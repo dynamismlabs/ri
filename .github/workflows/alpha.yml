@@ -1,5 +1,5 @@
-name: Beta desktop builds
-# Manual workflow_dispatch build across macOS and Linux for beta testing.
+name: Alpha desktop builds
+# Manual workflow_dispatch build across macOS and Linux for alpha sharing.
 # Uploads ad-hoc signed Mac DMGs, Linux AppImages, and headless runtime tarballs
 # as workflow artifacts without requiring publisher signing keys.
 on:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   build:
-    name: Beta ${{ matrix.platform }} / ${{ matrix.arch }}
+    name: Alpha ${{ matrix.platform }} / ${{ matrix.arch }}
     timeout-minutes: 90
     runs-on: ${{ matrix.os }}
     strategy:
@@ -27,6 +27,10 @@ jobs:
           - { os: macos-15-intel, platform: darwin, arch: x64 }
           - { os: ubuntu-22.04, platform: linux, arch: x64 }
           - { os: ubuntu-22.04-arm, platform: linux, arch: arm64 }
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      MACOSX_DEPLOYMENT_TARGET: '13.5'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/setup@v3
@@ -60,18 +64,36 @@ jobs:
       - name: Build speech helper
         if: inputs.with_speech
         run: pnpm speech:build
-      - name: Build beta installers
+      - name: Disable Spotlight indexing during macOS DMG creation
+        if: runner.os == 'macOS'
+        run: |
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo mdutil -a -i off || sudo mdutil -i off /System/Volumes/Data
+      - name: Build the production app with a bounded heap
+        env:
+          RI_ROOT: ${{ runner.temp }}/ri-alpha-build-home
+          RI_DB_PATH: ''
+          RI_CONFIG_DIR: ''
+          RI_WORK_DIR: ''
+          NEXT_DIST_DIR: .next-desktop
+          NODE_ENV: production
+          RI_BUILD_MEMORY_LIMIT_GB: '16'
+        run: node scripts/next-build.mjs
+      - name: Build alpha installers
         env:
           RI_RELEASE_COMMIT: ${{ github.sha }}
         run: |
           if [ "${{ inputs.with_speech }}" = "true" ]; then
-            node desktop/package.mjs --share --with-speech
+            node desktop/package.mjs --share --skip-build --with-speech
           else
-            node desktop/package.mjs --share
+            node desktop/package.mjs --share --skip-build
           fi
       - uses: actions/upload-artifact@v4
         with:
-          name: ri-beta-${{ matrix.platform }}-${{ matrix.arch }}
+          name: ri-alpha-${{ matrix.platform }}-${{ matrix.arch }}
+          if-no-files-found: error
+          compression-level: 0
           retention-days: 14
           path: |
             release/desktop/*.dmg
