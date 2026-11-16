@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Editor } from '@tiptap/core';
-import { Layers3, NotebookPen, X } from 'lucide-react';
+import { Layers3, Maximize2, NotebookPen, X } from 'lucide-react';
 import { EntitySheet } from '@/components/entities/entity-sheet';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tip } from '@/components/ui/tip';
@@ -36,8 +36,8 @@ export function useScratchpadAvailable(): boolean {
 /** Where focus was when the shortcut took it into the pad, to go back to. */
 let returnTo: HTMLElement | null = null;
 
-/** The pad (in the column or its slideout) or the column's deck. */
-const BESIDE_SELECTOR = '[data-scratchpad], [data-beside-column]';
+/** The pad or the deck, in the column or in a slideout. */
+const BESIDE_SELECTOR = '[data-scratchpad], [data-deck-beside], [data-beside-column]';
 
 function padHasFocus(): boolean {
   return !!document.activeElement?.closest('[data-scratchpad]');
@@ -128,14 +128,21 @@ function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
   // caret, undo and unsent lines, and the deck's scroll, filters and half-typed add.
   const [deckMounted, setDeckMounted] = useState(showDeck);
   const [expanded, setExpanded] = useState(false);
-  // The deck takes the column, so a pad open in its slideout folds back in.
+  const [deckExpanded, setDeckExpanded] = useState(false);
+  // Each view takes the column from the other, so the other's slideout folds back in.
   if (showDeck && (!deckMounted || expanded)) { setDeckMounted(true); setExpanded(false); }
+  if (!showDeck && deckExpanded) setDeckExpanded(false);
   const editor = useRef<Editor | null>(null);
   const focusChat = useRef(false);
+  const deckExpandButton = useRef<HTMLButtonElement | null>(null);
   const storageScope = useHomeStorageScope();
   const { size: width, isResizing, handleResizeStart } = useDragResize({
     edge: 'left', min: 420, max: 1400, defaultSize: 960,
     storageKey: homeStorageIdentity('ri.scratchpad-slideout.width', storageScope),
+  });
+  const deckResize = useDragResize({
+    edge: 'left', min: 420, max: 1400, defaultSize: 960,
+    storageKey: homeStorageIdentity('ri.deck-slideout.width', storageScope),
   });
   // This component opens only after hydration. Keep one portal target and
   // move it between the column and the sheet, so the editor never remounts.
@@ -152,27 +159,58 @@ function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
     });
   }, [padContainer]);
   const collapse = () => setExpanded(false);
+  // The deck moves between the column and its slideout the same way, so its
+  // filters, half-typed add and loaded deck carry over.
+  const [deckContainer] = useState(() => {
+    const element = document.createElement('div');
+    element.className = 'flex h-full min-h-0 min-w-0 flex-1 flex-col';
+    return element;
+  });
+  const mountDeck = useCallback((element: HTMLElement | null) => {
+    if (element) element.appendChild(deckContainer);
+  }, [deckContainer]);
+  const collapseDeck = () => setDeckExpanded(false);
   return (
     <>
       <aside aria-label={showDeck ? 'Deck beside' : 'Scratchpad'} data-beside-column
         className="flex min-h-0 w-[340px] shrink-0 flex-col border-l border-border">
         <div ref={expanded ? undefined : mountPad} hidden={showDeck} className="flex min-h-0 flex-1 flex-col" />
-        {deckMounted && (
-          <div hidden={!showDeck} className="flex min-h-0 flex-1 flex-col bg-background">
-            <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border/50 pl-4 pr-2">
-              <Layers3 size={14} className="shrink-0 text-muted-foreground" />
-              <h2 className="mr-auto shrink-0 text-xs font-semibold">Deck</h2>
-              <Tip label="Close">
-                <button type="button" onClick={() => closeScratchpad(true)} aria-label="Close the deck beside"
+        {deckMounted && <div ref={deckExpanded ? undefined : mountDeck} hidden={!showDeck} className="flex min-h-0 flex-1 flex-col" />}
+      </aside>
+      <EntitySheet open={deckExpanded} label="Deck" width={deckResize.size} resizing={deckResize.isResizing}
+        onClose={collapseDeck} showCloseButton={false}
+        onCloseAutoFocus={(e) => { e.preventDefault(); deckExpandButton.current?.focus(); }}>
+        <div role="separator" aria-label="Resize the deck" aria-orientation="vertical"
+          className={cn('relative hidden w-1.5 shrink-0 cursor-col-resize bg-background transition-colors hover:bg-primary/20 md:block', deckResize.isResizing && 'bg-primary/30')}
+          onPointerDown={deckResize.handleResizeStart} style={{ touchAction: 'none' }}>
+          <div className="absolute inset-y-0 -left-1 -right-1" />
+        </div>
+        <div ref={deckExpanded ? mountDeck : undefined} className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden" />
+      </EntitySheet>
+      {deckMounted && createPortal(
+        <div data-deck-beside className="flex h-full min-h-0 flex-col bg-background">
+          <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border/50 pl-4 pr-2">
+            <Layers3 size={14} className="shrink-0 text-muted-foreground" />
+            <h2 className="mr-auto shrink-0 text-xs font-semibold">Deck</h2>
+            {!deckExpanded && (
+              <Tip label="Open in a slideout">
+                <button type="button" ref={deckExpandButton} onClick={() => setDeckExpanded(true)}
+                  aria-label="Expand the deck"
                   className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
-                  <X size={15} />
+                  <Maximize2 size={14} />
                 </button>
               </Tip>
-            </header>
-            <div className="min-h-0 flex-1">{deck}</div>
-          </div>
-        )}
-      </aside>
+            )}
+            <Tip label="Close">
+              <button type="button" onClick={deckExpanded ? collapseDeck : () => closeScratchpad(true)} aria-label="Close the deck beside"
+                className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+                <X size={15} />
+              </button>
+            </Tip>
+          </header>
+          <div className="min-h-0 flex-1">{deck}</div>
+        </div>, deckContainer,
+      )}
       <EntitySheet open={expanded} label="Scratchpad" width={width} resizing={isResizing}
         onClose={collapse} showCloseButton={false}
         onOpenAutoFocus={(e) => { e.preventDefault(); editor.current?.commands.focus(); }}

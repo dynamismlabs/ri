@@ -374,6 +374,55 @@ describe('the deck beside', () => {
     } finally { await page.close(); }
   });
 
+  it('expands the same deck into a slideout and folds it back', async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const settled = () => page.getByRole('dialog', { name: 'Deck' }).evaluate(async el => {
+      await Promise.all(el.getAnimations().map(animation => animation.finished));
+    });
+    try {
+      await page.goto(fixture.url);
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      await page.getByLabel('Add to deck').fill('Half typed');
+      const original = await page.getByLabel('Add to deck').elementHandle();
+
+      await page.getByRole('button', { name: 'Expand the deck' }).click();
+      await settled();
+      const dialog = page.getByRole('dialog', { name: 'Deck' });
+      expect(await dialog.locator('[data-deck-stub]').isVisible()).toBe(true);
+      expect((await dialog.boundingBox())!.width).toBeGreaterThan(900);
+      expect(await original!.evaluate(el => el.isConnected && (el as HTMLInputElement).value)).toBe('Half typed');
+      expect(await page.getByRole('button', { name: 'Expand the deck' }).count()).toBe(0);
+      await capture(page, 'deck-expanded');
+
+      // Escape returns it to the column, still open, with focus on Expand.
+      await page.keyboard.press('Escape');
+      await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
+      expect(await page.locator('[data-beside-column] [data-deck-stub]').isVisible()).toBe(true);
+      expect(await page.getByLabel('Add to deck').inputValue()).toBe('Half typed');
+      await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).toBe('Expand the deck');
+
+      // ✕ in the slideout folds it back too, rather than closing the column.
+      await page.getByRole('button', { name: 'Expand the deck' }).click();
+      await settled();
+      await page.getByRole('button', { name: 'Close the deck beside' }).click();
+      await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
+      expect(await page.locator('[data-beside-column] [data-deck-stub]').isVisible()).toBe(true);
+
+      // ⌘⇧J from the slideout folds it and puts the caret in the pad.
+      await page.getByRole('button', { name: 'Expand the deck' }).click();
+      await settled();
+      await page.keyboard.press('ControlOrMeta+Shift+j');
+      await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
+      await expect.poll(() => editor(page).evaluate(el => el.contains(document.activeElement))).toBe(true);
+      expect(await deck(page).isVisible()).toBe(false);
+
+      // Back on the deck, it opens in the column, not the slideout.
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      expect(await page.locator('[data-beside-column] [data-deck-stub]').isVisible()).toBe(true);
+      expect(await page.getByRole('dialog').count()).toBe(0);
+    } finally { await page.close(); }
+  });
+
   it('leaves the button off a tablet, where the deck is its own tab', async () => {
     const page = await fixture.browser.newPage({ viewport: { width: 820, height: 1180 }, hasTouch: true });
     try {
