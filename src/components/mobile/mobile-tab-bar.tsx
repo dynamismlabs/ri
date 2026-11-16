@@ -1,11 +1,8 @@
 "use client";
 
 import { MessageSquare, Bot, Plus, Layers3, MoreHorizontal, ListTodo, FileText } from 'lucide-react';
-import { useMemo } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
-import { useNeedsReviewSessions, useRailSessions } from '@/hooks/use-workspaces';
-import { useInactivity } from '@/hooks/use-inactivity';
-import { executionActivity } from '@/components/workspaces/bucket-config';
+import { useAgentsTabWork } from '@/hooks/use-agents-tab-work';
 import { cn } from '@/lib/utils';
 import type { MobileTab } from '@/types/dashboard';
 import { useTeamNav } from '@/components/team/team-context';
@@ -30,47 +27,15 @@ export function MobileTabBar() {
     { id: 'tasks' as const, label: 'Tasks', icon: ListTodo },
     { id: 'notes' as const, label: 'Notes', icon: FileText },
   ] : TABS;
-  const {
-    mobileTab,
-    setMobileTab,
-    setActiveView,
-    setMobileCreateOpen,
-    streamingSessionIds,
-    pendingInputSessionIds,
-  } = useDashboard();
-  const { data: needsReview } = useNeedsReviewSessions();
-  const { data: rail } = useRailSessions();
-  // Inactive work is folded out of the lists, so it doesn't badge either.
-  const { isInactive } = useInactivity();
-
-  // Three signals worth surfacing on the Agents tab:
-  //   - pending    → an execution is blocked on a user response
-  //   - working    → at least one execution is mid-turn
-  //   - to review  → executions with output the user hasn't seen yet
-  // Priority pending > working > review matches the header pill and
-  // session row pip: an agent waiting on you outranks an agent
-  // working, which outranks output you haven't read yet. Only executions
-  // count, as on the desktop pills: the live sets also hold the main chat.
-  const { pending: pendingCount, working: workingCount } = useMemo(
-    () =>
-      executionActivity(
-        (rail?.sessions ?? []).filter((s) => !isInactive(s)),
-        pendingInputSessionIds,
-        streamingSessionIds,
-      ),
-    [rail?.sessions, pendingInputSessionIds, streamingSessionIds, isInactive],
-  );
-  const reviewCount = (needsReview ?? []).filter(
-    (s) => (pendingInputSessionIds.has(s.id) || !streamingSessionIds.has(s.id)) && !isInactive(s),
-  ).length;
-  const reviewAttention = rail?.resultReviewAttention ?? [];
-  const resultPending = reviewAttention.filter((review) => rail?.pendingSessionIds.includes(review.sessionId)).length;
-  const resultWorking = reviewAttention.filter((review) => !rail?.pendingSessionIds.includes(review.sessionId) && (review.status === 'queued' || review.status === 'running')).length;
-  const resultFailed = reviewAttention.filter((review) => review.status === 'failed').length;
+  const { mobileTab, setMobileTab, setActiveView, setMobileCreateOpen } = useDashboard();
+  // The Agents tab's own counts (docs/chat-lenses.md), so the badge always
+  // matches its Unread and Working tabs. Blocked on you outranks working,
+  // which outranks unread, as on the header's pills.
+  const { counts } = useAgentsTabWork();
   const badgeKind: 'pending' | 'working' | 'review' | null =
-    pendingCount + resultPending > 0 ? 'pending' : workingCount + resultWorking > 0 ? 'working' : reviewCount + resultFailed > 0 ? 'review' : null;
+    counts.blocked > 0 ? 'pending' : counts.working > 0 ? 'working' : counts.unread > 0 ? 'review' : null;
   const badgeCount =
-    badgeKind === 'pending' ? pendingCount + resultPending : badgeKind === 'working' ? workingCount + resultWorking : reviewCount + resultFailed;
+    badgeKind === 'pending' ? counts.blocked : badgeKind === 'working' ? counts.working : counts.unread;
 
   return <HomePhoneBar tabs={tabs.map(tab => ({ ...tab, active: tab.id === mobileTab,
     onClick: () => { if (tab.id === 'create') setMobileCreateOpen(true); else if (team) { nav.show(tab.id === 'tasks' ? 'board' : tab.id === 'notes' ? 'notes' : tab.id === 'agents' ? 'agents' : 'chat'); } else { setMobileTab(tab.id); if (tab.id === 'agents') setActiveView(HOME_VIEW); } },

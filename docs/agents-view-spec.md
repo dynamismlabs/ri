@@ -1,6 +1,6 @@
 # Agents view: spec and task list
 
-> The tab this spec calls Overview reads **Chats** in the UI since 2026-11-03: that's mostly what it holds, and "chat" is the UI's word for an execution. Its id in code, URLs and saved tabs stays `overview`.
+> The tab this spec calls Overview reads **Chats** in the UI since 2026-11-03: that's mostly what it holds, and "chat" is the UI's word for an execution. Its id in code, URLs and saved tabs stays `overview`. Since 2026-11-16 it lists the agent's chats under All, Unread and Working tabs (`docs/chat-lenses.md`) instead of Pinned, Needs you, Working and Recent sections.
 
 **Status:** done 2026-09-22 (Phases 0 to 10). Written 2026-09-22. Follow-ups are in §7.
 **Current follow-up:** shared and agent-specific handoff preferences are implemented through [Handoff and review preferences](work-result-guidance.md). Chats opened from the agent view open beside its main chat (§9, 2026-10-27). The dated phase evidence below remains historical.

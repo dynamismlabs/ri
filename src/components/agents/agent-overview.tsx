@@ -10,6 +10,8 @@ import { DiffStatsPair } from '@/components/workspaces/diff-stats';
 import { SessionRowMenu } from '@/components/workspaces/session-row-menu';
 import { ChatAskSize, ChatStatusLine } from '@/components/workspaces/chat-status-line';
 import { InactiveFold } from '@/components/workspaces/inactive-fold';
+import { ChatLensBar, ChatLensPanel, ChatLenses } from '@/components/workspaces/chat-lens-bar';
+import { useAgentChatLens, type AgentChatLens } from '@/lib/client/chat-lens';
 import { harnessDefinition } from '@/lib/harness/registry';
 import { formatCompactRelative } from '@/lib/utils/relative-time';
 import type { RailSession } from '@/lib/api/sessions';
@@ -23,9 +25,12 @@ import { Tip } from '@/components/ui/tip';
 type RowState = 'approve' | 'unread' | 'working' | 'idle';
 
 /**
- * The agent's work at a glance (docs/agents-view-spec.md Phase 7): its
- * executions grouped the way the rail groups them, its pinned ones, the
- * tasks they are working, and its previews.
+ * The agent's chats (docs/agents-view-spec.md Phase 7), under three tabs
+ * (docs/chat-lenses.md): All, its pins and then every chat newest first, each
+ * with a dot for its state; Unread, what wants you; Working, what's running.
+ * Each tab carries its count, so the row of tabs says what needs you and
+ * what's running before you pick one. The tab is remembered across agents.
+ * All also holds the tasks its chats are working and its previews.
  */
 export function AgentOverview({
   workspace,
@@ -34,8 +39,9 @@ export function AgentOverview({
   workspace: WorkspaceRecord;
   onSelectTab: (tab: AgentTab) => void;
 }) {
-  const { needsYou, needsYouInactive, working, recent, recentInactive, pinned, pinnedInactive, all, isLoading } =
+  const { needsYou, needsYouInactive, working, pinned, pinnedInactive, unpinned, unpinnedInactive, all, isLoading } =
     useAgentExecutions(workspace.id);
+  const [lens, setLens] = useAgentChatLens();
   const archived = workspace.status === 'archived';
 
   if (isLoading) {
@@ -70,24 +76,68 @@ export function AgentOverview({
     );
   }
 
+  // Each chat's dot in All: blocked, unread, working or quiet.
+  const states = new Map<string, RowState>();
+  for (const s of working) states.set(s.id, 'working');
+  for (const { session, bucket } of [...needsYou, ...needsYouInactive]) {
+    states.set(session.id, bucket === 'needsApproval' ? 'approve' : 'unread');
+  }
+  const state = (s: RailSession): RowState => states.get(s.id) ?? 'idle';
+
   return (
-    <div className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-5">
-      {pinned.length + pinnedInactive.length > 0 && (
-        <Section title="Pinned" icon={<Pin size={10} className="-rotate-45" />} count={pinned.length} showBody>
-          {pinned.map((s) => (
-            <ExecutionRow key={s.id} session={s} state={stateOf(s, needsYou, working)} />
-          ))}
-          <InactiveFold sectionId={`overview:${workspace.id}:pinned`} count={pinnedInactive.length} className="pl-4">
-            {pinnedInactive.map((s) => (
-              <ExecutionRow key={s.id} session={s} state={stateOf(s, needsYouInactive, working)} inactive />
+    <ChatLenses value={lens} onChange={setLens} className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-shrink-0 px-3 pt-3 pb-2">
+        <ChatLensBar<AgentChatLens>
+          label={`Show chats in ${workspace.name}`}
+          options={[
+            { value: 'all', label: 'All' },
+            {
+              value: 'unread',
+              label: 'Unread',
+              count: needsYou.length,
+              tone: 'attention',
+              pulse: needsYou.some((n) => n.bucket === 'needsApproval'),
+            },
+            { value: 'working', label: 'Working', count: working.length, tone: 'working' },
+          ]}
+        />
+      </div>
+      <ChatLensPanel value="all" className="flex-1 min-h-0 overflow-y-auto px-3 pb-3 space-y-5">
+        {pinned.length + pinnedInactive.length > 0 && (
+          <Section title="Pinned" icon={<Pin size={10} className="-rotate-45" />} count={pinned.length} showBody>
+            {pinned.map((s) => (
+              <ExecutionRow key={s.id} session={s} state={state(s)} />
             ))}
-          </InactiveFold>
-        </Section>
-      )}
-      <Section title="Needs you" count={needsYou.length} tone="attention" empty={needsYou.length + needsYouInactive.length > 0 ? undefined : 'Nothing waiting on you.'}>
-        {needsYou.map(({ session, bucket }) => (
-          <ExecutionRow key={session.id} session={session} state={bucket === 'needsApproval' ? 'approve' : 'unread'} />
-        ))}
+            <InactiveFold sectionId={`overview:${workspace.id}:pinned`} count={pinnedInactive.length} className="pl-4">
+              {pinnedInactive.map((s) => (
+                <ExecutionRow key={s.id} session={s} state={state(s)} inactive />
+              ))}
+            </InactiveFold>
+          </Section>
+        )}
+        {unpinned.length + unpinnedInactive.length > 0 && (
+          // Titled only under the pins, to tell the two apart. Alone, the tab says it.
+          <Section title={pinned.length + pinnedInactive.length > 0 ? 'Recent' : undefined} count={0} showBody>
+            {unpinned.map((s) => (
+              <ExecutionRow key={s.id} session={s} state={state(s)} />
+            ))}
+            <InactiveFold sectionId={`overview:${workspace.id}:recent`} count={unpinnedInactive.length} className="pl-4">
+              {unpinnedInactive.map((s) => (
+                <ExecutionRow key={s.id} session={s} state={state(s)} inactive />
+              ))}
+            </InactiveFold>
+          </Section>
+        )}
+        <AgentTasksSection workspaceId={workspace.id} />
+        <AgentPreviewsSection workspaceId={workspace.id} onOpenPreviewTab={() => onSelectTab('preview')} />
+      </ChatLensPanel>
+      <ChatLensPanel value="unread" className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
+        {needsYou.length + needsYouInactive.length === 0 && <LensEmpty text="Nothing waiting on you." />}
+        <div className="space-y-px">
+          {needsYou.map(({ session, bucket }) => (
+            <ExecutionRow key={session.id} session={session} state={bucket === 'needsApproval' ? 'approve' : 'unread'} />
+          ))}
+        </div>
         <InactiveFold sectionId={`overview:${workspace.id}:needs`} count={needsYouInactive.length} className="pl-4">
           {needsYouInactive.map(({ session, bucket }) => (
             <ExecutionRow
@@ -98,39 +148,21 @@ export function AgentOverview({
             />
           ))}
         </InactiveFold>
-      </Section>
-      <Section title="Working" count={working.length} tone="working" empty="Nothing running right now.">
-        {working.map((s) => (
-          <ExecutionRow key={s.id} session={s} state="working" />
-        ))}
-      </Section>
-      {recent.length + recentInactive.length > 0 && (
-        <Section title="Recent" count={recent.length} showBody>
-          {recent.map((s) => (
-            <ExecutionRow key={s.id} session={s} state="idle" />
+      </ChatLensPanel>
+      <ChatLensPanel value="working" className="flex-1 min-h-0 overflow-y-auto px-3 pb-3">
+        {working.length === 0 && <LensEmpty text="Nothing running right now." />}
+        <div className="space-y-px">
+          {working.map((s) => (
+            <ExecutionRow key={s.id} session={s} state="working" />
           ))}
-          <InactiveFold sectionId={`overview:${workspace.id}:recent`} count={recentInactive.length} className="pl-4">
-            {recentInactive.map((s) => (
-              <ExecutionRow key={s.id} session={s} state="idle" inactive />
-            ))}
-          </InactiveFold>
-        </Section>
-      )}
-      <AgentTasksSection workspaceId={workspace.id} />
-      <AgentPreviewsSection workspaceId={workspace.id} onOpenPreviewTab={() => onSelectTab('preview')} />
-    </div>
+        </div>
+      </ChatLensPanel>
+    </ChatLenses>
   );
 }
 
-function stateOf(
-  session: RailSession,
-  needsYou: Array<{ session: RailSession; bucket: string }>,
-  working: RailSession[],
-): RowState {
-  const waiting = needsYou.find((n) => n.session.id === session.id);
-  if (waiting) return waiting.bucket === 'needsApproval' ? 'approve' : 'unread';
-  if (working.some((w) => w.id === session.id)) return 'working';
-  return 'idle';
+function LensEmpty({ text }: { text: string }) {
+  return <p className="px-1 pt-6 text-center text-[11px] text-muted-foreground/60">{text}</p>;
 }
 
 function Section({
@@ -142,7 +174,8 @@ function Section({
   showBody = false,
   children,
 }: {
-  title: string;
+  /** None for a list the tab above already names. */
+  title?: string;
   icon?: ReactNode;
   count: number;
   tone?: 'attention' | 'working';
@@ -154,7 +187,7 @@ function Section({
 }) {
   return (
     <section>
-      <h3 className="flex items-center gap-1.5 px-1 mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+      {title && <h3 className="flex items-center gap-1.5 px-1 mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
         {icon}
         {title}
         {count > 0 && (
@@ -171,7 +204,7 @@ function Section({
             {count}
           </span>
         )}
-      </h3>
+      </h3>}
       {count === 0 && empty && !showBody ? (
         <p className="px-1 text-[11px] text-muted-foreground/60">{empty}</p>
       ) : (

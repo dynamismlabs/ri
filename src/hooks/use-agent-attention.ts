@@ -31,20 +31,35 @@ export function useAgentAttention(): AgentAttentionItem[] {
   const { data: workspaces } = useWorkspaces({ status: 'active' });
   const { pendingInputSessionIds, streamingSessionIds } = useDashboard();
 
-  return useMemo(() => {
-    const byId = new Map((workspaces ?? []).map((w) => [w.id, w]));
-    const items: AgentAttentionItem[] = [];
-    for (const chat of rail?.mainChats ?? []) {
-      const workspace = byId.get(chat.workspaceId);
-      if (!workspace) continue;
-      const activity = mainChatActivity(chat, pendingInputSessionIds, streamingSessionIds);
-      const bucket = agentAttention(activity);
-      if (!bucket || (activity !== 'waiting' && activity !== 'replied')) continue;
-      items.push({ workspace, chat, activity, bucket });
-    }
-    return items.sort((a, b) => {
-      if (a.activity !== b.activity) return a.activity === 'waiting' ? -1 : 1;
-      return (latestActivityAt(b.chat) ?? '').localeCompare(latestActivityAt(a.chat) ?? '');
-    });
-  }, [rail?.mainChats, workspaces, pendingInputSessionIds, streamingSessionIds]);
+  return useMemo(
+    () => agentAttentionItems(rail?.mainChats, workspaces, pendingInputSessionIds, streamingSessionIds),
+    [rail?.mainChats, workspaces, pendingInputSessionIds, streamingSessionIds],
+  );
+}
+
+/**
+ * The reading behind {@link useAgentAttention}, for a surface that takes its
+ * live sets from somewhere else (the phone's Agents tab reads the work
+ * context, so a team's view has them too).
+ */
+export function agentAttentionItems(
+  mainChats: readonly RailMainChat[] | undefined,
+  workspaces: readonly WorkspaceWithCounts[] | undefined,
+  pendingInputSessionIds: ReadonlySet<string>,
+  streamingSessionIds: ReadonlySet<string>,
+): AgentAttentionItem[] {
+  const byId = new Map((workspaces ?? []).map((w) => [w.id, w]));
+  const items: AgentAttentionItem[] = [];
+  for (const chat of mainChats ?? []) {
+    const workspace = byId.get(chat.workspaceId);
+    if (!workspace) continue;
+    const activity = mainChatActivity(chat, pendingInputSessionIds, streamingSessionIds);
+    const bucket = agentAttention(activity);
+    if (!bucket || (activity !== 'waiting' && activity !== 'replied')) continue;
+    items.push({ workspace, chat, activity, bucket });
+  }
+  return items.sort((a, b) => {
+    if (a.activity !== b.activity) return a.activity === 'waiting' ? -1 : 1;
+    return (latestActivityAt(b.chat) ?? '').localeCompare(latestActivityAt(a.chat) ?? '');
+  });
 }
