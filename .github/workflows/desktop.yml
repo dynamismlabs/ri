@@ -78,6 +78,8 @@ jobs:
             package: release/desktop/linux-arm64-unpacked
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '13.5'
     steps:
       - uses: actions/checkout@v4
       # pnpm 11 and newer install through pnpm/setup. Node and the store cache
@@ -128,6 +130,9 @@ jobs:
           .electron-demo/speech-build/venv/bin/python desktop/speech/release_materials.py verify-bundle release/ri-speech-sources.tar.gz > release/qualification/speech-sources.json
           .electron-demo/speech-build/venv/bin/python desktop/speech/native_inventory.py release/speech-helper --verify > release/qualification/speech-native-inventory.json
       - name: Build the unsigned native package
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          RI_BUILD_MEMORY_LIMIT_GB: '16'
         run: pnpm desktop:package --with-speech
       - name: Select the packaged application
         run: |

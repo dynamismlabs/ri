@@ -7,9 +7,9 @@ import { getAppRoot, getConfigDir, getDbPath, getWorkDir } from '@/lib/config/pa
 
 export function canonical(file: string): string {
   const absolute = path.resolve(/* turbopackIgnore: true */ file);
-  if (fs.existsSync(absolute)) return fs.realpathSync(absolute);
+  if (fs.existsSync(/* turbopackIgnore: true */ absolute)) return fs.realpathSync(/* turbopackIgnore: true */ absolute);
   const parent = path.dirname(absolute);
-  return parent === absolute ? absolute : path.join(canonical(parent), path.basename(absolute));
+  return parent === absolute ? absolute : path.join(/* turbopackIgnore: true */ canonical(parent), path.basename(absolute));
 }
 
 export function serviceIdentity() {
@@ -22,9 +22,9 @@ export function servicePaths() {
   return {
     id, identity,
     // A short per-user socket path also works with macOS's sockaddr_un limit.
-    socket: path.join(os.tmpdir(), `ri-${process.getuid?.() ?? 'user'}-${id}.sock`),
-    settings: path.join(identity.config, 'local-service.json'),
-    log: path.join(identity.work, 'service.log'),
+    socket: path.join(/* turbopackIgnore: true */ os.tmpdir(), `ri-${process.getuid?.() ?? 'user'}-${id}.sock`),
+    settings: path.join(/* turbopackIgnore: true */ identity.config, 'local-service.json'),
+    log: path.join(/* turbopackIgnore: true */ identity.work, 'service.log'),
     ownerLock: `${identity.database}.owner.sqlite`,
   };
 }

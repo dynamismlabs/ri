@@ -11,7 +11,6 @@ const root = path.resolve(process.env.RI_DESKTOP_ROOT || path.join(process.env.R
 const env = { ...process.env, RI_DESKTOP_REPO: repo, RI_DESKTOP_ROOT: process.env.RI_DESKTOP_ROOT || '', RI_DESKTOP_NODE: process.execPath,
   RI_DESKTOP_MODE: dev ? 'development' : 'production' };
 delete env.ELECTRON_RUN_AS_NODE;
-delete env.NODE_OPTIONS;
 
 function run(executable, args, childEnv) {
   return new Promise((resolve, reject) => {
@@ -40,8 +39,10 @@ try {
     throw new Error('Run pnpm desktop:demo once to build the production app, or use pnpm desktop:dev.');
   }
   if (!process.argv.includes('--build-only')) {
+    const electronEnv = { ...env };
+    delete electronEnv.NODE_OPTIONS;
     const executable = developmentExecutable({ electron, repo });
-    await run(executable, [path.join(repo, 'dist/desktop/main.cjs')], env);
+    await run(executable, [path.join(repo, 'dist/desktop/main.cjs')], electronEnv);
   }
 } catch (error) {
   console.error(error.message);

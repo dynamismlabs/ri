@@ -68,6 +68,9 @@ export function rebaseResourceLinks(root, sourceRoot) {
 }
 
 export const SHELL_ENTRYPOINTS = ['main.cjs', 'preload.cjs', 'maintenance-preload.cjs', 'companion-preload.cjs', 'local-preload.cjs', 'find-preload.cjs', 'team-navigation.cjs'];
+export const MAC_SIGN_IGNORE = ['Contents/Resources/server(?:/|$)', 'Contents/Resources/node(?:/|$)'];
+export const MAC_MINIMUM_SYSTEM_VERSION = '13.5';
+export const LINUX_ICON_RELATIVE_PATH = 'assets/brand/icons/icon-512.png';
 
 /** What the app's own part is: its bundles and its Electron. It leaves out the
  * version in its package.json, so a release that only changed pages and server

@@ -11,7 +11,7 @@ import { assertDesktopPackagingRuntime, DESKTOP_NODE_VERSION } from './package-p
 assertDesktopPackagingRuntime();
 const { build, Platform, Arch } = await import('electron-builder');
 const tar = await import('tar');
-const { appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, pruneDependencySourceMaps, removeUnusedPackageCopy, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
+const { appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, LINUX_ICON_RELATIVE_PATH, MAC_MINIMUM_SYSTEM_VERSION, MAC_SIGN_IGNORE, pruneDependencySourceMaps, removeUnusedPackageCopy, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
 const { signRuntime } = await import('./sign-runtime.mjs');
 const { stageSpeechHelper } = await import('./speech/package.mjs');
 
@@ -182,9 +182,9 @@ if (!headless) {
     files: [...SHELL_ENTRYPOINTS, 'package.json', '!node_modules/**/*'], asar: true,
     npmRebuild: false, nodeGypRebuild: false, forceCodeSigning: releaseBuild && process.platform === 'darwin',
     protocols: [{ name: 'Ri OAuth callback', schemes: ['ri'] }],
-    mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: releaseBuild ? process.env.CSC_NAME : shareBuild ? '-' : null, signIgnore: ['Contents/Resources/server/', 'Contents/Resources/node/'], hardenedRuntime: true, notarize: releaseBuild,
+    mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: releaseBuild ? process.env.CSC_NAME : shareBuild ? '-' : null, signIgnore: MAC_SIGN_IGNORE, minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION, hardenedRuntime: true, notarize: releaseBuild,
       extendInfo: { NSMicrophoneUsageDescription: 'Ri uses the microphone when you record a voice message.', NSCameraUsageDescription: 'Ri uses the camera when you scan a pairing code.' } },
-    linux: { executableName: 'ri', syncDesktopName: true, icon: path.join(repo, 'assets/brand/icons'), category: 'Office' },
+    linux: { executableName: 'ri', syncDesktopName: true, icon: path.join(repo, LINUX_ICON_RELATIVE_PATH), category: 'Office' },
     // The native updater obtains the eligible URL from signed Ri metadata.
     publish: process.env.RI_RELEASE_FEED ? [{ provider: 'generic', url: new URL('.', process.env.RI_RELEASE_FEED).href }] : null,
     afterPack: async context => {
