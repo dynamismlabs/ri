@@ -335,12 +335,15 @@ export async function installApp(sourceId: string, request?: RequestLike, return
     try {
       if (!await prepare(tools, job, source.folder!)) return;
       const port = await freePort();
-      const { code, tail } = await runIn(tools, source.folder!, pnpmCommand(tools), ['exec', cli, 'serve', '--install', 'HEAD', '--json'], { PORT: String(port), APP_HOST: '127.0.0.1' }, (line) => foldKitLine(job, line));
+      const installing = (await git(source.folder!, ['rev-parse', 'HEAD'], tools)).stdout.trim();
+      const { code, tail } = await runIn(tools, source.folder!, pnpmCommand(tools), ['exec', cli, 'serve', '--install', installing, '--json'], { PORT: String(port), APP_HOST: '127.0.0.1' }, (line) => foldKitLine(job, line));
       if (code !== 0 || job.result?.outcome !== 'switched' && job.result?.outcome !== 'unchanged') {
         return finish(job, 'failed', job.result?.message || `The app kit’s install failed: ${tail.trim().split('\n').pop() ?? ''}`);
       }
       const url = `http://127.0.0.1:${port}/mcp`;
       updateAppSource(source.id, { url });
+      // What the kit installed and checked is now running: an app from the catalog records its version from that.
+      await recordCatalogVersion(getAppSource(source.id) ?? source, await releaseCommit(source.folder!, job.result?.release) ?? installing);
       const { addPersonalApp } = await import('@/lib/integrations/apps');
       const added = await addPersonalApp({ name: source.name, url, ...(returnTo ? { returnTo } : {}) }, request);
       updateAppSource(source.id, { personalAppId: added.app.id });
@@ -396,7 +399,7 @@ export function switchTo(source: AppSourceRecord, commit: string): AppJob {
       const { code, tail } = await runIn(tools, source.folder!, pnpmCommand(tools), ['exec', cli, 'change', commit, '--json'], {}, (line) => foldKitLine(job, line));
       const outcome = job.result?.outcome;
       if (code === 0 && (outcome === 'switched' || outcome === 'unchanged')) {
-        await settleChange(source, commit);
+        await settleChange(source, commit, job.result?.release);
         return finish(job, 'done');
       }
       finish(job, 'failed', job.result?.message || `The app kit’s change failed: ${tail.trim().split('\n').pop() ?? ''}`);
@@ -408,19 +411,31 @@ export function switchTo(source: AppSourceRecord, commit: string): AppJob {
 }
 
 /** After a switch: bring the app's folder to the running commit when it can, and drop the working copy. */
-async function settleChange(source: AppSourceRecord, commit: string) {
+async function settleChange(source: AppSourceRecord, commit: string, reported?: string) {
   try {
     const { stdout } = await git(source.folder!, ['status', '--porcelain']);
     if (!stdout.trim()) await git(source.folder!, ['merge', '-q', '--ff-only', commit]);
   } catch { /* The folder moved on its own. The branch keeps the change. */ }
   if (source.changeFolder) { try { await git(source.folder!, ['worktree', 'remove', '--force', source.changeFolder]); } catch { /* Already gone. */ } }
   updateAppSource(source.id, { changeFolder: null, changeBranch: null });
-  await recordCatalogVersion(source, commit);
+  // The release the kit says is answering now, which it checked before saying so.
+  await recordCatalogVersion(source, await releaseCommit(source.folder!, reported) ?? commit);
+}
+
+/**
+ * The full commit of a release the kit reports (it names each release by its commit's first 12
+ * characters), or null when there's none or the folder doesn't have it.
+ */
+export async function releaseCommit(folder: string, release: string | null | undefined): Promise<string | null> {
+  if (!release || !/^[0-9a-f]{7,64}$/.test(release)) return null;
+  try { return (await git(folder, ['rev-parse', '--verify', '-q', `${release}^{commit}`])).stdout.trim() || null; } catch { return null; }
 }
 
 /**
  * For an app from the catalog: once the running commit includes the catalog's current version (an
- * update switched over, or the builder merged it into a change), record that version.
+ * update switched over, or the builder merged it into a change), record that version. `running`
+ * must be what the app actually runs: the kit's install or switch result, or its status. Never the
+ * folder's HEAD, which can hold commits that were never installed.
  */
 export async function recordCatalogVersion(source: AppSourceRecord, running: string): Promise<boolean> {
   if (!source.catalogId || !source.folder) return false;
