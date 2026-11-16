@@ -10,7 +10,10 @@
  */
 
 import path from 'node:path';
+import slugify from '@sindresorhus/slugify';
 import {
+  archiveReferenceFolder,
+  createReferenceFolder,
   foldersToCheck,
   getWorkspaceSetup,
   getDevice,
@@ -27,6 +30,7 @@ import {
   removeWorkspaceSetup,
   setAgentFolder,
   setFolderLink,
+  updateReferenceFolder,
   updateWorkspace,
 } from '@/lib/db/queries';
 import { isDeviceConnected, requestWorker, sendToWorker, WorkerUnavailableError } from '@/lib/workers/hub';
@@ -204,6 +208,116 @@ export async function chooseLinkedFolder(referenceFolderId: string, deviceId: st
     const { recycleForReferenceFolderChange } = await import('@/lib/executor/adapter');
     if (ref) await recycleForReferenceFolderChange(ref.workspaceId);
   }
+}
+
+/**
+ * A linked folder's name for a folder: what you type after `@`. Its folder
+ * name, lowercased, made unique among the agent's linked folders (and the
+ * ones every agent has) with `-2`, `-3` … `except` leaves one out, for
+ * renaming it.
+ */
+export function linkedFolderAlias(workspaceId: string, raw: string, except?: string): string {
+  const base = slugify(raw) || 'folder';
+  const taken = new Set(listReferenceFoldersForWorkspace(workspaceId).filter((r) => r.id !== except).map((r) => r.alias));
+  for (let n = 1; ; n++) {
+    const alias = n === 1 ? base : `${base}-${n}`;
+    if (!taken.has(alias)) return alias;
+  }
+}
+
+/**
+ * Add a folder to an agent, as the person picked it on a device: named after
+ * the folder, editable, placed on that device. One that's already another
+ * agent's folder there links that agent instead, so it follows that agent's
+ * folder on every device. One the agent already has is left as it is.
+ * Returns the linked folder.
+ */
+export async function linkFolder(
+  workspaceId: string,
+  deviceId: string,
+  typed: string,
+  opts: { readOnly?: boolean } = {},
+): Promise<string> {
+  const folder = await folderOn(deviceId, typed);
+  const ws = getWorkspace(workspaceId);
+  if (!ws) throw new FolderError('That agent is gone.');
+  const own = getWorkspaceSetup(workspaceId, deviceId)?.sourcePath;
+  if (own && path.resolve(/* turbopackIgnore: true */ own) === folder) {
+    throw new FolderError(`${folder} is already ${ws.name}'s primary folder.`);
+  }
+  for (const ref of listReferenceFoldersForWorkspace(workspaceId)) {
+    const placed = ref.targetWorkspaceId
+      ? getWorkspaceSetup(ref.targetWorkspaceId, deviceId)?.sourcePath
+      : getFolderLink(deviceId, ref.id)?.path;
+    if (placed && path.resolve(/* turbopackIgnore: true */ placed) === folder) return ref.id;
+  }
+  const readOnly = opts.readOnly !== undefined ? { readOnly: opts.readOnly } : {};
+  const other = listWorkspaceSetups({ deviceId })
+    .filter((s) => s.workspaceId !== workspaceId && path.resolve(/* turbopackIgnore: true */ s.sourcePath) === folder)
+    .map((s) => getWorkspace(s.workspaceId))
+    .find((w) => w?.status === 'active');
+  if (other) {
+    return createReferenceFolder({
+      workspaceId,
+      alias: linkedFolderAlias(workspaceId, other.name),
+      targetWorkspaceId: other.id,
+      path: null,
+      description: null,
+      ...readOnly,
+    }).id;
+  }
+  const ref = createReferenceFolder({ workspaceId, alias: linkedFolderAlias(workspaceId, path.basename(folder)), description: null, ...readOnly });
+  try {
+    await chooseLinkedFolder(ref.id, deviceId, folder);
+  } catch (err) {
+    // Nothing half-made: the linked folder goes with its place.
+    archiveReferenceFolder(ref.id);
+    throw err;
+  }
+  return ref.id;
+}
+
+/**
+ * Make one of an agent's linked folders its primary folder, as ChatGPT's
+ * Make primary does: on every device the agent is set up on, that folder
+ * becomes the one its chats start in, and the old primary stays beside it
+ * as a linked folder, named after itself, editable. A folder that's another
+ * agent's (or every agent's) can't be: it isn't this agent's to take. Every
+ * device needs the folder placed first, or the agent would be left there
+ * without a primary folder.
+ */
+export async function makeLinkedFolderPrimary(workspaceId: string, referenceFolderId: string): Promise<void> {
+  const ws = getWorkspace(workspaceId);
+  const ref = getReferenceFolder(referenceFolderId);
+  if (!ws || !ref || ref.status !== 'active') throw new FolderError('That folder is gone.');
+  if (ref.workspaceId !== workspaceId) {
+    throw new FolderError(`@${ref.alias} is linked for every agent, so it can't be ${ws.name}'s primary folder.`);
+  }
+  if (ref.targetWorkspaceId) {
+    const target = getWorkspace(ref.targetWorkspaceId);
+    throw new FolderError(`@${ref.alias} is ${target?.name ?? 'another agent'}'s folder, so it can't be ${ws.name}'s primary folder too.`);
+  }
+  const host = getHome()?.hostDeviceId ?? null;
+  const swaps = listWorkspaceSetups({ workspaceId })
+    .map((s) => ({ deviceId: s.deviceId, from: s.sourcePath, to: getFolderLink(s.deviceId, ref.id)?.path ?? null }))
+    // The home first: it's the agent's folder for the rest of the app.
+    .sort((a, b) => Number(b.deviceId === host) - Number(a.deviceId === host));
+  const unplaced = swaps.find((s) => !s.to);
+  if (unplaced) {
+    throw new FolderError(`Choose where @${ref.alias} is on ${nameOf(unplaced.deviceId)} first, so ${ws.name} has a primary folder there too.`);
+  }
+  // Every place is checked before anything changes.
+  const placed = await Promise.all(swaps.map(async (s) => ({ ...s, to: await folderOn(s.deviceId, s.to!) })));
+  const first = placed[0];
+  if (first) updateReferenceFolder(ref.id, { alias: linkedFolderAlias(workspaceId, path.basename(first.from), ref.id), description: null, readOnly: false });
+  for (const s of placed) {
+    await recordAgentFolder(workspaceId, s.deviceId, s.to);
+    setFolderLink(s.deviceId, ref.id, s.from);
+  }
+  for (const s of placed) await afterChange(s.deviceId);
+  // Its chats read their folders when they start, so they restart into the new one.
+  const { recycleWorkspaceSessions } = await import('@/lib/executor/adapter');
+  await recycleWorkspaceSessions(workspaceId);
 }
 
 // ─── An agent's folders across the person's devices, for the Setup tab ───

@@ -355,6 +355,8 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             </Field>
           </Section>
 
+          <AgentFoldersSection workspace={workspace} />
+
           <Section
             title="Instructions"
             description="Standing instructions every chat in this agent receives when it starts. The agent's main chat follows them too."
@@ -436,7 +438,6 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             </label>
           </Section>}
 
-          <AgentFoldersSection workspace={workspace} />
 
           <Section title="Git">
             {workspace.isGit && (

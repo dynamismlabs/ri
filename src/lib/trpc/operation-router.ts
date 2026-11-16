@@ -248,6 +248,8 @@ import * as operation219 from "@/lib/server/operations/workspaces/[id]/file/crea
 import * as operation220 from "@/lib/server/operations/workspaces/[id]/file/rename";
 import * as operation222 from "@/lib/server/operations/workspaces/[id]/file/resolve-conflict";
 import * as operation232 from "@/lib/server/operations/workspaces/[id]/folders";
+import * as operation267 from "@/lib/server/operations/workspaces/[id]/folders/primary";
+import * as operation268 from "@/lib/server/operations/workspaces/new-folder";
 import * as operation233 from "@/lib/server/operations/workspaces/[id]/folders/[deviceId]";
 import * as operation234 from "@/lib/server/operations/workspaces/[id]/folders/[deviceId]/linked/[referenceFolderId]";
 import * as operation235 from "@/lib/server/operations/workspaces/[id]/github/issues";
@@ -637,6 +639,7 @@ export const internalRouters = {
     launchPicker: sp.input(launchPicker.GETInput).query(async ({ input, ctx }) => unwrapOperation(await launchPicker.GET(input, operationContext(ctx.request, input, "/workspaces/picker")))),
     list: sp.input(operation212.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation212.GET(input, operationContext(ctx.request, input, "/workspaces")))),
     create: sp.input(operation212.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation212.POST(input, operationContext(ctx.request, input, "/workspaces")))),
+    newFolderGet: sp.input(operation268.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation268.GET(input, operationContext(ctx.request, input, "/workspaces/new-folder")))),
     treeGet: sp.input(operation213.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation213.GET(input, operationContext(ctx.request, input, "/workspaces/[id]/tree")))),
     fileGet: sp.input(operation214.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation214.GET(input, operationContext(ctx.request, input, "/workspaces/[id]/file")))),
     filePut: sp.input(operation214.PUTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation214.PUT(input, operationContext(ctx.request, input, "/workspaces/[id]/file")))),
@@ -663,6 +666,7 @@ export const internalRouters = {
     integrationScopesPut: p.input(operation231.PUTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation231.PUT(input, operationContext(ctx.request, input, "/workspaces/[id]/integration-scopes")))),
     foldersGet: sp.input(operation232.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation232.GET(input, operationContext(ctx.request, input, "/workspaces/[id]/folders")))),
     foldersPost: sp.input(operation232.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation232.POST(input, operationContext(ctx.request, input, "/workspaces/[id]/folders")))),
+    foldersPrimaryPost: sp.input(operation267.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation267.POST(input, operationContext(ctx.request, input, "/workspaces/[id]/folders/primary")))),
     foldersDeviceIdPut: sp.input(operation233.PUTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation233.PUT(input, operationContext(ctx.request, input, "/workspaces/[id]/folders/[deviceId]")))),
     foldersDeviceIdDelete: sp.input(operation233.DELETEInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation233.DELETE(input, operationContext(ctx.request, input, "/workspaces/[id]/folders/[deviceId]")))),
     foldersLinkedDeviceIdReferenceFolderIdPut: sp.input(operation234.PUTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation234.PUT(input, operationContext(ctx.request, input, "/workspaces/[id]/folders/[deviceId]/linked/[referenceFolderId]")))),

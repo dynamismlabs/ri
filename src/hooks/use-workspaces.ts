@@ -191,11 +191,35 @@ export function useChangeAgentFolders(workspaceId: string) {
       mutationFn: (v: Parameters<typeof workspacesApi.addLinkedFolder>[1]) => workspacesApi.addLinkedFolder(workspaceId, v),
       onSuccess: settle,
     }),
+    addFolder: useMutation({
+      mutationFn: (v: { deviceId: string; folder: string }) => workspacesApi.addFolder(workspaceId, v),
+      onSuccess: settle,
+    }),
+    // The agent's record has a new folder and git state, like changing its folder.
+    primary: useMutation({
+      mutationFn: (referenceFolderId: string) => workspacesApi.makePrimary(workspaceId, referenceFolderId),
+      onSuccess: (data) => {
+        settle(data);
+        void qc.invalidateQueries({ queryKey: WORKSPACES_KEY });
+        void qc.invalidateQueries({ queryKey: workspaceFolderScope(workspaceId) });
+      },
+    }),
     remove: useMutation({
       mutationFn: (deviceId: string) => workspacesApi.removeFromDevice(workspaceId, deviceId),
       onSuccess: settle,
     }),
   };
+}
+
+/** Where Ri would make the folder for a new agent with this name, while none is chosen. */
+export function useNewAgentFolder(name: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...WORKSPACES_KEY, 'new-folder', name],
+    queryFn: ({ signal }) => workspacesApi.newFolder(name, { signal }),
+    enabled,
+    staleTime: 5_000,
+    placeholderData: (previous) => previous,
+  });
 }
 
 /** A folder's folders on a device, for choosing one. */
@@ -274,7 +298,7 @@ export function useDiffStats(sessionId: string | null, executionId: string | nul
 export function useCreateWorkspace() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: Partial<CreateWorkspaceInput> & { name: string; cwd: string }) =>
+    mutationFn: (input: Partial<CreateWorkspaceInput> & { name: string; cwd?: string | null; folders?: string[] }) =>
       workspacesApi.create(input),
     onSuccess: () => invalidateWorkspaceViews(qc),
   });

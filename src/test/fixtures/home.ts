@@ -16,7 +16,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const PATH_ENV = ['RI_ROOT', 'RI_DB_PATH', 'RI_CONFIG_DIR', 'RI_WORK_DIR'] as const;
+const PATH_ENV = ['RI_ROOT', 'RI_DB_PATH', 'RI_CONFIG_DIR', 'RI_WORK_DIR', 'RI_AGENTS_DIR'] as const;
 
 export interface TestHome {
   root: string;
@@ -50,6 +50,8 @@ export async function createTestHome(opts: TestHomeOptions = {}): Promise<TestHo
   process.env.RI_DB_PATH = dbPath;
   process.env.RI_CONFIG_DIR = configDir;
   process.env.RI_WORK_DIR = workDir;
+  // Folders Ri makes for agents created without one stay in the throwaway home.
+  process.env.RI_AGENTS_DIR = path.join(root, 'made-agent-folders');
   fs.mkdirSync(configDir, { recursive: true, mode: 0o700 });
   fs.writeFileSync(
     path.join(configDir, 'config.json'),

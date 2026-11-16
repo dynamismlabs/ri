@@ -34,6 +34,7 @@
  *   <APP>_DB_PATH      move just the db (advanced)
  *   <APP>_CONFIG_DIR   move just .config (advanced / sandboxing)
  *   <APP>_WORK_DIR     move just .work (advanced / sandboxing)
+ *   <APP>_AGENTS_DIR   where Ri makes folders for agents created without one
  *
  * Never write inside the install directory — it gets wiped on npm update.
  */
@@ -61,6 +62,8 @@ export const BRAIN_PATH_ENV = `${ENV_PREFIX}_BRAIN_PATH`;
 export const DB_PATH_ENV = `${ENV_PREFIX}_DB_PATH`;
 export const CONFIG_DIR_ENV = `${ENV_PREFIX}_CONFIG_DIR`;
 export const WORK_DIR_ENV = `${ENV_PREFIX}_WORK_DIR`;
+/** Where Ri makes folders for agents created without one (`getAgentFoldersDir`). */
+export const AGENTS_DIR_ENV = `${ENV_PREFIX}_AGENTS_DIR`;
 
 function homeDir(): string {
   return process.env.HOME ?? process.env.USERPROFILE ?? os.homedir();
@@ -222,6 +225,27 @@ export function ensureBackupsDir(): string {
   const dir = getBackupsDir();
   if (!fs.existsSync(/* turbopackIgnore: true */ dir)) fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   return dir;
+}
+
+// ─── agent folders — where an agent made without a folder keeps its files ─
+
+/**
+ * Where Ri makes a folder for an agent created without one
+ * (docs/agent-folders.md). Outside the home on purpose: the home has its
+ * own `AGENTS.md` (the main chat's brief), and harnesses read instruction
+ * files from parent folders, so an agent's folder inside the home would
+ * pick up Ri's own brief. The production home's agents get `~/Agents`.
+ * Any other home's sit beside it as `<home>-agents`, so the dev, test and
+ * throwaway homes never touch the person's real folders.
+ */
+export function getAgentFoldersDir(): string {
+  const override = process.env[AGENTS_DIR_ENV];
+  if (override) return override;
+  const root = path.resolve(/* turbopackIgnore: true */ getAppRoot());
+  if (root === path.resolve(/* turbopackIgnore: true */ getProductionAppRoot())) {
+    return path.join(/* turbopackIgnore: true */ homeDir(), 'Agents');
+  }
+  return `${root}-agents`;
 }
 
 // ─── browser — agent profiles are precious (.config), scratch is not (.work) ─

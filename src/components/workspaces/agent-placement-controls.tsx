@@ -5,7 +5,6 @@
 import { useOptionalHomeContext } from '@/components/home/home-context';
 
 import type { WorkspaceRecord } from '@/db/types';
-import { FolderPicker } from './folder-picker';
 
 /** Configuration policy is supplied once, separately from the shared form fields. */
 export function useAgentConfigurationScope() {
@@ -15,15 +14,6 @@ export function useAgentConfigurationScope() {
     personalTools: home?.capabilities.privatePlanning ?? true,
     executionChoices: home?.executionChoices ?? [],
   };
-}
-
-export function AgentCreationFolder({ cwd, onChange, onDismiss }: {
-  cwd: string; onChange: (value: string) => void; onDismiss: () => void;
-}) {
-  return <>
-    <FolderPicker value={cwd} onChange={onChange} placeholder="Choose folder…" autoOpen onDismiss={onDismiss} />
-    <p className="mt-1 text-[10px] text-muted-foreground/70">Git is detected automatically. Plain folders work too.</p>
-  </>;
 }
 
 export function AgentPinnedFolder({ workspace }: { workspace: WorkspaceRecord }) {

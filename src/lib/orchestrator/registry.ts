@@ -1589,10 +1589,11 @@ const get_workspace_action = defineAction({
 const create_workspace_action = defineAction({
   name: 'create_workspace',
   description:
-    'Create a workspace tied to a folder on disk. Git is auto-detected. For git repos the base branch is resolved from <remote>/HEAD with main/master fallback.',
+    "Create an agent (a workspace). `cwd` is its primary folder: its chats start there and follow that folder's instructions. Git is auto-detected, and for git repos the base branch is resolved from <remote>/HEAD with main/master fallback. Leave `cwd` out for work that doesn't live in a folder yet, and Ri makes one named after the agent. `folders` are more folders it works in, linked beside the primary one (another agent's folder links that agent).",
   params: {
     name: z.string().min(1),
-    cwd: z.string().min(1),
+    cwd: z.string().min(1).optional().describe("The agent's primary folder. Omit it and Ri makes one."),
+    folders: z.array(z.string().min(1)).max(20).optional().describe('More folders it works in, as absolute paths'),
     emoji: z.string().nullable().optional(),
     areaId: z.string().nullable().optional(),
     baseBranch: z.string().nullable().optional(),
@@ -1604,15 +1605,19 @@ const create_workspace_action = defineAction({
   mutating: true,
   handler: async (ctx, input) => {
     assertCallerOnHome(ctx, 'Creating an agent from a folder path');
-    const cwd = path.resolve(/* turbopackIgnore: true */ input.cwd);
+    const chosen = input.cwd ? path.resolve(/* turbopackIgnore: true */ input.cwd) : null;
+    const extra = [...new Set((input.folders ?? []).map((f) => path.resolve(/* turbopackIgnore: true */ f)))].filter((f) => f !== chosen);
     const { assertHomeFolderUsable, setHomeFolder, SetupError } = await import('@/lib/setups/home-context');
     try {
-      assertHomeFolderUsable(cwd);
+      for (const folder of [...(chosen ? [chosen] : []), ...extra]) assertHomeFolderUsable(folder);
     } catch (err) {
       if (err instanceof SetupError) throw new ActionError('invalid_params', err.message);
       throw err;
     }
-    const isGit = await detectIsGit(cwd);
+    const { makeAgentFolder, removeUnusedAgentFolder } = await import('@/lib/workspaces/made-folder');
+    const made = chosen ? null : makeAgentFolder(input.name);
+    const cwd = chosen ?? made!;
+    const isGit = made ? false : await detectIsGit(cwd);
     const baseBranch = isGit
       ? input.baseBranch ?? (await detectBaseBranch(cwd, input.remoteName ?? 'origin'))
       : null;
@@ -1634,12 +1639,20 @@ const create_workspace_action = defineAction({
       });
       try {
         await setHomeFolder(row.id, cwd);
+        if (extra.length) {
+          const { linkFolder } = await import('@/lib/setups/folders');
+          const { ensureHomeIdentity } = await import('@/lib/home/identity');
+          const host = ensureHomeIdentity().device.id;
+          for (const folder of extra) await linkFolder(row.id, host, folder);
+        }
       } catch (err) {
         archiveWorkspace(row.id);
-        throw new ActionError('conflict', `The agent's folder couldn't be set up: ${err instanceof Error ? err.message : String(err)}`);
+        if (made) removeUnusedAgentFolder(made);
+        throw new ActionError('conflict', `The agent's folders couldn't be set up: ${err instanceof Error ? err.message : String(err)}`);
       }
       return row;
     } catch (err) {
+      if (made && !(err instanceof ActionError)) removeUnusedAgentFolder(made);
       if (err instanceof WorkspaceFieldError) throw new ActionError(err.code, err.message);
       throw err;
     }
@@ -3216,6 +3229,32 @@ const set_linked_folder_action = defineAction({
   },
 });
 
+const make_primary_folder_action = defineAction({
+  name: 'make_primary_folder',
+  description:
+    "Make one of an agent's linked folders its primary folder, on every device it's set up on: its chats start there and follow that folder's instructions. The old primary folder stays as a linked folder named after itself. The folder has to be the agent's own (not another agent's or every agent's) and placed on each of those devices.",
+  params: {
+    agent: z.string().min(1).describe('The agent, by id or name'),
+    alias: z.string().min(1).describe('The linked folder, by its alias'),
+  },
+  cli: { positional: ['agent', 'alias'] },
+  mutating: true,
+  handler: async (_ctx, { agent, alias }) => {
+    const ws = await agentByIdOrName(agent);
+    const { listReferenceFoldersForWorkspace, getWorkspace } = await import('@/lib/db/queries');
+    const ref = listReferenceFoldersForWorkspace(ws.id).find((r) => r.alias === alias.toLowerCase());
+    if (!ref) {
+      // Safe to repeat: once it's primary it isn't a linked folder any more.
+      const { linkedFolderAlias } = await import('@/lib/setups/folders');
+      if (linkedFolderAlias(ws.id, path.basename(ws.cwd)) === alias.toLowerCase()) return getWorkspace(ws.id);
+      throw new ActionError('not_found', `${ws.name} has no linked folder "${alias}".`);
+    }
+    const { makeLinkedFolderPrimary } = await import('@/lib/setups/folders');
+    await folderChange(() => makeLinkedFolderPrimary(ws.id, ref.id));
+    return getWorkspace(ws.id);
+  },
+});
+
 const remove_workspace_setup_action = defineAction({
   name: 'remove_workspace_setup',
   description:
@@ -3507,6 +3546,7 @@ export const typedActions = [
   describe_device_harnesses_action,
   set_workspace_folder_action,
   set_linked_folder_action,
+  make_primary_folder_action,
   remove_workspace_setup_action,
   list_device_folders_action,
   list_workspace_setups_action,

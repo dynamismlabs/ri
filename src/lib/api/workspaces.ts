@@ -20,8 +20,15 @@ export const workspacesApi = {
     return trpcClient.workspaces.get.query({params: {id: id}});
   },
 
-  create(input: Partial<CreateWorkspaceInput> & { name: string; cwd: string }) {
-    return trpcClient.workspaces.create.mutate({body: input});
+  /** No `cwd`: Ri makes the agent a folder. `folders`: more folders it works in. */
+  create(input: Partial<CreateWorkspaceInput> & { name: string; cwd?: string | null; folders?: string[] }) {
+    const { cwd, ...rest } = input;
+    return trpcClient.workspaces.create.mutate({body: { ...rest, ...(cwd ? { cwd } : {}) }});
+  },
+
+  /** Where Ri would make the folder for a new agent with this name. Nothing is made. */
+  newFolder(name: string, opts: { signal?: AbortSignal } = {}) {
+    return trpcClient.workspaces.newFolderGet.query({query: { name }}, rpcOptions({ signal: opts.signal }));
   },
 
   update(id: string, input: UpdateWorkspaceInput) {
@@ -124,6 +131,16 @@ export const workspacesApi = {
   /** A new linked folder, placed on the device it's added from. */
   addLinkedFolder(id: string, body: { alias: string; description: string | null; forEveryAgent: boolean; readOnly: boolean; deviceId: string; folder: string }) {
     return trpcClient.workspaces.foldersPost.mutate({params: {id: id}, body: body});
+  },
+
+  /** A folder picked to work in, named after itself (another agent's folder links that agent). */
+  addFolder(id: string, body: { deviceId: string; folder: string }) {
+    return trpcClient.workspaces.foldersPost.mutate({params: {id: id}, body: body});
+  },
+
+  /** Make a linked folder the agent's primary folder, on every device it's set up on. */
+  makePrimary(id: string, referenceFolderId: string) {
+    return trpcClient.workspaces.foldersPrimaryPost.mutate({params: {id: id}, body: { referenceFolderId }});
   },
 
   /** Take the agent off a device. Nothing there is deleted. */

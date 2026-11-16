@@ -2,19 +2,24 @@
 
 /**
  * An agent's folders on each of the person's devices (docs/homes-spec.md
- * §4.1-4.2): its project folder, and the folders it links to beside it,
- * which its agents can change unless one is read only. A switcher across the devices, and
- * for the one chosen, each folder with whether it's there, Change, and for a
- * linked folder, Go without it. The home's records are the only place these
- * are kept, so any screen can change any device's.
+ * §4.1-4.2, docs/agent-folders.md): one list, its primary folder first (where
+ * its chats start and whose instructions they follow), then the other
+ * folders it works in, which its chats can change unless one is read only.
+ * Any of the agent's own folders can be made primary. A switcher across the
+ * devices, and for the one chosen, each folder with whether it's there. The
+ * home's records are the only place these are kept, so any screen can change
+ * any device's.
  */
 
-import { useState, type ReactNode } from 'react';
-import { AlertTriangle, Check, CornerUpLeft, GitBranch, Globe, Home as HomeIcon, Loader2, Lock, Pencil, Plus, Trash2 } from 'lucide-react';
+import { useRef, useState, type ReactNode } from 'react';
+import { AlertTriangle, Bot, Check, CircleSlash, CornerUpLeft, Folder, FolderOpen, FolderPlus, GitBranch, Globe, Home as HomeIcon, Loader2, Lock, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import slugify from '@sindresorhus/slugify';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FolderPickerDialog } from '@/components/workspaces/folder-picker-dialog';
+import { folderName } from '@/lib/folders/folder-name';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useAgentFolders, useChangeAgentFolders } from '@/hooks/use-workspaces';
 import {
@@ -63,8 +68,8 @@ export function AgentFoldersSection({ workspace }: { workspace: WorkspaceRecord 
       <div>
         <h3 className="text-sm font-semibold text-foreground">Folders</h3>
         <p className="mt-0.5 text-[11px] text-muted-foreground/75">
-          Where {workspace.name} is on each of your devices, and the folders it links to beside it. Its executions and
-          main chat can read and change linked folders, except ones you make read only.
+          {workspace.name}&apos;s chats start in its primary folder and follow that folder&apos;s instructions. They can read and
+          change every folder here, except ones marked read only.
         </p>
       </div>
 
@@ -124,14 +129,16 @@ export function AgentFoldersSection({ workspace }: { workspace: WorkspaceRecord 
   );
 }
 
-/** The agent's folders on one device. */
+/** The agent's folders on one device: one list, its primary folder first (docs/agent-folders.md). */
 function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFoldersOn }) {
   const change = useChangeAgentFolders(workspace.id);
+  const archive = useArchiveReferenceFolder();
   const confirm = useConfirm();
   const device: Device = { id: on.deviceId, name: on.name };
   const [settingUp, setSettingUp] = useState(false);
   const [choosing, setChoosing] = useState<null | { kind: 'project' } | { kind: 'linked'; ref: LinkedFolderOn }>(null);
   const [defining, setDefining] = useState<null | { editing: LinkedFolderDefinition | null }>(null);
+  const [picking, setPicking] = useState(false);
   // Git state for linked folders on the home, where Ri can look at them itself.
   const { data: resolved } = useReferenceFolders(on.isHome ? workspace.id : null);
   const gitOf = (id: string) => (on.isHome ? resolved?.find((r) => r.id === id)?.git : null);
@@ -161,7 +168,7 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
     );
   }
 
-  const remove = async () => {
+  const removeFromHere = async () => {
     const ok = await confirm({
       title: `Remove ${workspace.name} from ${on.name}?`,
       description: `New work in ${workspace.name} won't run on ${on.name}. Nothing on ${on.name} is deleted, and you can set it up there again later.`,
@@ -182,7 +189,46 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
     );
 
   const setup = on.setup;
-  const projectState = setup.found === true ? 'found' : setup.found === false ? 'missing' : 'unchecked';
+  const primaryName = folderName(setup.folder);
+
+  const makePrimary = async (ref: LinkedFolderOn) => {
+    const name = ref.path ? folderName(ref.path) : ref.alias;
+    const ok = await confirm({
+      title: `Make ${name} the primary folder?`,
+      description: `${workspace.name}'s chats will start in ${name} and follow its instructions${on.isHome ? '' : ` on every device it's set up on`}. ${primaryName} stays as one of its folders. Chats that are running restart in the new folder.`,
+      confirmLabel: 'Make primary',
+    });
+    if (!ok) return;
+    change.primary.mutate(ref.referenceFolderId, {
+      onSuccess: () => toast.success(`${name} is ${workspace.name}'s primary folder`),
+      onError: (err) => toast.error(apiErrorText(err)),
+    });
+  };
+
+  const remove = async (ref: LinkedFolderOn) => {
+    const ok = await confirm({
+      title: `Remove ${ref.alias}?`,
+      description: ref.forEveryAgent
+        ? 'Every agent has it, so removing it takes it from all of them, on every device. Nothing on disk is touched.'
+        : `${workspace.name} and its chats stop working in it, on every device. Nothing on disk is touched.`,
+      confirmLabel: 'Remove',
+      tone: 'destructive',
+    });
+    if (!ok) return;
+    archive.mutate(ref.referenceFolderId, {
+      onSuccess: () => toast.success(`${ref.alias} removed`),
+      onError: (err) => toast.error(apiErrorText(err)),
+    });
+  };
+
+  const addFolder = (folder: string) =>
+    change.addFolder.mutate(
+      { deviceId: on.deviceId, folder },
+      { onError: (err) => toast.error(apiErrorText(err)) },
+    );
+
+  const projectState: RowState = setup.found === true ? 'found' : setup.found === false ? 'missing' : 'unchecked';
+  const primaryPending = change.primary.isPending ? change.primary.variables : null;
 
   return (
     <div className="space-y-3">
@@ -198,68 +244,67 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
         </p>
       )}
 
-      <FolderRow
-        title="Project folder"
-        path={setup.folder}
-        state={projectState}
-        deviceName={on.name}
-        actions={
-          <RowButton onClick={() => setChoosing({ kind: 'project' })} emphasis={projectState === 'missing'}>
-            Change
-          </RowButton>
-        }
-      />
-
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Linked folders</p>
+      <ul className="overflow-hidden rounded-xl border border-border">
+        <li className="flex items-start gap-2.5 border-b border-border px-3 py-2.5">
+          <Folder size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[13px] font-medium text-foreground">{primaryName}</p>
+            <PathLine path={setup.folder} state={projectState} deviceName={on.name} />
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <span className="rounded-md border border-border px-2 py-0.5 text-[11px] text-muted-foreground">Primary</span>
+            <RowButton onClick={() => setChoosing({ kind: 'project' })} emphasis={projectState === 'missing'}>
+              Change
+            </RowButton>
+          </div>
+        </li>
+        {on.linked.map((ref) => (
+          <LinkedRow
+            key={ref.referenceFolderId}
+            refOn={ref}
+            deviceName={on.name}
+            git={gitOf(ref.referenceFolderId)}
+            busy={
+              primaryPending === ref.referenceFolderId ||
+              (change.linked.isPending && change.linked.variables?.referenceFolderId === ref.referenceFolderId)
+            }
+            onMakePrimary={() => void makePrimary(ref)}
+            onChange={() => setChoosing({ kind: 'linked', ref })}
+            onGoWithout={() => goWithout(ref)}
+            onEdit={() =>
+              setDefining({
+                editing: {
+                  id: ref.referenceFolderId,
+                  alias: ref.alias,
+                  description: ref.description,
+                  workspaceId: ref.forEveryAgent ? null : workspace.id,
+                  targetWorkspaceId: ref.agent?.id ?? null,
+                  readOnly: ref.readOnly,
+                },
+              })
+            }
+            onRemove={() => void remove(ref)}
+          />
+        ))}
+        <li>
           <button
             type="button"
-            onClick={() => setDefining({ editing: null })}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            // A device that isn't running Ri can't be browsed, so its folder is typed in the full dialog.
+            onClick={() => (on.connected ? setPicking(true) : setDefining({ editing: null }))}
+            disabled={change.addFolder.isPending}
+            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-[13px] text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground disabled:opacity-50"
           >
-            <Plus size={12} />
-            Add a linked folder
+            {change.addFolder.isPending ? <Loader2 size={15} className="shrink-0 animate-spin" /> : <FolderPlus size={15} className="shrink-0" />}
+            Add folder
           </button>
-        </div>
-        {on.linked.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-[11px] text-muted-foreground/70">
-            None yet. Link the backend repo, a design system, a docs folder, anything worth reading from here.
-          </p>
-        ) : (
-          <ul className="space-y-1.5">
-            {on.linked.map((ref) => (
-              <LinkedRow
-                key={ref.referenceFolderId}
-                refOn={ref}
-                deviceName={on.name}
-                git={gitOf(ref.referenceFolderId)}
-                onChange={() => setChoosing({ kind: 'linked', ref })}
-                onGoWithout={() => goWithout(ref)}
-                onEdit={() =>
-                  setDefining({
-                    editing: {
-                      id: ref.referenceFolderId,
-                      alias: ref.alias,
-                      description: ref.description,
-                      workspaceId: ref.forEveryAgent ? null : workspace.id,
-                      targetWorkspaceId: ref.agent?.id ?? null,
-                      readOnly: ref.readOnly,
-                    },
-                  })
-                }
-                pending={change.linked.isPending && change.linked.variables?.referenceFolderId === ref.referenceFolderId}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+        </li>
+      </ul>
 
       {!on.isHome && (
         <div className="pt-1">
           <button
             type="button"
-            onClick={remove}
+            onClick={removeFromHere}
             disabled={change.remove.isPending}
             className="flex items-center gap-1.5 text-[11px] text-destructive hover:underline disabled:opacity-50"
           >
@@ -269,6 +314,14 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
         </div>
       )}
 
+      <FolderPickerDialog
+        open={picking}
+        onOpenChange={setPicking}
+        initialPath={setup.folder.replace(/\/[^/]+\/?$/, '') || '~'}
+        onChoose={addFolder}
+        device={on.isHome ? undefined : device}
+      />
+
       <ChooseFolderDialog
         open={choosing !== null}
         onOpenChange={(open) => !open && setChoosing(null)}
@@ -276,8 +329,8 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
         browsable={on.connected}
         title={
           choosing?.kind === 'linked'
-            ? `Where @${choosing.ref.alias} is on ${on.name}`
-            : `Where ${workspace.name} is on ${on.name}`
+            ? `Where ${choosing.ref.alias} is on ${on.name}`
+            : `Where ${workspace.name}'s primary folder is on ${on.name}`
         }
         description={
           choosing?.kind === 'linked'
@@ -309,35 +362,11 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
 
 type RowState = 'found' | 'missing' | 'unchecked';
 
-function FolderRow({
-  title,
-  path,
-  state,
-  deviceName,
-  actions,
-}: {
-  title: string;
-  path: string;
-  state: RowState;
-  deviceName: string;
-  actions: ReactNode;
-}) {
-  return (
-    <div className="rounded-lg border border-border bg-muted/20 px-3 py-2">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{title}</p>
-      <div className="mt-1 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <PathLine path={path} state={state} deviceName={deviceName} />
-        <div className="flex shrink-0 items-center gap-1">{actions}</div>
-      </div>
-    </div>
-  );
-}
-
 function PathLine({ path, state, deviceName }: { path: string; state: RowState; deviceName: string }) {
   return (
-    <span className="flex min-w-0 items-center gap-1.5">
+    <span className="mt-0.5 flex min-w-0 items-center gap-1.5">
       <span
-        className={cn('min-w-0 break-all font-mono text-[11px]', state === 'missing' ? 'text-destructive/80 line-through' : 'text-foreground/85')}
+        className={cn('min-w-0 truncate font-mono text-[11px]', state === 'missing' ? 'text-destructive/80 line-through' : 'text-muted-foreground')}
       >
         {path}
       </span>
@@ -354,96 +383,142 @@ function PathLine({ path, state, deviceName }: { path: string; state: RowState; 
   );
 }
 
+/** A folder beside the primary one: its name, where it is here, Make primary, and the rest in a menu. */
 function LinkedRow({
   refOn,
   deviceName,
   git,
+  busy,
+  onMakePrimary,
   onChange,
   onGoWithout,
   onEdit,
-  pending,
+  onRemove,
 }: {
   refOn: LinkedFolderOn;
   deviceName: string;
   git: ReferenceFolderGitState | null | undefined;
+  busy: boolean;
+  onMakePrimary: () => void;
   onChange: () => void;
   onGoWithout: () => void;
   onEdit: () => void;
-  pending: boolean;
+  onRemove: () => void;
 }) {
   const { state, agent } = refOn;
   const summary = state === 'found' ? gitSummary(git) : null;
+  // Only the agent's own folder can be its primary one, once it has a place here.
+  const canBePrimary = !agent && !refOn.forEveryAgent && !!refOn.path && (state === 'found' || state === 'unchecked');
+  // A menu choice that opens a dialog waits for the menu to close, so focus doesn't land back on it.
+  const afterMenu = useRef<(() => void) | null>(null);
+  const later = (fn: () => void) => () => {
+    afterMenu.current = fn;
+  };
   return (
-    <li className="group rounded-lg border border-border bg-muted/20 px-3 py-2 text-[11px]">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="font-mono font-semibold text-foreground">@{refOn.alias}</span>
-            {refOn.readOnly && (
-              <span className="flex items-center gap-0.5 rounded bg-accent px-1 py-px text-[9px] text-muted-foreground">
-                <Lock size={8} /> read only
-              </span>
-            )}
-            {refOn.forEveryAgent && (
-              <span className="flex items-center gap-0.5 rounded bg-accent px-1 py-px text-[9px] text-muted-foreground">
-                <Globe size={8} /> every agent
-              </span>
-            )}
-            {agent && <span className="rounded bg-accent px-1 py-px text-[9px] text-muted-foreground">agent: {agent.name}</span>}
-          </div>
-          {refOn.description && <p className="mt-0.5 text-[10.5px] leading-snug text-muted-foreground/85">{refOn.description}</p>}
+    <li className="group flex items-start gap-2.5 border-b border-border px-3 py-2.5">
+      {agent ? <Bot size={15} className="mt-0.5 shrink-0 text-muted-foreground" /> : <Folder size={15} className="mt-0.5 shrink-0 text-muted-foreground" />}
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="truncate text-[13px] font-medium text-foreground">{refOn.alias}</span>
+          {refOn.readOnly && (
+            <span className="flex items-center gap-0.5 rounded bg-accent px-1 py-px text-[9.5px] text-muted-foreground">
+              <Lock size={8} /> read only
+            </span>
+          )}
+          {refOn.forEveryAgent && (
+            <span className="flex items-center gap-0.5 rounded bg-accent px-1 py-px text-[9.5px] text-muted-foreground">
+              <Globe size={8} /> every agent
+            </span>
+          )}
+          {agent && <span className="rounded bg-accent px-1 py-px text-[9.5px] text-muted-foreground">{agent.name}&apos;s folder</span>}
         </div>
-        <Tip label={`Edit @${refOn.alias}`}>
-          <button
-            type="button"
-            onClick={onEdit}
-            aria-label={`Edit @${refOn.alias}`}
-            className="shrink-0 rounded p-1 text-muted-foreground opacity-60 transition-colors hover:bg-accent hover:text-foreground group-hover:opacity-100"
-          >
-            <Pencil size={11} />
-          </button>
-        </Tip>
-      </div>
-
-      <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        {refOn.description && <p className="mt-0.5 text-[10.5px] leading-snug text-muted-foreground/85">{refOn.description}</p>}
         {agent ? (
           refOn.path ? (
             <PathLine path={refOn.path} state={state === 'missing' ? 'missing' : state === 'found' ? 'found' : 'unchecked'} deviceName={deviceName} />
           ) : (
-            <span className="text-[10.5px] text-muted-foreground">
+            <p className="mt-0.5 text-[10.5px] text-muted-foreground">
               {agent.name} isn&apos;t on {deviceName}, so this goes without it there.
-            </span>
+            </p>
           )
         ) : state === 'omitted' ? (
-          <span className="text-[10.5px] text-muted-foreground">Going without it on {deviceName}.</span>
+          <p className="mt-0.5 text-[10.5px] text-muted-foreground">Going without it on {deviceName}.</p>
         ) : state === 'unchosen' ? (
-          <span className="flex items-center gap-1 text-[10.5px] text-amber-600 dark:text-amber-400">
+          <p className="mt-0.5 flex items-center gap-1 text-[10.5px] text-amber-600 dark:text-amber-400">
             <AlertTriangle size={10} className="shrink-0" />
             Not chosen on {deviceName} yet.
-          </span>
+          </p>
         ) : (
           <PathLine path={refOn.path ?? ''} state={state} deviceName={deviceName} />
         )}
-        {!agent && (
-          <div className="flex shrink-0 items-center gap-1">
-            {pending && <Loader2 size={11} className="animate-spin text-muted-foreground" />}
-            <RowButton onClick={onChange} emphasis={state === 'missing' || state === 'unchosen'}>
-              {state === 'omitted' || state === 'unchosen' ? 'Choose' : 'Change'}
-            </RowButton>
-            {state !== 'omitted' && (
-              <RowButton onClick={onGoWithout} disabled={pending}>
-                Go without it
-              </RowButton>
-            )}
-          </div>
+        {summary && (
+          <p className="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground/60">
+            <GitBranch size={9} className="shrink-0" />
+            {summary}
+          </p>
         )}
       </div>
-      {summary && (
-        <p className="mt-1 flex items-center gap-1 text-[10px] text-muted-foreground/60">
-          <GitBranch size={9} className="shrink-0" />
-          {summary}
-        </p>
-      )}
+      <div className="flex shrink-0 items-center gap-1">
+        {busy && <Loader2 size={12} className="animate-spin text-muted-foreground" />}
+        {!agent && (state === 'unchosen' || state === 'missing') && (
+          <RowButton onClick={onChange} emphasis>
+            Choose
+          </RowButton>
+        )}
+        {canBePrimary && (
+          <button
+            type="button"
+            onClick={onMakePrimary}
+            disabled={busy}
+            className="rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium text-foreground opacity-0 transition-opacity hover:bg-accent/70 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100 disabled:opacity-40"
+          >
+            Make primary
+          </button>
+        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              aria-label={`More for ${refOn.alias}`}
+              className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="w-52"
+            onCloseAutoFocus={(e) => {
+              if (!afterMenu.current) return;
+              e.preventDefault();
+              afterMenu.current();
+              afterMenu.current = null;
+            }}
+          >
+            {!agent && (
+              <DropdownMenuItem className="text-xs" onSelect={later(onChange)}>
+                <FolderOpen size={12} className="mr-2" />
+                {state === 'omitted' || state === 'unchosen' ? `Choose where it is` : `Change where it is`}
+              </DropdownMenuItem>
+            )}
+            {!agent && state !== 'omitted' && (
+              <DropdownMenuItem className="text-xs" onSelect={onGoWithout}>
+                <CircleSlash size={12} className="mr-2" />
+                Go without it
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuItem className="text-xs" onSelect={later(onEdit)}>
+              <Pencil size={12} className="mr-2" />
+              Edit
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-xs text-destructive focus:text-destructive" onSelect={later(onRemove)}>
+              <Trash2 size={12} className="mr-2" />
+              Remove
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </li>
   );
 }

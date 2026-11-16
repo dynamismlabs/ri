@@ -30,7 +30,7 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, request: Operat
 
 export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: OperationContext) {
   try {
-    const body: Partial<CreateWorkspaceInput> & { name?: string; cwd?: string } = rpcInput.body;
+    const body: Partial<CreateWorkspaceInput> & { name?: string; cwd?: string; folders?: string[] } = rpcInput.body;
     if (['workResultGuidance', 'reviewBeforeHandoff', 'reviewDefaults'].some((field) => field in body)
       && requestHasSessionAuthority(request.headers)) {
       return reply({ error: 'Only the owner can choose handoff and review preferences for a new agent.', code: 'unsupported' }, { status: 403 });
@@ -38,10 +38,10 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
     const review = workspaceReviewPreferencesSchema.safeParse({ reviewBeforeHandoff: body.reviewBeforeHandoff, reviewDefaults: body.reviewDefaults });
     if (!review.success) return reply({ error: 'Invalid reviewer preferences.', code: 'invalid_params' }, { status: 400 });
 
-    if (!body.name) return reply({ error: 'name is required' }, { status: 400 });
-    if (!body.cwd) return reply({ error: 'cwd is required' }, { status: 400 });
+    if (!body.name?.trim()) return reply({ error: 'name is required' }, { status: 400 });
 
-    const row = await createWorkspaceForHome({ ...body, ...review.data, name: body.name, cwd: body.cwd }, getRequestKey(request.headers));
+    // No `cwd`: Ri makes the agent a folder (docs/agent-folders.md). `folders` are more folders it works in.
+    const row = await createWorkspaceForHome({ ...body, ...review.data, name: body.name.trim(), cwd: body.cwd ?? null, folders: body.folders ?? [] }, getRequestKey(request.headers));
     return reply(row, { status: 201 });
   } catch (err) {
     if (isTeamError(err)) return reply({ error: err.code, message: err.message }, { status: err.code === 'not_allowed' ? 403 : err.code === 'not_found' ? 404 : err.code === 'conflict' ? 409 : 400 });
@@ -56,4 +56,4 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
 }
 
 export const GETInput = rpcZ.object({ query: rpcZ.object({ "status": rpcZ.string().optional() }).strict().optional() }).strict().default({});
-export const POSTInput = rpcZ.object({ body: createInsertSchema(workspaces).pick({ "name": true, "status": true, "slug": true, "emoji": true, "cwd": true, "isGit": true, "baseBranch": true, "remoteName": true, "worktreeRoot": true, "setupCommand": true, "teardownCommand": true, "startCommand": true, "createdAt": true, "updatedAt": true, "areaId": true, "purpose": true, "instructions": true, "workResultGuidance": true, "reviewBeforeHandoff": true, "reviewDefaults": true, "defaultDeviceId": true, "position": true, "collapsed": true, "skipLiveConfirm": true, "browserEnabled": true, "archivedAt": true }).partial().extend({ "filesToCopy": rpcZ.array(rpcZ.string()).optional(), "integrationScopes": rpcZ.array(rpcZ.object({ "toolkitId": rpcZ.string(), "accounts": rpcZ.array(rpcZ.object({ "accountId": rpcZ.string(), "authConfigId": rpcZ.string().optional() }).strict()).optional(), "account": rpcZ.object({ "accountId": rpcZ.string(), "authConfigId": rpcZ.string().optional() }).strict().optional() }).strict()).optional(), "attachments": rpcZ.union([rpcZ.null(), rpcZ.array(rpcZ.object({ "fileName": rpcZ.string(), "originalName": rpcZ.string(), "mimeType": rpcZ.string(), "size": rpcZ.number().finite(), "uploadedAt": rpcZ.string() }).strict())]).optional() }).strict().default({}) }).strict();
+export const POSTInput = rpcZ.object({ body: createInsertSchema(workspaces).pick({ "name": true, "status": true, "slug": true, "emoji": true, "cwd": true, "isGit": true, "baseBranch": true, "remoteName": true, "worktreeRoot": true, "setupCommand": true, "teardownCommand": true, "startCommand": true, "createdAt": true, "updatedAt": true, "areaId": true, "purpose": true, "instructions": true, "workResultGuidance": true, "reviewBeforeHandoff": true, "reviewDefaults": true, "defaultDeviceId": true, "position": true, "collapsed": true, "skipLiveConfirm": true, "browserEnabled": true, "archivedAt": true }).partial().extend({ "folders": rpcZ.array(rpcZ.string()).max(20).optional(), "filesToCopy": rpcZ.array(rpcZ.string()).optional(), "integrationScopes": rpcZ.array(rpcZ.object({ "toolkitId": rpcZ.string(), "accounts": rpcZ.array(rpcZ.object({ "accountId": rpcZ.string(), "authConfigId": rpcZ.string().optional() }).strict()).optional(), "account": rpcZ.object({ "accountId": rpcZ.string(), "authConfigId": rpcZ.string().optional() }).strict().optional() }).strict()).optional(), "attachments": rpcZ.union([rpcZ.null(), rpcZ.array(rpcZ.object({ "fileName": rpcZ.string(), "originalName": rpcZ.string(), "mimeType": rpcZ.string(), "size": rpcZ.number().finite(), "uploadedAt": rpcZ.string() }).strict())]).optional() }).strict().default({}) }).strict();

@@ -4,6 +4,12 @@ Status: Phases 1 and 2 implemented. Phase 3 done except the agentex swap,
 which is blocked on a field that does not exist yet.
 Owner: Trey
 
+**Changed 2026-11-16: one Folders list.** An agent's primary folder and its
+linked folders show as one list, any of its own folders can be made primary,
+and adding one only needs the folder (named after itself). An agent can be
+created with several folders, or none (Ri makes one). See
+`docs/agent-folders.md`.
+
 **Changed 2026-10-08: linked folders are editable unless marked read only.**
 An agent in `insiderfinance-app` refused to change its linked
 `insiderfinance-tradedata` repo because the prompt said "do not modify", and

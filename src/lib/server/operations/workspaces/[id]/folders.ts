@@ -1,7 +1,7 @@
 import { homeSettingsAdmission } from '@/lib/home/settings-authority';
 import { createReferenceFolder, getDevice, getWorkspace, ReferenceFolderError } from '@/lib/db/queries';
 import { reply, type OperationContext } from '@/lib/server/operation';
-import { agentFoldersEverywhere, chooseLinkedFolder, FolderError } from '@/lib/setups/folders';
+import { agentFoldersEverywhere, chooseLinkedFolder, FolderError, linkFolder } from '@/lib/setups/folders';
 import { z as rpcZ } from 'zod/v4';
 
 /**
@@ -20,7 +20,10 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, _request: Opera
 /**
  * Add a linked folder: its alias and description, for this agent or every
  * agent, whether agents may change it, and where it is on the device it was
- * added from. Other devices choose their own place for it.
+ * added from. Other devices choose their own place for it. With no alias it's
+ * just a folder picked to work in (the Folders list's Add folder): named
+ * after itself, editable, for this agent, and another agent's folder links
+ * that agent (`linkFolder`).
  */
 export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, _request: OperationContext) {
   const homeDenied = homeSettingsAdmission(_request.headers, 'configureAgents', (rpcInput.body as { deviceId?: unknown })?.deviceId);
@@ -35,11 +38,21 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, _request: Ope
     deviceId?: unknown;
     folder?: unknown;
   };
-  if (typeof body.alias !== 'string' || !body.alias.trim()) return reply({ error: 'invalid_params', message: 'Name it.' }, { status: 400 });
   if (typeof body.deviceId !== 'string' || !getDevice(body.deviceId)) {
     return reply({ error: 'invalid_params', message: 'Say which device it is on.' }, { status: 400 });
   }
   if (typeof body.folder !== 'string' || !body.folder.trim()) return reply({ error: 'invalid_params', message: 'Choose where it is.' }, { status: 400 });
+  if (body.alias === undefined || body.alias === null) {
+    try {
+      await linkFolder(id, body.deviceId, body.folder, typeof body.readOnly === 'boolean' ? { readOnly: body.readOnly } : {});
+    } catch (err) {
+      if (err instanceof FolderError) return reply({ error: 'not_there', message: err.message }, { status: 400 });
+      if (err instanceof ReferenceFolderError) return reply({ error: err.code, message: err.message }, { status: err.code === 'conflict' ? 409 : 400 });
+      throw err;
+    }
+    return reply({ devices: agentFoldersEverywhere(id) }, { status: 201 });
+  }
+  if (typeof body.alias !== 'string' || !body.alias.trim()) return reply({ error: 'invalid_params', message: 'Name it.' }, { status: 400 });
   let refId: string;
   try {
     refId = createReferenceFolder({
@@ -69,4 +82,4 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, _request: Ope
 }
 
 export const GETInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict() }).strict();
-export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "alias": rpcZ.string().optional(), "description": rpcZ.string().nullable().optional(), "forEveryAgent": rpcZ.boolean().optional(), "readOnly": rpcZ.boolean().optional(), "deviceId": rpcZ.string().optional(), "folder": rpcZ.string().nullable().optional() }).strict().default({}) }).strict();
+export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "alias": rpcZ.string().nullable().optional(), "description": rpcZ.string().nullable().optional(), "forEveryAgent": rpcZ.boolean().optional(), "readOnly": rpcZ.boolean().optional(), "deviceId": rpcZ.string().optional(), "folder": rpcZ.string().nullable().optional() }).strict().default({}) }).strict();
