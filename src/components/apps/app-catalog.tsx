@@ -69,6 +69,8 @@ export function AppCatalogList({ onOpen }: { onOpen: (sourceId: string) => void 
               <Button size="xs" disabled={add.isPending} onClick={() => add.mutate(app.id)}>
                 {adding === app.id && <Loader2 size={12} className="animate-spin" />}Add
               </Button>
+            ) : !app.installedVersion ? (
+              <Button size="xs" variant="outline" onClick={() => onOpen(app.sourceId!)}>Finish installing</Button>
             ) : app.updateAvailable ? (
               <Button size="xs" variant="outline" onClick={() => onOpen(app.sourceId!)}><ArrowUpCircle size={12} aria-hidden />Update to {app.version}</Button>
             ) : (

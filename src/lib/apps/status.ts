@@ -11,7 +11,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { processState } from '@/lib/process-state';
 import { untraced } from '@/lib/utils/untraced';
-import { AppBuildError, finish, foldKitLine, kitCliFor, newJob, pnpmCommand, requireFolder, runIn, type AppJob } from './builder';
+import { AppBuildError, finish, foldKitLine, kitCliFor, newJob, pnpmCommand, releaseCommit, requireFolder, runIn, type AppJob } from './builder';
+import type { AppSourceRecord } from '@/lib/db/queries';
 import { appToolchain } from './toolchain';
 
 export type AppState = 'running' | 'starting' | 'stopped' | 'not_installed' | 'unknown';
@@ -134,6 +135,18 @@ async function readStatus(sourceId: string): Promise<AppStatus> {
   }
   const reason = (result.stderr || result.stdout).trim().split('\n').pop() ?? '';
   return { state: 'unknown', problem: 'failed', message: `The app kit couldn’t read its state${reason ? `: ${reason.slice(0, 300)}` : '.'}`, checkedAt };
+}
+
+/**
+ * The commit the app runs, from the kit's status: the release answering when it's running, else the
+ * release installed. Null when it isn't installed or the kit can't say.
+ */
+export async function runningCommit(source: AppSourceRecord): Promise<string | null> {
+  if (!source.folder) return null;
+  const status = await appStatus(source.id, { fresh: true });
+  const release = status.state === 'running' ? (status.answering ?? status.release)
+    : status.state === 'stopped' || status.state === 'starting' ? status.release : null;
+  return releaseCommit(source.folder, release);
 }
 
 /** Restart the app's service with the kit's `restart --json`, as a job like an install. */

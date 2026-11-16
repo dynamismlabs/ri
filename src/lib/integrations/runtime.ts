@@ -52,7 +52,7 @@ import { registerMcpSecrets } from './mcp-secrets';
 import { APP_NAME } from '@/constants/app';
 import { getWorkspace } from '@/lib/db/queries';
 import { resolveIntegrationFilter, resolveRiIntegrationFilter, type WorkspaceIntegrationFilter } from './workspace-filter';
-import { trackAppCall } from './hub/origin';
+import { invocationMeta } from './hub/origin';
 import { hubApprovalStore } from './hub/approval-store';
 import { withLiveCallback } from './live-callback';
 import { hostedMcpConnectionId, hostedMcpDefinition, hostedMcpRequiresAuth, markHostedMcpReconnectRequired, hostedMcpEndpointSetup, mcpOAuthTransportOptions, trustHostedMcpAnnotations } from './hosted-mcp';
@@ -852,9 +852,11 @@ async function build(): Promise<Built> {
           definitions.push({
             name: snapshot.slug,
             client: { listTools: async () => ({ tools: account.tools }), callTool: (params: { name: string; arguments?: Record<string, unknown> }, options?: { signal?: AbortSignal }) => {
-              const call = () => runTransport(() => account.client.callTool(params, ...(options ? [options] : [])), 'call');
-              // Ri calling a personal app: the app's hub calls meanwhile belong to whoever Ri acts for (hub/origin.ts).
-              return snapshot.app ? trackAppCall(snapshot.url, call) : call();
+              // Ri calling a personal app for a chat: a signed context the app can pass back on its hub calls,
+              // so they're credited to that chat and nobody else (hub/origin.ts).
+              const meta = snapshot.app ? invocationMeta(snapshot.url) : undefined;
+              const request = meta ? { ...params, _meta: { ...(params as { _meta?: Record<string, unknown> })._meta, ...meta } } : params;
+              return runTransport(() => account.client.callTool(request, ...(options ? [options] : [])), 'call');
             } },
             ownerId: getIntegrationOwnerId(), connectionId: hostedMcpConnectionId(snapshot), sessionToken: account.sessionToken,
             ...(account.unavailable ? { preserveConnection: true } : {}),

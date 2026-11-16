@@ -2,6 +2,8 @@ import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { beginMcpAuthorization } from '@/lib/integrations/mcp-authorization';
 import { safeReturnPath } from '@/lib/integrations/oauth-return';
 import { removeMcpServer, updateMcpServerConfiguration } from '@/lib/integrations/mcp-lifecycle';
+import { revokeApprovalsForConnections } from '@/lib/integrations/approval';
+import { hostedMcpConnectionId } from '@/lib/integrations/hosted-mcp';
 import type { McpServerAuth } from '@/lib/integrations/mcp-servers';
 import { MCP_APPROVAL_POLICIES, type McpApprovalPolicy, type McpToolApprovalPatch } from '@/lib/integrations/mcp-approval-policy';
 import { validateHeaderName, validateMcpUrl } from '@/lib/integrations/mcp-validate';
@@ -74,6 +76,10 @@ export async function PATCH(rpcInput: rpcZ.infer<typeof PATCHInput>, _request: O
     ...(body.secret !== undefined ? { secret: body.secret } : {}),
   });
   if (!updated) return reply({ error: 'not_found' }, { status: 404 });
+  // Switched off, moved or signed in differently: approvals made for the old access don't carry over.
+  if (body.enabled === false || body.url !== undefined || body.auth !== undefined || body.secret !== undefined) {
+    revokeApprovalsForConnections([hostedMcpConnectionId(entry)]);
+  }
 
   // Approval is resolved from disk on every call. Changing it needs no reconnect.
   const permissionOnly = Object.keys(body).length > 0 && Object.keys(body).every(key =>
@@ -116,6 +122,7 @@ export async function DELETE(rpcInput: rpcZ.infer<typeof DELETEInput>, _request:
   if (!await removeMcpServer(entry, store, getIntegrationConnectionStore(), getIntegrationOwnerId())) {
     return reply({ error: 'not_found' }, { status: 404 });
   }
+  revokeApprovalsForConnections([hostedMcpConnectionId(entry)]);
   invalidateIntegrationRuntime();
   return reply({ ok: true });
 }

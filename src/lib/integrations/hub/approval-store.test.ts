@@ -33,4 +33,13 @@ it('keeps an app\'s request, its answer and its one use within the day, in the d
   hubApprovalStore.insertPending(waiting);
   hubApprovalStore.drop(app.id);
   expect(hubApprovalStore.listPending().some(row => row.id === waiting.id)).toBe(false);
+  // Turning an account off drops every app's waiting and approved requests on it, and only on it.
+  const onAccount = { ...request, id: crypto.randomUUID(), callKey: 'on-account' };
+  const approvedOnAccount = { ...request, id: crypto.randomUUID(), callKey: 'approved-on-account' };
+  const elsewhere = { ...request, id: crypto.randomUUID(), callKey: 'elsewhere', connectionId: 'c-other' };
+  for (const row of [onAccount, approvedOnAccount, elsewhere]) hubApprovalStore.insertPending(row);
+  hubApprovalStore.decide(approvedOnAccount.id, 'approved', now + 60 * 60_000);
+  hubApprovalStore.dropForConnections([request.connectionId]);
+  expect(hubApprovalStore.listPending().map(row => row.id)).toEqual([elsewhere.id]);
+  expect(hubApprovalStore.takeGrant(app.id, 'approved-on-account', now)).toBeNull();
 });

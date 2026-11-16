@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { grantFromChoice, hubConsentOptions } from './grant';
-import { startedByFor, trackAppCall, withStartedBy } from './origin';
 
 const action = (id: string, mutating = false) => ({ id, description: id, input: z.object({}), mutating });
 const toolkits = [
   { id: 'gmail', providerId: 'google', displayName: 'Gmail', actions: [action('gmail.search_messages'), action('gmail.get_message'), action('gmail.send_email', true)] },
-  { id: 'google_calendar', providerId: 'google', displayName: 'Google Calendar', actions: [action('google_calendar.list_events')] },
+  { id: 'google_calendar', providerId: 'google', displayName: 'Google Calendar', actions: [action('google_calendar.list_events'), action('google_calendar.create_event', true)] },
   { id: 'app_reading_log', providerId: 'app_reading_log', displayName: 'Reading Log', actions: [action('app_reading_log.list_books')] },
 ] as never;
 const connections = [
@@ -23,9 +22,11 @@ describe('the hub consent screen', () => {
       ['Gmail', 'me@example.com'], ['Gmail', 'me@work.example'], ['Google Calendar', 'me@example.com'], ['Google Calendar', 'me@work.example'],
     ]);
     const gmail = options.accounts[0]!;
-    expect(gmail.tools.map(t => [t.name, t.requested, t.outside])).toEqual([
+    expect(gmail.tools.map(t => [t.name, t.requested, t.asks])).toEqual([
       ['gmail__search_messages', true, false], ['gmail__get_message', true, false], ['gmail__send_email', false, true],
     ]);
+    // Every write is marked as asking each time, a calendar event (which can invite people) too.
+    expect(options.accounts[2]!.tools.map(t => [t.name, t.asks])).toEqual([['google_calendar__list_events', false], ['google_calendar__create_event', true]]);
     expect(options.services.find(s => s.name === 'list_tasks')?.requested).toBe(true);
     expect(options.services.find(s => s.name === 'create_task')).toMatchObject({ requested: false, write: true });
   });
@@ -37,22 +38,5 @@ describe('the hub consent screen', () => {
       services: ['ai_text', 'shell'],
     });
     expect(grant).toEqual({ accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages'] }], services: ['ai_text'] });
-  });
-});
-
-describe('what started a hub call', () => {
-  it('is the job an app names, else the one chat or person Ri is calling the app for, else the app', async () => {
-    const app = 'http://127.0.0.1:4391';
-    expect(startedByFor([app], { 'app/job': 'import_receipts', 'app/jobRun': 'run-1' })).toEqual({ kind: 'job', label: 'import_receipts', id: 'run-1' });
-    expect(startedByFor([app], undefined)).toEqual({ kind: 'app' });
-    let seen;
-    // Ri calls the app for a chat. The app answers by calling the hub at its localhost alias.
-    await withStartedBy({ kind: 'chat', id: 'chat-1' }, () => trackAppCall(`${app}/mcp`, async () => { seen = startedByFor(['http://localhost:4391/api/hub/callback'], undefined); }));
-    expect(seen).toEqual({ kind: 'chat', id: 'chat-1' });
-    expect(startedByFor([app], undefined)).toEqual({ kind: 'app' });
-    // Two callers at once can't be told apart.
-    let both;
-    await withStartedBy({ kind: 'chat', id: 'chat-1' }, () => trackAppCall(app, () => withStartedBy({ kind: 'person' }, () => trackAppCall(app, async () => { both = startedByFor([app], undefined); }))));
-    expect(both).toEqual({ kind: 'app' });
   });
 });

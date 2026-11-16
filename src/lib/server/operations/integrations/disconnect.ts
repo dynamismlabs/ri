@@ -2,6 +2,7 @@ import { hostedMcpConnectionId } from '@/lib/integrations/hosted-mcp';
 import { removeMcpServer } from '@/lib/integrations/mcp-lifecycle';
 import { getIntegrationConnectionStore, getIntegrationOwnerId, getIntegrationRuntime, getMcpServerStore, invalidateIntegrationRuntime } from '@/lib/integrations/runtime';
 import { deleteChannelsForConnection } from '@/lib/db/queries';
+import { revokeApprovalsForConnections } from '@/lib/integrations/approval';
 import { reply, type OperationContext } from '@/lib/server/operation';
 import { getHostedMcpProvider, PROVIDER_CATALOG } from '@integrations/engine/providers';
 import { z as rpcZ } from 'zod/v4';
@@ -31,6 +32,8 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, _request: Ope
   }
   // Notifier cascade (spec §2.13): drop any notification channels that delivered through it.
   deleteChannelsForConnection(body.id);
+  // Nothing approved or waiting on the removed account may run if it's connected again.
+  revokeApprovalsForConnections([body.id]);
   return reply({ ok: true });
 }
 

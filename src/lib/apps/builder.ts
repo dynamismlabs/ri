@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { parse as parseYaml } from 'yaml';
 import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
 import { getAppRoot, getWorkDir } from '@/lib/config/paths';
 import { createAppSource, getAppSource, listAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
@@ -205,14 +206,41 @@ export function runIn(tools: AppToolchain, folder: string, command: string, args
 const quote = (value: string) => `'${value.replace(/'/g, `'\\''`)}'`;
 
 /**
- * The app's own dependencies, so its kit command can run. Only installs from its lockfile, and
- * runs nothing of the app. The kit installs a release's dependencies again in its own copy.
+ * The dependencies the app itself allows to build (pnpm's `onlyBuiltDependencies`, in its
+ * package.json or pnpm-workspace.yaml, or `allowBuilds` entries set to true): native modules such as
+ * better-sqlite3, which the kit's own command opens to snapshot and rehearse. Only names a package
+ * could have, so none can pass as an option.
+ */
+export function allowedBuilds(folder: string): string[] {
+  const names = new Set<string>();
+  const add = (value: unknown) => { if (typeof value === 'string' && /^(@[a-z0-9._~-]+\/)?[a-z0-9._~-]+$/.test(value)) names.add(value); };
+  try {
+    const pkg = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'package.json'), 'utf8')) as { pnpm?: { onlyBuiltDependencies?: unknown } };
+    if (Array.isArray(pkg.pnpm?.onlyBuiltDependencies)) pkg.pnpm.onlyBuiltDependencies.forEach(add);
+  } catch { /* kitCliFor reports a missing package.json. */ }
+  try {
+    const workspace = parseYaml(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'pnpm-workspace.yaml'), 'utf8')) as { onlyBuiltDependencies?: unknown; allowBuilds?: unknown } | null;
+    if (Array.isArray(workspace?.onlyBuiltDependencies)) workspace.onlyBuiltDependencies.forEach(add);
+    if (workspace?.allowBuilds && typeof workspace.allowBuilds === 'object') {
+      for (const [name, allowed] of Object.entries(workspace.allowBuilds)) if (allowed === true) add(name);
+    }
+  } catch { /* No workspace file. */ }
+  return [...names].sort();
+}
+
+/**
+ * The app's own dependencies, so its kit command can run. It installs from the lockfile with every
+ * lifecycle script off, so none of the app's own hooks (which could touch its live data) run in its
+ * editable folder, then builds only the native dependencies the app allows to build. The kit installs
+ * a release's dependencies again in its own checked copy, with disposable data.
  */
 async function prepare(tools: AppToolchain, job: AppJob, folder: string): Promise<boolean> {
   if (fs.existsSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'node_modules', '.bin'))) return true;
   const step: KitStep = { step: 'prepare', status: 'started' };
   job.steps.push(step);
-  const { code, tail } = await runIn(tools, folder, pnpmCommand(tools), ['install', '--frozen-lockfile', '--prefer-offline'], {}, () => {});
+  let { code, tail } = await runIn(tools, folder, pnpmCommand(tools), ['install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts'], {}, () => {});
+  const natives = allowedBuilds(folder);
+  if (code === 0 && natives.length) ({ code, tail } = await runIn(tools, folder, pnpmCommand(tools), ['rebuild', ...natives], {}, () => {}));
   Object.assign(step, code === 0 ? { status: 'passed' } : { status: 'failed', detail: tail.slice(-500) });
   if (code !== 0) finish(job, 'failed', `Installing the app’s dependencies failed: ${tail.trim().split('\n').pop() ?? ''}`);
   return code === 0;
@@ -307,12 +335,15 @@ export async function installApp(sourceId: string, request?: RequestLike, return
     try {
       if (!await prepare(tools, job, source.folder!)) return;
       const port = await freePort();
-      const { code, tail } = await runIn(tools, source.folder!, pnpmCommand(tools), ['exec', cli, 'serve', '--install', 'HEAD', '--json'], { PORT: String(port), APP_HOST: '127.0.0.1' }, (line) => foldKitLine(job, line));
+      const installing = (await git(source.folder!, ['rev-parse', 'HEAD'], tools)).stdout.trim();
+      const { code, tail } = await runIn(tools, source.folder!, pnpmCommand(tools), ['exec', cli, 'serve', '--install', installing, '--json'], { PORT: String(port), APP_HOST: '127.0.0.1' }, (line) => foldKitLine(job, line));
       if (code !== 0 || job.result?.outcome !== 'switched' && job.result?.outcome !== 'unchanged') {
         return finish(job, 'failed', job.result?.message || `The app kit’s install failed: ${tail.trim().split('\n').pop() ?? ''}`);
       }
       const url = `http://127.0.0.1:${port}/mcp`;
       updateAppSource(source.id, { url });
+      // What the kit installed and checked is now running: an app from the catalog records its version from that.
+      await recordCatalogVersion(getAppSource(source.id) ?? source, await releaseCommit(source.folder!, job.result?.release) ?? installing);
       const { addPersonalApp } = await import('@/lib/integrations/apps');
       const added = await addPersonalApp({ name: source.name, url, ...(returnTo ? { returnTo } : {}) }, request);
       updateAppSource(source.id, { personalAppId: added.app.id });
@@ -368,7 +399,7 @@ export function switchTo(source: AppSourceRecord, commit: string): AppJob {
       const { code, tail } = await runIn(tools, source.folder!, pnpmCommand(tools), ['exec', cli, 'change', commit, '--json'], {}, (line) => foldKitLine(job, line));
       const outcome = job.result?.outcome;
       if (code === 0 && (outcome === 'switched' || outcome === 'unchanged')) {
-        await settleChange(source, commit);
+        await settleChange(source, commit, job.result?.release);
         return finish(job, 'done');
       }
       finish(job, 'failed', job.result?.message || `The app kit’s change failed: ${tail.trim().split('\n').pop() ?? ''}`);
@@ -380,19 +411,31 @@ export function switchTo(source: AppSourceRecord, commit: string): AppJob {
 }
 
 /** After a switch: bring the app's folder to the running commit when it can, and drop the working copy. */
-async function settleChange(source: AppSourceRecord, commit: string) {
+async function settleChange(source: AppSourceRecord, commit: string, reported?: string) {
   try {
     const { stdout } = await git(source.folder!, ['status', '--porcelain']);
     if (!stdout.trim()) await git(source.folder!, ['merge', '-q', '--ff-only', commit]);
   } catch { /* The folder moved on its own. The branch keeps the change. */ }
   if (source.changeFolder) { try { await git(source.folder!, ['worktree', 'remove', '--force', source.changeFolder]); } catch { /* Already gone. */ } }
   updateAppSource(source.id, { changeFolder: null, changeBranch: null });
-  await recordCatalogVersion(source, commit);
+  // The release the kit says is answering now, which it checked before saying so.
+  await recordCatalogVersion(source, await releaseCommit(source.folder!, reported) ?? commit);
+}
+
+/**
+ * The full commit of a release the kit reports (it names each release by its commit's first 12
+ * characters), or null when there's none or the folder doesn't have it.
+ */
+export async function releaseCommit(folder: string, release: string | null | undefined): Promise<string | null> {
+  if (!release || !/^[0-9a-f]{7,64}$/.test(release)) return null;
+  try { return (await git(folder, ['rev-parse', '--verify', '-q', `${release}^{commit}`])).stdout.trim() || null; } catch { return null; }
 }
 
 /**
  * For an app from the catalog: once the running commit includes the catalog's current version (an
- * update switched over, or the builder merged it into a change), record that version.
+ * update switched over, or the builder merged it into a change), record that version. `running`
+ * must be what the app actually runs: the kit's install or switch result, or its status. Never the
+ * folder's HEAD, which can hold commits that were never installed.
  */
 export async function recordCatalogVersion(source: AppSourceRecord, running: string): Promise<boolean> {
   if (!source.catalogId || !source.folder) return false;

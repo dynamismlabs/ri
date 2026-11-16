@@ -282,8 +282,8 @@ export interface Action<I = unknown, O = unknown> {
   modelVisible?: boolean;
   /**
    * Whether a call reaches people or systems beyond the person's own accounts (MCP's
-   * `openWorldHint`), when the provider says so. Undefined when nobody said. The host's approval
-   * policy may use it to tell a write that reaches outside from one to the person's own data.
+   * `openWorldHint`), when the provider says so. Undefined when nobody said. Descriptive only:
+   * no approval decision rests on it, since a provider's hint can't prove a write stays private.
    */
   openWorld?: boolean;
   /** Trusted local validation after account resolution and before approval. No side effects. */
@@ -622,8 +622,6 @@ export interface ApprovalCheckInput {
   inputDigest: string;
   inputPreview: unknown;
   caller: Caller;
-  /** The action's `openWorld`, when its provider said. */
-  openWorld?: boolean;
 }
 
 export interface ApprovalPolicy {

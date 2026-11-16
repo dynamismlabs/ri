@@ -20,6 +20,7 @@ import {
 } from './builder';
 import { catalogEntry, catalogRef, CatalogError, loadCatalog, type CatalogEntry } from './catalog-entries';
 import { treeChecksum } from './catalog-checksum';
+import { runningCommit } from './status';
 import type { AppToolchain } from './toolchain';
 
 type Tools = AppToolchain & { git: string };
@@ -28,7 +29,7 @@ export interface CatalogApp extends CatalogEntry {
   /** The app's source in Ri once added. */
   sourceId: string | null;
   personalAppId: string | null;
-  /** The catalog version it includes. */
+  /** The catalog version its running release includes. Null until it's installed. */
   installedVersion: string | null;
   /** Added, and the catalog has another version. */
   updateAvailable: boolean;
@@ -47,7 +48,8 @@ export function listCatalogApps(): { apps: CatalogApp[]; error: string | null } 
         sourceId: source?.id ?? null,
         personalAppId: source?.personalAppId ?? null,
         installedVersion: source?.catalogVersion ?? null,
-        updateAvailable: !!source && source.catalogVersion !== entry.version,
+        // Against what's running: an app added but not installed yet has nothing to update.
+        updateAvailable: !!source?.catalogVersion && source.catalogVersion !== entry.version,
       };
     }),
     error: null,
@@ -117,7 +119,8 @@ export async function addCatalogApp(id: string, request?: RequestLike, returnTo?
     fs.rmSync(/* turbopackIgnore: true */ folder, { recursive: true, force: true });
     throw error;
   }
-  const source = createAppSource({ name: entry.name, folder, gitUrl: entry.git, createdByRi: true, catalogId: entry.id, catalogVersion: entry.version, catalogCommit: commit });
+  // Its version is recorded once the install is running it (builder.ts, recordCatalogVersion).
+  const source = createAppSource({ name: entry.name, folder, gitUrl: entry.git, createdByRi: true, catalogId: entry.id });
   const job = await installApp(source.id, request, returnTo);
   return { source, job };
 }
@@ -139,20 +142,33 @@ export function mergeRequest(entry: Pick<CatalogEntry, 'name' | 'version'>, comm
   ].join('\n\n');
 }
 
+/** Whether `commit` includes `target`. */
+async function includes(folder: string, commit: string, target: string, tools: Tools): Promise<boolean> {
+  try { await git(folder, ['merge-base', '--is-ancestor', target, commit], tools); return true; } catch { return false; }
+}
+
 /** Update an app added from the catalog to the catalog's version. */
 export async function updateCatalogApp(sourceId: string): Promise<CatalogUpdate> {
   const source = requireFolder(sourceId);
   if (!source.catalogId) throw new AppBuildError('invalid', `${source.name} wasn’t added from Ri’s catalog.`);
   const entry = requireEntry(source.catalogId);
+  if (!source.catalogVersion) throw new AppBuildError('invalid', `${source.name} isn’t installed yet. Install and connect it first.`);
   if (entry.version === source.catalogVersion) return { mode: 'current', version: entry.version };
   if (source.changeFolder) throw new AppBuildError('conflict', 'A change is open. Apply or discard it first, then update.');
   const tools = toolsWithGit();
   const commit = await fetchVersion(source.folder!, entry, tools);
+  // Already in what's running, by the kit's own status: just record it.
+  const running = await runningCommit(source);
+  if (running && await recordCatalogVersion(source, running)) return { mode: 'current', version: entry.version };
   const head = (await git(source.folder!, ['rev-parse', 'HEAD'], tools)).stdout.trim();
-  // Already in what's running (the builder merged it before): just record it.
-  if (await recordCatalogVersion(source, head)) return { mode: 'current', version: entry.version };
   const dirty = (await git(source.folder!, ['status', '--porcelain'], tools)).stdout.trim();
-  if (!dirty && head === source.catalogCommit) return { mode: 'switch', version: entry.version, job: switchTo(source, commit) };
+  if (!dirty) {
+    // The folder already has the update but it never ran (merged, then not applied, or its checks
+    // failed): install the folder's commit through the kit's checks rather than call it current.
+    if (head !== source.catalogCommit && await includes(source.folder!, head, commit, tools)) return { mode: 'switch', version: entry.version, job: switchTo(source, head) };
+    // The person never changed the app: straight to the new version.
+    if (head === source.catalogCommit) return { mode: 'switch', version: entry.version, job: switchTo(source, commit) };
+  }
   const changing = await startChange(source.id);
   return { mode: 'merge', version: entry.version, commit, source: changing, message: mergeRequest(entry, commit, source.catalogVersion) };
 }

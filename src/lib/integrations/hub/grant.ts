@@ -7,7 +7,6 @@
 import { toToolName, type Connection, type Toolkit } from '@integrations/engine';
 import type { HubGrant } from '@/lib/db/schema';
 import { isAppToolkitId } from '../app-ids';
-import { reachesOutside } from '../write-policy';
 import { RI_SERVICE_CONSENT_LABELS, RI_SERVICE_NAMES, RI_SERVICE_WRITES, type RiServiceName } from './ri-services';
 
 /** The prefix Ri's own services carry as hub tools: `ri__ai_text`. */
@@ -26,8 +25,8 @@ const CAPABILITY_TOOLS: Record<string, string[]> = {
 export interface HubConsentTool {
   name: string;
   description: string;
-  /** A write that reaches outside the person's own data: it asks the person every time. */
-  outside: boolean;
+  /** It changes something in the account, so Ri asks the person before every call. */
+  asks: boolean;
   requested: boolean;
 }
 export interface HubConsentAccount {
@@ -39,7 +38,7 @@ export interface HubConsentAccount {
 }
 export interface HubConsentOptions {
   accounts: HubConsentAccount[];
-  /** Ri's own services. None reaches outside (`RI_SERVICE_REACH`). */
+  /** Ri's own services. They follow the person's usual settings (`RI_SERVICE_REACH`). */
   services: { name: RiServiceName; tool: string; description: string; write: boolean; requested: boolean }[];
 }
 
@@ -63,7 +62,7 @@ export function hubConsentOptions(
     for (const connection of connections.filter((c) => c.providerId === toolkit.providerId && c.status === 'active')) {
       const tools = toolkit.actions.filter((action) => action.modelVisible !== false).map((action): HubConsentTool => {
         const name = toToolName(action.id);
-        return { name, description: action.description, outside: reachesOutside({ actionId: action.id, mutating: action.mutating === true, openWorld: action.openWorld }), requested: wanted.has(name) || !!granted.get(connection.id)?.has(name) };
+        return { name, description: action.description, asks: action.mutating === true, requested: wanted.has(name) || !!granted.get(connection.id)?.has(name) };
       });
       if (!tools.length) continue;
       accounts.push({

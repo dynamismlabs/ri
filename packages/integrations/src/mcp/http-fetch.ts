@@ -59,6 +59,53 @@ export function messageMeter(eventStream: boolean) {
   };
 }
 
+/** How long an answer to a refresh stays the answer for the refresh token it spent. */
+export const MCP_REFRESH_SHARE_MS = 60_000;
+
+interface RefreshAnswer { status: number; statusText: string; headers: [string, string][]; body: string }
+/**
+ * Refreshes in flight and just answered, by token endpoint and refresh token. Shared by every MCP
+ * client in the process (one per chat can reach the same connection), so it lives on globalThis,
+ * not in one copy of this module.
+ */
+const refreshFlights = (): Map<string, { answer: Promise<RefreshAnswer>; until: number }> => {
+  const key = Symbol.for('@integrations/engine/mcp-refresh-flights');
+  const holder = globalThis as unknown as Record<symbol, Map<string, { answer: Promise<RefreshAnswer>; until: number }> | undefined>;
+  return holder[key] ??= new Map();
+};
+
+/** The refresh token an OAuth token request spends, if it's a refresh. */
+export function refreshTokenOf(init: RequestInit | undefined): string | null {
+  if (init?.method?.toUpperCase() !== 'POST' || !init.body) return null;
+  const body = init.body instanceof URLSearchParams ? init.body : typeof init.body === 'string' ? new URLSearchParams(init.body) : null;
+  return body?.get('grant_type') === 'refresh_token' ? body.get('refresh_token') : null;
+}
+
+/**
+ * One refresh at a time per refresh token, so per connection. Servers that rotate refresh tokens
+ * treat a second use of one as theft and end the connection (personal apps made with the kit do),
+ * so two chats whose requests both hit a 401 at once must not each spend it. The first request goes
+ * to the server. Any other with the same refresh token, while it's in flight or for a minute after,
+ * gets the same answer, and saves the same new tokens.
+ */
+export function shareRefresh(send: () => Promise<Response>, url: string, refreshToken: string, now = Date.now()): Promise<Response> {
+  const flights = refreshFlights();
+  for (const [key, flight] of flights) if (flight.until < now) flights.delete(key);
+  const key = `${url}\n${refreshToken}`;
+  let flight = flights.get(key);
+  if (!flight) {
+    const answer = send().then(async (response) => ({
+      status: response.status, statusText: response.statusText, headers: [...response.headers.entries()], body: await response.text(),
+    }));
+    flight = { answer, until: Number.POSITIVE_INFINITY };
+    flights.set(key, flight);
+    const settled = flight;
+    // A failed request is retried by its next caller. An answer is shared for a minute.
+    answer.then(() => { settled.until = Date.now() + MCP_REFRESH_SHARE_MS; }, () => { if (flights.get(key) === settled) flights.delete(key); });
+  }
+  return flight.answer.then((answer) => new Response(answer.body, { status: answer.status, statusText: answer.statusText, headers: answer.headers }));
+}
+
 /**
  * Per-client HTTP budgets and per-request cancellation, without changing
  * global fetch. Each message is read within the size that fits what it is:
@@ -146,8 +193,15 @@ export async function mcpHttpFetch(options: { maxMessageBytes?: number; maxContr
       return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers });
     } catch (error) { release(); throw error; }
   };
+  // OAuth refreshes (the SDK sends them through this fetch on a 401) go one at a time per refresh token.
+  const sharedFetch: typeof fetch = (input, init) => {
+    const refreshToken = refreshTokenOf(init);
+    if (!refreshToken) return scopedFetch(input, init);
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+    return shareRefresh(() => scopedFetch(input, init), url, refreshToken);
+  };
   return {
-    fetch: scopedFetch,
+    fetch: sharedFetch,
     async close() { lifetime.abort(); requests.clear(); await dispatcher.close(); },
   };
 }

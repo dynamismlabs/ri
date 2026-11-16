@@ -21,6 +21,10 @@ vi.mock('./builder', async (original) => {
   };
 });
 
+// What the kit's status says the app runs.
+const running = { commit: null as string | null };
+vi.mock('./status', () => ({ runningCommit: vi.fn(async () => running.commit) }));
+
 const { addCatalogApp, listCatalogApps, mergeRequest, updateCatalogApp } = await import('./catalog');
 const { recordCatalogVersion, setAppBuildSettings } = await import('./builder');
 
@@ -47,9 +51,16 @@ async function publish(version: string, overrides: Partial<CatalogEntry> = {}) {
   return entry;
 }
 
+/** The kit installed or switched to `commit` and it's running, as its result and status say. */
+async function nowRunning(sourceId: string, commit: string) {
+  running.commit = commit;
+  return recordCatalogVersion(q.getAppSource(sourceId)!, commit);
+}
+
 beforeEach(() => {
   installed.length = 0;
   switched.length = 0;
+  running.commit = null;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-catalog-'));
   upstream = path.join(root, 'upstream');
   apps = path.join(root, 'apps');
@@ -76,13 +87,19 @@ describe('adding an app from the catalog', () => {
 
     const { source } = await addCatalogApp('tide-log');
     const folder = path.join(apps, 'tide-log');
-    expect(source).toMatchObject({ folder, gitUrl: upstream, createdByRi: true, catalogId: 'tide-log', catalogVersion: 'v1.0.0', catalogCommit: pinned });
+    // Nothing runs yet, so no version is recorded, and there's nothing to update.
+    expect(source).toMatchObject({ folder, gitUrl: upstream, createdByRi: true, catalogId: 'tide-log', catalogVersion: null, catalogCommit: null });
     expect(git(folder, 'rev-parse', 'HEAD')).toBe(pinned);
     expect(fs.existsSync(path.join(folder, 'later.txt'))).toBe(false);
     expect(git(folder, 'remote')).toBe('upstream');
     expect(git(folder, 'status', '--porcelain')).toBe('');
     expect(installed).toEqual([source.id]);
-    expect(listCatalogApps().apps[0]).toMatchObject({ sourceId: source.id, installedVersion: 'v1.0.0', updateAvailable: false });
+    expect(listCatalogApps().apps[0]).toMatchObject({ sourceId: source.id, installedVersion: null, updateAvailable: false });
+    await expect(updateCatalogApp(source.id)).rejects.toThrow(/isn’t installed yet/);
+    // The install is running the pinned commit: now it has a version.
+    expect(await nowRunning(source.id, pinned)).toBe(true);
+    expect(q.getAppSource(source.id)).toMatchObject({ catalogVersion: 'v1.0.0', catalogCommit: pinned });
+    expect(listCatalogApps().apps[0]).toMatchObject({ installedVersion: 'v1.0.0', updateAvailable: false });
     await expect(addCatalogApp('tide-log')).rejects.toThrow(/already added/);
   });
 
@@ -109,9 +126,16 @@ describe('adding an app from the catalog', () => {
 });
 
 describe('updating an app from the catalog', () => {
-  it('switches an app the person never changed straight to the new version, and records it once that\'s running', async () => {
+  /** Add the app and have the kit install its pinned version. */
+  async function addAndInstall() {
     await publish('v1.0.0');
     const { source } = await addCatalogApp('tide-log');
+    await nowRunning(source.id, git(source.folder!, 'rev-parse', 'HEAD'));
+    return q.getAppSource(source.id)!;
+  }
+
+  it('switches an app the person never changed straight to the new version, and records it once that\'s running', async () => {
+    const source = await addAndInstall();
     const next = commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
     await publish('v1.1.0');
     expect(listCatalogApps().apps[0]).toMatchObject({ installedVersion: 'v1.0.0', updateAvailable: true });
@@ -119,19 +143,19 @@ describe('updating an app from the catalog', () => {
     const update = await updateCatalogApp(source.id);
     expect(update).toMatchObject({ mode: 'switch', version: 'v1.1.0' });
     expect(switched).toEqual([{ sourceId: source.id, commit: next }]);
-    // The switch (the kit's change, then settling the folder) records the version.
-    expect(await recordCatalogVersion(q.getAppSource(source.id)!, next)).toBe(true);
+    // The kit's switch reports the new release running, and that records the version.
+    expect(await nowRunning(source.id, next)).toBe(true);
     expect(q.getAppSource(source.id)).toMatchObject({ catalogVersion: 'v1.1.0', catalogCommit: next });
     expect(await updateCatalogApp(source.id)).toEqual({ mode: 'current', version: 'v1.1.0' });
   });
 
   it('has the builder merge the update first when the person changed the app, and records it once the merge is running', async () => {
-    await publish('v1.0.0');
-    const { source } = await addCatalogApp('tide-log');
-    // The person's own change, already applied.
+    const source = await addAndInstall();
+    // The person's own change, applied: the kit runs it.
     fs.writeFileSync(path.join(source.folder!, 'mine.md'), 'My tides\n');
     git(source.folder!, 'add', '-A');
     git(source.folder!, 'commit', '-q', '-m', 'My change');
+    running.commit = git(source.folder!, 'rev-parse', 'HEAD');
     const next = commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
     await publish('v1.1.0');
 
@@ -148,26 +172,43 @@ describe('updating an app from the catalog', () => {
 
     // The builder merges in the working copy. Applying it switches to the merge, which includes the update.
     git(work, 'merge', '-q', '--no-edit', next);
-    const merged = git(work, 'rev-parse', 'HEAD');
-    expect(await recordCatalogVersion(q.getAppSource(source.id)!, merged)).toBe(true);
+    expect(await nowRunning(source.id, git(work, 'rev-parse', 'HEAD'))).toBe(true);
     expect(q.getAppSource(source.id)).toMatchObject({ catalogVersion: 'v1.1.0', catalogCommit: next });
   });
 
-  it('records an update the running app already includes, without switching again', async () => {
-    await publish('v1.0.0');
-    const { source } = await addCatalogApp('tide-log');
+  it('records an update the running app already includes, by the kit\'s status, without switching again', async () => {
+    const source = await addAndInstall();
     const next = commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
     git(source.folder!, 'fetch', '-q', 'upstream', 'v1.1.0');
     git(source.folder!, 'merge', '-q', '--ff-only', next);
     await publish('v1.1.0');
+    running.commit = next;
     expect(await updateCatalogApp(source.id)).toEqual({ mode: 'current', version: 'v1.1.0' });
     expect(switched).toEqual([]);
     expect(q.getAppSource(source.id)?.catalogVersion).toBe('v1.1.0');
   });
 
+  it('installs an update the folder has but the app never ran, rather than calling it current', async () => {
+    // The reviewer's case: v2 is merged into the folder and committed, but its switch never ran
+    // (or its checks failed), so v1 is still what runs.
+    const source = await addAndInstall();
+    const v1 = running.commit!;
+    const next = commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
+    git(source.folder!, 'fetch', '-q', 'upstream', 'v1.1.0');
+    git(source.folder!, 'merge', '-q', '--ff-only', next);
+    await publish('v1.1.0');
+    expect(running.commit).toBe(v1);
+    expect(await updateCatalogApp(source.id)).toMatchObject({ mode: 'switch', version: 'v1.1.0' });
+    expect(switched).toEqual([{ sourceId: source.id, commit: next }]);
+    // Still offered until the switch is running it.
+    expect(q.getAppSource(source.id)?.catalogVersion).toBe('v1.0.0');
+    expect(listCatalogApps().apps[0]).toMatchObject({ updateAvailable: true });
+    // A recorded version never comes from the folder alone either.
+    expect(await recordCatalogVersion(q.getAppSource(source.id)!, v1)).toBe(false);
+  });
+
   it('never uses an update whose files don\'t match the catalog', async () => {
-    await publish('v1.0.0');
-    const { source } = await addCatalogApp('tide-log');
+    const source = await addAndInstall();
     commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
     await publish('v1.1.0', { checksum: `sha256-${'1'.repeat(64)}` });
     await expect(updateCatalogApp(source.id)).rejects.toThrow(/doesn’t match/);

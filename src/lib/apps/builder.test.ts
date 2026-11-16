@@ -4,7 +4,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
 import * as q from '@/lib/db/queries';
-import { AppBuildError, appBuildSettings, createApp, foldKitLine, kitCliFor, setAppBuildSettings, type AppJob } from './builder';
+import { AppBuildError, allowedBuilds, appBuildSettings, createApp, foldKitLine, kitCliFor, setAppBuildSettings, type AppJob } from './builder';
 import { appToolchain } from './toolchain';
 
 vi.setConfig({ testTimeout: 60_000 });
@@ -33,6 +33,19 @@ describe('reading the kit', () => {
     expect(() => kitCliFor(folder)).toThrow(AppBuildError);
     fs.writeFileSync(path.join(folder, 'package.json'), JSON.stringify({ scripts: { start: 'kit; rm -rf / serve' } }));
     expect(() => kitCliFor(folder)).toThrow(AppBuildError);
+  });
+});
+
+describe('preparing an app\'s folder', () => {
+  it('builds only the native dependencies the app allows to build, by names that can\'t be options', () => {
+    const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-app-'));
+    fs.writeFileSync(path.join(folder, 'package.json'), JSON.stringify({ scripts: { postinstall: 'node migrate.js' }, pnpm: { onlyBuiltDependencies: ['better-sqlite3', 'esbuild', '--ignore-scripts=false', 'workerd'] } }));
+    expect(allowedBuilds(folder)).toEqual(['better-sqlite3', 'esbuild', 'workerd']);
+    fs.writeFileSync(path.join(folder, 'pnpm-workspace.yaml'), 'allowBuilds:\n  sharp: true\n  core-js: false\nonlyBuiltDependencies:\n  - "@parcel/watcher"\n');
+    expect(allowedBuilds(folder)).toEqual(['@parcel/watcher', 'better-sqlite3', 'esbuild', 'sharp', 'workerd']);
+    fs.writeFileSync(path.join(folder, 'package.json'), JSON.stringify({ scripts: {} }));
+    fs.rmSync(path.join(folder, 'pnpm-workspace.yaml'));
+    expect(allowedBuilds(folder)).toEqual([]);
   });
 });
 
@@ -72,7 +85,7 @@ describe('what Ri brings', () => {
     try {
       const source = await createApp({ name: 'Tide Log' });
       const tools = appToolchain();
-      expect(fs.readFileSync(seen, 'utf8').split(path.delimiter).slice(0, 2)).toEqual([tools.binDir, path.dirname(process.execPath)]);
+      expect(fs.readFileSync(seen, 'utf8').split(path.delimiter).slice(0, 2)).toEqual([tools.binDir, path.dirname(tools.node)]);
       const log = execFileSync('git', ['log', '--format=%an %s'], { cwd: source.folder!, encoding: 'utf8' }).trim();
       expect(log).toBe('Ri Create Tide Log from the app kit');
       // The builder's own commits work there too.
