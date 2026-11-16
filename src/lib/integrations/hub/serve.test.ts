@@ -3,7 +3,8 @@ import { z } from 'zod';
 import * as q from '@/lib/db/queries';
 import type { RiMcpServer, RiMcpToolHandler } from '@/lib/mcp/http-server';
 import { serveHub } from './serve';
-import { trackAppCall, withStartedBy } from './origin';
+import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
+import { INVOCATION_META, invocationContext, withStartedBy } from './origin';
 
 const action = (id: string, mutating = false) => ({ id, description: id, input: z.object({ query: z.string().optional() }), mutating });
 const runtime = (runAction: (...args: unknown[]) => Promise<unknown>) => ({
@@ -56,14 +57,20 @@ describe('the hub surface an app sees', () => {
       allowedConnectionIds: ['c-home', 'c-work'], account: 'me@work.example',
       caller: { type: 'app', id: `hub:${app.id}`, hubApp: { appId: app.id, startedBy: { kind: 'job', label: 'import_messages', id: 'run-7' } } },
     }));
-    // Started while Ri was calling the app for a chat: the approval shows in that chat.
-    await withStartedBy({ kind: 'chat', id: 'chat-9' }, () => trackAppCall('http://127.0.0.1:4391/mcp', async () =>
-      tools.get('gmail__send_email')!.handler({ query: 'x' }, context())));
+    // The app passes back the context Ri gave it when a chat called it: the approval shows in that chat.
+    if (!readAuthConfig()?.localToken) writeAuthConfig({ localToken: 'hub-serve-test-token' });
+    const fromChat = invocationContext({ kind: 'chat', id: 'chat-9' }, 'http://127.0.0.1:4391/mcp')!;
+    await tools.get('gmail__send_email')!.handler({ query: 'x' }, context({ [INVOCATION_META]: fromChat }));
     expect(runAction).toHaveBeenLastCalledWith('gmail.send_email', { query: 'x' }, expect.objectContaining({
       connectionId: 'c-home', caller: expect.objectContaining({ hubApp: { appId: app.id, startedBy: { kind: 'chat', id: 'chat-9' } } }),
     }));
+    // Without it, even while Ri is busy with a chat, the call is the app's own.
+    await withStartedBy({ kind: 'chat', id: 'chat-9' }, () => tools.get('gmail__send_email')!.handler({ query: 'y' }, context()));
+    expect(runAction).toHaveBeenLastCalledWith('gmail.send_email', { query: 'y' }, expect.objectContaining({
+      caller: expect.objectContaining({ hubApp: { appId: app.id, startedBy: { kind: 'app' } } }),
+    }));
     expect(q.listHubCalls(app.id).map(call => [call.tool, call.status, call.startedByKind, call.startedByLabel]).reverse()).toEqual([
-      ['gmail__search_messages', 'ok', 'job', 'import_messages'], ['gmail__send_email', 'ok', 'chat', null],
+      ['gmail__search_messages', 'ok', 'job', 'import_messages'], ['gmail__send_email', 'ok', 'chat', null], ['gmail__send_email', 'ok', 'app', null],
     ]);
   });
 

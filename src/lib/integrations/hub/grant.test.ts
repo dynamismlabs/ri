@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { grantFromChoice, hubConsentOptions } from './grant';
-import { startedByFor, trackAppCall, withStartedBy } from './origin';
 
 const action = (id: string, mutating = false) => ({ id, description: id, input: z.object({}), mutating });
 const toolkits = [
@@ -37,22 +36,5 @@ describe('the hub consent screen', () => {
       services: ['ai_text', 'shell'],
     });
     expect(grant).toEqual({ accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages'] }], services: ['ai_text'] });
-  });
-});
-
-describe('what started a hub call', () => {
-  it('is the job an app names, else the one chat or person Ri is calling the app for, else the app', async () => {
-    const app = 'http://127.0.0.1:4391';
-    expect(startedByFor([app], { 'app/job': 'import_receipts', 'app/jobRun': 'run-1' })).toEqual({ kind: 'job', label: 'import_receipts', id: 'run-1' });
-    expect(startedByFor([app], undefined)).toEqual({ kind: 'app' });
-    let seen;
-    // Ri calls the app for a chat. The app answers by calling the hub at its localhost alias.
-    await withStartedBy({ kind: 'chat', id: 'chat-1' }, () => trackAppCall(`${app}/mcp`, async () => { seen = startedByFor(['http://localhost:4391/api/hub/callback'], undefined); }));
-    expect(seen).toEqual({ kind: 'chat', id: 'chat-1' });
-    expect(startedByFor([app], undefined)).toEqual({ kind: 'app' });
-    // Two callers at once can't be told apart.
-    let both;
-    await withStartedBy({ kind: 'chat', id: 'chat-1' }, () => trackAppCall(app, () => withStartedBy({ kind: 'person' }, () => trackAppCall(app, async () => { both = startedByFor([app], undefined); }))));
-    expect(both).toEqual({ kind: 'app' });
   });
 });
