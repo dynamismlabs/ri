@@ -1086,7 +1086,6 @@ export function createIntegrationRuntime(opts: IntegrationRuntimeOptions): Integ
         inputDigest: digest,
         inputPreview,
         caller,
-        ...(action.openWorld !== undefined ? { openWorld: action.openWorld } : {}),
       });
       const decision = typeof verdict === 'string' ? verdict : verdict.decision;
       if (decision === 'deny') {

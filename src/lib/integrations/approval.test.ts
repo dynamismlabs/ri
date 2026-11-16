@@ -118,7 +118,7 @@ describe('appApprovalPolicy', () => {
       return { check: async (input: ApprovalCheckInput) => { const verdict = await gate.check(input); return typeof verdict === 'string' ? verdict : verdict.decision; } };
     };
 
-    it('asks for a write that reaches outside every time, even when the action runs without asking and in development', async () => {
+    it('asks for an app\'s send every time, even when the action runs without asking and in development', async () => {
       const gate = plain();
       setActionOverride('gmail.send_email', 'auto');
       try {
@@ -142,39 +142,29 @@ describe('appApprovalPolicy', () => {
       expect(await gate.check(send({ caller: job }))).toBe('ask');
     });
 
-    it('lets a write to the person\'s own data follow their usual setting, from a chat or a job', async () => {
+    it('asks for every write an app makes through a connected service, however private it looks, and never for a read', async () => {
       const gate = plain();
-      const createEvent = check({ actionId: 'google_calendar.create_event', risk: 'medium', caller: job });
-      // A reversible write to their own calendar runs without asking by default, as for any caller.
-      expect(await gate.check(createEvent)).toBe('allow');
-      // Pulled behind the gate by the person, it asks the app too.
-      setActionOverride('google_calendar.create_event', 'ask');
-      try { expect(await gate.check(createEvent)).toBe('ask'); } finally { setActionOverride('google_calendar.create_event', null); }
-      // An irreversible one asks by default, and the person can let it run.
-      const remove = check({ caller: job });
-      expect(await gate.check(remove)).toBe('ask');
+      // Creating an event sounds like the person's own calendar, but its attendees get invited. For
+      // the person's own agent it runs without asking by default. For an app it asks, every time.
+      const createEvent = (caller?: Caller) => check({
+        actionId: 'google_calendar.create_event', risk: 'medium',
+        inputPreview: { summary: 'Pediatrician', attendees: [{ email: 'someone@example.com' }] }, ...(caller ? { caller } : {}),
+      });
+      expect(await gate.check(createEvent())).toBe('allow');
+      expect(await gate.check(createEvent(job))).toBe('ask');
+      // Set to run without asking, or in development, it still asks the app.
+      setActionOverride('google_calendar.create_event', 'auto');
+      try {
+        expect(await gate.check(createEvent(job))).toBe('ask');
+        expect(await plain({ autoApprove: true }).check(createEvent(job))).toBe('ask');
+      } finally { setActionOverride('google_calendar.create_event', null); }
+      // So does an irreversible one the person let run.
       setActionOverride('google_calendar.delete_event', 'auto');
-      try { expect(await gate.check(remove)).toBe('allow'); } finally { setActionOverride('google_calendar.delete_event', null); }
-      expect(await plain({ autoApprove: true }).check(check({ caller: job }))).toBe('allow');
+      try { expect(await gate.check(check({ caller: job }))).toBe('ask'); } finally { setActionOverride('google_calendar.delete_event', null); }
       // Reads never ask.
       expect(await gate.check(check({ mutating: false, caller: hub('bloom', { kind: 'app' }) }))).toBe('allow');
     });
 
-    it('takes the provider\'s word on whether a write reaches outside, where it gave one', async () => {
-      const gate = plain();
-      // A tool that posts but says it stays within the person's own data follows their setting, here
-      // to run without asking. Without that word, its verb says it reaches outside, and it asks.
-      setActionOverride('mcp.notes.post_entry', 'auto');
-      try {
-        expect(await gate.check(check({ actionId: 'mcp.notes.post_entry', risk: 'medium', openWorld: false, caller: job }))).toBe('allow');
-        expect(await gate.check(check({ actionId: 'mcp.notes.post_entry', risk: 'medium', caller: job }))).toBe('ask');
-      } finally { setActionOverride('mcp.notes.post_entry', null); }
-      // A tool with a quiet name that says it reaches the open world asks, even set to run without asking.
-      setActionOverride('mcp.docs.create_doc', 'auto');
-      try { expect(await gate.check(check({ actionId: 'mcp.docs.create_doc', risk: 'medium', openWorld: true, caller: job }))).toBe('ask'); }
-      finally { setActionOverride('mcp.docs.create_doc', null); }
-    });
-  
     /** An in-memory stand-in for `hub_approvals`, as the database would keep it across a restart. */
     function memoryStore() {
       const rows = new Map<string, StoredHubApproval & { status: string; expiresAt: number | null }>();

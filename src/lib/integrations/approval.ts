@@ -38,7 +38,7 @@ import { isNotifierDelivery } from '@/lib/notifications/caller';
 import { isEmailComposerSend } from '@/lib/email/caller';
 import { isMcpSettingsAction } from '@/lib/mcp-apps/settings-caller';
 import { publishIntegrationApprovals } from '@/lib/realtime/bus';
-import { reachesOutside, resolveApprovalMode, type ApprovalMode } from './write-policy';
+import { resolveApprovalMode, type ApprovalMode } from './write-policy';
 
 export const GRANT_TTL_MS = 5 * 60_000;
 
@@ -242,13 +242,14 @@ export function appApprovalPolicy(opts: AppApprovalOptions = {}): ApprovalPolicy
       if (isEmailComposerSend(input.caller, input.actionId)) return 'allow';
       // The viewer opened this server's settings, changed one, or clicked one of its settings buttons, themselves.
       if (isMcpSettingsAction(input.caller, input.actionId)) return 'allow';
-      // A personal app's write that reaches outside the person's own data (sending, posting,
-      // sharing, inviting, paying) asks every time, whoever started it, even when the action is set
-      // to run without asking and in development. Its writes to the person's own data follow their
-      // usual setting, as any caller's do (docs/personal-apps.md "The hub").
+      // Every write a personal app makes through a connected service asks the person, every time,
+      // whoever started it, even when the action is set to run without asking and in development.
+      // Nothing about an action's name proves a write stays private: creating a calendar event can
+      // invite people. Only Ri's own services (hub/ri-services.ts, `RI_SERVICE_REACH`) follow the
+      // person's usual settings, and they never come through here (docs/personal-apps.md "The hub").
       const hub = input.caller?.hubApp;
-      const outsideFromApp = !!hub && reachesOutside(input);
-      if (opts.autoApprove && !outsideFromApp) return 'allow';
+      const writeFromApp = !!hub && input.mutating;
+      if (opts.autoApprove && !writeFromApp) return 'allow';
       const key = grantKey(input) + (hub ? `|hub:${hub.appId}` : '') + (input.caller?.chatSource ? `|source:${JSON.stringify(input.caller.chatSource)}` : '') + (input.caller?.connectedApp ? connectedAppKey(input.caller.connectedApp) : '');
       const sessionId = sessionIdFromCaller(input.caller);
       // A hub app's approval licenses the app's identical retry, from a job or any chat: its grant
@@ -257,9 +258,8 @@ export function appApprovalPolicy(opts: AppApprovalOptions = {}): ApprovalPolicy
       // Standing intent: reversible, internal writes run on the connection the
       // user already authorized. Outward (send/post/…) and irreversible
       // (high-risk delete/cancel/pay) actions fall through to the human gate,
-      // unless the user has explicitly flipped that action to 'auto'. Never for an app's write
-      // that reaches outside.
-      if (!outsideFromApp && (opts.resolveMode?.(input) ?? resolveApprovalMode({ actionId: input.actionId, risk: input.risk, mutating: input.mutating })) === 'auto') {
+      // unless the user has explicitly flipped that action to 'auto'. Never for an app's write.
+      if (!writeFromApp && (opts.resolveMode?.(input) ?? resolveApprovalMode({ actionId: input.actionId, risk: input.risk, mutating: input.mutating })) === 'auto') {
         settleMoot(key, slotSession);
         return 'allow';
       }

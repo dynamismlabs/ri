@@ -50,7 +50,8 @@ describe('the hub surface an app sees', () => {
     // Search is on two accounts, so the app names one. Send is on one, so there's nothing to choose.
     expect(Object.keys(tools.get('gmail__search_messages')!.config.inputSchema as object)).toContain('account');
     expect(Object.keys(tools.get('gmail__send_email')!.config.inputSchema as object)).not.toContain('account');
-    expect(String(tools.get('gmail__send_email')!.config.description)).toContain('asks the person every time');
+    expect(String(tools.get('gmail__send_email')!.config.description)).toContain('asks the person before every call');
+    expect(String(tools.get('gmail__search_messages')!.config.description)).not.toContain('asks');
 
     await tools.get('gmail__search_messages')!.handler({ query: 'from:clinic', account: 'me@work.example' }, context({ 'app/job': 'import_messages', 'app/jobRun': 'run-7' }));
     expect(runAction).toHaveBeenLastCalledWith('gmail.search_messages', { query: 'from:clinic' }, expect.objectContaining({
@@ -72,6 +73,21 @@ describe('the hub surface an app sees', () => {
     expect(q.listHubCalls(app.id).map(call => [call.tool, call.status, call.startedByKind, call.startedByLabel]).reverse()).toEqual([
       ['gmail__search_messages', 'ok', 'job', 'import_messages'], ['gmail__send_email', 'ok', 'chat', null], ['gmail__send_email', 'ok', 'app', null],
     ]);
+  });
+
+  it('creates a Ri task for an app without asking, as Ri\'s own services follow the person\'s settings', async () => {
+    const app = q.upsertHubApp({ clientId: `bloom-${crypto.randomUUID()}`, name: 'Bloom', grant: { accounts: [], services: ['create_task'] } });
+    const runAction = vi.fn();
+    const { server, tools } = registrar();
+    await serveHub(server, runtime(runAction) as never, app, { ownerId: 'local', redirectUris: [] });
+    const answer = await tools.get('ri__create_task')!.handler({ title: 'Book the pediatrician', operationId: crypto.randomUUID() }, context());
+    expect(answer.isError, JSON.stringify(answer.content)).toBeFalsy();
+    const task = JSON.parse((answer.content[0] as { text: string }).text) as { id: string; title: string };
+    expect(task.title).toBe('Book the pediatrician');
+    expect(q.getTask(task.id)).toBeTruthy();
+    // No connected service, no approval gate.
+    expect(runAction).not.toHaveBeenCalled();
+    expect(q.listHubCalls(app.id)[0]).toMatchObject({ tool: 'ri__create_task', status: 'ok' });
   });
 
   it('answers a write waiting for the person the way the kit retries it', async () => {

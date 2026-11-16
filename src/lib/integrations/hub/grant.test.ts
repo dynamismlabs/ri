@@ -5,7 +5,7 @@ import { grantFromChoice, hubConsentOptions } from './grant';
 const action = (id: string, mutating = false) => ({ id, description: id, input: z.object({}), mutating });
 const toolkits = [
   { id: 'gmail', providerId: 'google', displayName: 'Gmail', actions: [action('gmail.search_messages'), action('gmail.get_message'), action('gmail.send_email', true)] },
-  { id: 'google_calendar', providerId: 'google', displayName: 'Google Calendar', actions: [action('google_calendar.list_events')] },
+  { id: 'google_calendar', providerId: 'google', displayName: 'Google Calendar', actions: [action('google_calendar.list_events'), action('google_calendar.create_event', true)] },
   { id: 'app_reading_log', providerId: 'app_reading_log', displayName: 'Reading Log', actions: [action('app_reading_log.list_books')] },
 ] as never;
 const connections = [
@@ -22,9 +22,11 @@ describe('the hub consent screen', () => {
       ['Gmail', 'me@example.com'], ['Gmail', 'me@work.example'], ['Google Calendar', 'me@example.com'], ['Google Calendar', 'me@work.example'],
     ]);
     const gmail = options.accounts[0]!;
-    expect(gmail.tools.map(t => [t.name, t.requested, t.outside])).toEqual([
+    expect(gmail.tools.map(t => [t.name, t.requested, t.asks])).toEqual([
       ['gmail__search_messages', true, false], ['gmail__get_message', true, false], ['gmail__send_email', false, true],
     ]);
+    // Every write is marked as asking each time, a calendar event (which can invite people) too.
+    expect(options.accounts[2]!.tools.map(t => [t.name, t.asks])).toEqual([['google_calendar__list_events', false], ['google_calendar__create_event', true]]);
     expect(options.services.find(s => s.name === 'list_tasks')?.requested).toBe(true);
     expect(options.services.find(s => s.name === 'create_task')).toMatchObject({ requested: false, write: true });
   });
