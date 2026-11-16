@@ -432,12 +432,15 @@ describe('the hub for personal apps', () => {
   }
   const listTools = (accessToken: string) => serve(HUB, { method: 'POST', headers: { authorization: `Bearer ${accessToken}`, 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'mcp-protocol-version': '2025-06-18' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }) });
 
-  it('rotates the refresh token on every refresh, and ends all of the app\'s tokens when a used one comes back', async () => {
+  it('rotates the refresh token on every refresh, and ends all of the app\'s tokens when a used one comes back as a copy', async () => {
     const { tokens, clientId } = await connectApp();
     const second = await token({ grant_type: 'refresh_token', refresh_token: tokens.refresh_token!, client_id: clientId });
     expect(second.status).toBe(200);
     expect(second.body.refresh_token).toMatch(/^ri_hub_rt_/);
     expect(second.body.refresh_token).not.toBe(tokens.refresh_token);
+    // A retry of the same refresh within 30 seconds gets the same new pair, and ends nothing.
+    const retry = await token({ grant_type: 'refresh_token', refresh_token: tokens.refresh_token!, client_id: clientId });
+    expect(retry).toMatchObject({ status: 200, body: { access_token: second.body.access_token, refresh_token: second.body.refresh_token } });
     // The refresh spent the old pair: its access token stops at once.
     expect((await listTools(tokens.access_token)).status).toBe(401);
     expect((await listTools(second.body.access_token)).status).toBe(200);

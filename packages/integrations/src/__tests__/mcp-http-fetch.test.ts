@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MCP_HTTP_MAX_CONTROL_MESSAGE_BYTES, MCP_HTTP_MAX_MESSAGE_BYTES, MCP_TOOL_LIST_MAX_BYTES, McpMessageTooLargeError, mcpHttpFetch, messageMeter } from '../mcp/http-fetch';
+import { MCP_HTTP_MAX_CONTROL_MESSAGE_BYTES, MCP_HTTP_MAX_MESSAGE_BYTES, MCP_TOOL_LIST_MAX_BYTES, McpMessageTooLargeError, mcpHttpFetch, messageMeter, refreshTokenOf } from '../mcp/http-fetch';
 import { MCP_STDIO_MAX_BUFFER_BYTES } from '../mcp/client';
 import { MCP_HTTP_TIMEOUT_MS, MCP_TOOL_TOTAL_TIMEOUT_MS } from '../mcp/timeouts';
 
@@ -96,3 +96,53 @@ describe('scoped MCP HTTP fetch', () => {
   });
 });
 
+
+describe('refreshing an MCP connection', () => {
+  const refresh = (token: string) => ({ method: 'POST', body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: token, client_id: 'ri' }) });
+
+  it('sends one refresh per refresh token, and every client asking with it gets the same new tokens', async () => {
+    let issued = 0;
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const nativeFetch = vi.fn(async (_input: unknown, init: RequestInit) => {
+      const body = init.body as URLSearchParams;
+      if (body.get('grant_type') !== 'refresh_token') return Response.json({ result: 'other' });
+      await held;
+      issued += 1;
+      return Response.json({ access_token: `at-${issued}`, refresh_token: `rt-${issued}`, token_type: 'Bearer' });
+    });
+    vi.stubGlobal('fetch', nativeFetch);
+    // Two chats, each with its own client, hit a 401 on the same connection at once.
+    const [a, b] = [await mcpHttpFetch(), await mcpHttpFetch()];
+    const url = `https://app-${crypto.randomUUID()}.example/token`;
+    const both = Promise.all([a.fetch(url, refresh('rt-0')), b.fetch(url, refresh('rt-0'))]);
+    release();
+    const [first, second] = await both;
+    expect(await first.json()).toEqual({ access_token: 'at-1', refresh_token: 'rt-1', token_type: 'Bearer' });
+    expect(await second.json()).toEqual({ access_token: 'at-1', refresh_token: 'rt-1', token_type: 'Bearer' });
+    // A third, a moment later, still holding the old refresh token: the same answer, no second use.
+    expect(await (await a.fetch(url, refresh('rt-0'))).json()).toMatchObject({ refresh_token: 'rt-1' });
+    expect(nativeFetch).toHaveBeenCalledTimes(1);
+    // The new refresh token is its own refresh.
+    expect(await (await b.fetch(url, refresh('rt-1'))).json()).toMatchObject({ refresh_token: 'rt-2' });
+    expect(nativeFetch).toHaveBeenCalledTimes(2);
+    await a.close(); await b.close();
+  });
+
+  it('lets the next caller try again when a refresh never got an answer, and leaves other requests alone', async () => {
+    let calls = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      calls += 1;
+      if (calls === 1) throw new TypeError('fetch failed');
+      return Response.json({ access_token: 'at', refresh_token: 'rt-new' });
+    }));
+    const http = await mcpHttpFetch();
+    const url = `https://app-${crypto.randomUUID()}.example/token`;
+    await expect(http.fetch(url, refresh('rt-old'))).rejects.toThrow('fetch failed');
+    expect(await (await http.fetch(url, refresh('rt-old'))).json()).toMatchObject({ refresh_token: 'rt-new' });
+    expect(refreshTokenOf({ method: 'POST', body: 'grant_type=authorization_code&code=x' })).toBeNull();
+    expect(refreshTokenOf({ method: 'POST', body: 'grant_type=refresh_token&refresh_token=abc' })).toBe('abc');
+    expect(refreshTokenOf({ method: 'POST', body: JSON.stringify({ method: 'tools/list' }) })).toBeNull();
+    await http.close();
+  });
+});

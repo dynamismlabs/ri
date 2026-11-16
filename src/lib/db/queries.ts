@@ -13349,6 +13349,32 @@ export function hubTokenForRefresh(refreshHash: string): { token: HubTokenRecord
     .where(eq(hubTokens.refreshHash, refreshHash)).get() ?? null;
 }
 
+/**
+ * Rotate a refresh token in one transaction: only if the app's access is still on and the token is
+ * neither spent nor revoked, spend and end it and store its replacement. A revocation that landed in
+ * the meantime is seen here, so no token is issued after it.
+ */
+export function rotateHubToken(
+  oldTokenId: string,
+  replacement: Pick<HubTokenRecord, 'appId' | 'accessHash' | 'accessExpiresAt' | 'refreshHash' | 'refreshExpiresAt'>,
+): { ok: true; token: HubTokenRecord } | { ok: false; reason: 'app_revoked' | 'spent' } {
+  const now = new Date().toISOString();
+  return getDb().transaction((tx) => {
+    const app = tx.select({ revokedAt: hubApps.revokedAt }).from(hubApps).where(eq(hubApps.id, replacement.appId)).get();
+    if (!app || app.revokedAt) return { ok: false as const, reason: 'app_revoked' as const };
+    const spent = tx.update(hubTokens).set({ refreshedAt: now, revokedAt: now, updatedAt: now })
+      .where(and(eq(hubTokens.id, oldTokenId), eq(hubTokens.appId, replacement.appId), isNull(hubTokens.refreshedAt), isNull(hubTokens.revokedAt))).run();
+    if (spent.changes !== 1) return { ok: false as const, reason: 'spent' as const };
+    const token = tx.insert(hubTokens).values({ id: uuidv7(), createdAt: now, updatedAt: now, ...replacement }).returning().get();
+    return { ok: true as const, token };
+  });
+}
+
+/** One hub token, by ID. */
+export function getHubToken(id: string): HubTokenRecord | undefined {
+  return getDb().select().from(hubTokens).where(eq(hubTokens.id, id)).get();
+}
+
 /** Spend a refresh token once. False when it was already spent or revoked: a replay. */
 export function spendHubRefreshToken(id: string): boolean {
   const now = new Date().toISOString();
