@@ -13426,6 +13426,14 @@ export function dropHubApprovals(appId: string, connectionId?: string): void {
     .where(and(eq(hubApprovals.appId, appId), inArray(hubApprovals.status, ['pending', 'approved']), connectionId ? eq(hubApprovals.connectionId, connectionId) : undefined)).run();
 }
 
+/** Every app's waiting and approved-but-unused requests on these connections, for when one is turned off or removed. */
+export function dropHubApprovalsForConnections(connectionIds: readonly string[]): void {
+  if (connectionIds.length === 0) return;
+  const now = new Date().toISOString();
+  getDb().update(hubApprovals).set({ status: 'dropped', updatedAt: now })
+    .where(and(inArray(hubApprovals.connectionId, [...connectionIds]), inArray(hubApprovals.status, ['pending', 'approved']))).run();
+}
+
 // ─── Personal app sources (docs/personal-apps.md "Building and changing apps") ───
 
 type AppSourceRecord = typeof appSources.$inferSelect;

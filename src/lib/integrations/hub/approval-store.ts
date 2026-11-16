@@ -1,4 +1,4 @@
-import { decideHubApproval, deniedHubApproval, dropHubApprovals, insertHubApproval, listPendingHubApprovals, takeHubApprovalGrant } from '@/lib/db/queries';
+import { decideHubApproval, deniedHubApproval, dropHubApprovals, dropHubApprovalsForConnections, insertHubApproval, listPendingHubApprovals, takeHubApprovalGrant } from '@/lib/db/queries';
 import type { HubApprovalStore, StoredHubApproval } from '../approval';
 
 /**
@@ -28,6 +28,9 @@ export const hubApprovalStore: HubApprovalStore = {
   },
   deniedSince(appId, callKey, since) {
     return deniedHubApproval(appId, callKey, new Date(since).toISOString());
+  },
+  dropForConnections(connectionIds) {
+    dropHubApprovalsForConnections(connectionIds);
   },
   drop(appId, connectionId) {
     dropHubApprovals(appId, connectionId);

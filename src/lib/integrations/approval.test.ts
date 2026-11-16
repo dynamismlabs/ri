@@ -180,6 +180,7 @@ describe('appApprovalPolicy', () => {
         },
         deniedSince: (appId, callKey) => [...rows.values()].find((item) => item.appId === appId && item.callKey === callKey && item.status === 'denied')?.id ?? null,
         drop: (appId) => { for (const row of rows.values()) if (row.appId === appId && ['pending', 'approved'].includes(row.status)) row.status = 'dropped'; },
+        dropForConnections: (ids) => { for (const row of rows.values()) if (ids.includes(row.connectionId) && ['pending', 'approved'].includes(row.status)) row.status = 'dropped'; },
       };
       return { store, rows };
     }
@@ -235,6 +236,26 @@ describe('appApprovalPolicy', () => {
         revokeHubApprovals('bloom');
         expect(listPendingApprovals()).toEqual([]);
       } finally { vi.useRealTimers(); }
+    });
+
+    it('clears an app\'s waiting and approved requests when the account is turned off, and turning it back on revives none', async () => {
+      const { store, rows } = memoryStore();
+      const asked = await policy({ hubStore: store }).check(send({ caller: job })) as { approvalId: string };
+      const other = await policy({ hubStore: store }).check(send({ caller: job, inputDigest: 'digest-b' })) as { approvalId: string };
+      resolvePendingApprovals([asked.approvalId], 'approve');
+      // Ri restarts, then the person turns the account off: the waiting request comes back from
+      // disk only to be cleared, and the approved one is dropped with it.
+      _resetApprovals();
+      policy({ hubStore: store });
+      expect(revokeApprovalsForConnections(['conn-1']).map((p) => p.id)).toEqual([other.approvalId]);
+      expect(rows.get(asked.approvalId)!.status).toBe('dropped');
+      expect(rows.get(other.approvalId)!.status).toBe('dropped');
+      // The account is back and Ri restarts again: the same call asks afresh, under a new ID.
+      _resetApprovals();
+      const again = await policy({ hubStore: store }).check(send({ caller: job })) as { decision: string; approvalId: string };
+      expect(again.decision).toBe('ask');
+      expect(again.approvalId).not.toBe(asked.approvalId);
+      expect(listPendingApprovals().map((p) => p.id)).toEqual([again.approvalId]);
     });
 
     it('never lets the apps\' store stand between a chat and its approvals', async () => {

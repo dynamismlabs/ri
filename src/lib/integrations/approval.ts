@@ -113,6 +113,8 @@ export interface HubApprovalStore {
   /** The person declined this exact call since then. Its ID, or null. */
   deniedSince(appId: string, callKey: string, since: number): string | null;
   drop(appId: string, connectionId?: string): void;
+  /** Drop every app's waiting and approved requests on these connections. */
+  dropForConnections(connectionIds: readonly string[]): void;
 }
 
 /** Read apps' waiting requests back after a restart, once, so their cards and IDs carry on. */
@@ -397,9 +399,10 @@ export function revokeHubApprovals(
 }
 
 /**
- * Access to these connections was removed (an account disconnected, a source turned off). Their
- * pending approvals can no longer license a call: they leave the queue, recorded as settled so
- * the cards show it, and any unused grant for them is dropped.
+ * Access to these connections was removed or changed (an account disconnected, a server switched off
+ * or signed in again, a source turned off). Their pending approvals can no longer license a call:
+ * they leave the queue, recorded as settled so the cards show it, and any unused grant for them is
+ * dropped, apps' stored ones included. Nothing comes back when the access does.
  */
 export function revokeApprovalsForConnections(
   connectionIds: readonly string[],
@@ -407,6 +410,14 @@ export function revokeApprovalsForConnections(
 ): PendingApproval[] {
   const ids = new Set(connectionIds);
   if (ids.size === 0) return [];
+  // Apps' requests live on disk too: restore them first so the waiting ones are settled, then drop
+  // them there with any approved-but-unused ones. Turning the connection back on revives none.
+  hydrateHub();
+  try { state.hubStore?.dropForConnections([...ids]); }
+  catch (err) {
+    // The access is already gone. Say so loudly, and still clear what's in memory below.
+    console.error('[approvals] dropping apps\' stored approvals for removed connections failed:', err instanceof Error ? err.message : err);
+  }
   const removed = [...state.pending.values()].filter((p) => ids.has(p.connectionId));
   for (const p of removed) state.pending.delete(p.id);
   // A grant slot starts with the grant key: owner|action|connection|digest|version.
