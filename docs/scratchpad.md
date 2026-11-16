@@ -101,6 +101,39 @@ their own per-chat scratchpad and `@scratchpad`, unchanged.
 **Private planning.** Only a personal Home has one. A team's Home shows no
 pad, and its procedures and action refuse there.
 
+## The deck beside
+
+**Status:** Trial, built 2026-11-16 on branch `deck-beside`.
+
+The same column can show the deck instead of the pad, so the deck stays in
+view from a chat, an agent, Apps or a skill without going Home. Going Home
+to look meant leaving the work on screen, and the way back wasn't reliable:
+⌘E from Home opens the last chat, not the agent page you left.
+
+- **Two buttons, one column.** The top bar has a Deck button (the stack
+  icon the phone's Deck tab uses) beside the scratchpad's. Each shows its
+  view in the column, switching from the other or opening it, and closes
+  the column when it's already showing (`nextDeckBesideAction`). The one
+  showing is pressed. ⌘K has "Show deck beside".
+- **The pad stays the pad.** ⌘⇧J from the deck switches the column to the
+  pad with the caret in it. The column remembers which one it showed
+  (`ri.client.besideView`) along with whether it's open.
+- **Both stay mounted while the column is open**, so switching keeps the
+  pad's caret, undo and unsent lines, and the deck's scroll, filters and
+  half-typed add. Showing the deck folds a pad slideout back into the column.
+- **The deck is the whole deck** (`DeckContainer`), the same one Home shows,
+  at the column's 340px. Escape doesn't close it, since the add bar uses
+  Escape. ✕ or the Deck button does.
+- **Wide windows only.** A phone or tablet already has the deck as a tab,
+  so the button isn't there and the ⌘K command goes to that tab.
+- **The same everywhere, Home included.** With the deck already in one of
+  Home's panels, the column shows a second copy. Watch whether that grates.
+
+What the trial should tell us: do you keep the deck open beside chats, or
+open it for a glance and close it? If it's a glance, a peek would cost less
+width. If it stays open, does 340px read well, and does the chat's tools
+panel need room? Would Tasks or Notes earn a place in the column too?
+
 ## Every device
 
 The pad is one Markdown text (`scratchpad` table, one row). The client

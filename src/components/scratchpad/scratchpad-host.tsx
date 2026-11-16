@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Editor } from '@tiptap/core';
-import { NotebookPen } from 'lucide-react';
+import { Layers3, NotebookPen, X } from 'lucide-react';
 import { EntitySheet } from '@/components/entities/entity-sheet';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Tip } from '@/components/ui/tip';
@@ -14,8 +14,8 @@ import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { useDragResize } from '@/hooks/use-drag-resize';
 import { homeStorageIdentity } from '@/lib/home/document-scope';
 import {
-  isScratchpadColumnOpen, isScratchpadSheetOpen, nextScratchpadAction, requestScratchpadFocus,
-  setScratchpadColumnOpen, setScratchpadSheetOpen, useScratchpadColumnOpen, useScratchpadSheetOpen,
+  isScratchpadInColumn, isScratchpadSheetOpen, nextDeckBesideAction, nextScratchpadAction, requestScratchpadFocus,
+  setBesideView, setScratchpadColumnOpen, setScratchpadSheetOpen, useBesideView, useScratchpadColumnOpen, useScratchpadSheetOpen,
 } from '@/lib/client/scratchpad-open';
 import { cn } from '@/lib/utils';
 import { ScratchpadPad } from './scratchpad-pad';
@@ -23,7 +23,9 @@ import { ScratchpadPad } from './scratchpad-pad';
 /**
  * Where the scratchpad shows (docs/scratchpad.md): a column at the right of
  * every screen on a wide window, a sheet over the page on a phone or tablet.
- * It's private planning, so a team's Home has none.
+ * On a wide window the same column can show the deck instead ("The deck
+ * beside"), so it stays in view from a chat or an agent. Both are private
+ * planning, so a team's Home has neither.
  */
 
 export function useScratchpadAvailable(): boolean {
@@ -34,13 +36,20 @@ export function useScratchpadAvailable(): boolean {
 /** Where focus was when the shortcut took it into the pad, to go back to. */
 let returnTo: HTMLElement | null = null;
 
+/** The pad (in the column or its slideout) or the column's deck. */
+const BESIDE_SELECTOR = '[data-scratchpad], [data-beside-column]';
+
 function padHasFocus(): boolean {
   return !!document.activeElement?.closest('[data-scratchpad]');
 }
 
+function besideHasFocus(): boolean {
+  return !!document.activeElement?.closest(BESIDE_SELECTOR);
+}
+
 function rememberFocus() {
   const active = document.activeElement;
-  returnTo = active instanceof HTMLElement && active !== document.body && !active.closest('[data-scratchpad]') ? active : null;
+  returnTo = active instanceof HTMLElement && active !== document.body && !active.closest(BESIDE_SELECTOR) ? active : null;
 }
 
 /** Back to where you were before the pad: that element, else the chat on screen. */
@@ -55,21 +64,29 @@ function goBack() {
 
 export function openScratchpad(wide: boolean) {
   rememberFocus();
-  if (wide) setScratchpadColumnOpen(true);
+  if (wide) { setBesideView('scratchpad'); setScratchpadColumnOpen(true); }
   else setScratchpadSheetOpen(true);
   requestScratchpadFocus();
 }
 
+/** Closes the column (whichever view it shows) or the sheet. */
 export function closeScratchpad(wide: boolean) {
-  const inside = padHasFocus();
+  const inside = besideHasFocus();
   if (wide) setScratchpadColumnOpen(false);
   else setScratchpadSheetOpen(false);
   if (inside) goBack();
 }
 
-/** ⌘⇧J: to the pad's caret, and back (`nextScratchpadAction`). */
+/** Shows the deck in the column beside the page. Focus stays where it is. */
+export function showDeckBeside() {
+  if (padHasFocus()) goBack();
+  setBesideView('deck');
+  setScratchpadColumnOpen(true);
+}
+
+/** ⌘⇧J: to the pad's caret, and back (`nextScratchpadAction`). From the deck beside, it switches the column to the pad. */
 export function runScratchpadShortcut(wide: boolean) {
-  const open = wide ? isScratchpadColumnOpen() : isScratchpadSheetOpen();
+  const open = wide ? isScratchpadInColumn() : isScratchpadSheetOpen();
   const action = nextScratchpadAction(open, padHasFocus(), wide);
   if (action === 'open') openScratchpad(wide);
   else if (action === 'focus') { rememberFocus(); requestScratchpadFocus(); }
@@ -94,15 +111,25 @@ export function ScratchpadShortcut() {
   return null;
 }
 
-/** The pad beside every screen on a wide window. It stays open across navigation and reloads. */
-export function ScratchpadColumn() {
+/**
+ * The column beside every screen on a wide window: the pad, or the deck the
+ * dashboard passes in. It stays open across navigation and reloads.
+ */
+export function ScratchpadColumn({ deck }: { deck?: ReactNode }) {
   const available = useScratchpadAvailable();
   const open = useScratchpadColumnOpen();
-  return available && open ? <OpenScratchpadColumn /> : null;
+  return available && open ? <OpenScratchpadColumn deck={deck} /> : null;
 }
 
-function OpenScratchpadColumn() {
+function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
+  const view = useBesideView();
+  const showDeck = view === 'deck' && !!deck;
+  // Both stay mounted while the column is open, so switching keeps the pad's
+  // caret, undo and unsent lines, and the deck's scroll, filters and half-typed add.
+  const [deckMounted, setDeckMounted] = useState(showDeck);
   const [expanded, setExpanded] = useState(false);
+  // The deck takes the column, so a pad open in its slideout folds back in.
+  if (showDeck && (!deckMounted || expanded)) { setDeckMounted(true); setExpanded(false); }
   const editor = useRef<Editor | null>(null);
   const focusChat = useRef(false);
   const storageScope = useHomeStorageScope();
@@ -127,8 +154,25 @@ function OpenScratchpadColumn() {
   const collapse = () => setExpanded(false);
   return (
     <>
-      <aside aria-label="Scratchpad" ref={expanded ? undefined : mountPad}
-        className="flex min-h-0 w-[340px] shrink-0 flex-col border-l border-border" />
+      <aside aria-label={showDeck ? 'Deck beside' : 'Scratchpad'} data-beside-column
+        className="flex min-h-0 w-[340px] shrink-0 flex-col border-l border-border">
+        <div ref={expanded ? undefined : mountPad} hidden={showDeck} className="flex min-h-0 flex-1 flex-col" />
+        {deckMounted && (
+          <div hidden={!showDeck} className="flex min-h-0 flex-1 flex-col bg-background">
+            <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border/50 pl-4 pr-2">
+              <Layers3 size={14} className="shrink-0 text-muted-foreground" />
+              <h2 className="mr-auto shrink-0 text-xs font-semibold">Deck</h2>
+              <Tip label="Close">
+                <button type="button" onClick={() => closeScratchpad(true)} aria-label="Close the deck beside"
+                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+                  <X size={15} />
+                </button>
+              </Tip>
+            </header>
+            <div className="min-h-0 flex-1">{deck}</div>
+          </div>
+        )}
+      </aside>
       <EntitySheet open={expanded} label="Scratchpad" width={width} resizing={isResizing}
         onClose={collapse} showCloseButton={false}
         onOpenAutoFocus={(e) => { e.preventDefault(); editor.current?.commands.focus(); }}
@@ -191,9 +235,11 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
   const available = useScratchpadAvailable();
   const tier = useViewportTier();
   const columnOpen = useScratchpadColumnOpen();
+  const view = useBesideView();
   const sheetOpen = useScratchpadSheetOpen();
   const wide = tier === 'desktop';
-  const open = wide ? columnOpen : sheetOpen;
+  // A column showing the deck switches to the pad.
+  const open = wide ? columnOpen && view === 'scratchpad' : sheetOpen;
   if (!available) return null;
   const button = (
     <button
@@ -212,4 +258,33 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
   );
   if (variant === 'phone') return button;
   return <Tip label="Scratchpad" shortcut={HOTKEYS.scratchpad.label}>{button}</Tip>;
+}
+
+/**
+ * Shows the deck in the column beside the page, or closes it there. Wide
+ * windows only: a phone or tablet has the deck as a tab of its own.
+ */
+export function DeckBesideButton() {
+  const available = useScratchpadAvailable();
+  const tier = useViewportTier();
+  const columnOpen = useScratchpadColumnOpen();
+  const view = useBesideView();
+  if (!available || tier !== 'desktop') return null;
+  const open = columnOpen && view === 'deck';
+  return (
+    <Tip label="Deck beside this screen">
+      <button
+        type="button"
+        aria-label="Deck"
+        aria-pressed={open}
+        onClick={() => (nextDeckBesideAction(columnOpen, view) === 'close' ? closeScratchpad(true) : showDeckBeside())}
+        className={cn(
+          'flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:text-foreground',
+          open && 'bg-muted/60 text-foreground',
+        )}
+      >
+        <Layers3 size={14} />
+      </button>
+    </Tip>
+  );
 }

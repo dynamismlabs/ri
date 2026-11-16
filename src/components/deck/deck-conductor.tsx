@@ -80,15 +80,20 @@ export function DeckConductor({
     updateMorning.mutate({ enabled: !(morning?.enabled ?? false) });
   }, [morning?.enabled, updateMorning]);
 
+  // Sized by its own width, not the window's: Home's panel is wide, the
+  // column beside other screens is 340px (docs/scratchpad.md). Below 30rem
+  // the labels stay on one line, Generate New Deck keeps only its icon, and
+  // the actions wrap under the filters rather than clip.
   return (
-    <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-      <div className="flex items-center gap-2">
+    <div className="@container/conductor border-b border-border">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 @max-[30rem]/conductor:gap-x-1.5 @max-[30rem]/conductor:px-3">
+      <div className="flex items-center gap-2 @max-[30rem]/conductor:gap-1.5">
         {/* Energy toggle: Light / Deep */}
         <div className="flex items-center gap-0.5 p-0.5 bg-card rounded-lg border border-border">
           <button
             onClick={() => onWorkModeChange(workMode === 'light' ? null : 'light')}
             className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold transition-all',
+              'px-2.5 py-1 rounded text-[9px] font-bold transition-all @max-[30rem]/conductor:px-1.5',
               workMode === 'light'
                 ? 'bg-sky-400/15 text-sky-400 shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -99,7 +104,7 @@ export function DeckConductor({
           <button
             onClick={() => onWorkModeChange(workMode === 'deep' ? null : 'deep')}
             className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold transition-all',
+              'px-2.5 py-1 rounded text-[9px] font-bold transition-all @max-[30rem]/conductor:px-1.5',
               workMode === 'deep'
                 ? 'bg-orange-500/15 text-orange-500 shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -112,8 +117,8 @@ export function DeckConductor({
         {/* Area filter dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1.5 px-2.5 py-1 bg-card border border-border rounded-lg cursor-pointer hover:border-muted-foreground transition-all">
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            <button className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 bg-card border border-border rounded-lg cursor-pointer hover:border-muted-foreground transition-all @max-[30rem]/conductor:gap-1 @max-[30rem]/conductor:px-2">
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest @max-[30rem]/conductor:tracking-wide">
                 {selectedArea ? selectedArea.name : 'All areas'}
               </span>
               <ChevronDown size={9} className="text-muted-foreground" />
@@ -150,7 +155,7 @@ export function DeckConductor({
             onClick={() => dueTodayCount > 0 && onFilterDueTodayChange(!filterDueToday)}
             disabled={dueTodayCount === 0}
             className={cn(
-              'px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border',
+              'whitespace-nowrap px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border @max-[30rem]/conductor:px-2',
               filterDueToday
                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
                 : dueTodayCount > 0
@@ -163,7 +168,7 @@ export function DeckConductor({
         </Tip>
       </div>
 
-      <div className="flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-1.5 @max-[30rem]/conductor:gap-1">
         {/* Morning auto-refresh toggle (opt-in cron) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -200,18 +205,22 @@ export function DeckConductor({
         </DropdownMenu>
 
         {onReplan && (
-          <button
-            onClick={onReplan}
-            className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold rounded-md transition-colors',
-              URGENCY_STYLES[urgency],
-            )}
-          >
-            <RefreshCw size={10} />
-            Generate New Deck
-          </button>
+          <Tip label="Generate New Deck" onlyWhenTextHidden>
+            <button
+              onClick={onReplan}
+              aria-label="Generate New Deck"
+              className={cn(
+                'flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 text-[9px] font-bold rounded-md transition-colors @max-[30rem]/conductor:h-7 @max-[30rem]/conductor:px-2',
+                URGENCY_STYLES[urgency],
+              )}
+            >
+              <RefreshCw size={10} />
+              <span className="@max-[30rem]/conductor:hidden">Generate New Deck</span>
+            </button>
+          </Tip>
         )}
       </div>
+    </div>
     </div>
   );
 }

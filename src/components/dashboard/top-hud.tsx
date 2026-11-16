@@ -11,7 +11,7 @@ import { RateLimitsPill } from './rate-limits-pill';
 import { HudDayButton } from '@/components/calendar/hud-day-button';
 import { WorkHudPill } from '@/components/calendar/work/work-hud-pill';
 import { DesktopNavButtons } from '@/components/desktop/desktop-nav-buttons';
-import { ScratchpadButton } from '@/components/scratchpad/scratchpad-host';
+import { DeckBesideButton, ScratchpadButton } from '@/components/scratchpad/scratchpad-host';
 import { Tip } from '@/components/ui/tip';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { Kbd } from '@/components/ui/kbd';
@@ -21,7 +21,8 @@ import { Kbd } from '@/components/ui/kbd';
 // event, the budget. Places (Board, Calendar, Schedules and Triggers) and
 // Settings live in the left rail (docs/rail.md). Create (tasks, notes, quick
 // capture) and ⌘K search stay here for now, beside the rail's own Create and
-// Search.
+// Search. The deck and scratchpad buttons share the column beside every
+// screen (docs/scratchpad.md).
 
 export function TopHud() {
   const team = useOptionalHomeContext()?.home.kind === 'team';
@@ -106,7 +107,7 @@ export function TopHud() {
                 <Search size={14} />
               </button>
             </Tip>
-            {!team && <ScratchpadButton />}
+            {!team && <><DeckBesideButton /><ScratchpadButton /></>}
             <CreateMenu />
           </div>
         </div>

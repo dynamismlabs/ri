@@ -115,7 +115,9 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
   );
 
   return (
-    <div className="relative">
+    // Sized by its own width: the hint gives way to the placeholder in the
+    // narrow column beside other screens (docs/scratchpad.md).
+    <div className="@container/addbar relative">
       <div
         className={cn(
           // A quiet fill (not a bare outline) so it reads as the deck's one input
@@ -143,7 +145,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
         {createTask.isPending ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
         ) : (
-          <span className="shrink-0 text-[10px] text-muted-foreground/50">
+          <span className="shrink-0 text-[10px] text-muted-foreground/50 @max-sm/addbar:hidden">
             {q ? '↑↓ to choose · ↵ to add' : 'Enter to add'}
           </span>
         )}
