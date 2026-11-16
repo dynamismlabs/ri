@@ -156,7 +156,7 @@ it.skipIf(!enabled)('sets a repeat from the row menu, and a resting row says whe
     const chip = page.getByRole('button', { name: 'Repeats weekly. Next one Tue, Nov 17', exact: true });
     expect((await chip.textContent())?.trim()).toBe('Weekly · Tomorrow');
     await chip.hover();
-    await page.getByText('Done for now. Next one Tue, Nov 17', { exact: true }).first().waitFor();
+    await page.getByText('Next one Tue, Nov 17', { exact: true }).first().waitFor();
   } finally {
     await page.close();
   }

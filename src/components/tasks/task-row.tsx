@@ -134,7 +134,8 @@ export function TaskRow({
   const resting = isRestingUntilNext(task);
   const nextOne = resting ? `Next one ${describeLocalDate(task.nextRecurrenceAt)}` : null;
   const repeatTip = [
-    nextOne ? `Done for now. ${nextOne}` : null,
+    // Resting means done for now or not started yet: the date is true of both.
+    nextOne,
     recurrenceHasDetail(task.recurrence) ? `Saved as “${task.recurrence}”` : null,
   ].filter(Boolean).join('. ');
   const repeatChip = (
