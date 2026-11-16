@@ -12,6 +12,7 @@ import { MobileTabBar } from './mobile-tab-bar';
 import { MobileTopBar } from './mobile-top-bar';
 import { MobileCreateSheet } from './mobile-create-sheet';
 import { useOptionalTeam, useTeamNav } from '@/components/team/team-context';
+import { openChatSearch } from '@/components/workspaces/chat-search-store';
 
 export function MobileLayout() {
   const { mobileTab, activeSessionId, activeView, goHome } = useDashboard();
@@ -70,7 +71,12 @@ export function MobileLayout() {
 
   return (
     <>
-      {showTopBar && <MobileTopBar onOpenAccount={team ? () => nav.openSettings('access') : undefined} />}
+      {/* On Agents, Search finds chats: the way to any chat, by name or by
+          something said in it (docs/chat-lenses.md). */}
+      {showTopBar && <MobileTopBar
+        onOpenAccount={team ? () => nav.openSettings('access') : undefined}
+        {...(mobileTab === 'agents' ? { onSearch: openChatSearch, searchLabel: 'Search chats…' } : {})}
+      />}
       {/* flex-col so children (each content view + ExecutionView) get
           full width via cross-axis stretch and grow vertically through
           flex-1. Without this, ExecutionView's outer `flex flex-1`

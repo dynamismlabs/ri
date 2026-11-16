@@ -5,6 +5,8 @@
  * the sheet now uses (a device the agent isn't on offers to set it up).
  * Adapted again for inactive executions: the view folds idle rows through
  * `useInactivity`, stubbed here to fold nothing.
+ * Adapted for the chat tabs (docs/chat-lenses.md): the agents are under the
+ * Agents tab, so the page opens on it.
  */
 import http from 'node:http';
 import { createRequire } from 'node:module';
@@ -70,6 +72,7 @@ it('returns focus and pointer input after selecting or dismissing the agent devi
     const pageErrors: string[]=[];
     page.on('pageerror',(error)=>pageErrors.push(error.message));
     page.setDefaultTimeout(5000);
+    await page.addInitScript(()=>localStorage.setItem('ri.client.phoneChatLens','agents'));
     await page.goto(`http://127.0.0.1:${(server.address() as AddressInfo).port}`);
     const menu=page.getByRole('button',{name:'More for Review agent'});
     await menu.waitFor().catch((error: unknown)=>{

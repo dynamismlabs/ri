@@ -1,5 +1,6 @@
 name: Alpha desktop builds
 # One manual, speech-free sharing path. Installer lifecycle checks are opt-in.
+# Runs from main also replace the files on the rolling `alpha` pre-release (docs/alpha-builds.md).
 on:
   workflow_dispatch:
     inputs:
@@ -210,3 +211,28 @@ jobs:
             release/qualification/*.png
           if-no-files-found: ignore
           retention-days: 14
+  publish:
+    name: Publish the alpha release
+    needs: build
+    # Only main replaces the public downloads, with whichever platforms passed. Branch
+    # runs and retests keep their artifacts only. The alpha tag never matches release.yml.
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && !inputs.installer_run }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    concurrency: alpha-release
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: desktop/alpha-release.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ri-alpha-*
+          path: ${{ runner.temp }}/alpha
+      - name: Replace the passing platforms' installers on the alpha release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node desktop/alpha-release.mjs "$RUNNER_TEMP/alpha"

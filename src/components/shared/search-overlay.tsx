@@ -25,7 +25,7 @@ import { useSearch } from '@/hooks/use-search';
 import { useCreateTask } from '@/hooks/use-tasks';
 import { useStartSkill } from '@/hooks/use-start-skill';
 import { closeTaskBoard, openBoard } from '@/lib/client/task-board';
-import { openScratchpad, useScratchpadAvailable } from '@/components/scratchpad/scratchpad-host';
+import { openScratchpad, showDeckBeside, useScratchpadAvailable } from '@/components/scratchpad/scratchpad-host';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { closeCalendarModal, openCalendarModal } from '@/lib/client/calendar-modal';
 import { appPlaces } from '@/components/apps/app-places';
@@ -158,6 +158,11 @@ export function SearchOverlay() {
       case 'open-scratchpad':
         setOpen(false);
         openScratchpad(tier === 'desktop');
+        break;
+      case 'deck-beside':
+        // Only a wide window has the column. Elsewhere the deck is its own tab.
+        if (tier === 'desktop') { setOpen(false); showDeckBeside(); }
+        else handleNavigate('deck');
         break;
       case 'search-chats':
         setOpen(false);

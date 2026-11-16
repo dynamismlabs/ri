@@ -123,7 +123,9 @@ function ChatSearchPanel() {
     <>
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={closeChatSearch} />
 
-      <div className="relative mx-auto mt-[15vh] w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-card shadow-2xl">
+      {/* The whole screen on a phone, where the keyboard takes half of it,
+          and a card over the page from the phone breakpoint up. */}
+      <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-card pt-[env(safe-area-inset-top)] md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl md:rounded-xl md:border md:border-border md:pt-0 md:shadow-2xl">
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <TextSearch size={16} className="flex-shrink-0 text-muted-foreground" />
           <Command.Input
@@ -131,7 +133,8 @@ function ChatSearchPanel() {
             value={query}
             onValueChange={setQuery}
             placeholder={agent ? `Search chats in ${agent.name}…` : 'Search chats…'}
-            className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            // 16px on a phone, so iOS doesn't zoom the page into the field.
+            className="min-w-0 flex-1 border-none bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm"
           />
           {settling && <Loader2 size={14} className="animate-spin text-muted-foreground" />}
           {/* Beside the query rather than with the facets under it: it narrows
@@ -147,9 +150,9 @@ function ChatSearchPanel() {
             type="button"
             onClick={closeChatSearch}
             aria-label="Close search"
-            className="p-1 text-muted-foreground hover:text-foreground"
+            className="-mr-1.5 p-2 text-muted-foreground hover:text-foreground md:mr-0 md:p-1"
           >
-            <X size={14} />
+            <X size={14} className="size-[18px] md:size-3.5" />
           </button>
         </div>
 
@@ -179,7 +182,7 @@ function ChatSearchPanel() {
           </div>
         )}
 
-        <Command.List ref={listRef} className="max-h-[60vh] overflow-y-auto py-1">
+        <Command.List ref={listRef} className="min-h-0 flex-1 overflow-y-auto py-1 md:max-h-[60vh]">
           {!searching ? (
             recent.length > 0 ? (
               <Command.Group heading="Recent" className={GROUP_CLASS}>
@@ -229,7 +232,7 @@ function ChatSearchPanel() {
           )}
         </Command.List>
 
-        <div className="flex items-center gap-3 border-t border-border px-4 py-2 text-[9px] text-muted-foreground/50">
+        <div className="hidden items-center gap-3 border-t border-border px-4 py-2 text-[9px] text-muted-foreground/50 md:flex">
           <span>
             <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">{'↑↓'}</kbd> navigate
           </span>
@@ -280,7 +283,7 @@ function ChatResultItem({
     <Command.Item
       value={session.id}
       onSelect={() => onOpen(session.id)}
-      className="flex cursor-pointer items-start gap-2.5 rounded-md px-2 py-2 text-left data-[selected=true]:bg-muted/50"
+      className="flex cursor-pointer items-start gap-2.5 rounded-md px-2 py-2.5 text-left data-[selected=true]:bg-muted/50 md:py-2"
     >
       <WorkspaceAvatar
         wsImage={coverAttachmentUrl(session.workspaceAttachments)}
@@ -291,17 +294,17 @@ function ChatResultItem({
         <div className="flex items-baseline gap-2">
           <span
             className={cn(
-              'flex-1 truncate text-[12px]',
+              'flex-1 truncate text-[14px] md:text-[12px]',
               placeholder ? 'italic text-muted-foreground/70' : 'font-medium text-foreground/90',
             )}
           >
             {placeholder ? label : <HighlightedText segments={highlightTerms(label, terms)} />}
           </span>
-          <span className="flex-shrink-0 text-[9.5px] text-muted-foreground/60">
+          <span className="flex-shrink-0 text-[11px] text-muted-foreground/60 md:text-[9.5px]">
             {formatCompactRelative(sessionRankedAt(session))}
           </span>
         </div>
-        <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[10px] text-muted-foreground/70">
+        <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] text-muted-foreground/70 md:text-[10px]">
           {archived && (
             <span className="flex-shrink-0 rounded bg-muted px-1 text-[8.5px] font-semibold uppercase tracking-wide">
               Archived

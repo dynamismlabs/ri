@@ -115,7 +115,9 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
   );
 
   return (
-    <div className="relative">
+    // Sized by its own width: the hint gives way to the placeholder in the
+    // narrow column beside other screens (docs/scratchpad.md).
+    <div className="@container/addbar relative">
       <div
         className={cn(
           // A quiet fill (not a bare outline) so it reads as the deck's one input
@@ -138,12 +140,14 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
           onBlur={() => setTimeout(() => setFocused(false), 120)}
           placeholder="Add a task, or find an existing one"
           aria-label="Add a task, or find an existing one"
+          // Typed text clears on Escape before a slideout around the deck closes.
+          data-cancel-on-escape={q ? '' : undefined}
           className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
         {createTask.isPending ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
         ) : (
-          <span className="shrink-0 text-[10px] text-muted-foreground/50">
+          <span className="shrink-0 text-[10px] text-muted-foreground/50 @max-sm/addbar:hidden">
             {q ? '↑↓ to choose · ↵ to add' : 'Enter to add'}
           </span>
         )}

@@ -144,6 +144,8 @@ export const PALETTE_COMMANDS: PaletteCommand[] = [
 
   // Working memory beside every screen (docs/scratchpad.md)
   { id: 'open-scratchpad', label: 'Scratchpad', keywords: 'scratchpad jot notepad scratch pad working memory write down', icon: 'NotebookPen', shortcut: '\u2318\u21E7J', group: 'navigate', capability: 'privatePlanning' },
+  // The deck in that same column, so it stays in view from a chat or an agent
+  { id: 'deck-beside', label: 'Show deck beside', keywords: 'deck beside side column keep in view today next', icon: 'Layers3', group: 'navigate', capability: 'privatePlanning' },
 
   // Voice
   { id: 'voice-chat', label: 'Voice chat', keywords: 'voice mic record dictate speak', icon: 'Mic', shortcut: '\u2318J', group: 'navigate' },

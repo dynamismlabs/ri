@@ -40,6 +40,7 @@ import { useSearchParams } from 'next/navigation';
 import { MobileAgentsView } from '@/components/mobile/mobile-agents-view';
 import { TeamSearch } from '@/components/team/team-search';
 import { ScratchpadColumn, ScratchpadSheet, ScratchpadShortcut } from '@/components/scratchpad/scratchpad-host';
+import { DeckContainer } from '@/components/deck/deck-container';
 
 export function DashboardShell() {
   const team = useHomeContext().home.kind === 'team';
@@ -166,8 +167,8 @@ export function DashboardShell() {
             ) : (
               allAgents ? <MobileAgentsView /> : <PanelLayout />
             )}
-            {/* Working memory beside every screen (docs/scratchpad.md). */}
-            {!team && <ScratchpadColumn />}
+            {/* Working memory, or the deck, beside every screen (docs/scratchpad.md). */}
+            {!team && <ScratchpadColumn deck={<DeckContainer />} />}
           </div>
         )}
 

@@ -12,7 +12,7 @@ beforeAll(async () => {
     import React, {useEffect, useRef} from 'react';
     import {createRoot} from 'react-dom/client';
     import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-    import {ScratchpadButton, ScratchpadColumn, ScratchpadSheet, ScratchpadShortcut} from '@/components/scratchpad/scratchpad-host';
+    import {DeckBesideButton, ScratchpadButton, ScratchpadColumn, ScratchpadSheet, ScratchpadShortcut} from '@/components/scratchpad/scratchpad-host';
     import {registerComposer} from '@/components/chat/editor/composer-focus';
     function App() {
       const message=useRef(null);
@@ -22,7 +22,7 @@ beforeAll(async () => {
       }}),[]);
       return <QueryClientProvider client={new QueryClient()}>
         <div className="flex h-dvh flex-col">
-          <header className="flex h-12 shrink-0 items-center justify-end border-b p-2"><ScratchpadButton /></header>
+          <header className="flex h-12 shrink-0 items-center justify-end gap-2 border-b p-2"><DeckBesideButton /><ScratchpadButton /></header>
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <main className="flex min-w-0 flex-1 flex-col">
               <header className="border-b px-6 py-4 text-sm font-semibold">Launch review <span className="ml-2 font-normal text-muted-foreground">Sample chat</span></header>
@@ -32,7 +32,7 @@ beforeAll(async () => {
               </div>
               <div className="mx-auto mb-5 w-[calc(100%-3rem)] max-w-3xl rounded-xl border p-4"><input ref={message} aria-label="Message" placeholder="Message" className="w-full bg-transparent outline-none" /></div>
             </main>
-            <div className="hidden min-h-0 lg:contents"><ScratchpadColumn /></div>
+            <div className="hidden min-h-0 lg:contents"><ScratchpadColumn deck={<div data-deck-stub className="p-4 text-sm"><p>Today</p><input aria-label="Add to deck" className="w-full border" /></div>} /></div>
           </div>
           <ScratchpadSheet /><ScratchpadShortcut />
         </div>
@@ -305,6 +305,130 @@ describe('scratchpad quick view and expansion', () => {
         await expand(page);
         await capture(page, 'empty-modal');
       }
+    } finally { await page.close(); }
+  });
+});
+
+describe('the deck beside', () => {
+  const pressed = (page: Page, name: string) => page.getByRole('button', { name, exact: true }).getAttribute('aria-pressed');
+  const deck = (page: Page) => page.locator('[data-deck-stub]');
+
+  it('shares the column with the pad and keeps both as they were left', async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
+    try {
+      await page.goto(fixture.url);
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      await deck(page).waitFor();
+      expect(await page.getByRole('complementary', { name: 'Deck beside' }).isVisible()).toBe(true);
+      expect(await pressed(page, 'Deck')).toBe('true');
+      expect(await pressed(page, 'Scratchpad')).toBe('false');
+      expect((await page.locator('[data-beside-column]').boundingBox())!.width).toBeLessThanOrEqual(340);
+      await capture(page, 'deck-beside');
+      await page.getByLabel('Add to deck').fill('Half typed');
+
+      // The pad's button switches the column to the pad with the caret in it.
+      await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
+      await expect.poll(() => editor(page).evaluate(el => el.contains(document.activeElement))).toBe(true);
+      expect(await deck(page).isVisible()).toBe(false);
+      expect(await pressed(page, 'Scratchpad')).toBe('true');
+      expect(await pressed(page, 'Deck')).toBe('false');
+      await page.keyboard.type(' today');
+
+      // Back to the deck: its typing is still there, and the pad stops holding the caret.
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      expect(await deck(page).isVisible()).toBe(true);
+      expect(await page.getByLabel('Add to deck').inputValue()).toBe('Half typed');
+      expect(await editor(page).isVisible()).toBe(false);
+
+      // ⌘⇧J from the deck goes to the pad's caret, with its typing kept.
+      await page.getByLabel('Add to deck').press('ControlOrMeta+Shift+j');
+      await expect.poll(() => editor(page).evaluate(el => el.contains(document.activeElement))).toBe(true);
+      expect(await editor(page).textContent()).toContain(' today');
+      expect(await deck(page).isVisible()).toBe(false);
+
+      // The button of the view showing closes the column.
+      await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
+      await expect.poll(() => page.locator('[data-beside-column]').count()).toBe(0);
+    } finally { await page.close(); }
+  });
+
+  it('remembers the deck across a reload and closes from its button or ✕', async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
+    try {
+      await page.goto(fixture.url);
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      await deck(page).waitFor();
+      await page.reload();
+      await deck(page).waitFor();
+      expect(await pressed(page, 'Deck')).toBe('true');
+      await page.getByRole('button', { name: 'Close the deck beside' }).click();
+      await expect.poll(() => page.locator('[data-beside-column]').count()).toBe(0);
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      await deck(page).waitFor();
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      await expect.poll(() => page.locator('[data-beside-column]').count()).toBe(0);
+      // The pad's own button opens the pad again, not the last view.
+      await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
+      await editor(page).waitFor();
+      expect(await deck(page).count()).toBe(0);
+    } finally { await page.close(); }
+  });
+
+  it('expands the same deck into a slideout and folds it back', async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
+    const settled = () => page.getByRole('dialog', { name: 'Deck' }).evaluate(async el => {
+      await Promise.all(el.getAnimations().map(animation => animation.finished));
+    });
+    try {
+      await page.goto(fixture.url);
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      await page.getByLabel('Add to deck').fill('Half typed');
+      const original = await page.getByLabel('Add to deck').elementHandle();
+
+      await page.getByRole('button', { name: 'Expand the deck' }).click();
+      await settled();
+      const dialog = page.getByRole('dialog', { name: 'Deck' });
+      expect(await dialog.locator('[data-deck-stub]').isVisible()).toBe(true);
+      expect((await dialog.boundingBox())!.width).toBeGreaterThan(900);
+      expect(await original!.evaluate(el => el.isConnected && (el as HTMLInputElement).value)).toBe('Half typed');
+      expect(await page.getByRole('button', { name: 'Expand the deck' }).count()).toBe(0);
+      await capture(page, 'deck-expanded');
+
+      // Escape returns it to the column, still open, with focus on Expand.
+      await page.keyboard.press('Escape');
+      await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
+      expect(await page.locator('[data-beside-column] [data-deck-stub]').isVisible()).toBe(true);
+      expect(await page.getByLabel('Add to deck').inputValue()).toBe('Half typed');
+      await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).toBe('Expand the deck');
+
+      // ✕ in the slideout folds it back too, rather than closing the column.
+      await page.getByRole('button', { name: 'Expand the deck' }).click();
+      await settled();
+      await page.getByRole('button', { name: 'Close the deck beside' }).click();
+      await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
+      expect(await page.locator('[data-beside-column] [data-deck-stub]').isVisible()).toBe(true);
+
+      // ⌘⇧J from the slideout folds it and puts the caret in the pad.
+      await page.getByRole('button', { name: 'Expand the deck' }).click();
+      await settled();
+      await page.keyboard.press('ControlOrMeta+Shift+j');
+      await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
+      await expect.poll(() => editor(page).evaluate(el => el.contains(document.activeElement))).toBe(true);
+      expect(await deck(page).isVisible()).toBe(false);
+
+      // Back on the deck, it opens in the column, not the slideout.
+      await page.getByRole('button', { name: 'Deck', exact: true }).click();
+      expect(await page.locator('[data-beside-column] [data-deck-stub]').isVisible()).toBe(true);
+      expect(await page.getByRole('dialog').count()).toBe(0);
+    } finally { await page.close(); }
+  });
+
+  it('leaves the button off a tablet, where the deck is its own tab', async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 820, height: 1180 }, hasTouch: true });
+    try {
+      await page.goto(fixture.url);
+      await page.getByRole('button', { name: 'Scratchpad', exact: true }).waitFor();
+      expect(await page.getByRole('button', { name: 'Deck', exact: true }).count()).toBe(0);
     } finally { await page.close(); }
   });
 });

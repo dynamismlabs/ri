@@ -71,8 +71,8 @@ That cap is gone: everything with activity in the last week shows.
 | Rail, Agents tab: Needs you (executions) | `unread` |
 | Rail, Agents tab: each agent's threads (agents-first) or list (classic) | `agent:<workspaceId>` |
 | Rail, Recent tab (archived included) | `recent` |
-| Agent view Chats tab: Pinned, Needs you, Recent | `overview:<workspaceId>:pinned`, `:needs`, `:recent` |
-| Mobile Agents: Needs review, each agent | `unread`, `agent:<workspaceId>` |
+| Agent view Chats tab: All (Pinned, Recent), Unread | `overview:<workspaceId>:pinned`, `:recent`, `:needs` |
+| Mobile Agents tab: Unread, each agent's chats | `unread`, `agent:<workspaceId>` |
 
 A section holding only inactive rows still shows, with just its fold. The
 collapsed rail's Agents flyout renders the same lists, so it shares their
@@ -95,8 +95,8 @@ finds anything.
 
 **Attention counts leave inactive work out**, so they keep matching the lists:
 the top bar's status pills, each agent's header dots and agents-only counts in the rail, the agent
-view header, the mobile Agents tab badge and each mobile agent's count, and the
-tablet rail's dots.
+view header, the mobile Agents tab badge, its Unread and Working counts and
+each mobile agent's counts (`docs/chat-lenses.md`), and the tablet rail's dots.
 
 ## Agents
 

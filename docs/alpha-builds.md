@@ -1,5 +1,22 @@
 # Alpha installers
 
+The newest alpha installers built from `main` are on the
+[`alpha` pre-release](https://github.com/dynamismlabs/ri/releases/tag/alpha).
+These links never change, and they download without a GitHub account:
+
+| Platform | Download |
+| --- | --- |
+| Mac, Apple silicon | [Ri-mac-arm64.dmg](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-mac-arm64.dmg) |
+| Mac, Intel | [Ri-mac-x64.dmg](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-mac-x64.dmg) |
+| Windows x64 | [Ri-Setup-x64.exe](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-Setup-x64.exe) |
+| Linux x64 | [Ri-linux-x64.AppImage](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-linux-x64.AppImage), [Ri-linux-x64.deb](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-linux-x64.deb) |
+| Linux arm64 | [Ri-linux-arm64.AppImage](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-linux-arm64.AppImage), [Ri-linux-arm64.deb](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-linux-arm64.deb) |
+
+The release notes give the commit, date and run each file came from, and how to
+open Ri on each platform. Send people these links rather than run artifacts.
+
+## Building
+
 Run **Alpha desktop builds** (`.github/workflows/alpha.yml`) manually from the
 branch to share. `target: all` builds native installers for all five targets:
 
@@ -12,14 +29,35 @@ branch to share. `target: all` builds native installers for all five targets:
 | windows-x64 | windows-2025 | ri-alpha-win32-x64 | NSIS .exe |
 
 Each artifact also contains its runtime tarball. On Windows, this is the packaged
-runtime payload, not an always-on headless installation. End users open the
-installer under `desktop/`. GitHub requires sign-in to download Actions artifacts,
-even from a public repository. Artifacts expire after 14 days.
+runtime payload, not an always-on headless installation. The installer is under
+`desktop/`. GitHub requires sign-in to download Actions artifacts, even from a
+public repository. Artifacts expire after 14 days.
 
 Alpha always uses `--share`: free ad-hoc signing on macOS, unsigned Linux and
-Windows installers, no update feed, and no release or tag publication. It never
-packages the optional speech helper. The artifact-bound speech review process
-in `desktop/speech/RELEASE.md` remains a separate publisher responsibility.
+Windows installers, and no update feed. It never packages the optional speech
+helper. The artifact-bound speech review process in `desktop/speech/RELEASE.md`
+remains a separate publisher responsibility.
+
+## The rolling alpha release
+
+A run from `main` ends with **Publish the alpha release**
+(`desktop/alpha-release.mjs`). It moves the `alpha` tag to the built commit,
+gives each platform that passed its fixed name from the table above, replaces that
+file on the release with `gh release upload --clobber` and rewrites the notes.
+A platform that failed, or that the run didn't build, keeps its previous file,
+and the notes say it is older. The notes keep each file's commit, date and run in
+a hidden comment, which is how the next run knows. The upgrade fixture,
+qualification reports and runtime tarballs stay in the run's artifacts.
+
+Branch runs and `installer_run` retests publish nothing. The release is a
+pre-release and never Latest, and `release.yml` only starts on `v*` tags, so the
+`alpha` tag never publishes a real release. Only the publish job can write, using
+the workflow's own token with `contents: write`.
+
+That token can't hold GitHub's workflow permission, and without it GitHub won't
+tag a commit whose workflow files differ from the current `main`. So if a
+workflow file changes on `main` while a run is building, its publish job fails
+before touching the release. Run the workflow again from `main`.
 
 ## Installer qualification
 
@@ -120,8 +158,8 @@ Reports and reopened-note screenshots were reviewed.
 | `Ri-0.1.0-arm64.dmg` | `9d14b8c8d1ad662ed480079dc2f28b7ead438c6acc69d210682abf26ab44da77` |
 | `Ri-0.1.0.dmg` | `a26aa1ba1e2522d4ec7969b34514372bfabf259b148ce54668c918775d47d4df` |
 
-Sign into GitHub, extract the artifact ZIP, open the DMG in its `desktop` folder
-and drag Ri into Applications. Open it once. If blocked, use System Settings,
+Download [Ri-mac-arm64.dmg](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-mac-arm64.dmg) or
+[Ri-mac-x64.dmg](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-mac-x64.dmg), open it and drag Ri into Applications. Open it once. If blocked, use System Settings,
 Privacy & Security, Open Anyway. Complete setup and test a real provider sign-in
 and chat. Browser-downloaded Gatekeeper handling, real accounts and recipient
 hardware remain manual checks. These builds require macOS 13.5 or newer.
@@ -151,8 +189,8 @@ note after reinstalling and reopening.
 | `ri-desktop_0.1.0_arm64.deb` | `73523bdd125c0540af68817152e7ad237e6d2b5a4328cc8bba5b9b2626393161` |
 | arm64 `Ri-0.1.0-arm64.AppImage` | `c79420c7612abc5dac01eb7ff456eae10676e476141c8475264009b979e66161` |
 
-Sign into GitHub, download and extract the matching artifact ZIP, then open the
-Debian package in its `desktop` folder on Ubuntu or Debian. Complete setup,
+Download [Ri-linux-x64.deb](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-linux-x64.deb) or
+[Ri-linux-arm64.deb](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-linux-arm64.deb) and open it on Ubuntu or Debian. Complete setup,
 sign into a real coding tool, create a task and note in chat, and check them
 after quitting and reopening. Actual provider accounts, recipient hardware,
 other distributions and FUSE mounting were not exercised by these runner checks.
@@ -189,9 +227,8 @@ For the HP, no terminal commands are needed:
 
 1. In Settings, System, About, confirm 64-bit Intel/AMD Windows 10 version 1809
    or newer, or Windows 11. Windows 7 and 8 cannot run this build.
-2. Sign into GitHub, download the normal artifact ZIP, extract it and open the
-   `.exe` in `desktop`. If Windows blocks it, choose **More info**, then
-   **Run anyway**. Installation can take several minutes.
+2. Download [Ri-Setup-x64.exe](https://github.com/dynamismlabs/ri/releases/download/alpha/Ri-Setup-x64.exe) and open it.
+   If Windows blocks it, choose **More info**, then **Run anyway**. Installation can take several minutes.
 3. Start a new Ri, install Claude Code or Codex using its button, and sign in.
    Ask it to create a task and a note. Open and edit the note, then complete the task.
 4. Close and reopen Ri and confirm both remain. Try a replacement installer
