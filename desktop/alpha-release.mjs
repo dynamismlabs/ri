@@ -87,15 +87,18 @@ export function releaseNotes({ builds, commit, server, repo, tag }) {
 const gh = (...args) => execFileSync('gh', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
 
 /**
- * Puts the staged files on the release, creating it the first time, then moves its tag
- * to this commit and rewrites the notes. Files of platforms not given are left alone.
+ * Moves the release's tag to this commit (creating the release the first time), puts the
+ * staged files on it and rewrites the notes. Files of platforms not given are left alone.
+ * The tag goes first because it is the step GitHub can refuse: without the workflow
+ * permission, which a workflow's own token can't have, it won't tag a commit whose
+ * workflow files differ from main's. Refused there, the release is left as it was.
  */
 export function publish({ repo, tag, commit, server, files, built, work }) {
   let body = null;
   try { body = JSON.parse(gh('release', 'view', tag, '--repo', repo, '--json', 'body')).body; }
   catch { gh('release', 'create', tag, '--repo', repo, '--target', commit, '--prerelease', '--latest=false', '--title', 'Ri alpha', '--notes', 'The first alpha build is uploading.'); }
-  gh('release', 'upload', tag, '--repo', repo, '--clobber', ...files);
   if (body !== null) gh('api', '--method', 'PATCH', `repos/${repo}/git/refs/tags/${tag}`, '-f', `sha=${commit}`, '-F', 'force=true');
+  gh('release', 'upload', tag, '--repo', repo, '--clobber', ...files);
   const builds = { ...readBuilds(body), ...built };
   const notes = path.join(work, 'notes.md');
   fs.writeFileSync(notes, releaseNotes({ builds, commit, server, repo, tag }));

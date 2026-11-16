@@ -41,9 +41,9 @@ remains a separate publisher responsibility.
 ## The rolling alpha release
 
 A run from `main` ends with **Publish the alpha release**
-(`desktop/alpha-release.mjs`). It gives each platform that passed its fixed name
-from the table above, replaces that file on the release with `gh release upload
---clobber`, moves the `alpha` tag to the built commit and rewrites the notes.
+(`desktop/alpha-release.mjs`). It moves the `alpha` tag to the built commit,
+gives each platform that passed its fixed name from the table above, replaces that
+file on the release with `gh release upload --clobber` and rewrites the notes.
 A platform that failed, or that the run didn't build, keeps its previous file,
 and the notes say it is older. The notes keep each file's commit, date and run in
 a hidden comment, which is how the next run knows. The upgrade fixture,
@@ -53,6 +53,11 @@ Branch runs and `installer_run` retests publish nothing. The release is a
 pre-release and never Latest, and `release.yml` only starts on `v*` tags, so the
 `alpha` tag never publishes a real release. Only the publish job can write, using
 the workflow's own token with `contents: write`.
+
+That token can't hold GitHub's workflow permission, and without it GitHub won't
+tag a commit whose workflow files differ from the current `main`. So if a
+workflow file changes on `main` while a run is building, its publish job fails
+before touching the release. Run the workflow again from `main`.
 
 ## Installer qualification
 
