@@ -16,7 +16,7 @@ import { setFeedbackOpen, useFeedbackStore } from './feedback-store';
 import { useVisualViewportBottom } from '@/hooks/use-visual-viewport-bottom';
 
 /**
- * Rail footer trigger: a quiet borderless row when wide, or an icon button
+ * Rail footer trigger: an outlined row when wide, or an icon button
  * when collapsed. Opens an anchored popover beside the footer so the user can
  * report what is on screen without losing context.
  */
@@ -38,7 +38,7 @@ export function FeedbackRailButton({ collapsed }: { collapsed: boolean }) {
             type="button"
             aria-label="Feedback & bugs"
             aria-expanded={open}
-            className="w-full flex items-center gap-2 rounded-lg px-2 py-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-colors"
+            className="w-full flex items-center gap-1.5 rounded-lg border border-border/60 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-colors"
           >
             <MessageSquarePlus size={13} className="shrink-0" />
             <span className="truncate">Feedback & bugs</span>
