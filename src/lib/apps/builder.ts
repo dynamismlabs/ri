@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { parse as parseYaml } from 'yaml';
 import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
 import { getAppRoot, getWorkDir } from '@/lib/config/paths';
 import { createAppSource, getAppSource, listAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
@@ -205,14 +206,41 @@ export function runIn(tools: AppToolchain, folder: string, command: string, args
 const quote = (value: string) => `'${value.replace(/'/g, `'\\''`)}'`;
 
 /**
- * The app's own dependencies, so its kit command can run. Only installs from its lockfile, and
- * runs nothing of the app. The kit installs a release's dependencies again in its own copy.
+ * The dependencies the app itself allows to build (pnpm's `onlyBuiltDependencies`, in its
+ * package.json or pnpm-workspace.yaml, or `allowBuilds` entries set to true): native modules such as
+ * better-sqlite3, which the kit's own command opens to snapshot and rehearse. Only names a package
+ * could have, so none can pass as an option.
+ */
+export function allowedBuilds(folder: string): string[] {
+  const names = new Set<string>();
+  const add = (value: unknown) => { if (typeof value === 'string' && /^(@[a-z0-9._~-]+\/)?[a-z0-9._~-]+$/.test(value)) names.add(value); };
+  try {
+    const pkg = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'package.json'), 'utf8')) as { pnpm?: { onlyBuiltDependencies?: unknown } };
+    if (Array.isArray(pkg.pnpm?.onlyBuiltDependencies)) pkg.pnpm.onlyBuiltDependencies.forEach(add);
+  } catch { /* kitCliFor reports a missing package.json. */ }
+  try {
+    const workspace = parseYaml(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'pnpm-workspace.yaml'), 'utf8')) as { onlyBuiltDependencies?: unknown; allowBuilds?: unknown } | null;
+    if (Array.isArray(workspace?.onlyBuiltDependencies)) workspace.onlyBuiltDependencies.forEach(add);
+    if (workspace?.allowBuilds && typeof workspace.allowBuilds === 'object') {
+      for (const [name, allowed] of Object.entries(workspace.allowBuilds)) if (allowed === true) add(name);
+    }
+  } catch { /* No workspace file. */ }
+  return [...names].sort();
+}
+
+/**
+ * The app's own dependencies, so its kit command can run. It installs from the lockfile with every
+ * lifecycle script off, so none of the app's own hooks (which could touch its live data) run in its
+ * editable folder, then builds only the native dependencies the app allows to build. The kit installs
+ * a release's dependencies again in its own checked copy, with disposable data.
  */
 async function prepare(tools: AppToolchain, job: AppJob, folder: string): Promise<boolean> {
   if (fs.existsSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'node_modules', '.bin'))) return true;
   const step: KitStep = { step: 'prepare', status: 'started' };
   job.steps.push(step);
-  const { code, tail } = await runIn(tools, folder, pnpmCommand(tools), ['install', '--frozen-lockfile', '--prefer-offline'], {}, () => {});
+  let { code, tail } = await runIn(tools, folder, pnpmCommand(tools), ['install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts'], {}, () => {});
+  const natives = allowedBuilds(folder);
+  if (code === 0 && natives.length) ({ code, tail } = await runIn(tools, folder, pnpmCommand(tools), ['rebuild', ...natives], {}, () => {}));
   Object.assign(step, code === 0 ? { status: 'passed' } : { status: 'failed', detail: tail.slice(-500) });
   if (code !== 0) finish(job, 'failed', `Installing the app’s dependencies failed: ${tail.trim().split('\n').pop() ?? ''}`);
   return code === 0;
