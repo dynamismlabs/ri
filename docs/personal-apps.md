@@ -97,6 +97,14 @@ The Apps page ("Running on this computer"), each installed app's build page and 
 
 Checked on November 12, 2026 on the isolated Ri with an app made by the kit at `cc812fc` (core 0.2.2) and the kit's plain-process service. Status showed it running with its release and address. Logs showed the server's lines and the install log. After the app's process was killed, status showed it stopped, and Restart brought it back. An app made with the carried kit 0.2.0 showed the older-kit message.
 
+On November 16, 2026, Ri started carrying the kit from its `main` at `02cd537` (core 0.2.2). On a fresh isolated Ri with the plain-process service:
+- New app vendored that core.
+- Install passed every kit step.
+- Status showed the app running its release on core 0.2.2.
+- Logs showed the server's lines.
+- Restart brought the same release back.
+- The app answered MCP.
+
 ## The catalog
 
 Ri offers recommended apps the way it used to offer its bundled ones, without carrying their code (shared spec §2, "The catalog"). Only first-party apps for now.
