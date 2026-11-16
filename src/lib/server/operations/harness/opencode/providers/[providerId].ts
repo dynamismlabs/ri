@@ -42,11 +42,14 @@ export async function PUT(rpcInput: rpcZ.infer<typeof PUTInput>, _request: Opera
   if (homeDenied) return homeDenied;
   try {
     const { providerId } = rpcInput.params;
-    const body = rpcInput.body as { apiKey?: unknown };
+    const body = rpcInput.body as { apiKey?: unknown; inputs?: unknown };
     if (typeof body.apiKey !== 'string' || !body.apiKey.trim()) {
       return reply({ error: 'apiKey is required' }, { status: 400 });
     }
-    await openCodeProviderManager().setApiKey(providerId, body.apiKey, await openCodeRuntimeContext());
+    const inputs = body.inputs && typeof body.inputs === 'object' && !Array.isArray(body.inputs)
+      ? Object.fromEntries(Object.entries(body.inputs).filter((entry): entry is [string, string] => typeof entry[1] === 'string'))
+      : undefined;
+    await openCodeProviderManager().setApiKey(providerId, body.apiKey, await openCodeRuntimeContext(), inputs);
     const { recycleHarnessSessions } = await import('@/lib/executor/adapter');
     await recycleHarnessSessions('opencode');
     clearHarnessModelCache('opencode');
@@ -109,5 +112,5 @@ export async function DELETE(rpcInput: rpcZ.infer<typeof DELETEInput>, _request:
 }
 
 export const GETInput = rpcZ.object({ params: rpcZ.object({ "providerId": rpcZ.string().min(1) }).strict() }).strict();
-export const PUTInput = rpcZ.object({ params: rpcZ.object({ "providerId": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "apiKey": rpcZ.string().optional() }).strict().default({}) }).strict();
+export const PUTInput = rpcZ.object({ params: rpcZ.object({ "providerId": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "apiKey": rpcZ.string().optional(), "inputs": rpcZ.record(rpcZ.string(), rpcZ.string()).optional() }).strict().default({}) }).strict();
 export const DELETEInput = rpcZ.object({ params: rpcZ.object({ "providerId": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ replacementHarness: rpcZ.enum(['claude', 'codex', 'cursor', 'opencode', 'antigravity']).optional(), replacementModel: rpcZ.string().optional() }).strict().default({}) }).strict();

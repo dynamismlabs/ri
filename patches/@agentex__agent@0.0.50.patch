@@ -1,5 +1,5 @@
 diff --git a/dist/providers/opencode/server.js b/dist/providers/opencode/server.js
-index 5bcdbfd5cd0a6ee473f7943010469eeece57b9cf..8641fe10cb5b02bcd191237efa51f4858a0b7a5b 100644
+index 798547e0037e1dc1849eb8294794ec256199cbc9..29da95358b17f8ed729c9fffce621680c53e3049 100644
 --- a/dist/providers/opencode/server.js
 +++ b/dist/providers/opencode/server.js
 @@ -1,5 +1,6 @@
@@ -9,7 +9,7 @@ index 5bcdbfd5cd0a6ee473f7943010469eeece57b9cf..8641fe10cb5b02bcd191237efa51f485
  import * as os from "node:os";
  import * as path from "node:path";
  import { killProcessTree } from "../../utils/process.js";
-@@ -63,9 +64,26 @@ async function waitForHealth(client, timeoutMs) {
+@@ -86,9 +87,25 @@ async function waitForHealth(client, timeoutMs) {
      }
      throw new Error("opencode serve failed authenticated health check within 10s");
  }
@@ -28,7 +28,6 @@ index 5bcdbfd5cd0a6ee473f7943010469eeece57b9cf..8641fe10cb5b02bcd191237efa51f485
 +        });
 +    });
 +}
-+
  async function startServer(key, generation, binary, prefixArgs, env, cwd) {
 +    const port = await availableServerPort();
      const password = randomBytes(32).toString("base64url");
@@ -38,7 +37,7 @@ index 5bcdbfd5cd0a6ee473f7943010469eeece57b9cf..8641fe10cb5b02bcd191237efa51f485
          env: { ...env, OPENCODE_SERVER_PASSWORD: password },
          stdio: ["ignore", "pipe", "pipe"],
 diff --git a/src/providers/opencode/server.ts b/src/providers/opencode/server.ts
-index f48defb7f77571debc21a51f0e16cf6d7b618256..80264a90ea2261eaf3f9f07b780280decb66de4f 100644
+index 2913910f8db5ebeff75f7461de3f855bd820a207..d3eec773b2c5337cb8338dbda10144c0ad44da3f 100644
 --- a/src/providers/opencode/server.ts
 +++ b/src/providers/opencode/server.ts
 @@ -1,5 +1,6 @@
@@ -48,7 +47,7 @@ index f48defb7f77571debc21a51f0e16cf6d7b618256..80264a90ea2261eaf3f9f07b780280de
  import * as os from "node:os";
  import * as path from "node:path";
  import { killProcessTree } from "../../utils/process.js";
-@@ -82,6 +83,23 @@ async function waitForHealth(client: OpenCodeClient, timeoutMs: number): Promise
+@@ -113,6 +114,23 @@ async function waitForHealth(
    throw new Error("opencode serve failed authenticated health check within 10s");
  }
  
@@ -72,7 +71,7 @@ index f48defb7f77571debc21a51f0e16cf6d7b618256..80264a90ea2261eaf3f9f07b780280de
  async function startServer(
    key: string,
    generation: number,
-@@ -90,10 +108,11 @@ async function startServer(
+@@ -121,10 +139,11 @@ async function startServer(
    env: Record<string, string>,
    cwd: string,
  ): Promise<PooledServer> {

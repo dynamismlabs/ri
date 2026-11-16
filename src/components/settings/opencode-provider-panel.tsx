@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { apiErrorStatus } from '@/lib/api/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
-import type { ProviderAuthFlow, UpstreamProvider } from '@agentex/agent';
+import type { ProviderAuthFlow, ProviderAuthMethod, UpstreamProvider } from '@agentex/agent';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, ExternalLink, KeyRound, Loader2, LogOut, PlugZap, Search } from 'lucide-react';
 import { useState } from 'react';
@@ -102,9 +102,13 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
   const [code, setCode] = useState('');
 
   const setKey = useMutation({
-    mutationFn: () => trpcClient.harness.opencodeProvidersProviderIdPut.mutate({params: {providerId: provider.id}, body: { apiKey }}),
+    mutationFn: () => trpcClient.harness.opencodeProvidersProviderIdPut.mutate({
+      params: { providerId: provider.id },
+      body: { apiKey, ...(Object.keys(inputs).length > 0 ? { inputs } : {}) },
+    }),
     onSuccess: () => {
       setApiKey('');
+      setInputs({});
       toast.success(`${provider.name} connected`);
       onChanged();
     },
@@ -176,7 +180,7 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             <button
               key={entry.id}
               type="button"
-              onClick={() => { setMethodId(entry.id); setFlow(null); }}
+              onClick={() => { setMethodId(entry.id); setInputs({}); setFlow(null); }}
               className={cn('rounded px-2 py-1 text-[10.5px]', entry.id === method.id ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground')}
             >
               {entry.name}
@@ -185,11 +189,18 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
         </div>
       )}
       {method.type === 'api_key' ? (
-        <div className="flex gap-2">
-          <Input type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`} className="h-8 rounded-md text-[11px]" />
-          <Button size="sm" disabled={!apiKey.trim() || setKey.isPending} onClick={() => setKey.mutate()}>
-            <KeyRound /> Save
-          </Button>
+        <div className="space-y-2">
+          <PromptFields
+            prompts={method.prompts}
+            inputs={inputs}
+            onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
+          />
+          <div className="flex gap-2">
+            <Input type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`} className="h-8 rounded-md text-[11px]" />
+            <Button size="sm" disabled={!apiKey.trim() || setKey.isPending} onClick={() => setKey.mutate()}>
+              <KeyRound /> Save
+            </Button>
+          </div>
         </div>
       ) : flow ? (
         <div className="space-y-2">
@@ -206,29 +217,50 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
         </div>
       ) : (
         <div className="space-y-2">
-          {method.prompts?.map((prompt) => prompt.type === 'select' ? (
-            <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
-              {prompt.label}
-              <select
-                value={inputs[prompt.id] ?? ''}
-                onChange={(event) => setInputs((current) => ({ ...current, [prompt.id]: event.target.value }))}
-                className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-[11px] text-foreground"
-              >
-                <option value="">Select</option>
-                {prompt.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-              </select>
-            </label>
-          ) : (
-            <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
-              {prompt.label}
-              <Input value={inputs[prompt.id] ?? ''} onChange={(event) => setInputs((current) => ({ ...current, [prompt.id]: event.target.value }))} className="mt-1 h-8 rounded-md text-[11px]" />
-            </label>
-          ))}
+          <PromptFields
+            prompts={method.prompts}
+            inputs={inputs}
+            onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
+          />
           <Button size="sm" disabled={beginOAuth.isPending} onClick={() => beginOAuth.mutate()}>
             {beginOAuth.isPending && <Loader2 className="animate-spin" />} Connect with {method.name}
           </Button>
         </div>
       )}
     </div>
+  );
+}
+
+function PromptFields({
+  prompts,
+  inputs,
+  onChange,
+}: {
+  prompts?: ProviderAuthMethod['prompts'];
+  inputs: Record<string, string>;
+  onChange: (id: string, value: string) => void;
+}) {
+  if (!prompts?.length) return null;
+  return (
+    <>
+      {prompts.map((prompt) => prompt.type === 'select' ? (
+        <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
+          {prompt.label}
+          <select
+            value={inputs[prompt.id] ?? ''}
+            onChange={(event) => onChange(prompt.id, event.target.value)}
+            className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-[11px] text-foreground"
+          >
+            <option value="">Select</option>
+            {prompt.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+      ) : (
+        <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
+          {prompt.label}
+          <Input value={inputs[prompt.id] ?? ''} onChange={(event) => onChange(prompt.id, event.target.value)} className="mt-1 h-8 rounded-md text-[11px]" />
+        </label>
+      ))}
+    </>
   );
 }
