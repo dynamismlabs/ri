@@ -90,7 +90,8 @@ export interface ViewCallbacks {
   openFile?(path: string, signal: AbortSignal): Promise<void>;
   displayMode?(mode: 'inline' | 'fullscreen' | 'pip'): void;
   selectFile?(signal: AbortSignal): Promise<{name: string; mimeType: string; base64: string} | null>;
-  downloadFile?(contents: unknown[], signal: AbortSignal): Promise<void>;
+  /** MCP Apps `ui/download-file`. False when the person chose not to save it (`isError: true`). */
+  downloadFile?(contents: unknown[], signal: AbortSignal): Promise<boolean | void>;
 }
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 /**
@@ -418,8 +419,8 @@ export class AppViewController {
     };
     bridge.ondownloadfile = async (params, extra) => {
       if (!binding.files?.download || !this.callbacks.downloadFile) throw new Error('File downloads are unavailable');
-      await this.callbacks.downloadFile(params.contents, extra.mcpReq.signal);
-      return {};
+      // A file the person chose not to save is answered as the spec says, not as a failure.
+      return (await this.callbacks.downloadFile(params.contents, extra.mcpReq.signal)) === false ? { isError: true } : {};
     };
     bridge.onsizechange = (params) => {
       if (typeof params.height === 'number' && Number.isFinite(params.height)) this.callbacks.resize?.(Math.max(160, Math.min(900, params.height)));
