@@ -44,6 +44,20 @@ export function externalWebUrl(raw: string): string | null {
 }
 
 /**
+ * A link a window may hand to the system when a page opens it: a web address, or a `mailto:`
+ * address, which opens the person's mail app with a draft they send themselves (an app's "Email
+ * this"). No other scheme leaves a window this way.
+ */
+export function externalLinkUrl(raw: string): string | null {
+  const web = externalWebUrl(raw);
+  if (web) return web;
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'mailto:' && url.pathname.length > 0 ? url.href : null;
+  } catch { return null; }
+}
+
+/**
  * An outside agent's own "add this MCP server" link, from Settings → Connect
  * your agent: Cursor, VS Code, Goose and LM Studio, each on its exact
  * install path. The agent asks before adding anything. Only these, so no other

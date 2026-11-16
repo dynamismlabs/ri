@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { X509Certificate } from 'node:crypto';
 import { generateCaPair, generateLeafPair } from '../src/lib/config/tls-x509';
-import { agentInstallUrl, certificateDecision, externalWebUrl, sameOrigin } from './trust';
+import { agentInstallUrl, certificateDecision, externalLinkUrl, externalWebUrl, sameOrigin } from './trust';
 
 let certificate: string;
 let otherCertificate: string;
@@ -48,6 +48,15 @@ describe('window navigation', () => {
     expect(externalWebUrl('https://example.com/docs')).toBe('https://example.com/docs');
     for (const url of ['javascript:alert(1)', 'file:///tmp/a', 'ri://command', 'https://user:secret@example.com', 'invalid']) {
       expect(externalWebUrl(url)).toBeNull();
+    }
+  });
+  it('hands the system a page\'s web or mailto link, and nothing else', () => {
+    expect(externalLinkUrl('http://127.0.0.1:4310/books/b1')).toBe('http://127.0.0.1:4310/books/b1');
+    expect(externalLinkUrl('mailto:club@books.example?subject=Kindred')).toBe('mailto:club@books.example?subject=Kindred');
+    // The IPC path for Ri's own buttons stays web only.
+    expect(externalWebUrl('mailto:club@books.example')).toBeNull();
+    for (const url of ['mailto:', 'javascript:alert(1)', 'file:///tmp/a', 'ri://command', 'https://user:secret@example.com', 'sms:+15555550123', 'invalid']) {
+      expect(externalLinkUrl(url)).toBeNull();
     }
   });
   it('opens only the agents’ own MCP install links, on their exact paths', () => {

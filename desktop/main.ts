@@ -10,7 +10,7 @@ import { createInterface } from 'node:readline';
 import { APP_NAME, PAIRING_TOKEN_FRAGMENT_KEY } from '../src/constants/app';
 import { getConfigDir, getProductionAppRoot } from '../src/lib/config/paths';
 import { demoEnvironment, demoRoot, type BackendMessage, type BackendReady } from './config';
-import { agentInstallUrl, certificateDecision, desktopRequestHeaders, externalWebUrl, sameOrigin } from './trust';
+import { agentInstallUrl, certificateDecision, desktopRequestHeaders, externalLinkUrl, externalWebUrl, sameOrigin } from './trust';
 import { removeTerminalCommand, type CliInstallation } from './cli-install';
 import { downloadDesktopUpdateInBackground, relaunchWithHome, updateDesktop } from './shell-update';
 import { HarnessToolSetup } from './harness-tools';
@@ -928,7 +928,7 @@ function configureViewerSession(ready: BackendReady | undefined) {
       isMainFrame: details.isMainFrame, requestingUrl: details.requestingUrl, origin: ready.origin }));
   });
   const openExternal = (url: string) => {
-    const safe = externalWebUrl(url);
+    const safe = externalLinkUrl(url);
     if (safe) void shell.openExternal(safe).catch(() => {});
   };
   window!.webContents.setWindowOpenHandler(({ url }) => {

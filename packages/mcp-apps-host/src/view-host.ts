@@ -92,6 +92,20 @@ export interface ViewCallbacks {
   selectFile?(signal: AbortSignal): Promise<{name: string; mimeType: string; base64: string} | null>;
   downloadFile?(contents: unknown[], signal: AbortSignal): Promise<void>;
 }
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+/**
+ * A link a view may have Ri open outside it, or null: `https:` anywhere, `http:` only to this
+ * computer (an app on loopback opening its own address, as the kit's "Open in browser" does), and
+ * `mailto:`. Never one carrying credentials, and never `javascript:`, `file:` or another scheme.
+ */
+export function openableLink(raw: string): string | null {
+  let url: URL;
+  try { url = new URL(raw); } catch { return null; }
+  if (url.username || url.password) return null;
+  if (url.protocol === "https:" || url.protocol === "mailto:") return url.href;
+  if (url.protocol === "http:" && (LOOPBACK_HOSTS.has(url.hostname) || url.hostname.endsWith(".localhost"))) return url.href;
+  return null;
+}
 /**
  * Runs first in every view. A form's submit handlers run (the frame allows
  * forms, as apps written for ChatGPT expect), but no form ever navigates the
@@ -396,10 +410,9 @@ export class AppViewController {
       if (params.url.startsWith("/") && !params.url.startsWith("//"))
         await this.callbacks.navigate(params.url);
       else {
-        const url = new URL(params.url);
-        if (url.protocol !== "https:" || url.username || url.password)
-          throw new Error("Only HTTPS links can be opened");
-        await this.callbacks.externalLink(url.href);
+        const link = openableLink(params.url);
+        if (!link) throw new Error("Apps can open https links, http links to this computer and mailto links");
+        await this.callbacks.externalLink(link);
       }
       return {};
     };
