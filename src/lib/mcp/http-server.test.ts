@@ -31,7 +31,7 @@ describe('zodStandardSchema', () => {
 describe('riMcpHandler', () => {
   const handler = riMcpHandler(server => {
     server.registerTool('echo', { description: 'Echo the caller', inputSchema: { text: z.string() }, annotations: { readOnlyHint: true } }, async (args, context) => ({
-      content: [{ type: 'text', text: JSON.stringify({ text: args.text, era: context.era, caller: context.headers?.get('x-caller') ?? null }) }],
+      content: [{ type: 'text', text: JSON.stringify({ text: args.text, era: context.era, caller: context.headers?.get('x-caller') ?? null, invocation: context.meta?.['ri/invocation'] ?? null }) }],
     }));
     server.registerTool('ping', { description: 'No parameters' }, async () => ({ content: [{ type: 'text', text: 'pong' }] }));
   }, { name: 'ri-test', version: '1.0.0', instructions: 'Test server' });
@@ -45,7 +45,10 @@ describe('riMcpHandler', () => {
       const { tools } = await client.listTools();
       expect(tools.map(tool => [tool.name, tool.annotations?.readOnlyHint])).toEqual([['echo', true], ['ping', undefined]]);
       const result = await client.callTool({ name: 'echo', arguments: { text: 'hi' } });
-      expect(JSON.parse((result.content as { text: string }[])[0]!.text)).toEqual({ text: 'hi', era: mode === 'auto' ? 'modern' : 'legacy', caller: 'chat-1' });
+      expect(JSON.parse((result.content as { text: string }[])[0]!.text)).toEqual({ text: 'hi', era: mode === 'auto' ? 'modern' : 'legacy', caller: 'chat-1', invocation: null });
+      // The request's own `_meta` reaches the tool as sent: how an app hands back Ri's invocation context.
+      const passedBack = await client.callTool({ name: 'echo', arguments: { text: 'hi' }, _meta: { 'ri/invocation': 'signed.context' } });
+      expect(JSON.parse((passedBack.content as { text: string }[])[0]!.text)).toMatchObject({ invocation: 'signed.context' });
       expect((await client.callTool({ name: 'ping', arguments: {} })).content).toEqual([{ type: 'text', text: 'pong' }]);
       await expect(client.callTool({ name: 'echo', arguments: { text: 7 } })).resolves.toMatchObject({ isError: true });
     } finally { await client.close(); }

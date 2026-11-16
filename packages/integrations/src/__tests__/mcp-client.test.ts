@@ -282,6 +282,23 @@ describe('connectMcpClient over Streamable HTTP', () => {
     expect((await client.listTools()).tools).toHaveLength(2);
   }, 25_000);
 
+  it.each(['modern', 'legacy'] as const)('sends a call\'s own _meta to a %s server, as Ri\'s invocation context reaches an app', async (era) => {
+    // A personal app reads Ri's signed context from the tool call's `_meta` and hands it back on
+    // its hub calls (docs/personal-apps.md "What started a call"), so it must arrive as sent.
+    const factory: McpServerFactory = () => {
+      const server = new McpServer({ name: 'meta-echo', version: '1.0.0' }, { capabilities: { tools: {} } });
+      server.registerTool('whoCalled', { inputSchema: object }, async (_args, ctx) => ({ content: [{ type: 'text', text: JSON.stringify(ctx.mcpReq._meta?.['ri/invocation'] ?? null) }] }));
+      return server;
+    };
+    const fetch = era === 'modern' ? createMcpHandler(factory).fetch : legacyStatelessFallback(factory);
+    const { url } = await serve(request => fetch(request));
+    const client = await connectMcpClient({ url, ...(era === 'legacy' ? { knownLegacy: true } : {}) });
+    clients.push(client);
+    expect(client.server?.era).toBe(era);
+    expect(JSON.parse(text(await client.callTool({ name: 'whoCalled', arguments: {}, _meta: { 'ri/invocation': 'signed.context' } })))).toBe('signed.context');
+    expect(JSON.parse(text(await client.callTool({ name: 'whoCalled', arguments: {} })))).toBeNull();
+  });
+
   it('skips the probe for a server the host already knows is legacy', async () => {
     const legacy = legacyStatelessFallback(appServer);
     const { url, methods } = await serve(request => legacy(request));
