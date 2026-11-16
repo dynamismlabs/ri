@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
 import { getWorkDir } from '@/lib/config/paths';
+import { appToolchain } from '@/lib/apps/toolchain';
 import * as q from '@/lib/db/queries';
 import { buildSessionSpec, type SessionSpecInput } from './session-spec';
 
@@ -37,15 +38,17 @@ function input(over: Partial<SessionSpecInput>): SessionSpecInput {
 }
 
 describe('the app builder chat', () => {
-  it('puts what Ri brings for apps first on its PATH: the carried pnpm, and Ri\'s own Node', async () => {
+  it('puts what Ri brings for apps first on its PATH: the carried pnpm, and the apps\' Node', async () => {
     const folder = fs.mkdtempSync(path.join(home.root, 'app-'));
     const source = q.createAppSource({ name: 'Tide Log', folder, createdByRi: true });
     const spec = await buildSessionSpec(input({ surfaceKind: 'app-builder', surfaceRef: source.id }));
     const parts = spec.env.PATH!.split(path.delimiter);
     const bin = path.join(getWorkDir(), 'app-tools', 'bin');
     expect(parts[0]).toBe(bin);
-    expect(parts[1]).toBe(path.dirname(process.execPath));
-    expect(fs.readFileSync(path.join(bin, 'pnpm'), 'utf8')).toContain(process.execPath);
+    // The apps' Node, which outlives Ri's releases, then Ri's own.
+    expect(parts[1]).toBe(path.dirname(appToolchain().node));
+    expect(parts[2]).toBe(path.dirname(process.execPath));
+    expect(fs.readFileSync(path.join(bin, 'pnpm'), 'utf8')).toContain(appToolchain().node);
     // Ri's own `ri` launcher stays on the PATH too.
     expect(parts.some((part) => part.endsWith(`${path.sep}bin`) && part !== bin)).toBe(true);
     expect(spec.instructions).toContain('Tide Log');

@@ -85,7 +85,7 @@ describe('what Ri brings', () => {
     try {
       const source = await createApp({ name: 'Tide Log' });
       const tools = appToolchain();
-      expect(fs.readFileSync(seen, 'utf8').split(path.delimiter).slice(0, 2)).toEqual([tools.binDir, path.dirname(process.execPath)]);
+      expect(fs.readFileSync(seen, 'utf8').split(path.delimiter).slice(0, 2)).toEqual([tools.binDir, path.dirname(tools.node)]);
       const log = execFileSync('git', ['log', '--format=%an %s'], { cwd: source.folder!, encoding: 'utf8' }).trim();
       expect(log).toBe('Ri Create Tide Log from the app kit');
       // The builder's own commits work there too.

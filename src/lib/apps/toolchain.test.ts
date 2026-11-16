@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { appToolchain, findComputerGit, gitHelp, kitCommandPath, planLaunchers, toolchainPath } from './toolchain';
+import { getRuntimeBaseDir } from '@/lib/service/paths';
+import { appNode, appToolchain, findComputerGit, gitHelp, kitCommandPath, planLaunchers, toolchainPath } from './toolchain';
 
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -33,20 +34,41 @@ describe('what Ri carries for apps', () => {
 
   it('runs the carried pnpm and the carried kit with Ri\'s own Node', () => {
     const tools = appToolchain();
-    expect(tools.node).toBe(process.execPath);
+    expect(tools.node).toBe(path.join(getRuntimeBaseDir(), 'app-node', `${process.version}-${process.platform}-${process.arch}`, 'bin', 'node'));
+    expect(execFileSync(tools.node, ['-p', 'process.version'], { encoding: 'utf8' }).trim()).toBe(process.version);
     const env = { ...process.env, ...tools.env };
     expect(execFileSync(tools.pnpm!.command, ['--version'], { env, encoding: 'utf8' }).trim()).toBe(tools.pnpm!.version);
     expect(execFileSync(tools.node, [tools.kit!.bin, 'create', '--help'], { env, encoding: 'utf8' })).toMatch(/create <new-folder>/);
     // Ri's bin folder and Ri's Node come first, so a kit script's `node` and `pnpm` are Ri's.
-    const [bin, nodeDir] = tools.env.PATH.split(path.delimiter);
+    const [bin, nodeDir, riNodeDir] = tools.env.PATH.split(path.delimiter);
     expect(bin).toBe(tools.binDir);
-    expect(nodeDir).toBe(path.dirname(process.execPath));
+    expect(nodeDir).toBe(path.dirname(tools.node));
+    // Ri's own Node folder follows, for its npm and npx.
+    expect(riNodeDir).toBe(path.dirname(process.execPath));
     expect(execFileSync('/bin/sh', ['-c', 'command -v pnpm; command -v node'], { env, encoding: 'utf8' }).trim().split('\n'))
-      .toEqual([path.join(tools.binDir, 'pnpm'), path.join(path.dirname(process.execPath), 'node')]);
+      .toEqual([path.join(tools.binDir, 'pnpm'), tools.node]);
   });
 
   it('keeps pnpm out of Ri\'s own scripts, which use the developer\'s', () => {
     expect(fs.existsSync(path.resolve('node_modules/.bin/pnpm'))).toBe(false);
+  });
+});
+
+describe('the Node apps run on', () => {
+  it('outlives the Ri release it came from, and the kit sees its own stable path', () => {
+    // A release's Node, which Ri later prunes.
+    const release = scratch();
+    const releaseNode = path.join(release, 'node');
+    fs.linkSync(process.execPath, releaseNode);
+    const kept = appNode(releaseNode, 'v0.0.0-test');
+    expect(kept).toBe(path.join(getRuntimeBaseDir(), 'app-node', `v0.0.0-test-${process.platform}-${process.arch}`, 'bin', 'node'));
+    // Asked again, it's the same file, not a fresh copy.
+    const inode = fs.statSync(kept).ino;
+    expect(appNode(releaseNode, 'v0.0.0-test')).toBe(kept);
+    expect(fs.statSync(kept).ino).toBe(inode);
+    fs.rmSync(release, { recursive: true, force: true });
+    // What the kit writes into the app's service is this path, and it still runs.
+    expect(execFileSync(kept, ['-p', 'process.execPath'], { encoding: 'utf8' }).trim()).toBe(kept);
   });
 });
 
@@ -94,9 +116,9 @@ describe('launchers and PATH', () => {
     expect(planLaunchers({ node: '/n', pnpmScript: null, git: '/usr/local/bin/git' }).git).toContain(`exec '/usr/local/bin/git' "$@"`);
   });
 
-  it('puts Ri\'s bin folder and Node first, once each', () => {
-    expect(toolchainPath('/w/bin', '/ri/node/bin/node', ['/usr/bin', '/ri/node/bin', '', '/w/bin', '/bin'].join(path.delimiter)))
-      .toBe(['/w/bin', '/ri/node/bin', '/usr/bin', '/bin'].join(path.delimiter));
+  it('puts Ri\'s bin folder, the apps\' Node and Ri\'s Node first, once each', () => {
+    expect(toolchainPath('/w/bin', '/rt/app-node/v26/bin/node', ['/usr/bin', '/ri/node/bin', '', '/w/bin', '/bin'].join(path.delimiter), '/ri/node/bin/node'))
+      .toBe(['/w/bin', '/rt/app-node/v26/bin', '/ri/node/bin', '/usr/bin', '/bin'].join(path.delimiter));
   });
 
   it('finds the kit\'s one command without knowing its name', () => {

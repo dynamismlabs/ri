@@ -2,8 +2,9 @@
  * What Ri brings so a person needs no developer tools for personal apps (docs/personal-apps.md
  * "What Ri brings", shared spec §2 "What Ri brings").
  *
- * - **Node** is the one running Ri. It runs every kit command, and the kit's installs write the
- *   Node that ran them into the app's background service, so each app runs on Ri's Node too.
+ * - **Node** is Ri's own, from a folder that outlives Ri's releases (`appNode`). The kit's installs
+ *   write the Node that ran them into the app's background service, so an app keeps a Node that
+ *   exists after Ri updates and prunes old releases, running or stopped.
  * - **pnpm** is carried in `@ri/app-toolchain`, at the version the carried kit writes into every
  *   app's `packageManager`, so pnpm never has to fetch another one. It lives in that package rather
  *   than in Ri's own dependencies, so Ri's own scripts keep the developer's pnpm.
@@ -21,6 +22,7 @@ import fs from 'node:fs';
 import nodeModule from 'node:module';
 import path from 'node:path';
 import { getWorkDir } from '@/lib/config/paths';
+import { getRuntimeBaseDir } from '@/lib/service/paths';
 import { runtimeRequire } from '@/lib/releases/runtime-identity';
 
 /** The pinned kit Ri carries, for New app. */
@@ -35,7 +37,7 @@ export interface CarriedKit {
 }
 
 export interface AppToolchain {
-  /** Ri's own Node. */
+  /** Ri's own Node, from the folder that outlives Ri's releases (`appNode`). */
   node: string;
   /** The folder Ri puts first on the PATH: `pnpm`, and `git` when the computer has one. */
   binDir: string;
@@ -178,19 +180,55 @@ export function planLaunchers(input: { node: string; pnpmScript: string | null; 
   };
 }
 
-/** A PATH with Ri's bin folder and Ri's Node first, and each folder once. */
-export function toolchainPath(binDir: string, node: string, base: string): string {
-  const first = [binDir, path.dirname(node)];
+/**
+ * A PATH with Ri's bin folder and the apps' Node first, then the folder of the Node running Ri (for
+ * its npm and npx), and each folder once.
+ */
+export function toolchainPath(binDir: string, node: string, base: string, riNode: string = process.execPath): string {
+  const first = [...new Set([binDir, path.dirname(node), path.dirname(riNode)])];
   return [...first, ...base.split(path.delimiter).filter((part) => part && !first.includes(part))].join(path.delimiter);
 }
 
 /**
- * Ri's toolchain for apps, with its bin folder written. Cheap enough to call before each kit command:
- * it reads two package manifests and, on a Mac whose first git is Apple's placeholder, asks
- * `xcode-select` where the developer tools are.
+ * The Node apps run on: Ri's own Node, kept at `<runtime>/app-node/<version>-<platform>-<arch>/bin/node`.
+ *
+ * The kit writes the path of the Node that ran its install into the app's service definition (its
+ * `process.execPath`, which follows symlinks, so a link to "current" wouldn't hold). A path inside a
+ * Ri release would vanish when Ri prunes that release after updating, and a stopped app couldn't
+ * start again. So each Node version Ri has run apps with gets its own folder beside the release store
+ * that Ri never prunes, holding a hard link to that Node (a clone or copy across volumes), which
+ * keeps working after the release it came from is gone. An app moves to a newer Node only with its
+ * next install or change, which rebuilds its native modules for it.
+ */
+export function appNode(source: string = process.execPath, version: string = process.version): string {
+  const dir = path.join(/* turbopackIgnore: true */ getRuntimeBaseDir(), 'app-node', `${version}-${process.platform}-${process.arch}`, 'bin');
+  const target = path.join(/* turbopackIgnore: true */ dir, 'node');
+  try {
+    if (fs.statSync(/* turbopackIgnore: true */ target).size === fs.statSync(/* turbopackIgnore: true */ source).size) return target;
+  } catch { /* Not there yet. */ }
+  fs.mkdirSync(/* turbopackIgnore: true */ dir, { recursive: true });
+  const tmp = `${target}.${process.pid}.tmp`;
+  fs.rmSync(/* turbopackIgnore: true */ tmp, { force: true });
+  try { fs.linkSync(/* turbopackIgnore: true */ source, /* turbopackIgnore: true */ tmp); }
+  catch { fs.copyFileSync(/* turbopackIgnore: true */ source, /* turbopackIgnore: true */ tmp, fs.constants.COPYFILE_FICLONE); }
+  fs.chmodSync(/* turbopackIgnore: true */ tmp, 0o755);
+  // Replace whole: a running app keeps the file it started from.
+  fs.renameSync(/* turbopackIgnore: true */ tmp, /* turbopackIgnore: true */ target);
+  return target;
+}
+
+/**
+ * Ri's toolchain for apps, with its bin folder written and the apps' Node in place. Cheap enough to
+ * call before each kit command: it reads two package manifests, compares two file sizes and, on a
+ * Mac whose first git is Apple's placeholder, asks `xcode-select` where the developer tools are.
  */
 export function appToolchain(): AppToolchain {
-  const node = process.execPath;
+  let node = process.execPath;
+  try { node = appNode(); }
+  catch (error) {
+    // Ri's own Node still works now. Only a later prune of this release could strand an app.
+    console.warn('[apps] keeping a Node for apps failed:', error instanceof Error ? error.message : error);
+  }
   const binDir = path.join(/* turbopackIgnore: true */ getWorkDir(), 'app-tools', 'bin');
   const toolchain = toolchainPackage();
   const pnpm = toolchain ? carriedPnpm(toolchain) : null;
