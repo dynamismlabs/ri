@@ -11,6 +11,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { Client } from '@modelcontextprotocol/client';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { createTeamTestHome, preloadTeamRoutes, serveTeam, TEAM_BASE, teamPost, teamTrpc, type TeamTestHome } from '@/test/fixtures/team-home';
+import { PUBLIC_BASE_URL_ENV } from '@/lib/server-runtime/record';
 
 const ai = vi.hoisted(() => ({
   embed: vi.fn(async () => ({ embedding: new Array(1536).fill(0) })),
@@ -73,6 +74,7 @@ beforeEach(async () => {
 
 afterEach(async () => {
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
   delete process.env.OPENAI_API_KEY;
   await team.cleanup();
 });
@@ -497,6 +499,15 @@ describe('when an AI client stops working', () => {
     await expect(me.call('list_tasks')).rejects.toThrow();
     const q = await import('@/lib/db/queries');
     expect(q.listMemberAiClients(maya.id)).toEqual([]);
+  });
+
+  it('gives an agent on the computer hosting the team its plain local address', async () => {
+    // The team served by the service: the browser opens the HTTPS gateway, the server behind it has its own port.
+    vi.stubEnv(PUBLIC_BASE_URL_ENV, 'https://localhost:42242');
+    vi.stubEnv('PORT', '42243');
+    const here = await trpcFor(owner.token, 'https://localhost:42242');
+    expect(await here.team.aiClients.address.query()).toEqual({ mcpUrl: 'http://127.0.0.1:42243/api/team/mcp', reachable: false });
+    expect(await here.team.aiClients.create.mutate({ client: 'claude_code' })).toMatchObject({ mcpUrl: 'http://127.0.0.1:42243/api/team/mcp', reachable: false });
   });
 
   it('makes no team key for an agent that signs in to a personal Ri', async () => {

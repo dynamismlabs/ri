@@ -157,6 +157,15 @@ describe('issuer', () => {
     expect(issuerFor(headers('evil.example'), 'http://evil.example/', { remote: null, local: bases.local })).toBe('http://localhost:4224');
   });
 
+  it('answers on the plain address agents on this computer use, beside the HTTPS one the desktop app opens', () => {
+    const service = { remote: 'https://ri-trey.beamd.run', local: 'https://localhost:42242', loopback: 'http://127.0.0.1:42243' };
+    expect(issuerFor(headers('127.0.0.1:42243'), 'http://127.0.0.1:42243/', service)).toBe('http://127.0.0.1:42243');
+    expect(issuerFor(headers('localhost:42243'), 'http://localhost:42243/', service)).toBe('http://localhost:42243');
+    expect(issuerFor(headers('localhost:42242'), 'https://localhost:42242/', service)).toBe('https://localhost:42242');
+    expect(issuerFor(headers('ri-trey.beamd.run'), 'http://internal/', service)).toBe('https://ri-trey.beamd.run');
+    expect(issuerFor(headers('127.0.0.1:9999'), 'http://127.0.0.1:9999/', service)).toBe('https://ri-trey.beamd.run');
+  });
+
   it('challenges with the resource metadata on the same origin', () => {
     expect(mcpChallenge('https://ri.example', 'invalid_token')).toBe('Bearer resource_metadata="https://ri.example/.well-known/oauth-protected-resource/api/orchestrator/mcp", scope="content", error="invalid_token"');
   });

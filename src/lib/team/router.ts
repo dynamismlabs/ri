@@ -21,7 +21,7 @@ import { stopTeamAiWork } from './ai/chat';
 import { z } from 'zod/v4';
 import fs from 'node:fs';
 import { TRPCError } from '@trpc/server';
-import { setRunningPort } from '@/lib/auth/bootstrap';
+import { getLoopbackBaseUrl, setRunningPort } from '@/lib/auth/bootstrap';
 import { writeAuthConfig } from '@/lib/auth/config-file';
 import { readLiveServerRuntime } from '@/lib/server-runtime/record';
 import * as q from '@/lib/db/queries';
@@ -92,6 +92,16 @@ async function openBeamdAddress(request: Request, name?: string) {
     if (err instanceof Error) throw new TRPCError({ code: 'BAD_REQUEST', message: err.message });
     throw err;
   }
+}
+
+/**
+ * Where a member's agents reach the team's MCP. On the computer hosting the
+ * team that's its plain loopback address, since no agent there trusts the
+ * certificate of the HTTPS one the browser opens (`getLoopbackBaseUrl`).
+ */
+async function teamMcpAddress(request: Request): Promise<{ mcpUrl: string; reachable: boolean }> {
+  const { base, reachable } = await teamLinkAddress(requestOrigin(request));
+  return { mcpUrl: `${isLoopbackTeamAddress(base) ? getLoopbackBaseUrl() : base}${TEAM_MCP_PATH}`, reachable };
 }
 
 function requestOrigin(request: Request): string | null {
@@ -168,8 +178,7 @@ export const teamRouter = router({
     /** Where a member's agents connect, shown in each agent's steps before any key is made. */
     address: memberProcedure.query(async ({ ctx }) => {
       me(ctx);
-      const { base, reachable } = await teamLinkAddress(requestOrigin(ctx.request));
-      return { mcpUrl: `${base}${TEAM_MCP_PATH}`, reachable };
+      return teamMcpAddress(ctx.request);
     }),
     create: memberProcedure.input(aiClientKeyInput).mutation(async ({ ctx, input }) => {
       const member = me(ctx);
@@ -178,8 +187,7 @@ export const teamRouter = router({
       // An agent that signs in (ChatGPT) does so to a personal Ri, never with a team key.
       if (agent.signsIn) throw new q.TeamError('invalid', `${agent.label} signs in to a personal Ri. Connect it to your own Ri, which can reach this team’s shared tasks.`);
       const { client, token } = q.createMemberAiClient(member.id, input.name ?? agent.keyName, input.client);
-      const { base, reachable } = await teamLinkAddress(requestOrigin(ctx.request));
-      return { client, token: token.plaintext, mcpUrl: `${base}${TEAM_MCP_PATH}`, reachable };
+      return { client, token: token.plaintext, ...await teamMcpAddress(ctx.request) };
     }),
     revoke: memberProcedure.input(z.object({ keyId: z.string().min(1) }).strict()).mutation(async ({ ctx, input }) => {
       q.revokeMemberAiClient(me(ctx).id, input.keyId);

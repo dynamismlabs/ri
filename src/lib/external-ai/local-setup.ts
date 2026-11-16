@@ -12,6 +12,11 @@
  * for a development Ri) whose key is one of this Ri's working keys. So a
  * person removing the entry by hand, or revoking the key, shows here as it is.
  * Disconnect removes the entry Ri wrote and revokes its key.
+ *
+ * The address is Ri's plain loopback one (`getLoopbackBaseUrl`), never the
+ * desktop app's HTTPS address, whose certificate no outside agent trusts.
+ * When that address moves, the server rewrites the entries it wrote as it
+ * starts (`repairLocalAgents`), so nobody sets anything up twice.
  */
 
 import { execFile } from 'node:child_process';
@@ -20,7 +25,7 @@ import os from 'node:os';
 import path from 'node:path';
 import * as jsonc from 'jsonc-parser';
 import { findBinary } from '@agentex/agent';
-import { getLocalBaseUrl } from '@/lib/auth/bootstrap';
+import { getLoopbackBaseUrl } from '@/lib/auth/bootstrap';
 import * as q from '@/lib/db/queries';
 import { defaultDeviceName } from '@/lib/home/device-name';
 import { assertPersonalCapability } from '@/lib/home/authority';
@@ -56,12 +61,15 @@ export interface LocalAgentState {
   connection: q.AiClientView | null;
   /**
    * An entry under Ri's server name that isn't a working connection to this
-   * Ri: its key was revoked, or it points somewhere else. Set up replaces it
-   * only when it's a Ri's.
+   * Ri: its key was revoked, it has this Ri's key at an old address on this
+   * computer, or it points somewhere else. Set up replaces it only when it's
+   * a Ri's.
    */
-  stale: 'revoked' | 'elsewhere' | null;
+  stale: 'revoked' | 'moved' | 'elsewhere' | null;
   /** Its configuration file, `~` for the home folder. */
   config: string;
+  /** What the person does in the agent to load Ri, usually start a new session. */
+  next: string;
 }
 
 export interface LocalConnectResult {
@@ -93,9 +101,16 @@ export function localServerName(): string {
   return personalMcpNames(homeEnvironment()).server;
 }
 
-/** This Ri's MCP address on this computer: loopback, so it works without a remote address. */
+/** This Ri's MCP address on this computer: plain HTTP on loopback, which every agent here can reach. */
 export function localMcpUrl(): string {
-  return homeMcpAddress(null, getLocalBaseUrl()).mcpUrl;
+  return homeMcpAddress(null, getLoopbackBaseUrl()).mcpUrl;
+}
+
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
+
+/** An address on this computer, the only kind Ri moves on its own. */
+function isLoopbackUrl(url: string | null): boolean {
+  try { return url !== null && LOOPBACK_HOSTS.has(new URL(url).hostname); } catch { return false; }
 }
 
 function run(command: string, args: string[], timeoutMs = 30_000): Promise<string> {
@@ -370,7 +385,7 @@ function isRiEntry(entry: Entry): boolean {
 
 async function inspect(client: AiClientDef, adapter: Adapter): Promise<LocalAgentState> {
   const server = localServerName();
-  const state: LocalAgentState = { kind: client.kind, installed: false, connection: null, stale: null, config: displayPath(adapter.file()) };
+  const state: LocalAgentState = { kind: client.kind, installed: false, connection: null, stale: null, config: displayPath(adapter.file()), next: nextStep(client, server) };
   const command = await adapter.detect();
   if (command === null) return state;
   state.installed = true;
@@ -382,9 +397,43 @@ async function inspect(client: AiClientDef, adapter: Adapter): Promise<LocalAgen
   }
   if (!entry) return state;
   const connection = entry.token ? q.findPersonalAiClientByToken(entry.token) : null;
-  if (connection) state.connection = connection;
+  if (connection && movedEntry(entry)) state.stale = 'moved';
+  else if (connection) state.connection = connection;
   else state.stale = isRiEntry(entry) ? 'revoked' : 'elsewhere';
   return state;
+}
+
+/** This Ri's entry at an earlier address on this computer, such as the HTTPS one Ri used to write. */
+function movedEntry(entry: Entry): boolean {
+  return isLoopbackUrl(entry.url) && entry.url !== localMcpUrl();
+}
+
+/**
+ * Point every entry this Ri wrote at its current address on this computer,
+ * keeping each agent's key. Runs as the server starts, where the address is
+ * certain (an `ri` command with the server stopped can only guess it). Only
+ * an entry with one of this Ri's working keys at another loopback address
+ * moves: a remote address someone chose stays as it is. Returns the agents
+ * it moved. One agent's failure leaves the others to finish.
+ */
+export async function repairLocalAgents(): Promise<AiClientKind[]> {
+  const server = localServerName();
+  const url = localMcpUrl();
+  const moved: AiClientKind[] = [];
+  for (const kind of LOCAL_CLIENTS) {
+    try {
+      const { client, adapter } = localAdapter(kind);
+      const command = await adapter.detect();
+      if (command === null) continue;
+      const entry = await adapter.read(server, command).catch(() => null);
+      if (!entry?.token || !movedEntry(entry) || !q.findPersonalAiClientByToken(entry.token)) continue;
+      await adapter.write(server, url, entry.token, command);
+      moved.push(client.kind);
+    } catch (error) {
+      console.warn(`[agents] could not move ${kind} to ${url}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  return moved;
 }
 
 /** Every agent Ri can set up here, whether it's installed and whether it's connected. */

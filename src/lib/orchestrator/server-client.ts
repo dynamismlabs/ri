@@ -20,37 +20,18 @@
 
 import { API_PROTOCOL, API_PROTOCOL_HEADER } from '@/lib/releases/api-contract';
 import { readAuthConfig } from '@/lib/auth/config-file';
-import { getLocalBaseUrl } from '@/lib/auth/bootstrap';
-import { PUBLIC_BASE_URL_ENV, readLiveServerRuntime } from '@/lib/server-runtime/record';
+import { getLoopbackBaseUrl } from '@/lib/auth/bootstrap';
 import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER } from './session-credential';
 import { ActionError } from './types';
 import type { WorkstreamRuntime, ScopeChange } from '@/lib/sessions/workstream';
 
 /**
- * Base URL for INTERNAL self-calls into the app's HTTP API.
- *
- * These must reach the app over a plain-HTTP loopback address, never the public
- * HTTPS gateway: under `--http2` the public origin is HTTPS with a locally-
- * generated certificate this internal Node client does not carry the CA for, so
- * a `fetch` to it fails validation and every send/stop/notify would break. In
- * gateway mode we target the private Next listener directly:
- *   - in the server process, `PORT` is that private port;
- *   - out of process (e.g. `ri agent`), the runtime record carries it.
- * Direct HTTP and portless deployments keep their existing public/local URL.
+ * Base URL for INTERNAL self-calls into the app's HTTP API: the server over
+ * plain HTTP on loopback, never the public HTTPS gateway, whose certificate
+ * this Node client doesn't trust (`getLoopbackBaseUrl`).
  */
 export function serverBaseUrl(): string {
-  const envPort = Number(process.env.PORT);
-  const gatewayInProcess = process.env[PUBLIC_BASE_URL_ENV]?.startsWith('https:');
-  if (gatewayInProcess && Number.isFinite(envPort) && envPort > 0) {
-    return `http://127.0.0.1:${envPort}`;
-  }
-  // Only follow a LIVE record: a stale HTTPS record left by a crashed run (or
-  // after a switch back to HTTP) must not redirect self-calls to a dead port.
-  const record = readLiveServerRuntime();
-  if (record?.mode === 'https') {
-    return record.privateUpstreams.next;
-  }
-  return getLocalBaseUrl();
+  return getLoopbackBaseUrl();
 }
 
 /**

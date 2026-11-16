@@ -39,7 +39,7 @@ What Ri implements, and the specs it follows: the [MCP authorization spec](https
 | Token | The code becomes an outside-assistant key (`api_keys.role = ai_client`), named after the app and filed under it (`chatgpt`, `claude_desktop`, else `other`). `{ access_token, token_type: "Bearer", scope: "content" }`. |
 | Revocation (RFC 7009) | `/api/oauth/revoke` ends the key a token names. Holding the token is the authority. |
 
-**One issuer per address.** A Home answers on its remote address and on its local one, and a client checks that the issuer and resource match the address it used, exactly. `issuerFor` picks the Home address the request reached (a loopback name on the local port counts as local) and never a host it doesn't know, so no request can make Ri's metadata name another site.
+**One issuer per address.** A Home answers on its remote address and on this computer, and a client checks that the issuer and resource match the address it used, exactly. On this computer that's the address the desktop app opens and, when that one is HTTPS with Ri's own certificate, the plain loopback address agents here use ([external-ai.md](external-ai.md), Address). `issuerFor` picks the Home address the request reached (a loopback name on either local port counts as local) and never a host it doesn't know, so no request can make Ri's metadata name another site.
 
 **Codes** live five minutes in the server's memory (`processState`), are used once, and are bound to the client, redirect, PKCE challenge, resource and issuer. A wrong verifier spends the code. A restart between Allow and the app's exchange loses it, and the app asks you to connect again.
 

@@ -210,9 +210,10 @@ export async function teamPost(path: string, body: unknown, token?: string): Pro
   });
 }
 
-export async function teamTrpc(token: string) {
+/** The team's tRPC as a member, reached at its test address or another one (`base`). */
+export async function teamTrpc(token: string, base = TEAM_BASE) {
   const { createAppTRPCClient } = await import('@/lib/trpc/client');
-  return createAppTRPCClient({ url: `${TEAM_BASE}/api/trpc`, transport: new ApiClient({ getToken: () => token, onUnauthorized: () => {} }) });
+  return createAppTRPCClient({ url: `${base}/api/trpc`, transport: new ApiClient({ getToken: () => token, onUnauthorized: () => {} }) });
 }
 
 export interface TeamTestHome {

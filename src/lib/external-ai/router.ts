@@ -2,7 +2,7 @@ import { z } from 'zod/v4';
 import { TRPCError } from '@trpc/server';
 import { viewerProcedure, router } from '@/lib/trpc/init';
 import * as q from '@/lib/db/queries';
-import { getLocalBaseUrl, getRemoteBaseUrl } from '@/lib/auth/bootstrap';
+import { getLoopbackBaseUrl, getRemoteBaseUrl } from '@/lib/auth/bootstrap';
 import { assertPersonalCapability } from '@/lib/home/authority';
 import { homeEnvironment } from '@/lib/server/operations/system/host-info';
 import { defaultDeviceName } from '@/lib/home/device-name';
@@ -12,9 +12,10 @@ import { aiClient, personalMcpNames } from './client-config';
 import { aiClientKeyInput, clientKind } from './key-input';
 
 
+/** The remote address when there is one, else the plain one agents on this computer reach. */
 function address() {
   assertPersonalCapability('Personal external assistants');
-  try { return { ...homeMcpAddress(getRemoteBaseUrl(), getLocalBaseUrl()), ...personalMcpNames(homeEnvironment()) }; }
+  try { return { ...homeMcpAddress(getRemoteBaseUrl(), getLoopbackBaseUrl()), ...personalMcpNames(homeEnvironment()) }; }
   catch (cause) { throw new TRPCError({ code: 'PRECONDITION_FAILED', message: cause instanceof Error ? cause.message : 'Check your Ri’s remote address in Settings → Devices.', cause }); }
 }
 

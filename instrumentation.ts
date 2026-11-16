@@ -70,6 +70,13 @@ export async function register() {
   // every update (docs/always-on-spec.md section 9). Background, never blocking.
   void perfScope('startup:skills', async () => (await import('@/lib/agent-skills/startup')).refreshSkillsAtStartup())
     .catch((err: unknown) => console.warn('[skills] startup refresh skipped:', err instanceof Error ? err.message : String(err)));
+  // Outside agents this Ri set up follow its address on this computer, so an
+  // agent written with an older one (the HTTPS address no agent trusts, or a
+  // port that moved) works again without anyone setting it up twice.
+  void perfScope('startup:agent-address', async () => {
+    const moved = await (await import('@/lib/external-ai/local-setup')).repairLocalAgents();
+    if (moved.length > 0) console.log(`[agents] moved ${moved.join(', ')} to this Ri's address on this computer`);
+  }).catch((err: unknown) => console.warn('[agents] address check skipped:', err instanceof Error ? err.message : String(err)));
   await (await import('@/lib/home/execution-startup')).startHomeExecutionRuntime();
 
   // Every agent's folders are in the home's records (docs/homes-spec.md

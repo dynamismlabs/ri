@@ -102,11 +102,16 @@ export function registerMcpCommand(program: Command) {
       if (failed(envelope)) return;
       const agents = envelope.result as Array<{ client: string; label: string; installed: boolean; connected: boolean; lastUsedAt: string | null; stale?: string }>;
       for (const agent of agents) {
-        const state = agent.connected
+        const connect = `${APP_SHORT_ID} mcp connect ${agent.client.replace(/_/g, '-')}`;
+        const state = agent.connected && agent.lastUsedAt
           ? pc.green(`connected, ${since(agent.lastUsedAt)}`)
-          : agent.installed
-            ? agent.stale === 'revoked' ? pc.yellow('its key was revoked, connect it again') : `installed, not connected ${pc.dim(`(${APP_SHORT_ID} mcp connect ${agent.client.replace(/_/g, '-')})`)}`
-            : pc.dim('not installed');
+          : agent.connected
+            ? pc.yellow('set up, waiting for it to reach Ri in its next session')
+            : agent.installed
+              ? agent.stale === 'revoked' ? pc.yellow(`its key was revoked, connect it again ${pc.dim(`(${connect})`)}`)
+                : agent.stale === 'moved' ? pc.yellow(`it has an old address for Ri, connect it again ${pc.dim(`(${connect})`)}`)
+                  : `installed, not connected ${pc.dim(`(${connect})`)}`
+              : pc.dim('not installed');
         console.log(`  ${agent.label.padEnd(12)} ${state}`);
       }
     });

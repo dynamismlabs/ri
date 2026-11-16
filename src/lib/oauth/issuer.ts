@@ -1,12 +1,12 @@
 /**
- * Where Ri's OAuth lives (docs/mcp-oauth.md). A Home answers on two origins:
- * its saved remote address (Settings → Devices), which ChatGPT and other
- * cloud clients use, and its own local one, which agents on this computer
- * use. Each is its own issuer, because a client checks that the issuer and
- * resource it is told match the address it connected to, character for
- * character.
+ * Where Ri's OAuth lives (docs/mcp-oauth.md). A Home answers on its saved
+ * remote address (Settings → Devices), which ChatGPT and other cloud clients
+ * use, and on this computer: the address the desktop app opens and, when that
+ * one is HTTPS, the plain one agents here use. Each is its own issuer,
+ * because a client checks that the issuer and resource it is told match the
+ * address it connected to, character for character.
  */
-import { getLocalBaseUrl, getRemoteBaseUrl } from '@/lib/auth/bootstrap';
+import { getLocalBaseUrl, getLoopbackBaseUrl, getRemoteBaseUrl } from '@/lib/auth/bootstrap';
 import { HOME_MCP_PATH } from '@/lib/external-ai/policy';
 
 /** The one scope: the content tools an outside assistant may use (`HOME_CONTENT_ACTIONS`). */
@@ -21,20 +21,29 @@ function originOf(raw: string | null): URL | null {
 
 /**
  * The issuer a request reached: the Home origin with the request's host.
- * The local address also answers as any loopback name on its port. A host
- * Ri doesn't know gets the remote address (or the local one when there is
+ * Its local addresses are the one the desktop app opens and the plain one
+ * agents on this computer use (`getLoopbackBaseUrl`, the same address under
+ * plain HTTP). Each also answers as any loopback name on its port. A host Ri
+ * doesn't know gets the remote address (or the local one when there is
  * none), never the caller's Host, so no request can make Ri's metadata name
  * another site.
  */
-export function issuerFor(headers: Headers, requestUrl: string, bases: { remote: string | null; local: string } = { remote: getRemoteBaseUrl(), local: getLocalBaseUrl() }): string {
+export function issuerFor(
+  headers: Headers,
+  requestUrl: string,
+  bases: { remote: string | null; local: string; loopback?: string } = { remote: getRemoteBaseUrl(), local: getLocalBaseUrl(), loopback: getLoopbackBaseUrl() },
+): string {
   const host = (headers.get('host') ?? originOf(requestUrl)?.host ?? '').toLowerCase();
   const remote = originOf(bases.remote);
   const local = originOf(bases.local);
   if (remote && remote.host === host) return remote.origin;
-  if (local && local.host === host) return local.origin;
-  if (local && LOOPBACK.has(local.hostname)) {
-    const asked = originOf(`${local.protocol}//${host}`);
-    if (asked && LOOPBACK.has(asked.hostname) && asked.port === local.port) return asked.origin;
+  for (const base of [local, originOf(bases.loopback ?? null)]) {
+    if (!base) continue;
+    if (base.host === host) return base.origin;
+    if (LOOPBACK.has(base.hostname)) {
+      const asked = originOf(`${base.protocol}//${host}`);
+      if (asked && LOOPBACK.has(asked.hostname) && asked.port === base.port) return asked.origin;
+    }
   }
   return (remote ?? local ?? originOf(requestUrl)!).origin;
 }

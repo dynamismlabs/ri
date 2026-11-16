@@ -9,7 +9,7 @@ import { hasTeamCapability } from '@/lib/team/capabilities';
 import { conversationHash, newConversationToken, saveConversationSecrets, deleteConversationSecrets } from './secrets';
 import { slackApi, slackConversationManifest, reconnectSlackSocket } from './slack';
 import { drainConversations } from './service';
-import { getLocalBaseUrl, getRemoteBaseUrl } from '@/lib/auth/bootstrap';
+import { getLoopbackBaseUrl, getRemoteBaseUrl } from '@/lib/auth/bootstrap';
 import { authorizeTeamExecution } from '@/lib/home/execution-authority';
 
 function human(key: RequestKey | null) {
@@ -70,7 +70,7 @@ export const conversationIntegrationsRouter = router({
           q.consumeConversationLink(connectionId, 'acp-host', conversationHash(code));
         }
         void drainConversations();
-        return { connection, bridgeToken, bridgeUrl: new URL(`/api/integrations/conversations/acp/${connectionId}`, getRemoteBaseUrl() ?? getLocalBaseUrl()).toString() };
+        return { connection, bridgeToken, bridgeUrl: new URL(`/api/integrations/conversations/acp/${connectionId}`, getRemoteBaseUrl() ?? getLoopbackBaseUrl()).toString() };
       } catch (error) { deleteConversationSecrets(connectionId); throw error; }
     }),
   setEnabled: p.input(id.extend({ enabled: z.boolean() })).mutation(({ ctx, input }) => { manage(ctx.key); q.updateConversationConnection(input.id, { enabled: input.enabled }); void drainConversations(); return { ok: true }; }),
@@ -95,7 +95,7 @@ export const conversationIntegrationsRouter = router({
     q.createConversationLink({ connectionId: input.id, apiKeyId: key.apiKeyId, memberId: key.memberId ?? null, codeHash: conversationHash(code) });
     let bridgeCommand: string | null = null;
     if (connection.provider === 'buzz') {
-      const url = new URL(`/api/integrations/conversations/acp/${connection.id}`, getRemoteBaseUrl() ?? getLocalBaseUrl()).toString();
+      const url = new URL(`/api/integrations/conversations/acp/${connection.id}`, getRemoteBaseUrl() ?? getLoopbackBaseUrl()).toString();
       const body = JSON.stringify({ operation: 'prompt', channelId: connection.channels[0], threadId: 'link', eventId: code, text: `link ${code}` });
       const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
       bridgeCommand = `curl --fail-with-body ${quote(url)} -H "Authorization: Bearer \${RI_CONVERSATION_TOKEN}" -H 'Content-Type: application/json' --data-binary ${quote(body)}`;

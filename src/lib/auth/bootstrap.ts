@@ -66,6 +66,32 @@ export function getLocalBaseUrl(): string {
 }
 
 /**
+ * This Home's server over plain HTTP on loopback, for every client on this
+ * computer except the desktop window: Ri's own calls to itself, its chats' MCP
+ * and outside agents (docs/external-ai.md, Address).
+ *
+ * When Ri serves HTTPS on this computer (the always-on service, `--http2`),
+ * the certificate comes from Ri's own local authority. Only the desktop app
+ * trusts it, so any other client here refuses the connection. Loopback never
+ * leaves the computer, so TLS there protects nothing. The server behind the
+ * HTTPS gateway answers the same routes with the same keys, and the service
+ * keeps its port across restarts.
+ *   - In the server process under a gateway, `PORT` is that server's own port.
+ *   - Out of process (`ri agent`, `ri mcp`), the live runtime record names it.
+ *   - Served directly over HTTP, it's the local address as it is.
+ */
+export function getLoopbackBaseUrl(): string {
+  const envPort = Number(process.env.PORT);
+  const gatewayInProcess = process.env[PUBLIC_BASE_URL_ENV]?.startsWith('https:');
+  if (gatewayInProcess && Number.isInteger(envPort) && envPort > 0) return `http://127.0.0.1:${envPort}`;
+  // Only a LIVE record: one left by a crashed HTTPS run must not send
+  // anything to a dead port after a switch back to HTTP.
+  const record = readLiveServerRuntime();
+  if (record?.mode === 'https') return record.privateUpstreams.next;
+  return getLocalBaseUrl();
+}
+
+/**
  * First non-loopback IPv4 address of this machine, or null if none. Used to
  * build a pair URL that same-network devices (phones on WiFi, etc.) can
  * actually reach — `localhost` in a QR is useless because the scanning

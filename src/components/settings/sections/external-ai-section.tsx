@@ -6,7 +6,7 @@ import { trpc, trpcClient } from '@/lib/trpc/client';
 import { apiErrorText } from '@/lib/api/client';
 import type { AiConnectionTarget } from '@/lib/external-ai/client-config';
 import { AgentSkillFooter } from '../agent-skill-access';
-import { ConnectAgents } from '../connect-agents';
+import { ConnectAgents, waitingForAgent } from '../connect-agents';
 import { setSettingsSection } from '../settings-store';
 
 /**
@@ -15,9 +15,15 @@ import { setSettingsSection } from '../settings-store';
  * skills for agents there (docs/external-ai.md).
  */
 export function ExternalAiSection() {
-  const keys = useQuery(trpc.externalAi.list.queryOptions());
-  const address = useQuery(trpc.externalAi.address.queryOptions());
   const local = useQuery(trpc.externalAi.local.queryOptions());
+  // Set up writes the file, and the agent reaches Ri when its next session
+  // starts. Until then the key list is read every few seconds, so Connected
+  // appears while the person is still in the agent.
+  const keys = useQuery({
+    ...trpc.externalAi.list.queryOptions(),
+    refetchInterval: query => (waitingForAgent(local.data?.agents, query.state.data) ? 4000 : false),
+  });
+  const address = useQuery(trpc.externalAi.address.queryOptions());
   const refresh = () => { void keys.refetch(); void local.refetch(); };
   const target: AiConnectionTarget | null = address.data
     ? { space: { kind: 'personal' }, mcpUrl: address.data.mcpUrl, server: address.data.server, tokenVar: address.data.tokenVar, reachable: address.data.reachable }

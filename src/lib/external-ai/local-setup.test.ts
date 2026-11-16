@@ -10,6 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
+import { PUBLIC_BASE_URL_ENV } from '@/lib/server-runtime/record';
 
 const mocks = vi.hoisted(() => ({
   /** Programs found on PATH, by name, for agents that aren't harnesses. */
@@ -260,6 +261,66 @@ describe('what Set up refuses', () => {
     const { connectLocalAgent } = await setup();
     await expect(connectLocalAgent('goose')).rejects.toMatchObject({ code: 'unsupported' });
     await expect(connectLocalAgent('chatgpt')).rejects.toMatchObject({ code: 'unsupported' });
+  });
+});
+
+describe('the address agents here use', () => {
+  const cursorUrl = async (): Promise<string> => (await import('jsonc-parser')).parse(fs.readFileSync(path.join(folder, '.cursor/mcp.json'), 'utf8')).mcpServers.ri.url;
+  const setCursorUrl = (url: string) => {
+    const file = path.join(folder, '.cursor/mcp.json');
+    const value = JSON.parse(fs.readFileSync(file, 'utf8'));
+    value.mcpServers.ri.url = url;
+    fs.writeFileSync(file, JSON.stringify(value));
+  };
+
+  it('is Ri’s plain loopback address when Ri serves HTTPS here, never the certificate only the desktop app trusts', async () => {
+    // The always-on service: the desktop app opens the HTTPS gateway, and the server behind it has its own port.
+    vi.stubEnv(PUBLIC_BASE_URL_ENV, 'https://localhost:42242');
+    vi.stubEnv('PORT', '42243');
+    fs.mkdirSync(path.join(folder, '.cursor'));
+    const { connectLocalAgent, localMcpUrl } = await setup();
+    expect(localMcpUrl()).toBe('http://127.0.0.1:42243/api/orchestrator/mcp');
+    await connectLocalAgent('cursor');
+    expect(await cursorUrl()).toBe('http://127.0.0.1:42243/api/orchestrator/mcp');
+  });
+
+  it('moves its own entry from an old address on this computer, keeping its key', async () => {
+    fs.mkdirSync(path.join(folder, '.cursor'));
+    const { connectLocalAgent, localAgentState, localMcpUrl, repairLocalAgents } = await setup();
+    const first = await connectLocalAgent('cursor');
+    // What Set up wrote before: the HTTPS address no outside agent trusts.
+    setCursorUrl('https://localhost:42242/api/orchestrator/mcp');
+    expect(await localAgentState('cursor')).toMatchObject({ connection: null, stale: 'moved' });
+
+    expect(await repairLocalAgents()).toEqual(['cursor']);
+    expect(await cursorUrl()).toBe(localMcpUrl());
+    expect(await localAgentState('cursor')).toMatchObject({ connection: { keyId: first.connection.keyId }, stale: null });
+    expect((await activeKeys()).map(key => key.keyId)).toEqual([first.connection.keyId]);
+    // Nothing left to move.
+    expect(await repairLocalAgents()).toEqual([]);
+  });
+
+  it('leaves a remote address someone chose, and an entry whose key was revoked', async () => {
+    fs.mkdirSync(path.join(folder, '.cursor'));
+    fs.mkdirSync(path.join(folder, '.gemini'));
+    const { connectLocalAgent, localAgentState, repairLocalAgents } = await setup();
+    await connectLocalAgent('cursor');
+    setCursorUrl('https://ri-trey.beamd.run/api/orchestrator/mcp');
+    const gemini = await connectLocalAgent('gemini_cli');
+    (await queries()).revokePersonalAiClient(gemini.connection.keyId);
+    const settings = read('.gemini/settings.json');
+    settings.mcpServers.ri.url = 'https://localhost:42242/api/orchestrator/mcp';
+    fs.writeFileSync(path.join(folder, '.gemini/settings.json'), JSON.stringify(settings));
+
+    expect(await repairLocalAgents()).toEqual([]);
+    expect(await cursorUrl()).toBe('https://ri-trey.beamd.run/api/orchestrator/mcp');
+    expect(read('.gemini/settings.json').mcpServers.ri.url).toBe('https://localhost:42242/api/orchestrator/mcp');
+    expect(await localAgentState('gemini_cli')).toMatchObject({ connection: null, stale: 'revoked' });
+  });
+
+  it('says what to do in the agent to load Ri', async () => {
+    const { localAgentState } = await setup();
+    expect((await localAgentState('antigravity')).next).toBe('Start a new Antigravity conversation.');
   });
 });
 

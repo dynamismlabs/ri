@@ -92,7 +92,9 @@ const list_agent_connections = defineAction({
   name: 'list_agent_connections',
   description:
     'List the outside agents Ri can connect on the computer running it: whether each is installed here, whether it\'s connected ' +
-    'to Ri\'s MCP, and when its key was last used. Read before connect_agent to see what\'s installed.',
+    'to Ri\'s MCP, and when its key was last used. Read before connect_agent to see what\'s installed. Connected means Ri\'s entry ' +
+    'is in the agent\'s configuration with a working key. A null lastUsedAt means the agent hasn\'t reached Ri yet: it loads Ri in its ' +
+    'next session. stale "moved" means it has an old address for Ri, and connect_agent fixes it.',
   params: {},
   strictParams: true,
   handler: async (ctx) => {

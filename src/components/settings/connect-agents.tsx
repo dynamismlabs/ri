@@ -37,6 +37,19 @@ function ago(iso: string): string {
 
 const used = (key: Pick<AiClientView, 'lastUsedAt'>) => (key.lastUsedAt ? `Used ${ago(key.lastUsedAt)}` : 'Not used yet');
 
+/**
+ * An agent Ri set up here whose key hasn't been used yet: the agent hasn't
+ * reached Ri. The key list is the fresher read (the agents' state is read from
+ * their files and is slower), so Settings polls it while one is waiting.
+ */
+export function waitingForAgent(agents: LocalAgentState[] | undefined, keys: AiClientView[] | undefined): boolean {
+  return (agents ?? []).some(agent => {
+    if (!agent.connection) return false;
+    const key = keys?.find(k => k.keyId === agent.connection!.keyId) ?? agent.connection;
+    return !key.lastUsedAt;
+  });
+}
+
 /** A key made in an item, shown while Settings is open and never again. */
 export interface MadeKey {
   client: AiClientView;
@@ -128,6 +141,8 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
   const [setupResult, setSetupResult] = useState<LocalConnectResult | null>(null);
   const localKeyId = localState?.connection?.keyId ?? null;
   const otherKeys = keys.filter(key => key.keyId !== localKeyId);
+  // The key list is polled while an agent is waiting, so it knows first when it arrives.
+  const localKey = keys.find(key => key.keyId === localKeyId) ?? localState?.connection ?? null;
   const steps = target ? aiClientSetup(client.kind, made ? { ...target, mcpUrl: made.mcpUrl } : target, made?.token ?? null) : null;
   const linkPreview = target ? aiClientInstallLink(client.kind, target, 'preview') : null;
 
@@ -159,17 +174,21 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
     onError: (err) => toast.error(apiErrorText(err)),
   });
 
+  // Connected means Ri has heard from the agent, not that a file was written:
+  // an agent that can't reach Ri never uses its key.
   const connectedHere = Boolean(localState?.connection);
   const anyUsed = keys.some(key => key.lastUsedAt);
   const chip = client.limitation
     ? <StatusChip tone="off">Not available yet</StatusChip>
-    : connectedHere || anyUsed
-      ? <StatusChip tone="on">Connected</StatusChip>
-      : keys.length > 0
-        ? <StatusChip tone="waiting">{client.signsIn ? 'Not used yet' : 'Key not used yet'}</StatusChip>
-        : localState?.installed
-          ? <StatusChip tone="off">Installed</StatusChip>
-          : null;
+    : localState?.stale === 'moved'
+      ? <StatusChip tone="waiting">Set up again</StatusChip>
+      : anyUsed
+        ? <StatusChip tone="on">Connected</StatusChip>
+        : keys.length > 0
+          ? <StatusChip tone="waiting">{client.signsIn || connectedHere ? 'Not used yet' : 'Key not used yet'}</StatusChip>
+          : localState?.installed
+            ? <StatusChip tone="off">Installed</StatusChip>
+            : null;
 
   const openLink = async () => {
     if (!target) return;
@@ -238,6 +257,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                 client={client}
                 device={local!.device}
                 state={localState}
+                usedAt={localKey?.lastUsedAt ?? null}
                 result={setupResult}
                 busy={setUp.isPending || disconnectLocal.isPending}
                 disabled={!ready}
@@ -341,20 +361,25 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
   );
 }
 
-function LocalRow({ client, device, state, result, busy, disabled, onSetUp, onDisconnect }: {
-  client: AiClientDef; device: string | null; state: LocalAgentState; result: LocalConnectResult | null;
+function LocalRow({ client, device, state, usedAt, result, busy, disabled, onSetUp, onDisconnect }: {
+  client: AiClientDef; device: string | null; state: LocalAgentState; usedAt: string | null; result: LocalConnectResult | null;
   busy: boolean; disabled: boolean; onSetUp: () => void; onDisconnect: () => void;
 }) {
   const where = device ? `On ${device}` : 'On this computer';
   const connection = state.connection;
+  const reached = Boolean(connection && usedAt);
   return (
     <div className="space-y-1.5">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{where}</p>
       <div className="flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
-        <span aria-hidden className={cn('size-1.5 shrink-0 rounded-full', connection ? 'bg-emerald-500' : state.stale ? 'bg-amber-500' : 'bg-muted-foreground/40')} />
+        <span aria-hidden className={cn('size-1.5 shrink-0 rounded-full', reached ? 'bg-emerald-500' : connection || state.stale ? 'bg-amber-500' : 'bg-muted-foreground/40')} />
         <span className="min-w-0 flex-1">
-          {connection ? (
-            <>Connected <span className="text-muted-foreground">· {used(connection)} · {state.config}</span></>
+          {connection && reached ? (
+            <>Connected <span className="text-muted-foreground">· {used({ lastUsedAt: usedAt })} · {state.config}</span></>
+          ) : connection ? (
+            <>Waiting for {client.label} to reach Ri. <span className="text-muted-foreground">{state.next}</span></>
+          ) : state.stale === 'moved' ? (
+            <>{client.label} has an old address for Ri. Set it up again to reconnect.</>
           ) : state.stale === 'revoked' ? (
             <>Its key was disconnected. Set it up again to reconnect.</>
           ) : state.stale === 'elsewhere' ? (
@@ -373,11 +398,10 @@ function LocalRow({ client, device, state, result, busy, disabled, onSetUp, onDi
           </button>
         )}
       </div>
-      {connection && result && (
+      {connection && result && result.skills.state !== 'none' && (
         <p role="status" className="text-xs text-muted-foreground">
-          {result.next}
-          {result.skills.state === 'ready' && ' Ri’s skill is installed for it.'}
-          {result.skills.state === 'blocked' && ` Another skill already uses Ri’s skill name${result.skills.blocked.length ? ` at ${result.skills.blocked.join(', ')}` : ''}, so Ri left it alone.`}
+          {result.skills.state === 'ready' && 'Ri’s skill is installed for it.'}
+          {result.skills.state === 'blocked' && `Another skill already uses Ri’s skill name${result.skills.blocked.length ? ` at ${result.skills.blocked.join(', ')}` : ''}, so Ri left it alone.`}
         </p>
       )}
     </div>

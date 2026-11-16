@@ -1,9 +1,10 @@
-import { afterEach, beforeEach, expect, it } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import * as q from '@/lib/db/queries';
 import { executionDispatchPolicy } from './home-policy';
 import { buildSessionSpec } from './session-spec';
 import { verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { PUBLIC_BASE_URL_ENV } from '@/lib/server-runtime/record';
 let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>;
 beforeEach(async () => { fixture = await createTeamExecutionFixture(); });
 afterEach(async () => { await fixture.cleanup(); });
@@ -30,4 +31,17 @@ it('uses one stable signed session identity whose member is resolved from each s
   expect(spec.standingInstructions).toContain('Shared standing instructions.');
   expect(spec.env.RI_HOME_TOOLS_URL).toMatch(/^https?:\/\//);
   expect(spec.instructions).not.toMatch(/personal tasks|personal notes|private planning data/);
+});
+it('reaches a team served over HTTPS here at its plain loopback address, which its MCP and CLI trust', async () => {
+  // The team served by the service: the browser opens the HTTPS gateway, the server behind it has its own port.
+  vi.stubEnv(PUBLIC_BASE_URL_ENV, 'https://localhost:42242');
+  vi.stubEnv('PORT', '42243');
+  try {
+    const saved = turn();
+    const spec = await buildSessionSpec({ chatSessionId: saved.session.id, harness: 'codex', cwd: fixture.workspace.cwd, sessionType: 'execution', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE, surfaceRef: null, existingExternalSessionId: null, executionId: saved.session.executionId, permissionMode: 'ask', prePlanMode: null, model: 'gpt-6.1-sol', modelVariant: null, effort: null, teamTurnId: saved.turn.id });
+    expect((spec.mcpServers[0] as { url: string }).url).toBe('http://127.0.0.1:42243/api/team/mcp');
+    expect(spec.env.RI_HOME_TOOLS_URL).toBe('http://127.0.0.1:42243');
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });
