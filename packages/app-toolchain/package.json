@@ -9,6 +9,6 @@
   ],
   "dependencies": {
     "pnpm": "10.30.1",
-    "kit": "file:kit/kit-0.2.2-02cd537eacaf.tgz"
+    "kit": "file:kit/kit-0.2.2-1713f6a53ad2.tgz"
   }
 }
