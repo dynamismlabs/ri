@@ -6,27 +6,38 @@
  * primary folder, where its chats start and whose instructions they follow,
  * and any other can be made primary instead. With none, Ri makes the agent a
  * folder and says where. The name and icon follow the primary folder until
- * the person sets them. Everything else (connectors, browser, scripts, files
- * to copy, area) keeps its default and lives in the agent's Setup.
+ * the person sets them, and clicking the icon picks an emoji or an image.
+ * Below the folders: connectors (an important part of Ri, so new agents show
+ * them up front), the agent browser, and for an agent with a folder, the
+ * files copied into each new worktree (what its first run needs, like `.env`)
+ * and its worktree scripts. Then its area. All of it is also in Setup.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Folder, FolderPlus, Loader2, Monitor, SmilePlus, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { ChevronDown, ChevronRight, Folder, FolderPlus, ImagePlus, Loader2, Monitor, SmilePlus, Trash2, X } from 'lucide-react';
 import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
 import { EmojiPicker } from '@/components/shared/emoji-picker';
 import { SharedComputerWarning } from '@/components/home/shared-computer-warning';
+import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
-import type { Attachment } from '@/db/types';
+import { INTEGRATION_LABELS } from '@/constants/integrations';
+import type { Attachment, WorkspaceIntegrationScope } from '@/db/types';
+import { useAreas } from '@/hooks/use-areas';
 import { useClientLocation } from '@/hooks/use-client-location';
 import { useCreateWorkspace, useNewAgentFolder } from '@/hooks/use-workspaces';
 import { apiErrorBody, apiErrorStatus } from '@/lib/api/client';
 import { fsApi } from '@/lib/api/fs';
+import { uploadAttachment } from '@/lib/attachments/client';
 import { coverAttachmentUrl } from '@/lib/attachments/view';
 import { agentInitials } from '@/lib/client/agent-initials';
 import { folderName } from '@/lib/folders/folder-name';
 import { cn } from '@/lib/utils';
+import { DEFAULT_FILES_TO_COPY } from '@/lib/workspaces/defaults';
 import { useAgentConfigurationScope } from './agent-placement-controls';
+import { FilesToCopySection } from './files-to-copy-section';
 import { FolderPickerDialog } from './folder-picker-dialog';
+import { IntegrationScopePicker } from './integration-scope-picker';
+import { WorktreeScriptsSection } from './worktree-scripts-section';
 
 interface WorkspaceCreateModalProps {
   open: boolean;
@@ -49,8 +60,19 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
   const [folders, setFolders] = useState<string[]>([]);
   const [emoji, setEmoji] = useState<string | null>(null);
   const [attachment, setAttachment] = useState<Attachment | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [integrationScopes, setIntegrationScopes] = useState<WorkspaceIntegrationScope[]>([]);
+  const [browserEnabled, setBrowserEnabled] = useState(true);
+  const [filesToCopy, setFilesToCopy] = useState<string[]>(DEFAULT_FILES_TO_COPY);
+  const [setupCommand, setSetupCommand] = useState('');
+  const [startCommand, setStartCommand] = useState('');
+  const [teardownCommand, setTeardownCommand] = useState('');
+  const [scriptsOpen, setScriptsOpen] = useState(false);
+  const [areaId, setAreaId] = useState('');
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { data: areas } = useAreas();
   // A name or icon the person set stays when the primary folder changes.
   const nameEditedRef = useRef(false);
   const coverEditedRef = useRef(false);
@@ -70,6 +92,15 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
     setFolders([]);
     setEmoji(null);
     setAttachment(null);
+    setUploading(false);
+    setIntegrationScopes([]);
+    setBrowserEnabled(true);
+    setFilesToCopy(DEFAULT_FILES_TO_COPY);
+    setSetupCommand('');
+    setStartCommand('');
+    setTeardownCommand('');
+    setScriptsOpen(false);
+    setAreaId('');
     setPicking(false);
     setError(null);
     nameEditedRef.current = false;
@@ -116,6 +147,22 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
     coverEditedRef.current = false;
   }, [open]);
 
+  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file?.type.startsWith('image/')) return;
+    setUploading(true);
+    try {
+      setAttachment(await uploadAttachment(file));
+      setEmoji(null);
+      coverEditedRef.current = true;
+    } catch (err) {
+      setError(`The image couldn't be uploaded: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = useCallback(() => {
     if (!canConfigure || !trimmedName || createWs.isPending) return;
     setError(null);
@@ -126,7 +173,18 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
         folders: folders.slice(1),
         emoji: emoji ?? null,
         attachments: attachment ? [attachment] : [],
-        browserEnabled: personalTools,
+        areaId: areaId || null,
+        // Worktrees are made from a folder the person chose. One Ri makes is a plain folder.
+        ...(primary
+          ? {
+              filesToCopy,
+              setupCommand: setupCommand.trim() || null,
+              startCommand: startCommand.trim() || null,
+              teardownCommand: teardownCommand.trim() || null,
+            }
+          : {}),
+        integrationScopes: personalTools ? integrationScopes : [],
+        browserEnabled: personalTools && browserEnabled,
       },
       {
         onSuccess: () => {
@@ -143,7 +201,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
         },
       },
     );
-  }, [canConfigure, trimmedName, createWs, primary, folders, emoji, attachment, personalTools, reset, onOpenChange]);
+  }, [canConfigure, trimmedName, createWs, primary, folders, emoji, attachment, areaId, filesToCopy, setupCommand, startCommand, teardownCommand, integrationScopes, personalTools, browserEnabled, reset, onOpenChange]);
 
   const handleOpenChange = useCallback(
     (next: boolean) => {
@@ -184,19 +242,38 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
               }}
             >
               <div className="flex items-center rounded-xl border border-border bg-background focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-foreground/20">
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
                 <EmojiPicker
                   onSelect={(picked) => {
                     setEmoji(picked);
                     setAttachment(null);
                     coverEditedRef.current = true;
                   }}
+                  actions={[
+                    { label: 'Upload image', icon: <ImagePlus size={13} />, onSelect: () => fileInputRef.current?.click() },
+                    ...(image || emoji
+                      ? [{
+                          label: 'Remove',
+                          icon: <Trash2 size={13} />,
+                          tone: 'destructive' as const,
+                          onSelect: () => {
+                            setEmoji(null);
+                            setAttachment(null);
+                            coverEditedRef.current = true;
+                          },
+                        }]
+                      : []),
+                  ]}
                 >
                   <button
                     type="button"
                     aria-label="Agent icon"
+                    disabled={uploading}
                     className="ml-1.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   >
-                    {image ? (
+                    {uploading ? (
+                      <Loader2 size={15} className="animate-spin" />
+                    ) : image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={image} alt="" className="h-6 w-6 rounded-md object-cover" />
                     ) : emoji ? (
@@ -290,6 +367,89 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 </p>
               </section>
 
+              {personalTools && (
+                <Section
+                  title={INTEGRATION_LABELS.plural}
+                  hint={`Accounts this agent's chats can use. Ri's main chat always has every connected account.`}
+                >
+                  <IntegrationScopePicker scopes={integrationScopes} onChange={setIntegrationScopes} disabled={createWs.isPending} />
+                </Section>
+              )}
+
+              {personalTools && (
+                <label className="flex cursor-pointer items-center justify-between gap-4">
+                  <span>
+                    <span className="block text-[13px] font-medium text-foreground">Agent browser</span>
+                    <span className="mt-0.5 block text-[11.5px] leading-relaxed text-muted-foreground/80">
+                      Lets its chats read and act on the web, in the agent browser&apos;s own profile.
+                    </span>
+                  </span>
+                  <Switch checked={browserEnabled} onCheckedChange={setBrowserEnabled} disabled={createWs.isPending} aria-label="Agent browser" />
+                </label>
+              )}
+
+              {primary && (
+                <Section
+                  title="Files to copy"
+                  hint="In a git repository each chat works in its own copy of the project. These files come along from the primary folder, so the first run has what git leaves out, like .env files. One pattern per line."
+                >
+                  <FilesToCopySection value={filesToCopy} onChange={setFilesToCopy} cwd={primary} heading={false} />
+                </Section>
+              )}
+
+              {primary && (
+                <section>
+                  <button
+                    type="button"
+                    onClick={() => setScriptsOpen((v) => !v)}
+                    aria-expanded={scriptsOpen}
+                    className="flex w-full items-center justify-between gap-2 text-left"
+                  >
+                    <span>
+                      <span className="block text-[13px] font-medium text-foreground">Worktree scripts</span>
+                      <span className="mt-0.5 block text-[11.5px] leading-relaxed text-muted-foreground/80">
+                        {setupCommand.trim() || startCommand.trim() || teardownCommand.trim()
+                          ? [setupCommand.trim() && 'Setup', startCommand.trim() && 'Start', teardownCommand.trim() && 'Teardown'].filter(Boolean).join(', ')
+                          : 'In a git repository, install, start and clean up each chat\'s copy of the project. Optional.'}
+                      </span>
+                    </span>
+                    {scriptsOpen ? <ChevronDown size={15} className="shrink-0 text-muted-foreground" /> : <ChevronRight size={15} className="shrink-0 text-muted-foreground" />}
+                  </button>
+                  {scriptsOpen && (
+                    <div className="mt-3">
+                      <WorktreeScriptsSection
+                        setupCommand={setupCommand}
+                        startCommand={startCommand}
+                        teardownCommand={teardownCommand}
+                        onSetupChange={setSetupCommand}
+                        onStartChange={setStartCommand}
+                        onTeardownChange={setTeardownCommand}
+                        cwd={primary}
+                      />
+                    </div>
+                  )}
+                </section>
+              )}
+
+              <Section title="Area" hint="Where its tasks and notes belong. Optional.">
+                <div className="relative">
+                  <select
+                    value={areaId}
+                    onChange={(e) => setAreaId(e.target.value)}
+                    aria-label="Area"
+                    className="w-full appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-9 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                  >
+                    <option value="">None</option>
+                    {areas?.map((area) => (
+                      <option key={area.id} value={area.id}>
+                        {area.emoji ? `${area.emoji} ${area.name}` : area.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                </div>
+              </Section>
+
               {error && (
                 <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
                   {error}
@@ -371,5 +531,18 @@ function FolderRow({
         <X size={13} />
       </button>
     </li>
+  );
+}
+
+/** A setting below the folders: a heading, what it does, and its control. */
+function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+  return (
+    <section className="space-y-2">
+      <div>
+        <h3 className="text-[13px] font-medium text-foreground">{title}</h3>
+        <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted-foreground/80">{hint}</p>
+      </div>
+      {children}
+    </section>
   );
 }

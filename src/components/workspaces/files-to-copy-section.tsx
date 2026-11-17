@@ -19,6 +19,8 @@ interface FilesToCopySectionProps {
   className?: string;
   /** Whether the preview list defaults to expanded. Defaults to `true`. */
   defaultExpanded?: boolean;
+  /** Its own label and explanation. Off when the caller titles it (the New agent dialog). */
+  heading?: boolean;
 }
 
 const PREVIEW_DEBOUNCE_MS = 350;
@@ -40,6 +42,7 @@ export function FilesToCopySection({
   cwd,
   className,
   defaultExpanded = true,
+  heading = true,
 }: FilesToCopySectionProps) {
   const { canConfigureAgents } = useExecutionRuntimeScope();
   // Local text state so we can preserve in-progress newlines/whitespace
@@ -96,16 +99,19 @@ export function FilesToCopySection({
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <label className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Files to copy
-      </label>
-      <p className="text-[10.5px] text-muted-foreground/70 leading-snug">
-        Each new session&apos;s worktree gets a fresh copy of these files
-        from the source folder. One glob per line. Bare patterns like{' '}
-        <code className="font-mono">.env*</code> match at any depth. Files
-        git tracks are skipped, since the worktree already has them.
-      </p>
+      {heading && <>
+        <label className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+          Files to copy
+        </label>
+        <p className="text-[10.5px] text-muted-foreground/70 leading-snug">
+          Each new session&apos;s worktree gets a fresh copy of these files
+          from the source folder. One glob per line. Bare patterns like{' '}
+          <code className="font-mono">.env*</code> match at any depth. Files
+          git tracks are skipped, since the worktree already has them.
+        </p>
+      </>}
       <textarea
+        aria-label="Files to copy"
         value={text}
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder=".env*"

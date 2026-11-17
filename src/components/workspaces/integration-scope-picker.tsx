@@ -28,6 +28,7 @@ import type { ApplicationId } from '@/lib/integrations/sources/types';
 import { AlertCircle, ChevronDown, Loader2, Plug } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Tip } from '@/components/ui/tip';
+import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 
 interface Toolkit {
   id: string;
@@ -255,7 +256,11 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Read again whenever Settings closes: an account connected there (from the
+  // button below, say) shows up here without leaving this screen.
+  const settingsOpen = useSettingsStore().open;
   useEffect(() => {
+    if (settingsOpen) return;
     Promise.all([
       trpcClient.integrations.toolkitsGet.query({}),
       trpcClient.integrations.statusGet.query({}),
@@ -269,7 +274,7 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
       })
       .catch((e) => setError(errMsg(e)))
       .finally(() => setLoading(false));
-  }, []);
+  }, [settingsOpen]);
 
   const connectedProviderIds = useMemo(() => new Set(connections.map((c) => c.providerId)), [connections]);
   const providerName = useMemo(() => {
@@ -357,8 +362,16 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/10 p-6 text-center">
           <Plug size={20} className="mb-2 text-muted-foreground" />
           <p className="text-[12px] text-muted-foreground">
-            No connected services yet. Connect them in Settings, under Plugins, then scope them here.
+            No accounts connected yet. Connect Gmail, Linear, Notion and more, then choose here which this agent can use.
           </p>
+          <button
+            type="button"
+            onClick={() => openSettings('plugins', { anchor: 'integrations' })}
+            className="mt-3 flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[12.5px] font-medium text-foreground transition-colors hover:bg-accent/70"
+          >
+            <Plug size={13} />
+            Connect an account
+          </button>
         </div>
       ) : (
         <div className="space-y-3">

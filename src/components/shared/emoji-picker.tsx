@@ -5,9 +5,18 @@ import { Popover as PopoverPrimitive } from "radix-ui";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
+interface EmojiPickerAction {
+  label: string;
+  icon: React.ReactNode;
+  onSelect: () => void;
+  tone?: 'destructive';
+}
+
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
   children: React.ReactNode;
+  /** Other ways to set the icon, shown above the emoji grid (Upload image, Remove). Each closes the picker. */
+  actions?: EmojiPickerAction[];
 }
 
 /**
@@ -31,7 +40,7 @@ interface EmojiPickerProps {
  * custom-element wrapper doesn't churn its `componentWillReceiveProps`
  * pipeline on every parent render.
  */
-export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
+export function EmojiPicker({ onSelect, children, actions }: EmojiPickerProps) {
   const [open, setOpen] = useState(false);
 
   const onSelectRef = useRef(onSelect);
@@ -70,6 +79,28 @@ export function EmojiPicker({ onSelect, children }: EmojiPickerProps) {
           // for the picker subtree.
           className="z-[60] outline-none pointer-events-auto"
         >
+          {actions && actions.length > 0 && (
+            <div className="mb-1.5 flex gap-1 rounded-lg border border-border bg-popover p-1 shadow-md">
+              {actions.map((action) => (
+                <button
+                  key={action.label}
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    action.onSelect();
+                  }}
+                  className={
+                    action.tone === 'destructive'
+                      ? 'flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-destructive transition-colors hover:bg-destructive/10'
+                      : 'flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-foreground transition-colors hover:bg-accent'
+                  }
+                >
+                  {action.icon}
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
           <Picker
             data={data}
             onEmojiSelect={handleSelect}

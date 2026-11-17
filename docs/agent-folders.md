@@ -28,13 +28,16 @@ The nightly backup (`pnpm backup`) covers the home only, so these folders aren't
 
 ## Creating an agent
 
-`src/components/workspaces/workspace-create-modal.tsx`. A name, with the icon beside it, and a Folders list:
+`src/components/workspaces/workspace-create-modal.tsx`. ChatGPT's dialog on top, then Ri's own settings below it:
 
-- Empty: "Add a folder on this computer" (or the Ri computer's name when the page runs elsewhere) and the line saying where Ri will keep the agent's files instead.
-- With folders: each row shows the folder's name (the whole path on hover), **Primary** on the first, **Make primary** on the others (on hover, always on touch screens), and remove. **Add folder** at the bottom opens the folder browser.
-- The name and icon follow the primary folder until the person sets them.
+- **Name, with the icon beside it.** The icon and name follow the primary folder until the person sets them. Clicking the icon picks an emoji, uploads an image, or removes it.
+- **Folders.** Empty: "Add a folder on this computer" (or the Ri computer's name when the page runs elsewhere) and the line saying where Ri will keep the agent's files instead. With folders: each row shows the folder's name (the whole path on hover), **Primary** on the first, **Make primary** on the others (on hover, always on touch screens), and remove. **Add folder** at the bottom opens the folder browser.
+- **Connectors**, shown to every new agent because they are a large part of what an agent can do. With nothing connected yet, **Connect an account** opens Settings → Plugins on top of the dialog, and the list reads again when Settings closes, so the new account is there to choose. The same picker (and button) is in Setup.
+- **Agent browser**, on by default.
+- **Files to copy** and **Worktree scripts**, once a folder is chosen. Files to copy is open (`.env*` by default, with the files it matches listed) because a git agent's first chat needs them. Worktree scripts fold away.
+- **Area**, optional.
 
-Everything else (connectors, browser, worktree scripts, files to copy, area) keeps its default and lives in the agent's Setup. One request creates it: `workspaces.create` takes `cwd` (optional) and `folders` (more folders), checks every folder before anything is made, and takes back a folder it made if creating fails. `ri agent create_workspace` takes the same two.
+One request creates it: `workspaces.create` takes `cwd` (optional) and `folders` (more folders), checks every folder before anything is made, and takes back a folder it made if creating fails. An agent without a folder doesn't send files to copy or scripts (its folder is plain, so they would do nothing). `ri agent create_workspace` takes the same `cwd` and `folders`.
 
 ## Changing an agent's folders
 
@@ -53,6 +56,10 @@ Taken 2026-11-16 on a throwaway home from this branch.
 | | |
 |---|---|
 | New agent, empty | ![](images/agent-folders/new-agent-empty.png) |
+| Clicking the icon | ![](images/agent-folders/new-agent-icon.png) |
+| With folders: connectors, browser, files to copy | ![](images/agent-folders/new-agent-settings.png) |
+| Worktree scripts open | ![](images/agent-folders/new-agent-scripts.png) |
+| Connect an account, over the dialog | ![](images/agent-folders/connect-from-new-agent.png) |
 | A name and no folder | ![](images/agent-folders/new-agent-no-folder.png) |
 | Three folders, hovering the second | ![](images/agent-folders/new-agent-folders.png) |
 | On a phone | ![](images/agent-folders/new-agent-phone.png) |
