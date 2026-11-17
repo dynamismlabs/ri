@@ -60,10 +60,13 @@ export class ManagedSpeech {
   private lastCrash = 0;
   private crashes = 0;
 
+  /** `platform` is this computer's unless a test names one: where the helper can run at all. */
+  constructor(private readonly platform: ReturnType<typeof speechPlatform> = speechPlatform()) {}
+
   status(): ManagedSpeechStatus {
     const preferences = speechPreferences();
     const installed = fs.existsSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ speechPaths().model, 'verified.json'));
-    const { supported, unavailable } = speechPlatform();
+    const { supported, unavailable } = this.platform;
     return {
       phase: this.phase === 'not-installed' && installed ? 'installed' : this.phase,
       supported, ...(unavailable ? { unavailable } : {}), installed, ...preferences, downloadedBytes: this.downloaded, totalBytes: PARAKEET_BYTES,
@@ -102,7 +105,8 @@ export class ManagedSpeech {
     if (this.removing) throw new Error('Local speech is being removed');
     if (this.operation) return this.status();
     if (this.busy) throw new Error('Wait for the active transcription before repairing local speech');
-    if (!this.status().helperAvailable) throw new Error('This build does not include the local speech helper');
+    const status = this.status();
+    if (!status.helperAvailable) throw new Error(status.unavailable ?? 'This build does not include the local speech helper');
     this.claim();
     this.stop();
     const release = beginActivity();

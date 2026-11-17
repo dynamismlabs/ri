@@ -19,7 +19,8 @@ beforeEach(() => {
   const helper = path.join(root, 'helper'); fs.writeFileSync(helper, 'unused helper');
   vi.stubEnv('RI_SPEECH_HELPER', helper);
   vi.stubGlobal('fetch', vi.fn().mockImplementation((url, options) => String(url).startsWith('https://model.example') ? Promise.resolve(new Response(fixture.bytes)) : realFetch(url, options)));
-  manager = new ManagedSpeech();
+  // The helper's lifecycle, on a computer that runs it, whatever this one is.
+  manager = new ManagedSpeech({ supported: true });
 });
 afterEach(async () => { clearMaintenance(); await manager.dispose(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); fs.rmSync(root, { recursive: true, force: true }); });
 async function settled() {
@@ -63,7 +64,7 @@ it('blocks model/configuration mutations during update maintenance', async () =>
 });
 it('holds a crash-released ownership lock across managers', async () => {
   manager.configure({ cloudFallback: true });
-  const second = new ManagedSpeech();
+  const second = new ManagedSpeech({ supported: true });
   expect(() => second.configure({ cloudFallback: false })).toThrow('Another Ri backend');
   await manager.dispose();
   expect(second.configure({ cloudFallback: false }).cloudFallback).toBe(false);
@@ -125,5 +126,12 @@ describe('where local speech runs', () => {
     expect(speechPlatform('linux', 'arm64')).toEqual({ supported: true });
     expect(speechPlatform('darwin', 'x64')).toEqual({ supported: false, unavailable: 'Local speech isn’t available on this Mac. Its speech engine has no build for Intel Macs.' });
     expect(speechPlatform('win32', 'x64')).toMatchObject({ supported: false });
+  });
+
+  it('offers no install on an Intel Mac, even with a helper on disk, and says why', async () => {
+    const { ManagedSpeech: Speech, speechPlatform } = await import('./manager');
+    const intel = new Speech(speechPlatform('darwin', 'x64'));
+    expect(intel.status()).toMatchObject({ supported: false, helperAvailable: false, unavailable: expect.stringContaining('Intel Macs') });
+    expect(() => intel.install()).toThrow('Local speech isn’t available on this Mac.');
   });
 });
