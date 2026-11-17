@@ -25,6 +25,10 @@ CODECS = {
     'gnutls': 'gnutls', 'gmp': 'gmp', 'nettle': 'nettle', 'hogweed': 'nettle',
     'unistring': 'unistring', 'asound': 'alsa-lib', 'vpl': 'libvpl',
 }
+# Libraries the numpy wheel bundles in numpy.libs, by file prefix, with the word that names each in
+# the wheel's own LICENSE.txt (numpy appends its bundled-software notice to it for its wheels). They
+# arrive in the hash-pinned wheel with that notice, as onnxruntime's arrive with its ThirdPartyNotices.
+NUMPY_BUNDLED = {'libscipy_openblas': 'openblas', 'libgfortran': 'gfortran', 'libquadmath': 'quadmath'}
 # These are OS interfaces rather than libraries copied into the distribution.
 # Anything actually bundled is still inventoried and must have known provenance.
 LINUX_SYSTEM = re.compile(r'^(?:ld-linux[^/]*|lib(?:c|m|dl|pthread|rt|util|resolv|gcc_s|stdc\+\+)\.so(?:\.[0-9]+)*)$')
@@ -49,6 +53,25 @@ def file_inventory(root):
     return files
 
 
+def drop_os_libraries(root):
+    """Remove bundled copies of the OS's own libraries (LINUX_SYSTEM) and return what went.
+
+    PyInstaller copies the build machine's libgcc_s and libstdc++. The manylinux wheels inside the
+    helper expect the system's, as this inventory treats them, so the helper uses those too.
+    """
+    root = Path(root).resolve(); removed = []
+    for file in sorted(root.rglob('*')):
+        if (file.is_file() or file.is_symlink()) and LINUX_SYSTEM.fullmatch(file.name):
+            file.unlink(); removed.append(file.relative_to(root).as_posix())
+    return removed
+
+
+def numpy_bundled(name):
+    """The word numpy's licence names a library in numpy.libs by, or None for any other file."""
+    if Path(name).parent.name != 'numpy.libs': return None
+    return next((word for prefix, word in NUMPY_BUNDLED.items() if re.match(r'^' + re.escape(prefix) + r'[0-9_]*[-.]', Path(name).name)), None)
+
+
 def component_for(name):
     basename = Path(name).name
     for library in FFMPEG:
@@ -60,6 +83,7 @@ def component_for(name):
     extension = bool(re.fullmatch(r'[a-zA-Z0-9_]+\.(?:abi3|cpython-3[0-9]+-[a-zA-Z0-9_-]+)\.so', basename))
     if '/av/' in name and extension: return 'pyav-recipe'
     if '/numpy/' in name and extension: return 'numpy'
+    if numpy_bundled(name): return 'numpy'
     if '/onnxruntime/' in name and (basename.startswith(('libonnxruntime.', 'onnxruntime_pybind11_state')) or basename == 'libonnxruntime_providers_shared.so'): return 'onnxruntime'
     # Dynamic CPython standard-library extension modules, where present.
     if extension and (Path(name).parent.as_posix() == '_internal' or '/lib-dynload/' in name): return 'python'
@@ -208,6 +232,10 @@ def verify_inventory(root, catalog_path=SOURCE / 'source-catalog.json'):
             evidence = item.get('runtimeEvidence', {})
             if not all(evidence.get(key) for key in ['version', 'license', 'configuration']): raise ValueError('Missing FFmpeg runtime evidence')
             if item.get('family') == 'avutil' and evidence.get('ffmpegVersion') != pinned_ffmpeg: raise ValueError('FFmpeg runtime/source version mismatch')
+        # A numpy.libs library counts as numpy's only when numpy's own licence names it.
+        word = numpy_bundled(item['file'])
+        if word and word not in ' '.join((root / name).read_text(errors='replace').lower() for name in existing_notices.get('numpy', [])):
+            raise ValueError('The numpy licence does not name its bundled ' + Path(item['file']).name)
         if component in source_ids:
             source = next(source for source in value['artifacts'] if source['id'] == component)
             if not source.get('notices'): raise ValueError('Missing component notice inventory: ' + str(component))
@@ -224,7 +252,11 @@ def main():
     parser.add_argument('helper', type=Path)
     parser.add_argument('--catalog', type=Path, default=SOURCE / 'source-catalog.json')
     parser.add_argument('--verify', action='store_true')
+    parser.add_argument('--drop-os-libraries', action='store_true', help='Remove bundled copies of the OS libraries a Linux helper takes from the system')
     args = parser.parse_args()
+    if args.drop_os_libraries:
+        print(json.dumps({'removed': drop_os_libraries(args.helper)}, indent=2))
+        return
     result = verify_inventory(args.helper, args.catalog) if args.verify else collect(args.helper, args.catalog)
     print(json.dumps({'nativeFiles': len(result['native']), 'platform': result['platform'], 'arch': result['arch'], 'problems': result['problems']}, indent=2))
     if result['problems']: raise SystemExit(1)
