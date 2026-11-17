@@ -158,7 +158,7 @@ export function foldKitLine(job: Pick<AppJob, 'steps' | 'result'>, line: string)
 /** The kit's command inside an app, as its own `start` script names it (`<cli> serve`). */
 export function kitCliFor(folder: string): string {
   let pkg: { scripts?: Record<string, string> };
-  try { pkg = JSON.parse(fs.readFileSync(path.join(/* turbopackIgnore: true */ folder, 'package.json'), 'utf8')); }
+  try { pkg = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'package.json'), 'utf8')); }
   catch { throw new AppBuildError('setup', 'This folder has no package.json. Is it an app made with the app kit?'); }
   const cli = pkg.scripts?.start?.trim().split(/\s+/)[0];
   if (!cli || !/^[A-Za-z0-9@/._-]+$/.test(cli) || !/\bserve\b/.test(pkg.scripts?.start ?? '')) {
