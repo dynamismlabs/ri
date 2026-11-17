@@ -101,10 +101,13 @@ try {
   // A separate installation the CLI made on its own folders, with its own
   // database and identity. A copy of the first Home's database would be that
   // Home's data on a second root, which serves nothing until it's claimed
-  // (`home_not_active`, docs/homes-spec.md section 10.3).
+  // (`home_not_active`, docs/homes-spec.md section 10.3). Like `ri start` on a
+  // new folder, it records the choice to make a Home there first. Without it
+  // the service waits in first run for someone to choose, with no Home to open.
   for (const dir of [advanced.root, advanced.config, advanced.work]) fs.mkdirSync(dir, { recursive: true });
   const associationEnv = demoEnvironment(repo, { ...env, ...installationEnvironment(advanced) }, 'production');
   select(associationEnv);
+  writeDesktopHomeIntent();
   // Deliberately start an existing source/CLI owner. Connecting a packaged
   // viewer must not select the bundled runtime for its future restarts.
   await ensureService({ repo, node: process.execPath, env: { ...associationEnv, RI_RUNTIME_REPO: repo } });
