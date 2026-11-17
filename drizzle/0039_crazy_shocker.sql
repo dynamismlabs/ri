@@ -1,0 +1,1 @@
+ALTER TABLE `app_sources` ADD `removed_at` text;

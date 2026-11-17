@@ -274,6 +274,13 @@
       "when": 1794528257499,
       "tag": "0038_tidy_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "6",
+      "when": 1794904527931,
+      "tag": "0039_crazy_shocker",
+      "breakpoints": true
     }
   ]
 }
