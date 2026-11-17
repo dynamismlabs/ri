@@ -217,12 +217,20 @@ jobs:
         env:
           RI_SERVICE_SMOKE_SUPERVISOR: install-test-job-on-disposable-github-hosted-account
         run: pnpm exec tsx desktop/service-lifecycle-smoke.ts "$RI_RUNTIME_PACKAGE" --os-supervisor --report release/qualification/service-native.json
-      # launchd writes the controller's output to the fixture's service.log,
-      # which a failed run keeps and the upload below collects. systemd sends
-      # it to the journal instead, so a failed Linux run saves the test job's.
+      # launchd and systemd both write the controller's output to the fixture's
+      # service.log, which a failed run keeps and the upload below collects.
+      # systemd's own lines about the unit (starts, exits, restart limits) are
+      # in the journal. `--user-unit` matches the caller's own units, so it runs
+      # as this account: under sudo it looked for root's and found nothing.
       - name: Save the test login job's journal
         if: failure() && steps.os_supervision.outcome == 'failure' && runner.os == 'Linux'
-        run: sudo journalctl --no-pager -o short-precise --user-unit 'app.ri.service.*' > "$RUNNER_TEMP/ri-service-journal.log" 2>&1 || true
+        run: |
+          {
+            echo "== The test unit's journal, read as $USER"
+            journalctl --user --no-pager -o short-precise --user-unit 'app.ri.service.*' 2>&1
+            echo "== Everything $USER's processes logged in the last hour, read as root"
+            sudo journalctl --no-pager -o short-precise _UID="$(id -u)" --since '1 hour ago' -n 5000 2>&1
+          } > "$RUNNER_TEMP/ri-service-journal.log" || true
       - name: Exercise packaged macOS recovery
         if: runner.os == 'macOS'
         run: pnpm exec tsx desktop/recovery-smoke.ts

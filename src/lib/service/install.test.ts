@@ -4,7 +4,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { servicePaths } from './paths';
 import { acquireServiceOwner } from './owner';
-import { hasLoginSupervision, installService, startInstalledService, uninstallService } from './install';
+import { hasLoginSupervision, installService, previousDefinitions, serviceDefinition, startInstalledService, uninstallService } from './install';
 
 const mocks = vi.hoisted(() => ({ exec: vi.fn(), status: vi.fn(), request: vi.fn(), stop: vi.fn(), runtime: vi.fn() }));
 vi.mock('node:child_process', () => ({ execFileSync: mocks.exec }));
@@ -84,11 +84,31 @@ describe.each(['darwin', 'linux'] as const)('%s user service adapter', platform 
     else expect(mocks.exec).toHaveBeenCalledWith('systemctl', ['--user', 'start', `${job.label}.service`], { stdio: 'pipe' });
   });
 
+  // The template Ri shipped just before this one.
   function previousContent(content: string) {
     return platform === 'darwin'
       ? content.replace('<key>ExitTimeOut</key><integer>60</integer>', '<key>ExitTimeOut</key><integer>30</integer>')
-      : content.replace('TimeoutStopSec=60\n', 'TimeoutStopSec=30\n');
+      : content.replace('StartLimitIntervalSec=0\n', 'StartLimitIntervalSec=300\nStartLimitBurst=5\n').replace(/^Standard(?:Output|Error)=append:.*\n/gm, '');
   }
+
+  it('knows every template Ri shipped, and only those', async () => {
+    const job = await installService(true);
+    const previous = previousDefinitions(job);
+    expect(previous[0]).toBe(previousContent(job.content));
+    if (platform === 'linux') expect(previous).toEqual([previousContent(job.content), previousContent(job.content).replace('TimeoutStopSec=60\n', 'TimeoutStopSec=30\n')]);
+    else expect(previous).toHaveLength(1);
+    expect(previous).not.toContain(job.content);
+  });
+
+  it('migrates the template from before the one Ri shipped last, too', async () => {
+    if (platform === 'darwin') return;
+    const job = await installService(); const older = previousDefinitions(job)[1];
+    write(job.file, older); mocks.exec.mockClear();
+    await expect(startInstalledService()).resolves.toBe(true);
+    expect(fs.readFileSync(job.file, 'utf8')).toBe(job.content);
+    expect(mocks.exec).toHaveBeenCalledWith('systemctl', ['--user', 'stop', `${job.label}.service`], { stdio: 'pipe' });
+    expect(mocks.exec).toHaveBeenLastCalledWith('systemctl', ['--user', 'enable', '--now', `${job.label}.service`], { stdio: 'pipe' });
+  });
 
   it('migrates only the known previous definition after a successful idle handoff', async () => {
     const job = await installService(); const previous = previousContent(job.content);
@@ -218,4 +238,24 @@ it('migrates an unloaded previous macOS registration without booting out a diffe
   expect(mocks.exec.mock.calls.some(([, args]) => args[0] === 'bootout')).toBe(false);
   expect(fs.readFileSync(job.file, 'utf8')).toBe(job.content);
   expect(mocks.exec).toHaveBeenLastCalledWith('launchctl', ['bootstrap', `gui/${process.getuid!()}`, job.file], { stdio: 'pipe' });
+});
+
+describe('systemd unit', () => {
+  const options = { platform: 'linux' as const, home: '/home/person', launcher: '/home/person/.ri/launch', id: 'abc', root: '/home/person/ri',
+    database: '/home/person/ri/data.db', config: '/home/person/ri/.config', work: '/home/person/ri/.work', log: '/home/person/ri/.work/service.log' };
+
+  it('restarts a failed launcher without a start limit and logs where `ri logs` reads, as launchd does', () => {
+    const { content } = serviceDefinition(options);
+    expect(content).toContain('[Unit]\nDescription=Ri background service\nStartLimitIntervalSec=0\n\n[Service]');
+    expect(content).not.toContain('StartLimitBurst');
+    expect(content).toContain('Restart=on-failure\nRestartSec=30\n');
+    expect(content).toContain('StandardOutput=append:/home/person/ri/.work/service.log\nStandardError=append:/home/person/ri/.work/service.log\n');
+  });
+
+  it('writes a log path systemd reads as it stands, or refuses it', () => {
+    expect(serviceDefinition({ ...options, log: '/home/person/100% ri/.work/service.log' }).content).toContain('StandardOutput=append:/home/person/100%% ri/.work/service.log\n');
+    for (const log of ['relative/service.log', '/home/person/ri\n[Service]\nExecStartPre=/bin/sh', '/home/person/ri/service.log ', '/home/person/ri\\']) {
+      expect(() => serviceDefinition({ ...options, log })).toThrow('systemd unit');
+    }
+  });
 });
