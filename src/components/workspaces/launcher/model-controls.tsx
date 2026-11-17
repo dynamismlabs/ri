@@ -64,6 +64,7 @@ export function ModelControl({
   const currentModel = models.find(model => model.id === selection.model) ?? null;
   const effortOptions = effortOptionsForModel(selection.harness, currentModel);
   const effortLabel = effortOptions.find(option => option.id === effort)?.label;
+  const variantLabel = variant ? currentModel?.variants?.find(option => option.id === variant)?.name ?? variant : undefined;
   const speedOptions = serviceTierOptions(currentModel);
   // An omitted value initializes a new draft. Explicit NULL is a saved
   // legacy selection that still inherits the native provider setting.
@@ -93,12 +94,12 @@ export function ModelControl({
         <Tip label="Choose a model and adjust its settings">
           <button
             type="button"
-            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}`}
+            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
             disabled={disabled}
             className={TRIGGER_CLASS}
           >
             <Cpu size={11} className="text-primary/70" />
-            <ModelMenuLabel model={label} effort={effortLabel} speed={speed ?? undefined} />
+            <ModelMenuLabel model={label} effort={effortLabel} variant={variantLabel} speed={speed ?? undefined} />
           </button>
         </Tip>
       </PopoverTrigger>

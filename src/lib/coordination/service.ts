@@ -15,6 +15,7 @@ import { requestScopedId } from './start-id';
 import { startDelegatedExecution } from './start-execution';
 import { IMPORT_MIRROR_REFUSAL, isImportMirror } from '@/lib/import/mirror';
 import { AGENT_MESSAGE_INSTRUCTIONS, AGENT_REQUEST_REPLY_INSTRUCTIONS } from '@/lib/sessions/chat-message';
+import { deriveAndSetSessionLabel } from '@/lib/sessions/derive-label';
 
 const state = processState('coordination.delivery', () => ({ draining: null as Promise<void> | null, again: false, reconcileAfterId: null as string | null, timer: null as ReturnType<typeof setInterval> | null }));
 
@@ -249,7 +250,14 @@ async function dispatchReserved(sessionId: string, run: ReturnType<typeof q.getR
     if (!ready.ok) throw new ActionError('conflict', ready.error);
     await new Promise<void>((resolve, reject) => {
       void executor.dispatch(sessionId, expanded, { runId: run.id, sourceEventId: run.sourceEventId, coordinationDeliveryIds: messages.map(message => message.id), attachments,
-        actor, onTaken: resolve, onQueued: resolve }).then(resolve, reject);
+        actor, onQueued: resolve, onTaken: () => {
+          resolve();
+          if (session && !session.label && session.type !== 'orchestration') {
+            // Use the shared intent, without sender labels or delivery instructions.
+            const content = messages.map(message => [message.payload.directions, message.payload.content].filter(Boolean).join('\n\n')).join('\n\n');
+            void deriveAndSetSessionLabel(sessionId, content, session.harness);
+          }
+        } }).then(resolve, reject);
     });
   } catch (error) {
     const { CoordinationHeldError } = await import('./hold');

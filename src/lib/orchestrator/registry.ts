@@ -148,7 +148,7 @@ import { uuidv7 } from 'uuidv7';
 import { z } from 'zod';
 import { browserActions } from './browser-actions';
 import { ActionError, defineAction, type Action, type ActionContext } from './types';
-import type { ChatSessionRecord } from '@/db/types';
+import { EFFORT_LEVELS, type ChatSessionRecord } from '@/db/types';
 // `dispatchRun` and the executor `abort` transitively load `@agentex/agent`,
 // which has no `require` condition in its package exports. Top-level imports
 // here would crash `tsx src/cli/index.ts` (CJS resolution) on every CLI
@@ -2191,7 +2191,7 @@ const triggerConcurrencyPolicy = z.enum([
   'allow_concurrent',
 ]);
 const triggerCatchUpPolicy = z.enum(['skip_missed', 'run_all']);
-const effortLevel = z.enum(['low', 'medium', 'high', 'xhigh', 'max', 'ultra']);
+const effortLevel = z.enum(EFFORT_LEVELS);
 // Provider vocabulary, the same ids `user_state.default_harness` stores.
 // Only providers their rollout flag leaves enabled.
 const triggerProvider = z.enum(HARNESS_IDS as unknown as [HarnessId, ...HarnessId[]]);

@@ -39,7 +39,7 @@ beforeAll(async () => {
         const [speed,setSpeed] = useState('default');
         const [switched,setSwitched] = useState(null);
         const [launch,setLaunch] = useState({harness:'codex',model:'gpt-6.1-sol',effort:'high',variant:null});
-        const [schedule,setSchedule] = useState({provider:'codex',model:'gpt-6.1-sol',effort:'high',serviceTier:null});
+        const [schedule,setSchedule] = useState(params.has('opencode') ? {provider:'opencode',model:'anthropic/claude-sonnet-5-5',effort:null,serviceTier:null} : {provider:'codex',model:'gpt-6.1-sol',effort:'high',serviceTier:null});
         const settings = useSettingsStore();
         const preview = params.get('preview');
         return <TipProvider><main style={params.has('bottom')?{position:'fixed',left:24,bottom:24}:{padding:24}}>
@@ -99,6 +99,10 @@ beforeAll(async () => {
           fixture.models.claude.push({id:'fable',label:'Fable'},{id:'sonnet',label:'Sonnet'},{id:'haiku',label:'Haiku'});
           fixture.recent.claude = ['opus','fable'];
         }
+        if(location.search.includes('opencode')) {
+          fixture.models.opencode = [{id:'anthropic/claude-sonnet-5-5',label:'Claude Sonnet 5.5',supportedEfforts:['low','medium','high','xhigh','max']},{id:'anthropic/claude-opus-5-5',label:'Claude Opus 5.5',supportedEfforts:['low','xhigh'],variants:[{id:'thinking',name:'Thinking'}]}];
+          fixture.recent.opencode = ['anthropic/claude-sonnet-5-5','anthropic/claude-opus-5-5'];
+        }
         if(location.search.includes('no-history')) fixture.recent = {};
         if(location.search.includes('all-providers')) {
           fixture.models.claude = [...fixture.models.claude,{id:'fable',label:'Fable'}];
@@ -129,7 +133,7 @@ beforeAll(async () => {
         export const useHarnesses = () => ({data:{harnesses:[]}});
         export const useAddCustomModel = () => ({});
         export const useRemoveCustomModel = () => ({});
-        export const useHarnessConnection = harness => ({connection:{connected:harness==='codex'||harness==='claude'||(location.search.includes('all-providers')&&['cursor','antigravity'].includes(harness))}});
+        export const useHarnessConnection = harness => ({connection:{connected:harness==='codex'||harness==='claude'||(location.search.includes('opencode')&&harness==='opencode')||(location.search.includes('all-providers')&&['cursor','antigravity'].includes(harness))}});
         export const useRecheckHarnessConnection = () => ({isPending:false,mutate(){}});
         export const useDefaultSelection = () => ({harness:'codex',model:'gpt-6.1-sol',effort:'high'});
         export const useSetDefaultSelection = () => ({isPending:false,mutate(){}});
@@ -753,6 +757,27 @@ it.skipIf(!enabled)('shows inherited schedule speed honestly until Normal is exp
     await page.getByRole('button', { name: 'Speed: Provider default' }).click();
     await page.getByRole('menuitemradio', { name: 'Normal', exact: true }).click();
     await expect.poll(async () => JSON.parse((await page.getByLabel('Schedule selection').textContent())!).serviceTier).toBe('default');
+  } finally { await page.close(); }
+});
+
+it.skipIf(!enabled)('edits an OpenCode schedule effort like any provider, and keeps a variant that is not an effort level apart', async () => {
+  const page = await openPage('?schedule&opencode');
+  const selection = async () => JSON.parse((await page.getByLabel('Schedule selection').textContent())!);
+  try {
+    await page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5, Medium effort', exact: true }).click();
+    expect(await page.getByRole('button', { name: /^Variant:/ }).count()).toBe(0);
+    await page.getByRole('button', { name: 'Effort: Medium' }).click();
+    await page.getByRole('menuitemradio', { name: /^High/ }).click();
+    await expect.poll(selection).toMatchObject({ provider: 'opencode', model: 'anthropic/claude-sonnet-5-5', effort: 'high' });
+    const chip = page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5, High effort', exact: true });
+    expect(await chip.textContent()).toContain('High');
+    // A model without Medium and with no default lands on the nearest level it offers.
+    await chip.click();
+    await page.getByRole('option', { name: /Claude Opus 5.5/ }).first().click();
+    await expect.poll(selection).toMatchObject({ model: 'anthropic/claude-opus-5-5', effort: 'low' });
+    // Its own variant, one that isn't an effort level, keeps its row.
+    await page.getByRole('button', { name: /Model and settings: Claude Opus 5.5/ }).click();
+    await page.getByRole('button', { name: 'Variant: Default' }).waitFor();
   } finally { await page.close(); }
 });
 

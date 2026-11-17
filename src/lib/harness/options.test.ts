@@ -24,12 +24,12 @@ describe('harness ordering', () => {
 });
 
 describe('agent effort options', () => {
-  it('shows effort for Claude, Codex and Antigravity harnesses', () => {
+  it('shows effort for Claude, Codex, OpenCode and Antigravity harnesses', () => {
     expect(harnessSupportsEffort('claude')).toBe(true);
     expect(harnessSupportsEffort('codex')).toBe(true);
     expect(harnessSupportsEffort('antigravity')).toBe(true);
+    expect(harnessSupportsEffort('opencode')).toBe(true);
     expect(harnessSupportsEffort('cursor')).toBe(false);
-    expect(harnessSupportsEffort('opencode')).toBe(false);
     expect(harnessSupportsEffort('other')).toBe(false);
   });
 
@@ -95,6 +95,25 @@ describe('agent effort options', () => {
       variant: null,
       effort: 'medium',
     });
+  });
+
+  it('resolves an OpenCode model\'s own levels like any effort', () => {
+    const catalog: ModelOption[] = [
+      { id: 'anthropic/claude', label: 'Claude', supportedEfforts: ['low', 'medium', 'high', 'max'] },
+      { id: 'opencode/flash', label: 'Flash', supportedEfforts: ['none', 'high'] },
+      { id: 'opencode/plain', label: 'Plain' },
+    ];
+    expect(effortOptionsForModel('opencode', catalog[1]).map((option) => option.id)).toEqual(['none', 'high']);
+    expect(explicitHarnessSelection('opencode', { model: 'anthropic/claude', effort: 'max' }, catalog)).toMatchObject({ effort: 'max', variant: null });
+    expect(explicitHarnessSelection('opencode', { model: 'anthropic/claude' }, catalog).effort).toBe('medium');
+    // No Medium and no default: the nearest level, not the weakest.
+    expect(explicitHarnessSelection('opencode', { model: 'opencode/flash' }, catalog).effort).toBe('high');
+    expect(explicitHarnessSelection('opencode', { model: 'opencode/flash', effort: 'xhigh' }, catalog).effort).toBe('high');
+    // A model without levels carries none, so OpenCode is never sent one it would refuse.
+    expect(explicitHarnessSelection('opencode', { model: 'opencode/plain', effort: 'high' }, catalog).effort).toBeNull();
+    // At a boundary that only knows the model's id, a validated level is kept, and none is invented.
+    expect(explicitHarnessSelection('opencode', { model: 'custom/model', effort: 'high' }, []).effort).toBe('high');
+    expect(explicitHarnessSelection('opencode', { model: 'custom/model' }, []).effort).toBeNull();
   });
 
   it('keeps model variants independent from reasoning effort', () => {

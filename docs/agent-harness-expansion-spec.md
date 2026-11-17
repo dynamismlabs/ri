@@ -160,8 +160,8 @@ Use these terms consistently:
 - Harness: the coding agent runtime, such as Cursor or OpenCode
 - Upstream provider: a model and credential source inside a harness, such as Anthropic inside OpenCode
 - Model: the model identifier accepted by the selected harness
-- Variant: an OpenCode model variant, separate from reasoning effort
-- Effort: a harness-supported reasoning effort value
+- Variant: an OpenCode model variant that isn't an effort level, such as one defined in `opencode.json`
+- Effort: a harness-supported reasoning effort value, weakest first: `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `ultra`. OpenCode models list their effort levels as variants named after them. agentex (0.0.51) reports those as the model's `supportedEfforts` and sends `config.effort` as the variant, so Ri stores and shows OpenCode's effort like every other harness's
 - Enabled model: a model the user selected for normal menus
 - Catalog model: any model reported by the harness, whether enabled or not
 
@@ -661,7 +661,7 @@ Rules:
 - Disabling the default chooses the first remaining enabled model after confirmation
 - Disabling the final model is rejected when this is the global default harness
 - A default model must be enabled
-- OpenCode variant is stored separately from effort
+- OpenCode effort is stored as effort, like every harness's. Only a variant that isn't an effort level is stored as a variant
 - Unsupported effort or variant values are preserved on historical chats but cannot be newly selected
 - Model catalog defaults are suggestions, not forced replacements
 

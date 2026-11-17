@@ -121,6 +121,14 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
                   kind === 'build' ? 'Tell the AI what this skill should do or change' : 'Ask for something the skill should handle'
                 }
                 intro={kind === 'build' ? buildIntro(skill) : tryIntro(skill)}
+                onSwitchProvider={(next) => chat.newChat.mutate({
+                  providerId: next.harness,
+                  model: next.model,
+                  variant: next.variant,
+                  effort: next.effort,
+                  serviceTier: next.serviceTier,
+                })}
+                switchingProvider={chat.newChat.isPending}
               />
             ) : chat.error ? (
               <div className="flex flex-1 items-center justify-center px-8 text-center">

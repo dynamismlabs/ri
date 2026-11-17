@@ -18,7 +18,7 @@ vi.mock('@/lib/harness/model-discovery', () => ({
   getHarnessModelCatalog: async (harness: string) => [{ id: harness === 'codex' ? 'gpt-5.5' : 'opus', supportedEfforts: ['high'] }],
   resolveHarnessSelection: async (harness: string) => ({ providerId: harness,
     model: harness === 'codex' ? 'gpt-5.5' : 'opus', variant: null,
-    effort: harness === 'claude' || harness === 'codex' || harness === 'antigravity' ? 'high' : null }),
+    effort: harness === 'claude' || harness === 'codex' || harness === 'opencode' || harness === 'antigravity' ? 'high' : null }),
 }));
 vi.mock('@/lib/harness/runtime', () => ({
   runtimeContextForHarness: async () => ({}),
