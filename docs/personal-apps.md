@@ -141,6 +141,14 @@ On November 17, Ri moved to the kit's `main` at `bbbb340`, still core 0.2.2. It 
 
 Later on November 17, Ri moved to the kit's `main` at `a8e9b5d`, still core 0.2.2. `change` and `upgrade` now rewrite an installed app's service definition when it differs from what `serve --install` would write, so an app installed by an earlier kit picks up `NODE_ENV=production` and its current Node, and a rollback puts the old definition back. The launchd plist sets `ProcessType` to `Interactive`, so a busy Mac no longer throttles an app's start. The switch waits for `/api/health` as long as the rehearsal showed the build needs (1 to 10 minutes, or `--health-timeout`), a rollback restores the snapshot only once, and `upgrade` switches with the new core's own `change`. An app on `df533b0` or earlier still switches with its old core that one time, so it takes these on with one `change` after the upgrade. Ri's typecheck, its app and toolchain tests and a release build with its trace check passed. The live check above wasn't repeated for this move.
 
+Later still on November 17, Ri moved to the kit's `main` at `023f92f`, still core 0.2.2. It brings four changes:
+- **Builds use the service's Node.** `change`, `upgrade` and their rehearsal build with the Node an installed app's service runs, not whatever is first on the PATH. They refuse before building when that Node is gone or doesn't satisfy the app's `engines.node`.
+- **Transactions.** `transaction(ctx, work)` runs synchronous work on Node as one transaction that can read, so an app needs no private database handle for it.
+- **Settings in an assistant's view.** An app's Settings (connections, the link to Ri and automations) works inside an MCP Apps view, through the view-only tools `read_settings` and `change_settings`.
+- **Browser clients and add-only connections.** OAuth clients in a browser, like a browser extension, can sign in. An app can mark actions that only add, and its consent screen then offers a connection that may only add. That is the starter's new core migration, `0_core-0010`.
+
+A starter made by the carried kit built, typechecked and passed its test, and all eleven of its migrations applied to an empty database, `core-0010` included. Its install ran offline from the local store. Ri's typecheck, its app and toolchain tests and a release build with its trace check passed. The live check above wasn't repeated for this move.
+
 ## The catalog
 
 Ri offers recommended apps the way it used to offer its bundled ones, without carrying their code (shared spec §2, "The catalog"). Only first-party apps for now.
