@@ -55,13 +55,15 @@ async function waitFor(jobId: string) {
 }
 
 describe('an app\'s state', () => {
-  it('reads it from the kit\'s status --json, keeping what Ri shows and not where its data is', async () => {
+  it('reads it from the kit\'s status --json, keeping what Ri shows', async () => {
     const { source, write, asked } = app();
     write('status.json', JSON.stringify(running) + '\n');
     const status = await appStatus(source.id, { fresh: true });
     expect(status).toMatchObject({ state: 'running', pid: 41237, release: '3f2a9c1d0b7e', core: '0.2.1', address: 'http://127.0.0.1:4310', lastError: null });
     expect(status.lastChange).toMatchObject({ outcome: 'switched', previous: 'a81c03e4f5d2' });
-    expect(status).not.toHaveProperty('dataDir');
+    // Where its data is, which Remove names as kept. Ri never opens it.
+    expect(status.dataDir).toBe('/Users/x/.local/share/tide-log');
+    expect(status).not.toHaveProperty('logFile');
     expect(asked()).toEqual(['status --json']);
     // Views asking at once share one answer for a few seconds.
     await appStatus(source.id);

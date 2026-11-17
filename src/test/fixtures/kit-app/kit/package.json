@@ -1,0 +1,8 @@
+{
+  "name": "tide-kit",
+  "version": "0.0.0",
+  "type": "module",
+  "bin": {
+    "tide-kit": "cli.mjs"
+  }
+}

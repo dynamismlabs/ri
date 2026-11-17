@@ -75,7 +75,32 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllEnvs();
   setAppBuildSettings({ appsDir: null });
-  for (const source of q.listAppSources()) q.deleteAppSource(source.id);
+  for (const source of [...q.listAppSources(), ...q.listRemovedAppSources()]) q.deleteAppSource(source.id);
+});
+
+describe('adding an app the person removed', () => {
+  it('installs its kept folder again, changes and all, and clones afresh only when the folder is gone', async () => {
+    await publish('v1.0.0');
+    const { source } = await addCatalogApp('tide-log');
+    const folder = path.join(apps, 'tide-log');
+    fs.writeFileSync(path.join(folder, 'mine.txt'), 'my change\n');
+    q.updateAppSource(source.id, { removedAt: new Date().toISOString() });
+    expect(listCatalogApps().apps[0]).toMatchObject({ sourceId: null });
+
+    const { source: back } = await addCatalogApp('tide-log');
+    expect(back).toMatchObject({ id: source.id, folder, removedAt: null });
+    expect(fs.readFileSync(path.join(folder, 'mine.txt'), 'utf8')).toBe('my change\n');
+    expect(installed).toEqual([source.id, source.id]);
+    await expect(addCatalogApp('tide-log')).rejects.toThrow(/already added/);
+
+    // Removed again, and its folder deleted by hand: a fresh copy from the catalog, as a new app.
+    q.updateAppSource(source.id, { removedAt: new Date().toISOString() });
+    fs.rmSync(folder, { recursive: true, force: true });
+    const { source: fresh } = await addCatalogApp('tide-log');
+    expect(fresh.id).not.toBe(source.id);
+    expect(q.getAppSource(source.id)).toBeUndefined();
+    expect(git(folder, 'rev-parse', 'HEAD')).toBe(git(upstream, 'rev-parse', 'v1.0.0'));
+  });
 });
 
 describe('adding an app from the catalog', () => {
