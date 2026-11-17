@@ -90,6 +90,16 @@ describe('the hub surface an app sees', () => {
     expect(q.listHubCalls(app.id)[0]).toMatchObject({ tool: 'ri__create_task', status: 'ok' });
   });
 
+  it('tells an app a message is gone as not_found with its HTTP status, still an error', async () => {
+    const app = q.upsertHubApp({ clientId: `travel-${crypto.randomUUID()}`, name: 'Travel', grant: { accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages'] }], services: [] } });
+    const { server, tools } = registrar();
+    await serveHub(server, runtime(vi.fn(async () => ({ ok: false, reason: 'error', code: 'not_found', message: 'provider error 410 for GET /gmail/v1/users/me/history', status: 410 }))) as never, app, { ownerId: 'local', redirectUris: [] });
+    const answer = await tools.get('gmail__search_messages')!.handler({}, context());
+    expect(answer.isError).toBe(true);
+    expect(JSON.parse((answer.content[0] as { text: string }).text)).toEqual({ status: 'error', code: 'not_found', httpStatus: 410, message: 'provider error 410 for GET /gmail/v1/users/me/history' });
+    expect(q.listHubCalls(app.id)[0]).toMatchObject({ tool: 'gmail__search_messages', status: 'error' });
+  });
+
   it('answers a write waiting for the person the way the kit retries it', async () => {
     const app = q.upsertHubApp({ clientId: `bloom-${crypto.randomUUID()}`, name: 'Bloom', grant: { accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__send_email'] }], services: [] } });
     const { server, tools } = registrar();

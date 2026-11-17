@@ -15,6 +15,9 @@ export type IntegrationErrorCode =
   | 'invalid_input'
   | 'denied'
   | 'provider_error'
+  // The provider says what was asked for isn't there or is gone (HTTP 404 or 410): a deleted message,
+  // an expired history or sync token. The status stays on the error, so a caller can tell 410 from 404.
+  | 'not_found'
   | 'provider_rate_limited'
   | 'provider_unavailable'
   | 'provider_timeout'         // one request exceeded its budget, not a revoked connection
