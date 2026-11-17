@@ -295,7 +295,9 @@ it('scrolls long chat lists below a fixed header and follows the rail height on 
     await page.evaluate(() => (window as unknown as FixtureWindow).fixture.patch({ many: true }));
     await nameButton(page).hover();
     const panel = flyout(page);
-    await panel.waitFor();
+    // Drawing 87 chats with React's development build takes seconds on a slow runner (4.5 s with
+    // the CPU slowed 20 times), past the 3 s a step gets. It opens, just later.
+    await panel.waitFor({ timeout: 15_000 });
     await expectFullHeight(panel, page.locator('aside'));
     const header = panel.locator(':scope > div').first();
     const headerTop = (await header.boundingBox())!.y;

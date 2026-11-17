@@ -119,7 +119,9 @@ async function phone(): Promise<{ context: BrowserContext; page: Page }> {
     (window as unknown as { setKeyboard: (px: number) => void }).setKeyboard = (px) => { keyboard = px; viewport.dispatchEvent(new Event('resize')); };
   });
   const page = await context.newPage();
+  // Steps fail fast. Loading the bundle cold takes longer on a slow runner, so it gets its own budget.
   page.setDefaultTimeout(5_000);
+  page.setDefaultNavigationTimeout(15_000);
   page.on('pageerror', (e) => console.error(e.message));
   await skillRequests(page);
   await page.goto(fixture.url);
@@ -187,6 +189,7 @@ it('keeps Enter-to-start and key hints on desktop', async () => {
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   page.setDefaultTimeout(5_000);
+  page.setDefaultNavigationTimeout(15_000);
   try {
     await skillRequests(page);
     await page.goto(fixture.url);
@@ -209,6 +212,7 @@ it('loads skills before creating a chat and updates an open /f picker when disco
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   page.setDefaultTimeout(5_000);
+  page.setDefaultNavigationTimeout(15_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   const skills = await skillRequests(page, true);
@@ -238,6 +242,7 @@ it('changes the skill list with the chosen agent and harness and opens it from +
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   page.setDefaultTimeout(5_000);
+  page.setDefaultNavigationTimeout(15_000);
   const skills = await skillRequests(page);
   try {
     await page.goto(fixture.url);
@@ -296,6 +301,7 @@ it('keeps the launch menu focused on context and omits unavailable agents', asyn
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
   page.setDefaultTimeout(5_000);
+  page.setDefaultNavigationTimeout(15_000);
   await skillRequests(page);
   try {
     await page.goto(`${fixture.url}?noAgents`);
