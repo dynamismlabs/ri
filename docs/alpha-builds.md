@@ -38,6 +38,14 @@ Windows installers, and no update feed. It never packages the optional speech
 helper. The artifact-bound speech review process in `desktop/speech/RELEASE.md`
 remains a separate publisher responsibility.
 
+GitHub's Mac runners, mostly the Intel ones, sometimes keep the DMG's temporary
+volume busy when dmgbuild unmounts it ("Resource busy"). `desktop/package.mjs`
+then builds the installers once more and leaves a warning on the run. Each Mac
+job also prints every change in which processes had that volume open, under
+**Show which processes used the DMG volume**. Once a failure names the process
+holding it, stop that before packaging, as is done for Spotlight, and remove the
+watcher.
+
 ## The rolling alpha release
 
 A run from `main` ends with **Publish the alpha release**

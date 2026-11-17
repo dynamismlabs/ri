@@ -220,7 +220,15 @@ if (!headless) {
       run(process.execPath, ['dist/cli/index.mjs', 'service', 'verify', resources]);
     },
   } });
-  const output = await build(packageOptions());
+  // GitHub's Mac runners, the Intel ones above all, sometimes keep the DMG's
+  // temporary volume busy when dmgbuild unmounts it. A second build usually passes.
+  let output;
+  try { output = await build(packageOptions()); }
+  catch (error) {
+    if (process.platform !== 'darwin' || !String(error?.message).includes('Unable to detach device cleanly')) throw error;
+    console.warn(`${process.env.GITHUB_ACTIONS ? '::warning::' : ''}macOS kept the DMG volume busy, so the installers are being built once more.`);
+    output = await build(packageOptions());
+  }
   if (process.platform === 'win32' && process.argv.includes('--upgrade-test')) {
     const parts = pkg.version.split('.').map(Number);
     const upgradeVersion = `${parts[0]}.${parts[1]}.${parts[2] + 1}`;
