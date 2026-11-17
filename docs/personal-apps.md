@@ -149,6 +149,14 @@ Later still on November 17, Ri moved to the kit's `main` at `023f92f`, still cor
 
 A starter made by the carried kit built, typechecked and passed its test, and all eleven of its migrations applied to an empty database, `core-0010` included. Its install ran offline from the local store. Ri's typecheck, its app and toolchain tests and a release build with its trace check passed. The live check above wasn't repeated for this move.
 
+Last on November 17, Ri moved to the kit's `main` at `7b1ba65`, still core 0.2.2, with no new migration. It brings:
+- **Cheaper transactions.** `transaction()` costs little more than the statements it runs: about 2.5 µs for a statement in its own transaction, down from 17.
+- **`upgrade` installs the new core in the app's folder.** After the folder moves to the new commit, `upgrade` runs `pnpm install --frozen-lockfile` there with the service's Node, so the folder's own command is the new core's.
+- **Versioned service definitions.** Each plist and systemd unit records the version of its shape, and an older command leaves a newer definition as it is instead of writing its own.
+- **Asking for add-only.** A client can ask for the `add_only` scope, and the consent screen then starts on "Only add". The person still chooses. An add-only connection lists only the app's add actions.
+
+The same checks passed for this move: the starter from the carried kit, now vendoring this core, and Ri's typecheck, app and toolchain tests and release build. The live check above wasn't repeated.
+
 ## The catalog
 
 Ri offers recommended apps the way it used to offer its bundled ones, without carrying their code (shared spec §2, "The catalog"). Only first-party apps for now.
