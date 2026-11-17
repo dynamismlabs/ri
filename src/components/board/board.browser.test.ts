@@ -189,10 +189,18 @@ it('keeps task drag, lifecycle creates and chat links working with Done and Arch
     const card = dialog(page).getByRole('button', { name: /^todo task\. todo\./ });
     await card.waitFor();
     // Keyboard drag across visible columns invokes the same semantic Start action.
+    // dnd-kit says each step in its live region. Waiting on what it says, and on frames rather than
+    // milliseconds, keeps a slow computer from dropping the card before it moved.
+    const said = () => page.locator('[id^="DndLiveRegion"]').innerText();
     await card.focus();await page.keyboard.press('Space');
-    // Let the keyboard sensor measure droppables before the first move.
-    await page.waitForTimeout(100);
-    await page.keyboard.press('ArrowRight');await page.waitForTimeout(100);
+    // Picked up: it says so, or already says the card is over its own place.
+    await expect.poll(said).toContain('raggable item todo');
+    // The keyboard sensor measures the columns in the frames after the pickup.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const before = await said();
+    await page.keyboard.press('ArrowRight');
+    // Moved: it names the new place before the drop.
+    await expect.poll(said).not.toBe(before);
     await page.keyboard.press('Space');
     await expect.poll(() => mutations.filter(m => m.procedure === 'tasks.transition').map(m => m.input.command)).toEqual(['start']);
     expect(await picker(page).innerText()).toContain('3/5');
