@@ -125,7 +125,8 @@ it('edits cron through presets or a raw expression, validates input, and merges 
     // The builder chat or another screen changes the message meanwhile: the
     // untouched message takes it, the schedule being edited keeps the draft.
     await page.evaluate(() => (window as unknown as FixtureWindow).refreshTrigger());
-    expect(await page.getByLabel('Message').inputValue()).toBe('New instructions from another viewer');
+    // A change from outside an event renders in a later task, so wait for it to land.
+    await expect.poll(() => page.getByLabel('Message').inputValue()).toBe('New instructions from another viewer');
     expect(await page.getByLabel('Time', { exact: true }).inputValue()).toBe('16:45');
     await save(page).click();
     expect(await changes(page)).toEqual([{ id: 'fixture-job', cronExpression: '45 16 * * 5', timezone: 'America/Denver' }]);
