@@ -20,3 +20,10 @@ export function connectionFailure(error: unknown, local = false): DesktopConnect
   }
   return { kind: 'attention', message: 'The Ri connection needs attention.', detail, retryable: false };
 }
+
+/** A local Home whose start failed and that its controller keeps trying
+ * (docs/always-on-spec.md section 6.2). It comes up by itself once the cause
+ * is gone, so this is retryable, and the controller's reason is the detail. */
+export function retryingStartIssue(reason: string): DesktopConnectionIssue {
+  return { kind: 'attention', message: 'Ri couldn’t start. It keeps trying by itself.', detail: reason, retryable: true };
+}

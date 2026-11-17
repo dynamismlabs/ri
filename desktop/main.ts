@@ -17,7 +17,7 @@ import { HarnessToolSetup } from './harness-tools';
 import type { DesktopComputerStatus } from '../src/lib/client/desktop';
 import { parseDeepLink, resultLocation, watchOAuthResults } from './oauth-client';
 import { servicePaths } from '../src/lib/service/paths';
-import { serviceRequest, serviceStatus, type ServiceStatus } from '../src/lib/service/client';
+import { awaitingRetry, serviceRequest, serviceStatus, type ServiceStatus } from '../src/lib/service/client';
 import { redactServiceLine } from '../src/lib/service/logging';
 import { assertExistingInstallation, installationEnvironment, localInstallation, readInstallation, saveInstallation, type InstallationInspection } from './installation';
 import { maintenanceWindow } from './maintenance-window';
@@ -125,6 +125,13 @@ let quitting = false;
 let finished = false;
 let exitCode = 0;
 let startupTimer: ReturnType<typeof setTimeout> | undefined;
+const STARTUP_LIMIT_MS = 4 * 60_000;
+const STARTUP_LIMIT_MESSAGE = 'The app did not finish starting within four minutes. Check the backend output and retry.';
+const PREPARE_LIMIT_MS = 30 * 60_000;
+function startupLimit(ms: number, message: string) {
+  clearTimeout(startupTimer);
+  startupTimer = setTimeout(() => fail(message), ms);
+}
 let appOrigin: string | undefined;
 let appToken: string | undefined;
 let localViewer = false;
@@ -384,6 +391,9 @@ async function retryConnection() {
   if (selectionInvalid) throw new Error('Choose and verify an installation before retrying. The saved selection could not be opened.');
   const status = await serviceStatus();
   if (status?.phase === 'failed') throw new Error('The service needs recovery before it can restart.');
+  // A Home waiting for its next try after a failed start tries now: whoever
+  // pressed this has likely fixed the cause.
+  if (awaitingRetry(status)) await serviceRequest('/restart', 'POST', 10_000);
   selectionError = undefined;
   connecting = true;
   try {
@@ -1294,6 +1304,10 @@ function startConnection() {
   }
   backend.on('message', (message: BackendMessage) => {
     if (backend !== child || quitting) return;
+    // A first launch stages the bundled release before anything else: minutes
+    // on a slow disk, so it has its own limit and the startup clock starts after.
+    if (message.type === 'preparing' && connecting) startupLimit(PREPARE_LIMIT_MS, 'Ri is still preparing its first start after 30 minutes. Check the backend output and retry.');
+    if (message.type === 'prepared' && connecting) startupLimit(STARTUP_LIMIT_MS, STARTUP_LIMIT_MESSAGE);
     if (message.type === 'setup') {
       connecting = false; clearTimeout(startupTimer);
       if (viewerTransitions.current) fail(message.status.reason ?? 'Review this computer’s connection in Desktop Settings.');
@@ -1319,7 +1333,7 @@ function startConnection() {
   });
   child.once('error', (error) => { if (backend === child) fail(error); });
   child.once('exit', (code) => { if (!quitting && backend === child && !selectionError) fail(`The desktop connection helper stopped (${code ?? 'signal'}). Inspect the service and retry.`); });
-  startupTimer = setTimeout(() => fail('The app did not finish starting within four minutes. Check the backend output and retry.'), 240_000);
+  startupLimit(STARTUP_LIMIT_MS, STARTUP_LIMIT_MESSAGE);
 }
 
 app.on('before-quit', (event) => { if (!finished) { event.preventDefault(); void quit(); } });

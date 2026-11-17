@@ -7,7 +7,7 @@ import { execFile } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';
 import type { InstallationInspection } from './installation';
-import { ensureServiceStatus, serviceStatus, serviceRequest, stopService, type ServiceSession, type ServiceStatus } from '../src/lib/service/client';
+import { awaitingRetry, ensureServiceStatus, serviceStatus, serviceRequest, stopService, type ServiceSession, type ServiceStatus } from '../src/lib/service/client';
 import { attachExistingOwner, runtimeForOwner } from './backend-selection';
 import { installedRuntime } from '../src/lib/service/runtime';
 import { latestRelease, releaseDirectory, stageRelease } from '../src/lib/service/store';
@@ -16,7 +16,7 @@ import { compareVersions } from '../src/lib/service/version-order';
 import { stageFirstDesktopRuntime } from '../src/lib/service/initialization';
 import { connectionSetup, type ConnectionSetupStatus, type ConnectedViewerSession } from './connection-setup';
 import { assertBridge, remoteViewerOrigin } from './viewer-trust';
-import { connectionFailure } from './connection-failure';
+import { connectionFailure, retryingStartIssue } from './connection-failure';
 import { DesktopSessionError } from './session-auth';
 
 /**
@@ -40,6 +40,19 @@ const mode = process.env.RI_DESKTOP_MODE === 'development' ? 'development' : 'pr
 const env = demoEnvironment(repo, process.env, mode);
 Object.assign(process.env, env);
 const send = (message: BackendMessage) => { if (process.connected) process.send?.(message); };
+/** Resolves once the message is handed to the IPC channel, before a long synchronous step. */
+const sent = (message: BackendMessage) => new Promise<void>(resolve => {
+  if (!process.connected || !process.send) resolve();
+  else process.send(message, () => resolve());
+});
+
+/** Staging hashes and copies the whole bundled release, minutes on a slow disk,
+ * and blocks this helper meanwhile. The app gives it its own time limit. */
+async function stageFirstRuntime(resources: string) {
+  await sent({ type: 'preparing' });
+  try { return stageFirstDesktopRuntime(resources); }
+  finally { send({ type: 'prepared' }); }
+}
 let retrySession = false;
 let ownsService = false;
 let stopping = false;
@@ -80,7 +93,7 @@ void (async () => {
   }
   let status: ServiceStatus;
   if (running) {
-    status = await attachExistingOwner({ status: serviceStatus, session: async () => {
+    status = await attachExistingOwner({ status: serviceStatus, retrying: owner => owner, session: async () => {
       const current = await serviceStatus();
       if (!current) throw new Error('The service stopped while connecting. Retry.');
       return current;
@@ -92,10 +105,10 @@ void (async () => {
     if (process.platform !== 'win32' && !remote && existingInstallation && !active && mode !== 'development') throw new Error('Start this installation with its existing CLI service before connecting.');
     // The Windows preview runs the installer bundle directly. Reinstalling
     // replaces software while the Home stays in the user's AppData folder.
-    const runtime = process.platform === 'win32' ? undefined : active ?? (process.env.RI_DESKTOP_RESOURCES ? stageFirstDesktopRuntime(process.env.RI_DESKTOP_RESOURCES) : undefined);
+    const runtime = process.platform === 'win32' ? undefined : active ?? (process.env.RI_DESKTOP_RESOURCES ? await stageFirstRuntime(process.env.RI_DESKTOP_RESOURCES) : undefined);
     const serviceRepo = runtime?.repo ?? repo;
     ownsService = process.platform === 'win32';
-    status = await ensureServiceStatus({ repo: serviceRepo, node: runtime?.node ?? process.execPath, desktopOwned: ownsService,
+    status = await ensureServiceStatus({ repo: serviceRepo, node: runtime?.node ?? process.execPath, desktopOwned: ownsService, untilRetrying: true,
       env: { ...process.env, RI_RUNTIME_REPO: serviceRepo, RI_DESKTOP_REPO: serviceRepo } });
   }
   const ownerRuntime = (owner: ServiceStatus) => {
@@ -128,9 +141,18 @@ void (async () => {
     else if (next.certificate !== last.certificate) send({ type: 'certificate', origin: next.origin, certificate: next.certificate });
     last = next; reportedFailure = undefined; retrySession = false;
   }
+  // A start that failed waits for its controller's next try, which never stops
+  // (docs/always-on-spec.md section 6.2). Say why now. The monitor below
+  // connects once it's up, whether by itself or after the cause is fixed.
+  function startRetrying(owner: ServiceStatus & { error: string }) {
+    if (owner.error === reportedFailure) return;
+    reportedFailure = owner.error;
+    send({ type: 'status', status: owner });
+    send({ type: 'error', message: owner.error, issue: retryingStartIssue(owner.error) });
+  }
   // An unavailable Home does not stop its local worker/controller. Retry the
   // verified connection while retaining the existing renderer and its drafts.
-  try { await connect(status); }
+  try { if (awaitingRetry(status)) startRetrying(status); else await connect(status); }
   catch (error) { const issue = connectionFailure(error); reportedFailure = issue.detail; send({ type: 'error', message: reportedFailure, issue }); }
   // Once the window is up: it's minutes of hashing when there's anything to do, and nothing waits on it.
   setTimeout(() => { try { offerOwnRelease(); } catch (error) { console.warn('[desktop] Could not store this app\'s release:', error instanceof Error ? error.message : 'Failed'); } }, 60_000).unref();
@@ -147,6 +169,9 @@ void (async () => {
         } else await connect(current);
       } else if (current?.phase === 'failed') throw new Error(current.error ?? 'The background service needs recovery.');
       else if (!current) throw new DesktopSessionError('This computer’s Ri service is not responding. Checking again automatically. If it stays unavailable, review Desktop Settings.', 'network');
+      // Before the first connection only. A Home that was serving here and
+      // crashed is back in seconds, and the viewer covers that itself.
+      else if (!last && awaitingRetry(current)) startRetrying(current);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Cannot reach your Ri.';
       if (message !== reportedFailure) send({ type: 'error', message, issue: connectionFailure(error) });

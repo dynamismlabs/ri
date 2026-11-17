@@ -62,4 +62,6 @@ export interface BackendReady {
   token: string;
 }
 
-export type BackendMessage = BackendReady | { type: 'setup'; status: import('./connection-setup').ConnectionSetupStatus } | { type: 'status'; status: import('../src/lib/service/client').ServiceStatus } | { type: 'certificate'; origin: string; certificate: string } | { type: 'error'; message: string; issue?: import('../src/lib/connection/desktop-contract').DesktopConnectionIssue };
+/** `preparing` and `prepared` bracket a first launch's staging of the bundled
+ * release, which takes minutes on a slow disk and has its own time limit. */
+export type BackendMessage = BackendReady | { type: 'preparing' } | { type: 'prepared' } | { type: 'setup'; status: import('./connection-setup').ConnectionSetupStatus } | { type: 'status'; status: import('../src/lib/service/client').ServiceStatus } | { type: 'certificate'; origin: string; certificate: string } | { type: 'error'; message: string; issue?: import('../src/lib/connection/desktop-contract').DesktopConnectionIssue };
