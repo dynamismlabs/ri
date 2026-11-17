@@ -165,7 +165,10 @@ async function expectFullHeight(panel: Locator, rail: Locator) {
 
 it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, and preserves navigation and dismissal', async (style) => {
   const page = await browser.newPage();
+  // The page's own clock, so the brief crossing below can hold time still.
+  await page.clock.install();
   page.setDefaultTimeout(3_000);
+  page.setDefaultNavigationTimeout(15_000);
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?style=${style}`);
@@ -179,11 +182,14 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
     await page.locator('#outside').hover();
     await apps.waitFor({ state: 'hidden' });
     const header = page.locator('#agent-row .group').first();
-    // Crossing a row briefly never opens a menu.
+    // Crossing a row briefly never opens a menu. Time stands still while the pointer crosses, so
+    // the crossing is brief however slowly this computer moves it, then runs past the open delay.
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1));
     await header.hover();
     await page.locator('#outside').hover();
-    await page.waitForTimeout(250);
+    await page.clock.runFor(250);
     expect(await flyout(page).count()).toBe(0);
+    await page.clock.resume();
     // Hover the icon rather than the name to exercise the whole header.
     await header.locator('button').first().hover();
     await flyout(page).waitFor();
@@ -246,6 +252,7 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
 it('keeps inactive chats and nested menus usable, including inside the collapsed rail', async () => {
   const page = await browser.newPage();
   page.setDefaultTimeout(3_000);
+  page.setDefaultNavigationTimeout(15_000);
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?nested=1`);
@@ -268,7 +275,8 @@ it('keeps inactive chats and nested menus usable, including inside the collapsed
     await flyout(page).getByText('Inactive chat', { exact: true }).waitFor();
     await flyout(page).getByRole('button', { name: /Inactive chat/ }).click();
     await flyout(page).waitFor({ state: 'hidden' });
-    expect(await page.getByRole('dialog', { name: 'Agents', exact: true }).count()).toBe(0);
+    // Choosing a chat closes the Agents chooser too, once its exit animation ends.
+    await page.getByRole('dialog', { name: 'Agents', exact: true }).waitFor({ state: 'detached' });
     expect(await actions(page)).toEqual([{ kind: 'navigate', value: { kind: 'execution', id: 'inactive' } }]);
   } catch (error) {
     await page.screenshot({ path: path.join(os.tmpdir(), 'agent-chats-flyout-failure.png') });
@@ -280,6 +288,7 @@ it('keeps inactive chats and nested menus usable, including inside the collapsed
 it('scrolls long chat lists below a fixed header and follows the rail height on resize', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   page.setDefaultTimeout(3_000);
+  page.setDefaultNavigationTimeout(15_000);
   try {
     await page.goto(base);
     await nameButton(page).waitFor();
