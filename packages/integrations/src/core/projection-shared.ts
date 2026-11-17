@@ -8,6 +8,28 @@ import type { AccountChoice, Action, ActionOutcome, RunActionOptions } from './t
 
 export type FailedOutcome = Extract<ActionOutcome, { ok: false }>;
 
+/**
+ * Whether an action's own input has an `account` field, as a connected MCP server's tool may. That
+ * action owns the word: a projection adds no account selector of its own over it and passes the
+ * field through. The action then runs on a settled account, a pin or the only one connected, and
+ * with several to choose from the runtime answers `choose_account`.
+ */
+export function ownsAccountField(action: Pick<Action, 'input'>): boolean {
+  const schema = action.input as unknown as { shape?: unknown; _def?: { shape?: unknown } };
+  const shape = schema.shape ?? (typeof schema._def?.shape === 'function' ? (schema._def.shape as () => unknown)() : schema._def?.shape);
+  return !!shape && typeof shape === 'object' && Object.hasOwn(shape, 'account');
+}
+
+/**
+ * The model's arguments split into the action's input and the projection's account hint. An action
+ * that owns `account` keeps it as input, so the projection has no hint.
+ */
+export function splitAccountArg(action: Pick<Action, 'input'>, args: Record<string, unknown>): { input: Record<string, unknown>; account: string | undefined } {
+  if (ownsAccountField(action)) return { input: args, account: undefined };
+  const { account, ...input } = args as { account?: unknown } & Record<string, unknown>;
+  return { input, account: typeof account === 'string' ? account : undefined };
+}
+
 /** Sanitize an action id (`gmail.send_email`) into a provider-safe tool name. */
 export function toToolName(actionId: string): string {
   return actionId.replace(/[^a-zA-Z0-9_-]/g, '__');

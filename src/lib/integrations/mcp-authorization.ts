@@ -13,6 +13,18 @@ import { slackMcpAccessIssue } from './slack-account-setup';
 import { getIntegrationRuntime, getMcpServerStore, invalidateIntegrationRuntime, MCP_TIMEOUT_MS, mcpOAuthProviderFor, withTimeout } from './runtime';
 
 /**
+ * The sign-in worked and Ri holds the tokens, but the server's tools didn't load (it refused a tool
+ * list Ri can't use, or stopped answering). Not an authorization failure: the person's next step is
+ * the server's own status, which says why.
+ */
+export class McpToolsUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'McpToolsUnavailableError';
+  }
+}
+
+/**
  * Finish a browser sign-in. `iss` is the authorization server's issuer from the callback, when it
  * sent one: the SDK compares it with the server the sign-in started at (RFC 9207), so a response
  * from a different server cannot complete this connection.
@@ -28,7 +40,7 @@ export async function completeMcpAuthorization(entry: McpServerEntry, code: stri
   const toolkitId = mcpToolkitId(entry);
   if (!saved || (saved.enabled && (saved.lastStatus !== 'ok' || !runtime.getToolkits().some((toolkit) => toolkit.id === toolkitId)))) {
     if (saved?.providerId === 'slack' && slackMcpAccessIssue(saved.lastError)) throw new Error(saved.lastError);
-    throw new Error(`Authorization succeeded, but the ${INTEGRATION_LABELS.singular.toLowerCase()} could not load its tools. Try testing the connection again.`);
+    throw new McpToolsUnavailableError(`Authorization succeeded, but the ${INTEGRATION_LABELS.singular.toLowerCase()} could not load its tools. Try testing the connection again.`);
   }
   if (saved.enabled) {
     const recorded = await finalizeMcpServer(saved, getMcpServerStore(), (current) =>

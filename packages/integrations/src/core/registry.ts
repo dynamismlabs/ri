@@ -34,14 +34,6 @@ function isZodObject(schema: unknown): boolean {
   return def?.typeName === 'ZodObject' || def?.shape !== undefined;
 }
 
-/** The keys of a Zod object schema (best-effort across zod versions). */
-function objectKeys(schema: unknown): string[] {
-  if (schema instanceof z.ZodObject) return Object.keys(schema.shape as Record<string, unknown>);
-  const shape = (schema as { _def?: { shape?: unknown } } | undefined)?._def?.shape;
-  const resolved = typeof shape === 'function' ? (shape as () => Record<string, unknown>)() : shape;
-  return resolved && typeof resolved === 'object' ? Object.keys(resolved as Record<string, unknown>) : [];
-}
-
 export function createRegistry(): Registry {
   const providers = new Map<string, Provider>();
   const toolkits = new Map<string, Toolkit>();
@@ -65,17 +57,11 @@ export function createRegistry(): Registry {
       if (!isZodObject(action.input)) {
         throw new IntegrationError(
           'internal_error',
-          `action "${action.id}" input must be a Zod object schema (the projection injects an \`account\` field)`,
+          `action "${action.id}" input must be a Zod object schema (the projections add an \`account\` field to it)`,
         );
       }
-      if (objectKeys(action.input).includes('account')) {
-        // `account` is the projection's reserved, injected param (§11) — it strips/overrides
-        // any caller value, so an action declaring its own `account` would be silently shadowed.
-        throw new IntegrationError(
-          'internal_error',
-          `action "${action.id}" input declares a reserved field "account" (the projection injects it; rename the field)`,
-        );
-      }
+      // An action may declare its own `account`, as a connected MCP server's tool does: the
+      // projections then add no account selector over it and pass it through (`ownsAccountField`).
     }
     toolkits.set(toolkit.id, toolkit);
     for (const action of toolkit.actions) actions.set(action.id, { action, toolkit, provider });

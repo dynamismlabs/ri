@@ -336,6 +336,28 @@ describe('ingestMcpServer (§12) — external MCP as a gated provider', () => {
     expect(tool!.config.inputSchema).toHaveProperty('account'); // serveMcp still injects account
   });
 
+  it('serves a tool with its own `account` input, passing it through rather than taking it as the account choice', async () => {
+    const s = ingestSetup();
+    const calls: { name: string; arguments?: Record<string, unknown> }[] = [];
+    const client: McpClientLike = {
+      async listTools() {
+        return { tools: [{ name: 'configure_source', inputSchema: { type: 'object', properties: { account: { type: 'string', description: 'The source account' } }, required: ['account'] }, annotations: { readOnlyHint: true } }] };
+      },
+      async callTool(params) { calls.push(params); return { content: [{ type: 'text', text: 'configured' }] }; },
+    };
+    const res = await ingestMcpServer(s.registry, s.store, s.secretBox, { name: 'people', client, trustToolAnnotations: true });
+    for (const binding of [{}, { connectionPins: { [res.toolkitId]: res.connectionId } }]) {
+      const reg = fakeRegistrar();
+      serveMcp(reg, s.runtime, binding);
+      const tool = reg.tools.get('mcp__people__configure_source')!;
+      // The tool's own field, not Ri's account selector over it.
+      expect(String((tool.config.inputSchema!.account as { description?: string }).description)).toBe('The source account');
+      const answer = await tool.handler({ account: 'trey@example.com' });
+      expect(answer.isError).toBeUndefined();
+    }
+    expect(calls.map(call => call.arguments)).toEqual([{ account: 'trey@example.com' }, { account: 'trey@example.com' }]);
+  });
+
   it('per-tool overrides: disabled tool is hidden, non-mutating tool reads through the gate (§12)', async () => {
     const s = ingestSetup();
     const res = await ingestMcpServer(s.registry, s.store, s.secretBox, {

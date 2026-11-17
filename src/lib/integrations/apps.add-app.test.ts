@@ -97,4 +97,38 @@ describe('Add app', () => {
     expect(app.calls).toEqual([{ name: 'open_bookmarks', args: {} }, { name: 'list_bookmarks', args: { query: 'mcp' } }]);
   }, 120_000);
 
+  it('connects an app whose tool takes an input named account, and the tool gets it', async () => {
+    // People's configure_source, before it was renamed: a connected server may use the word.
+    app = await startOAuthMcpApp((server, calls) => {
+      server.registerTool('configure_source', {
+        description: 'Choose which mail account People reads.', annotations: { readOnlyHint: true },
+        inputSchema: fromJsonSchema({ type: 'object', properties: { account: { type: 'string', description: 'The mail account to read' } }, required: ['account'] }),
+      }, async (args) => {
+        calls.push({ name: 'configure_source', args });
+        return { content: [{ type: 'text', text: 'Reading it' }] };
+      });
+    }, { name: 'people' });
+    const landed = await consent((await addApp('People', app.url)).authUrl);
+    expect(landed.searchParams.get('error')).toBeNull();
+    expect(landed.searchParams.get('connected')).toBe('People');
+
+    const { getIntegrationRuntime, getMcpServerStore } = await import('./runtime');
+    const { hostedMcpConnectionId } = await import('./hosted-mcp');
+    const { mcpToolActionId } = await import('./mcp-servers');
+    const entry = getMcpServerStore().list().find(candidate => candidate.app?.name === 'People')!;
+    const outcome = await (await getIntegrationRuntime()).runAction(mcpToolActionId(entry, 'configure_source'), { account: 'trey@example.com' }, { connectionId: hostedMcpConnectionId(entry) });
+    expect(outcome).toMatchObject({ ok: true });
+    expect(app.calls).toEqual([{ name: 'configure_source', args: { account: 'trey@example.com' } }]);
+  }, 120_000);
+
+  it('says the tools didn\'t load, not that sign-in failed, when the app signs Ri in but its tools fail', async () => {
+    app = await startOAuthMcpApp(() => {}, {
+      name: 'broken',
+      intercept: message => message.method === 'tools/list'
+        ? Response.json({ jsonrpc: '2.0', id: message.id, error: { code: -32603, message: 'The tool list is broken' } })
+        : undefined,
+    });
+    const landed = await consent((await addApp('Broken', app.url)).authUrl);
+    expect(landed.searchParams.get('error')).toBe('tools_unavailable');
+  }, 120_000);
 });
