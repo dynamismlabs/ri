@@ -14,6 +14,8 @@ import {
   accountBinding,
   allowedAccountDescription,
   bindingRunOptions,
+  ownsAccountField,
+  splitAccountArg,
   type FailedOutcome,
 } from '../core/projection-shared';
 import type { AccountChoice, ActionOutcome, Caller, IntegrationRuntime, Redactor } from '../core/types';
@@ -88,11 +90,11 @@ export function serveMcp(server: McpToolRegistrar, runtime: IntegrationRuntime, 
           description: projectedDescription(a),
           inputSchema: {
             ...shape,
-            ...(binding.kind === 'pin' ? {} : { account: z.string().optional().describe(accountDesc) }),
+            ...(binding.kind === 'pin' || ownsAccountField(a) ? {} : { account: z.string().optional().describe(accountDesc) }),
           },
         },
         async (args, extra) => {
-          const { account, ...rest } = args as { account?: string } & Record<string, unknown>;
+          const { input: rest, account } = splitAccountArg(a, args as Record<string, unknown>);
           const signals = [options.signal, extra?.signal].filter((signal): signal is AbortSignal => signal !== undefined);
           const outcome = await runtime.runAction(a.id, rest, {
             ...(options.ownerId ? { ownerId: options.ownerId } : {}),

@@ -2,6 +2,18 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod/v4';
 import { viewerProcedure as p, router } from '@/lib/trpc/init';
 import { safeReturnPath } from './oauth-return';
+import { getAppSourceForApp } from '@/lib/db/queries';
+import { AppBuildError } from '@/lib/apps/builder';
+import { removeApp } from '@/lib/apps/remove';
+
+/** Remove an app Ri installed, its kit's refusals said as this router says its own. */
+async function removeAppWithBuildErrors(sourceId: string) {
+  try { return await removeApp(sourceId); }
+  catch (error) {
+    if (error instanceof AppBuildError) throw new PersonalAppError(error.code === 'setup' ? 'invalid' : error.code, error.message);
+    throw error;
+  }
+}
 import { chatAppTools, setAppToolMode } from './app-tools';
 import {
   addPersonalApp, allowPersonalAppInAgent, getPersonalApp, listPersonalApps, PersonalAppError,
@@ -31,7 +43,14 @@ export const personalAppsRouter = router({
     .mutation(({ input, ctx }) => run(() => allowPersonalAppInAgent({ ...input, returnTo: safeReturnPath(input.returnTo) ?? undefined }, ctx.request))),
   disallow: p.input(z.object({ appId: id, workspaceId: id }).strict())
     .mutation(({ input }) => run(() => removePersonalAppFromAgent(input))),
-  remove: p.input(z.object({ appId: id }).strict()).mutation(({ input }) => run(() => removePersonalApp(input.appId))),
+  // An app Ri installed is uninstalled too, keeping its folder and data (src/lib/apps/remove.ts).
+  // One added by its address is only disconnected: it runs on its own.
+  remove: p.input(z.object({ appId: id }).strict()).mutation(({ input }) => run(async () => {
+    const source = getAppSourceForApp(input.appId);
+    if (source?.createdByRi) return removeAppWithBuildErrors(source.id);
+    await removePersonalApp(input.appId);
+    return null;
+  })),
   /** The apps a chat may use, each on, automatic or off for it (docs/personal-apps.md "Loading app tools"). */
   chatTools: p.input(z.object({ chatId: id }).strict()).query(({ input }) => chatAppTools(input.chatId)),
   setChatTool: p.input(z.object({ chatId: id, toolkitId: id, mode: z.enum(['on', 'auto', 'off']) }).strict())

@@ -112,6 +112,19 @@ jobs:
           NODE_ENV: production
           RI_BUILD_MEMORY_LIMIT_GB: '16'
         run: node scripts/next-build.mjs
+      - name: Watch which processes use the DMG volume
+        if: runner.os == 'macOS' && !inputs.installer_run
+        # dmgbuild sometimes can't unmount its volume ("Resource busy"). Record each change in
+        # who has files open on it, so the log can name what holds it.
+        run: |
+          (
+            last=
+            while sleep 2; do
+              now=$(sudo -n lsof -n +f -- /Volumes/Ri* 2>/dev/null | awk 'NR > 1 { print $1 "(" $2 ")" }' | sort -u | tr '\n' ' ')
+              if [ "$now" != "$last" ]; then echo "$(date -u +%T) ${now:-nothing open}"; last=$now; fi
+            done
+          ) > "$RUNNER_TEMP/dmg-volume.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/dmg-volume.pid"
       - name: Build alpha installers
         if: ${{ !inputs.installer_run }}
         env:
@@ -119,6 +132,11 @@ jobs:
           UPGRADE_TEST: ${{ runner.os == 'Windows' && inputs.installer_checks && '--upgrade-test' || '' }}
         shell: bash
         run: pnpm desktop:package --share --skip-build $UPGRADE_TEST
+      - name: Show which processes used the DMG volume
+        if: always() && runner.os == 'macOS' && !inputs.installer_run
+        run: |
+          kill "$(cat "$RUNNER_TEMP/dmg-volume.pid")" 2>/dev/null || true
+          cat "$RUNNER_TEMP/dmg-volume.log" 2>/dev/null || true
       - uses: actions/download-artifact@v4
         if: ${{ inputs.installer_run }}
         with:

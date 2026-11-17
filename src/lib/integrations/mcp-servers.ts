@@ -30,6 +30,7 @@ import { snapshotMcpCapabilities, diffMcpCapabilities, type McpCapabilityTool, t
 import { clearMcpToolApprovals, patchMcpToolOverrides, DEFAULT_MCP_APPROVAL_POLICY, MCP_APPROVAL_POLICIES, type McpApprovalPolicy, type McpToolApprovalMode, type McpToolApprovalPatch } from './mcp-approval-policy';
 import { safeMcpIcons, type McpIcon } from './mcp-icons';
 import { appToolkitId, type McpAppPlace } from './app-ids';
+import { mcpActionId, mcpServerIds, type McpServerIds } from '@integrations/engine';
 export { APP_TOOLKIT_PREFIX, appPlaceAccountId, appToolkitId, isAppToolkitId, samePlace, type McpAppPlace } from './app-ids';
 
 export type McpServerAuth =
@@ -68,8 +69,21 @@ export interface McpAppBinding {
   place: McpAppPlace;
 }
 /** The connector a server's tools belong to. An app's places share one; anything else has its own or its provider's. */
+/**
+ * How the engine names this server (`mcpServerIds`): the identity Ri ingests it with, which is a hosted
+ * provider's own ID or a personal app's `app_<slug>`, or none for a server added by address.
+ */
+export function mcpIds(entry: Pick<McpServerEntry, 'providerId' | 'slug' | 'app'>): McpServerIds {
+  return mcpServerIds(entry.slug, entry.providerId ?? (entry.app ? appToolkitId(entry.app.slug) : undefined));
+}
+
 export function mcpToolkitId(entry: Pick<McpServerEntry, 'providerId' | 'slug' | 'app'>): string {
-  return entry.providerId ?? (entry.app ? appToolkitId(entry.app.slug) : `mcp_${entry.slug}`);
+  return mcpIds(entry).providerId;
+}
+
+/** The action ID that runs one of this server's tools through the integrations runtime. */
+export function mcpToolActionId(entry: Pick<McpServerEntry, 'providerId' | 'slug' | 'app'>, tool: string): string {
+  return mcpActionId(mcpIds(entry), tool);
 }
 
 export interface McpServerEntry {

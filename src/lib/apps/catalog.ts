@@ -13,7 +13,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { createAppSource, listAppSources, type AppSourceRecord } from '@/lib/db/queries';
+import { createAppSource, deleteAppSource, listAppSources, listRemovedAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
 import {
   AppBuildError, appBuildSettings, ensureCommitIdentity, git, installApp, recordCatalogVersion, requireFolder, startChange, switchTo, toolsWithGit,
   type AppJob,
@@ -100,6 +100,15 @@ type RequestLike = Pick<Request, 'headers' | 'url'>;
 export async function addCatalogApp(id: string, request?: RequestLike, returnTo?: string): Promise<{ source: AppSourceRecord; job: AppJob }> {
   const entry = requireEntry(id);
   if (listAppSources().some((source) => source.catalogId === entry.id)) throw new AppBuildError('conflict', `${entry.name} is already added.`);
+  // Removed before: its folder (with any changes the person made) and its data were kept. Install
+  // that folder again rather than clone over it. Its data comes back with it, kept by the app's id.
+  const removed = listRemovedAppSources().find((source) => source.catalogId === entry.id);
+  if (removed?.folder && fs.existsSync(/* turbopackIgnore: true */ removed.folder)) {
+    const source = updateAppSource(removed.id, { removedAt: null })!;
+    return { source, job: await installApp(source.id, request, returnTo) };
+  }
+  // Its folder is gone: start over from the catalog, as a new app.
+  if (removed) deleteAppSource(removed.id);
   const settings = appBuildSettings();
   const tools = toolsWithGit();
   const folder = path.join(/* turbopackIgnore: true */ settings.appsDir, entry.id);

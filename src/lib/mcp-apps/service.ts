@@ -17,7 +17,7 @@ import { appToolVisible, entrypointIcons, mentionsSearchTool, modelToolVisible, 
 import { declaredCsp, type DeclaredNetwork, type ViewCsp } from '@ri/mcp-apps-host/csp';
 import { McpViewStore, MAX_DELIVERED_RESULT, MAX_RESULT, type Capture, type CaptureKind, type ModelContext, type View } from './store';
 import { prepareResource } from './resource';
-import { appPlaceAccountId, isAppToolkitId, mcpToolkitId, type McpAppPlace } from '@/lib/integrations/mcp-servers';
+import { appPlaceAccountId, isAppToolkitId, mcpIds, mcpToolActionId, mcpToolkitId, type McpAppPlace } from '@/lib/integrations/mcp-servers';
 
 export const mcpAppsEnabled = () => process.env.RI_MCP_APPS !== '0';
 export const mcpViews = () => processState('mcp-app-views', () => new McpViewStore(view => {
@@ -204,7 +204,7 @@ export async function prepareMcpResultCapture(event: Parameters<NonNullable<Inte
   const metadata = await integrationSourceMetadata();
   const remote = metadata.servers.find(s => hostedMcpConnectionId(s.entry) === event.connectionId);
   if (!remote) return;
-  const prefix = `${remote.entry.providerId ?? `mcp.${remote.entry.slug}`}.`;
+  const prefix = `${mcpIds(remote.entry).actionPrefix}.`;
   if (!event.actionId.startsWith(prefix)) return;
   const toolName = event.actionId.slice(prefix.length);
   const tool = remote.capabilities?.tools.find(t => t.name === toolName), ui = tool && viewMetadata(tool);
@@ -303,7 +303,7 @@ async function invoke(view: View, name: string, args: Record<string, unknown>, i
   // The engine still checks visibility, so an entrypoint runs as whichever audience its tool admits.
   const audience = caller === 'entrypoint' ? (modelToolVisible(tool) ? 'model' : 'app') : caller;
   if (Buffer.byteLength(JSON.stringify(args)) > 64 * 1024) throw new Error('App input exceeds its limit');
-  const actionId = `${current.remote.entry.providerId ?? `mcp.${current.remote.entry.slug}`}.${name}`;
+  const actionId = mcpToolActionId(current.remote.entry, name);
   const fingerprint = inputDigest([actionId, args, current.connection.id, audience]);
   const result = await mcpViews().call(view, invocationId, fingerprint, async () => {
     const connectedApp = {viewId: view.id, invocationId, sourceRef: view.capture.sourceRef, viewerId: view.viewerId};

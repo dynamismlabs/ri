@@ -55,7 +55,9 @@ function signInReturn(eventId: string): { notice: string | null } | null {
   const error = params.get('error');
   if (!error && !params.get('connected')) return null;
   if (!error) return { notice: null };
-  return { notice: error === 'authorization_cancelled' ? 'Sign-in was cancelled.' : `Sign-in didn’t finish (${error}). Try again.` };
+  if (error === 'authorization_cancelled') return { notice: 'Sign-in was cancelled.' };
+  if (error === 'tools_unavailable') return { notice: 'Signed in, but its tools didn’t load. Its page in Settings says why.' };
+  return { notice: `Sign-in didn’t finish (${error}). Try again.` };
 }
 
 /** Where the provider's sign-in should land back: this page, minus a previous result. */

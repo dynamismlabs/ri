@@ -5,7 +5,7 @@ import { integrationSourceMetadata } from '@/lib/integrations/source-metadata';
 import { getIntegrationRuntime, getIntegrationOwnerId } from '@/lib/integrations/runtime';
 import { pinMatchesConnection, scopePins, normalizeIntegrationScopes } from '@/lib/integrations/scope-pins';
 import { hostedMcpConnectionId } from '@/lib/integrations/hosted-mcp';
-import { appPlaceAccountId, isAppToolkitId } from '@/lib/integrations/mcp-servers';
+import { appPlaceAccountId, isAppToolkitId, mcpIds } from '@/lib/integrations/mcp-servers';
 import { sessionCaller } from '@/lib/integrations/approval';
 import { recordPausedConnection } from '@/lib/integrations/connection-requests';
 import { runSourceInvocation } from '@/lib/integrations/source-invocations';
@@ -78,7 +78,7 @@ export const integrationSourceAdapter: SourceAdapter = {
   async actions(ref, ctx) {
     const { toolkit, remote } = await exact(ref, ctx);
     return (toolkit?.actions ?? []).filter(a => a.modelVisible !== false).flatMap(a => {
-      const prefix = remote ? `${remote.entry.providerId ?? `mcp.${remote.entry.slug}`}.` : null;
+      const prefix = remote ? `${mcpIds(remote.entry).actionPrefix}.` : null;
       if (prefix && !a.id.startsWith(prefix)) return [];
       const name = prefix ? a.id.slice(prefix.length) : null;
       const tool = remote?.capabilities?.tools.find(t => t.name === name);

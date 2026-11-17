@@ -110,18 +110,17 @@ describe('Registry invariants (§3/§17)', () => {
       /unknown provider/,
     );
   });
-  it('rejects an action whose input declares the reserved `account` field (§11)', () => {
+  it('accepts an action whose input declares its own `account`, which the projections then leave to it', () => {
     const reg = createRegistry();
     reg.addProvider(provider);
-    const collides = httpAction({
-      id: 'p.collide',
+    const owns = httpAction({
+      id: 'p.own_account',
       description: 'c',
       input: z.object({ account: z.string() }),
       request: () => ({ method: 'GET', path: '/x' }),
     });
-    expect(() =>
-      reg.addToolkit(defineToolkit({ id: 't', providerId: 'p', displayName: 'T', actions: [collides] })),
-    ).toThrow(/reserved field "account"/);
+    reg.addToolkit(defineToolkit({ id: 't', providerId: 'p', displayName: 'T', actions: [owns] }));
+    expect(reg.getAction('p.own_account')).toBeTruthy();
   });
 });
 

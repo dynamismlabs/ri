@@ -23,6 +23,8 @@ import {
   accountBinding,
   allowedAccountDescription,
   bindingRunOptions,
+  ownsAccountField,
+  splitAccountArg,
   type FailedOutcome,
 } from '../core/projection-shared';
 import type { AccountChoice, ActionOutcome, Caller, IntegrationRuntime, Redactor, Toolkit } from '../core/types';
@@ -87,13 +89,13 @@ export async function toToolSet(runtime: IntegrationRuntime, options: ToToolSetO
       if (a.modelVisible === false) continue;
       const baseSchema = a.input as unknown as z.ZodObject<z.ZodRawShape>;
       const inputSchema =
-        binding.kind === 'pin' ? baseSchema : baseSchema.extend({ account: z.string().optional().describe(accountDesc) });
+        binding.kind === 'pin' || ownsAccountField(a) ? baseSchema : baseSchema.extend({ account: z.string().optional().describe(accountDesc) });
 
       tools[toToolName(a.id)] = tool({
         description: projectedDescription(a),
         inputSchema,
         execute: async (args: Record<string, unknown>) => {
-          const { account, ...rest } = args as { account?: string } & Record<string, unknown>;
+          const { input: rest, account } = splitAccountArg(a, args);
           const outcome = await runtime.runAction(a.id, rest, {
             ...(ownerId ? { ownerId } : {}),
             ...bindingRunOptions(binding, account),

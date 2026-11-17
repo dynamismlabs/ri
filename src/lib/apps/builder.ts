@@ -25,7 +25,7 @@ import { promisify } from 'node:util';
 import { parse as parseYaml } from 'yaml';
 import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
 import { getAppRoot, getWorkDir } from '@/lib/config/paths';
-import { createAppSource, getAppSource, listAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
+import { createAppSource, getAppSource, listAppSources, listRemovedAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
 import { processState } from '@/lib/process-state';
 import { untraced } from '@/lib/utils/untraced';
 import { toSlug } from '@/lib/integrations/mcp-servers';
@@ -108,7 +108,7 @@ export interface KitResult { outcome: KitOutcome; message: string; release?: str
 export interface AppJob {
   id: string;
   sourceId: string;
-  kind: 'create' | 'install' | 'change' | 'restart';
+  kind: 'create' | 'install' | 'change' | 'restart' | 'remove';
   state: 'running' | 'done' | 'failed';
   steps: KitStep[];
   result?: KitResult;
@@ -234,7 +234,7 @@ export function allowedBuilds(folder: string): string[] {
  * editable folder, then builds only the native dependencies the app allows to build. The kit installs
  * a release's dependencies again in its own checked copy, with disposable data.
  */
-async function prepare(tools: AppToolchain, job: AppJob, folder: string): Promise<boolean> {
+export async function prepare(tools: AppToolchain, job: AppJob, folder: string): Promise<boolean> {
   if (fs.existsSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ folder, 'node_modules', '.bin'))) return true;
   const step: KitStep = { step: 'prepare', status: 'started' };
   job.steps.push(step);
@@ -283,6 +283,10 @@ export async function createApp(input: { name: string }): Promise<AppSourceRecor
   const tools = toolsWithGit();
   if (!settings.appKitCommand && !tools.kit) throw new AppBuildError('setup', 'This copy of Ri carries no app kit. Set the app kit command to a kit checkout’s create.');
   const folder = path.join(/* turbopackIgnore: true */ settings.appsDir, slug);
+  // The person removed an app by this name and Ri kept its folder: pick it back up, changes and all,
+  // rather than make another. Installing it brings its data back too, which the kit keeps by app.
+  const kept = listRemovedAppSources().find((source) => source.folder === folder);
+  if (kept && fs.existsSync(/* turbopackIgnore: true */ folder)) return updateAppSource(kept.id, { removedAt: null })!;
   if (fs.existsSync(/* turbopackIgnore: true */ folder)) throw new AppBuildError('conflict', `${folder} already exists. Choose another name.`);
   if (listAppSources().some((source) => source.folder === folder)) throw new AppBuildError('conflict', 'Ri already has an app there.');
   fs.mkdirSync(/* turbopackIgnore: true */ settings.appsDir, { recursive: true });
@@ -464,6 +468,7 @@ export async function discardChange(sourceId: string): Promise<AppSourceRecord> 
 export function requireFolder(sourceId: string): AppSourceRecord {
   const source = getAppSource(sourceId);
   if (!source) throw new AppBuildError('not_found', 'That app isn’t in Ri anymore.');
+  if (source.removedAt) throw new AppBuildError('not_found', `${source.name} was removed from Ri. Add it again to use it.`);
   if (!source.folder || !fs.existsSync(/* turbopackIgnore: true */ source.folder)) throw new AppBuildError('setup', `Ri can’t find ${source.name}’s folder${source.folder ? ` at ${source.folder}` : ''}.`);
   return source;
 }

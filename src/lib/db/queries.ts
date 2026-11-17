@@ -13466,11 +13466,17 @@ export function getAppSourceForApp(personalAppId: string): AppSourceRecord | und
   return getDb().select().from(appSources).where(eq(appSources.personalAppId, personalAppId)).get();
 }
 
+/** The apps in Ri. One the person removed is kept apart, for adding it again (`listRemovedAppSources`). */
 export function listAppSources(): AppSourceRecord[] {
-  return getDb().select().from(appSources).orderBy(asc(appSources.name)).all();
+  return getDb().select().from(appSources).where(isNull(appSources.removedAt)).orderBy(asc(appSources.name)).all();
 }
 
-export function updateAppSource(id: string, patch: Partial<Pick<AppSourceRecord, 'name' | 'folder' | 'gitUrl' | 'notes' | 'personalAppId' | 'url' | 'changeFolder' | 'changeBranch' | 'catalogVersion' | 'catalogCommit'>>): AppSourceRecord | undefined {
+/** Apps the person removed, whose folders and data Ri kept, newest first. */
+export function listRemovedAppSources(): AppSourceRecord[] {
+  return getDb().select().from(appSources).where(isNotNull(appSources.removedAt)).orderBy(desc(appSources.removedAt)).all();
+}
+
+export function updateAppSource(id: string, patch: Partial<Pick<AppSourceRecord, 'name' | 'folder' | 'gitUrl' | 'notes' | 'personalAppId' | 'url' | 'changeFolder' | 'changeBranch' | 'catalogVersion' | 'catalogCommit' | 'removedAt'>>): AppSourceRecord | undefined {
   return getDb().update(appSources).set({ ...patch, updatedAt: new Date().toISOString() }).where(eq(appSources.id, id)).returning().get();
 }
 

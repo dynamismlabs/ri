@@ -81,6 +81,12 @@ describe('AI-SDK projection (§11)', () => {
     expect(JSON.stringify(modelResult)).not.toContain('SENTINEL-TOK');
   });
 
+  it('model-safe view of a provider error keeps its code and gives the HTTP status its own field', () => {
+    expect(modelSafeOutcome({ ok: false, reason: 'error', code: 'not_found', message: 'provider error 404 for GET /gmail/v1/users/me/messages/m1', status: 404 }))
+      .toEqual({ status: 'error', code: 'not_found', message: 'provider error 404 for GET /gmail/v1/users/me/messages/m1', httpStatus: 404 });
+    expect(modelSafeOutcome({ ok: false, reason: 'error', code: 'invalid_input', message: 'bad' })).toEqual({ status: 'error', code: 'invalid_input', message: 'bad' });
+  });
+
   it('model-safe view of auth_config_required shows config LABELS only, never the authConfigId', () => {
     const safe = modelSafeOutcome({
       ok: false,

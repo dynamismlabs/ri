@@ -853,6 +853,11 @@ export const appSources = sqliteTable('app_sources', {
   /** The catalog version the app includes, and the upstream commit it resolved to. */
   catalogVersion: text(),
   catalogCommit: text(),
+  /**
+   * When the person removed it: Ri uninstalled its service and disconnected it, and kept its folder
+   * and data. Adding it again (the catalog, or New app with its name) clears this and installs it.
+   */
+  removedAt: text(),
 });
 
 // ─── App hub (docs/personal-apps.md "The hub") ─────────────────────────────

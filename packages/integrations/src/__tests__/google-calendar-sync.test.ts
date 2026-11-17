@@ -48,7 +48,7 @@ describe('google_calendar.sync_events', () => {
     expect(new URL(urls[0]!).searchParams.get('syncToken')).toBe('sync-1');
     expect(new URL(urls[0]!).searchParams.has('timeMin')).toBe(false);
     h.env.action = () => ({ status: 410, json: { error: { message: 'Sync token is no longer valid' } } });
-    expect(await h.runtime.runAction('google_calendar.sync_events', { syncToken: 'expired' })).toMatchObject({ ok: false, reason: 'error', status: 410 });
+    expect(await h.runtime.runAction('google_calendar.sync_events', { syncToken: 'expired' })).toMatchObject({ ok: false, reason: 'error', code: 'not_found', status: 410 });
   });
 
   it('keeps list_events summaries unchanged while adding pagination', async () => {

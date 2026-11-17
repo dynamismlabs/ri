@@ -6,6 +6,7 @@ import { AlertCircle, ArrowUpCircle, Library, Loader2 } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
 import { Button } from '@/components/ui/button';
 import { trpc, trpcClient } from '@/lib/trpc/client';
+import { versionLabel } from '@/lib/apps/version-label';
 import { ensureAppBuilderChat } from './new-app-dialog';
 
 /**
@@ -61,7 +62,7 @@ export function AppCatalogList({ onOpen }: { onOpen: (sourceId: string) => void 
         {data.apps.map((app) => (
           <li key={app.id} className="flex items-start gap-3 px-3 py-2.5">
             <div className="min-w-0 flex-1 space-y-0.5">
-              <p className="text-sm">{app.name} <span className="text-[11px] text-muted-foreground">{app.installedVersion ?? app.version}</span></p>
+              <p className="text-sm">{app.name} <span className="text-[11px] text-muted-foreground">{versionLabel(app.installedVersion ?? app.version)}</span></p>
               <p className="text-xs text-muted-foreground">{app.description}</p>
               <p className="text-[11px] text-muted-foreground">{app.reaches.length ? `Can reach: ${app.reaches.join(', ')}.` : 'Keeps to its own data.'}</p>
             </div>
@@ -72,7 +73,7 @@ export function AppCatalogList({ onOpen }: { onOpen: (sourceId: string) => void 
             ) : !app.installedVersion ? (
               <Button size="xs" variant="outline" onClick={() => onOpen(app.sourceId!)}>Finish installing</Button>
             ) : app.updateAvailable ? (
-              <Button size="xs" variant="outline" onClick={() => onOpen(app.sourceId!)}><ArrowUpCircle size={12} aria-hidden />Update to {app.version}</Button>
+              <Button size="xs" variant="outline" onClick={() => onOpen(app.sourceId!)}><ArrowUpCircle size={12} aria-hidden />Update to {versionLabel(app.version)}</Button>
             ) : (
               <span className="self-center text-[11px] text-muted-foreground">Added</span>
             )}

@@ -3,7 +3,7 @@ import { withCompression } from '@/lib/api/compression';
 import {
   getMcpServerStore, getMcpOAuthRedirectUrl,
 } from '@/lib/integrations/runtime';
-import { completeMcpAuthorization, mcpSettingsReturnPath } from '@/lib/integrations/mcp-authorization';
+import { completeMcpAuthorization, mcpSettingsReturnPath, McpToolsUnavailableError } from '@/lib/integrations/mcp-authorization';
 import { oauthReturnRedirect, takeOAuthReturn } from '@/lib/integrations/oauth-return';
 import { getHostedMcpProvider } from '@integrations/engine/providers';
 import { usesRegisteredOAuth } from '@/lib/integrations/hosted-oauth-config';
@@ -72,6 +72,7 @@ async function handleGET(request: NextRequest, { params }: { params: Promise<{ s
     return redirect({ connected: entry.displayName });
   } catch (e) {
     console.error(`[integrations] MCP OAuth callback failed`, e instanceof Error ? e.name : 'Error');
-    return redirect({ error: 'authorization_failed' });
+    // Signed in, but its tools didn't load: its own status says why, not a failed sign-in.
+    return redirect({ error: e instanceof McpToolsUnavailableError ? 'tools_unavailable' : 'authorization_failed' });
   }
 }

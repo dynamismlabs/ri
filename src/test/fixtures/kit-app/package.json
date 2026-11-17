@@ -1,0 +1,11 @@
+{
+  "name": "tide-log",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tide-kit serve"
+  },
+  "devDependencies": {
+    "tide-kit": "file:./kit"
+  }
+}

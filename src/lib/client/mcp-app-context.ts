@@ -70,9 +70,23 @@ export function registerConnectedContext(chatId: Scope, viewId: string, flush: F
   const entry: Entry = { flush, ...(info ? { app: info.app, clear: info.clear, content: info.content ?? null } : {}) };
   entries.set(viewId, entry);
   changed();
-  return () => {
-    if (entries.get(viewId) === entry) entries.delete(viewId);
-    if (!entries.size) { contexts.delete(scope); selected.delete(scope); }
+  const remove = (current: Entry) => {
+    if (entries.get(viewId) === current) entries.delete(viewId);
+    if (!entries.size && contexts.get(scope) === entries) { contexts.delete(scope); selected.delete(scope); }
+    changed();
+  };
+  /**
+   * The view closed. `keep` holds on to what it attached, as a full-screen app's selection must
+   * reach the next message after the person leaves the screen for the chat: its last acknowledged
+   * revision goes with the next send, as the home still has it, and removing its group clears it
+   * on the home (`keep.clear`) with no view to tell. Opening the view again registers it afresh.
+   */
+  return (keep?: { reference: Reference; clear: () => Promise<void> }) => {
+    if (entries.get(viewId) !== entry) return;
+    if (!keep || !entry.app) return remove(entry);
+    const kept: Entry = { flush: async () => keep.reference, app: entry.app, content: entry.content ?? null,
+      clear: async () => { await keep.clear(); remove(kept); } };
+    entries.set(viewId, kept);
     changed();
   };
 }
