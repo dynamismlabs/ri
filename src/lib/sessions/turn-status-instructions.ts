@@ -13,7 +13,7 @@ export function turnStatusInstructions(session: { executionId: string | null; su
   if (!chatStatusLinesEnabled()) return '';
   return [
     '# Status line',
-    'Before you end each turn, call set_chat_status with one short line saying where this chat stands, so the person can tell from their chat lists without opening it.',
+    'When you are ready to end the turn, call set_chat_status before writing your final reply. Give one short line saying where this chat stands, so the person can tell from their chat lists without opening it. Write your final reply after your tool calls so it is the last thing in the turn.',
     'When you need something from them, set needs_you and start the line with what they need to do, verb first ("Pick A or B for the pricing table", "Test the preview on your phone"). Set effort to how much of their time it takes (quick: a click or a short reply, minutes: a few minutes to read or try something, block: a real decision or a long test) and say what it unblocks. Before you stop for them, make their part as small as you can: recommend an option, and prepare any test (a link, a short checklist, the one command to run).',
     'When you need nothing, leave needs_you false and say what you did or where things stand ("Merged the login fix, nothing needed").',
     `Use the set_chat_status MCP tool when attached, or run ${cliCommand} agent set_chat_status --input '<JSON object>'.`,

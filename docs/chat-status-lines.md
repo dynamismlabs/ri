@@ -4,7 +4,7 @@
 
 Coming back to Ri, the question is which chats need you and what for. "Unread" only says new text arrived since you looked. On a real home, of 23 unread chats about 5 asked for a decision, 3 waited on a deploy only the person could do, 1 had stalled, and about 14 were reports that asked nothing. The asks were the oldest, so newest-first buried them.
 
-A status line answers that. At the end of each turn, a chat's agent writes one line saying where the chat stands: what it did, or what it needs from you, how long your part takes and what it unblocks. Ri shows the line under the chat's title.
+A status line answers that. Before the final reply, a chat's agent writes one line saying where the chat stands. It says what the agent did or what it needs from you, how long your part takes and what it unblocks. Ri shows the line under the chat's title.
 
 ## Who writes it
 
@@ -18,6 +18,8 @@ The agent itself, as part of its turn. It knows what it did and what it needs, s
 | `unblocks` | What answering unblocks, briefly. |
 
 The rule also asks the agent to make the person's part small before it stops: recommend an option, and prepare any test (a link, a short checklist, the one command).
+
+The final reply comes after the status call and any other tools. Claude Code has sometimes recorded text before a tool call as a thinking summary, leaving Ri without the full reply to display.
 
 Only execution chats get the rule. Agents' main chats already show their last message on their rail row, and reviewers and team chats are left out.
 

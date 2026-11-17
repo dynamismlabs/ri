@@ -120,7 +120,8 @@ describe('scoped handoff guidance and general agent instructions at the dispatch
     };
     const execution = await sent('execution');
     expect(execution).toContain('# Status line');
-    expect(execution).toContain('set_chat_status');
+    expect(execution).toContain('call set_chat_status before writing your final reply');
+    expect(execution).toContain('Write your final reply after your tool calls');
     expect(execution.endsWith('Fix the login bug.')).toBe(true);
     for (const surface of ['app', 'agent', 'task']) expect(await sent(surface)).not.toContain('# Status line');
     q.updateUserState({ chatStatusLines: false });

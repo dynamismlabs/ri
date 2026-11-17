@@ -153,7 +153,7 @@ export const coordinationActions = [
   defineAction({
     name: 'set_chat_status',
     strictParams: true,
-    description: 'Set this chat\'s status line before you end a turn: one short line the person reads in their chat lists without opening the chat. When you need something from them, set needs_you, start the line with what they need to do (verb first), and give effort (their time: quick, minutes or block) and what it unblocks. When you need nothing, say what you did or where things stand. A new message to this chat clears it.',
+    description: 'Set this chat\'s status line before writing your final reply. The person reads this short line in their chat lists without opening the chat. When you need something from them, set needs_you, start the line with what they need to do (verb first), and give effort (their time: quick, minutes or block) and what it unblocks. When you need nothing, say what you did or where things stand. A new message to this chat clears it.',
     params: {
       line: z.string().trim().min(1).max(160).describe('Where this chat stands, or what the person needs to do, verb first. Under 100 characters is best.'),
       needs_you: z.boolean().describe('True when you are waiting on the person.'),
