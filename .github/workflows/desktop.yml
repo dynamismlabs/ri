@@ -62,32 +62,42 @@ jobs:
         # `speech` is whether the package includes the optional local speech
         # helper, and `no_speech` says why not where it doesn't. Ri offers the
         # other providers there (docs/desktop.md).
+        # `timeout` is the job's budget in minutes. The macOS runners take two
+        # to three times as long for the same steps (pnpm test took 27 minutes
+        # on Apple chips, 31 on Intel and 12 to 14 on Linux), and the Intel Mac
+        # spends about 8 minutes staging the runtime for each lifecycle smoke.
+        # Intel reached the OS supervision step after 75 minutes, with the
+        # packaged-app steps still to come.
         include:
           - os: macos-15
             platform: darwin
             arch: arm64
             package: release/desktop/mac-arm64/Ri.app
             speech: true
+            timeout: 150
           - os: macos-15-intel
             platform: darwin
             arch: x64
             package: release/desktop/mac/Ri.app
             speech: false
             no_speech: The speech helper's engine (onnxruntime) has no build for Intel Macs.
+            timeout: 210
           - os: ubuntu-24.04
             platform: linux
             arch: x64
             package: release/desktop/linux-unpacked
             speech: false
             no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
+            timeout: 90
           - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
             package: release/desktop/linux-arm64-unpacked
             speech: false
             no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
+            timeout: 90
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: ${{ matrix.timeout }}
     env:
       MACOSX_DEPLOYMENT_TARGET: '13.5'
     steps:
