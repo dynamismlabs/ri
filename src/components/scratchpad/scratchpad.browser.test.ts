@@ -109,6 +109,18 @@ const settle = (locator: Locator) => locator.evaluate(el => {
   }
 });
 
+/**
+ * Empty the editor through its own keys. `fill('')` selects the text from outside the editor and
+ * presses Delete at once, and Chrome runs the key before the selection change that tells
+ * ProseMirror what's selected. On a busy runner ProseMirror then deleted from its old cursor and
+ * the text stayed. Its own select all and Delete both happen inside its key handler, in order.
+ */
+async function clear(page: Page) {
+  await editor(page).focus();
+  await editor(page).press('ControlOrMeta+a');
+  await editor(page).press('Delete');
+}
+
 async function expand(page: Page) {
   await page.getByRole('button', { name: 'Expand the scratchpad' }).click();
   await settle(page.getByRole('dialog', { name: 'Scratchpad' }));
@@ -297,7 +309,7 @@ describe('scratchpad quick view and expansion', () => {
   it.each([320, 390, 1440])('keeps the empty placeholder on one line at %ipx', async width => {
     const page = await open({ width, height: 780 });
     try {
-      await editor(page).fill('');
+      await clear(page);
       const placeholder = editor(page).locator('.is-empty[data-placeholder]').first();
       expect(await placeholder.getAttribute('data-placeholder')).toBe('Write a note…');
       const style = await placeholder.evaluate(el => {
