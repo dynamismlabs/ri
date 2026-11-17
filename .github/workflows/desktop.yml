@@ -201,11 +201,18 @@ jobs:
           echo "XDG_RUNTIME_DIR=/run/user/${account_uid}" >> "$GITHUB_ENV"
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${account_uid}/bus" >> "$GITHUB_ENV"
       - name: Qualify real login supervision on the disposable CI account
+        id: os_supervision
         # This exact opt-in is required in addition to hosted-runner identity.
         # The harness refuses self-hosted CI and never installs OS jobs locally.
         env:
           RI_SERVICE_SMOKE_SUPERVISOR: install-test-job-on-disposable-github-hosted-account
         run: pnpm exec tsx desktop/service-lifecycle-smoke.ts "$RI_RUNTIME_PACKAGE" --os-supervisor --report release/qualification/service-native.json
+      # launchd writes the controller's output to the fixture's service.log,
+      # which a failed run keeps and the upload below collects. systemd sends
+      # it to the journal instead, so a failed Linux run saves the test job's.
+      - name: Save the test login job's journal
+        if: failure() && steps.os_supervision.outcome == 'failure' && runner.os == 'Linux'
+        run: sudo journalctl --no-pager -o short-precise --user-unit 'app.ri.service.*' > "$RUNNER_TEMP/ri-service-journal.log" 2>&1 || true
       - name: Exercise packaged macOS recovery
         if: runner.os == 'macOS'
         run: pnpm exec tsx desktop/recovery-smoke.ts
@@ -305,9 +312,14 @@ jobs:
         with:
           name: ri-qualification-${{ matrix.platform }}-${{ matrix.arch }}
           # Upload small reports and screenshots, not runtime copies or private
-          # fixture homes. Failed cleanup must not publish helper binaries.
+          # fixture homes. Failed cleanup must not publish helper binaries. The
+          # service logs exist only when a lifecycle smoke failed, which keeps
+          # its disposable fixture for diagnosis. The fixture has no credentials.
           path: |
             release/qualification/*.json
+            ${{ runner.temp }}/ri-service-lifecycle-*/work/service.log
+            ${{ runner.temp }}/ri-service-lifecycle-*/work/service.log.previous
+            ${{ runner.temp }}/ri-service-journal.log
             ${{ runner.temp }}/ri-acceptance/ri-version-smoke-*/report.json
             ${{ runner.temp }}/ri-acceptance/ri-version-smoke-*/*.png
             ${{ runner.temp }}/ri-acceptance/ri-companion-home-*/companion-report.json

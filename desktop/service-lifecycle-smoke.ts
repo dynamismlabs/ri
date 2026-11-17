@@ -16,6 +16,7 @@ import { servicePaths } from '../src/lib/service/paths';
 import { ensureService, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
 import { hasLoginSupervision, installService, uninstallService } from '../src/lib/service/install';
 import { markStopped, readStopped } from '../src/lib/service/stopped';
+import { HANG_LIMIT_MS, PROBE_INTERVAL_MS, PROBE_TIMEOUT_MS } from '../src/lib/service/supervisor';
 import { assertDisposableSupervisorAccount, fixtureEnvironment } from './platform-qualification';
 
 const { values, positionals } = parseArgs({ allowPositionals: true, options: { 'os-supervisor': { type: 'boolean' }, report: { type: 'string' } } });
@@ -31,7 +32,11 @@ if (native) assertDisposableSupervisorAccount(process.env, temporary, os.userInf
 const environment = fixtureEnvironment(process.env, { temporary, ...(native ? { accountHome: os.userInfo().homedir } : {}) });
 // The controller's hang limit and probe interval, shortened so the hung-server
 // check takes seconds instead of three minutes (docs/always-on-spec.md 6.2).
-Object.assign(environment, { RI_SERVICE_HANG_MS: '20000', RI_SERVICE_PROBE_MS: '2000' });
+// Under the OS they reach only a controller this script starts itself: launchd
+// and systemd start theirs with the login job's own environment, so the hung-
+// server check there waits the real limit.
+const HANG_MS = 20_000;
+Object.assign(environment, { RI_SERVICE_HANG_MS: String(HANG_MS), RI_SERVICE_PROBE_MS: '2000' });
 // Helpers discover the same isolated identity as child processes. Deliberately
 // remove every inherited app override and provider credential first.
 for (const name of Object.keys(process.env)) delete process.env[name];
@@ -72,6 +77,25 @@ function track(session: ServiceSession) {
 async function start(env: NodeJS.ProcessEnv = environment) {
   assert(runtime);
   const session = await ensureService({ repo: runtime.repo, node: runtime.node, env });
+  track(session);
+  return session;
+}
+/**
+ * Start a controller with settings of its own. Under the OS, `start` asks
+ * launchd or systemd, which run the login job's fixed environment, so this
+ * starts the controller directly, logging where the job would.
+ */
+async function startWith(env: NodeJS.ProcessEnv) {
+  if (!native) return start(env);
+  assert(runtime);
+  const log = fs.openSync(paths.log, 'a', 0o600);
+  try {
+    const controller = spawn(runtime.node, [path.join(runtime.repo, 'dist/service/main.cjs')], { cwd: runtime.repo, env: { ...env, RI_RUNTIME_REPO: runtime.repo }, stdio: ['ignore', log, log], detached: true });
+    controller.unref();
+    if (controller.pid) observed.add(controller.pid);
+  } finally { fs.closeSync(log); }
+  await waitFor(serviceStatus, value => value?.phase === 'running', 'controller started with its own settings', 180_000);
+  const session = await serviceRequest<ServiceSession>('/session');
   track(session);
   return session;
 }
@@ -176,11 +200,15 @@ async function main() {
     passed('a crashed server is restarted by its controller within 10 s, keeping data and origin');
 
     const hungBackend = track(session);
-    console.info('Fault injection: freezing only the fixture backend');
+    // The OS's controller probes every 15 s and waits 3 minutes: the limits
+    // Ri ships with, under the supervisor it ships with.
+    const hangLimit = native ? HANG_LIMIT_MS : HANG_MS;
+    const probeWindow = native ? PROBE_INTERVAL_MS + PROBE_TIMEOUT_MS : 2_000 + PROBE_TIMEOUT_MS;
+    console.info(`Fault injection: freezing only the fixture backend (hang limit ${hangLimit / 1000} s)`);
     started = Date.now();
     process.kill(hungBackend, 'SIGSTOP');
-    session = await restartedBy(session, /stopped answering/, 60_000);
-    console.info(`Back ${((Date.now() - started) / 1000).toFixed(1)} s after kill -STOP (hang limit 20 s)`);
+    session = await restartedBy(session, /stopped answering/, hangLimit + probeWindow + 60_000);
+    console.info(`Back ${((Date.now() - started) / 1000).toFixed(1)} s after kill -STOP (hang limit ${hangLimit / 1000} s)`);
     track(session);
     await waitFor(() => !alive(hungBackend), value => value, 'hung backend killed', 30_000);
     passed('a frozen server is stopped and restarted after the hang limit');
@@ -190,7 +218,7 @@ async function main() {
     // controller run only, which then stops. Squeezing the heap limit instead
     // makes Next run out of memory while it boots.
     await stopService();
-    session = await start({ ...environment, RI_SERVICE_MEMORY_IDLE_SHARE: '0.01', RI_SERVICE_MEMORY_GRACE_MS: '0' });
+    session = await startWith({ ...environment, RI_SERVICE_MEMORY_IDLE_SHARE: '0.01', RI_SERVICE_MEMORY_GRACE_MS: '0' });
     const memoryBefore = (await serviceStatus())?.restarts?.count ?? 0;
     const memory = await waitFor(serviceStatus, value => (value?.restarts?.count ?? 0) > memoryBefore && value?.phase === 'running', 'memory restart', 120_000);
     assert.match(memory!.restarts!.last.reason, /its memory reached \d+% of Node's limit/);
