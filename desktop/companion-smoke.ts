@@ -202,13 +202,17 @@ void (async () => {
     if (sourceHome) passed('Existing unchosen control service still opens first-run setup without a database');
     // A remote Home using the local generated certificate must fail ordinary
     // Node trust before releasing the browser credential or starting a worker.
+    // A pasted link is checked first, which shows where it leads, and its button
+    // says Continue until then. Only a link that checks out offers Connect.
     await setup.locator('#choose-connect').click();
-    await setup.getByLabel('Pairing link', { exact: true }).fill(`${session.origin}/#token=${pair.plaintext}`);
-    await setup.getByRole('button', { name: 'Connect', exact: true }).click();
+    const link = setup.getByLabel('Ri link', { exact: true });
+    await link.fill(`${session.origin}/#token=${pair.plaintext}`);
+    await setup.getByRole('button', { name: 'Continue', exact: true }).click();
     await setup.getByRole('alert').filter({ hasText: /certificate.*trust/i }).waitFor();
     assert.equal(fs.existsSync(path.join(connected.root, '.config/connection.json')), false);
     passed('Remote Home pairing rejects an untrusted local TLS certificate without altering OS trust');
-    await setup.getByLabel('Pairing link', { exact: true }).fill(`${proxyOrigin}/#token=${pair.plaintext}`);
+    await link.fill(`${proxyOrigin}/#token=${pair.plaintext}`);
+    await setup.locator('#link-destination').filter({ hasText: 'Pairing link for ' }).waitFor();
     await setup.getByRole('button', { name: 'Connect', exact: true }).click();
     const page = await mainPage(connected, proxyOrigin);
     assertSameNativeWindow(connectedWindow, await nativeWindowSnapshot(connected.app!));

@@ -49,7 +49,8 @@ void acceptance('version-smoke', async fixture => {
   await capture.getByText('Draft saved on this device.', { exact: true }).waitFor();
   await capture.getByRole('button', { name: 'Close', exact: true }).click();
   await capture.waitFor({ state: 'hidden' });
-  const reload = page.getByRole('button', { name: 'Reload with saved drafts' });
+  // The notice that this view needs a newer Ri. Its Refresh keeps the drafts.
+  const reload = page.getByRole('status').getByRole('button', { name: 'Refresh', exact: true });
   await reload.waitFor();
   await eventually(async () => rejected > 0, 'old API mutation rejected');
   const draftKeys = await page.evaluate(() => Object.keys(localStorage).filter(key => /^ri:(?:document-draft:v1:|chat-draft:|capture-draft:)/.test(key)));
