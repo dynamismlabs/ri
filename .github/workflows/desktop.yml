@@ -109,6 +109,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y xvfb xauth openbox libgtk-3-0 libnss3 libasound2t64
       - run: pnpm install --frozen-lockfile
+      # The browser tests, and the phone web app smoke below, drive a real
+      # Chromium through playwright-core. Its build is cached for each OS,
+      # architecture and playwright-core version. Linux also needs its system
+      # libraries, which aren't cached.
+      - name: Find the test Chromium's version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright-core --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Restore the test Chromium
+        id: chromium_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
+          key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+      - name: Install the test Chromium
+        if: steps.chromium_cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright-core install chromium
+      - name: Install the test Chromium's system libraries
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright-core install-deps chromium
+      - name: Point the browser tests at the test Chromium
+        run: node -e 'const fs = require("node:fs"); const file = require("playwright-core").chromium.executablePath(); if (!fs.existsSync(file)) throw new Error(`No test Chromium at ${file}`); fs.appendFileSync(process.env.GITHUB_ENV, `RI_REVIEW_CHROMIUM=${file}\n`)'
       - run: pnpm ts
         # The full app type graph exceeds Node's 2 GiB default on macOS runners.
         env:
@@ -248,8 +269,6 @@ jobs:
             pnpm exec tsx desktop/capture-smoke.ts
           fi
       - run: pnpm exec tsx desktop/update-smoke.ts "$RI_RUNTIME_PACKAGE"
-      - name: Install test Chromium
-        run: pnpm exec playwright-core install --with-deps chromium
       - name: Exercise phone manifest and private-cache boundaries
         run: pnpm exec tsx scripts/smoke-phone-web-app.ts
       - uses: actions/upload-artifact@v4

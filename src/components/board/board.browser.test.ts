@@ -8,6 +8,7 @@ import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { beforeAll, afterAll, beforeEach, expect, it } from 'vitest';
 import type { TaskListDTO } from '@/lib/api/dto/entity-list';
+import { testChromiumPath } from '@/test/fixtures/test-chromium';
 
 let browser: Browser;
 let server: http.Server;
@@ -120,7 +121,7 @@ beforeAll(async () => {
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const executablePath = process.env.RI_REVIEW_CHROMIUM ?? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'].find(fs.existsSync);
+  const executablePath = testChromiumPath();
   if (!executablePath) throw new Error('Chromium is required for Board qualification');
   browser = await chromium.launch({ executablePath, headless: true });
 }, 30_000);
