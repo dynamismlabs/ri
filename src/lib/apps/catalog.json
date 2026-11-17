@@ -1,3 +1,57 @@
 {
-  "apps": []
+  "apps": [
+    {
+      "id": "bookmarks",
+      "name": "Bookmarks",
+      "description": "Save a link from anywhere, then find it by what the page said, or ask an assistant. No folders to maintain.",
+      "reaches": [
+        "the web pages you save (read through Ri)"
+      ],
+      "git": "https://github.com/dynamismlabs/app-bookmarks.git",
+      "version": "v0.1.0",
+      "checksum": "sha256-d383d1afc66ddef3025bb87682edb955d63be891e05c6bc39a653bffc87abf45"
+    },
+    {
+      "id": "job-search",
+      "name": "Job Search",
+      "description": "Opportunities, interviews, correspondence and versioned materials together, from saving a posting to preparing for its interview.",
+      "reaches": [
+        "your Gmail through Ri (read only)",
+        "your Google Calendar through Ri (read only)",
+        "Ri's tasks",
+        "Ri's AI model"
+      ],
+      "git": "https://github.com/dynamismlabs/app-job-search.git",
+      "version": "v0.1.0",
+      "checksum": "sha256-a9bf92d16032a2989183e527abade121aab2afddbff0eca89c1c80c087dfc85c"
+    },
+    {
+      "id": "people",
+      "name": "People",
+      "description": "Your relationships, conversations and follow-ups in one place: people, companies, meetings, lists and keep-in-touch reminders.",
+      "reaches": [
+        "your Gmail through Ri (read only)",
+        "your Google Calendar through Ri (read only)",
+        "Ri's tasks",
+        "Ri's AI model"
+      ],
+      "git": "https://github.com/dynamismlabs/app-people.git",
+      "version": "v0.1.0",
+      "checksum": "sha256-04da430e6cf0f0a03a37be9ca0ecb11d996a35f1a7439b124639c1f56000e085"
+    },
+    {
+      "id": "travel",
+      "name": "Travel",
+      "description": "Turns plans, reservations and changes into one trip you can inspect and discuss with your assistant.",
+      "reaches": [
+        "your Gmail through Ri (read only)",
+        "your Google Calendar through Ri (read only)",
+        "Ri's tasks",
+        "Ri's AI model"
+      ],
+      "git": "https://github.com/dynamismlabs/app-travel.git",
+      "version": "v0.1.0",
+      "checksum": "sha256-4268a43da1ebd578221047a11fdea40261f19ad3e7344ab13ac454cf21db2742"
+    }
+  ]
 }
