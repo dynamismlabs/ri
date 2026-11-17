@@ -1,6 +1,6 @@
 /** The real scratchpad and editor, with synthetic storage and entity mutations. */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { Page } from 'playwright-core';
+import type { Locator, Page } from 'playwright-core';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
@@ -89,20 +89,27 @@ async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
   await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
   await page.locator('[data-scratchpad] .tiptap').waitFor();
   if (viewport.width < 1024) {
-    await page.getByRole('dialog').evaluate(async el => {
-      await Promise.all(el.getAnimations().map(animation => animation.finished));
-    });
+    await settle(page.getByRole('dialog'));
   }
   return page;
 }
 
 const editor = (page: Page) => page.locator('[data-scratchpad] .tiptap');
 
+/**
+ * Jump an element's running animations to their end, so a test reads the settled layout. Waiting
+ * for them to finish depends on frames: on a busy runner one sometimes never did, and the test
+ * timed out at one width or another.
+ */
+const settle = (locator: Locator) => locator.evaluate(el => {
+  for (const animation of el.getAnimations()) {
+    try { animation.finish(); } catch { /* An endless animation has no end to jump to. */ }
+  }
+});
+
 async function expand(page: Page) {
   await page.getByRole('button', { name: 'Expand the scratchpad' }).click();
-  await page.getByRole('dialog', { name: 'Scratchpad' }).evaluate(async el => {
-    await Promise.all(el.getAnimations().map(animation => animation.finished));
-  });
+  await settle(page.getByRole('dialog', { name: 'Scratchpad' }));
 }
 
 async function capture(page: Page, name: string) {
@@ -376,9 +383,7 @@ describe('the deck beside', () => {
 
   it('expands the same deck into a slideout and folds it back', async () => {
     const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
-    const settled = () => page.getByRole('dialog', { name: 'Deck' }).evaluate(async el => {
-      await Promise.all(el.getAnimations().map(animation => animation.finished));
-    });
+    const settled = () => settle(page.getByRole('dialog', { name: 'Deck' }));
     try {
       await page.goto(fixture.url);
       await page.getByRole('button', { name: 'Deck', exact: true }).click();
