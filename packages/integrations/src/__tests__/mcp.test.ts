@@ -244,6 +244,24 @@ describe('ingestMcpServer (§12) — external MCP as a gated provider', () => {
     expect(await s.runtime.runAction('mcp.view.widget_update', {}, { toolAudience: 'app' })).toMatchObject({ ok: true });
     expect(executions).toBe(1);
   });
+  it('refuses a tool to a caller it isn\'t for before reading the input, so bad input names no fields', async () => {
+    const s = ingestSetup(); let executions = 0;
+    await ingestMcpServer(s.registry, s.store, s.secretBox, { name: 'view', client: {
+      listTools: async () => ({ tools: [{ name: 'save_row', inputSchema: { type: 'object', properties: { secretField: { type: 'string' } }, required: ['secretField'] }, _meta: { ui: { visibility: ['app'] } } }] }),
+      callTool: async () => { executions++; return { content: [{ type: 'text', text: 'Saved' }] }; },
+    } });
+    s.setApproval(() => 'allow');
+    for (const input of [{}, { secretField: 7 }, { secretField: 'ok' }]) {
+      const outcome = await s.runtime.runAction('mcp.view.save_row', input);
+      expect(outcome).toMatchObject({ ok: false, reason: 'error', code: 'denied' });
+      expect(JSON.stringify(outcome)).not.toContain('secretField');
+    }
+    // The app's own screen still gets the field errors it needs, and its call runs.
+    expect(await s.runtime.runAction('mcp.view.save_row', {}, { toolAudience: 'app' })).toMatchObject({ ok: false, code: 'invalid_input' });
+    expect(await s.runtime.runAction('mcp.view.save_row', { secretField: 'ok' }, { toolAudience: 'app' })).toMatchObject({ ok: true });
+    expect(executions).toBe(1);
+  });
+
   it('registers namespaced, provenance-clean actions', async () => {
     const s = ingestSetup();
     const res = await ingestMcpServer(s.registry, s.store, s.secretBox, { name: 'demo', client: demoClient([]) });

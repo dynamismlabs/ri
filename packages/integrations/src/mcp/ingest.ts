@@ -284,6 +284,7 @@ export async function ingestMcpServers(
       },
     });
     return { ...result, modelVisible: variants.some(variant => mcpToolVisible(variant.tool, 'model')),
+      admitsAudience: audience => variants.some(variant => mcpToolVisible(variant.tool, audience)),
       validateForConnection: (connection, input, audience = 'model') => {
         const selected = selectedTool(connection, name, input);
         if (!mcpToolVisible(selected.selected.tool, audience)) throw new IntegrationError('denied', 'This tool is not available to this caller.');
