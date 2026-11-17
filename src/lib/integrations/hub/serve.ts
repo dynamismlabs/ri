@@ -99,7 +99,7 @@ export async function serveHub(server: RiMcpServer, runtime: IntegrationRuntime,
     accounts.push({ id: hubAccountId(app.id, connectionId), name: accountDisplay(accountChoice(connection)) ?? null, provider: connection.providerId, tools: backs });
   }
   server.registerTool(LIST_ACCOUNTS_TOOL, {
-    description: 'The person\'s accounts this app may use, each with the tools it backs. Pass an account\'s name as a tool\'s account argument when the tool offers one. An account keeps its id across its tools and while it stays connected.',
+    description: 'The person\'s accounts this app may use, each with the tools it backs. Pass an account\'s name as a tool\'s account argument when that argument lists it as allowed. A tool whose own input is named account means something of its own by it. An account keeps its id across its tools and while it stays connected.',
     annotations: { readOnlyHint: true },
   }, async () => text({ accounts }));
 
