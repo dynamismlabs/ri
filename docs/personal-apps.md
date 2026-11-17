@@ -105,6 +105,8 @@ On November 16, 2026, Ri started carrying the kit from its `main` at `02cd537` (
 - Restart brought the same release back.
 - The app answered MCP.
 
+Later on November 16, Ri moved to the kit's `main` at `1713f6a`, which adds the full app in every host (downloads, links, drafts and opening at a record from a view). The same check passed. The kit's version is still 0.2.2, so an app's status can't tell the two apart.
+
 ## The catalog
 
 Ri offers recommended apps the way it used to offer its bundled ones, without carrying their code (shared spec §2, "The catalog"). Only first-party apps for now.
