@@ -73,68 +73,75 @@ async function proxyToHome(session: ServiceSession) {
   proxyOrigin = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
 }
 interface RemoteDelivery { id: string; status: string; attempts: number; receipt: string | null }
-type NotificationFixtureGlobal = typeof globalThis & { companionAlerts: Notification[] };
+type NotificationFixtureGlobal = typeof globalThis & { companionAlerts: Notification[]; consentQuestions: string[] };
 function remoteDeliveries(deviceId: string): RemoteDelivery[] {
   const db = new Database(path.join(home.root, 'data.db'), { readonly: true, fileMustExist: true });
   try { return db.prepare('SELECT id, status, attempts, provider_message_id AS receipt FROM notification_deliveries WHERE channel_id = ? ORDER BY id').all(`desktop:device:${deviceId}`) as RemoteDelivery[]; }
   finally { db.close(); }
 }
+/**
+ * A connected Home's page turns this computer's alerts on in place: the app
+ * asks the person in a native dialog over its window, and only Allow turns
+ * them on. Turning them off needs no dialog (desktop/notification-consent.ts).
+ */
 async function remoteNotificationConsent(page: Page, deviceId: string) {
-  await connected.app!.evaluate(({ Notification }) => {
+  await connected.app!.evaluate(({ Notification, dialog }) => {
     const shown: Notification[] = [];
-    (globalThis as NotificationFixtureGlobal).companionAlerts = shown;
+    const questions: string[] = [];
+    Object.assign(globalThis, { companionAlerts: shown, consentQuestions: questions });
     Notification.isSupported = () => true;
     Notification.getHistory = async () => [];
     Notification.prototype.show = function () { shown.push(this); queueMicrotask(() => this.emit('show')); };
+    // The person's answer in the native dialog. The page can neither draw nor answer it.
+    const original = dialog.showMessageBox;
+    dialog.showMessageBox = ((...args: unknown[]) => {
+      const options = args.at(-1) as { message?: string };
+      if (options.message === 'Show notifications from Ri on this computer?') {
+        questions.push(options.message);
+        return Promise.resolve({ response: 0, checkboxChecked: false });
+      }
+      return original(...args as Parameters<typeof original>);
+    }) as typeof original;
   });
   const shown = () => connected.app!.evaluate(() => (globalThis as NotificationFixtureGlobal).companionAlerts.map(alert => ({ id: alert.id, title: alert.title })));
+  const questions = () => connected.app!.evaluate(() => [...(globalThis as NotificationFixtureGlobal).consentQuestions]);
   await connected.navigate('/?settings=notifications');
   const deviceCard = page.getByRole('region', { name: 'Desktop notifications on this computer', exact: true });
-  await deviceCard.getByRole('status').filter({ hasText: 'Off' }).waitFor();
+  const state = deviceCard.getByRole('status');
+  await state.filter({ hasText: 'Off' }).waitFor();
   const viewerIdentity = await page.evaluate(() => performance.timeOrigin);
+  // The dialog opens only over a focused window, so a page in the background
+  // can't raise it. A person clicking the button has focused it.
+  await connected.app!.evaluate(({ BrowserWindow }) => { BrowserWindow.getAllWindows()[0]?.focus(); });
   await deviceCard.getByRole('button', { name: 'Enable desktop notifications', exact: true }).click();
-  let controls = await localPage(connected.app!, 'companion');
-  let consent = controls.locator('#native-notifications');
-  await consent.waitFor();
-  assert.equal(await controls.locator('#notifications').evaluate(element => element.hasAttribute('open')), true);
-  assert.equal(await page.evaluate(() => performance.timeOrigin), viewerIdentity);
-  await eventually(() => consent.evaluate(element => document.activeElement === element), 'notification consent control focused');
-  assert.equal(await consent.isChecked(), false);
-  assert.equal(await controls.getByRole('button', { name: 'Send test notification', exact: true }).isEnabled(), false);
-  await consent.check();
-  let test = controls.getByRole('button', { name: 'Send test notification', exact: true });
-  await test.click();
+  await state.filter({ hasText: 'On' }).waitFor();
+  assert.deepEqual(await questions(), ['Show notifications from Ri on this computer?']);
+  assert.equal(await page.evaluate(() => performance.timeOrigin), viewerIdentity, 'Turning alerts on must not reload the viewer');
+  // The Desktop channel's Test, on the row for this desktop app.
+  await page.locator('div.rounded-xl', { has: page.getByText('This desktop app') }).getByRole('button', { name: 'Test', exact: true }).click();
   await eventually(async () => remoteDeliveries(deviceId).length === 1 && remoteDeliveries(deviceId)[0].status === 'sent', 'remote native claim and acknowledgement');
   const first = remoteDeliveries(deviceId)[0];
   assert.equal(first.attempts, 1); assert(first.receipt);
   assert.deepEqual(await shown(), [{ id: `desktop:device:${deviceId}:${first.id}`, title: 'Ri notifications are ready' }]);
-  passed('Local companion opt-in uses the Home per-device outbox, real claim and acknowledgement, and native presentation');
+  passed('A connected Home turns alerts on in place, only with the person’s Allow in a native dialog, and its test uses the per-device outbox, real claim and acknowledgement, and native presentation');
 
-  await controls.getByRole('button', { name: 'Back to Ri', exact: true }).click();
-  await deviceCard.getByRole('status').filter({ hasText: 'On' }).waitFor();
-  await deviceCard.getByRole('button', { name: 'Open notification settings', exact: true }).click();
-  controls = await localPage(connected.app!, 'companion');
-  consent = controls.locator('#native-notifications');
-  test = controls.getByRole('button', { name: 'Send test notification', exact: true });
-  await consent.waitFor();
-  passed('Notification settings show effective status and open focused local controls without reloading the viewer');
-
-  await consent.uncheck();
-  await eventually(async () => !(await consent.isChecked()) && await consent.isEnabled(), 'local notification consent disabled');
+  await deviceCard.getByRole('button', { name: 'Disable desktop notifications', exact: true }).click();
+  await state.filter({ hasText: 'Off' }).waitFor();
+  assert.equal((await questions()).length, 1, 'Turning alerts off asks nothing');
   // A Home-side routing change must never override this computer's consent.
   const channel = `desktop:device:${deviceId}`;
   await api(page, `/api/notifications/channels/${encodeURIComponent(channel)}`, 'PATCH', { enabled: true });
-  assert.equal(await test.isEnabled(), false);
   await api(page, `/api/notifications/channels/${encodeURIComponent(channel)}/test`, 'POST', {});
   await eventually(async () => remoteDeliveries(deviceId).length === 2, 'queued alert while local consent is disabled');
   assert.equal(remoteDeliveries(deviceId)[1].status, 'pending');
   assert.equal(remoteDeliveries(deviceId)[1].attempts, 0);
   assert.equal((await shown()).length, 1);
-  assert.equal(await consent.isChecked(), false);
-  await controls.getByRole('button', { name: 'Back to Ri', exact: true }).click();
-  await deviceCard.getByRole('status').filter({ hasText: 'Off' }).waitFor();
+  await assert.rejects(page.evaluate(() => window.riDesktop!.notifications!('test')), /Turn on desktop notifications/);
+  await state.filter({ hasText: 'Off' }).waitFor();
+  assert.equal(await page.evaluate(() => performance.timeOrigin), viewerIdentity, 'Turning alerts off must not reload the viewer');
   passed('Home channel re-enable cannot override local native notification refusal');
 }
+
 async function consentToExecution(fixture: AcceptanceFixture) {
   await fixture.app!.evaluate(({ dialog }) => {
     const original = dialog.showMessageBox;
