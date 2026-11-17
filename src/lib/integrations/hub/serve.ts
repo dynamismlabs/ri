@@ -4,17 +4,18 @@
  * accounts it was granted on, and runs through the same gated `runAction` as every other caller
  * (approval, redaction, audit), as the app. Writes ask the person every time. Ri's own services
  * are tools too, `ri__<name>`, under the same grant. Every call goes in the app's audit log with
- * what started it.
+ * what started it. `ri__list_accounts` names the accounts Ri lent the app, for every app.
  */
+import { createHmac } from 'node:crypto';
 import { z as z4 } from 'zod/v4';
 import { z } from 'zod';
-import { accountDisplay, modelSafeOutcome, ownsAccountField, splitAccountArg, toToolName, type AccountChoice, type Caller, type IntegrationRuntime } from '@integrations/engine';
+import { accountDisplay, modelSafeOutcome, ownsAccountField, splitAccountArg, toToolName, type AccountChoice, type Caller, type Connection, type IntegrationRuntime } from '@integrations/engine';
 import type { RiMcpServer, RiMcpToolResult } from '@/lib/mcp/http-server';
 import { insertHubCall, type HubAppRecord } from '@/lib/db/queries';
 import { isAppToolkitId } from '../app-ids';
 import { callRiService, RI_SERVICE_DESCRIPTIONS, riServiceInputs, RiServiceError, type RiServiceName } from './ri-services';
 import { startedByFor, type StartedBy } from './origin';
-import { riServiceTool } from './grant';
+import { RI_SERVICE_TOOL_PREFIX, riServiceTool } from './grant';
 
 const text = (value: unknown, isError = false): RiMcpToolResult => ({ content: [{ type: 'text', text: JSON.stringify(value) }], ...(isError ? { isError: true } : {}) });
 
@@ -33,6 +34,33 @@ function audit(app: HubAppRecord, tool: string, connectionId: string | null, sta
     // The call already ran or was refused. A failed log line must not change its answer.
     console.warn('[hub] recording the call failed:', err instanceof Error ? err.message : err);
   }
+}
+
+/** The tool every app has for the accounts Ri lent it. It isn't a consent choice: it shows only the app's own grant. */
+export const LIST_ACCOUNTS_TOOL = `${RI_SERVICE_TOOL_PREFIX}list_accounts`;
+
+/** One account Ri lent an app, as `ri__list_accounts` answers. */
+export interface HubLentAccount {
+  id: string;
+  /** What a tool's `account` argument takes for it. `null` when Ri has no email or name for it. */
+  name: string | null;
+  provider: string;
+  /** The granted tools this account backs, named as `tools/list` names them. */
+  tools: string[];
+}
+
+/**
+ * An account's ID for one app: the same on every tool it backs and for as long as it stays connected,
+ * and never the connection's own ID. Two apps get different IDs for the same account, so they can't
+ * match up what each was lent.
+ */
+export function hubAccountId(appId: string, connectionId: string): string {
+  return `acc_${createHmac('sha256', appId).update(connectionId).digest('hex').slice(0, 24)}`;
+}
+
+/** How an account is named to an app, here and in a tool's `account` argument alike. */
+function accountChoice(connection: Connection): AccountChoice {
+  return { connectionId: connection.id, ...(connection.email ? { email: connection.email } : {}), ...(connection.label ? { label: connection.label } : {}) };
 }
 
 /** Where the app is: its own address and where it returns the person, for attribution only. */
@@ -61,10 +89,24 @@ export async function serveHub(server: RiMcpServer, runtime: IntegrationRuntime,
     }
   }
 
+  // One entry per lent account, with every tool it backs across its services (one Google account's mail
+  // and calendar are one account to the app). It reads nothing beyond the grant, so it isn't logged.
+  const accounts: HubLentAccount[] = [];
+  for (const connectionId of new Set(app.grant.accounts.map((account) => account.connectionId))) {
+    const backs = [...tools].filter(([, entry]) => entry.connections.includes(connectionId)).map(([name]) => name);
+    const connection = connections.find((c) => c.id === connectionId);
+    if (!connection || !backs.length) continue;
+    accounts.push({ id: hubAccountId(app.id, connectionId), name: accountDisplay(accountChoice(connection)) ?? null, provider: connection.providerId, tools: backs });
+  }
+  server.registerTool(LIST_ACCOUNTS_TOOL, {
+    description: 'The person\'s accounts this app may use, each with the tools it backs. Pass an account\'s name as a tool\'s account argument when the tool offers one. An account keeps its id across its tools and while it stays connected.',
+    annotations: { readOnlyHint: true },
+  }, async () => text({ accounts }));
+
   for (const [name, entry] of tools) {
     const toolkit = toolkits.get(entry.toolkitId)!;
     const action = toolkit.actions.find((candidate) => candidate.id === entry.actionId)!;
-    const choices: AccountChoice[] = connections.filter((c) => entry.connections.includes(c.id)).map((c) => ({ connectionId: c.id, ...(c.email ? { email: c.email } : {}), ...(c.label ? { label: c.label } : {}) }));
+    const choices: AccountChoice[] = connections.filter((c) => entry.connections.includes(c.id)).map(accountChoice);
     const several = choices.length > 1;
     // An action with its own `account` input keeps it, so the app can't name a lent account for it:
     // on several, the runtime answers choose_account rather than pick one.
