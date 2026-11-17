@@ -661,7 +661,7 @@ Rules:
 - Disabling the default chooses the first remaining enabled model after confirmation
 - Disabling the final model is rejected when this is the global default harness
 - A default model must be enabled
-- OpenCode effort is stored as effort, like every harness's. Only a variant that isn't an effort level is stored as a variant (migration 0040 moved existing levels)
+- OpenCode effort is stored as effort, like every harness's. Only a variant that isn't an effort level is stored as a variant
 - Unsupported effort or variant values are preserved on historical chats but cannot be newly selected
 - Model catalog defaults are suggestions, not forced replacements
 
