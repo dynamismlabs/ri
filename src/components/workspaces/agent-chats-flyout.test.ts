@@ -184,7 +184,10 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
     const header = page.locator('#agent-row .group').first();
     // Crossing a row briefly never opens a menu. Time stands still while the pointer crosses, so
     // the crossing is brief however slowly this computer moves it, then runs past the open delay.
-    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1));
+    // Any page timer that fires between reading the clock and pausing it moves the clock on,
+    // past a 1 ms lead on a busy CI Mac, so pause a few seconds ahead. Nothing is hovered
+    // while it jumps.
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 5_000));
     await header.hover();
     await page.locator('#outside').hover();
     await page.clock.runFor(250);
