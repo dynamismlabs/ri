@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHash } from 'node:crypto';
 import { ManagedSpeech, speechPaths } from './manager';
 import { clearMaintenance, writeMaintenance } from '@/lib/service/maintenance';
@@ -115,4 +115,15 @@ process.stdin.once('data', () => {
   }
   await expect(manager.transcribe(new Blob(['recording']))).rejects.toThrow('repeatedly stopped');
   expect(fs.readFileSync(launches, 'utf8').trim().split('\n')).toHaveLength(3);
+});
+
+describe('where local speech runs', () => {
+  it('runs on Linux and Apple-chip Macs, and says plainly it isn\'t available on an Intel Mac', async () => {
+    const { speechPlatform } = await import('./manager');
+    expect(speechPlatform('darwin', 'arm64')).toEqual({ supported: true });
+    expect(speechPlatform('linux', 'x64')).toEqual({ supported: true });
+    expect(speechPlatform('linux', 'arm64')).toEqual({ supported: true });
+    expect(speechPlatform('darwin', 'x64')).toEqual({ supported: false, unavailable: 'Local speech isn’t available on this Mac. Its speech engine has no build for Intel Macs.' });
+    expect(speechPlatform('win32', 'x64')).toMatchObject({ supported: false });
+  });
 });
