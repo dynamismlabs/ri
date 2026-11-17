@@ -9,11 +9,15 @@
  * Changing the model can switch provider, and that change always sends the
  * whole tuple (the picked model plus the effort resolved for it): the server
  * resets model and effort on a provider switch that doesn't restate them.
+ *
+ * On OpenCode a model's effort levels are its variants (`effortIsVariant`),
+ * so the menu's Variant row edits the schedule's effort.
  */
 
 import { useState } from 'react';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import {
+  effortIsVariant,
   explicitEffortForModel,
   findProvider,
   harnessSupportsEffort,
@@ -21,7 +25,7 @@ import {
 import { readProviderEfforts } from '@/lib/executions/provider-effort';
 import { ProviderIcon } from '@/components/settings/harness-connection-ui';
 import { ModelControl } from '@/components/workspaces/launcher/launch-controls';
-import type { EffortLevel } from '@/db/types';
+import { EFFORT_LEVELS, type EffortLevel } from '@/db/types';
 import type { HarnessId } from '@/lib/harness/registry';
 
 export interface RunsOnValue {
@@ -66,6 +70,7 @@ export function RunsOnPicker({
   }
 
   const selectedModelOption = model ? models.find((m) => m.id === model) ?? null : null;
+  const asVariant = effortIsVariant(provider);
   // A null effort means "the model's default", so show that rather than an
   // empty control.
   const effort: EffortLevel | null =
@@ -85,14 +90,25 @@ export function RunsOnPicker({
           selection={{ harness: provider, model: model ?? '' }}
           label={selectedModelOption?.label ?? model ?? 'Default model'}
           rememberedEfforts={efforts}
-          effort={effort}
+          variant={asVariant ? savedEffort : null}
+          variantIds={EFFORT_LEVELS}
+          effort={asVariant ? null : effort}
           serviceTier={value.serviceTier ?? null}
           onEffortChange={(next) => onChange({ effort: next })}
-          onChange={(next) => onChange({ provider: next.harness, model: next.model, effort: next.effort, serviceTier: next.serviceTier })}
+          onChange={(next) => onChange({
+            provider: next.harness,
+            model: next.model,
+            effort: effortIsVariant(next.harness) ? effortLevel(next.variant) : next.effort,
+            serviceTier: next.serviceTier,
+          })}
           disabled={disabled}
         />
       </div>
       {error && <p className="text-[12px] text-destructive">{error}</p>}
     </div>
   );
+}
+
+function effortLevel(id: string | null | undefined): EffortLevel | null {
+  return (EFFORT_LEVELS as readonly string[]).includes(id ?? '') ? id as EffortLevel : null;
 }

@@ -400,6 +400,26 @@ export function harnessSupportsEffort(harness: string | null | undefined): boole
   return isKnownHarnessId(harness) && HARNESS_REGISTRY[harness].maximumCapabilities.reasoningEffort;
 }
 
+/**
+ * A harness whose effort levels are its models' variants. OpenCode has no
+ * effort setting: each model lists its levels (low, medium, high, xhigh,
+ * max) as variants. A schedule keeps the level as its effort, and it reaches
+ * OpenCode as the variant.
+ */
+export function effortIsVariant(harness: string | null | undefined): boolean {
+  if (!isKnownHarnessId(harness)) return false;
+  const capabilities = HARNESS_REGISTRY[harness].maximumCapabilities;
+  return capabilities.modelVariants && !capabilities.reasoningEffort;
+}
+
+/** A model's effort levels when they are its variants: the ones Ri's effort can hold. */
+export function variantEfforts(model: ModelOption | null | undefined): EffortLevel[] {
+  const levels = new Set<string>(EFFORT_OPTIONS.map((option) => option.id));
+  return (model?.variants ?? [])
+    .filter((variant) => !variant.disabled && levels.has(variant.id))
+    .map((variant) => variant.id as EffortLevel);
+}
+
 // ─── Providers ────────────────────────────────────────────────
 // The selectable harnesses. One vocabulary everywhere: the `HarnessId` values
 // stored on chats, triggers, runs and `user_state.default_harness`, which are

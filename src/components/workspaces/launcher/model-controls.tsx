@@ -40,6 +40,7 @@ export function ModelControl({
   onChange,
   disabled,
   variant,
+  variantIds,
   effort,
   serviceTier,
   onEffortChange,
@@ -48,6 +49,8 @@ export function ModelControl({
   label: string;
   /** The launch's variant and effort, carried along if it's made the default. */
   variant?: string | null;
+  /** Offer only these variants. A schedule keeps OpenCode's variant as its effort level. */
+  variantIds?: readonly string[];
   effort?: EffortLevel | null;
   serviceTier?: string | null;
   onEffortChange: (effort: EffortLevel) => void;
@@ -64,6 +67,8 @@ export function ModelControl({
   const currentModel = models.find(model => model.id === selection.model) ?? null;
   const effortOptions = effortOptionsForModel(selection.harness, currentModel);
   const effortLabel = effortOptions.find(option => option.id === effort)?.label;
+  const variantLabel = variant ? currentModel?.variants?.find(option => option.id === variant)?.name ?? variant : undefined;
+  const variantOptions = currentModel?.variants?.filter(option => !variantIds || variantIds.includes(option.id)) ?? [];
   const speedOptions = serviceTierOptions(currentModel);
   // An omitted value initializes a new draft. Explicit NULL is a saved
   // legacy selection that still inherits the native provider setting.
@@ -93,12 +98,12 @@ export function ModelControl({
         <Tip label="Choose a model and adjust its settings">
           <button
             type="button"
-            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}`}
+            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
             disabled={disabled}
             className={TRIGGER_CLASS}
           >
             <Cpu size={11} className="text-primary/70" />
-            <ModelMenuLabel model={label} effort={effortLabel} speed={speed ?? undefined} />
+            <ModelMenuLabel model={label} effort={effortLabel} variant={variantLabel} speed={speed ?? undefined} />
           </button>
         </Tip>
       </PopoverTrigger>
@@ -125,9 +130,9 @@ export function ModelControl({
             onEffortChange(level);
             setOpen(false);
           }}
-          variant={currentModel?.variants?.length ? {
+          variant={variantOptions.length ? {
             value: variant ?? null,
-            options: currentModel.variants,
+            options: variantOptions,
             onChange: (id) => {
               onChange({ harness: selection.harness, model: selection.model, variant: id, effort: effort ?? null, serviceTier: speed });
               setOpen(false);

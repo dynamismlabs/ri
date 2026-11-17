@@ -116,6 +116,9 @@ export function ComposerProviderMenu({
   const speedOptions = serviceTierOptions(currentModel);
   const effortLabel =
     efforts.find((option) => option.id === effort)?.label ?? effort;
+  const variantLabel = variant
+    ? currentModel?.variants?.find((option) => option.id === variant)?.name ?? variant
+    : undefined;
   const modelSelectionDisabled = disabled || switching || (selectionDisabled && !onSwitchProvider);
 
   const reset = (next: boolean) => {
@@ -173,7 +176,7 @@ export function ComposerProviderMenu({
         <Tip label="Choose a model and adjust its settings">
           <button
             type="button"
-            aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}`}
+            aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
             disabled={disabled || switching}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors',
@@ -182,7 +185,7 @@ export function ComposerProviderMenu({
             )}
           >
             <Cpu size={11} className="text-primary/70" />
-            <ModelMenuLabel model={fallbackLabel} effort={effortLabel} speed={serviceTier ?? undefined} />
+            <ModelMenuLabel model={fallbackLabel} effort={effortLabel} variant={variantLabel} speed={serviceTier ?? undefined} />
           </button>
         </Tip>
       </PopoverTrigger>

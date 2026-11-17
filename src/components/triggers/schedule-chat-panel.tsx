@@ -63,6 +63,14 @@ export function ScheduleChatPanel({ chat, scheduleRef }: { chat: ReturnType<type
             autoFocusComposer={isNew}
             composerPlaceholder={isNew ? 'What should run, and when?' : 'Ask for a change to this schedule'}
             intro={isNew ? NEW_INTRO : EDIT_INTRO}
+            onSwitchProvider={(next) => chat.newChat.mutate({
+              providerId: next.harness,
+              model: next.model,
+              variant: next.variant,
+              effort: next.effort,
+              serviceTier: next.serviceTier,
+            })}
+            switchingProvider={chat.newChat.isPending}
           />
         ) : chat.error ? (
           <div className="flex flex-1 items-center justify-center px-8 text-center">

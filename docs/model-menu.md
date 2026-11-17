@@ -1,7 +1,7 @@
 # Combined model menu
 
 The chat composer, new-chat launcher and scheduled-run pickers use one control
-for model, reasoning effort and model variants. Its button shows the model and effort together.
+for model, reasoning effort and model variants. Its button shows the model with its effort or variant. On a schedule or the heartbeat, OpenCode's variant row edits the schedule's effort, since a model's variants are its effort levels.
 Search matches model labels, exact IDs and harness names across the supported
 catalog, including models inside collapsed sections. Arrow keys and Enter select
 a result. Closing the menu clears its search and collapses the provider sections.

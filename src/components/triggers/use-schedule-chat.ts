@@ -9,8 +9,13 @@ import { apiErrorText } from '@/lib/api/client';
 import type { ChatSessionRecord } from '@/lib/api/dto/records';
 import { hasRuntimeActivity } from '@/lib/executor/runtime-status';
 import { SCHEDULE_CHAT_SURFACE } from '@/lib/triggers/schedule-chat';
+import type { EffortLevel } from '@/db/types';
+import type { ProviderId } from '@/lib/harness/options';
 import { trpcClient } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
+
+/** The composer's model menu choice a fresh chat starts on. */
+type NewChatOverride = { providerId?: ProviderId; model?: string; variant?: string; effort?: EffortLevel; serviceTier?: string };
 
 export function scheduleChatQueryKey(ref: string) {
   return ['document-chat', SCHEDULE_CHAT_SURFACE, ref] as const;
@@ -56,8 +61,11 @@ export function useScheduleChat(ref: string) {
   const { data: live } = useSession(sessionId);
   const movedTo = live?.surfaceRef && live.surfaceRef !== ref ? live.surfaceRef : null;
 
+  // No args starts a fresh chat on the default model. A choice from the
+  // composer's model menu starts it on that provider and model instead.
   const newChat = useMutation({
-    mutationFn: () => trpcClient.documentChat.create.mutate({ body: { entityType: SCHEDULE_CHAT_SURFACE, entityId: ref } }),
+    mutationFn: (opts: NewChatOverride | void) =>
+      trpcClient.documentChat.create.mutate({ body: { entityType: SCHEDULE_CHAT_SURFACE, entityId: ref, ...(opts ?? {}) } }),
     onError: (error) => toast.error('Could not start a new chat', { description: apiErrorText(error) }),
     onSuccess: (data) => qc.setQueryData(queryKey, data.session),
   });

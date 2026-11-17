@@ -17,7 +17,7 @@ import { chatSourceActions } from '@/lib/chat-sources/actions';
  */
 
 import { INTEGRATION_LABELS } from '@/constants/integrations';
-import { speedForTriggerModel, triggerSpeedModel } from '@/lib/triggers/model-speed';
+import { assertTriggerEffort, effortForTriggerModel, speedForTriggerModel, triggerSpeedModel } from '@/lib/triggers/model-speed';
 import { HUMAN_LINES_PER_HOUR } from '@/lib/work/lines';
 import { resultActions } from './result-actions';
 import { emailActions } from './email-actions';
@@ -112,6 +112,7 @@ import {
 } from '@/lib/db/queries';
 import {
 	customModelOption,
+	effortIsVariant,
 	modelBelongsToProvider,
 	modelsForProvider,
 } from '@/lib/harness/options';
@@ -148,7 +149,7 @@ import { uuidv7 } from 'uuidv7';
 import { z } from 'zod';
 import { browserActions } from './browser-actions';
 import { ActionError, defineAction, type Action, type ActionContext } from './types';
-import type { ChatSessionRecord } from '@/db/types';
+import type { ChatSessionRecord, EffortLevel } from '@/db/types';
 // `dispatchRun` and the executor `abort` transitively load `@agentex/agent`,
 // which has no `require` condition in its package exports. Top-level imports
 // here would crash `tsx src/cli/index.ts` (CJS resolution) on every CLI
@@ -2318,6 +2319,16 @@ async function validateTriggerSpeed(harness: HarnessId, model: string | null | u
   }
 }
 
+async function validateTriggerEffort(harness: HarnessId, model: string | null | undefined, effort: EffortLevel | null | undefined) {
+  // Other harnesses resolve effort against the model's ladder at dispatch.
+  if (effort == null || !effortIsVariant(harness)) return;
+  try {
+    assertTriggerEffort(harness, await triggerSpeedModel(harness, model), effort);
+  } catch (error) {
+    throw new ActionError('invalid_params', error instanceof Error ? error.message : String(error));
+  }
+}
+
 const createTriggerShape = {
   name: z.string().min(1),
   description: z.string().nullable().optional(),
@@ -2411,7 +2422,7 @@ const create_trigger_action = defineAction({
   description:
     'Create a trigger. Kind-specific fields are enforced (cron requires cron_expression, every requires interval_seconds, at requires run_at, webhook generates credentials, manual takes no cadence fields and only fires via run_trigger). ' +
     'target_kind decides where each fire runs. session sends the prompt into one existing chat as a message from the trigger: target_session_id names it, and called from a chat it defaults to that chat, so a chat can schedule its own check-ins. The chat keeps its own provider and model, and a fire while it is busy is skipped unless concurrency_policy says otherwise, except a one-time fire, which waits until the chat is free. workspace starts a fresh chat in that agent on every fire. orchestrator starts a fresh Ri chat on every fire. ' +
-    'provider picks who runs a workspace or orchestrator trigger (defaults to the user\'s default provider); model and effort are validated against that provider. Enabling an automation authorizes its run chats to message and delegate within the assignment without per-send coordination approval. Create schedules only within the user\'s intent, never to bypass a denied send.',
+    'provider picks who runs a workspace or orchestrator trigger (defaults to the user\'s default provider); model and effort are validated against that provider. OpenCode models list their own effort levels, and effort must be one of them. Enabling an automation authorizes its run chats to message and delegate within the assignment without per-send coordination approval. Create schedules only within the user\'s intent, never to bypass a denied send.',
   params: createTriggerShape,
   mutating: true,
   handler: async (ctx, input) => {
@@ -2494,6 +2505,7 @@ const create_trigger_action = defineAction({
     const nextRunAt = computeNextRun(draft);
 
     await validateTriggerSpeed(harness, input.model, input.serviceTier);
+    await validateTriggerEffort(harness, input.model, input.effort);
     const serviceTier = targetChat ? null : input.serviceTier ?? await speedForTriggerModel(harness, input.model, null);
     const row = createTrigger({
       name: input.name,
@@ -2555,7 +2567,8 @@ const update_trigger_action = defineAction({
     'Patch a trigger. Cron / interval / runAt changes recompute nextRunAt automatically. ' +
     'kind switches between manual, at, every and cron: pass the new kind\'s cron_expression, interval_seconds or run_at in the same call, and the other kinds\' fields are cleared. A webhook keeps its kind. ' +
     'workspace_id moves a workspace trigger to another agent. ' +
-    'Changing provider resets model and effort to that provider\'s defaults unless the same call sets them.',
+    'Changing provider resets model and effort to that provider\'s defaults unless the same call sets them. ' +
+    'On OpenCode, where each model lists its own effort levels, changing model keeps the effort only if the new model offers it.',
   params: {
     id: z.string().min(1),
     // Switch who runs it. Allowed on app-managed triggers too: provider,
@@ -2659,6 +2672,13 @@ const update_trigger_action = defineAction({
         rest.serviceTier = await speedForTriggerModel(provider ?? current.harness, model, harness ? null : current.serviceTier);
       }
     }
+    // A model whose effort levels are its own keeps the level only if the
+    // new model offers it too.
+    if (!harness && rest.effort === undefined && rest.model !== undefined && rest.model !== current.model) {
+      const effort = await effortForTriggerModel(current.harness, rest.model, current.effort);
+      if (effort !== current.effort) rest.effort = effort;
+    }
+    await validateTriggerEffort(provider ?? current.harness, rest.model !== undefined ? rest.model : current.model, rest.effort);
 
     // Verify the digest binding against the (immutable) target_kind before write.
     if (rest.deliverResultTo !== undefined) {
@@ -2910,6 +2930,7 @@ const update_heartbeat_action = defineAction({
     'activeHoursStart/activeHoursEnd are HH:MM in the heartbeat\'s timezone, set together, or both null for any time of day. ' +
     'instructions replace the user\'s instructions verbatim (the app\'s ground rules are added separately and cannot be edited). ' +
     'resetInstructions restores the default instructions. Changing provider resets model and effort unless the same call sets them. ' +
+    'On OpenCode, where each model lists its own effort levels, changing model keeps the effort only if the new model offers it. ' +
     'Turning it on schedules the first check-in one interval out, inside the active hours. Use run_trigger with the returned triggerId to check in now.',
   params: {
     enabled: z.boolean().optional(),
@@ -2980,6 +3001,11 @@ const update_heartbeat_action = defineAction({
     } else if (patch.harness || (model !== undefined && model !== current.model)) {
       serviceTier = await speedForTriggerModel(input.provider ?? current.harness, targetModel, patch.harness ? null : current.serviceTier);
     }
+    if (!patch.harness && effort === undefined && model !== undefined && model !== current.model) {
+      const kept = await effortForTriggerModel(current.harness, model, current.effort);
+      if (kept !== current.effort) effort = kept;
+    }
+    await validateTriggerEffort(input.provider ?? current.harness, targetModel, effort);
 
     if (input.enabled !== undefined) patch.enabled = input.enabled;
     if (input.resetInstructions) patch.instructions = DEFAULT_HEARTBEAT_INSTRUCTIONS;

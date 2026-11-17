@@ -58,7 +58,7 @@ It's seeded at boot, only if missing, by `ensureHeartbeatTrigger()` (new, in `sr
 | Which hours | `activeHoursStart` / `activeHoursEnd` | both null (24/7) | yes |
 | Timezone | `timezone` | your timezone from Settings > General, else the host's | yes |
 | Provider | `harness` | `defaultTriggerHarness()` (your default provider) | yes, through the provider switch |
-| Model, effort | `model`, `effort` | `null` (the program's defaults) | yes |
+| Model, effort | `model`, `effort` (on OpenCode, one of the model's own levels, sent as its variant) | `null` (the program's defaults) | yes |
 | Instructions | `prompt` | the default instructions (§8) | yes |
 | Name, description | `name`, `description` | `Heartbeat`, `Checks in on your work on a schedule.` | locked |
 | Target | `targetKind` | `orchestrator` | locked |

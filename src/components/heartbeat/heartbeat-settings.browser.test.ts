@@ -33,7 +33,7 @@ beforeAll(async () => {
     ]:[];
     const saved={triggerId:'heartbeat',enabled:query.has('on'),instructions:'Look at my tasks.',instructionsAreDefault:false,
       intervalSeconds:Number(query.get('seconds')||1800),activeHoursStart:query.get('start'),activeHoursEnd:query.get('end'),
-      timezone:'America/Denver',provider:'claude',model:'opus',effort:null,serviceTier:null,deliverResultTo:[],
+      timezone:'America/Denver',...(query.has('opencode')?{provider:'opencode',model:'anthropic/claude-sonnet-5-5'}:{provider:'claude',model:'opus'}),effort:null,serviceTier:null,deliverResultTo:[],
       nextCheckInAt:null,running:false,lastCheckIn:null,recentCheckIns:CHECK_INS,disabledReason:null,consecutiveFailures:0};
     let listener=null;
     let config=saved;
@@ -48,7 +48,7 @@ beforeAll(async () => {
     export const useCheckInNow=()=>({isPending:false,mutate:()=>{}});
     export const useUserState=()=>({data:{timezone:'America/Denver'}});
     export const useOrchestratorName=()=>'Rye';
-    export const useHarnessModels=()=>({models:[{id:'opus',label:'Opus'}]});
+    export const useHarnessModels=()=>({models:query.has('opencode')?[{id:'anthropic/claude-sonnet-5-5',label:'Claude Sonnet 5.5',variants:[{id:'none',name:'None'},{id:'high',name:'High'},{id:'max',name:'Max'}]}]:[{id:'opus',label:'Opus'}]});
     export const useDefaultSelection=()=>null;
     export const useSettingsLink=()=>null;
     export const useHomeStorageScope=()=>null;
@@ -368,6 +368,24 @@ describe('hours', () => {
       expect(await page.getByLabel('When it may check in').locator('option:checked').textContent()).toBe('Between');
       expect(await page.getByLabel('From').inputValue()).toBe('08:00');
       expect(await page.getByLabel('To').inputValue()).toBe('18:00');
+    } finally { await page.close(); }
+  });
+});
+
+describe('runs on', () => {
+  it('keeps an OpenCode variant as the effort once picked, instead of falling back to Default', async () => {
+    const page = await open('?opencode');
+    try {
+      await openModelMenu(page);
+      await page.getByRole('button', { name: 'Variant: Default' }).click();
+      // A level Ri's effort can't hold isn't offered.
+      expect(await page.getByRole('menuitemradio', { name: 'None', exact: true }).count()).toBe(0);
+      await page.getByRole('menuitemradio', { name: 'High', exact: true }).click();
+      expect(await patches(page)).toEqual([expect.objectContaining({ provider: 'opencode', model: 'anthropic/claude-sonnet-5-5', effort: 'high' })]);
+      const chip = page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5, High variant', exact: true });
+      await chip.waitFor();
+      await chip.click();
+      await page.getByRole('button', { name: 'Variant: High' }).waitFor();
     } finally { await page.close(); }
   });
 });

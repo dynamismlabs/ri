@@ -231,16 +231,20 @@ export function ModelMenuItem({
 export function ModelMenuLabel({
   model,
   effort,
+  variant,
   speed,
 }: {
   model: string;
   effort?: string | null;
+  /** A chosen variant's name. Its default shows nothing, like an unset effort. */
+  variant?: string | null;
   speed?: SpeedMode;
 }) {
   return (
     <>
       <span className="max-w-40 truncate">{model}</span>
       {effort && <span className="text-muted-foreground/70">{effort}</span>}
+      {variant && <span className="text-muted-foreground/70">{variant}</span>}
       {speed && speed !== 'default' && (
         <Zap
           size={11}

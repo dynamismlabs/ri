@@ -5,12 +5,16 @@ import { SKILLS_KEY } from '@/hooks/use-skills';
 import { apiErrorText } from '@/lib/api/client';
 import type { ChatSessionRecord } from '@/lib/api/dto/records';
 import { hasRuntimeActivity } from '@/lib/executor/runtime-status';
+import type { EffortLevel } from '@/db/types';
+import type { ProviderId } from '@/lib/harness/options';
 import { trpcClient } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
+/** The composer's model menu choice a fresh chat starts on. */
+type NewChatOverride = { providerId?: ProviderId; model?: string; variant?: string; effort?: EffortLevel; serviceTier?: string };
 
 /** 'build' is the skill's builder chat, 'try' the chat that tries it. */
 export type SkillChatKind = 'build' | 'try';
@@ -52,9 +56,11 @@ export function useSkillChat(ref: string, kind: SkillChatKind, opts: { enabled?:
     wasActive.current = isActive;
   }, [isActive, qc]);
 
+  // No args starts a fresh chat on the default model. A choice from the
+  // composer's model menu starts it on that provider and model instead.
   const newChat = useMutation({
-    mutationFn: () =>
-      trpcClient.documentChat.create.mutate({body: { entityType: ENTITY_TYPE[kind], entityId: ref }}),
+    mutationFn: (opts: NewChatOverride | void) =>
+      trpcClient.documentChat.create.mutate({body: { entityType: ENTITY_TYPE[kind], entityId: ref, ...(opts ?? {}) }}),
     onError: (error) => toast.error('Could not start a new chat', { description: apiErrorText(error) }),
     onSuccess: (data) => qc.setQueryData(queryKey, data.session),
   });
