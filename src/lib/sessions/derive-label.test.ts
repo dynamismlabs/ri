@@ -175,6 +175,15 @@ describe('native-first chat naming', () => {
     expect(executeMock).not.toHaveBeenCalled();
   });
 
+  it('uses a readable content snippet when both title generators fail', async () => {
+    const { q, session } = await contentChat();
+    nativeHandle = { generateNativeTitle: async () => { throw new Error('Native naming unavailable'); } } as unknown as import('@agentex/agent').AgentSession;
+    executeMock.mockRejectedValue(new Error('Fallback naming unavailable'));
+    const { deriveAndSetSessionLabel } = await import('./derive-label');
+    await deriveAndSetSessionLabel(session.id, 'Review the deployment checklist', 'claude');
+    expect(q.getChatSession(session.id)).toMatchObject({ label: 'Review the deployment checklist', labelSource: 'truncated' });
+  });
+
   it('leaves the fallback its own budget after a native timeout', async () => {
     const { q, session } = await contentChat();
     vi.useFakeTimers();

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { getProvider, type AgentSession } from '@agentex/agent';
 import { afterEach, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
@@ -36,6 +37,16 @@ function makeGitWorkspace(workspace: ReturnType<typeof q.createWorkspace>) {
   execFileSync('git', ['init', '-q', '-b', 'main'], { cwd: workspace.cwd });
   execFileSync('git', ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', '-c', 'commit.gpgsign=false', 'commit', '--allow-empty', '-qm', 'Initial'], { cwd: workspace.cwd });
   q.updateWorkspace(workspace.id, { isGit: true, baseBranch: 'main', filesToCopy: [], worktreeRoot: path.join(home!.root, 'worktrees') });
+}
+
+function mockNativeTitle(generateNativeTitle: NonNullable<AgentSession['generateNativeTitle']>) {
+  const provider = getProvider(harness!.providerType);
+  const createSession = provider.createSession!;
+  vi.spyOn(provider, 'createSession').mockImplementation(async ctx => {
+    const session = await createSession(ctx);
+    session.generateNativeTitle = generateNativeTitle;
+    return session;
+  });
 }
 
 it('waits for a delegated worktree before the first native send and preserves one launch and one outcome', async () => {
@@ -287,6 +298,8 @@ it('keeps the producing assignment when human input folds into its active native
 
 it('forwards once into a new chat with the selected model and effort and no automatic return', async () => {
   const { main, workspace } = await setupRuntime();
+  const generateNativeTitle = vi.fn(async () => 'Shared findings review');
+  mockNativeTitle(generateNativeTitle);
   harness!.onTurn(async turn => { await turn.say('The shared review is complete.'); });
   const selected = q.insertChatEvent({ sessionId: main.id, role: 'assistant', source: 'agent', content: 'Full original review and findings.' })!;
   const input = { sendId: 'new-human-share', sourceEventId: selected.id, directions: 'Check these findings.', launch: { workspaceId: workspace.id, provider: 'claude' as const, model: 'sonnet', effort: 'high' as const } };
@@ -299,11 +312,39 @@ it('forwards once into a new chat with the selected model and effort and no auto
   expect(second.id).toBe(first.id);
   const delivery = q.getAgentDelivery(first.id)!;
   expect(q.getChatSession(delivery.targetSessionId!)!).toMatchObject({ model: 'sonnet', effort: 'high' });
+  await vi.waitFor(() => expect(q.getChatSession(delivery.targetSessionId!)).toMatchObject({ label: 'Shared findings review', labelSource: 'native' }));
+  expect(q.getExecution(q.getChatSession(delivery.targetSessionId!)!.executionId!)?.label).toBe('Shared findings review');
+  expect(generateNativeTitle).toHaveBeenCalledExactlyOnceWith('Check these findings.\n\nFull original review and findings.', expect.any(Object));
   expect(q.listChatSessions({ workspaceId: workspace.id }).filter(chat => chat.type === 'execution')).toHaveLength(1);
   expect(q.listAgentRequests(main.id)).toHaveLength(0);
   await vi.waitFor(() => expect(q.getLastChatEventBySource(delivery.targetSessionId!, 'agent')?.content).toBe('The shared review is complete.'));
   expect(q.getLastChatEventBySource(main.id, 'agent')?.id).toBe(selected.id);
   expect(q.getChatEventById(delivery.eventId)?.raw).toMatchObject({ agentCoordination: { senderKind: 'human', sourceEventId: selected.id, directions: 'Check these findings.' } });
+}, 20_000);
+
+it.each(['untitled', 'named', 'cleared', 'main'] as const)('preserves title ownership when forwarding to an existing %s chat', async kind => {
+  const { main, workspace, agentMain } = await setupRuntime();
+  const generateNativeTitle = vi.fn(async () => 'Deployment review');
+  mockNativeTitle(generateNativeTitle);
+  harness!.onTurn(async turn => { await turn.say('The deployment review is complete.'); });
+  const target = kind === 'main' ? agentMain : q.createExecutionWithChat({
+    workspaceId: workspace.id, harness: 'claude', label: kind === 'named' ? 'Chosen name' : null,
+  }).session;
+  if (kind === 'cleared') q.updateChatSession(target.id, { label: null });
+  const selected = q.insertChatEvent({ sessionId: main.id, role: 'assistant', source: 'agent', content: 'Review the deployment checklist.' })!;
+  const { forwardToChat } = await import('./human');
+  const delivery = await forwardToChat({ sendId: 'existing-share', sourceEventId: selected.id, directions: '', target: target.id });
+  await (await import('./service')).drainAgentCoordination();
+  await vi.waitFor(() => expect(q.getAgentDelivery(delivery.id)?.status).toBe('accepted'));
+  await vi.waitFor(() => expect(q.getLastChatEventBySource(target.id, 'agent')?.content).toBe('The deployment review is complete.'));
+  if (kind === 'untitled') {
+    await vi.waitFor(() => expect(q.getChatSession(target.id)?.label).toBe('Deployment review'));
+    expect(q.getExecution(target.executionId!)?.label).toBe('Deployment review');
+    expect(generateNativeTitle).toHaveBeenCalledExactlyOnceWith('Review the deployment checklist.', expect.any(Object));
+  } else {
+    expect(q.getChatSession(target.id)).toMatchObject({ label: kind === 'named' ? 'Chosen name' : null });
+    expect(generateNativeTitle).not.toHaveBeenCalled();
+  }
 }, 20_000);
 
 it.each(['at', 'cron'] as const)('delivers an unattended %s message under Ask first defaults without an approval or automatic fireback', async kind => {
