@@ -283,6 +283,8 @@ async function open(
   // Touch is a tablet's: the collapsed rail, fingers on the flyout's rows.
   const page = await browser.newPage({ viewport: { width: 640, height }, deviceScaleFactor: 2, hasTouch: touch });
   page.setDefaultTimeout(5_000);
+  // Loading the page bundle is slower on the Intel Mac runner. Each action keeps its 5 seconds.
+  page.setDefaultNavigationTimeout(15_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(({ style, view }) => {
