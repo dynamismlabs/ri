@@ -26,6 +26,7 @@ import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let server: http.Server;
 let browser: Browser;
@@ -282,9 +283,7 @@ async function open(
   heldArchives = [];
   // Touch is a tablet's: the collapsed rail, fingers on the flyout's rows.
   const page = await browser.newPage({ viewport: { width: 640, height }, deviceScaleFactor: 2, hasTouch: touch });
-  page.setDefaultTimeout(5_000);
-  // Loading the page bundle is slower on the Intel Mac runner. Each action keeps its 5 seconds.
-  page.setDefaultNavigationTimeout(15_000);
+  testTimeouts(page, 5_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(({ style, view }) => {

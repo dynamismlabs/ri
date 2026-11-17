@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import type { Page } from 'playwright-core';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Run with RI_SPACES_BROWSER_TEST=1, like the other task control tests.
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
@@ -41,7 +42,7 @@ afterAll(async () => {
 // 1pm on Mon, Nov 16 2026 in Denver.
 async function open(path: string): Promise<Page> {
   const page = await fixture.browser.newPage({ timezoneId: 'America/Denver' });
-  page.setDefaultTimeout(4000);
+  testTimeouts(page, 4000);
   await page.clock.setFixedTime(new Date('2026-11-16T20:00:00Z'));
   await page.goto(fixture.url + path);
   return page;

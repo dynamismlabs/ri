@@ -9,6 +9,7 @@ import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, beforeEach, expect, it } from 'vitest';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let server: http.Server;
 let browser: Browser;
@@ -165,7 +166,7 @@ afterAll(async () => {
 });
 async function open(width = 1280, height = 800) {
   const page = await browser.newPage({ viewport: { width, height } });
-  page.setDefaultTimeout(5000);
+  testTimeouts(page, 5000);
   await page.goto(base);
   await page.addStyleTag({
     content: '*,::before,::after{animation:none!important;transition:none!important}',

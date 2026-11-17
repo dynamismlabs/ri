@@ -11,6 +11,7 @@ import { pdfResponse } from '@/lib/attachments/pdf-delivery';
 import { HTML_PREVIEW_RESPONSE_CSP, HTML_PREVIEW_TAIL, htmlPreviewHead } from '@/lib/sessions/html-preview-document';
 import { htmlFilePreviewResponse } from '@/lib/sessions/html-preview-response';
 import { PREVIEW_PLACE_KEY } from '@/lib/client/preview-place';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Files beside the chat, in a real Chromium with its PDF viewer: a chat and
 // the panel beside it, the way Home's second panel, an execution's tools and
@@ -173,7 +174,7 @@ afterAll(async () => {
 async function openPage() {
   const context = await browser.newContext({ viewport: { width: 1400, height: 900 }, acceptDownloads: true });
   const page = await context.newPage();
-  page.setDefaultTimeout(15_000);
+  testTimeouts(page, 15_000);
   await page.goto(address);
   return page;
 }

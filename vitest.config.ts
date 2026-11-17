@@ -17,5 +17,8 @@ export default defineConfig({
     // depends on time moves the clock itself (vi.useFakeTimers) or sets its own limit.
     testTimeout: 30_000,
     hookTimeout: 60_000,
+    // expect.poll gave up after 1 s, which a dialog closing in a busy browser
+    // there outlasted. A poll that passes returns as soon as it does.
+    expect: { poll: { timeout: 10_000 } },
   },
 });

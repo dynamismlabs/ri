@@ -5,6 +5,7 @@ import os from 'node:os';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // RI_USAGE_BROWSER_TEST=1 pnpm exec vitest run src/components/dashboard/rate-limits-pill.browser.test.ts
 const enabled = process.env.RI_USAGE_BROWSER_TEST === '1';
@@ -64,7 +65,7 @@ afterAll(async () => {
 async function openPage(dark = false, width = 736) {
   const page = await browser.newPage({ viewport: { width, height: 460 } });
   await page.clock.install();
-  page.setDefaultTimeout(5000);
+  testTimeouts(page, 5000);
   page.on('pageerror', error => console.error('Usage fixture failed:', error.message));
   await page.goto(address + (dark ? '/?dark' : '/'));
   await page.waitForFunction('window.usageFixture?.read === 1');

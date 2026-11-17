@@ -9,6 +9,7 @@ import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { encodeSource } from '@/lib/chat-sources/reference';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let server: http.Server;
 let browser: Browser;
@@ -112,7 +113,7 @@ afterAll(async () => {
 
 async function open(query = ''): Promise<Page> {
   const page = await browser.newPage({ viewport: { width: 1180, height: 900 } });
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   await page.goto(base + query);
   return page;
 }

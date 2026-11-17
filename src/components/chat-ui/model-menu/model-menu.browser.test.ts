@@ -4,6 +4,7 @@ import path from 'node:path';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // RI_MODEL_MENU_BROWSER_TEST=1 pnpm exec vitest run src/components/chat-ui/model-menu/model-menu.browser.test.ts
 const enabled = process.env.RI_MODEL_MENU_BROWSER_TEST === '1';
@@ -169,7 +170,7 @@ async function openPage(query = '', width = 1000, height = 800, touch = false) {
   page.on('pageerror', (error) => {
     console.error('Model menu fixture:', error.message);
   });
-  page.setDefaultTimeout(10_000);
+  testTimeouts(page, 10_000);
   await page.goto(`${address}/${query}`);
   await page.waitForSelector('main');
   return page;

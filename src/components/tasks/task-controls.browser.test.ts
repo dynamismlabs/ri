@@ -1,5 +1,6 @@
 import { afterAll,beforeAll,expect,it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 const enabled=process.env.RI_SPACES_BROWSER_TEST==='1';let fixture:Awaited<ReturnType<typeof browserFixture>>;
 beforeAll(async()=>{if(!enabled)return;fixture=await browserFixture(`
  import React,{useState} from 'react';import {createRoot} from 'react-dom/client';import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
@@ -27,7 +28,7 @@ beforeAll(async()=>{if(!enabled)return;fixture=await browserFixture(`
  };for(const[name,contents]of Object.entries(modules)){b.onResolve({filter:new RegExp(name+'$')},()=>({path:name,namespace:'data'}));b.onLoad({filter:new RegExp('^'+name+'$'),namespace:'data'},()=>({contents,loader:'tsx',resolveDir:process.cwd()}));}}}]);},120_000);
 afterAll(async()=>{await fixture?.close();});
 it.skipIf(!enabled).each([['Asia/Tokyo','2026-11-06','Fri, Nov 6','Nov 6, 2026'],['America/Denver','2026-11-05','Thu, Nov 5','Nov 5, 2026']])('types or picks a task date on the local calendar in %s',async(timezoneId,tomorrow,described,shown)=>{
- const page=await fixture.browser.newPage({timezoneId});page.setDefaultTimeout(4000);try{await page.clock.setFixedTime(new Date('2026-11-04T20:00:00Z'));await page.goto(fixture.url);
+ const page=await fixture.browser.newPage({timezoneId});testTimeouts(page, 4000);try{await page.clock.setFixedTime(new Date('2026-11-04T20:00:00Z'));await page.goto(fixture.url);
  const field=page.getByRole('button',{name:/^Snooze until: /}),input=page.getByRole('textbox',{name:'Snooze until'}),outside=page.getByRole('button',{name:'Outside',exact:true}),changes=()=>page.evaluate('window.changes');
  await field.waitFor();expect(await field.getAttribute('class')).toContain('text-red-500');
  // Typed text shows what it read, and saves on leaving.
@@ -48,7 +49,7 @@ it.skipIf(!enabled).each([['Asia/Tokyo','2026-11-06','Fri, Nov 6','Nov 6, 2026']
  }finally{await page.close();}
 },25_000);
 it.skipIf(!enabled)('opens the date picker and the block box from a row menu and leaves the task closed',async()=>{
- const page=await fixture.browser.newPage({timezoneId:'America/Denver'});page.setDefaultTimeout(4000);try{await page.clock.setFixedTime(new Date('2026-11-04T20:00:00Z'));await page.goto(fixture.url+'/?row');
+ const page=await fixture.browser.newPage({timezoneId:'America/Denver'});testTimeouts(page, 4000);try{await page.clock.setFixedTime(new Date('2026-11-04T20:00:00Z'));await page.goto(fixture.url+'/?row');
  const menu=async(item:string)=>{await page.getByText('Row task',{exact:true}).hover();await page.locator('button:has(svg.lucide-ellipsis)').click();await page.getByRole('menuitem',{name:item}).click();};
  const staysFocused=async(field:ReturnType<typeof page.getByRole>)=>{await expect.poll(()=>field.evaluate(el=>el===document.activeElement)).toBe(true);await page.waitForTimeout(400);expect(await field.evaluate(el=>el===document.activeElement)).toBe(true);};
  const date=page.getByRole('textbox',{name:'Deadline',exact:true});
@@ -76,7 +77,7 @@ it.skipIf(!enabled)('shares Back and Forward keys, mouse buttons and menu events
 },25_000);
 
 it.skipIf(!enabled)('offers one work entry and names the available destinations and audiences',async()=>{
- const page=await fixture.browser.newPage();page.setDefaultTimeout(5000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));try{
+ const page=await fixture.browser.newPage();testTimeouts(page, 5000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));try{
  await page.goto(fixture.url+'/?destinations');await page.getByRole('button',{name:'Work with agent',exact:true}).click();
  await page.getByRole('button',{name:"Work on team's server",exact:true}).waitFor();await page.getByRole('button',{name:'Work in My Ri',exact:true}).waitFor();
  expect(await page.getByText('Everyone on the team can read the chat.',{exact:true}).count()).toBe(1);expect(await page.getByText('Your personal agents. Only you can read the chat.',{exact:true}).count()).toBe(1);

@@ -9,6 +9,7 @@ import { chromium, type Browser, type Page } from 'playwright-core';
 import { beforeAll, afterAll, beforeEach, expect, it } from 'vitest';
 import type { TaskListDTO } from '@/lib/api/dto/entity-list';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let browser: Browser;
 let server: http.Server;
@@ -128,7 +129,7 @@ beforeAll(async () => {
 afterAll(async () => { await browser?.close();server?.closeAllConnections();if (server) await new Promise<void>(resolve => server.close(() => resolve())); });
 async function open(search = '') {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  page.setDefaultTimeout(6000);
+  testTimeouts(page, 6000);
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(base + search);return page;
 }

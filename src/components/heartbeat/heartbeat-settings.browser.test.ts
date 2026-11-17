@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 interface FixtureWindow extends Window {
   patches: Record<string, unknown>[];
@@ -119,7 +120,7 @@ afterAll(async () => {
 
 async function open(query = '', viewport = { width: 1280, height: 720 }): Promise<Page> {
   const page = await browser.newPage({ viewport });
-  page.setDefaultTimeout(3_000);
+  testTimeouts(page, 3_000);
   await page.goto(`${base}/${query}`);
   await page.getByRole('switch', { name: 'Heartbeat' }).waitFor();
   return page;

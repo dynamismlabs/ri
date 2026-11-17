@@ -4,6 +4,7 @@ import type { Locator, Page } from 'playwright-core';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 
@@ -86,7 +87,7 @@ afterAll(async () => { await fixture?.close(); });
 async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
   const page = await fixture.browser.newPage({ viewport, hasTouch: viewport.width < 1024 });
   // Short of the test's own limit, so a step that can't happen says which and why.
-  page.setDefaultTimeout(10_000);
+  testTimeouts(page, 10_000);
   await page.goto(fixture.url);
   await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
   await page.locator('[data-scratchpad] .tiptap').waitFor();

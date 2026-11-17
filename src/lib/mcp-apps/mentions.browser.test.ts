@@ -6,6 +6,7 @@ import { decodeSource, encodeSource } from '@/lib/chat-sources/reference';
 import type { ChatInputEditorHandle } from '@/components/chat/editor/chat-input-editor';
 import type { SourceDescriptor } from '@/lib/chat-sources/types';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Bits & Bolts' @ search, as the composer receives it from `appMentions.search`: its
 // library parts as resource links (mcp://bits-and-bolts/parts/<id>), titled by part.
@@ -58,7 +59,7 @@ it('lists an app\'s @ search results under the app and inserts the chosen item a
   try {
     const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
     page.on('pageerror', error => { errors.push(error.message); });
-    page.setDefaultTimeout(6000);
+    testTimeouts(page, 6000);
     await page.goto(origin);
     const editor = page.locator('.tiptap'); await editor.waitFor(); await editor.click();
     // A bare `@` stays short: no app is asked until something is typed.

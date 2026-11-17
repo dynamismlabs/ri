@@ -21,6 +21,7 @@ import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let server: http.Server;
 let browser: Browser;
@@ -174,7 +175,7 @@ afterAll(async () => {
 /** A phone, its storage shared across reloads of the same page. */
 async function phone(query = '', theme: 'dark' | 'light' = 'dark'): Promise<{ page: Page; errors: string[] }> {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, hasTouch: true, isMobile: true });
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(`${base}/?theme=${theme}${query}`);

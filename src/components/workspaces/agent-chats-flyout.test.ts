@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 interface FixtureWindow extends Window {
   actions: { kind: string; value: unknown }[];
@@ -167,8 +168,7 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
   const page = await browser.newPage();
   // The page's own clock, so the brief crossing below can hold time still.
   await page.clock.install();
-  page.setDefaultTimeout(3_000);
-  page.setDefaultNavigationTimeout(15_000);
+  testTimeouts(page, 3_000);
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?style=${style}`);
@@ -254,8 +254,7 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
 
 it('keeps inactive chats and nested menus usable, including inside the collapsed rail', async () => {
   const page = await browser.newPage();
-  page.setDefaultTimeout(3_000);
-  page.setDefaultNavigationTimeout(15_000);
+  testTimeouts(page, 3_000);
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?nested=1`);
@@ -290,8 +289,7 @@ it('keeps inactive chats and nested menus usable, including inside the collapsed
 
 it('scrolls long chat lists below a fixed header and follows the rail height on resize', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-  page.setDefaultTimeout(3_000);
-  page.setDefaultNavigationTimeout(15_000);
+  testTimeouts(page, 3_000);
   try {
     await page.goto(base);
     await nameButton(page).waitFor();
