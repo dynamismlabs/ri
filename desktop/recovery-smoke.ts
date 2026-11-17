@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import Database from 'better-sqlite3';
 import electron from 'electron';
 import { _electron, type ElectronApplication } from 'playwright-core';
 import { waitForHome } from './first-run';
@@ -99,9 +98,11 @@ try {
   assert.equal(running?.phase, 'running');
   assert.equal(running?.runId, failed?.runId, 'The same controller kept trying until it started');
   assert(fs.existsSync(path.join(root, 'data.db')), 'The first successful start opens the database');
+  // A separate installation the CLI made on its own folders, with its own
+  // database and identity. A copy of the first Home's database would be that
+  // Home's data on a second root, which serves nothing until it's claimed
+  // (`home_not_active`, docs/homes-spec.md section 10.3).
   for (const dir of [advanced.root, advanced.config, advanced.work]) fs.mkdirSync(dir, { recursive: true });
-  const database = new Database(path.join(root, 'data.db'), { readonly: true });
-  try { await database.backup(advanced.database); } finally { database.close(); }
   const associationEnv = demoEnvironment(repo, { ...env, ...installationEnvironment(advanced) }, 'production');
   select(associationEnv);
   // Deliberately start an existing source/CLI owner. Connecting a packaged
