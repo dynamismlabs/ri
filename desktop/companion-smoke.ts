@@ -16,6 +16,7 @@ import { AcceptanceFixture, api, eventually } from './acceptance-fixture';
 import { desktopPackageLayout } from './package-layout';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
 import { ensureServiceStatus, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
+import { hasLoginSupervision } from '../src/lib/service/install';
 
 const sourceHome = process.argv.includes('--source-home');
 const home = new AcceptanceFixture('companion-home', { chooseHome: false, source: sourceHome });
@@ -165,6 +166,9 @@ void (async () => {
     await homePage.screenshot({ path: path.join(home.base, 'home.png') });
     assert.equal(await homePage.evaluate(() => typeof window.riDesktop?.settings), 'function');
     assert.equal((await serviceStatus())?.role, 'home');
+    // A packaged app keeps a new Home running with a login job, which this check
+    // never installs. The app is refused one and opens the Home all the same.
+    assert.equal(hasLoginSupervision(), false, 'The check installed a login job');
     await api(homePage, '/api/user-state', 'PATCH', { onboardedAt: new Date().toISOString() });
     const pair = await api<{ plaintext: string; device: { id: string } }>(homePage, '/api/devices', 'POST', { name: 'Companion fixture laptop', kind: 'computer' });
     const sharedNote = await api<{ id: string }>(homePage, '/api/notes', 'POST', { title: 'Companion acceptance', body: 'Stored only on the disposable Home.' });

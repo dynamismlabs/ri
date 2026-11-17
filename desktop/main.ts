@@ -27,6 +27,7 @@ import { appleSigned } from './app-signature';
 import { DesktopNotifications } from './notifications';
 import { backgroundWindow, revealWindow } from './window-visibility';
 import { initialWindowBounds, MIN_WINDOW_SIZE } from './window-bounds';
+import { SUPERVISOR_OPT_IN } from './platform-qualification';
 import { createDesktopTray, desktopMenuCommands, activityMenuItems, updateDesktopTray } from './tray';
 import { CaptureShortcut } from './shortcut';
 import { ensureDesktopPortalIdentity } from './portal';
@@ -769,6 +770,12 @@ const canKeepRunning = () => process.platform !== 'win32' && !!installedRuntime?
 function runServiceCli(action: 'install' | 'uninstall' | 'start' | 'stop' | 'add-to-terminal') {
   const options = cliInstallation();
   if (action === 'install' && !options.launcher) throw new Error('Keeping Ri running needs an installed release.');
+  // A login job belongs to the computer's account, not to the temporary Home a
+  // check runs in. Run on someone's computer, a check would leave a real launchd
+  // or systemd job behind, so only a disposable CI account that opted in gets one.
+  if (action === 'install' && process.env.RI_DESKTOP_SMOKE && process.env.RI_SERVICE_SMOKE_SUPERVISOR !== SUPERVISOR_OPT_IN) {
+    return Promise.reject(new Error('This automated run does not install login jobs.'));
+  }
   const command = options.launcher ?? options.node;
   const args = options.launcher ? ['cli', 'service', action] : [options.cli, 'service', action];
   return new Promise<string>((resolve, reject) => execFile(command, args, { env, timeout: 240_000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => error ? reject(new Error(stderr || error.message)) : resolve(stdout)));
@@ -976,7 +983,15 @@ async function openApp(ready: BackendReady) {
     installedRuntime = ready.runtime;
     if (canKeepRunning() && !hasLoginSupervision()) {
       try { await runServiceCli('install'); return; }
-      catch (error) { console.warn('[desktop] Could not keep the new Home running:', error instanceof Error ? error.message : 'Failed'); }
+      catch (error) {
+        console.warn('[desktop] Could not keep the new Home running:', error instanceof Error ? error.message : 'Failed');
+        // Installing hands the running service to the OS before the OS starts its
+        // own, so a failure can leave nothing serving the Home and this address
+        // gone. Connecting again starts the Home the ordinary way when it isn't
+        // running, and keeps the one that is.
+        await retryConnection();
+        return;
+      }
     }
   }
   let revealViewer = false;
