@@ -476,7 +476,8 @@ describe('the hub for personal apps', () => {
     const app = new Client({ name: 'bloom-hub', version: '1.0.0' });
     clients.push(app);
     await app.connect(transport);
-    expect((await app.listTools()).tools.map(tool => tool.name).sort()).toEqual(['ri__create_task', 'ri__list_tasks']);
+    // Every app also sees which accounts it was lent (none here), whatever its grant.
+    expect((await app.listTools()).tools.map(tool => tool.name).sort()).toEqual(['ri__create_task', 'ri__list_accounts', 'ri__list_tasks']);
     const created = await app.callTool({ name: 'ri__create_task', arguments: { title: 'Book the checkup', operationId: crypto.randomUUID() } });
     expect(created.isError).toBeFalsy();
     const q = await import('@/lib/db/queries');
@@ -501,7 +502,7 @@ describe('the hub for personal apps', () => {
     const narrowed = new Client({ name: 'bloom-hub', version: '1.0.0' });
     clients.push(narrowed);
     await narrowed.connect(new StreamableHTTPClientTransport(new URL(HUB), { fetch: serve as typeof fetch, requestInit: { headers: { authorization: `Bearer ${refreshed.body.access_token}` } } }));
-    expect((await narrowed.listTools()).tools.map(tool => tool.name)).toEqual(['ri__list_tasks']);
+    expect((await narrowed.listTools()).tools.map(tool => tool.name)).toEqual(['ri__list_accounts', 'ri__list_tasks']);
     turnOffHubApp(hubApp.id);
     const after = await serve(HUB, { method: 'POST', headers: { authorization: `Bearer ${refreshed.body.access_token}`, 'content-type': 'application/json', accept: 'application/json, text/event-stream' }, body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }) });
     expect(after.status).toBe(401);
