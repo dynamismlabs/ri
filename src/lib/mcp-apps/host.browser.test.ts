@@ -141,6 +141,8 @@ it('advertises OpenAI extensions only as the page supports them, and carries hos
       updateModelContext: {text: {}, image: {}, resourceLink: {}, resource: {}, structuredContent: {}}, message: {text: {}, image: {}, resourceLink: {}, resource: {}}});
     expect(first.capabilities.experimental).not.toHaveProperty('openai/resource');
     expect(first.capabilities.experimental).not.toHaveProperty('openai/files');
+    // Downloads are offered only to a view whose page saves them.
+    expect(first.capabilities).not.toHaveProperty('downloadFile');
     expect(first.context).toMatchObject({platform: 'web', theme: 'dark', availableDisplayModes: ['inline'], 'openai/deepLink': {url: '/parts?tag=bolt&sort=asc'}, 'openai/modelContext': null});
     expect(first.read).toEqual({contents: [{uri: 'cad-resource://bits-and-bolts/occt-import-js.wasm', mimeType: 'application/wasm', blob: 'AGFzbQ=='}]});
     expect(first.update).toEqual({_meta: {'openai/modelContext': {updateId: 'update-1'}}});

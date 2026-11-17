@@ -14,7 +14,7 @@ import path from 'node:path';
 import { BrowserWindow, dialog, session, shell } from 'electron';
 import { PAIRING_TOKEN_FRAGMENT_KEY } from '../src/constants/app';
 import { signInDesktopSession } from './session-auth';
-import { certificateDecision, externalWebUrl, sameOrigin } from './trust';
+import { certificateDecision, externalLinkUrl, sameOrigin } from './trust';
 import type { SavedTeam } from './teams';
 
 export interface TeamWindowOptions {
@@ -30,7 +30,7 @@ export function teamWindows(options: TeamWindowOptions) {
   const windows = new Map<string, BrowserWindow>();
 
   function openExternal(url: string) {
-    const safe = externalWebUrl(url);
+    const safe = externalLinkUrl(url);
     if (safe) void shell.openExternal(safe);
   }
 

@@ -20,6 +20,7 @@ import { initialDisplayMode, VIEW_CLOSED_MESSAGE } from '@/lib/mcp-apps/metadata
 import { launchConnectedFile, showConnectedCapture } from '@/lib/client/mcp-app-file';
 import { viewHref } from '@/lib/client/active-view';
 import { attachmentUrl } from '@/lib/attachments/view';
+import { fileSizeLabel, MAX_VIEW_DOWNLOAD_BYTES, saveViewDownload, viewDownload, type ViewDownload } from '@/lib/mcp-apps/view-download';
 import { ConnectedViewForms } from './form/view-forms';
 
 type OpenView = RouterOutputs['connectedApps']['open'];
@@ -42,6 +43,8 @@ const FRESH_RESULT_MS = 2 * 60_000;
 /** An approval card's buttons wait this long after it appears, so a click meant for the app never lands on them. */
 const APPROVAL_ARM_MS = 500;
 type Pending = {ids: string[]; preview?: unknown; finish: (approve: boolean) => void};
+/** A file the view asked Ri to save, waiting for the person's word. */
+type PendingSave = {file: ViewDownload; finish: (save: boolean) => void};
 /**
  * `onClose` puts a Close control in the result's own header row, for a page that shows the result beside
  * other content. `titled` says the surrounding pane already names this view (a thread tab), so it shows no
@@ -137,6 +140,15 @@ function ApprovalCard({pending}: {pending: Pending}) {
     <div className="flex gap-2"><Button size="xs" disabled={!armed} onClick={() => pending.finish(true)}>Allow once</Button><Button size="xs" variant="outline" disabled={!armed} onClick={() => pending.finish(false)}>Decline</Button></div>
   </div>;
 }
+/** The person decides whether a file the app handed Ri is saved (`ui/download-file`). */
+function SaveCard({app, pending}: {app: string; pending: PendingSave}) {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => { const timer = setTimeout(() => setArmed(true), APPROVAL_ARM_MS); return () => clearTimeout(timer); }, []);
+  return <div role="alertdialog" aria-label="Save a file from this app" className="absolute inset-x-0 top-0 z-20 space-y-2 border-b border-border bg-card p-3 text-xs shadow-md">
+    <p><span className="font-medium">{app}</span> wants to save <span className="break-all font-medium">{pending.file.name}</span> ({fileSizeLabel(pending.file.bytes.byteLength)}).</p>
+    <div className="flex gap-2"><Button size="xs" disabled={!armed} onClick={() => pending.finish(true)}>Save</Button><Button size="xs" variant="outline" disabled={!armed} onClick={() => pending.finish(false)}>Don’t save</Button></div>
+  </div>;
+}
 function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expanded: boolean; deepLink?: string; onExpand: (mode: 'inline' | 'fullscreen' | 'pip') => void}) {
   const queryClient = useQueryClient();
   const mount = useRef<HTMLDivElement>(null);
@@ -145,6 +157,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
   const [error, setError] = useState<string | null>(null);
   const [height, setHeight] = useState(420);
   const [pending, setPending] = useState<Pending | null>(null);
+  const [saving, setSaving] = useState<PendingSave | null>(null);
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const onExpandRef = useRef(onExpand);
@@ -186,6 +199,15 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
       if (signal.aborted) { abort(); return; }
       waiting = {...request, finish: approved => { signal.removeEventListener('abort', abort); waiting = null; setPending(null); resolve(approved); }};
       signal.addEventListener('abort', abort, {once: true}); setPending(waiting);
+    });
+    // One file at a time waits for the person: Save downloads it from Ri's own page, under their click.
+    let offered: PendingSave | null = null;
+    const offerSave = (file: ViewDownload, signal: AbortSignal) => new Promise<boolean>((resolve, reject) => {
+      if (offered) { reject(new Error('Answer the file this app is already saving first')); return; }
+      const abort = () => { offered = null; setSaving(null); reject(new Error('The app cancelled saving the file')); };
+      if (signal.aborted) { abort(); return; }
+      offered = {file, finish: save => { signal.removeEventListener('abort', abort); offered = null; setSaving(null); resolve(save); }};
+      signal.addEventListener('abort', abort, {once: true}); setSaving(offered);
     });
     const host = new AppViewController(frame, {
       call: async (name, input, signal, meta) => {
@@ -269,6 +291,13 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
         if (disposed) return;
         setNotice([draftNotice(view.app, routed.kept ? 'kept' : 'drafted', {mainChat: !view.chatId}), omitted ? omittedNotice(view.app, omitted) : null].filter(Boolean).join(' '));
       },
+      // MCP Apps `ui/download-file`: one embedded file, saved only when the person says so (docs/connected-mcp-apps.md, "Downloads and links").
+      downloadFile: async (contents, signal) => {
+        const file = viewDownload(contents);
+        if (!(await offerSave(file, signal))) return false;
+        saveViewDownload(file);
+        return true;
+      },
       ...(view.chatId ? {displayMode: (mode: 'inline' | 'fullscreen' | 'pip') => onExpandRef.current(mode)} : {}),
     });
     controller.current = host;
@@ -288,6 +317,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
     void host.open(resource, {id: view.id, packageDigest: resource.digest, path: '/', query: {}, initialData: null,
       theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light', mcp: {input: view.input, result: view.result, widgetState: view.widgetState}, displayMode: expanded ? 'fullscreen' : 'inline',
       displayModes: resource.displayModes.available, platform: 'web', fileResource: view.kind === 'file',
+      files: {download: {mimeTypes: ['*/*'], maxBytes: MAX_VIEW_DOWNLOAD_BYTES}},
       hostContext: {
         // OpenAI's host state: where a global screen opens, and the context this view attached before a remount.
         ...(deepLink ?? view.deepLink ? {'openai/deepLink': {url: deepLink ?? view.deepLink}} : {}),
@@ -295,7 +325,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
       }}).catch(e => setError(e.message));
     const timer = setTimeout(() => { if (!disposed) setReady(current => { if (!current) setError('The app did not connect to Ri’s UI bridge. Its tools and text results are still available.'); return current; }); }, 20_000);
     return () => {
-      disposed = true; clearTimeout(timer); unregister?.(); waiting?.finish(false); controller.current = null;
+      disposed = true; clearTimeout(timer); unregister?.(); waiting?.finish(false); offered?.finish(false); controller.current = null;
       for (const [uri, stop] of watching) { stop.abort(); void trpcClient.connectedApps.files.unsubscribe.mutate({viewId: view.id, uri}).catch(() => {}); }
       void host.dispose();
     };
@@ -313,6 +343,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
   useEffect(() => controller.current?.displayMode(expanded ? 'fullscreen' : 'inline'), [expanded]);
   return <div className="relative flex min-h-0 flex-1 flex-col">
     {pending && <ApprovalCard key={pending.ids.join(',')} pending={pending} />}
+    {saving && !pending && <SaveCard app={view.app} pending={saving} />}
     {error && <p role="alert" className="border-b border-border p-3 text-xs text-destructive">{error}</p>}
     {notice && <p role="status" className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[11px] text-muted-foreground"><span className="min-w-0 flex-1">{notice}</span><button type="button" className="shrink-0 hover:text-foreground" onClick={() => setNotice(null)}>Dismiss</button></p>}
     {!ready && !error && <p role="status" className="absolute left-3 top-3 text-xs text-muted-foreground">Loading interface…</p>}

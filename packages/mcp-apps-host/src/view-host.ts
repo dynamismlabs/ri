@@ -90,7 +90,22 @@ export interface ViewCallbacks {
   openFile?(path: string, signal: AbortSignal): Promise<void>;
   displayMode?(mode: 'inline' | 'fullscreen' | 'pip'): void;
   selectFile?(signal: AbortSignal): Promise<{name: string; mimeType: string; base64: string} | null>;
-  downloadFile?(contents: unknown[], signal: AbortSignal): Promise<void>;
+  /** MCP Apps `ui/download-file`. False when the person chose not to save it (`isError: true`). */
+  downloadFile?(contents: unknown[], signal: AbortSignal): Promise<boolean | void>;
+}
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
+/**
+ * A link a view may have Ri open outside it, or null: `https:` anywhere, `http:` only to this
+ * computer (an app on loopback opening its own address, as the kit's "Open in browser" does), and
+ * `mailto:`. Never one carrying credentials, and never `javascript:`, `file:` or another scheme.
+ */
+export function openableLink(raw: string): string | null {
+  let url: URL;
+  try { url = new URL(raw); } catch { return null; }
+  if (url.username || url.password) return null;
+  if (url.protocol === "https:" || url.protocol === "mailto:") return url.href;
+  if (url.protocol === "http:" && (LOOPBACK_HOSTS.has(url.hostname) || url.hostname.endsWith(".localhost"))) return url.href;
+  return null;
 }
 /**
  * Runs first in every view. A form's submit handlers run (the frame allows
@@ -396,17 +411,16 @@ export class AppViewController {
       if (params.url.startsWith("/") && !params.url.startsWith("//"))
         await this.callbacks.navigate(params.url);
       else {
-        const url = new URL(params.url);
-        if (url.protocol !== "https:" || url.username || url.password)
-          throw new Error("Only HTTPS links can be opened");
-        await this.callbacks.externalLink(url.href);
+        const link = openableLink(params.url);
+        if (!link) throw new Error("Apps can open https links, http links to this computer and mailto links");
+        await this.callbacks.externalLink(link);
       }
       return {};
     };
     bridge.ondownloadfile = async (params, extra) => {
       if (!binding.files?.download || !this.callbacks.downloadFile) throw new Error('File downloads are unavailable');
-      await this.callbacks.downloadFile(params.contents, extra.mcpReq.signal);
-      return {};
+      // A file the person chose not to save is answered as the spec says, not as a failure.
+      return (await this.callbacks.downloadFile(params.contents, extra.mcpReq.signal)) === false ? { isError: true } : {};
     };
     bridge.onsizechange = (params) => {
       if (typeof params.height === 'number' && Number.isFinite(params.height)) this.callbacks.resize?.(Math.max(160, Math.min(900, params.height)));
