@@ -1,6 +1,8 @@
 import hashlib
 import io
 import json
+import ssl
+import sys
 from pathlib import Path
 import subprocess
 import tarfile
@@ -11,6 +13,16 @@ import urllib.request
 
 import native_inventory as native
 import release_materials as materials
+
+
+class TlsTests(unittest.TestCase):
+    def test_source_hosts_are_verified_against_this_computers_roots(self):
+        context = materials.tls_context()
+        self.assertEqual(context.verify_mode, ssl.CERT_REQUIRED)
+        self.assertTrue(context.check_hostname)
+        if sys.platform == 'darwin':
+            # The system keychain's roots join the standalone Python's own bundle.
+            self.assertGreater(context.cert_store_stats()['x509_ca'], ssl.create_default_context().cert_store_stats()['x509_ca'])
 
 
 class MaterialTests(unittest.TestCase):

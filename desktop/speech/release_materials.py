@@ -12,6 +12,9 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import ssl
+import subprocess
+import sys
 import tarfile
 import tempfile
 import urllib.parse
@@ -70,6 +73,19 @@ class SecureRedirect(urllib.request.HTTPRedirectHandler):
         return super().redirect_request(request, fp, code, message, headers, newurl)
 
 
+def tls_context():
+    """Verify every source host against the roots this computer trusts. A standalone Python, such
+    as the one uv installs, carries its own CA bundle and doesn't read the macOS keychain, so a host
+    whose chain ends at a newer root (osuosl.org's SSL.com 2022) fails there. On macOS the system's
+    root keychain is added to its store. Verification is never turned off."""
+    context = ssl.create_default_context()
+    if sys.platform == 'darwin':
+        roots = subprocess.run(['/usr/bin/security', 'find-certificate', '-a', '-p', '/System/Library/Keychains/SystemRootCertificates.keychain'],
+                               check=True, capture_output=True, text=True, timeout=60).stdout
+        if 'BEGIN CERTIFICATE' in roots: context.load_verify_locations(cadata=roots)
+    return context
+
+
 def verify_archive(path, item):
     path = Path(path)
     if path.is_symlink() or not path.is_file() or path.stat().st_size != item['size'] or digest(path) != item['sha256']:
@@ -82,7 +98,7 @@ def fetch_archive(item, cache, opener=None):
     if target.exists() or target.is_symlink():
         verify_archive(target, item)
         return target
-    opener = opener or urllib.request.build_opener(SecureRedirect)
+    opener = opener or urllib.request.build_opener(SecureRedirect, urllib.request.HTTPSHandler(context=tls_context()))
     # A unique, exclusive partial file prevents symlink overwrite and leaves an
     # interrupted download outside the trusted final archive namespace.
     temporary = tempfile.NamedTemporaryFile(prefix=item['file'] + '.', suffix='.partial', dir=cache, delete=False)
