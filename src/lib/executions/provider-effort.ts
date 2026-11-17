@@ -22,20 +22,13 @@
  * default and is never written from here.
  */
 
-import type { EffortLevel } from '@/db/types';
+import { EFFORT_LEVELS, type EffortLevel } from '@/db/types';
 import { homeStorageIdentity } from '@/lib/home/document-scope';
 type HomeScope = Parameters<typeof homeStorageIdentity>[1];
 
 const KEY = 'ri.agent.effort.v1';
 
-const VALID: ReadonlySet<string> = new Set([
-  'low',
-  'medium',
-  'high',
-  'xhigh',
-  'max',
-  'ultra',
-]);
+const VALID: ReadonlySet<string> = new Set(EFFORT_LEVELS);
 
 type EffortMap = Record<string, EffortLevel>;
 

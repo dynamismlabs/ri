@@ -179,11 +179,14 @@ export interface EffortOption {
   hint: string;
 }
 
-// Provider reasoning-effort values. Individual Codex models expose a subset
-// through their live model catalog, while Claude currently uses the shared
-// list without model-specific discovery.
+// Provider reasoning-effort values, weakest first. Codex and OpenCode models
+// expose a subset through their live model catalog (OpenCode's through
+// agentex, which reads them from the model's variants), while Claude currently
+// uses the shared list without model-specific discovery.
 export const EFFORT_OPTIONS: EffortOption[] = [
-  { id: 'low', label: 'Low', shortLabel: 'low', hint: 'Minimal thinking, fastest' },
+  { id: 'none', label: 'None', shortLabel: 'none', hint: 'No reasoning, fastest' },
+  { id: 'minimal', label: 'Minimal', shortLabel: 'min', hint: 'Barely any thinking' },
+  { id: 'low', label: 'Low', shortLabel: 'low', hint: 'Light thinking, fast' },
   { id: 'medium', label: 'Medium', shortLabel: 'med', hint: 'Balanced default' },
   { id: 'high', label: 'High', shortLabel: 'high', hint: 'More thinking budget' },
   { id: 'xhigh', label: 'Extra high', shortLabel: 'xhigh', hint: 'Heavy thinking budget' },
@@ -224,7 +227,7 @@ const EFFORT_LABEL_OVERRIDES: Partial<
   },
 };
 
-const PRESERVE_EXTERNALLY_VALIDATED_EFFORT = new Set<HarnessId>(['codex']);
+const PRESERVE_EXTERNALLY_VALIDATED_EFFORT = new Set<HarnessId>(['codex', 'opencode']);
 
 export function effortOptionsForModel(
   harness: string | null,
@@ -249,6 +252,13 @@ export function effortOptionsForModel(
 
 /** Explicit fallback used when a provider does not advertise a preference. */
 export const DEFAULT_EFFORT: EffortLevel = 'medium';
+
+/**
+ * Where a model offers no Medium and names no default, the nearest level to
+ * it, stronger first. Weakest-first would land on None for an OpenCode model
+ * that offers only None and High.
+ */
+const EFFORT_FALLBACK_ORDER: readonly EffortLevel[] = ['medium', 'high', 'low', 'xhigh', 'max', 'minimal', 'none', 'ultra'];
 
 /**
  * Narrow an untyped value (a request body, a query param) to a harness id,
@@ -336,8 +346,7 @@ export function explicitEffortForModel(
   }
   if (preferred && supported.has(preferred)) return preferred;
   if (model.defaultEffort && supported.has(model.defaultEffort)) return model.defaultEffort;
-  if (supported.has(DEFAULT_EFFORT)) return DEFAULT_EFFORT;
-  return options[0]?.id ?? DEFAULT_EFFORT;
+  return EFFORT_FALLBACK_ORDER.find((level) => supported.has(level)) ?? options[0]?.id ?? DEFAULT_EFFORT;
 }
 
 export interface ExplicitHarnessSelection {
@@ -378,10 +387,23 @@ export function explicitHarnessSelection(
     model: model.id,
     variant: explicitVariantForModel(model, preferred.variant),
     serviceTier: preferred.serviceTier ?? null,
-    effort: harnessSupportsEffort(providerId)
+    effort: modelHasEffort(providerId, model, preferred.effort, models.some((option) => option.id === model.id))
       ? explicitEffortForModel(providerId, model, preferred.effort)
       : null,
   };
+}
+
+/**
+ * Whether a selection on this model carries an effort. Not on a harness
+ * without one, nor on a model of a catalog-only harness that lists no levels
+ * (an OpenCode model without reasoning), where any level would be refused.
+ * An effort already validated against a live catalog is kept at a boundary
+ * that only has the model's id.
+ */
+function modelHasEffort(providerId: ProviderId, model: ModelOption, preferred: EffortLevel | null | undefined, inCatalog: boolean): boolean {
+  if (!harnessSupportsEffort(providerId)) return false;
+  if (effortOptionsForModel(providerId, model).length > 0) return true;
+  return !inCatalog && !!preferred && PRESERVE_EXTERNALLY_VALIDATED_EFFORT.has(providerId);
 }
 
 /**
@@ -398,26 +420,6 @@ export function findModelOption(harness: string, modelId: string | null): ModelO
 
 export function harnessSupportsEffort(harness: string | null | undefined): boolean {
   return isKnownHarnessId(harness) && HARNESS_REGISTRY[harness].maximumCapabilities.reasoningEffort;
-}
-
-/**
- * A harness whose effort levels are its models' variants. OpenCode has no
- * effort setting: each model lists its levels (low, medium, high, xhigh,
- * max) as variants. A schedule keeps the level as its effort, and it reaches
- * OpenCode as the variant.
- */
-export function effortIsVariant(harness: string | null | undefined): boolean {
-  if (!isKnownHarnessId(harness)) return false;
-  const capabilities = HARNESS_REGISTRY[harness].maximumCapabilities;
-  return capabilities.modelVariants && !capabilities.reasoningEffort;
-}
-
-/** A model's effort levels when they are its variants: the ones Ri's effort can hold. */
-export function variantEfforts(model: ModelOption | null | undefined): EffortLevel[] {
-  const levels = new Set<string>(EFFORT_OPTIONS.map((option) => option.id));
-  return (model?.variants ?? [])
-    .filter((variant) => !variant.disabled && levels.has(variant.id))
-    .map((variant) => variant.id as EffortLevel);
 }
 
 // ─── Providers ────────────────────────────────────────────────

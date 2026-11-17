@@ -24,7 +24,7 @@ export const cancelPreparationInput = z.object({ messageId: id }).strict();
 export const decisionInput = z.object({ id, requestId, disposition: z.enum(['accepted', 'changes_requested', 'dismissed']), note: z.string().optional(), context: z.object({ reviewId: id.optional(), attachmentFileName: id.optional(), previewTargetId: id.optional() }).strict().optional(), attachments: z.array(attachment).optional() }).strict();
 export const completeInput = z.object({ id, requestId, taskId: id.optional(), expectedStatusChangedCount: z.number().int().nonnegative(), note: z.string().optional(), acknowledgedChildIds: z.array(id).optional(), runtimeChoice: z.enum(['keep_running', 'stop_running_agent']).optional(), acknowledgedExecutionIds: z.array(id).optional() }).strict();
 export const retryFeedbackInput = z.object({ id, reviewId: id }).strict();
-export const requestReviewInput = z.object({ id, requestId, focus: z.string().optional(), harness: z.enum(KNOWN_HARNESS_IDS).optional(), model: id.optional(), variant: id.nullable().optional(), effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max', 'ultra']).nullable().optional(), rerun: z.boolean().optional() }).strict();
+export const requestReviewInput = z.object({ id, requestId, focus: z.string().optional(), harness: z.enum(KNOWN_HARNESS_IDS).optional(), model: id.optional(), variant: id.nullable().optional(), effort: z.enum(['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra']).nullable().optional(), rerun: z.boolean().optional() }).strict();
 export const previewInput = z.object({ id, targetId: id }).strict();
 export const openPreviewInput = previewInput.extend({ remote: z.boolean().optional() });
 

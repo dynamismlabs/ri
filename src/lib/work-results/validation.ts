@@ -30,7 +30,7 @@ export const workResultReviewScopeSchema = z.object({
   requested: z.object({ ...scopeObservation, resultId: z.string().min(1), attachments: z.array(storedAttachmentSchema), capturedAt: z.string().min(1) }).strict(),
   observed: z.object({ ...scopeObservation, attachments: z.array(storedAttachmentSchema).optional(), drift: z.boolean().nullable().optional() }).strict().optional(),
 }).strict();
-export const workResultEffortSchema = z.enum(['low', 'medium', 'high', 'xhigh', 'max', 'ultra']);
+export const workResultEffortSchema = z.enum(['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra']);
 export const workResultHarnessSchema = z.enum(KNOWN_HARNESS_IDS);
 export const workResultReviewProvenanceSchema = z.object({
   method: z.enum(['native_review', 'fresh_session', 'reported_review']), independence: z.enum(['observed', 'reported', 'unknown']),

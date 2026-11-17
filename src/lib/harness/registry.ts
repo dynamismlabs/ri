@@ -203,13 +203,17 @@ export const HARNESS_REGISTRY: Record<HarnessId, HarnessDefinition> = {
       modelDiscovery: true,
       upstreamProviderSetup: true,
       upstreamProviderDisconnect: true,
+      // Variants named after an effort level reach Ri as the model's
+      // efforts (agentex 0.0.51). Only other variants stay variants.
       modelVariants: true,
+      reasoningEffort: true,
       permissionRequests: true,
       questionRequests: true,
       planMode: true,
       modes: true,
       sessionModelChange: true,
       sessionVariantChange: true,
+      sessionEffortChange: true,
       sessionModeChange: true,
     },
   },

@@ -40,7 +40,6 @@ export function ModelControl({
   onChange,
   disabled,
   variant,
-  variantIds,
   effort,
   serviceTier,
   onEffortChange,
@@ -49,8 +48,6 @@ export function ModelControl({
   label: string;
   /** The launch's variant and effort, carried along if it's made the default. */
   variant?: string | null;
-  /** Offer only these variants. A schedule keeps OpenCode's variant as its effort level. */
-  variantIds?: readonly string[];
   effort?: EffortLevel | null;
   serviceTier?: string | null;
   onEffortChange: (effort: EffortLevel) => void;
@@ -68,7 +65,6 @@ export function ModelControl({
   const effortOptions = effortOptionsForModel(selection.harness, currentModel);
   const effortLabel = effortOptions.find(option => option.id === effort)?.label;
   const variantLabel = variant ? currentModel?.variants?.find(option => option.id === variant)?.name ?? variant : undefined;
-  const variantOptions = currentModel?.variants?.filter(option => !variantIds || variantIds.includes(option.id)) ?? [];
   const speedOptions = serviceTierOptions(currentModel);
   // An omitted value initializes a new draft. Explicit NULL is a saved
   // legacy selection that still inherits the native provider setting.
@@ -130,9 +126,9 @@ export function ModelControl({
             onEffortChange(level);
             setOpen(false);
           }}
-          variant={variantOptions.length ? {
+          variant={currentModel?.variants?.length ? {
             value: variant ?? null,
-            options: variantOptions,
+            options: currentModel.variants,
             onChange: (id) => {
               onChange({ harness: selection.harness, model: selection.model, variant: id, effort: effort ?? null, serviceTier: speed });
               setOpen(false);

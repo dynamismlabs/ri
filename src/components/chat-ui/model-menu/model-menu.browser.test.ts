@@ -99,7 +99,7 @@ beforeAll(async () => {
           fixture.recent.claude = ['opus','fable'];
         }
         if(location.search.includes('opencode')) {
-          fixture.models.opencode = [{id:'anthropic/claude-sonnet-5-5',label:'Claude Sonnet 5.5',variants:[{id:'high',name:'High'},{id:'max',name:'Max'}]},{id:'anthropic/claude-opus-5-5',label:'Claude Opus 5.5',variants:[{id:'xhigh',name:'Extra high',isDefault:true}]}];
+          fixture.models.opencode = [{id:'anthropic/claude-sonnet-5-5',label:'Claude Sonnet 5.5',supportedEfforts:['low','medium','high','xhigh','max']},{id:'anthropic/claude-opus-5-5',label:'Claude Opus 5.5',supportedEfforts:['low','xhigh'],variants:[{id:'thinking',name:'Thinking'}]}];
           fixture.recent.opencode = ['anthropic/claude-sonnet-5-5','anthropic/claude-opus-5-5'];
         }
         if(location.search.includes('no-history')) fixture.recent = {};
@@ -759,21 +759,24 @@ it.skipIf(!enabled)('shows inherited schedule speed honestly until Normal is exp
   } finally { await page.close(); }
 });
 
-it.skipIf(!enabled)('keeps an OpenCode schedule variant as its effort, shows it on the chip, and resets it with the model', async () => {
+it.skipIf(!enabled)('edits an OpenCode schedule effort like any provider, and keeps a variant that is not an effort level apart', async () => {
   const page = await openPage('?schedule&opencode');
   const selection = async () => JSON.parse((await page.getByLabel('Schedule selection').textContent())!);
   try {
-    await page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5', exact: true }).click();
-    await page.getByRole('button', { name: 'Variant: Default' }).click();
-    await page.getByRole('menuitemradio', { name: 'High', exact: true }).click();
+    await page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5, Medium effort', exact: true }).click();
+    expect(await page.getByRole('button', { name: /^Variant:/ }).count()).toBe(0);
+    await page.getByRole('button', { name: 'Effort: Medium' }).click();
+    await page.getByRole('menuitemradio', { name: /^High/ }).click();
     await expect.poll(selection).toMatchObject({ provider: 'opencode', model: 'anthropic/claude-sonnet-5-5', effort: 'high' });
-    const chip = page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5, High variant', exact: true });
+    const chip = page.getByRole('button', { name: 'Model and settings: Claude Sonnet 5.5, High effort', exact: true });
     expect(await chip.textContent()).toContain('High');
+    // A model without Medium and with no default lands on the nearest level it offers.
     await chip.click();
-    await page.getByRole('button', { name: 'Variant: High' }).waitFor();
-    // Another model's variants are its own: picking it takes its default.
     await page.getByRole('option', { name: /Claude Opus 5.5/ }).first().click();
-    await expect.poll(selection).toMatchObject({ model: 'anthropic/claude-opus-5-5', effort: 'xhigh' });
+    await expect.poll(selection).toMatchObject({ model: 'anthropic/claude-opus-5-5', effort: 'low' });
+    // Its own variant, one that isn't an effort level, keeps its row.
+    await page.getByRole('button', { name: /Model and settings: Claude Opus 5.5/ }).click();
+    await page.getByRole('button', { name: 'Variant: Default' }).waitFor();
   } finally { await page.close(); }
 });
 

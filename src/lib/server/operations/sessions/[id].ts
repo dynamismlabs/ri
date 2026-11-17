@@ -209,7 +209,7 @@ export async function PATCH(rpcInput: rpcZ.infer<typeof PATCHInput>, request: Op
         );
       }
       // A null resolution means the target harness has no reasoning-effort axis
-      // at all (e.g. OpenCode/Cursor), so an incoming effort is simply
+      // at all (Cursor, or an OpenCode model that lists no levels), so an incoming effort is simply
       // irrelevant rather than "unsupported" — ignore it instead of rejecting a
       // model change. The mismatch error is reserved for harnesses that do have
       // an effort axis but can't honor the specific requested level.
@@ -335,4 +335,4 @@ export async function PATCH(rpcInput: rpcZ.infer<typeof PATCHInput>, request: Op
 }
 
 export const GETInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict() }).strict();
-export const PATCHInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "label": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional(), "executionLabel": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional(), "permissionMode": rpcZ.enum(["auto_all", "auto_edits", "ask", "plan"]).optional(), "model": rpcZ.string().optional(), "modelVariant": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional(), "serviceTier": rpcZ.string().trim().min(1).nullable().optional(), "effort": rpcZ.union([rpcZ.null(), rpcZ.literal("low"), rpcZ.literal("medium"), rpcZ.literal("high"), rpcZ.literal("xhigh"), rpcZ.literal("max"), rpcZ.literal("ultra")]).optional(), "prNumber": rpcZ.union([rpcZ.null(), rpcZ.number().finite()]).optional(), "tabSortKey": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional() }).strict().default({}) }).strict();
+export const PATCHInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "label": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional(), "executionLabel": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional(), "permissionMode": rpcZ.enum(["auto_all", "auto_edits", "ask", "plan"]).optional(), "model": rpcZ.string().optional(), "modelVariant": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional(), "serviceTier": rpcZ.string().trim().min(1).nullable().optional(), "effort": rpcZ.union([rpcZ.null(), rpcZ.literal("none"), rpcZ.literal("minimal"), rpcZ.literal("low"), rpcZ.literal("medium"), rpcZ.literal("high"), rpcZ.literal("xhigh"), rpcZ.literal("max"), rpcZ.literal("ultra")]).optional(), "prNumber": rpcZ.union([rpcZ.null(), rpcZ.number().finite()]).optional(), "tabSortKey": rpcZ.union([rpcZ.null(), rpcZ.string()]).optional() }).strict().default({}) }).strict();

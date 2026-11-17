@@ -136,7 +136,7 @@ export const userState = sqliteTable('user_state', {
   defaultHarness: text({ enum: HARNESS_VALUES }),
   defaultModel: text(),
   defaultVariant: text(),
-  defaultEffort: text({ enum: ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
+  defaultEffort: text({ enum: ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
   defaultServiceTier: text(),
   // Retired 2026-10-05, no longer read or written: the main chat acts
   // through MCP only. It once chose between 'harness_skills' (actions via the
@@ -227,7 +227,7 @@ export const harnessSettings = sqliteTable('harness_settings', {
   knownModels: text({ mode: 'json' }).$type<string[]>(),
   defaultModel: text(),
   defaultVariant: text(),
-  defaultEffort: text({ enum: ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
+  defaultEffort: text({ enum: ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
   defaultServiceTier: text(),
   catalogRefreshedAt: text(),
 });
@@ -1713,7 +1713,7 @@ export const workspaces = sqliteTable(
       harness: HarnessId | null;
       model: string | null;
       variant: string | null;
-      effort: 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'ultra' | null;
+      effort: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max' | 'ultra' | null;
     }>>(),
     position: integer().notNull().default(0),
     collapsed: integer({ mode: 'boolean' }).notNull(),
@@ -2399,7 +2399,7 @@ export const chatSessions = sqliteTable(
     // Effort enum values are literal provider tokens, not display strings.
     model: text(),
     modelVariant: text(),
-    effort: text({ enum: ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
+    effort: text({ enum: ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
     // Provider-native speed id. NULL preserves a legacy chat's native setting.
     serviceTier: text(),
     // Which personal apps' tools this chat's model sees (docs/personal-apps.md "Loading app
@@ -3178,7 +3178,7 @@ export const triggers = sqliteTable(
     // Per-run overrides applied to the dispatched session. Null = inherit
     // the harness default.
     model: text(),
-    effort: text({ enum: ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
+    effort: text({ enum: ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
     serviceTier: text(),
     // Optional hard cap on wall-clock runtime per fire. NULL = no
     // timeout (the default for new triggers); positive int = seconds.

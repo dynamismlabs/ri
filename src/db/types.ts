@@ -521,7 +521,7 @@ export { PERMISSION_MODES } from '@/lib/permissions/modes';
 export type EffortLevel = NonNullable<ChatSessionRecord['effort']>;
 export type ServiceTier = NonNullable<ChatSessionRecord['serviceTier']>;
 
-export const EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max', 'ultra'] as const satisfies readonly EffortLevel[];
+export const EFFORT_LEVELS = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'] as const satisfies readonly EffortLevel[];
 
 // ─── Triggers ─────────────────────────────────────────────────
 

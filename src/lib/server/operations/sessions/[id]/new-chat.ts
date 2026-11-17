@@ -156,4 +156,4 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
   }
 }
 
-export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "providerId": rpcZ.enum(["cursor", "antigravity", "claude", "codex", "opencode"]).optional(), "model": rpcZ.string().optional(), "variant": rpcZ.string().optional(), "serviceTier": rpcZ.string().trim().min(1).optional(), "effort": rpcZ.enum(["low", "medium", "high", "xhigh", "max", "ultra"]).optional(), "forApp": rpcZ.boolean().optional() }).strict().default({}) }).strict();
+export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), body: rpcZ.object({ "providerId": rpcZ.enum(["cursor", "antigravity", "claude", "codex", "opencode"]).optional(), "model": rpcZ.string().optional(), "variant": rpcZ.string().optional(), "serviceTier": rpcZ.string().trim().min(1).optional(), "effort": rpcZ.enum(["none", "minimal", "low", "medium", "high", "xhigh", "max", "ultra"]).optional(), "forApp": rpcZ.boolean().optional() }).strict().default({}) }).strict();

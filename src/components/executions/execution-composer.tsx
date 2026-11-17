@@ -474,7 +474,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
         id: sessionId,
         model: nextModel.id,
         // Only carry an effort for harnesses that actually have a
-        // reasoning-effort axis. OpenCode/Cursor resolve effort to null on the
+        // reasoning-effort axis. Cursor resolves effort to null on the
         // server, so sending the client-side fallback ('medium') would be
         // rejected as an unsupported effort. Mirrors the provider-switch paths.
         ...(showEffort ? { effort: nextEffort } : {}),
