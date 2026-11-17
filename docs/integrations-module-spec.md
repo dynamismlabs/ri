@@ -723,6 +723,7 @@ actions flow through the **exact same `runAction` pipeline**. Concretely:
 type IntegrationErrorCode =
   | 'unknown_action' | 'connection_not_found' | 'invalid_input' | 'denied'
   | 'provider_error' | 'provider_rate_limited' | 'provider_unavailable'
+  | 'not_found'                 // the provider's 404 or 410: a deleted item, an expired sync or history token
   | 'provider_not_configured'   // no auth client/app resolves for this provider (+caller, hosted) — §6
   | 'internal_error'
   // multi-client layer — reserved now, dormant until enabled (see integrations-authconfig-spec.md §6a):
@@ -738,7 +739,10 @@ type IntegrationErrorCode =
 Provider HTTP mapping: `401` → refresh-then-retry-once, else `auth_required`; `403` →
 refresh-only-if-`refreshableStatuses`, else `provider_error` (or `needs_consent` when the
 body indicates insufficient scope); `429` → `provider_rate_limited` (surface `Retry-After`);
-`5xx` → `provider_unavailable`; other 4xx → `provider_error`. Mutating requests are **not**
+`404` and `410` → `not_found`; `5xx` → `provider_unavailable`; other 4xx → `provider_error`. Every
+provider error keeps its HTTP status, and the model-facing outcome carries it as `httpStatus`
+(`{"status":"error","code":"not_found","httpStatus":410,"message":"..."}`), since `status` there
+says what kind of answer it is. Mutating requests are **not**
 blindly retried after a partial provider success — a `5xx`/timeout *after* a mutating request
 is sent returns `provider_unavailable` with `indeterminate: true` and audits `status: 'unknown'`
 (§5/§9), since the call may have succeeded.
