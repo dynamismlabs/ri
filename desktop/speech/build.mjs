@@ -38,8 +38,8 @@ for candidate in builtins.license._Printer__filenames:
   shutil.copyfile(candidate,out/'PYTHON-LICENSE.txt')
   break
 `]);
-// The OS's own runtime (libgcc_s, libstdc++) comes from the system, as the manylinux wheels expect.
-// PyInstaller copies the build machine's, which would ship them with no recorded source.
+// The OS's own libraries (libgcc_s, libstdc++, libz, libmvec) come from the system, as the manylinux
+// wheels expect. PyInstaller copies the build machine's, which would ship them with no recorded source.
 if (process.platform === 'linux') run(python, [path.join(source, 'native_inventory.py'), output, '--drop-os-libraries']);
 fs.copyFileSync(path.join(source, 'requirements.txt'), path.join(output, 'requirements.txt'));
 fs.copyFileSync(path.join(source, 'NOTICES.md'), path.join(output, 'NOTICES.md'));

@@ -29,9 +29,11 @@ CODECS = {
 # the wheel's own LICENSE.txt (numpy appends its bundled-software notice to it for its wheels). They
 # arrive in the hash-pinned wheel with that notice, as onnxruntime's arrive with its ThirdPartyNotices.
 NUMPY_BUNDLED = {'libscipy_openblas': 'openblas', 'libgfortran': 'gfortran', 'libquadmath': 'quadmath'}
-# These are OS interfaces rather than libraries copied into the distribution.
+# These are OS interfaces rather than libraries copied into the distribution: glibc's parts
+# (libmvec among them), and the libraries the manylinux policy lets a wheel take from the system
+# instead of bundling (libgcc_s, libstdc++, libz). auditwheel's policy lists each for manylinux_2_28.
 # Anything actually bundled is still inventoried and must have known provenance.
-LINUX_SYSTEM = re.compile(r'^(?:ld-linux[^/]*|lib(?:c|m|dl|pthread|rt|util|resolv|gcc_s|stdc\+\+)\.so(?:\.[0-9]+)*)$')
+LINUX_SYSTEM = re.compile(r'^(?:ld-linux[^/]*|lib(?:c|m|mvec|dl|pthread|rt|util|resolv|gcc_s|stdc\+\+|z)\.so(?:\.[0-9]+)*)$')
 NATIVE_MAGIC = {b'\x7fELF', b'\xfe\xed\xfa\xce', b'\xce\xfa\xed\xfe', b'\xfe\xed\xfa\xcf', b'\xcf\xfa\xed\xfe', b'\xca\xfe\xba\xbe', b'\xbe\xba\xfe\xca', b'\xca\xfe\xba\xbf', b'\xbf\xba\xfe\xca'}
 
 
@@ -56,8 +58,9 @@ def file_inventory(root):
 def drop_os_libraries(root):
     """Remove bundled copies of the OS's own libraries (LINUX_SYSTEM) and return what went.
 
-    PyInstaller copies the build machine's libgcc_s and libstdc++. The manylinux wheels inside the
-    helper expect the system's, as this inventory treats them, so the helper uses those too.
+    PyInstaller copies the build machine's libgcc_s, libstdc++, libz and libmvec. The manylinux
+    wheels inside the helper expect the system's, as this inventory treats them, so the helper uses
+    those too.
     """
     root = Path(root).resolve(); removed = []
     for file in sorted(root.rglob('*')):

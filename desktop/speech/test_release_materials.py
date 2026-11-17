@@ -211,11 +211,17 @@ class NativePlatformTests(unittest.TestCase):
     def test_linux_helper_takes_the_os_runtime_libraries_from_the_system(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name in ['_internal/libstdc++.so.6', '_internal/libgcc_s.so.1', '_internal/libz.so.1', '_internal/numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0', '_internal/libstdc++-extra.txt']:
+            kept = ['_internal/av.libs/libxcb-5ddf6756.so.1.1.0', '_internal/av.libs/libz-0f2b3c4d.so.1.3.1', '_internal/libstdc++-extra.txt', '_internal/libzstd.so.1', '_internal/numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0']
+            for name in ['_internal/libstdc++.so.6', '_internal/libgcc_s.so.1', '_internal/libz.so.1', '_internal/libmvec.so.1', *kept]:
                 (root / name).parent.mkdir(parents=True, exist_ok=True); (root / name).write_bytes(b'\x7fELF')
-            self.assertEqual(native.drop_os_libraries(root), ['_internal/libgcc_s.so.1', '_internal/libstdc++.so.6'])
-            # Anything else bundled stays, to be inventoried and recorded.
-            self.assertEqual(sorted(file.relative_to(root).as_posix() for file in root.rglob('*') if file.is_file()), ['_internal/libstdc++-extra.txt', '_internal/libz.so.1', '_internal/numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0'])
+            self.assertEqual(native.drop_os_libraries(root), ['_internal/libgcc_s.so.1', '_internal/libmvec.so.1', '_internal/libstdc++.so.6', '_internal/libz.so.1'])
+            # Anything else bundled stays, to be inventoried and recorded: a wheel's own renamed copy
+            # of a library, and libraries that only begin like an OS one.
+            self.assertEqual(sorted(file.relative_to(root).as_posix() for file in root.rglob('*') if file.is_file()), kept)
+            for name in ['libz.so.1', 'libmvec.so.1', 'libgcc_s.so.1']:
+                self.assertTrue(native.is_system_dependency(name, 'linux'))
+            for name in ['libzstd.so.1', 'libxcb.so.1', 'libz-0f2b3c4d.so.1.3.1']:
+                self.assertFalse(native.is_system_dependency(name, 'linux'))
 
     @patch('native_inventory.subprocess.run')
     def test_macos_excludes_library_identity_from_dependencies(self, run):

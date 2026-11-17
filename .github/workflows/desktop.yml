@@ -78,13 +78,14 @@ jobs:
             platform: linux
             arch: x64
             package: release/desktop/linux-unpacked
-            speech: true
+            speech: false
+            no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
           - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
             package: release/desktop/linux-arm64-unpacked
             speech: false
-            no_speech: The speech helper bundles libz and PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
+            no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     env:
