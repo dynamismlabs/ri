@@ -244,6 +244,9 @@ export function SearchOverlay() {
     placeholder={isCommand ? 'Type a command...' : 'Search or type > for commands...'}
     beforeResults={<>          {isCommand && <CommandSearchItems commands={[...PALETTE_COMMANDS, ...appCommands].filter(command => (command.capability !== 'handoffs' || capabilities.data?.handoffsEnabled) && (command.capability !== 'privatePlanning' || scratchpadAvailable))} query={searchQuery} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
 
+          {/* ── Apps a search names: "Bookmarks" finds Open Bookmarks without > ── */}
+          {hasQuery && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty={null} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
+
           {/* ── Recent items (empty query, no command mode) ── */}
           {!isCommand && searchQuery.length === 0 && recents && recents.length > 0 && (
             <RecentSearchItems items={recents} onSelect={handleSelect} />

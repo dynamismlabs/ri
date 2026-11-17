@@ -10,7 +10,7 @@ import type { MentionedResourceContext } from '@/lib/chat-sources/types';
 import { MENTION_CONTENT_BYTES } from '@/lib/chat-sources/service';
 import { appToolVisible, mentionsSearchTool } from './metadata';
 import { authority, mcpAppsEnabled } from './service';
-import { mcpToolkitId } from '@/lib/integrations/mcp-servers';
+import { mcpToolActionId, mcpToolkitId } from '@/lib/integrations/mcp-servers';
 
 /**
  * Server-provided @ search, OpenAI's "Composer At-Mentions"
@@ -134,9 +134,9 @@ export async function searchAppMentions(chatId: string, query: string, signal?: 
   });
   const results = await Promise.all(candidates.map(async ({ entry, tools, searchTool, toolkitId, app }) => {
     const skip = (reason: string) => ({ skipped: { serverId: entry.id, app, reason } });
-    const actionId = `${entry.providerId ?? `mcp.${entry.slug}`}.${searchTool}`;
+    const actionId = mcpToolActionId(entry, searchTool);
     const refusal = searchRefusal(tools.find(t => t.name === searchTool), entry.toolOverrides?.[searchTool]?.enabled !== false,
-      readWouldAsk(actionId, { id: hostedMcpConnectionId(entry), providerId: entry.providerId ?? toolkitId }));
+      readWouldAsk(actionId, { id: hostedMcpConnectionId(entry), providerId: toolkitId }));
     if (refusal) return skip(refusal);
     try {
       return await deadline(MENTION_SEARCH_TIMEOUT_MS, signal, async abort => {

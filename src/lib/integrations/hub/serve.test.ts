@@ -142,6 +142,30 @@ describe('the hub surface an app sees', () => {
     expect(JSON.parse(((await tools.get('ri__list_accounts')!.handler({}, context())).content[0] as { text: string }).text)).toEqual({ accounts: [] });
   });
 
+  it('leaves a tool its own account input beside ri__list_accounts, when several lent accounts back it', async () => {
+    const runAction = vi.fn(async (..._args: unknown[]) => ({ ok: true, result: {} }));
+    const owning = { id: 'gmail.list_labels', description: 'gmail.list_labels', input: z.object({ account: z.string().describe('The mailbox to read labels for') }), mutating: false };
+    const base = runtime(runAction);
+    const withOwning = { ...base, getToolkits: () => base.getToolkits().map(toolkit => toolkit.id === 'gmail' ? { ...toolkit, actions: [...toolkit.actions, owning] } : toolkit) };
+    const app = q.upsertHubApp({
+      clientId: `labels-${crypto.randomUUID()}`, name: 'Labels', clientUri: 'http://127.0.0.1:4392',
+      grant: { accounts: [
+        { connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__list_labels'] },
+        { connectionId: 'c-work', toolkitId: 'gmail', tools: ['gmail__list_labels'] },
+      ], services: [] },
+    });
+    const { server, tools } = registrar();
+    await serveHub(server, withOwning as never, app, { ownerId: 'local', redirectUris: [] });
+    expect(tools.get('ri__list_accounts')!.config.inputSchema).toBeUndefined();
+    // The tool's account is its own input, not a choice of the lent accounts.
+    expect(String((tools.get('gmail__list_labels')!.config.inputSchema as { account: z.ZodTypeAny }).account.description)).toBe('The mailbox to read labels for');
+    await tools.get('gmail__list_labels')!.handler({ account: 'shared@example.com' }, context());
+    expect(runAction).toHaveBeenCalledWith('gmail.list_labels', { account: 'shared@example.com' }, expect.objectContaining({ allowedConnectionIds: ['c-home', 'c-work'] }));
+    expect(runAction.mock.calls[0]![2]).not.toHaveProperty('account');
+    const { accounts } = JSON.parse(((await tools.get('ri__list_accounts')!.handler({}, context())).content[0] as { text: string }).text) as { accounts: HubLentAccount[] };
+    expect(accounts.map(account => [account.name, account.tools])).toEqual([['me@example.com', ['gmail__list_labels']], ['me@work.example', ['gmail__list_labels']]]);
+  });
+
   it.each(['auto', 'legacy'] as const)('answers ri__list_accounts to an MCP client on the %s protocol era', async (mode) => {
     const app = q.upsertHubApp({ clientId: `travel-${crypto.randomUUID()}`, name: 'Travel', grant: { accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages'] }], services: [] } });
     const handler = riMcpHandler(server => serveHub(server, runtime(vi.fn()) as never, app, { ownerId: 'local', redirectUris: [] }), { name: 'ri-hub-test', version: '1.0.0' });

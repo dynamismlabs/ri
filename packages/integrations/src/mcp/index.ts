@@ -6,3 +6,5 @@ export { beginMcpOAuth, connectMcpClient, finishMcpOAuth, isMcpAuthenticationErr
 export type { ConnectMcpOptions, ConnectedMcpClient, McpResourceContent, McpServerFacts } from './client';
 export { MCP_CONNECT_TIMEOUT_MS, MCP_DISCOVERY_TIMEOUT_MS, MCP_RESOURCE_TIMEOUT_MS, MCP_TOOL_TIMEOUT_MS, MCP_TOOL_TOTAL_TIMEOUT_MS, MCP_HTTP_TIMEOUT_MS } from './timeouts';
 export { jsonSchemaToZodObject } from './json-schema';
+export { mcpActionId, mcpServerIds } from './identity';
+export type { McpServerIds } from './identity';

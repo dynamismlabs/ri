@@ -9,7 +9,7 @@
 import { createHmac } from 'node:crypto';
 import { z as z4 } from 'zod/v4';
 import { z } from 'zod';
-import { accountDisplay, modelSafeOutcome, toToolName, type AccountChoice, type Caller, type Connection, type IntegrationRuntime } from '@integrations/engine';
+import { accountDisplay, modelSafeOutcome, ownsAccountField, splitAccountArg, toToolName, type AccountChoice, type Caller, type Connection, type IntegrationRuntime } from '@integrations/engine';
 import type { RiMcpServer, RiMcpToolResult } from '@/lib/mcp/http-server';
 import { insertHubCall, type HubAppRecord } from '@/lib/db/queries';
 import { isAppToolkitId } from '../app-ids';
@@ -99,7 +99,7 @@ export async function serveHub(server: RiMcpServer, runtime: IntegrationRuntime,
     accounts.push({ id: hubAccountId(app.id, connectionId), name: accountDisplay(accountChoice(connection)) ?? null, provider: connection.providerId, tools: backs });
   }
   server.registerTool(LIST_ACCOUNTS_TOOL, {
-    description: 'The person\'s accounts this app may use, each with the tools it backs. Pass an account\'s name as a tool\'s account argument when the tool offers one. An account keeps its id across its tools and while it stays connected.',
+    description: 'The person\'s accounts this app may use, each with the tools it backs. Pass an account\'s name as a tool\'s account argument when that argument lists it as allowed. A tool whose own input is named account means something of its own by it. An account keeps its id across its tools and while it stays connected.',
     annotations: { readOnlyHint: true },
   }, async () => text({ accounts }));
 
@@ -108,16 +108,19 @@ export async function serveHub(server: RiMcpServer, runtime: IntegrationRuntime,
     const action = toolkit.actions.find((candidate) => candidate.id === entry.actionId)!;
     const choices: AccountChoice[] = connections.filter((c) => entry.connections.includes(c.id)).map(accountChoice);
     const several = choices.length > 1;
+    // An action with its own `account` input keeps it, so the app can't name a lent account for it:
+    // on several, the runtime answers choose_account rather than pick one.
+    const offersAccount = several && !ownsAccountField(action);
     const shape = (action.input as unknown as z.ZodObject<z.ZodRawShape>).shape;
     server.registerTool(name, {
       description: action.description + (action.mutating ? ' It changes something in the person\'s account, so Ri asks the person before every call.' : ''),
       inputSchema: {
         ...shape,
-        ...(several ? { account: z.string().optional().describe(`Which account. Allowed: ${choices.map((c) => `"${accountDisplay(c)}"`).join(', ')}.`) } : {}),
+        ...(offersAccount ? { account: z.string().optional().describe(`Which account. Allowed: ${choices.map((c) => `"${accountDisplay(c)}"`).join(', ')}.`) } : {}),
       },
     }, async (args, context) => {
       const startedBy = startedByFor(urls, context.meta);
-      const { account, ...input } = args as { account?: string } & Record<string, unknown>;
+      const { input, account } = splitAccountArg(action, args as Record<string, unknown>);
       const signals = [options.signal, context.signal].filter((signal): signal is AbortSignal => !!signal);
       const outcome = await runtime.runAction(action.id, input, {
         ownerId: options.ownerId,

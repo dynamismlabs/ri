@@ -911,6 +911,12 @@ export function createIntegrationRuntime(opts: IntegrationRuntimeOptions): Integ
     const mutating = action.mutating ?? false;
     const risk: RiskLevel = action.risk ?? (mutating ? 'medium' : 'low');
 
+    // A tool only its app's screen may call is refused to the model before its input is read, so its
+    // field names never reach a caller it isn't for.
+    if (action.admitsAudience && !action.admitsAudience(options.toolAudience ?? 'model')) {
+      return fail('denied', 'This tool is not available to this caller.');
+    }
+
     // 2. Validate input (still pre-audit — a malformed call learns nothing).
     const parsed = action.input.safeParse(input);
     if (!parsed.success) {

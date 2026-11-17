@@ -74,3 +74,32 @@ it("does not put an old abandoned question into a later composer", () => {
   off();
   vi.useRealTimers();
 });
+it("keeps an app's message for a chat that isn't open through a reload, as the person's own draft, and puts it there once", async () => {
+  const saved = new Map<string, string>();
+  const localStorage = { getItem: (key: string) => saved.get(key) ?? null, setItem: (key: string, value: string) => { saved.set(key, value); }, removeItem: (key: string) => { saved.delete(key); } };
+  vi.stubGlobal("window", { localStorage });
+  vi.useFakeTimers();
+  try {
+    vi.resetModules();
+    const before = await import("./app-chat-intent");
+    // The person is on the app's own screen, and the main chat isn't open.
+    expect(before.requestAppChatMessage("main-chat", { parts })).toBe("queued");
+    // Long after a minute, and after a reload.
+    vi.advanceTimersByTime(60 * 60_000);
+    vi.resetModules();
+    const after = await import("./app-chat-intent");
+    const appendParts = vi.fn();
+    const off = after.registerAppChatComposer("main-chat", vi.fn(), { appendParts });
+    expect(appendParts).toHaveBeenCalledExactlyOnceWith(parts);
+    off();
+    const again = vi.fn();
+    const offAgain = after.registerAppChatComposer("main-chat", vi.fn(), { appendParts: again });
+    expect(again).not.toHaveBeenCalled();
+    offAgain();
+    expect(saved.size).toBe(0);
+  } finally {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.resetModules();
+  }
+});

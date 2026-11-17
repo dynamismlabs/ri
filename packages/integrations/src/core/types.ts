@@ -286,6 +286,12 @@ export interface Action<I = unknown, O = unknown> {
    * no approval decision rests on it, since a provider's hint can't prove a write stays private.
    */
   openWorld?: boolean;
+  /**
+   * Whether any account's version of this action is for this audience at all (MCP Apps
+   * `ui.visibility`). Checked before the input, so a caller the tool isn't for learns nothing about
+   * its fields. Per-account visibility is still checked in `validateForConnection`.
+   */
+  admitsAudience?(audience: 'model' | 'app'): boolean;
   /** Trusted local validation after account resolution and before approval. No side effects. */
   validateForConnection?(connection: ConnectionMetadata, input: I, audience?: 'model' | 'app'): void;
   execute(ctx: ActionContext, input: I): Promise<O>;
