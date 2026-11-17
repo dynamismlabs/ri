@@ -85,6 +85,8 @@ afterAll(async () => { await fixture?.close(); });
 
 async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
   const page = await fixture.browser.newPage({ viewport, hasTouch: viewport.width < 1024 });
+  // Short of the test's own limit, so a step that can't happen says which and why.
+  page.setDefaultTimeout(10_000);
   await page.goto(fixture.url);
   await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
   await page.locator('[data-scratchpad] .tiptap').waitFor();
@@ -312,6 +314,13 @@ describe('scratchpad quick view and expansion', () => {
         await expand(page);
         await capture(page, 'empty-modal');
       }
+    } catch (error) {
+      // Where the sheet and its editor were, for a failure only one platform's fonts show.
+      console.error('scratchpad layout', JSON.stringify(await page.evaluate(() => {
+        const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().toJSON() ?? null;
+        return { viewport: [innerWidth, innerHeight], sheet: box('[data-scratchpad]'), editor: box('[data-scratchpad] .tiptap'), placeholder: box('[data-scratchpad] .is-empty') };
+      }).catch(() => null)));
+      throw error;
     } finally { await page.close(); }
   });
 });
