@@ -11,7 +11,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { getProvider } from '@agentex/agent';
-import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
+import { installFakeHarness, userMessageOf, type FakeHarness } from '@/test/fixtures/fake-harness';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { startHomeServer, type HomeServer } from '@/test/fixtures/home-server';
 import { startWorkerProcess, type WorkerProcess } from '@/test/fixtures/worker-process';
@@ -465,8 +465,9 @@ describe('an execution on a connected device', () => {
     expect(q.listChatEvents(chatId).some((e) => e.content === `ok: read ${copy}`)).toBe(true);
     expect(fs.readFileSync(copy, 'utf8')).toBe('shopping list');
     const [command] = q.listWorkerCommands(deviceId);
+    // The app's current guidance rides ahead of the person's words, which still name the file by its marker.
+    expect(userMessageOf((command!.payload as { message: string }).message)).toBe(content);
     expect(command!.payload).toMatchObject({
-      message: content,
       attachments: [{ fileName: notes.fileName, originalName: 'notes.txt', size: 13, sha256: expect.stringMatching(/^[0-9a-f]{64}$/) }],
     });
     expect(JSON.stringify(command!.payload)).not.toContain(getAttachmentsDir());
