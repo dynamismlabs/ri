@@ -223,6 +223,9 @@ export function createAuthedHttp(opts: CreateAuthedHttpOptions): AuthedHttp {
           retryAfter: retryAfterSeconds(res),
         });
       }
+      if (res.status === 404 || res.status === 410) {
+        throw new IntegrationError('not_found', message, { status: res.status });
+      }
       if (res.status >= 500) {
         throw new IntegrationError('provider_unavailable', message, {
           status: res.status,

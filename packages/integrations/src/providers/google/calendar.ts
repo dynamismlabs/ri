@@ -192,7 +192,7 @@ export const googleCalendar = defineToolkit({
       id: 'google_calendar.sync_events',
       description:
         'Read one page of a calendar for synchronization: typed participants, organizer, recurrence identity, original time zones, update times and cancellations. ' +
-        'Start with timeMin/timeMax, follow nextPageToken, then pass the final nextSyncToken to receive only later changes. An expired sync token fails with status 410.',
+        'Start with timeMin/timeMax, follow nextPageToken, then pass the final nextSyncToken to receive only later changes. An expired sync token fails with code not_found and httpStatus 410: start again without it.',
       scopes: [GOOGLE_SCOPES.calendarEventsReadonly],
       input: z
         .object({

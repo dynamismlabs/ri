@@ -156,7 +156,14 @@ describe('AuthedHttp (§13)', () => {
       n++;
       return { status: 404 };
     });
-    await expect(client.get('/v1/x')).rejects.toMatchObject({ code: 'provider_error', status: 404 });
+    await expect(client.get('/v1/x')).rejects.toMatchObject({ code: 'not_found', status: 404 });
     expect(n).toBe(1);
+  });
+
+  it('names a 404 or 410 not_found with its status, and leaves other 4xx provider_error', async () => {
+    for (const [status, code] of [[404, 'not_found'], [410, 'not_found'], [400, 'provider_error'], [409, 'provider_error']] as const) {
+      const { client } = setup(() => ({ status }));
+      await expect(client.get('/v1/gone')).rejects.toMatchObject({ code, status });
+    }
   });
 });

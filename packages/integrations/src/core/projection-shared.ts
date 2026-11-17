@@ -159,6 +159,8 @@ export function modelSafeOutcome(outcome: FailedOutcome): Record<string, unknown
         status: 'error',
         code: outcome.code,
         message: outcome.message,
+        // The provider's HTTP status, apart from `status`, which says what kind of answer this is.
+        ...(outcome.status !== undefined ? { httpStatus: outcome.status } : {}),
         ...(outcome.indeterminate ? { indeterminate: true } : {}),
         ...(outcome.approvalId ? { approvalId: outcome.approvalId } : {}),
       };
