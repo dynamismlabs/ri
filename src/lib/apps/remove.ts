@@ -7,12 +7,17 @@
  * Its folder, with any changes the person made, and its data, which the kit keeps by the app's id,
  * both stay on this computer. Adding it again (from the catalog, or New app with its name) installs
  * that folder again and the app finds its data where it left it.
+ *
+ * If the folder is gone, the kit can't uninstall the app, since it finds the service from the
+ * folder. Remove still takes the app off Ri, and its result says the app may still be running and
+ * gives the kit's command to uninstall it by hand.
  */
 import fs from 'node:fs';
 import { getAppSource, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
 import { addPersonalApp, listPersonalApps, removePersonalApp } from '@/lib/integrations/apps';
 import { AppBuildError, finish, kitCliFor, latestAppJob, newJob, pnpmCommand, prepare, runIn, toolsWithGit } from './builder';
 import { appStatus } from './status';
+import { appToolchain } from './toolchain';
 
 type RequestLike = Pick<Request, 'headers' | 'url'>;
 
@@ -22,6 +27,21 @@ export interface RemovedApp {
   folder: string | null;
   /** Where its data stays, when the kit said. */
   dataDir: string | null;
+  /**
+   * Set when Ri installed the app but couldn't uninstall it: its folder is gone, and the kit finds
+   * the app's service from the folder. The app may still be running. `command` is the kit's
+   * uninstall as the person runs it in the folder once it's back, when Ri knows the kit's name.
+   */
+  stillInstalled: { command: string | null } | null;
+}
+
+/**
+ * The kit's uninstall, as the person runs it in an app's folder. Named by the kit Ri carries: an
+ * app's own copy of the kit has the same command.
+ */
+function uninstallCommand(): string | null {
+  const name = appToolchain().kit?.name;
+  return name ? `pnpm exec ${name} serve --uninstall` : null;
 }
 
 /** Whether the app's connection for Ri's own chats still exists. */
@@ -64,9 +84,12 @@ export async function removeApp(sourceId: string): Promise<RemovedApp> {
       throw error;
     }
   }
+  // Installed, but its folder is gone, so the kit can't find its service to uninstall it. It's
+  // still removed from Ri, and the person is told what may still be running and how to stop it.
+  const stillInstalled = source.url && !folder ? { command: uninstallCommand() } : null;
   if (source.personalAppId) await removePersonalApp(source.personalAppId);
   updateAppSource(source.id, { url: null, personalAppId: null, removedAt: new Date().toISOString() });
-  return { name: source.name, folder: source.folder, dataDir };
+  return { name: source.name, folder: source.folder, dataDir, stillInstalled };
 }
 
 /**

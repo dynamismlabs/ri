@@ -12,6 +12,8 @@ export interface RemoveCopyInput {
   dataDir: string | null;
   /** Added from Ri's catalog, so Add there picks it back up. Otherwise New app with its name does. */
   fromCatalog: boolean;
+  /** Installed, but its folder is gone (the status says `no_folder`), so Ri can't uninstall it. */
+  folderGone?: boolean;
 }
 
 const where = (path: string | null, fallback: string) => (path ? `at ${path}` : fallback);
@@ -19,6 +21,10 @@ const where = (path: string | null, fallback: string) => (path ? `at ${path}` : 
 /** The confirmation for removing an app Ri installed or made. */
 export function removeAppDescription(input: RemoveCopyInput): string {
   const { name } = input;
+  if (input.installed && input.folderGone) {
+    const folder = input.folder ? `its folder at ${input.folder}` : 'its folder';
+    return `${APP_NAME} takes ${name} off its apps and forgets every sign-in to it, so ${APP_NAME} and every agent lose its tools and screens. ${APP_NAME} can’t uninstall it, because the app kit needs ${folder} and the folder is gone. ${name} may keep running, and ${APP_NAME} will say how to uninstall it by hand.`;
+  }
   const what = input.installed
     ? `${APP_NAME} stops ${name}, uninstalls it from this computer and forgets every sign-in to it, so ${APP_NAME} and every agent lose its tools and screens.`
     : `${APP_NAME} takes ${name} off its apps.`;
@@ -28,8 +34,18 @@ export function removeAppDescription(input: RemoveCopyInput): string {
   return `${what} ${kept}${reach} ${back}`;
 }
 
+export interface RemovedNoticeInput extends Pick<RemoveCopyInput, 'name' | 'folder' | 'dataDir'> {
+  /** Ri couldn't uninstall it because its folder is gone (src/lib/apps/remove.ts). */
+  stillInstalled?: { command: string | null } | null;
+}
+
 /** What the person is told once it's removed. */
-export function removedNotice(input: Pick<RemoveCopyInput, 'name' | 'folder' | 'dataDir'>): string {
+export function removedNotice(input: RemovedNoticeInput): string {
+  if (input.stillInstalled) {
+    const folder = input.folder ? `its folder at ${input.folder}` : 'its folder';
+    const run = input.stillInstalled.command ? `run ${input.stillInstalled.command} in it` : 'run the app kit’s serve --uninstall in it';
+    return `${input.name} is removed from ${APP_NAME}, but ${APP_NAME} couldn’t uninstall it. The app kit needs ${folder}, and the folder is gone. ${input.name} may still be running. To uninstall it, put the folder back and ${run}.`;
+  }
   const kept = [input.folder ? `its folder at ${input.folder}` : 'its folder', input.dataDir ? `its data at ${input.dataDir}` : 'its data'];
   return `${input.name} is removed. ${APP_NAME} kept ${kept.join(' and ')}.`;
 }

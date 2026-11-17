@@ -91,6 +91,11 @@ Ri builds and changes apps with the kit's own commands (shared spec §2, and the
 - **Keeps its folder,** with any changes the person made, and **its data**, in the kit's data directory (the kit keeps it by the app's id). The dialog names both paths, from the kit's `status --json` (`dataDir`). Deleting them is the person's to do.
 - **Its access through Ri's hub stays** as the person allowed it, so an app added again picks that up too. The hub panel turns it off.
 
+**If its folder is gone,** the kit can't uninstall it, since the kit finds the app's service from its folder.
+- The dialog says so before anything runs. The app's status reports `no_folder`.
+- Remove still disconnects it and takes it off Ri's lists.
+- The result's `stillInstalled` says the app may still be running. The notice stays up until it's dismissed and gives the kit's uninstall, `pnpm exec <kit> serve --uninstall`, to run once the folder is back. Ri names the kit's command from the kit it carries (`CarriedKit.name`), since an app's own copy has the same command.
+
 **Adding it again** picks both back up. Add in Recommended apps, or New app with the same name, revives the record and installs the kept folder as it is, not a fresh clone. The app finds its data where it left it. Its catalog version and any change in progress come back with it. If its folder was deleted, Add clones the catalog version afresh, and the app's data still comes back.
 
 **An app that's installed but not connected** (its connection was removed, or its consent screen never finished) offers Reconnect on its page, which adds its connection again and opens its consent screen.

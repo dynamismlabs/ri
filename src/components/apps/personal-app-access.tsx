@@ -75,12 +75,14 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
     mutationFn: async () => {
       const name = app.data!.name;
       const description = source.data?.createdByRi
-        ? removeAppDescription({ name, installed: installedByRi, folder: source.data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!source.data.catalogId })
+        ? removeAppDescription({ name, installed: installedByRi, folder: source.data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!source.data.catalogId, folderGone: status.data?.problem === 'no_folder' })
         : `${APP_NAME} and every agent lose ${name}'s tools and screens, and ${APP_NAME} forgets every sign-in to it. ${name} keeps running with its own data.`;
       if (!await confirm({ title: `Remove ${name} from ${APP_NAME}?`, description, confirmLabel: 'Remove', tone: 'destructive' })) return;
       const removed = await trpcClient.personalApps.remove.mutate({ appId });
       await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() })]);
-      if (removed) toast.success(removedNotice(removed));
+      // One Ri couldn't uninstall may still be running: that stays up until it's read.
+      if (removed?.stillInstalled) toast.warning(removedNotice(removed), { duration: Infinity });
+      else if (removed) toast.success(removedNotice(removed));
       onRemoved();
     },
     onError: failed,

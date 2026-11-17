@@ -118,7 +118,7 @@ describe('removing an app Ri installed', () => {
     git(installed.folder!, 'commit', '-q', '-m', 'My notes');
 
     const removed = await removeApp(source.id);
-    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir });
+    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir, stillInstalled: null });
     // Stopped and uninstalled with the kit's own command.
     expect(await answers(installed.url!)).toBe(false);
     expect(fs.existsSync(path.join(dataDir, 'releases', 'service.process'))).toBe(false);
@@ -135,6 +135,30 @@ describe('removing an app Ri installed', () => {
     expect(q.getAppSource(source.id)).toMatchObject({ folder: installed.folder, removedAt: null });
     expect(git(installed.folder!, 'log', '-1', '--format=%s')).toBe('My notes');
     expect(await visit()).toBe(2);
+  });
+
+  it('says when its folder is gone and it may still run, with the kit’s command to uninstall it by hand', async () => {
+    const q = await import('@/lib/db/queries');
+    const { listPersonalApps } = await import('@/lib/integrations/apps');
+    const { appStatus } = await import('./status');
+    const { appToolchain } = await import('./toolchain');
+    const { removeApp } = await import('./remove');
+
+    const source = await addAndConnect();
+    const installed = q.getAppSource(source.id)!;
+    fs.rmSync(installed.folder!, { recursive: true, force: true });
+    // What the Remove dialog reads to say so before it runs.
+    expect(await appStatus(source.id, { fresh: true })).toMatchObject({ state: 'unknown', problem: 'no_folder' });
+
+    const removed = await removeApp(source.id);
+    const kit = appToolchain().kit;
+    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir: null, stillInstalled: { command: kit ? `pnpm exec ${kit.name} serve --uninstall` : null } });
+    // It says so because it's so: the kit never ran, and the app still answers.
+    expect(await answers(installed.url!)).toBe(true);
+    expect(fs.existsSync(path.join(dataDir, 'releases', 'service.process'))).toBe(true);
+    // It's off Ri all the same.
+    expect(listPersonalApps()).toEqual([]);
+    expect(q.listAppSources()).toEqual([]);
   });
 
   it('connects an app that is installed but not connected, from its page', async () => {

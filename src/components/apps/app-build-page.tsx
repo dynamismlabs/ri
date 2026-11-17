@@ -60,11 +60,13 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const remove = useMutation({
     mutationFn: async () => {
       const data = source.data!;
-      const description = removeAppDescription({ name: data.name, installed: !!data.url, folder: data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!data.catalogId });
+      const description = removeAppDescription({ name: data.name, installed: !!data.url, folder: data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!data.catalogId, folderGone: status.data?.problem === 'no_folder' });
       if (!await confirm({ title: `Remove ${data.name} from ${APP_NAME}?`, description, confirmLabel: 'Remove', tone: 'destructive' })) return;
       const removed = await trpcClient.appBuilds.remove.mutate({ id: sourceId });
       await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() }), queryClient.invalidateQueries({ queryKey: trpc.connectedApps.pathKey() })]);
-      toast.success(removedNotice(removed));
+      // One Ri couldn't uninstall may still be running: that stays up until it's read.
+      if (removed.stillInstalled) toast.warning(removedNotice(removed), { duration: Infinity });
+      else toast.success(removedNotice(removed));
       navigate('');
     },
     onError: (e) => setError(e instanceof Error ? e.message : String(e)),
