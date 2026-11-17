@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
@@ -68,22 +68,27 @@ describe('withProgressKeepalive', () => {
     return {notify, ctx: {mcpReq: {_meta: progressToken === undefined ? {} : {progressToken}, notify, ...(signal ? {signal} : {})}} as never};
   };
 
+  // On the clock the tests move, so a busy computer can't change how many beats fit in a wait.
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
   it('reports rising progress while the call waits, and stops when it answers', async () => {
     const {notify, ctx} = context(1);
-    const result = await withProgressKeepalive(ctx, () => new Promise(resolve => setTimeout(() => resolve('answered'), 55)), 10);
-    expect(result).toBe('answered');
+    const working = withProgressKeepalive(ctx, () => new Promise(resolve => setTimeout(() => resolve('answered'), 55)), 10);
+    await vi.advanceTimersByTimeAsync(55);
+    expect(await working).toBe('answered');
     const calls = notify.mock.calls as unknown as [{method: string; params: {progressToken: number; progress: number}}][];
-    expect(calls.length).toBeGreaterThanOrEqual(3);
     expect(calls.every(([message]) => message.method === 'notifications/progress' && message.params.progressToken === 1)).toBe(true);
-    expect(calls.map(([message]) => message.params.progress)).toEqual(calls.map((_, index) => index + 1));
-    const sent = notify.mock.calls.length;
-    await new Promise(resolve => setTimeout(resolve, 30));
-    expect(notify.mock.calls.length).toBe(sent);
+    expect(calls.map(([message]) => message.params.progress)).toEqual([1, 2, 3, 4, 5]);
+    await vi.advanceTimersByTimeAsync(30);
+    expect(notify).toHaveBeenCalledTimes(5);
   });
 
   it('sends nothing to a client that asked for no progress, and passes failures through', async () => {
     const {notify, ctx} = context();
-    expect(await withProgressKeepalive(ctx, () => new Promise(resolve => setTimeout(() => resolve('done'), 30)), 5)).toBe('done');
+    const working = withProgressKeepalive(ctx, () => new Promise(resolve => setTimeout(() => resolve('done'), 30)), 5);
+    await vi.advanceTimersByTimeAsync(30);
+    expect(await working).toBe('done');
     expect(notify).not.toHaveBeenCalled();
     const tracked = context('call-7');
     await expect(withProgressKeepalive(tracked.ctx, async () => { throw new Error('refused'); }, 5)).rejects.toThrow('refused');
@@ -93,14 +98,17 @@ describe('withProgressKeepalive', () => {
     const cancel = new AbortController();
     const {notify, ctx} = context(2, cancel.signal);
     const working = withProgressKeepalive(ctx, () => new Promise(resolve => setTimeout(() => resolve('finished anyway'), 80)), 10);
-    await vi.waitFor(() => expect(notify.mock.calls.length).toBeGreaterThanOrEqual(2));
+    await vi.advanceTimersByTimeAsync(25);
+    expect(notify).toHaveBeenCalledTimes(2);
     cancel.abort();
-    const sent = notify.mock.calls.length;
+    await vi.advanceTimersByTimeAsync(80);
     expect(await working).toBe('finished anyway');
-    expect(notify.mock.calls.length).toBe(sent);
+    expect(notify).toHaveBeenCalledTimes(2);
     // A call that arrives already cancelled starts no progress at all.
     const late = context(3, AbortSignal.abort());
-    expect(await withProgressKeepalive(late.ctx, () => new Promise(resolve => setTimeout(() => resolve('late'), 30)), 5)).toBe('late');
+    const lateWork = withProgressKeepalive(late.ctx, () => new Promise(resolve => setTimeout(() => resolve('late'), 30)), 5);
+    await vi.advanceTimersByTimeAsync(30);
+    expect(await lateWork).toBe('late');
     expect(late.notify).not.toHaveBeenCalled();
   });
 });
