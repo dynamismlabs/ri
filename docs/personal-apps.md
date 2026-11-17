@@ -36,6 +36,12 @@ How the places stay apart:
 
 Checked on November 12, 2026 against Reading Log built from the kit's branch and run with `serve` in local-owner mode, from an isolated Ri: adding it registered client `Ri`, allowing the Family agent registered a second client named `Ri · Family`, Ri's connection (allowed read-only) was refused `save_book` with the app's own message while Family's (allowed changes) saved a book, and an agent that wasn't allowed had no app tools and couldn't add the app through its scopes.
 
+**Naming.** An app's connection is one toolkit, `app_<slug>`, and its tools are actions `app_<slug>.<tool>`. A server added by address is `mcp_<slug>` with actions `mcp.<slug>.<tool>`, and a built-in provider is its own ID. One function names them for the engine and every Ri caller (`mcpServerIds` in the integrations engine, `mcpIds` and `mcpToolActionId` in `src/lib/integrations/mcp-servers.ts`). Opening an app, its settings, its @ search and its result capture all go through it, so an app added with Add app, New app or the catalog opens and calls its tools like any other (`apps.add-app.test.ts`).
+
+**Inputs named `account`.** A tool may take an input named `account`. Ri passes it to the tool and adds no account choice of its own over it, which it needs no choice for: each place's connection is pinned. Kits need not warn about the name.
+
+**When its tools don't load.** If the app signs Ri in but its tools then fail to load, the sign-in lands with `error=tools_unavailable`, not `authorization_failed`, and the app's place shows the server's own error.
+
 ## Loading app tools in a chat
 
 Being allowed and being loaded are separate (shared spec §2). Dozens of apps' tools would swamp a model, so an allowed app costs a chat one line until it's needed. `src/lib/integrations/app-tools.ts` decides, and Ri's integrations endpoint and turn context carry it, so it works the same with every harness Ri runs.

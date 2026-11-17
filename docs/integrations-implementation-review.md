@@ -177,7 +177,10 @@ existing `indeterminate` flag); or implement the ledger for high-risk mutations.
   locally, unbounded growth + a widening leak-surface on the hosted plane. Scope it per-`runAction`.
 - **`account` is a silent reserved input name.** The projection strips/overrides any `account`
   field an action declares (`ai-sdk/index.ts:66,72`). Detect the collision and throw, or namespace
-  the injected key (`__account`).
+  the injected key (`__account`). *Resolved:* the registry threw for a while, which refused a whole
+  connected MCP server over one tool's input. Since November 2026 an action that declares
+  `account` owns it (`ownsAccountField`): the projections add no selector over it and pass it
+  through, and the action runs on a pinned or single account.
 - **Callback puts raw error text in the redirect URL** (`callback/route.ts:32`) → browser
   history/referrer/logs. Map to coarse codes.
 - **`fileLock` stale-break (30s)** can let two processes both refresh if one's critical section
