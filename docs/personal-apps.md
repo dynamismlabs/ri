@@ -137,6 +137,8 @@ On November 16, 2026, Ri started carrying the kit from its `main` at `02cd537` (
 
 Later on November 16, Ri moved to the kit's `main` at `1713f6a`, which adds the full app in every host (downloads, links, drafts and opening at a record from a view). The same check passed. The kit's version is still 0.2.2, so an app's status can't tell the two apart.
 
+On November 17, Ri moved to the kit's `main` at `bbbb340`, still core 0.2.2. It refreshes the hub token once at a time, records a Node path for an app's service that outlives one Node version, and passes on a provider's `not_found` with its `httpStatus`. It also brings the kit's smaller fixes from the same two pull requests, among them an app's own port, full-text indexes in backups and the account list pointing at `ri__list_accounts`. Ri's typecheck and its app and builder tests passed, and those run the carried kit's CLI. The live check above wasn't repeated for this move.
+
 ## The catalog
 
 Ri offers recommended apps the way it used to offer its bundled ones, without carrying their code (shared spec §2, "The catalog"). Only first-party apps for now.
