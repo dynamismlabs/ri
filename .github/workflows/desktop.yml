@@ -67,14 +67,18 @@ jobs:
         # on Apple chips, 31 on Intel and 12 to 14 on Linux), and the Intel Mac
         # spends about 8 minutes staging the runtime for each lifecycle smoke.
         # Intel reached the OS supervision step after 75 minutes, with the
-        # packaged-app steps still to come.
+        # packaged-app steps still to come. The Apple-chip runner has 7 GB of
+        # memory and the package build peaks at about 12 GB, so it swaps:
+        # building the package took 69 minutes in one run and 112 in the next
+        # (19 compiling, 74 in Next's TypeScript pass), against 12 on Intel.
+        # That run used all of 150 minutes before the packaged-app steps began.
         include:
           - os: macos-15
             platform: darwin
             arch: arm64
             package: release/desktop/mac-arm64/Ri.app
             speech: true
-            timeout: 150
+            timeout: 300
           - os: macos-15-intel
             platform: darwin
             arch: x64
