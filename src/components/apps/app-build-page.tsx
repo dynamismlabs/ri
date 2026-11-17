@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, ArrowUpCircle, CheckCircle2, Circle, GitBranch, Loader2, XCircle } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
@@ -39,6 +39,14 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const status = useQuery({ ...trpc.appBuilds.status.queryOptions({ id: sourceId }), enabled: !!source.data?.url });
   const [error, setError] = useState<string | null>(null);
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
+  // A job that just ended (an install, an update) changed what the catalog says, such as Update to.
+  const jobState = source.data?.job ? `${source.data.job.id}:${source.data.job.state}` : null;
+  const lastJobState = useRef(jobState);
+  useEffect(() => {
+    const was = lastJobState.current;
+    lastJobState.current = jobState;
+    if (was?.endsWith(':running') && jobState !== was) void queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
+  }, [jobState, queryClient]);
   const reconnect = useMutation({
     mutationFn: async () => {
       const start = await trpcClient.appBuilds.reconnect.mutate({ id: sourceId, returnTo: `${window.location.pathname}${window.location.search}` });
