@@ -3,6 +3,7 @@ import { integrationSourceMetadata } from '@/lib/integrations/source-metadata';
 import { getIntegrationRuntime, getIntegrationOwnerId } from '@/lib/integrations/runtime';
 import { hostedMcpConnectionId } from '@/lib/integrations/hosted-mcp';
 import type { McpCapabilityTool } from '@/lib/integrations/mcp-capabilities';
+import { mcpToolActionId } from '@/lib/integrations/mcp-servers';
 import { modelToolVisible, settingsCapability } from './metadata';
 import { mcpSettingsCaller } from './settings-caller';
 import { parseSettingsRead, settingsTools, SettingsReadError, type SettingValue, type SettingsView } from './settings-model';
@@ -51,7 +52,7 @@ async function run(target: Target, name: string, args: Record<string, unknown>) 
   if (target.remote.entry.toolOverrides?.[name]?.enabled === false) throw new SettingsUnavailableError(`${name} is turned off in this server's tools.`);
   const tool: McpCapabilityTool | undefined = target.tools.find(candidate => candidate.name === name);
   if (!tool) throw new SettingsUnavailableError(`This server no longer offers ${name}.`);
-  const actionId = `${target.remote.entry.providerId ?? `mcp.${target.remote.entry.slug}`}.${name}`;
+  const actionId = mcpToolActionId(target.remote.entry, name);
   let original: unknown;
   const outcome = await target.runtime.runAction(actionId, args, {
     ownerId: getIntegrationOwnerId(), connectionId: target.connection.id, allowedConnectionIds: [target.connection.id],

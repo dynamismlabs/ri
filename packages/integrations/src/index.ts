@@ -33,6 +33,9 @@ export type { FileLockOptions } from './lock';
 
 // Digest / canonicalization (host-shared for grant keys)
 export { inputDigest, canonicalStringify, actionVersion, schemaFingerprint } from './core/digest';
+// How a connected MCP server's toolkit and actions are named, with no MCP client attached.
+export { mcpActionId, mcpServerIds } from './mcp/identity';
+export type { McpServerIds } from './mcp/identity';
 
 // Errors
 export {

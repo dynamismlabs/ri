@@ -21,6 +21,7 @@ import { action, defineProvider, defineToolkit } from '../core/authoring';
 import { z } from 'zod';
 import { canonicalStringify } from '../core/digest';
 import { jsonSchemaToZodObject } from './json-schema';
+import { mcpActionId, mcpServerIds } from './identity';
 import { bearer } from '../auth/direct';
 import { newId } from '../core/ids';
 import { IntegrationError, NeedsReauthError } from '../core/errors';
@@ -152,14 +153,10 @@ export async function ingestMcpServers(
   accounts: readonly IngestMcpOptions[],
 ): Promise<IngestMcpResult[]> {
   if (!accounts.length) return [];
-  const identityOf = (opts: IngestMcpOptions) => {
-    const safe = opts.name.replace(/[^a-zA-Z0-9_]/g, '_');
-    return {
-      providerId: opts.identity?.providerId ?? `mcp_${safe}`,
-      displayName: opts.identity?.displayName ?? `MCP: ${opts.name}`,
-      actionPrefix: opts.identity?.providerId ?? `mcp.${safe}`,
-    };
-  };
+  const identityOf = (opts: IngestMcpOptions) => ({
+    ...mcpServerIds(opts.name, opts.identity?.providerId),
+    displayName: opts.identity?.displayName ?? `MCP: ${opts.name}`,
+  });
   const { providerId, displayName, actionPrefix } = identityOf(accounts[0]!);
   const ids = new Set<string>();
   type PreparedTool = { tool: McpToolDef; input: z.ZodObject<z.ZodRawShape>; mutating: boolean; risk: RiskLevel; openWorld?: boolean };
@@ -249,7 +246,7 @@ export async function ingestMcpServers(
       ? `${first.tool.description} (via MCP provider "${displayName}")`
       : `External MCP tool "${name}" from "${displayName}".`;
     const result = action({
-      id: `${actionPrefix}.${name}`, description,
+      id: mcpActionId({ providerId, actionPrefix }, name), description,
       input: unionInput(variants.map(variant => ({ schema: variant.tool.inputSchema, input: variant.input }))),
       mutating, risk, ...(openWorld !== undefined ? { openWorld } : {}),
       async execute(ctx, input) {
