@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import * as q from '@/lib/db/queries';
-import type { RiMcpServer, RiMcpToolHandler } from '@/lib/mcp/http-server';
-import { serveHub } from './serve';
+import { riMcpHandler, type RiMcpServer, type RiMcpToolHandler } from '@/lib/mcp/http-server';
+import { hubAccountId, serveHub, type HubLentAccount } from './serve';
 import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
 import { INVOCATION_META, invocationContext, withStartedBy } from './origin';
 
@@ -10,6 +11,8 @@ const action = (id: string, mutating = false) => ({ id, description: id, input: 
 const runtime = (runAction: (...args: unknown[]) => Promise<unknown>) => ({
   getToolkits: () => [
     { id: 'gmail', providerId: 'google', displayName: 'Gmail', actions: [action('gmail.search_messages'), action('gmail.send_email', true)] },
+    { id: 'google_calendar', providerId: 'google', displayName: 'Google Calendar', actions: [action('google_calendar.list_events')] },
+    { id: 'slack', providerId: 'slack', displayName: 'Slack', actions: [action('slack.list_channels')] },
     { id: 'app_finances', providerId: 'app_finances', displayName: 'Finances', actions: [action('app_finances.list')] },
   ],
   listConnections: async () => [
@@ -17,6 +20,8 @@ const runtime = (runAction: (...args: unknown[]) => Promise<unknown>) => ({
     { id: 'c-work', providerId: 'google', accountId: 'work', email: 'me@work.example', status: 'active' },
     { id: 'c-gone', providerId: 'google', accountId: 'gone', email: 'gone@example.com', status: 'needs_reauth' },
     { id: 'c-fin', providerId: 'app_finances', accountId: 'place:ri', status: 'active' },
+    { id: 'c-team', providerId: 'slack', accountId: 'T1', label: 'Family', status: 'active' },
+    { id: 'c-bare', providerId: 'slack', accountId: 'T2', status: 'active' },
   ],
   runAction,
 });
@@ -46,7 +51,7 @@ describe('the hub surface an app sees', () => {
     const runAction = vi.fn(async () => ({ ok: true, result: { messages: [] } }));
     const { server, tools } = registrar();
     await serveHub(server, runtime(runAction) as never, app, { ownerId: 'local', redirectUris: [] });
-    expect([...tools.keys()].sort()).toEqual(['gmail__search_messages', 'gmail__send_email', 'ri__list_tasks']);
+    expect([...tools.keys()].sort()).toEqual(['gmail__search_messages', 'gmail__send_email', 'ri__list_accounts', 'ri__list_tasks']);
     // Search is on two accounts, so the app names one. Send is on one, so there's nothing to choose.
     expect(Object.keys(tools.get('gmail__search_messages')!.config.inputSchema as object)).toContain('account');
     expect(Object.keys(tools.get('gmail__send_email')!.config.inputSchema as object)).not.toContain('account');
@@ -73,6 +78,85 @@ describe('the hub surface an app sees', () => {
     expect(q.listHubCalls(app.id).map(call => [call.tool, call.status, call.startedByKind, call.startedByLabel]).reverse()).toEqual([
       ['gmail__search_messages', 'ok', 'job', 'import_messages'], ['gmail__send_email', 'ok', 'chat', null], ['gmail__send_email', 'ok', 'app', null],
     ]);
+  });
+
+  it('lists the accounts Ri lent the app, one per account, with the tools each backs', async () => {
+    const app = q.upsertHubApp({
+      clientId: `people-${crypto.randomUUID()}`, name: 'People',
+      grant: {
+        accounts: [
+          { connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages', 'gmail__send_email'] },
+          { connectionId: 'c-work', toolkitId: 'gmail', tools: ['gmail__search_messages'] },
+          // The same Google account's calendar: one account to the app, not two.
+          { connectionId: 'c-home', toolkitId: 'google_calendar', tools: ['google_calendar__list_events'] },
+          { connectionId: 'c-gone', toolkitId: 'google_calendar', tools: ['google_calendar__list_events'] },
+          { connectionId: 'c-fin', toolkitId: 'app_finances', tools: ['app_finances__list'] },
+          { connectionId: 'c-team', toolkitId: 'slack', tools: ['slack__list_channels'] },
+          { connectionId: 'c-bare', toolkitId: 'slack', tools: ['slack__list_channels'] },
+          { connectionId: 'c-removed', toolkitId: 'gmail', tools: ['gmail__search_messages'] },
+        ],
+        services: ['list_tasks', 'ai_text'],
+      },
+    });
+    const runAction = vi.fn(async () => ({ ok: true, result: {} }));
+    const { server, tools } = registrar();
+    await serveHub(server, runtime(runAction) as never, app, { ownerId: 'local', redirectUris: [] });
+    const listing = tools.get('ri__list_accounts')!;
+    expect(listing.config).toMatchObject({ annotations: { readOnlyHint: true } });
+    expect(listing.config.inputSchema).toBeUndefined();
+    const answer = await listing.handler({}, context());
+    expect(answer.isError).toBeFalsy();
+    const { accounts } = JSON.parse((answer.content[0] as { text: string }).text) as { accounts: HubLentAccount[] };
+    // Only active accounts that back a served tool. Never another app, never Ri's own services.
+    expect(accounts).toEqual([
+      { id: hubAccountId(app.id, 'c-home'), name: 'me@example.com', provider: 'google', tools: ['gmail__search_messages', 'gmail__send_email', 'google_calendar__list_events'] },
+      { id: hubAccountId(app.id, 'c-work'), name: 'me@work.example', provider: 'google', tools: ['gmail__search_messages'] },
+      { id: hubAccountId(app.id, 'c-team'), name: 'Family', provider: 'slack', tools: ['slack__list_channels'] },
+      { id: hubAccountId(app.id, 'c-bare'), name: null, provider: 'slack', tools: ['slack__list_channels'] },
+    ]);
+    // Each name is what the tool's account argument lists and takes.
+    expect(String((tools.get('gmail__search_messages')!.config.inputSchema as { account: z.ZodTypeAny }).account.description)).toBe('Which account. Allowed: "me@example.com", "me@work.example".');
+    await tools.get('gmail__search_messages')!.handler({ account: accounts[1]!.name }, context());
+    expect(runAction).toHaveBeenLastCalledWith('gmail.search_messages', {}, expect.objectContaining({ account: 'me@work.example', allowedConnectionIds: ['c-home', 'c-work'] }));
+    // The calendar is lent on one account, so it takes no account argument, and the list still names that account.
+    expect(Object.keys(tools.get('google_calendar__list_events')!.config.inputSchema as object)).not.toContain('account');
+    // Opaque, stable across requests, and different for another app.
+    for (const account of accounts) {
+      expect(account.id).toMatch(/^acc_[0-9a-f]{24}$/);
+      expect(account.id).not.toContain('c-');
+    }
+    const again = registrar();
+    await serveHub(again.server, runtime(runAction) as never, app, { ownerId: 'local', redirectUris: [] });
+    const next = JSON.parse(((await again.tools.get('ri__list_accounts')!.handler({}, context())).content[0] as { text: string }).text) as { accounts: HubLentAccount[] };
+    expect(next.accounts.map(account => account.id)).toEqual(accounts.map(account => account.id));
+    expect(hubAccountId(`${app.id}-other`, 'c-home')).not.toBe(accounts[0]!.id);
+    // Listing reaches no account, so it isn't in the app's call log.
+    expect(q.listHubCalls(app.id).map(call => call.tool)).toEqual(['gmail__search_messages']);
+  });
+
+  it('lists no accounts for an app lent none, and still offers the tool', async () => {
+    const app = q.upsertHubApp({ clientId: `notes-${crypto.randomUUID()}`, name: 'Notes', grant: { accounts: [], services: [] } });
+    const { server, tools } = registrar();
+    await serveHub(server, runtime(vi.fn()) as never, app, { ownerId: 'local', redirectUris: [] });
+    expect([...tools.keys()]).toEqual(['ri__list_accounts']);
+    expect(JSON.parse(((await tools.get('ri__list_accounts')!.handler({}, context())).content[0] as { text: string }).text)).toEqual({ accounts: [] });
+  });
+
+  it.each(['auto', 'legacy'] as const)('answers ri__list_accounts to an MCP client on the %s protocol era', async (mode) => {
+    const app = q.upsertHubApp({ clientId: `travel-${crypto.randomUUID()}`, name: 'Travel', grant: { accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages'] }], services: [] } });
+    const handler = riMcpHandler(server => serveHub(server, runtime(vi.fn()) as never, app, { ownerId: 'local', redirectUris: [] }), { name: 'ri-hub-test', version: '1.0.0' });
+    const client = new Client({ name: 'travel', version: '1' }, { versionNegotiation: { mode } });
+    await client.connect(new StreamableHTTPClientTransport(new URL('http://ri.test/api/integrations/mcp'), { fetch: (url, init) => handler(new Request(url, init)) }));
+    try {
+      const listed = (await client.listTools()).tools.find(tool => tool.name === 'ri__list_accounts');
+      expect(listed).toMatchObject({ annotations: { readOnlyHint: true }, inputSchema: { type: 'object' } });
+      expect(Object.keys((listed!.inputSchema as { properties?: object }).properties ?? {})).toEqual([]);
+      const result = await client.callTool({ name: 'ri__list_accounts', arguments: {} });
+      expect(result.isError).toBeFalsy();
+      expect(JSON.parse((result.content as { text: string }[])[0]!.text)).toEqual({
+        accounts: [{ id: hubAccountId(app.id, 'c-home'), name: 'me@example.com', provider: 'google', tools: ['gmail__search_messages'] }],
+      });
+    } finally { await client.close(); }
   });
 
   it('creates a Ri task for an app without asking, as Ri\'s own services follow the person\'s settings', async () => {
