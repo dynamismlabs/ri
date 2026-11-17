@@ -9,6 +9,8 @@ import {
 } from './builder';
 import { addCatalogApp, listCatalogApps, updateCatalogApp } from './catalog';
 import { appLogs, appStatus, restartApp } from './status';
+import { isConnected, reconnectApp, removeApp } from './remove';
+import { listPersonalApps } from '@/lib/integrations/apps';
 
 /** New app and Change app (docs/personal-apps.md "Building and changing apps"). */
 const id = z.string().min(1).max(200);
@@ -23,16 +25,21 @@ async function run<T>(operation: () => Promise<T> | T): Promise<T> {
   }
 }
 
-const withJob = <T extends { id: string }>(source: T) => ({ ...source, job: latestAppJob(source.id) });
+/** A source with its latest job, and whether Ri's connection to it still exists. */
+const withJob = <T extends { id: string; personalAppId: string | null }>(source: T, connected = new Set(listPersonalApps().map((app) => app.id))) =>
+  ({ ...source, job: latestAppJob(source.id), connected: isConnected(source, connected) });
 
 export const appBuildsRouter = router({
   settings: p.query(() => appBuildSettings()),
   setSettings: p.input(z.object({ appsDir: z.string().max(1000).nullable().optional(), appKitCommand: z.string().max(500).nullable().optional() }).strict())
     .mutation(({ input }) => run(() => setAppBuildSettings(input))),
-  list: p.query(() => listAppSources().map(withJob)),
+  list: p.query(() => {
+    const connected = new Set(listPersonalApps().map((app) => app.id));
+    return listAppSources().map((source) => withJob(source, connected));
+  }),
   get: p.input(z.object({ id }).strict()).query(({ input }) => {
     const source = getAppSource(input.id);
-    if (!source) throw new TRPCError({ code: 'NOT_FOUND', message: 'That app isn’t in Ri anymore.' });
+    if (!source || source.removedAt) throw new TRPCError({ code: 'NOT_FOUND', message: 'That app isn’t in Ri anymore.' });
     return withJob(source);
   }),
   forApp: p.input(z.object({ personalAppId: id }).strict()).query(({ input }) => {
@@ -44,6 +51,10 @@ export const appBuildsRouter = router({
     .mutation(({ input }) => run(() => recordAppSource(input))),
   install: p.input(z.object({ id, returnTo: z.string().max(2048).optional() }).strict())
     .mutation(({ input, ctx }) => run(() => installApp(input.id, ctx.request, safeReturnPath(input.returnTo) ?? undefined))),
+  // Remove an app Ri installed, keeping its folder and data, and connect one that's installed but not connected (remove.ts).
+  remove: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => removeApp(input.id))),
+  reconnect: p.input(z.object({ id, returnTo: z.string().max(2048).optional() }).strict())
+    .mutation(({ input, ctx }) => run(() => reconnectApp(input.id, ctx.request, safeReturnPath(input.returnTo) ?? undefined))),
   startChange: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => startChange(input.id))),
   applyChange: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => applyChange(input.id))),
   discardChange: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => discardChange(input.id))),

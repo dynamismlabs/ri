@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 import { getRuntimeBaseDir } from '@/lib/service/paths';
-import { appNode, appToolchain, findComputerGit, gitHelp, kitCommandPath, planLaunchers, toolchainPath } from './toolchain';
+import { appNode, appToolchain, findComputerGit, gitHelp, kitCommandName, kitCommandPath, planLaunchers, toolchainPath } from './toolchain';
 
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -126,5 +126,11 @@ describe('launchers and PATH', () => {
     expect(kitCommandPath('/k/package.json', { bin: { anything: './bin/y.mjs' } })).toBe('/k/bin/y.mjs');
     expect(kitCommandPath('/k/package.json', { bin: { a: './a', b: './b' } })).toBeNull();
     expect(kitCommandPath('/k/package.json', {})).toBeNull();
+    // Its name, as `pnpm exec <name>` runs it inside an app.
+    expect(kitCommandName({ name: '@scope/the-kit', bin: './bin/x.mjs' })).toBe('the-kit');
+    expect(kitCommandName({ name: '@scope/the-kit', bin: { anything: './bin/y.mjs' } })).toBe('anything');
+    expect(kitCommandName({ bin: { a: './a', b: './b' } })).toBeNull();
+    expect(kitCommandName({ bin: './bin/x.mjs' })).toBeNull();
+    expect(kitCommandName({ bin: { 'rm -rf': './x' } })).toBeNull();
   });
 });

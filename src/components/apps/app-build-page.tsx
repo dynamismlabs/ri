@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, ArrowUpCircle, CheckCircle2, Circle, GitBranch, Loader2, XCircle } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
@@ -10,6 +10,9 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { APP_NAME } from '@/constants/app';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { trpc, trpcClient } from '@/lib/trpc/client';
+import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';
+import { versionLabel } from '@/lib/apps/version-label';
+import { toast } from 'sonner';
 import { useCatalogApp, useCatalogUpdate } from './app-catalog';
 import { AppStatusLine } from './app-status';
 import { ensureAppBuilderChat } from './new-app-dialog';
@@ -19,6 +22,7 @@ type Navigate = (route: string, options?: { replace?: boolean }) => void;
 const STEP_LABELS: Record<string, string> = {
   create: 'Create', prepare: 'Get its dependencies', resolve: 'Find the commit', copy: 'Copy it out', install: 'Install', typecheck: 'Typecheck', test: 'Test',
   build: 'Build', rehearse: 'Try it on a copy of your data', stop: 'Stop the app', snapshot: 'Snapshot your data', switch: 'Switch over', rollback: 'Roll back',
+  uninstall: 'Uninstall',
 };
 
 /**
@@ -31,9 +35,42 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const confirm = useConfirm();
   const source = useQuery(trpc.appBuilds.get.queryOptions({ id: sourceId }, { refetchInterval: (query) => query.state.data?.job?.state === 'running' ? 1000 : 15_000 }));
   const chat = useQuery({ queryKey: ['app-builder-chat', sourceId], queryFn: () => ensureAppBuilderChat(sourceId), staleTime: 30_000 });
-  const app = useQuery({ ...trpc.personalApps.get.queryOptions({ appId: source.data?.personalAppId ?? '' }), enabled: !!source.data?.personalAppId });
+  const app = useQuery({ ...trpc.personalApps.get.queryOptions({ appId: source.data?.personalAppId ?? '' }), enabled: !!source.data?.connected });
+  // Where its data is, for what removing it keeps.
+  const status = useQuery({ ...trpc.appBuilds.status.queryOptions({ id: sourceId }), enabled: !!source.data?.url });
   const [error, setError] = useState<string | null>(null);
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
+  // A job that just ended (an install, an update) changed what the catalog says, such as Update to.
+  const jobState = source.data?.job ? `${source.data.job.id}:${source.data.job.state}` : null;
+  const lastJobState = useRef(jobState);
+  useEffect(() => {
+    const was = lastJobState.current;
+    lastJobState.current = jobState;
+    if (was?.endsWith(':running') && jobState !== was) void queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
+  }, [jobState, queryClient]);
+  const reconnect = useMutation({
+    mutationFn: async () => {
+      const start = await trpcClient.appBuilds.reconnect.mutate({ id: sourceId, returnTo: `${window.location.pathname}${window.location.search}` });
+      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() })]);
+      if (start.requiresAuth) await openIntegrationAuthorization(start.authUrl);
+    },
+    onSuccess: () => setError(null),
+    onError: (e) => setError(e instanceof Error ? e.message : String(e)),
+  });
+  const remove = useMutation({
+    mutationFn: async () => {
+      const data = source.data!;
+      const description = removeAppDescription({ name: data.name, installed: !!data.url, folder: data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!data.catalogId, folderGone: status.data?.problem === 'no_folder' });
+      if (!await confirm({ title: `Remove ${data.name} from ${APP_NAME}?`, description, confirmLabel: 'Remove', tone: 'destructive' })) return;
+      const removed = await trpcClient.appBuilds.remove.mutate({ id: sourceId });
+      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() }), queryClient.invalidateQueries({ queryKey: trpc.connectedApps.pathKey() })]);
+      // One Ri couldn't uninstall may still be running: that stays up until it's read.
+      if (removed.stillInstalled) toast.warning(removedNotice(removed), { duration: Infinity });
+      else toast.success(removedNotice(removed));
+      navigate('');
+    },
+    onError: (e) => setError(e instanceof Error ? e.message : String(e)),
+  });
   const action = useMutation({
     mutationFn: async (kind: 'install' | 'change' | 'apply' | 'discard') => {
       if (kind === 'install') return trpcClient.appBuilds.install.mutate({ id: sourceId, returnTo: `${window.location.pathname}${window.location.search}` });
@@ -60,7 +97,8 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
     mutationFn: async () => {
       const job = source.data?.job;
       const failed = job?.steps.find((step) => step.status === 'failed');
-      const text = `The checks failed${failed ? ` at ${STEP_LABELS[failed.step] ?? failed.step}` : ''}: ${job?.result?.message ?? job?.error ?? ''}${job?.result?.log ? ` The full log is at ${job.result.log}.` : ''} Fix it and commit, then tell me.`;
+      const what = job?.kind === 'install' ? 'Installing it failed' : 'The checks failed';
+      const text = `${what}${failed ? ` at ${STEP_LABELS[failed.step] ?? failed.step}` : ''}: ${job?.result?.message ?? job?.error ?? ''}${job?.result?.log ? ` The full log is at ${job.result.log}.` : ''} Fix it and commit, then tell me.`;
       await trpcClient.sessions.messagesPost.mutate({ params: { id: chat.data!.id }, body: { id: uuidv7(), content: text } });
     },
     onError: (e) => setError(e instanceof Error ? e.message : String(e)),
@@ -72,6 +110,7 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const running = job?.state === 'running';
   const installed = !!data.url;
   const changing = !!data.changeFolder;
+  const busy = running || action.isPending || reconnect.isPending || remove.isPending;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
@@ -82,15 +121,17 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
           <p className="truncate text-[11px] text-muted-foreground">{changing ? <><GitBranch size={11} className="mr-1 inline" aria-hidden />Changing in {data.changeFolder} on {data.changeBranch}</> : data.folder}</p>
         </div>
         {app.data?.ri && <Button size="sm" variant="ghost" onClick={() => navigate(`~connected/${app.data!.ri!.serverId}`)}>Open app</Button>}
-        {data.createdByRi && !installed && <Button size="sm" disabled={running || action.isPending} onClick={() => action.mutate('install')}>Install and connect</Button>}
+        {data.createdByRi && !installed && <Button size="sm" disabled={busy} onClick={() => action.mutate('install')}>Install and connect</Button>}
+        {data.createdByRi && installed && !data.connected && <Button size="sm" disabled={busy} onClick={() => reconnect.mutate()}>Reconnect</Button>}
         {data.createdByRi && installed && !changing && <Button size="sm" variant="outline" disabled={running || action.isPending} onClick={() => action.mutate('change')}>Change app</Button>}
         {changing && <Button size="sm" variant="ghost" disabled={running || action.isPending} onClick={() => action.mutate('discard')}>Discard change</Button>}
         {changing && <Button size="sm" disabled={running || action.isPending} onClick={() => action.mutate('apply')}>Apply change</Button>}
         {installed && !changing && catalogApp?.updateAvailable && (
           <Button size="sm" variant="outline" disabled={running || update.isPending} onClick={() => update.mutate(undefined, { onError: (e) => setError(e instanceof Error ? e.message : String(e)) })}>
-            {update.isPending ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpCircle size={14} aria-hidden />}Update to {catalogApp.version}
+            {update.isPending ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpCircle size={14} aria-hidden />}Update to {versionLabel(catalogApp.version)}
           </Button>
         )}
+        {data.createdByRi && <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => remove.mutate()}>Remove</Button>}
       </header>
 
       {installed && <div className="border-b border-border px-5 py-2"><AppStatusLine sourceId={sourceId} name={data.name} /></div>}
@@ -117,7 +158,7 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
                 <p className={job.state === 'failed' ? 'text-destructive' : 'text-muted-foreground'}>{job.result?.message || job.error}</p>
               )}
               {job.result?.log && job.state === 'failed' && <p className="text-muted-foreground">The full log is at <span className="font-mono">{job.result.log}</span>.</p>}
-              {job.state === 'failed' && job.kind === 'change' && chat.data && (
+              {job.state === 'failed' && (job.kind === 'change' || job.kind === 'install') && chat.data && (
                 <Button size="xs" variant="outline" disabled={askToFix.isPending} onClick={() => askToFix.mutate()}>Ask the builder to fix it</Button>
               )}
               {job.authUrl && job.state === 'done' && app.data?.ri?.status !== 'connected' && (

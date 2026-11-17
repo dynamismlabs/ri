@@ -87,8 +87,30 @@ Ri builds and changes apps with the kit's own commands (shared spec §2, and the
 **Where each app's source lives** (table `app_sources`): its folder (a git repository), or a git URL, and for an app Ri didn't make, how it's built and deployed in the person's words, recorded from the app's page. A change in progress has its own working copy and branch.
 
 - **New app** (Apps → New app): runs `create` into `<appsDir>/<name>`, makes sure it's a repository and commits what it wrote. The builder chat (`app-builder` focused chat) starts in that folder with what the person asked for. **Install and connect** installs the app's dependencies from its lockfile with every lifecycle script off (`--ignore-scripts`), so none of the app's own hooks run in its editable folder against live data, then builds only the native dependencies the app allows to build (`allowedBuilds`: pnpm's `onlyBuiltDependencies` or `allowBuilds`, such as better-sqlite3, which the kit's own command opens to snapshot and rehearse). The kit installs a release's dependencies again in its own checked copy, with disposable data. Then it runs `serve --install <HEAD's commit> --json` on a port Ri picks and adds the app at `http://127.0.0.1:<port>/mcp`, which opens its consent screen for Ri's own connection.
-- **Change app** (the app's page): a separate git worktree on a new branch under `.work/app-changes`, where the builder works. **Apply change** runs `change <commit> --json` in the app's folder. Its steps show as they run. When it switched, the app's folder is fast-forwarded to that commit and the working copy goes. When its checks failed, nothing changed, the working copy stays, and Ask the builder to fix it sends the failing step, message and log path to the builder chat.
+- **Change app** (the app's page): a separate git worktree on a new branch under `.work/app-changes`, where the builder works. **Apply change** runs `change <commit> --json` in the app's folder. Its steps show as they run. When it switched, the app's folder is fast-forwarded to that commit and the working copy goes. When its checks failed, nothing changed, the working copy stays, and Ask the builder to fix it sends the failing step, message and log path to the builder chat. A failed install offers the same, then Install and connect runs the fixed commit.
 - Ri never starts an app itself, never runs the folder being edited, and never opens an app's data directory.
+
+## Removing an app
+
+**Remove** (the app's page, or Remove on its connection) for an app Ri installed, from New app or the catalog (`src/lib/apps/remove.ts`):
+- **Uninstalls it first,** with the kit's `serve --uninstall` in the app's folder, which stops the app and removes its service. If the kit can't, nothing else changes and the person sees why.
+- **Then disconnects it,** every place: Ri's own chats and every agent, with their scopes.
+- **Takes it off Ri's lists:** Running on this computer, Apps you're building, its connection, and the catalog row, which offers Add again. The app's record is kept apart (`app_sources.removed_at`).
+- **Keeps its folder,** with any changes the person made, and **its data**, in the kit's data directory (the kit keeps it by the app's id). The dialog names both paths, from the kit's `status --json` (`dataDir`). Deleting them is the person's to do.
+- **Its access through Ri's hub stays** as the person allowed it, so an app added again picks that up too. The hub panel turns it off.
+
+**If its folder is gone,** the kit can't uninstall it, since the kit finds the app's service from its folder.
+- The dialog says so before anything runs. The app's status reports `no_folder`.
+- Remove still disconnects it and takes it off Ri's lists.
+- The result's `stillInstalled` says the app may still be running. The notice stays up until it's dismissed and gives the kit's uninstall, `pnpm exec <kit> serve --uninstall`, to run once the folder is back. Ri names the kit's command from the kit it carries (`CarriedKit.name`), since an app's own copy has the same command.
+
+**Adding it again** picks both back up. Add in Recommended apps, or New app with the same name, revives the record and installs the kept folder as it is, not a fresh clone. The app finds its data where it left it. Its catalog version and any change in progress come back with it. If its folder was deleted, Add clones the catalog version afresh, and the app's data still comes back.
+
+**An app that's installed but not connected** (its connection was removed, or its consent screen never finished) offers Reconnect on its page, which adds its connection again and opens its consent screen.
+
+**A server added by its address** isn't Ri's to uninstall. Its Remove only disconnects it, as before, and says it keeps running.
+
+Tested through Ri's real path in `remove.test.ts`: catalog Add, Install, consent, Remove, then Add again. The kit stands in at its command line (`src/test/fixtures/kit-app`), and a real app process counts visits in its data directory.
 
 **The builder brief** (`src/lib/apps/builder-brief.ts`) keeps only host facts: where the folder or working copy is, that checks use their own data directory and fixture connectors, how to build and check, to commit, and never to install or run the service, open its data, connect it, grant it access, read Ri's credentials or edit Ri's source. How to build an app is the kit's build skill in the folder. The builder chat also has no reach into the person's accounts. It's guidance, not isolation (shared spec, Trust).
 
@@ -98,7 +120,7 @@ Checked on November 12, 2026 with the kit's `claude/single-path-kit-jobs` branch
 
 The Apps page ("Running on this computer"), each installed app's build page and its source panel show the app's state with Restart and Logs (shared spec §2, "Status"). Ri gets them from the kit's own commands in the app's folder (`status --json`, `restart --json`, `logs --json`, in the kit's `docs/safe-change.md`), run with the app's own copy of the kit and Ri's toolchain, the way it runs `serve --install` and `change` (`src/lib/apps/status.ts`). Ri still never starts, stops or reads an app's process or data itself.
 
-- **State:** `running`, `starting`, `stopped` or `not installed`, with the release, how long it's been up and the last error the kit found. Ri keeps only what it shows (never the data folder) and shares one answer for five seconds between the views asking. It checks every 15 seconds while shown.
+- **State:** `running`, `starting`, `stopped` or `not installed`, with the release, how long it's been up and the last error the kit found. Ri keeps only what it shows, which since Remove names it includes where the data folder is (`dataDir`), and shares one answer for five seconds between the views asking. It checks every 15 seconds while shown.
 - **Restart** runs `restart --json` as a job, like an install, so it shows on the app's page too. The kit stops the service, starts it and waits for the current release to answer.
 - **Logs** shows the last 500 lines of the server's log, refreshed every three seconds while open, or the last install or change log. Terminal colors are taken out. A `--since` value must be a span (`15m`, `2h`, `1d`) or an ISO time.
 - **An app made with an older kit** (before `status`) prints the kit's help for these commands, so Ri says the app's kit is older and offers neither Restart nor Logs. The kit's new `upgrade` command is how such an app gets a newer kit, and offering it is a follow-up.
@@ -125,7 +147,9 @@ Ri offers recommended apps the way it used to offer its bundled ones, without ca
 
 **Add** (Apps → Recommended apps) clones the repository into `<appsDir>/<id>` with its source as the `upstream` remote, fetches the version into `refs/ri-catalog/<version>`, checks its files against the checksum, and only then checks it out on the person's own branch, with no tracking of upstream. A mismatch or a failed clone leaves nothing behind. Then it's Install and connect, as for an app made with New app. The source records `catalog_id` at once, and `catalog_version` and `catalog_commit` only once the install is running (from the kit's install result), so an app whose install failed shows Finish installing, not an update.
 
-**Updates.** When the catalog lists another version, the Apps page and the app's page offer it. Update fetches and checks it the same way, then:
+**Versions** show as their tag, or a commit by its first 7 characters (`versionLabel`).
+
+**Updates.** When the catalog lists another version, the Apps page and the app's page offer it. Once the update's job ends, the catalog is read again, so Update to … goes without a reload. Update fetches and checks it the same way, then:
 - If what's running already includes it, by the kit's own status (`runningCommit` in `status.ts`), Ri just records it.
 - If the folder already has it but it never ran (merged and committed, then not applied, or its checks failed), the kit's safe-change command installs the folder's commit. The folder's HEAD alone never counts as installed.
 - If the person never changed the app (its folder is clean and still at the catalog commit that's running), the kit's safe-change command switches straight to the new version.

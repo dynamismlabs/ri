@@ -32,6 +32,8 @@ export interface CarriedKit {
   commit: string | null;
   /** The kit's command, run with Ri's Node. */
   bin: string;
+  /** What the kit's command is called, as `pnpm exec <name>` runs it inside an app. */
+  name: string;
   /** The packed kit, which the kit's `upgrade --core` takes to move an app onto this version. Null if this copy of Ri left it out. */
   tarball: string | null;
 }
@@ -98,13 +100,20 @@ export function kitCommandPath(manifest: string, pkg: { bin?: string | Record<st
   return path.join(/* turbopackIgnore: true */ path.dirname(manifest), bins[0]!);
 }
 
+/** What the kit's one command is called: its `bin` entry's name, or for a lone `bin` path, the package's own name. */
+export function kitCommandName(pkg: { name?: string; bin?: string | Record<string, string> }): string | null {
+  const names = typeof pkg.bin === 'string' ? (pkg.name ? [pkg.name.split('/').pop()!] : []) : Object.keys(pkg.bin ?? {});
+  return names.length === 1 && /^[A-Za-z0-9._-]+$/.test(names[0]!) ? names[0]! : null;
+}
+
 function carriedKit(toolchain: string): CarriedKit | null {
   try {
     const manifest = dependencyManifest(toolchain, 'kit');
     if (!manifest) return null;
-    const pkg = readJson(manifest) as { version?: string; bin?: string | Record<string, string> };
+    const pkg = readJson(manifest) as { name?: string; version?: string; bin?: string | Record<string, string> };
     const bin = kitCommandPath(manifest, pkg);
-    if (!pkg.version || !bin || !fs.existsSync(/* turbopackIgnore: true */ bin)) return null;
+    const name = kitCommandName(pkg);
+    if (!pkg.version || !bin || !name || !fs.existsSync(/* turbopackIgnore: true */ bin)) return null;
     let commit: string | null = null;
     const kitDir = path.join(/* turbopackIgnore: true */ path.dirname(toolchain), 'kit');
     try { commit = (readJson(path.join(/* turbopackIgnore: true */ kitDir, 'source.json')).commit as string) || null; } catch { /* Not recorded. */ }
@@ -113,7 +122,7 @@ function carriedKit(toolchain: string): CarriedKit | null {
       const packed = fs.readdirSync(/* turbopackIgnore: true */ kitDir).filter((name) => name.endsWith('.tgz'));
       if (packed.length === 1) tarball = path.join(/* turbopackIgnore: true */ kitDir, packed[0]!);
     } catch { /* Not shipped. */ }
-    return { version: pkg.version, commit, bin, tarball };
+    return { version: pkg.version, commit, bin, name, tarball };
   } catch { return null; }
 }
 
