@@ -26,6 +26,7 @@ import { remoteNotificationChanges } from './notification-consent';
 import { appleSigned } from './app-signature';
 import { DesktopNotifications } from './notifications';
 import { backgroundWindow, revealWindow } from './window-visibility';
+import { initialWindowBounds, MIN_WINDOW_SIZE } from './window-bounds';
 import { createDesktopTray, desktopMenuCommands, activityMenuItems, updateDesktopTray } from './tray';
 import { CaptureShortcut } from './shortcut';
 import { ensureDesktopPortalIdentity } from './portal';
@@ -1100,13 +1101,10 @@ async function start() {
   const icon = nativeImage.createFromPath(path.join(repo, 'public/brand/ri-desktop-icon.png'));
   app.dock?.setIcon(icon);
   const ses = session.fromPartition('persist:ri-desktop-demo');
-  let bounds: { x?: number; y?: number; width: number; height: number } = { width: 1440, height: 980 };
-  try {
-    const saved = JSON.parse(fs.readFileSync(path.join(profile, 'window.json'), 'utf8'));
-    if (['x', 'y', 'width', 'height'].every(key => Number.isFinite(saved[key])) && saved.width >= 800 && saved.height >= 600 &&
-        screen.getAllDisplays().some(display => saved.x + 100 > display.workArea.x && saved.x < display.workArea.x + display.workArea.width && saved.y + 50 > display.workArea.y && saved.y < display.workArea.y + display.workArea.height)) bounds = saved;
-  } catch { /* first window or disconnected display */ }
-  window = new BrowserWindow({ ...bounds, show: false, minWidth: 800, minHeight: 600, title: APP_NAME, icon,
+  let saved: unknown;
+  try { saved = JSON.parse(fs.readFileSync(path.join(profile, 'window.json'), 'utf8')); } catch { /* first window */ }
+  const bounds = initialWindowBounds(saved, screen.getAllDisplays().map(display => display.workArea), screen.getPrimaryDisplay().workArea);
+  window = new BrowserWindow({ ...bounds, show: false, minWidth: MIN_WINDOW_SIZE.width, minHeight: MIN_WINDOW_SIZE.height, title: APP_NAME, icon,
     ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset' as const, trafficLightPosition: { x: 12, y: 12 } } : {}),
     backgroundColor: appearance.get() === 'dark' ? '#09090b' : '#ffffff', webPreferences: { preload: path.join(__dirname, 'preload.cjs'), session: ses, nodeIntegration: false, contextIsolation: true, sandbox: true, webviewTag: false } });
   let boundsTimer: ReturnType<typeof setTimeout> | undefined;
