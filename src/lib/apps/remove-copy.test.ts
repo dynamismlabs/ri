@@ -1,5 +1,6 @@
 import { expect, it } from 'vitest';
 import { removeAppDescription, removedNotice } from './remove-copy';
+import { versionLabel } from './version-label';
 
 it('says what removing an installed app stops, and what it keeps and where', () => {
   const text = removeAppDescription({ name: 'Bookmarks', installed: true, folder: '/Users/me/ri/apps/bookmarks', dataDir: '/Users/me/.local/share/bookmarks', fromCatalog: true });
@@ -15,3 +16,9 @@ it('names New app for an app the person made, and says less for one never instal
   expect(removedNotice({ name: 'Tide Log', folder: '/apps/tide-log', dataDir: '/data/tide-log' })).toBe('Tide Log is removed. Ri kept its folder at /apps/tide-log and its data at /data/tide-log.');
 });
 
+it('shows a catalog version as its tag, or a commit by its first 7 characters', () => {
+  expect(versionLabel('b149ca3eaddbf2bdc7c064030e637df68e281d4a')).toBe('b149ca3');
+  expect(versionLabel('v1.2.0')).toBe('v1.2.0');
+  expect(versionLabel('0ebde33')).toBe('0ebde33');
+  expect(versionLabel(null)).toBe('');
+});

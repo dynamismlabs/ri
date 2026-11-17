@@ -11,6 +11,7 @@ import { APP_NAME } from '@/constants/app';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';
+import { versionLabel } from '@/lib/apps/version-label';
 import { toast } from 'sonner';
 import { useCatalogApp, useCatalogUpdate } from './app-catalog';
 import { AppStatusLine } from './app-status';
@@ -125,7 +126,7 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
         {changing && <Button size="sm" disabled={running || action.isPending} onClick={() => action.mutate('apply')}>Apply change</Button>}
         {installed && !changing && catalogApp?.updateAvailable && (
           <Button size="sm" variant="outline" disabled={running || update.isPending} onClick={() => update.mutate(undefined, { onError: (e) => setError(e instanceof Error ? e.message : String(e)) })}>
-            {update.isPending ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpCircle size={14} aria-hidden />}Update to {catalogApp.version}
+            {update.isPending ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpCircle size={14} aria-hidden />}Update to {versionLabel(catalogApp.version)}
           </Button>
         )}
         {data.createdByRi && <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => remove.mutate()}>Remove</Button>}
