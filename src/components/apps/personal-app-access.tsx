@@ -8,6 +8,8 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
+import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';
+import { toast } from 'sonner';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { APP_NAME } from '@/constants/app';
 import { HubAppPanel } from './hub-access';
@@ -25,6 +27,10 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const queryClient = useQueryClient();
   const confirm = useConfirm();
   const app = useQuery(trpc.personalApps.get.queryOptions({ appId }));
+  // An app Ri installed: removing it uninstalls it, keeping its folder and data (src/lib/apps/remove.ts).
+  const source = useQuery(trpc.appBuilds.forApp.queryOptions({ personalAppId: appId }));
+  const installedByRi = !!source.data?.createdByRi && !!source.data.url;
+  const status = useQuery({ ...trpc.appBuilds.status.queryOptions({ id: source.data?.id ?? '' }), enabled: installedByRi });
   // What the app can reach through Ri's hub, when it connected back to Ri.
   const hub = useQuery(trpc.hubApps.list.queryOptions(undefined, { staleTime: 15_000 }));
   const hubApp = hub.data?.find((item) => item.personalAppId === appId);
@@ -68,9 +74,13 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const remove = useMutation({
     mutationFn: async () => {
       const name = app.data!.name;
-      if (!await confirm({ title: `Remove ${name} from ${APP_NAME}?`, description: `${APP_NAME} and every agent lose ${name}'s tools and screens, and ${APP_NAME} forgets every sign-in to it. ${name} keeps running with its own data.`, confirmLabel: 'Remove', tone: 'destructive' })) return;
-      await trpcClient.personalApps.remove.mutate({ appId });
-      await refresh();
+      const description = source.data?.createdByRi
+        ? removeAppDescription({ name, installed: installedByRi, folder: source.data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!source.data.catalogId })
+        : `${APP_NAME} and every agent lose ${name}'s tools and screens, and ${APP_NAME} forgets every sign-in to it. ${name} keeps running with its own data.`;
+      if (!await confirm({ title: `Remove ${name} from ${APP_NAME}?`, description, confirmLabel: 'Remove', tone: 'destructive' })) return;
+      const removed = await trpcClient.personalApps.remove.mutate({ appId });
+      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() })]);
+      if (removed) toast.success(removedNotice(removed));
       onRemoved();
     },
     onError: failed,

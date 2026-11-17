@@ -10,6 +10,8 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { APP_NAME } from '@/constants/app';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { trpc, trpcClient } from '@/lib/trpc/client';
+import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';
+import { toast } from 'sonner';
 import { useCatalogApp, useCatalogUpdate } from './app-catalog';
 import { AppStatusLine } from './app-status';
 import { ensureAppBuilderChat } from './new-app-dialog';
@@ -19,6 +21,7 @@ type Navigate = (route: string, options?: { replace?: boolean }) => void;
 const STEP_LABELS: Record<string, string> = {
   create: 'Create', prepare: 'Get its dependencies', resolve: 'Find the commit', copy: 'Copy it out', install: 'Install', typecheck: 'Typecheck', test: 'Test',
   build: 'Build', rehearse: 'Try it on a copy of your data', stop: 'Stop the app', snapshot: 'Snapshot your data', switch: 'Switch over', rollback: 'Roll back',
+  uninstall: 'Uninstall',
 };
 
 /**
@@ -31,9 +34,32 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const confirm = useConfirm();
   const source = useQuery(trpc.appBuilds.get.queryOptions({ id: sourceId }, { refetchInterval: (query) => query.state.data?.job?.state === 'running' ? 1000 : 15_000 }));
   const chat = useQuery({ queryKey: ['app-builder-chat', sourceId], queryFn: () => ensureAppBuilderChat(sourceId), staleTime: 30_000 });
-  const app = useQuery({ ...trpc.personalApps.get.queryOptions({ appId: source.data?.personalAppId ?? '' }), enabled: !!source.data?.personalAppId });
+  const app = useQuery({ ...trpc.personalApps.get.queryOptions({ appId: source.data?.personalAppId ?? '' }), enabled: !!source.data?.connected });
+  // Where its data is, for what removing it keeps.
+  const status = useQuery({ ...trpc.appBuilds.status.queryOptions({ id: sourceId }), enabled: !!source.data?.url });
   const [error, setError] = useState<string | null>(null);
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
+  const reconnect = useMutation({
+    mutationFn: async () => {
+      const start = await trpcClient.appBuilds.reconnect.mutate({ id: sourceId, returnTo: `${window.location.pathname}${window.location.search}` });
+      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() })]);
+      if (start.requiresAuth) await openIntegrationAuthorization(start.authUrl);
+    },
+    onSuccess: () => setError(null),
+    onError: (e) => setError(e instanceof Error ? e.message : String(e)),
+  });
+  const remove = useMutation({
+    mutationFn: async () => {
+      const data = source.data!;
+      const description = removeAppDescription({ name: data.name, installed: !!data.url, folder: data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!data.catalogId });
+      if (!await confirm({ title: `Remove ${data.name} from ${APP_NAME}?`, description, confirmLabel: 'Remove', tone: 'destructive' })) return;
+      const removed = await trpcClient.appBuilds.remove.mutate({ id: sourceId });
+      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() }), queryClient.invalidateQueries({ queryKey: trpc.connectedApps.pathKey() })]);
+      toast.success(removedNotice(removed));
+      navigate('');
+    },
+    onError: (e) => setError(e instanceof Error ? e.message : String(e)),
+  });
   const action = useMutation({
     mutationFn: async (kind: 'install' | 'change' | 'apply' | 'discard') => {
       if (kind === 'install') return trpcClient.appBuilds.install.mutate({ id: sourceId, returnTo: `${window.location.pathname}${window.location.search}` });
@@ -72,6 +98,7 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const running = job?.state === 'running';
   const installed = !!data.url;
   const changing = !!data.changeFolder;
+  const busy = running || action.isPending || reconnect.isPending || remove.isPending;
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
@@ -82,7 +109,8 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
           <p className="truncate text-[11px] text-muted-foreground">{changing ? <><GitBranch size={11} className="mr-1 inline" aria-hidden />Changing in {data.changeFolder} on {data.changeBranch}</> : data.folder}</p>
         </div>
         {app.data?.ri && <Button size="sm" variant="ghost" onClick={() => navigate(`~connected/${app.data!.ri!.serverId}`)}>Open app</Button>}
-        {data.createdByRi && !installed && <Button size="sm" disabled={running || action.isPending} onClick={() => action.mutate('install')}>Install and connect</Button>}
+        {data.createdByRi && !installed && <Button size="sm" disabled={busy} onClick={() => action.mutate('install')}>Install and connect</Button>}
+        {data.createdByRi && installed && !data.connected && <Button size="sm" disabled={busy} onClick={() => reconnect.mutate()}>Reconnect</Button>}
         {data.createdByRi && installed && !changing && <Button size="sm" variant="outline" disabled={running || action.isPending} onClick={() => action.mutate('change')}>Change app</Button>}
         {changing && <Button size="sm" variant="ghost" disabled={running || action.isPending} onClick={() => action.mutate('discard')}>Discard change</Button>}
         {changing && <Button size="sm" disabled={running || action.isPending} onClick={() => action.mutate('apply')}>Apply change</Button>}
@@ -91,6 +119,7 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
             {update.isPending ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpCircle size={14} aria-hidden />}Update to {catalogApp.version}
           </Button>
         )}
+        {data.createdByRi && <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => remove.mutate()}>Remove</Button>}
       </header>
 
       {installed && <div className="border-b border-border px-5 py-2"><AppStatusLine sourceId={sourceId} name={data.name} /></div>}
