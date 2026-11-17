@@ -110,24 +110,31 @@ jobs:
           sudo apt-get install --no-install-recommends -y xvfb xauth openbox libgtk-3-0 libnss3 libasound2t64
       - run: pnpm install --frozen-lockfile
       # The browser tests, and the phone web app smoke below, drive a real
-      # Chromium through playwright-core. Its build is cached for each OS,
-      # architecture and playwright-core version. Linux also needs its system
-      # libraries, which aren't cached.
-      - name: Find the test Chromium's version
+      # Chromium through playwright-core, and the composer's touch and menu
+      # tests WebKit too. The builds are cached for each OS, architecture and
+      # playwright-core version. Linux also needs their system libraries,
+      # which aren't cached.
+      - name: Find the test browsers' version
         id: playwright
         run: echo "version=$(pnpm exec playwright-core --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      - name: Restore the test Chromium
-        id: chromium_cache
+      - name: Restore the test browsers
+        id: browser_cache
         uses: actions/cache@v4
         with:
           path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
-          key: playwright-chromium-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
-      - name: Install the test Chromium
-        if: steps.chromium_cache.outputs.cache-hit != 'true'
-        run: pnpm exec playwright-core install chromium
-      - name: Install the test Chromium's system libraries
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+      - name: Install the test browsers
+        if: steps.browser_cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright-core install chromium webkit
+      - name: Install the test browsers' system libraries
         if: runner.os == 'Linux'
-        run: pnpm exec playwright-core install-deps chromium
+        run: pnpm exec playwright-core install-deps chromium webkit
+      # Several tests run the app frame in Chromium's sandbox, as Ri does.
+      # Ubuntu 24.04 keeps unprivileged user namespaces, which that sandbox
+      # needs, behind AppArmor. This disposable runner allows them.
+      - name: Let the test Chromium use its sandbox
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Point the browser tests at the test Chromium
         run: node -e 'const fs = require("node:fs"); const file = require("playwright-core").chromium.executablePath(); if (!fs.existsSync(file)) throw new Error(`No test Chromium at ${file}`); fs.appendFileSync(process.env.GITHUB_ENV, `RI_REVIEW_CHROMIUM=${file}\n`)'
       - run: pnpm ts
