@@ -325,7 +325,11 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
       }}).catch(e => setError(e.message));
     const timer = setTimeout(() => { if (!disposed) setReady(current => { if (!current) setError('The app did not connect to Ri’s UI bridge. Its tools and text results are still available.'); return current; }); }, 20_000);
     return () => {
-      disposed = true; clearTimeout(timer); unregister?.(); waiting?.finish(false); offered?.finish(false); controller.current = null;
+      // A full-screen app's selection outlives its screen: the person leaves it for the chat to ask about it.
+      const keep = scope === null && revision && attached
+        ? {reference: {viewId: view.id, revision}, clear: async () => { await trpcClient.connectedApps.clearContext.mutate({viewId: view.id}); }}
+        : undefined;
+      disposed = true; clearTimeout(timer); unregister?.(keep); waiting?.finish(false); offered?.finish(false); controller.current = null;
       for (const [uri, stop] of watching) { stop.abort(); void trpcClient.connectedApps.files.unsubscribe.mutate({viewId: view.id, uri}).catch(() => {}); }
       void host.dispose();
     };

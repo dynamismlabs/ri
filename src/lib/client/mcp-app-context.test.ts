@@ -98,6 +98,38 @@ describe('what apps attached, as the composer shows it', () => {
     off();
   });
 
+  it('keeps a full-screen app\'s selection after its screen closes, for the next message, until the person removes it', async () => {
+    const live = vi.fn(async () => {}), onHome = vi.fn(async () => {});
+    const close = registerConnectedContext(null, 'view-people', async () => ({ viewId: 'view-people', revision: 5 }), { app: 'People', clear: live, content: [bolt] });
+    selectConnectedContext(null, 'view-people');
+    setConnectedContextAccess('chat-main-kept', { 'view-people': true });
+    // The person leaves the screen for the main chat.
+    close({ reference: { viewId: 'view-people', revision: 5 }, clear: onHome });
+    expect(connectedContextGroups('chat-main-kept').map(group => group.app)).toEqual(['People']);
+    expect(await flushConnectedContext('chat-main-kept')).toEqual([{ viewId: 'view-people', revision: 5 }]);
+    // Sending doesn't drop it, as an open screen's doesn't. Removing it clears it on the home, with no screen to tell.
+    expect(await flushConnectedContext('chat-main-kept')).toEqual([{ viewId: 'view-people', revision: 5 }]);
+    await connectedContextGroups('chat-main-kept')[0]!.remove();
+    expect(onHome).toHaveBeenCalledOnce();
+    expect(live).not.toHaveBeenCalled();
+    expect(connectedContextGroups('chat-main-kept')).toEqual([]);
+    expect(await flushConnectedContext('chat-main-kept')).toEqual([]);
+  });
+
+  it('drops a closed view\'s context when it attached nothing, and a reopened view takes over its place', async () => {
+    const first = registerConnectedContext(null, 'view-books', async () => ({ viewId: 'view-books', revision: 1 }), { app: 'Reading Log', clear: async () => {}, content: [bolt] });
+    selectConnectedContext(null, 'view-books');
+    setConnectedContextAccess('chat-books', { 'view-books': true });
+    first({ reference: { viewId: 'view-books', revision: 1 }, clear: async () => {} });
+    // Opened again: the live screen answers for itself from now on.
+    const reopened = registerConnectedContext(null, 'view-books', async () => ({ viewId: 'view-books', revision: 3 }), { app: 'Reading Log', clear: async () => {}, content: [bolt] });
+    expect(await flushConnectedContext('chat-books')).toEqual([{ viewId: 'view-books', revision: 3 }]);
+    // Closed with nothing attached: gone.
+    reopened();
+    expect(connectedContextGroups('chat-books')).toEqual([]);
+    expect(await flushConnectedContext('chat-books')).toEqual([]);
+  });
+
   it('tells subscribers about every change', () => {
     const listener = vi.fn();
     const off = subscribeConnectedContext(listener);
