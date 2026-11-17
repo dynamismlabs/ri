@@ -59,23 +59,30 @@ jobs:
         # Native builds, never cross-compiled native dependencies. Labels are
         # explicit so a change to a *-latest alias cannot silently change CPU.
         # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
+        # `speech` is whether the target can run the optional local speech
+        # helper. Its engine (onnxruntime) has no build for Intel Macs, so that
+        # package ships without it and Ri offers the other providers there.
         include:
           - os: macos-15
             platform: darwin
             arch: arm64
             package: release/desktop/mac-arm64/Ri.app
+            speech: true
           - os: macos-15-intel
             platform: darwin
             arch: x64
             package: release/desktop/mac/Ri.app
+            speech: false
           - os: ubuntu-24.04
             platform: linux
             arch: x64
             package: release/desktop/linux-unpacked
+            speech: true
           - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
             package: release/desktop/linux-arm64-unpacked
+            speech: true
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     env:
@@ -99,6 +106,7 @@ jobs:
           EXPECTED_ARCH: ${{ matrix.arch }}
         run: node -e 'const assert = require("node:assert/strict"); assert.equal(process.platform, process.env.EXPECTED_PLATFORM); assert.equal(process.arch, process.env.EXPECTED_ARCH); console.info(process.platform, process.arch, process.versions.node)'
       - name: Install the pinned speech build tool
+        if: matrix.speech
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: '0.10.3'
@@ -146,11 +154,18 @@ jobs:
       - run: pnpm --filter @integrations/engine test
       # Includes a frozen helper for each native target, but never downloads a
       # model or starts speech inference without the user's installation choice.
-      - run: pnpm speech:build
+      - name: Build the speech helper
+        if: matrix.speech
+        run: pnpm speech:build
+      - name: Leave the speech helper out of this package
+        if: ${{ !matrix.speech }}
+        run: echo "::notice title=No local speech on ${{ matrix.platform }}/${{ matrix.arch }}::The speech helper's engine (onnxruntime) has no build for Intel Macs, so this package ships without it. Ri says so in Settings and transcribes with its other providers (docs/desktop.md)."
       - name: Verify audio decoding boundaries
+        if: matrix.speech
         run: .electron-demo/speech-build/venv/bin/python -m unittest discover -s desktop/speech -p 'test_*.py'
       - name: Prepare verified speech sources and native inventory
         id: speech_materials
+        if: matrix.speech
         run: |
           mkdir -p release/qualification
           .electron-demo/speech-build/venv/bin/python desktop/speech/release_materials.py fetch
@@ -161,7 +176,9 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           RI_BUILD_MEMORY_LIMIT_GB: '16'
-        run: pnpm desktop:package --with-speech
+        run: |
+          mkdir -p release/qualification
+          pnpm desktop:package ${{ matrix.speech && '--with-speech' || '' }}
       - name: Select the packaged application
         run: |
           echo "RI_DESKTOP_PACKAGE=${{ matrix.package }}" >> "$GITHUB_ENV"
