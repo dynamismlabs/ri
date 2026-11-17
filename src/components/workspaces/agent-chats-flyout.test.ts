@@ -252,9 +252,14 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
   } finally { await page.close(); }
 }, 20_000);
 
-it('keeps inactive chats and nested menus usable, including inside the collapsed rail', async () => {
+// Slowed too. Choosing a chat inside a held chooser presses without changing its state. With
+// useState, React settled that press ahead of time and could apply it after navigating had closed
+// the Agents chooser, which then stayed open. It took a slow page: the Apple-chip CI Mac, or here
+// the CPU slowed 4 to 8 times, where it showed in most runs of this path and in some of this test's.
+it.each([1, 6])('keeps inactive chats and nested menus usable, including inside the collapsed rail (CPU slowed %i times)', async (slowdown) => {
   const page = await browser.newPage();
-  testTimeouts(page, 3_000);
+  testTimeouts(page, 3_000 * slowdown);
+  if (slowdown > 1) await (await page.context().newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: slowdown });
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?nested=1`);
@@ -285,7 +290,7 @@ it('keeps inactive chats and nested menus usable, including inside the collapsed
     console.error({ actions: await actions(page), body: await page.locator('body').innerText() });
     throw error;
   } finally { await page.close(); }
-}, 20_000);
+}, 120_000);
 
 it('scrolls long chat lists below a fixed header and follows the rail height on resize', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
