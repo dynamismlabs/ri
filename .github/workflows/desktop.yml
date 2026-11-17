@@ -59,9 +59,9 @@ jobs:
         # Native builds, never cross-compiled native dependencies. Labels are
         # explicit so a change to a *-latest alias cannot silently change CPU.
         # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
-        # `speech` is whether the target can run the optional local speech
-        # helper. Its engine (onnxruntime) has no build for Intel Macs, so that
-        # package ships without it and Ri offers the other providers there.
+        # `speech` is whether the package includes the optional local speech
+        # helper, and `no_speech` says why not where it doesn't. Ri offers the
+        # other providers there (docs/desktop.md).
         include:
           - os: macos-15
             platform: darwin
@@ -73,6 +73,7 @@ jobs:
             arch: x64
             package: release/desktop/mac/Ri.app
             speech: false
+            no_speech: The speech helper's engine (onnxruntime) has no build for Intel Macs.
           - os: ubuntu-24.04
             platform: linux
             arch: x64
@@ -82,7 +83,8 @@ jobs:
             platform: linux
             arch: arm64
             package: release/desktop/linux-arm64-unpacked
-            speech: true
+            speech: false
+            no_speech: The speech helper bundles libz and PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     env:
@@ -159,7 +161,9 @@ jobs:
         run: pnpm speech:build
       - name: Leave the speech helper out of this package
         if: ${{ !matrix.speech }}
-        run: echo "::notice title=No local speech on ${{ matrix.platform }}/${{ matrix.arch }}::The speech helper's engine (onnxruntime) has no build for Intel Macs, so this package ships without it. Ri says so in Settings and transcribes with its other providers (docs/desktop.md)."
+        env:
+          NO_SPEECH: ${{ matrix.no_speech }}
+        run: echo "::notice title=No local speech on ${{ matrix.platform }}/${{ matrix.arch }}::$NO_SPEECH So this package ships without it. Ri says so in Settings and transcribes with its other providers (docs/desktop.md)."
       - name: Verify audio decoding boundaries
         if: matrix.speech
         run: .electron-demo/speech-build/venv/bin/python -m unittest discover -s desktop/speech -p 'test_*.py'
