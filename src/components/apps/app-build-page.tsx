@@ -86,7 +86,8 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
     mutationFn: async () => {
       const job = source.data?.job;
       const failed = job?.steps.find((step) => step.status === 'failed');
-      const text = `The checks failed${failed ? ` at ${STEP_LABELS[failed.step] ?? failed.step}` : ''}: ${job?.result?.message ?? job?.error ?? ''}${job?.result?.log ? ` The full log is at ${job.result.log}.` : ''} Fix it and commit, then tell me.`;
+      const what = job?.kind === 'install' ? 'Installing it failed' : 'The checks failed';
+      const text = `${what}${failed ? ` at ${STEP_LABELS[failed.step] ?? failed.step}` : ''}: ${job?.result?.message ?? job?.error ?? ''}${job?.result?.log ? ` The full log is at ${job.result.log}.` : ''} Fix it and commit, then tell me.`;
       await trpcClient.sessions.messagesPost.mutate({ params: { id: chat.data!.id }, body: { id: uuidv7(), content: text } });
     },
     onError: (e) => setError(e instanceof Error ? e.message : String(e)),
@@ -146,7 +147,7 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
                 <p className={job.state === 'failed' ? 'text-destructive' : 'text-muted-foreground'}>{job.result?.message || job.error}</p>
               )}
               {job.result?.log && job.state === 'failed' && <p className="text-muted-foreground">The full log is at <span className="font-mono">{job.result.log}</span>.</p>}
-              {job.state === 'failed' && job.kind === 'change' && chat.data && (
+              {job.state === 'failed' && (job.kind === 'change' || job.kind === 'install') && chat.data && (
                 <Button size="xs" variant="outline" disabled={askToFix.isPending} onClick={() => askToFix.mutate()}>Ask the builder to fix it</Button>
               )}
               {job.authUrl && job.state === 'done' && app.data?.ri?.status !== 'connected' && (
