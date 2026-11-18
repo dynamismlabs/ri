@@ -31,21 +31,29 @@ void acceptance('version-smoke', async fixture => {
   let upgraded = false;
   const sockets = new Set<WebSocketRoute>();
   // Routing applies to documents loaded after it, so it goes in before the note opens.
+  // A browser WebSocket carries no header of ours, so the socket goes by navigation. The new
+  // page opens its socket only after it has loaded, well after `framenavigated`.
   await page.routeWebSocket(url => url.pathname === '/api/trpc/ws', ws => {
     if (homeUpdated && !upgraded) { void ws.close({ code: 1012, reason: 'Ri was updated' }); return; }
     sockets.add(ws);
     ws.connectToServer();
   });
+  // Every request the old page sends once the Home is replaced carries this header, and the
+  // newer Home refuses exactly those. Going by navigation instead let one old save through: the
+  // old page saves again as the reload hides it (desktop-chrome.tsx, on visibilitychange), and
+  // that request can reach the route after `framenavigated`. The new page never has the header.
+  const OLD_CLIENT_HEADER = 'x-acceptance-old-client';
+  const fromOldClient = (request: Request) => request.headers()[OLD_CLIENT_HEADER] === '1';
   const isNoteSave = (request: Request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/trpc/notes.update';
   let rejected = 0;
   await page.route(url => url.pathname === '/api/trpc/notes.update', async route => {
-    if (homeUpdated && !upgraded && isNoteSave(route.request())) {
+    if (homeUpdated && fromOldClient(route.request()) && isNoteSave(route.request())) {
       rejected++;
       await route.fulfill({ status: 426, contentType: 'application/json', body: JSON.stringify(issue) });
     } else await route.continue();
   });
   await page.route(url => url.pathname === '/api/version', async route => {
-    if (homeUpdated && !upgraded) await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ release: { build: 'acceptance-api-next' }, apiProtocols: [newer] }) });
+    if (homeUpdated && fromOldClient(route.request())) await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ release: { build: 'acceptance-api-next' }, apiProtocols: [newer] }) });
     else await route.continue();
   });
   await fixture.navigate(`/note/${note.id}`);
@@ -58,6 +66,16 @@ void acceptance('version-smoke', async fixture => {
   await page.waitForFunction(() => document.activeElement?.classList.contains('rich-editor-body'));
   const retainedTitle = 'An edit retained across an incompatible Home update';
   assert(sockets.size > 0, 'The note view opened no Home WebSocket to drop');
+  // From here on this page is the old client. Ri's API client calls the global fetch for each
+  // request, so wrapping it marks them all, the saves it sends while unloading included.
+  await page.evaluate(header => {
+    const send = window.fetch.bind(window);
+    window.fetch = (input, init) => {
+      const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+      headers.set(header, '1');
+      return send(input, { ...init, headers });
+    };
+  }, OLD_CLIENT_HEADER);
   homeUpdated = true;
   for (const socket of sockets) await socket.close({ code: 1012, reason: 'Ri was updated' });
   sockets.clear();
@@ -101,8 +119,9 @@ void acceptance('version-smoke', async fixture => {
   fixture.check('Unsupported mutations keep document/chat/capture drafts, and storage failure prevents reload');
 
   await page.evaluate(() => (window as unknown as { restoreAcceptanceStorage: () => void }).restoreAcceptanceStorage());
-  // Keep the old request rejected until navigation. The user explicitly
+  // The old page's saves stay refused through the reload. The person explicitly
   // chooses to carry durable patches into the new view rather than lose them.
+  // Its WebSocket is the new page's once the reload commits.
   page.once('framenavigated', () => { upgraded = true; });
   await page.evaluate(() => {
     const events: Array<{ type: string; value: string | boolean }> = [];
@@ -151,6 +170,7 @@ void acceptance('version-smoke', async fixture => {
     timings.newDocumentMs = Date.now() - started;
     fixture.report.versionReload = {
       timings,
+      refusedOldSaves: rejected,
       renderer: await page.evaluate(() => (window as unknown as { versionReloadEvents?: unknown }).versionReloadEvents).catch(() => undefined),
       native: await fixture.app!.evaluate(() => (globalThis as unknown as { versionReloadNative?: unknown }).versionReloadNative).catch(() => undefined),
     };
@@ -161,6 +181,7 @@ void acceptance('version-smoke', async fixture => {
   timings.hydratedMs = Date.now() - started;
   await title.waitFor();
   timings.titleMs = Date.now() - started;
+  // The newer Home refused every save the old page sent, so the edit is only in the retained draft.
   assert.equal((await api<{ title: string }>(page, `/api/notes/${note.id}`)).title, 'Before Home update');
   await page.getByRole('button', { name: 'Restore draft', exact: true }).click();
   await eventually(async () => (await api<{ title: string }>(page, `/api/notes/${note.id}`)).title === retainedTitle, 'explicit document draft recovery');
