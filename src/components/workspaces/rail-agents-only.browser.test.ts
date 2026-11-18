@@ -24,9 +24,14 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { testChromiumPath } from '@/test/fixtures/test-chromium';
-import { testTimeouts } from '@/test/fixtures/browser-timeouts';
+import { PAGE_LOAD_MS, testTimeouts } from '@/test/fixtures/browser-timeouts';
+
+// Each test first loads its page, which may take PAGE_LOAD_MS on the slowest
+// runner with every worker busy, and then does its own checks. The default
+// 30 s covered only the first of those, and timed out on CI's Intel Mac.
+vi.setConfig({ testTimeout: PAGE_LOAD_MS + 30_000 });
 
 let server: http.Server;
 let browser: Browser;
