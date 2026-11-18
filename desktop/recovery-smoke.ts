@@ -12,7 +12,7 @@ import { installationEnvironment, localInstallation } from './installation';
 import { ensureService, serviceStatus, stopService } from '../src/lib/service/client';
 import { installedRuntime } from '../src/lib/service/runtime';
 import { desktopPackageLayout } from './package-layout';
-import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot, viewerPage } from './acceptance-surfaces';
+import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot, relayDesktopOutput, viewerPage } from './acceptance-surfaces';
 
 const repo = path.resolve(__dirname, '..');
 const base = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-recovery-smoke-'));
@@ -54,7 +54,7 @@ try {
   fs.mkdirSync(path.join(root, '.config'), { recursive: true });
   fs.writeFileSync(path.join(root, '.config/local-service.json'), JSON.stringify({ version: 1, port: 0 }));
   const launched = Date.now();
-  instance = await _electron.launch({ executablePath, args, env: { ...env, RI_DESKTOP_SMOKE: '1', RI_DESKTOP_RECOVERY_SMOKE: '1' }, timeout: 240_000 });
+  instance = relayDesktopOutput(await _electron.launch({ executablePath, args, env: { ...env, RI_DESKTOP_SMOKE: '1', RI_DESKTOP_RECOVERY_SMOKE: '1' }, timeout: 240_000 }));
   await instance.firstWindow();
   const main = await viewerPage(instance);
   const initialWindow = await nativeWindowSnapshot(instance);
@@ -148,8 +148,8 @@ try {
     savedSelectionVerified = true;
   }
   assert.equal((await serviceStatus())?.runId, running?.runId, 'Quitting recovery stopped the shared service');
-  instance = await _electron.launch({ executablePath, args: [...args, '--ri-use-saved-installation'],
-    env: { ...env, RI_DESKTOP_SMOKE: '1' }, timeout: 240_000 });
+  instance = relayDesktopOutput(await _electron.launch({ executablePath, args: [...args, '--ri-use-saved-installation'],
+    env: { ...env, RI_DESKTOP_SMOKE: '1' }, timeout: 240_000 }), 'ri saved');
   await instance.firstWindow();
   const associatedPage = await viewerPage(instance);
   await waitForHome(associatedPage);

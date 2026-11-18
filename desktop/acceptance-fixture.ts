@@ -12,7 +12,7 @@ import { demoEnvironment } from './config';
 import { desktopPackageLayout } from './package-layout';
 import { serviceStatus, stopService } from '../src/lib/service/client';
 import { HOTKEYS, type Hotkey } from '../src/constants/commands';
-import { viewerPage } from './acceptance-surfaces';
+import { relayDesktopOutput, viewerPage } from './acceptance-surfaces';
 
 export async function bounded<T>(promise: Promise<T>, description: string, timeout = 30_000): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -162,6 +162,7 @@ export class AcceptanceFixture {
     assert(!this.app, 'Quit the current viewer before reopening it');
     console.info(`[acceptance] Launching ${this.source || options.source ? 'source' : 'packaged'} viewer with temporary home ${this.root}`);
     this.app = await _electron.launch({ executablePath: options.executable ?? (options.source || this.source ? electron as unknown as string : this.executable), args: options.source || this.source ? [path.resolve(__dirname, '../dist/desktop/main.cjs'), ...args] : args, cwd: this.base, env: this.env, chromiumSandbox: options.chromiumSandbox, timeout: 240_000 });
+    relayDesktopOutput(this.app, this.report.name as string);
     await this.app.firstWindow({ timeout: 30_000 });
     const page = await viewerPage(this.app);
     page.setDefaultTimeout(30_000);

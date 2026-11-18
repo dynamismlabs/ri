@@ -52,6 +52,22 @@ async function findPage(app: ElectronApplication, select: (state: Awaited<Return
   throw new Error(`Timed out finding ${view ?? 'main'} renderer attached to Ri's native window`);
 }
 
+/** The app says why it gave up only in its own output (`fail` in desktop/main.ts), and a smoke run quits
+ * right after. Pass its `[desktop]` lines through, so a failed run's log names the reason. */
+export function relayDesktopOutput(app: ElectronApplication, label = 'ri') {
+  for (const stream of [app.process().stdout, app.process().stderr]) {
+    if (!stream) continue;
+    let partial = '';
+    stream.setEncoding('utf8');
+    stream.on('data', (chunk: string) => {
+      const lines = (partial + chunk).split('\n');
+      partial = lines.pop() ?? '';
+      for (const line of lines) if (line.startsWith('[desktop]')) console.info(`[${label}] ${line}`);
+    });
+  }
+  return app;
+}
+
 export function viewerPage(app: ElectronApplication) {
   return findPage(app, state => [state.viewer.target]);
 }
