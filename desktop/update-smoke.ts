@@ -170,7 +170,9 @@ try {
   const leaf = await generateLeafPair({ caCertPem: ca.certPem, caKeyPem: ca.keyPem, sans: [{ type: 'dns', value: 'localhost' }], days: 1, clockSkewMs: 1000 });
   const caFile = path.join(temporary, 'fixture-ca.pem'); fs.writeFileSync(caFile, ca.certPem);
   server = https.createServer({ key: leaf.keyPem, cert: leaf.certPem }, (req, res) => {
-    if (req.url === `/feed/stable-${process.platform}-${process.arch}.json`) res.end(JSON.stringify(envelope));
+    // The channel's pointer and the release's own file, as desktop/publish-release.mjs
+    // writes them. The updater checks the version's file again just before it downloads.
+    if ([`/feed/stable-${process.platform}-${process.arch}.json`, `/feed/${manifest.version}-${process.platform}-${process.arch}.json`].includes(req.url!)) res.end(JSON.stringify(envelope));
     else if (req.url === '/runtime.tar.gz') fs.createReadStream(archive).pipe(res);
     else { res.statusCode = 404; res.end(); }
   });
