@@ -337,7 +337,7 @@ A typical update is a drain, a stop, a WAL checkpoint and clone, the check-only 
 
 ### 7.5 Keeping releases
 
-**One lock for the whole installation** (a lock file in the store) covers publishing a staged release, switching any Home's pointers and deleting a release. Hashing and copying a release take minutes and run outside it, because a Home switching its pointers while it's offline waits only 5 seconds for the lock. Today's staging lock is per Home's runtime folder (`stageRuntime` in `src/lib/service/runtime.ts`) and the updater's busy flag lives in one controller's memory (`src/lib/service/update.ts`), so neither covers two Homes sharing a store.
+**One lock for the whole installation** (a lock file in the store) covers publishing a staged release, switching any Home's pointers and deleting a release. Hashing and copying a release take minutes and run outside it, because a Home switching its pointers while it's offline waits only 5 seconds for the lock. Staging hashes in full only what the store keeps, the new copy or the release already stored, and reads just the manifest from the folder it copies from. Hashing both read a desktop app's 4 GB release twice on every first start (`stageRelease` in `src/lib/service/store.ts`). Today's staging lock is per Home's runtime folder (`stageRuntime` in `src/lib/service/runtime.ts`) and the updater's busy flag lives in one controller's memory (`src/lib/service/update.ts`), so neither covers two Homes sharing a store.
 
 **A release is kept while anything uses it:**
 - any Home's record names it (running, previous, or waiting to activate)

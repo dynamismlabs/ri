@@ -34,6 +34,40 @@ it('stores each release once and hard-links files identical to an earlier releas
   expect(latestRelease()).toBe(second.id);
 });
 
+it('hashes the copy it keeps, never the source it copies from', () => {
+  const resources = release('one', '0.1.0');
+  const opened = vi.spyOn(fs, 'openSync');
+  try {
+    const staged = stageRelease(resources);
+    const reads = (folder: string) => opened.mock.calls.filter(([file]) => String(file).startsWith(folder + path.sep)).length;
+    expect(reads(resources)).toBe(0);
+    // Every file of the stored copy, once.
+    expect(reads(path.join(storeDirectory(), staged.id))).toBe(0);
+    expect(opened.mock.calls.filter(([file]) => String(file).includes(`${path.sep}.stage-`)).length).toBe(staged.files.filter(file => file.sha256).length);
+    // A second Home on this computer verifies the stored release and reads no source file.
+    opened.mockClear();
+    stageRelease(resources);
+    expect(reads(resources)).toBe(0);
+    expect(reads(path.join(storeDirectory(), staged.id))).toBe(staged.files.filter(file => file.sha256).length);
+  } finally { opened.mockRestore(); }
+});
+
+it('refuses a source that no longer matches its manifest, and stores nothing', () => {
+  const resources = release('one', '0.1.0');
+  fs.writeFileSync(path.join(resources, 'server/node_modules/big/index.js'), 'changed after the manifest was written');
+  expect(() => stageRelease(resources)).toThrow('Runtime files do not match the manifest');
+  expect(fs.readdirSync(storeDirectory())).toEqual([]);
+  expect(latestRelease()).toBeNull();
+});
+
+it('checks a moved build before taking it out of its folder', () => {
+  const resources = release('build', '0.1.0');
+  fs.writeFileSync(path.join(resources, 'server/dist/app.js'), 'not in the manifest');
+  expect(() => stageRelease(resources, getRuntimeBaseDir(), { move: true })).toThrow('Runtime files do not match the manifest');
+  expect(fs.readFileSync(path.join(resources, 'server/node_modules/big/index.js'), 'utf8')).toBe('shared library bytes');
+  expect(fs.existsSync(storeDirectory())).toBe(false);
+});
+
 it('shares one store between Homes, each with its own pointer and record', () => {
   const staged = stageRuntime(release('one', '0.1.0'));
   const homeA = getRuntimeInstallDir();
