@@ -49,7 +49,8 @@ void acceptance('endurance-smoke', async fixture => {
             // Read-only requests can overlap editor writes without replacing
             // a document with an older API patch from the load generator.
             const response = await fetch(i % 2 ? route : '/api/health', { signal: AbortSignal.timeout(10_000) });
-            if (!response.ok) throw new Error(`Foreground request failed: ${response.status}`);
+            // The body names a gateway's reason, as in `Upstream error: socket hang up`.
+            if (!response.ok) throw new Error(`Foreground request for ${new URL(response.url).pathname} failed: ${response.status} ${(await response.text().catch(() => '')).slice(0, 200)}`);
             await response.text(); durations.push(performance.now() - start);
           }));
           await new Promise(resolve => setTimeout(resolve, 100));
