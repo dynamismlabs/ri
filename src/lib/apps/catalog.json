@@ -8,8 +8,8 @@
         "the web pages you save (read through Ri)"
       ],
       "git": "https://github.com/dynamismlabs/app-bookmarks.git",
-      "version": "v0.1.3",
-      "checksum": "sha256-50e941b2959629d55ee7507ed92880696cc7b73770f439751b8d4d6696a0f2e8"
+      "version": "v0.1.4",
+      "checksum": "sha256-9727aded56628e3527d95ff92b78506cd07e325fc370d1e3865cd7183fdc6e69"
     },
     {
       "id": "job-search",
@@ -22,8 +22,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-job-search.git",
-      "version": "v0.1.3",
-      "checksum": "sha256-c233682f9524e3b2d65f5b07780e6d7da721e67c4227d5e2f8f6a6b6cb581808"
+      "version": "v0.1.4",
+      "checksum": "sha256-662c229852f7764cc36750e1feaa324e96c62f7f0715f092b74381412ad94aee"
     },
     {
       "id": "people",
@@ -36,8 +36,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-people.git",
-      "version": "v0.1.3",
-      "checksum": "sha256-ca9abf9e531273796c16a5bc73bb163d15f7da7945bcb4a2e0a2d6bbafae32b0"
+      "version": "v0.1.4",
+      "checksum": "sha256-148de409ba4d9178a44ec70f338fb8ebb2628e9768d03c040a5d683c2fc34165"
     },
     {
       "id": "travel",
@@ -50,8 +50,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-travel.git",
-      "version": "v0.1.3",
-      "checksum": "sha256-4770b4f5a8037b7b8bc3434b85b3d5227f88ac8f4a0fbc34b1d830f59164985b"
+      "version": "v0.1.4",
+      "checksum": "sha256-92063dff10730471432f429eaa245c6e23d970c9f95a9f709acc3335232a5953"
     }
   ]
 }
