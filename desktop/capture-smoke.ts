@@ -290,6 +290,11 @@ void acceptance('capture-smoke', async fixture => {
     assert.equal((await streamRows(page, uncertain)).length, 0);
     await capture.getByRole('button', { name: 'Discard capture', exact: true }).click();
     await captureHasText(page, '');
+    // Discard empties the box, then reserves a fresh draft. Storage broken
+    // before that reservation is written fails the reservation itself, and the
+    // step below would test a capture with no storage at all.
+    await capture.getByText('Preparing capture…', { exact: true }).waitFor({ state: 'hidden' });
+    assert.equal(await capture.getByRole('alert').count(), 0, 'Discard did not reserve a fresh draft');
     fixture.check('Interrupted submission retains an uncertain draft across reload, warns before retry, and does not replay the request');
 
     await page.evaluate(() => {
