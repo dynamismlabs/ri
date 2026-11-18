@@ -8,7 +8,7 @@ import type { HubGrant } from '@/lib/db/schema';
 import { registeredClient } from '@/lib/oauth/clients';
 import { listPendingApprovals, revokeHubApprovals } from '../approval';
 import { getMcpServerStore, getIntegrationOwnerId, getIntegrationRuntime } from '../runtime';
-import { hubConsentOptions, type HubConsentOptions } from './grant';
+import { hubConsentOptions, sameHubAccount, type HubConsentOptions } from './grant';
 import { appOrigin } from './origin';
 
 export interface HubAppView {
@@ -19,7 +19,8 @@ export interface HubAppView {
   /** The app's own words about what it's for. Shown, never enforced. */
   purpose: string | null;
   /** What it can reach, as the person granted it, with labels. */
-  accounts: { connectionId: string; service: string; account: string; tools: string[]; connected: boolean }[];
+  /** One row per service on an account: Gmail and Calendar on one Google account are two. */
+  accounts: { connectionId: string; toolkitId: string; service: string; account: string; tools: string[]; connected: boolean }[];
   services: string[];
   off: boolean;
   lastUsedAt: string | null;
@@ -44,8 +45,8 @@ function view(app: HubAppRecord, offered: HubConsentOptions): HubAppView {
   return {
     id: app.id, name: app.name, clientUri: app.clientUri, purpose: app.purpose,
     accounts: app.grant.accounts.map((account) => {
-      const live = offered.accounts.find((item) => item.connectionId === account.connectionId);
-      return { connectionId: account.connectionId, service: live?.service ?? account.toolkitId, account: live?.account ?? 'An account no longer connected', tools: account.tools, connected: !!live };
+      const live = offered.accounts.find((item) => sameHubAccount(item, account));
+      return { connectionId: account.connectionId, toolkitId: account.toolkitId, service: live?.service ?? account.toolkitId, account: live?.account ?? 'An account no longer connected', tools: account.tools, connected: !!live };
     }),
     services: app.grant.services,
     off: !!app.revokedAt,
@@ -78,8 +79,11 @@ export function turnOffHubApp(id: string): void {
   dropPending(id);
 }
 
-/** Take back one account, or one tool on it. The app's next call sees the narrower grant. */
-export function narrowHubApp(id: string, remove: { connectionId: string; tool?: string } | { service: string }): HubGrant | null {
+/**
+ * Take back one service on an account, or one tool on it. The app's next call sees the narrower
+ * grant. Without `toolkitId`, every service granted on that connection goes.
+ */
+export function narrowHubApp(id: string, remove: { connectionId: string; toolkitId?: string; tool?: string } | { service: string }): HubGrant | null {
   const app = getHubApp(id);
   if (!app) return null;
   const grant: HubGrant = 'service' in remove
@@ -87,7 +91,7 @@ export function narrowHubApp(id: string, remove: { connectionId: string; tool?: 
     : {
         ...app.grant,
         accounts: app.grant.accounts.flatMap((account) => {
-          if (account.connectionId !== remove.connectionId) return [account];
+          if (account.connectionId !== remove.connectionId || (remove.toolkitId && account.toolkitId !== remove.toolkitId)) return [account];
           const tools = remove.tool ? account.tools.filter((tool) => tool !== remove.tool) : [];
           return tools.length ? [{ ...account, tools }] : [];
         }),

@@ -42,6 +42,18 @@ export interface HubConsentOptions {
   services: { name: RiServiceName; tool: string; description: string; write: boolean; requested: boolean }[];
 }
 
+/**
+ * One granted service on one account. Google's services (Gmail, Calendar, Drive, Docs, Sheets)
+ * share one connection, so the connection alone names the account, never which service of it.
+ */
+export function hubAccountKey(account: { connectionId: string; toolkitId: string }): string {
+  return `${account.connectionId}\u0000${account.toolkitId}`;
+}
+
+/** Whether a granted account is this service on this connection. */
+export const sameHubAccount = (a: { connectionId: string; toolkitId: string }, b: { connectionId: string; toolkitId: string }) =>
+  a.connectionId === b.connectionId && a.toolkitId === b.toolkitId;
+
 function requestedNames(scope: string | null | undefined): Set<string> {
   const words = (scope ?? '').split(/\s+/).filter(Boolean);
   return new Set(words.flatMap((word) => CAPABILITY_TOOLS[word] ?? [word]));
@@ -55,14 +67,15 @@ export function hubConsentOptions(
   current?: HubGrant | null,
 ): HubConsentOptions {
   const wanted = requestedNames(scope);
-  const granted = new Map((current?.accounts ?? []).map((account) => [account.connectionId, new Set(account.tools)]));
+  const granted = new Map((current?.accounts ?? []).map((account) => [hubAccountKey(account), new Set(account.tools)]));
   const accounts: HubConsentAccount[] = [];
   for (const toolkit of toolkits) {
     if (isAppToolkitId(toolkit.id)) continue;
     for (const connection of connections.filter((c) => c.providerId === toolkit.providerId && c.status === 'active')) {
+      const already = granted.get(hubAccountKey({ connectionId: connection.id, toolkitId: toolkit.id }));
       const tools = toolkit.actions.filter((action) => action.modelVisible !== false).map((action): HubConsentTool => {
         const name = toToolName(action.id);
-        return { name, description: action.description, asks: action.mutating === true, requested: wanted.has(name) || !!granted.get(connection.id)?.has(name) };
+        return { name, description: action.description, asks: action.mutating === true, requested: wanted.has(name) || !!already?.has(name) };
       });
       if (!tools.length) continue;
       accounts.push({
@@ -95,7 +108,7 @@ export function grantFromChoice(options: HubConsentOptions, choice: { tools: Rec
 /** A short sentence of what a grant reaches, for lists. */
 export function grantSummary(grant: HubGrant, options?: HubConsentOptions): string {
   const names = grant.accounts.map((account) => {
-    const offered = options?.accounts.find((item) => item.connectionId === account.connectionId);
+    const offered = options?.accounts.find((item) => sameHubAccount(item, account));
     return offered ? `${offered.service} (${offered.account})` : account.toolkitId;
   });
   const parts = [...new Set(names)];

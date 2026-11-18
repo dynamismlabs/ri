@@ -68,7 +68,7 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
   const [error, setError] = useState<string | null>(null);
   const failed = (e: unknown) => setError(e instanceof Error ? e.message : String(e));
   const narrow = useMutation({
-    mutationFn: (remove: { connectionId: string; tool?: string } | { service: string }) => trpcClient.hubApps.narrow.mutate({ id, ...remove }),
+    mutationFn: (remove: { connectionId: string; toolkitId: string; tool?: string } | { service: string }) => trpcClient.hubApps.narrow.mutate({ id, ...remove }),
     onSuccess: () => { setError(null); void refresh(); },
     onError: failed,
   });
@@ -102,16 +102,16 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
       {!data.off && (
         <ul className="space-y-2">
           {data.accounts.map((account) => (
-            <li key={account.connectionId} className="rounded-md border border-border p-2">
+            <li key={`${account.connectionId}:${account.toolkitId}`} className="rounded-md border border-border p-2">
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-sm">{account.service} <span className="text-muted-foreground">· {account.account}</span></span>
-                <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId })}>Remove</Button>
+                <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId })}>Remove</Button>
               </div>
               <ul className="mt-1 flex flex-wrap gap-1">
                 {account.tools.map((tool) => (
                   <li key={tool} className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
                     {tool}
-                    <Tip label="Take this tool back"><button type="button" aria-label={`Remove ${tool}`} disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, tool })}><X size={11} /></button></Tip>
+                    <Tip label="Take this tool back"><button type="button" aria-label={`Remove ${tool}`} disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId, tool })}><X size={11} /></button></Tip>
                   </li>
                 ))}
               </ul>
