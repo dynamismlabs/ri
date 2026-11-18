@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { mcpKnownLegacy, mcpServerProtocol, mcpServerStore, readMcpMetadata, toSlug, type McpServerStore } from './mcp-servers';
+import { capMcpInstructions, MCP_INSTRUCTIONS_MAX_CHARS, mcpKnownLegacy, mcpServerProtocol, mcpServerStore, readMcpMetadata, toSlug, type McpServerStore } from './mcp-servers';
 import { validateMcpUrl, validateHeaderName } from './mcp-validate';
 import { fileLock } from '@integrations/engine';
 
@@ -546,5 +546,33 @@ describe('MCP server protocol facts', () => {
     await store.recordProtocol(entry.id, mcpServerProtocol({ protocolVersion: '2026-07-28', era: 'modern', negotiation: 'probe' }, '2026-10-19T00:00:00.000Z'));
     await store.recordProtocol(entry.id, mcpServerProtocol({ protocolVersion: '2026-07-28', era: 'modern', negotiation: 'probe' }, '2026-10-19T01:00:00.000Z'));
     expect(store.get(entry.id)!.protocol?.checkedAt).toBe('2026-10-19T00:00:00.000Z');
+  });
+
+  it('keeps a server\'s instructions, and says when they change, so chats told the old ones can be restarted', async () => {
+    const store = freshStore();
+    const entry = await store.create({ slug: 'people', displayName: 'People', url: 'http://127.0.0.1:4311/mcp', auth: { kind: 'none' } });
+    const facts = (instructions?: string) => mcpServerProtocol({ protocolVersion: '2026-07-28', era: 'modern', negotiation: 'probe', ...(instructions !== undefined ? { instructions } : {}) }, '2026-11-18T00:00:00.000Z');
+    expect(await store.recordProtocol(entry.id, facts('  Start with search_people.\r\n'))).toBe(true);
+    expect(store.get(entry.id)!.protocol?.instructions).toBe('Start with search_people.');
+    // Reconnecting to the same app changes nothing, and restarts nothing.
+    expect(await store.recordProtocol(entry.id, facts('Start with search_people.'))).toBe(false);
+    // The app updated: new instructions are kept, and so is the change.
+    expect(await store.recordProtocol(entry.id, facts('Start with get_today.'))).toBe(true);
+    expect(readMcpMetadata(dirs.at(-1)!).find(row => row.entry.id === entry.id)?.entry.protocol?.instructions).toBe('Start with get_today.');
+    // An app that stops sending them leaves none behind.
+    expect(await store.recordProtocol(entry.id, facts())).toBe(true);
+    expect(store.get(entry.id)!.protocol?.instructions).toBeUndefined();
+    expect(await store.recordProtocol('gone', facts('x'))).toBe(false);
+  });
+
+  it('cuts instructions longer than Ri gives a model at a word, and says so', () => {
+    expect(capMcpInstructions('   ')).toBeUndefined();
+    expect(capMcpInstructions(42)).toBeUndefined();
+    const long = `${'word '.repeat(1_000)}end`;
+    const cut = capMcpInstructions(long)!;
+    expect(cut.length).toBeLessThanOrEqual(MCP_INSTRUCTIONS_MAX_CHARS + 40);
+    expect(cut).toMatch(/word \[cut at 4,000 characters\]$/);
+    const unbroken = capMcpInstructions('x'.repeat(5_000))!;
+    expect(unbroken).toBe(`${'x'.repeat(MCP_INSTRUCTIONS_MAX_CHARS)} [cut at 4,000 characters]`);
   });
 });

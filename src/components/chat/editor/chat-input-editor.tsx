@@ -74,6 +74,7 @@ import { recallStep, textToDocJSON, type RecallDirection } from './history-recal
 import { SlashMenuExtension } from './slash-menu/extension';
 import { SlashChipNode, SLASH_CHIP_NAME, type SlashChipAttrs } from './slash-menu/slash-chip-node';
 import type { SlashCommand } from './slash-menu/types';
+import type { ChatAppPrompt } from '@/lib/integrations/app-prompts';
 import { MentionMenuExtension } from './mention-menu/extension';
 import { debouncedAppMentionSearch } from './mention-menu/app-mentions';
 import type {
@@ -128,6 +129,12 @@ export interface ChatInputEditorHandle {
   clear(): void;
   /** Insert raw text at the current selection. */
   insertTextAtCursor(text: string): void;
+  /**
+   * Put an app's prompt in the draft at the caret: the app's chip (so its
+   * tools come with the message), then its text, titled items and files, as
+   * an app's message lands (`appPartsContent`). Nothing is sent.
+   */
+  insertAppPrompt(sourceRef: string | null, parts: readonly AppDraftPart[]): void;
   /**
    * Insert a task / note / scratchpad reference chip at the cursor.
    * Used by the references pane and scratchpad's promote-then-mention
@@ -237,6 +244,14 @@ export interface ChatInputEditorProps {
   slashCommands?: SlashCommand[];
   /** True while `slashCommands` is still loading from the server. */
   slashCommandsLoading?: boolean;
+  /**
+   * Called when the person picks an app's prompt from the `/` menu (a command
+   * with `appPrompt`), once its `/query` is out of the draft. The composer
+   * fills it in and puts it back with `insertAppPrompt`.
+   */
+  onAppPrompt?: (prompt: ChatAppPrompt) => void;
+  /** Called as the `/` menu opens, so a list that may have changed can be read again. */
+  onSlashMenuOpen?: () => void;
   /**
    * Optional worktree files/folders for the `@`-mention menu. Sourced
    * from `useSessionTree` on the consumer side. When omitted, typing
@@ -414,6 +429,8 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
       className,
       slashCommands,
       slashCommandsLoading,
+      onAppPrompt,
+      onSlashMenuOpen,
       mentionFiles,
       searchMentionEntities,
       mentionAgents,
@@ -456,6 +473,10 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
     slashCommandsRef.current = slashCommands;
     const slashCommandsLoadingRef = useRef(slashCommandsLoading);
     slashCommandsLoadingRef.current = slashCommandsLoading;
+    const onAppPromptRef = useRef(onAppPrompt);
+    onAppPromptRef.current = onAppPrompt;
+    const onSlashMenuOpenRef = useRef(onSlashMenuOpen);
+    onSlashMenuOpenRef.current = onSlashMenuOpen;
     const mentionFilesRef = useRef(mentionFiles);
     mentionFilesRef.current = mentionFiles;
     const sourceChatIdRef = useRef(sourceChatId);
@@ -823,6 +844,8 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
         SlashMenuExtension.configure({
           getCommands: () => slashCommandsRef.current ?? [],
           isLoading: () => slashCommandsLoadingRef.current ?? false,
+          onAppPrompt: () => onAppPromptRef.current,
+          onOpen: () => onSlashMenuOpenRef.current,
         }),
         MentionMenuExtension.configure({
           getScopeKey: () => sourceChatIdRef.current,
@@ -1082,6 +1105,15 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
         insertTextAtCursor: (text) => {
           if (!editor) return;
           editor.chain().focus().insertContent(text).run();
+        },
+        insertAppPrompt: (sourceRef, parts) => {
+          if (!editor || editor.isDestroyed) return;
+          const content = [
+            ...(sourceRef ? [{ type: SOURCE_CHIP_NAME, attrs: { sourceRef } }, { type: 'text', text: ' ' }] : []),
+            ...appPartsContent(parts),
+          ];
+          if (content.length) editor.chain().focus().insertContent(content).run();
+          else editor.commands.focus();
         },
         insertEntityChip: (attrs) => {
           if (!editor) return;

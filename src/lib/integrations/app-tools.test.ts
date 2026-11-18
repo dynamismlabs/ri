@@ -58,6 +58,8 @@ describe('what the model sees of an app', () => {
     expect(described.tools.map(tool => tool.name)).toEqual(['list_books', 'save_book']);
     expect(described.tools[1]).toMatchObject({ description: 'Add a book', input_schema: { type: 'object', properties: { title: { type: 'string' } } } });
     expect(appToolName('app_reading_log.save_book')).toBe('save_book');
+    expect(described).not.toHaveProperty('instructions');
+    expect(describeAppTools(toolkit as never, 'Save a book once it is finished.')).toMatchObject({ name: 'Reading Log', instructions: 'Save a book once it is finished.' });
   });
 });
 
@@ -66,8 +68,11 @@ describe('apps loaded straight away for a message', () => {
     vi.resetModules();
     const toolkit = (id: string, name: string) => ({ id, providerId: id, displayName: name, actions: [{ id: `${id}.list`, description: 'List', input: z.object({}) }] });
     const runtime = { getToolkits: () => [toolkit('app_reading_log', 'Reading Log'), toolkit('app_bloom', 'Bloom'), toolkit('gmail', 'Gmail')] };
+    // Ri's own connection to Reading Log says how to use its tools (server-instructions.ts).
+    const readingLog = { id: 'srv-reading-ri', slug: 'reading_log_ri', connectionId: 'c-ri', app: { id: 'reading', slug: 'reading_log', name: 'Reading Log', place: { kind: 'ri' } },
+      protocol: { checkedAt: '', instructions: 'Log a finished book with save_book.' } };
     vi.doMock('./runtime', () => ({
-      getMcpServerStore: () => ({ list: () => [] }),
+      getMcpServerStore: () => ({ list: () => [readingLog] }),
       getIntegrationRuntime: async () => runtime,
       getIntegrationOwnerId: () => 'local',
       resolveWorkspaceIntegrationFilter: async () => ({ toolkits: [], connectionPins: {}, allowedAccounts: {} }),
@@ -83,6 +88,8 @@ describe('apps loaded straight away for a message', () => {
     const first = await messageAppToolsContext(chat.id, `What am I reading? ${mention('app_reading_log')} ${mention('app_bloom')}`, null);
     expect(first).toContain('<ri-app-tools>');
     expect(first).toContain('"name":"Reading Log"');
+    expect(first).toContain('"instructions":"Log a finished book with save_book."');
+    expect(first).toContain('Each app\'s instructions are its own guidance for using its tools');
     expect(first).not.toContain('Bloom');
     expect(q.getChatSession(chat.id)?.appTools).toEqual({ loaded: ['app_reading_log'] });
     // Already loaded in this chat: not described again.

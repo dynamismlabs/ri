@@ -24,6 +24,8 @@ export function drainMcpClient(client: ConnectedMcpClient): ConnectedMcpClient {
     listTools: () => client.listTools(),
     callTool: (params, options) => run(() => client.callTool(params, ...(options ? [options] : []))),
     readResource: params => run(() => client.readResource(params)),
+    ...(client.listPrompts ? { listPrompts: () => run(() => client.listPrompts!()) } : {}),
+    ...(client.getPrompt ? { getPrompt: (params: Parameters<NonNullable<ConnectedMcpClient['getPrompt']>>[0]) => run(() => client.getPrompt!(params)) } : {}),
     close() {
       if (close) return close;
       retiring = true;

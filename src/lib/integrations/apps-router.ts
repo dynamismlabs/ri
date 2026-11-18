@@ -15,6 +15,7 @@ async function removeAppWithBuildErrors(sourceId: string) {
   }
 }
 import { chatAppTools, setAppToolMode } from './app-tools';
+import { AppPromptError, chatAppPrompts, getChatAppPrompt, MAX_PROMPT_ARGUMENT_CHARS, MAX_PROMPT_ARGUMENTS } from './app-prompts';
 import {
   addPersonalApp, allowPersonalAppInAgent, getPersonalApp, listPersonalApps, PersonalAppError,
   removePersonalApp, removePersonalAppFromAgent,
@@ -29,6 +30,9 @@ async function run<T>(operation: () => Promise<T> | T): Promise<T> {
   catch (error) {
     if (error instanceof PersonalAppError) {
       throw new TRPCError({ code: error.code === 'not_found' ? 'NOT_FOUND' : error.code === 'conflict' ? 'CONFLICT' : 'BAD_REQUEST', message: error.message });
+    }
+    if (error instanceof AppPromptError) {
+      throw new TRPCError({ code: error.code === 'not_found' ? 'NOT_FOUND' : error.code === 'invalid' ? 'BAD_REQUEST' : 'SERVICE_UNAVAILABLE', message: error.message });
     }
     throw error;
   }
@@ -55,4 +59,12 @@ export const personalAppsRouter = router({
   chatTools: p.input(z.object({ chatId: id }).strict()).query(({ input }) => chatAppTools(input.chatId)),
   setChatTool: p.input(z.object({ chatId: id, toolkitId: id, mode: z.enum(['on', 'auto', 'off']) }).strict())
     .mutation(async ({ input }) => { await setAppToolMode(input.chatId, input.toolkitId, input.mode); return chatAppTools(input.chatId); }),
+  /** The prompts of the apps this chat can use, for its `/` menu (app-prompts.ts). */
+  chatPrompts: p.input(z.object({ chatId: id }).strict()).query(({ input }) => run(() => chatAppPrompts(input.chatId))),
+  /** One prompt filled in with the person's arguments, for the draft. Never sent. */
+  getChatPrompt: p.input(z.object({
+    chatId: id, serverId: id, name: z.string().min(1).max(200),
+    arguments: z.record(z.string().max(100), z.string().max(MAX_PROMPT_ARGUMENT_CHARS))
+      .refine((value) => Object.keys(value).length <= MAX_PROMPT_ARGUMENTS).optional(),
+  }).strict()).mutation(({ input }) => run(() => getChatAppPrompt(input.chatId, input.serverId, input.name, input.arguments))),
 });

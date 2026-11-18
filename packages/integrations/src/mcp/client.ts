@@ -65,6 +65,8 @@ interface CommonMcpOptions {
   version?: string;
   /** Advisory server notification. The host should refresh discovery and invalidate cached tool policy. */
   onToolsChanged?: () => void | Promise<void>;
+  /** The server's prompts changed. The host should drop any prompt list it kept and list again when asked. */
+  onPromptsChanged?: () => void | Promise<void>;
   /**
    * Extra client capabilities, merged over the MCP Apps extension. A host advertises elicitation
    * here only together with `onElicit`, since a server may rely on what is advertised.
@@ -133,8 +135,30 @@ export interface McpServerFacts {
 
 export interface McpResourceContent { uri: string; mimeType?: string; text?: string; blob?: string; _meta?: Record<string, unknown> }
 
+/** A prompt the server offers (`prompts/list`): a request the person starts, with the arguments it takes. */
+export interface McpPromptDef {
+  name: string;
+  title?: string;
+  description?: string;
+  arguments?: { name: string; title?: string; description?: string; required?: boolean }[];
+  [key: string]: unknown;
+}
+
+/** A prompt's messages (`prompts/get`), each one content block: text, image, audio or a resource. */
+export interface McpPromptResult {
+  description?: string;
+  messages: { role: 'user' | 'assistant'; content: Record<string, unknown> }[];
+}
+
+/** A server's whole prompt list may be this large, as its tool list may be `MCP_TOOL_LIST_MAX_BYTES`. */
+export const MCP_PROMPT_LIST_MAX_BYTES = 1024 * 1024;
+
 export interface ConnectedMcpClient extends McpClientLike {
   readResource(params: { uri: string; _meta?: Record<string, unknown> }): Promise<{ contents: McpResourceContent[]; _meta?: Record<string, unknown> }>;
+  /** The server's prompts, every page. Absent on a test double. */
+  listPrompts?(): Promise<{ prompts: McpPromptDef[] }>;
+  /** One prompt filled in with its arguments. Absent on a test double. */
+  getPrompt?(params: { name: string; arguments?: Record<string, string> }): Promise<McpPromptResult>;
   /** Facts from the opening exchange. Empty for a test double. */
   readonly server?: McpServerFacts;
   close(): Promise<void>;
@@ -207,13 +231,17 @@ export async function connectMcpClient(opts: ConnectMcpOptions): Promise<Connect
       extensions: { ...MCP_APPS_EXTENSION, ...((opts.capabilities?.extensions as Record<string, unknown> | undefined) ?? {}) },
     };
     const notify = () => { void Promise.resolve(opts.onToolsChanged?.()).catch(() => {}); };
+    const notifyPrompts = () => { void Promise.resolve(opts.onPromptsChanged?.()).catch(() => {}); };
     const client = new mod.Client({ name: opts.name ?? 'integrations-engine', version: opts.version ?? '0.0.1' }, {
       capabilities,
       versionNegotiation: { mode, ...(mode === 'auto' ? { probe: { timeoutMs: opts.command !== undefined ? MCP_STDIO_PROBE_TIMEOUT_MS : MCP_HTTP_PROBE_TIMEOUT_MS } } : {}) },
       // `callTool` answers 2026-07-28 input rounds itself, where it knows exactly which run asked.
       inputRequired: { autoFulfill: false },
       // 2026-07-28 delivers list changes on a `subscriptions/listen` stream the client opens.
-      ...(opts.onToolsChanged ? { listChanged: { tools: { autoRefresh: false, debounceMs: 0, onChanged: notify } } } : {}),
+      ...(opts.onToolsChanged || opts.onPromptsChanged ? { listChanged: {
+        ...(opts.onToolsChanged ? { tools: { autoRefresh: false, debounceMs: 0, onChanged: notify } } : {}),
+        ...(opts.onPromptsChanged ? { prompts: { autoRefresh: false, debounceMs: 0, onChanged: notifyPrompts } } : {}),
+      } } : {}),
     });
     if (opts.onToolsChanged) {
       // 2025-era servers push the notification unsolicited, sometimes without advertising
@@ -221,6 +249,8 @@ export async function connectMcpClient(opts: ConnectMcpOptions): Promise<Connect
       // discovery and publication. This does not trust new tools or bypass host lifecycle checks.
       client.setNotificationHandler('notifications/tools/list_changed', notify);
     }
+    // The same for prompts: a 2025-era server sends its prompt changes unasked.
+    if (opts.onPromptsChanged) client.setNotificationHandler('notifications/prompts/list_changed', notifyPrompts);
     if (opts.onElicit) {
       const elicit = (method: 'elicitation/create' | 'openai/elicitation/create') =>
         async (request: { params?: Record<string, unknown> } | Record<string, unknown>, ctx: { mcpReq?: { signal?: AbortSignal }; signal?: AbortSignal }) => {
@@ -308,6 +338,20 @@ export async function connectMcpClient(opts: ConnectMcpOptions): Promise<Connect
     },
     async listTools() {
       return tracked(null, () => listTools());
+    },
+    async listPrompts() {
+      return tracked(null, async () => {
+        // Every page, always from the server: the host keeps its own list and drops it on a change notice.
+        const res = await client.listPrompts(undefined, { timeout: MCP_DISCOVERY_TIMEOUT_MS, cacheMode: 'refresh' });
+        const prompts = (res.prompts ?? []) as McpPromptDef[];
+        if (Buffer.byteLength(JSON.stringify(prompts)) > MCP_PROMPT_LIST_MAX_BYTES) {
+          throw new IntegrationError('provider_error', `The MCP server's prompt list is larger than Ri accepts (${MCP_PROMPT_LIST_MAX_BYTES / 1024 / 1024} MiB).`);
+        }
+        return { prompts: prompts.map(prompt => structuredClone(prompt)) };
+      });
+    },
+    async getPrompt(params) {
+      return tracked(null, async () => structuredClone(await client.getPrompt(params, { timeout: MCP_RESOURCE_TIMEOUT_MS })) as McpPromptResult);
     },
     async callTool(params, options) {
       if (options?.signal?.aborted) throw new IntegrationError('denied', 'The request was cancelled before dispatch. No request was sent.');

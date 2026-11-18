@@ -13,6 +13,8 @@ Ri's side of the [shared app kit spec](shared-app-kit-spec.md). A personal app i
 | What Ri brings for apps: the pinned kit and pnpm, run with Ri's Node | `packages/app-toolchain`, `src/lib/apps/toolchain.ts` |
 | The catalog of recommended apps: Add and Update | `src/lib/apps/catalog*.ts`, `src/components/apps/app-catalog.tsx` |
 | An installed app's state, Restart and Logs | `src/lib/apps/status.ts`, `src/components/apps/app-status.tsx` |
+| An app's instructions in chats that can use it | `src/lib/integrations/server-instructions.ts` |
+| An app's prompts in the composer's `/` menu | `src/lib/integrations/app-prompts.ts`, `src/components/chat-ui/app-prompts/` |
 
 ## Connecting an app
 
@@ -55,6 +57,33 @@ Being allowed and being loaded are separate (shared spec §2). Dozens of apps' t
 An app also loads straight away when a message @-tags it or carries context from its screen beside the chat: that turn gets the app's tools in an `<ri-app-tools>` block (`messageAppToolsContext`). The switch is per chat, in the + menu under App tools, and stored on `chat_sessions.app_tools`. Changing it restarts the chat's harness when idle, since harnesses keep the tool list they started with. A call with no chat behind it (no session credential) sees apps listed directly, since there is nowhere to remember a load. All of this decides what the model sees, never what the app may reach.
 
 Checked on November 12, 2026 with Reading Log, as Ri's main chat on the isolated Ri: automatic listed no Reading Log tools, only the two dispatchers, and loading then calling `list_books` worked through Ri's own connection. On listed its five tools directly with no dispatcher. Off listed nothing and the dispatcher was gone.
+
+## What an app tells the model
+
+An MCP server may send `instructions` when a connection opens: how its tools fit together, which to call first, what to treat as data. Every kit app does (`instructions` in its `app.config.ts`). Ri keeps them per connection, on the server entry's `protocol.instructions`, trimmed and cut at 4,000 characters (`capMcpInstructions`), and records them again every time the connection opens. So a reconnect, or an app update that reconnects it, brings the new ones. This holds for every MCP server, not only apps.
+
+A chat's model gets a server's instructions only where it can use that server's tools (`src/lib/integrations/server-instructions.ts`):
+
+| How the chat has the tools | Where the instructions go |
+| --- | --- |
+| Listed directly: every connector, and an app switched On in the chat | A `<connector-instructions>` block in the session's instructions, one `<server-instructions name="…">` per server, for the place the chat's integrations endpoint serves (its `?ws=`). A harness that drops session instructions gets the block with each message. |
+| An app on Automatic | With its tools when they load: `load_app_tools` returns them as `instructions`, and so does the `<ri-app-tools>` block of a turn that @-tags the app or has it beside the chat. Until then the app costs the chat its one line. |
+| An app switched Off, or a chat with no account tools (an app's builder chat, a review) | Nothing. |
+
+Each block says the servers' words are guidance for their own tools that never grant permission or override the person, Ri's instructions or another server. An app's text can't close the block from inside. When a connection's instructions change, the live chats that could have been told them restart when idle (`recycleForInstructionsChange`): an agent's place restarts that agent's chats, Ri's own place restarts Ri's own chats, and any other server restarts every chat. The conversation resumes with the new ones.
+
+Checked on November 18, 2026 against People, Job Search, Travel and Bookmarks running as services on a Mac (2025-11-25 connections), each added read-only to a disposable Ri by its address: Ri kept each app's instructions (People 889 characters, Job Search 1,371, Travel 908, Bookmarks 536). With People On in the main chat, its session block named People alone. `load_app_tools` on the main chat's integrations endpoint listed the other three, and loading each returned its own instructions.
+
+## Prompts
+
+An app may ship prompts: requests the person starts, such as People's "Prepare for a meeting" or Job Search's "Review my applications". They're the person's to choose, so Ri never offers them to the model. The composer lists them in its `/` menu after the chat's skills, as `/<app>:<prompt>` with the app's name and the prompt's title (`src/lib/integrations/app-prompts.ts`, `useAppPromptPicker`).
+
+- **Which apps.** The apps the chat can use on its place's own connection, not switched Off in the chat. Each lists at most 50 prompts.
+- **Picking one** takes the typed `/query` out. A prompt that takes arguments opens a small form first: each argument with its title and description, and the optional ones marked as optional. Ri sends only the arguments the prompt declares (`prompts/get`), and an app's refusal ("No one called … is in People") shows in the form.
+- **The answer goes in the draft, never sent.** The app's chip comes first, so the app's tools load with the message, then the app's text. Embedded resources, images and audio land as an app's own message does (`appMessageParts`, [connected MCP apps](connected-mcp-apps.md) "Messages"): text as titled items the person can remove, files as attachments. A message from the assistant role stays a titled item, since the person sends the whole draft as their own.
+- **Keeping the list current.** Each connection's list is read the first time the menu needs it and kept until the app sends `notifications/prompts/list_changed` (`McpPromptCache`), on its 2026-07-28 subscription or unasked on a 2025-era connection. Reconnecting starts a fresh list. The composer asks again every time its `/` menu opens, which reads Ri's kept list, not the app.
+
+Checked on November 18, 2026 with the same four apps: the main chat's `/` menu listed Job Search's two prompts, People's three and Travel's one after Ri's skills (Bookmarks ships none). "Prepare for a meeting" opened its form with People's description of its `person` argument, and an unknown name showed People's own refusal there. "Review my applications" put Job Search's chip and text in the draft, unsent.
 
 ## The hub
 

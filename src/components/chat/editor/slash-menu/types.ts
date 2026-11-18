@@ -3,6 +3,7 @@
  * provider-agnostic — it consumes whatever agentex hands it.
  */
 import type { SkillCommandDescriptor } from '@agentex/agent'
+import type { ChatAppPrompt } from '@/lib/integrations/app-prompts'
 
 export type {
   SkillCommandDescriptor,
@@ -19,4 +20,9 @@ export type {
  */
 export interface SlashCommand extends SkillCommandDescriptor {
   frecency?: number
+  /**
+   * Set on a personal app's prompt (src/lib/integrations/app-prompts.ts). Picking one asks the app
+   * for its text instead of inserting a command, and the text goes in the draft.
+   */
+  appPrompt?: ChatAppPrompt
 }
