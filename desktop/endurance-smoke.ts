@@ -7,6 +7,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { acceptance, api, bounded, eventually } from './acceptance-fixture';
 import { serviceStatus } from '../src/lib/service/client';
+import { CONNECTION_NOTICE_DELAY_MS } from '../src/lib/connection/desktop-contract';
+import { TRANSPORT_STORAGE_KEY } from '../src/lib/trpc/transport-state';
 
 const crashOnly = process.env.RI_DESKTOP_ENDURANCE_CRASH_ONLY === '1';
 const cycles = Number(process.env.RI_DESKTOP_ENDURANCE_CYCLES ?? 3);
@@ -79,11 +81,14 @@ void acceptance('endurance-smoke', async fixture => {
     // A renderer network interruption must show a reconnect state while the
     // detached service remains running, then recover without a new owner.
     await api(page, '/api/service');
+    // The notice waits out a brief interruption and names the computer the Home is on ("Reconnecting to Ri
+    // on <computer>…"), so it shows once the outage has lasted the notice delay and a check confirmed it.
+    const reconnecting = page.getByRole('status').filter({ hasText: /Reconnecting to Ri\b/ });
     await page.context().setOffline(true);
-    await page.getByRole('status').filter({ hasText: 'Reconnecting to Ri.' }).waitFor();
+    await reconnecting.waitFor({ timeout: CONNECTION_NOTICE_DELAY_MS + 30_000 });
     assert.equal((await serviceStatus())?.runId, initial.runId);
     await page.context().setOffline(false);
-    await page.getByRole('status').filter({ hasText: 'Reconnecting to Ri.' }).waitFor({ state: 'hidden' });
+    await reconnecting.waitFor({ state: 'hidden' });
     await eventually(async () => (await api<{ title: string }>(page, route)).title === finalTitle, 'API recovered after renderer network interruption');
     await fixture.quit();
     assert.equal((await serviceStatus())?.runId, initial.runId, 'Closing the GUI stopped the daemon');
@@ -102,14 +107,20 @@ void acceptance('endurance-smoke', async fixture => {
   const before = await api<{ title: string }>(page, route);
   const retainedTitle = 'Unacknowledged editor text survives renderer crash';
   // Fail only this fixture document's save, while allowing independent reads
-  // to prove SQLite still contains the last acknowledged value.
-  await page.route(`**${route}`, route => route.request().method() === 'PATCH' ? route.abort('connectionrefused') : route.continue());
-  const failedWrite = page.waitForEvent('requestfailed', { predicate: request => new URL(request.url()).pathname === route && request.method() === 'PATCH' });
+  // to prove SQLite still contains the last acknowledged value. The save is
+  // notes.update, sent over HTTP for this step (the Connection transport
+  // setting): a crashed page can't serve a routed WebSocket, and HTTP routing
+  // comes off whole before the crash.
+  const save = '/api/trpc/notes.update';
+  await page.evaluate(key => localStorage.setItem(key, 'http'), TRANSPORT_STORAGE_KEY);
+  await page.route(url => url.pathname === save, route => route.request().method() === 'POST' ? route.abort('connectionrefused') : route.continue());
+  const failedWrite = page.waitForEvent('requestfailed', { predicate: request => new URL(request.url()).pathname === save && request.method() === 'POST' });
   await page.locator('textarea.note-title').fill(retainedTitle);
   await failedWrite;
   assert.equal((await api<{ title: string }>(page, route)).title, before.title);
   assert(await page.evaluate(title => Object.keys(localStorage).some(key => key.startsWith('ri:document-draft:v1:') && localStorage.getItem(key)?.includes(title)), retainedTitle));
   await page.unrouteAll({ behavior: 'wait' });
+  await page.evaluate(key => localStorage.removeItem(key), TRANSPORT_STORAGE_KEY);
   // A crashed Playwright Page can no longer answer intercepted requests.
   // Remove CDP routing before testing Electron's autonomous recovery. This
   // home still has no provider credentials or harnesses on PATH.

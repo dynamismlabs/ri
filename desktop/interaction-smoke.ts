@@ -66,7 +66,9 @@ void acceptance('interaction-smoke', async fixture => {
     document.addEventListener('keydown', event => events.push({ phase: 'capture', key: event.key, meta: event.metaKey, ctrl: event.ctrlKey, shift: event.shiftKey, prevented: event.defaultPrevented, target: (event.target as HTMLElement)?.tagName }), { capture: true });
     window.addEventListener('keydown', event => events.push({ phase: 'window-bubble', key: event.key, meta: event.metaKey, ctrl: event.ctrlKey, shift: event.shiftKey, prevented: event.defaultPrevented, target: (event.target as HTMLElement)?.tagName }));
   });
-  await page.getByRole('button', { name: 'Back', exact: true }).focus();
+  // The note page's own Back, which says so. The desktop title bar has an icon-only Back as well.
+  const pageBack = page.getByRole('button', { name: 'Back', exact: true }).filter({ hasText: 'Back' });
+  await pageBack.focus();
   await hotkey(page, 'focusChatInput');
   fixture.report.focusShortcut = await page.evaluate(() => ({
     keys: (window as unknown as { acceptanceKeys: unknown[] }).acceptanceKeys,
@@ -100,7 +102,7 @@ void acceptance('interaction-smoke', async fixture => {
   });
   // Return through the actual app control and router history, not a CDP
   // address-bar navigation, which is a different Electron lifecycle.
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await pageBack.click();
   await page.waitForURL(url => url.pathname === '/');
   fixture.check('Focus-chat shortcut and full-page Back navigation');
   const rail = page.locator('aside:visible').first();

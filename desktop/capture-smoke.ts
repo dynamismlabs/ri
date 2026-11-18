@@ -47,6 +47,37 @@ async function captureHasText(page: Page, text: string) {
   await page.waitForFunction(text => document.querySelector<HTMLTextAreaElement>('[role="dialog"] textarea')?.value === text, text);
 }
 
+/** Interrupts a quick capture's write before it reaches the Home, as a dropped connection does, on
+ * whichever transport carries it. Over the WebSocket the message is held back and the socket drops with
+ * no answer. Over HTTP the request is refused. Everything else passes through. Routing covers documents
+ * loaded after it, so it goes in before a reload. */
+async function interruptCaptureWrites(page: Page) {
+  const state = { armed: false, interrupted: 0 };
+  type Request = { method?: string; params?: { path?: string } } | null;
+  const carriesCapture = (message: string | Buffer) => {
+    let parsed: unknown;
+    try { parsed = JSON.parse(String(message)); } catch { return false; } // PING and PONG
+    return (Array.isArray(parsed) ? parsed : [parsed]).some((request: Request) => request?.method === 'mutation' && request.params?.path === 'stream.create');
+  };
+  await page.routeWebSocket(url => url.pathname === '/api/trpc/ws', ws => {
+    const server = ws.connectToServer();
+    ws.onMessage(message => {
+      if (state.armed && carriesCapture(message)) {
+        state.interrupted++;
+        void server.close();
+        void ws.close();
+        return;
+      }
+      server.send(message);
+    });
+  });
+  await page.route(url => url.pathname === '/api/trpc/stream.create', async route => {
+    if (state.armed && route.request().method() === 'POST') { state.interrupted++; await route.abort('connectionrefused'); }
+    else await route.continue();
+  });
+  return state;
+}
+
 async function streamRows(page: Page, rawText: string) {
   const rows = await api<{ id: string; rawText: string }[]>(page, '/api/stream?limit=1000');
   return rows.filter(row => row.rawText === rawText);
@@ -233,6 +264,7 @@ void acceptance('capture-smoke', async fixture => {
     await capture.getByRole('button', { name: 'Capture', exact: true }).click();
     await capture.waitFor({ state: 'hidden' });
     await eventually(async () => (await streamRows(page, submitted)).length === 1, 'capture text persisted exactly once');
+    const interruption = await interruptCaptureWrites(page);
     await fixture.reload();
     capture = await openCapture(fixture);
     assert.equal(await capture.locator('textarea').inputValue(), '');
@@ -241,13 +273,14 @@ void acceptance('capture-smoke', async fixture => {
     fixture.check('Successful text capture uses the real stream pipeline exactly once and removes its durable draft across reload');
 
     const uncertain = 'Capture with an intentionally interrupted response.';
-    await page.route('**/api/stream', route => route.request().method() === 'POST' ? route.abort('connectionrefused') : route.continue());
+    interruption.armed = true;
     await capture.locator('textarea').fill(uncertain);
     await capture.getByText('Draft saved on this device.', { exact: true }).waitFor();
     await capture.getByRole('button', { name: 'Capture', exact: true }).click();
     await capture.getByText(/Check your Stream before capturing again/).first().waitFor();
+    assert.equal(interruption.interrupted, 1, 'The capture write was not interrupted exactly once');
     assert.equal(await capture.locator('textarea').inputValue(), uncertain);
-    await page.unroute('**/api/stream');
+    interruption.armed = false;
     await fixture.reload();
     capture = await openCapture(fixture);
     await capture.getByRole('button', { name: 'Restore capture', exact: true }).click();
