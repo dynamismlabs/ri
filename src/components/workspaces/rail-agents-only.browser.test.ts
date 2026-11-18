@@ -101,7 +101,10 @@ beforeAll(async () => {
       window.actions=[];
       const client=new QueryClient({defaultOptions:{queries:{retry:false,staleTime:Infinity},mutations:{retry:false}}});
       window.queryClient=client;
-      const at=(minutesAgo)=>new Date(Date.now()-minutesAgo*60_000).toISOString();
+      // One clock for the whole fixture, so chats given the same age tie exactly and keep their order. Reading
+      // it per call made a later chat a millisecond newer now and then, and it sorted first.
+      const now=Date.now();
+      const at=(minutesAgo)=>new Date(now-minutesAgo*60_000).toISOString();
       const agent=(id,name,emoji,purpose)=>({id,name,emoji,purpose,attachments:[],areaId:null,collapsed:false,isGit:true,status:'active'});
       const workspaces=[
         agent('ri','Ri','🛠️','Builds Ri'),
