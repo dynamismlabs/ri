@@ -2,8 +2,9 @@
  * RI_DESKTOP_PACKAGE=... pnpm exec tsx desktop/version-smoke.ts */
 import assert from 'node:assert/strict';
 import path from 'node:path';
+import type { Request, WebSocketRoute } from 'playwright-core';
 import { acceptance, api, bounded, eventually, type AcceptanceFixture } from './acceptance-fixture';
-import { apiCompatibilityIssue } from '../src/lib/releases/api-contract';
+import { API_PROTOCOL, apiCompatibilityIssue } from '../src/lib/releases/api-contract';
 
 async function openCapture(fixture: AcceptanceFixture) {
   await bounded(fixture.app!.evaluate(({ Menu, BrowserWindow }) => {
@@ -20,6 +21,33 @@ async function openCapture(fixture: AcceptanceFixture) {
 void acceptance('version-smoke', async fixture => {
   const page = await fixture.launch();
   const note = await api<{ id: string }>(page, '/api/notes', 'POST', { title: 'Before Home update', body: 'Saved original body.' });
+  // The Home is replaced under this view by one that speaks only a newer API. Its WebSocket drops, a
+  // reconnect is refused, and the view saves over HTTP in the meantime, where the new Home answers 426.
+  // The view's own reload (`upgraded`) brings the newer client, and the real Home serves it again.
+  const newer = API_PROTOCOL + 1;
+  const issue = apiCompatibilityIssue(String(API_PROTOCOL), [newer]);
+  assert.equal(issue?.update, 'client');
+  let homeUpdated = false;
+  let upgraded = false;
+  const sockets = new Set<WebSocketRoute>();
+  // Routing applies to documents loaded after it, so it goes in before the note opens.
+  await page.routeWebSocket(url => url.pathname === '/api/trpc/ws', ws => {
+    if (homeUpdated && !upgraded) { void ws.close({ code: 1012, reason: 'Ri was updated' }); return; }
+    sockets.add(ws);
+    ws.connectToServer();
+  });
+  const isNoteSave = (request: Request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/trpc/notes.update';
+  let rejected = 0;
+  await page.route(url => url.pathname === '/api/trpc/notes.update', async route => {
+    if (homeUpdated && !upgraded && isNoteSave(route.request())) {
+      rejected++;
+      await route.fulfill({ status: 426, contentType: 'application/json', body: JSON.stringify(issue) });
+    } else await route.continue();
+  });
+  await page.route(url => url.pathname === '/api/version', async route => {
+    if (homeUpdated && !upgraded) await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ release: { build: 'acceptance-api-next' }, apiProtocols: [newer] }) });
+    else await route.continue();
+  });
   await fixture.navigate(`/note/${note.id}`);
   const title = page.locator('textarea.note-title');
   await title.waitFor();
@@ -29,18 +57,10 @@ void acceptance('version-smoke', async fixture => {
   // while Playwright is inserting into the separate title textarea.
   await page.waitForFunction(() => document.activeElement?.classList.contains('rich-editor-body'));
   const retainedTitle = 'An edit retained across an incompatible Home update';
-  let upgraded = false;
-  let rejected = 0;
-  await page.route(`**/api/notes/${note.id}`, async route => {
-    if (!upgraded && route.request().method() === 'PATCH') {
-      rejected++;
-      await route.fulfill({ status: 426, contentType: 'application/json', body: JSON.stringify(apiCompatibilityIssue('1', [2])) });
-    } else await route.continue();
-  });
-  await page.route('**/api/version', async route => {
-    if (!upgraded) await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ release: { build: 'acceptance-api-two' }, apiProtocols: [2] }) });
-    else await route.continue();
-  });
+  assert(sockets.size > 0, 'The note view opened no Home WebSocket to drop');
+  homeUpdated = true;
+  for (const socket of sockets) await socket.close({ code: 1012, reason: 'Ri was updated' });
+  sockets.clear();
   await title.fill(retainedTitle);
   assert.equal(await title.inputValue(), retainedTitle, 'Initial title input must land in the title, not a mounting editor');
   await composer.fill('Chat draft retained through the Home update.');
@@ -110,7 +130,7 @@ void acceptance('version-smoke', async fixture => {
       return show(...args as Parameters<typeof show>);
     }) as typeof show;
   });
-  const ordinarySave = page.waitForResponse(response => response.url().endsWith(`/api/notes/${note.id}`) && response.request().method() === 'PATCH' && response.status() === 426);
+  const ordinarySave = page.waitForResponse(response => isNoteSave(response.request()) && response.status() === 426);
   await page.evaluate(() => {
     window.addEventListener('beforeunload', event => {
       (window as unknown as { ordinaryReloadPrevented: boolean }).ordinaryReloadPrevented = event.defaultPrevented;
