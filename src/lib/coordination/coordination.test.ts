@@ -17,6 +17,12 @@ vi.mock('@/lib/runner/local-runner', async original => ({ ...await original<obje
 vi.mock('@/lib/executor/devices', async original => ({ ...await original<object>(), harnessCapabilitiesOn: async () => ({ sessions: true, concurrentSend: fake.concurrentSend }) }));
 vi.mock('@/lib/executor/adapter', () => ({ isRunning: (id: string) => fake.busy.has(id), hasBackgroundTasks: () => false, dispatch: fake.dispatch, abort: fake.abort }));
 vi.mock('@/lib/sessions/dispatch', () => ({ WorkspaceNotFoundForDispatch: class extends Error {}, DeviceUnavailableForDispatch: class extends Error {}, TaskNotStartableForDispatch: class extends Error {}, dispatchExecutionSession: (...args: unknown[]) => fake.launch(...args) }));
+// Naming the chat a delivery starts belongs to derive-label.test.ts. A real
+// request here runs a harness title in the background that outlives the test
+// file, and its failure logged while vitest closed the worker on CI
+// (EnvironmentTeardownError). These tests only check what is asked for.
+const deriveTitle = vi.hoisted(() => vi.fn<(sessionId: string, content: string, harness: string) => Promise<void>>(async () => {}));
+vi.mock('@/lib/sessions/derive-label', async original => ({ ...await original<object>(), deriveAndSetSessionLabel: deriveTitle }));
 
 let home: TestHome;
 let main: ChatSessionRecord;
@@ -29,7 +35,7 @@ beforeEach(async () => {
   main = q.createChatSession({ type: 'orchestration', harness: 'claude' });
   agent = q.createWorkspace({ name: 'Frontend', cwd: home.root, isGit: false, filesToCopy: [] });
   agentMain = q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId: agent.id });
-  accepted = []; fake.busy.clear(); fake.producers.clear(); fake.concurrentSend = true; fake.dispatch.mockReset(); fake.abort.mockReset(); fake.launch.mockReset();
+  accepted = []; deriveTitle.mockClear(); fake.busy.clear(); fake.producers.clear(); fake.concurrentSend = true; fake.dispatch.mockReset(); fake.abort.mockReset(); fake.launch.mockReset();
   fake.dispatch.mockImplementation(async (sessionId: string, content: string, options: { runId: string; sourceEventId: string; coordinationDeliveryIds: string[]; onTaken?: () => void }) => {
     q.markRunStarted(options.runId);
     q.acceptAgentDeliveriesForRun(options.runId, sessionId, options.coordinationDeliveryIds, fake.producers.get(sessionId));
@@ -351,6 +357,8 @@ describe('launch, provenance and guards', () => {
     expect(q.getAgentRequest(id)).toMatchObject({targetSessionId:requestScopedId('session',agent.id,id),status:'working'});
     expect(q.initialAgentDelivery(id)?.eventId).toBe(requestScopedId('prompt',agent.id,id));
     await act(main,'delegate_work',input); await drainAgentCoordination(); expect(fake.launch).toHaveBeenCalledOnce();
+    // The new chat is named from the work it was given, once.
+    expect(deriveTitle.mock.calls.filter(([sessionId]) => sessionId === requestScopedId('session',agent.id,id))).toEqual([[requestScopedId('session',agent.id,id),'Implement the fix.','claude']]);
   });
   it('forwards full selected material and truthful human authorship once, without automatic return', async () => {
     const text='Review detail. '.repeat(1000); const material=q.insertChatEvent({sessionId:main.id,role:'assistant',source:'agent',content:text})!;
