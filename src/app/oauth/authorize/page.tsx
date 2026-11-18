@@ -113,7 +113,7 @@ export default async function AuthorizePage({ searchParams }: { searchParams: Pr
           </ul>
         </div>
         <p className="text-xs text-muted-foreground">
-          {copy.destination} Disconnect it any time in Settings → Connect your agent.
+          {copy.destination} Disconnect it any time in Settings → {APP_NAME} in other apps.
         </p>
         <ConsentButtons />
         <p className="text-center text-[11px] text-muted-foreground/70">{new URL(issuer).host}</p>

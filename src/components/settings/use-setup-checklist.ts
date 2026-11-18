@@ -6,6 +6,7 @@ import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { SectionId } from './settings-sections';
+import { APP_NAME } from '@/constants/app';
 
 /**
  * Drives the "Get started" checklist. Each item's "done" is derived from real
@@ -130,18 +131,19 @@ export function useSetupChecklist(enabled: boolean): SetupChecklist {
     // Done when the capability is on and a browser is available. Signing into a
     // site is the optional next step, surfaced in the Browser tab itself.
     const browserDone = !!browser.data?.enabled && (browser.data?.config.detected.length ?? 0) > 0;
-    // Any outside agent with its own key: Set up, its steps or its setup prompt.
+    // Any outside AI app with its own key: Set up, its steps or its setup prompt.
     const agentDone = (agentKeys.data?.length ?? 0) > 0;
 
     const base: Omit<ChecklistItem, 'dismissed'>[] = [
       { id: 'profile', section: 'profile', label: 'Tell your assistant about you', hint: 'Fill this out in the Profile tab any time.', done: profileDone },
       { id: 'model', section: 'models', label: 'Pick a default model', hint: 'Choose one in the Models tab any time.', done: modelDone },
-      { id: 'connect-agent', section: 'external-ai', label: 'Connect your agent', hint: 'Connect Claude Code, Codex or another agent in Connect your agent any time.', done: agentDone },
       { id: 'remote', section: 'devices', label: 'Set a remote URL', hint: 'Set your remote URL in the Devices tab any time.', done: remoteDone },
       { id: 'notifications', section: 'notifications', label: 'Turn on notifications', hint: 'Add a channel in the Notifications tab any time.', done: notificationsDone },
       // Ids are saved in DISMISS_KEY, so this one keeps its pre-rename spelling.
       { id: 'connectors', section: 'plugins', label: 'Connect an app', hint: 'Connect one in Plugins any time.', done: integrationsDone },
       { id: 'browser', section: 'browser', label: 'Set up the agent browser', hint: 'Pick a browser and sign into sites in the Browser tab any time.', done: browserDone },
+      // Ids are saved in DISMISS_KEY, so this one keeps its first spelling.
+      { id: 'connect-agent', section: 'external-ai', label: `Use ${APP_NAME} in other AI apps`, hint: `Add it to ChatGPT, Claude Code or another AI app from the ${APP_NAME} in other apps tab any time.`, done: agentDone },
     ];
     return base.map((i) => ({ ...i, dismissed: dismissed.has(i.id) }));
   }, [userState?.description, userState?.defaultHarness, baseUrls.data, channels.data, connections.data, browser.data, agentKeys.data, dismissed]);

@@ -10,7 +10,7 @@ export const TEAM_SETTINGS_SECTIONS = [
   { id: 'voice', label: 'Voice', title: 'Voice', icon: Mic, description: 'Your voice model and auto-send preference for this team.', ownerOnly: false },
   { id: 'skills', label: 'Skills', title: 'Skills', icon: ScrollText, description: 'Skills installed for the team’s agent chats.', ownerOnly: false },
   { id: 'areas', label: 'Areas', title: 'Areas', icon: LayoutGrid, description: 'Optional groups for the team’s tasks and notes.', ownerOnly: false },
-  { id: 'external-ai', label: 'Connect your agent', title: 'Connect your agent to the team’s MCP', icon: Cable, description: 'Let Claude Code, Codex, Cursor and other agents read and update the team’s tasks, notes and decisions.', ownerOnly: false },
+  { id: 'external-ai', label: 'Team in other apps', title: 'Use the team in other AI apps', icon: Cable, description: 'Let Claude Code, Codex, Cursor and other AI apps read and update the team’s tasks, notes and decisions through its MCP server.', ownerOnly: false },
   { id: 'updates', label: 'Updates', title: 'Updates', icon: Download, description: 'How Ri keeps itself up to date.', ownerOnly: false },
 ] as const;
 

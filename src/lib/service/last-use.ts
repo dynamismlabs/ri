@@ -12,7 +12,7 @@ export function noteUse(at = Date.now()) { state.at = at; }
 export function lastUseAt() { return state.at; }
 
 const AGENT_CONNECTIONS = new Set(['/api/mcp', '/api/orchestrator/mcp', '/api/team/mcp']);
-/** A request from an agent connected from outside ("Connect your agent"). */
+/** A request from an agent connected from outside ("Ri in other apps"). */
 export function isAgentCall(method: string | undefined, pathname: string) {
   return method === 'POST' && AGENT_CONNECTIONS.has(pathname);
 }

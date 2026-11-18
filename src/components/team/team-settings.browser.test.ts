@@ -49,10 +49,10 @@ beforeAll(async () => {
       b.onResolve({ filter: /spaces\/my-ri-client$/ }, () => ({ path: 'my-ri', namespace: 'fixture' }));
       b.onResolve({ filter: /ui\/confirm-dialog$/ }, () => ({ path: 'confirm', namespace: 'fixture' }));
       b.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ loader: 'tsx', resolveDir: process.cwd(), contents: {
-        dashboard: `export const useOptionalDashboard=()=>null;`,
+        dashboard: `export const useOptionalDashboard=()=>null;export const useDashboard=()=>({setActiveView:()=>{}});`,
         logo: `export const TeamLogo=()=>null;`,
         models: `export const HarnessSettingsPanel=()=>null;export const DefaultModelSection=()=>null;`,
-        home: `export const useHomeContext=()=>({home:{id:'team',kind:'team',name:'Team Huffine'},viewer:{id:'owner'},capabilities:{manageSignIns:!location.search.includes('member'),configureAgents:!location.search.includes('member'),administerMembers:!location.search.includes('member'),deletePermanently:!location.search.includes('member'),privatePlanning:false}});export const useOptionalHomeContext=useHomeContext;export const useHomeStorageScope=()=>({homeId:'team',viewerId:'owner'});`,
+        home: `export const useHomeContext=()=>({home:{id:'team',kind:'team',name:'Team Huffine'},viewer:{id:'owner'},capabilities:{manageSignIns:!location.search.includes('member'),configureAgents:!location.search.includes('member'),administerMembers:!location.search.includes('member'),deletePermanently:!location.search.includes('member'),privatePlanning:false}});export const useOptionalHomeContext=useHomeContext;export const useHomeStorageScope=()=>({homeId:'team',viewerId:'owner'});export const useHomeDocumentScope=useHomeStorageScope;`,
         navigation: `import {useSyncExternalStore} from 'react';const subscribe=fn=>{addEventListener('popstate',fn);return()=>removeEventListener('popstate',fn);};const go=(url,replace=false)=>{history[replace?'replaceState':'pushState']({},'',url);dispatchEvent(new PopStateEvent('popstate'));};const router={push:url=>go(url),replace:url=>go(url,true)};export const useRouter=()=>router;export const usePathname=()=>location.pathname;export const useSearchParams=()=>new URLSearchParams(useSyncExternalStore(subscribe,()=>location.search));`,
         chat: `import {useQuery} from '@tanstack/react-query';import {trpc} from '@/lib/trpc/client';export const useTeamAiStatus=()=>useQuery(trpc.team.ai.status.queryOptions());`,
         members: `export const initials=name=>name.slice(0,1);export const useTeamMembers=()=>({active:[{id:'owner',name:'Trey',role:'owner'},{id:'member',name:'Sam',role:'member'}]});`,
@@ -281,7 +281,7 @@ it.skipIf(!enabled)('lists every agent and makes a key inside its item the momen
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(`${address}/?panel=settings&settings=external-ai`);
-    await page.getByText('Connected agents work on Team Huffine’s shared tasks', { exact: false }).waitFor();
+    await page.getByText('Connected apps work on Team Huffine’s shared tasks', { exact: false }).waitFor();
     const order = await page.locator('[data-agent-client]').evaluateAll(items => items.map(item => item.getAttribute('data-agent-client')));
     expect(order.slice(0, 4)).toEqual(['claude_code', 'codex', 'cursor', 'vscode']);
     expect(order.slice(-3)).toEqual(['chatgpt', 'ri', 'other']);
@@ -338,9 +338,13 @@ it.skipIf(!enabled)('keeps all phone sections reachable and hides owner-only set
     await nav.getByRole('button', { name: 'Your account', exact: true }).click();
     await page.getByRole('button', { name: 'Sign in on another device', exact: true }).click();
     await page.getByText('Ask a team owner', { exact: false }).waitFor();
-    await nav.getByRole('button', { name: 'Connect your agent', exact: true }).click();
+    await nav.getByRole('button', { name: 'Team in other apps', exact: true }).click();
     await page.locator('[data-agent-client=claude_code]').waitFor();
     expect(await page.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true);
+    // A long blurb truncates, keeping every item's chevron inside the list.
+    const listRight = await page.locator('[data-agent-client=codex]').evaluate(item => item.getBoundingClientRect().right);
+    const chevronRight = await page.locator('[data-agent-client=codex] [data-slot=accordion-trigger-icon]').first().evaluate(icon => icon.getBoundingClientRect().right);
+    expect(chevronRight).toBeLessThanOrEqual(listRight);
     const navBox = await nav.boundingBox();
     const closeBox = await page.getByRole('button', { name: 'Close', exact: true }).boundingBox();
     expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(closeBox!.x);
@@ -361,6 +365,9 @@ it.skipIf(!enabled)('preserves the personal settings checklist and search', asyn
     expect(await nav.getByRole('button').count()).toBe(1);
     await nav.getByRole('button', { name: 'Models', exact: true }).click();
     expect(await nav.getByRole('button', { name: 'Models', exact: true }).getAttribute('aria-current')).toBe('page');
+    // MCP is only in descriptions: Ri's own MCP server, and the servers Ri's agents use.
+    await page.getByRole('textbox', { name: 'Search settings', exact: true }).fill('mcp');
+    expect(await nav.getByRole('button').allInnerTexts()).toEqual(['Plugins', 'Ri in other apps']);
   } finally { await page.close(); }
 }, 20_000);
 
@@ -368,7 +375,7 @@ it.skipIf(!enabled)('sets up an agent on this computer in one click, and disconn
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(`${address}/?personal=1&external=1`);
-    await page.getByText('Agents on other computers use your remote address.', { exact: false }).waitFor();
+    await page.getByText('Apps on other computers use your remote address.', { exact: false }).waitFor();
     await page.getByText('https://home.example.test/api/orchestrator/mcp', { exact: true }).waitFor();
     // Ri's skills close the section, with no key.
     await page.getByRole('heading', { name: 'Ri’s skills', exact: true }).waitFor();
@@ -378,9 +385,10 @@ it.skipIf(!enabled)('sets up an agent on this computer in one click, and disconn
     await codex.getByRole('button', { name: /Codex/ }).click();
     await codex.getByText('On Mac Mini', { exact: true }).waitFor();
     await codex.getByRole('button', { name: 'Set up', exact: true }).click();
-    await codex.getByRole('status').filter({ hasText: 'Start a new Codex session' }).waitFor();
+    // Connected waits for the agent's first request. Until then the item says what to do there.
+    await codex.getByText('Waiting for Codex to reach Ri.', { exact: false }).waitFor();
     await codex.getByText('Ri’s skill is installed for it.', { exact: false }).waitFor();
-    await codex.getByText('Connected', { exact: true }).first().waitFor();
+    await codex.getByText('Not used yet', { exact: true }).waitFor();
     expect(await page.evaluate('window.setUpCalls')).toEqual(['codex']);
     // Its key is the connection here, never listed again among the others.
     expect(await codex.getByText('Codex on Mac Mini', { exact: true }).count()).toBe(0);

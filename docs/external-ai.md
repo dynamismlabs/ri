@@ -1,6 +1,8 @@
-# Connect your agent
+# Ri in other apps
 
-Settings → Connect your agent connects an outside agent, such as Claude Code, Codex or Cursor, to Ri's MCP. It can search, read and update tasks, notes, areas and the priority deck in your personal Ri. This includes private notes and private planning on tasks brought into My Ri from teams. Shared task edits still go through their team's normal command path. A team's own Connect your agent section gives an agent the team's shared work only.
+Settings → Ri in other apps connects an outside AI app, such as Claude Code, Codex, Cursor or ChatGPT, to Ri's MCP server. It can search, read and update tasks, notes, areas and the priority deck in your personal Ri. This includes private notes and private planning on tasks brought into My Ri from teams. Shared task edits still go through their team's normal command path. A team's own section, Team in other apps, gives an app the team's shared work only.
+
+**The name says the direction.** In Ri's own copy an agent is one of Ri's workspaces, and Connectors under Plugins bring other accounts into Ri. So this section is named for Ri going out into other apps, and its copy calls Claude Code, ChatGPT and the rest apps. It sits low in Settings, after Imports, because it's optional and mostly for people who already use a coding agent, and its Get started item comes last. The title is "Use Ri in other AI apps" and the description names the MCP server, which settings search also reads, so searching "MCP" finds it beside Plugins. It was "Connect your agent" from 2026-10-27 until 2026-11-18, and MCP access before that. Its id, `external-ai`, stays, since links carry it.
 
 To use a team from your personal Ri, follow [Testing a team through personal Ri](team-testing.md). It covers both MCP CRUD and running a shared task with your personal agent.
 

@@ -77,15 +77,6 @@ export const SECTIONS: readonly SettingsSectionDef[] = [
     description: 'Remote access URL, paired devices, and host-machine settings.',
   },
   {
-    // Outside agents connected to Ri's MCP (docs/external-ai.md). The id
-    // predates the name and stays, since links carry it.
-    id: 'external-ai',
-    label: 'Connect your agent',
-    icon: Cable,
-    title: `Connect your agent to ${APP_NAME}’s MCP`,
-    description: `Let Claude Code, Codex, Cursor and other agents read and update your ${APP_NAME} tasks, notes and deck.`,
-  },
-  {
     // Teams this Ri works with (docs/homes-spec.md §3.1, §9.3).
     id: 'teams',
     label: 'Teams',
@@ -145,6 +136,17 @@ export const SECTIONS: readonly SettingsSectionDef[] = [
     icon: FileInput,
     title: 'Import agent history',
     description: 'Bring local projects and chats from Claude Code and Codex into Ri.',
+  },
+  {
+    // Outside AI apps (Claude Code, Codex, ChatGPT...) using Ri's MCP
+    // (docs/external-ai.md). Named for the direction, Ri going into other
+    // apps, so it can't be read as adding one of Ri's own agents. The id
+    // predates the name and stays, since links carry it.
+    id: 'external-ai',
+    label: `${APP_NAME} in other apps`,
+    icon: Cable,
+    title: `Use ${APP_NAME} in other AI apps`,
+    description: `Let ChatGPT, Claude Code, Codex and other AI apps read and update your tasks, notes and deck through ${APP_NAME}’s MCP server.`,
   },
   {
     id: 'notifications',

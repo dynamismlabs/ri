@@ -187,7 +187,7 @@ export async function runWizard(): Promise<void> {
   } else if (!desktop) {
     log.info(
       'Claude Code, Codex and other coding tools can now manage your tasks and notes from any project, through the ri command. ' +
-        `Connect them to ${APP_NAME}'s MCP with ${APP_SHORT_ID} mcp connect <agent>, or in Settings, Connect your agent.`,
+        `Connect them to ${APP_NAME}'s MCP with ${APP_SHORT_ID} mcp connect <agent>, or in Settings → ${APP_NAME} in other apps.`,
     );
   }
 

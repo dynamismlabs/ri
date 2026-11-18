@@ -1,5 +1,5 @@
 /**
- * Connect your agent says Connected only once Ri has heard from the agent.
+ * Ri in other apps says Connected only once Ri has heard from the agent.
  * Writing Ri into an agent's configuration isn't enough: an agent that can't
  * reach Ri (an address it refuses, a session not restarted) never uses its
  * key, and the person should see that here instead of finding out in the agent.

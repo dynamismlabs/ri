@@ -18,7 +18,7 @@ import { agentSkillState } from './agent-skill-state';
  * folder, so switching harnesses never loses them. A new home's first run
  * installs them (`src/components/onboarding/agent-skill-install.ts`),
  * connecting an agent installs them for it (`src/lib/external-ai/local-setup.ts`),
- * and Settings → Connect your agent ends with their one-click install and
+ * and Settings → Ri in other apps ends with their one-click install and
  * uninstall. Uninstalling removes only Ri's own links
  * (`src/lib/agent-skills/shipped.ts`) and never touches a project.
  */
@@ -56,7 +56,7 @@ const buttonClass =
 const HARNESS_NAMES = listJoin(HARNESS_IDS.map((id) => HARNESS_REGISTRY[id].name));
 
 /**
- * The end of Connect your agent: Ri's skills for the coding tools on this
+ * The end of Ri in other apps: Ri's skills for the coding tools on this
  * computer, whether they're there, and the one button. Nothing in the desktop
  * app, which keeps them in its own folder until an agent is connected.
  */
@@ -70,7 +70,7 @@ export function AgentSkillFooter() {
       <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{APP_NAME}’s skills</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         {HARNESS_NAMES} on this computer have {APP_NAME}’s skills for tasks, notes and the agent browser, so they can use
-        your work through the <code className="font-mono">{APP_SHORT_ID}</code> command even before you connect them. Connecting an agent
+        your work through the <code className="font-mono">{APP_SHORT_ID}</code> command even before you connect them. Connecting one
         installs them for it. Your projects are never changed.
       </p>
       <div className="mt-2 flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">

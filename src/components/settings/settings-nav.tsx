@@ -12,6 +12,8 @@ export interface SettingsNavItem<Id extends string> {
   id: Id;
   label: string;
   title: string;
+  /** Searched with the label and title, so a word like MCP finds its section. */
+  description?: string;
   icon: LucideIcon;
   badge?: string;
 }
@@ -32,7 +34,7 @@ export function SettingsNavigation<Id extends string>({
   }, [active]);
   const q = query.trim().toLowerCase();
   const matches = q
-    ? sections.filter((s) => s.label.toLowerCase().includes(q) || s.title.toLowerCase().includes(q))
+    ? sections.filter((s) => [s.label, s.title, s.description ?? ''].some((text) => text.toLowerCase().includes(q)))
     : sections;
 
   return (

@@ -7,7 +7,7 @@
  * harness Ri can run. First-run setup turns it on as the conversation opens,
  * unless the home already chose, connecting an outside agent puts it in that
  * agent's own folders (`inspectSkillFolders`, `src/lib/external-ai/local-setup.ts`),
- * and Settings → Connect your agent shows it with one-click install and
+ * and Settings → Ri in other apps shows it with one-click install and
  * uninstall (`src/components/settings/agent-skill-access.tsx`). Project
  * repositories are never an ownership location for shipped skills.
  */

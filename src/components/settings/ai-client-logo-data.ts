@@ -1,5 +1,5 @@
 /**
- * Brand marks for the outside agents in Settings → Connect your agent that
+ * Brand marks for the outside agents in Settings → Ri in other apps that
  * aren't harnesses (those are in `harness-logo-data.ts`), as single 24x24
  * SVG paths, vendored so the client never ships an icon package. Gemini,
  * Windsurf, LM Studio, GitHub Copilot and the Model Context Protocol mark are

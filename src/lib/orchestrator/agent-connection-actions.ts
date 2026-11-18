@@ -25,7 +25,7 @@ function assertHere(ctx: ActionContext, what: string): void {
   throw new ActionError(
     'unsupported',
     `${what} changes agents on the computer running Ri, and this call came from another device.`,
-    'For an agent on another computer, open Settings → Connect your agent, choose the agent and use Copy setup prompt.',
+    'For an agent on another computer, open Settings → Ri in other apps, choose the agent and use Copy setup prompt.',
   );
 }
 
@@ -50,7 +50,7 @@ const connect_agent = defineAction({
     'to the agent\'s user-level configuration the agent\'s own way (never a project\'s files) and installs Ri\'s skill for it. Use it when ' +
     'the user asks to "connect Codex to Ri" or similar. This is an outside app, not one of Ri\'s agents (workspaces). Running it again ' +
     'replaces the earlier connection. The agent loads it in its next session, so tell the user what `next` says. For an agent on another ' +
-    'computer, point the user to Settings → Connect your agent → Copy setup prompt.',
+    'computer, point the user to Settings → Ri in other apps → Copy setup prompt.',
   params: { client: clientParam },
   strictParams: true,
   mutating: true,
