@@ -12,7 +12,7 @@ import type { AddressInfo } from 'node:net';
 import type { Page } from 'playwright-core';
 import type { Notification } from 'electron';
 import Database from 'better-sqlite3';
-import { AcceptanceFixture, api, assertNoAlertsWithoutSignature, eventually, needsSignedBuild } from './acceptance-fixture';
+import { AcceptanceFixture, api, assertNoAlertsWithoutSignature, bounded, eventually, needsSignedBuild } from './acceptance-fixture';
 import { desktopPackageLayout } from './package-layout';
 import { FIRST_START_MS } from './first-run';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
@@ -34,6 +34,36 @@ async function companion(fixture: AcceptanceFixture) {
   const page = await localPage(fixture.app!, 'companion');
   await page.locator('#heading').waitFor();
   return page;
+}
+/** The page's first look at this computer runs a setup helper on the app's own
+ * Node, with a 45 s limit (desktop/setup-client.ts), and then asks the service.
+ * On CI's Intel Mac a click's 30 s ran out first. Wait for the choice itself and
+ * record how long the page took. */
+const FIRST_CHECK_MS = 120_000;
+async function firstRunChoice(page: Page) {
+  const started = Date.now();
+  await page.locator('#welcome').waitFor({ timeout: FIRST_CHECK_MS });
+  await page.waitForFunction(() => !(document.getElementById('create-home') as HTMLButtonElement).disabled, undefined, { timeout: FIRST_CHECK_MS });
+  report.firstRunChoiceMs = Date.now() - started;
+  return page.locator('#create-home');
+}
+/** What a companion page shows and the state it loaded, for a failed run. */
+async function companionDiagnostics(fixture: AcceptanceFixture) {
+  if (!fixture.app) return undefined;
+  const page = await bounded(localPage(fixture.app, 'companion'), 'companion page for diagnostics', 5_000).catch(() => undefined);
+  if (!page) return undefined;
+  // One expression in the page's own scope: it keeps what it loaded in a
+  // top-level `let state`, and a compiled function would carry tsx helpers.
+  return bounded(page.evaluate(`(() => {
+    const text = id => document.getElementById(id)?.textContent?.trim() || undefined;
+    const loaded = typeof state === 'undefined' || !state ? null : state;
+    return {
+      sections: [...document.querySelectorAll('section[id]')].filter(section => !section.hidden).map(section => section.id),
+      error: text('error'), progress: document.getElementById('progress')?.hidden ? undefined : text('progress'),
+      createHomeDisabled: document.getElementById('create-home')?.disabled,
+      state: loaded && { role: loaded.role, homeSelected: loaded.homeSelected, reason: loaded.reason, connecting: loaded.connecting, connectionError: loaded.connectionError, service: !!loaded.service },
+    };
+  })()`), 'companion page diagnostics', 5_000).catch(error => ({ unreadable: String(error) }));
 }
 async function openDesktopSettings(fixture: AcceptanceFixture) {
   await fixture.app!.evaluate(({ Menu, BrowserWindow }) => {
@@ -177,7 +207,7 @@ void (async () => {
     await initial.screenshot({ path: path.join(home.base, 'first-run.png') });
     assert.equal(fs.existsSync(path.join(home.root, 'data.db')), false);
     assert.equal(await serviceStatus(), null);
-    await initial.locator('#create-home').click();
+    await (await firstRunChoice(initial)).click();
     const homePage = await mainPage(home);
     assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(home.app!));
     await homePage.screenshot({ path: path.join(home.base, 'home.png') });
@@ -305,6 +335,7 @@ void (async () => {
   } catch (error) {
     failure = error;
     report.error = error instanceof Error ? error.stack : String(error);
+    report.companionPages = { home: await companionDiagnostics(home), connected: await companionDiagnostics(connected) };
     for (const fixture of [home, connected]) await fixture.page?.screenshot({ path: path.join(fixture.base, 'failure.png'), timeout: 3000 }).catch(() => {});
   } finally {
     offline = false;
