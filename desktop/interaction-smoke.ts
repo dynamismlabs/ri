@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Attachment } from '../src/db/types';
-import { acceptance, api, eventually, hotkey } from './acceptance-fixture';
+import { acceptance, api, eventually, hotkey, openWithHotkey } from './acceptance-fixture';
 
 interface NativeDownloadState { phase: string; fileName?: string; totalBytes?: number; receivedBytes?: number; url?: string }
 type DownloadFixtureGlobal = typeof globalThis & { riDownloadAcceptance: NativeDownloadState };
@@ -13,10 +13,11 @@ void acceptance('interaction-smoke', async fixture => {
   const page = await fixture.launch();
   const app = fixture.app!;
 
-  await hotkey(page, 'search');
   // cmdk's dialog wrapper has no box. Its fixed-position input is the
   // visible control, so checking wrapper dimensions would be misleading.
-  await page.getByRole('combobox').waitFor();
+  // The first shortcut after launch can beat the page's key listener on a
+  // slow runner (CI's Intel Mac), so it repeats until the palette shows.
+  await openWithHotkey(page, 'search', page.getByRole('combobox'), fixture.report);
   await page.getByRole('combobox').fill('> Create note');
   await page.getByRole('option', { name: 'Create note' }).click();
   const title = page.locator('textarea.note-title');

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import electron from 'electron';
-import { _electron, type ElectronApplication, type Page } from 'playwright-core';
+import { _electron, type ElectronApplication, type Locator, type Page } from 'playwright-core';
 import { demoEnvironment } from './config';
 import { desktopPackageLayout } from './package-layout';
 import { serviceStatus, stopService } from '../src/lib/service/client';
@@ -38,6 +38,25 @@ export async function eventually(check: () => Promise<boolean>, description: str
 export async function hotkey(page: Page, name: keyof typeof HOTKEYS) {
   const key: Hotkey = HOTKEYS[name];
   await page.keyboard.press([key.meta && (process.platform === 'darwin' ? 'Meta' : 'Control'), key.shift && 'Shift', key.key].filter(Boolean).join('+'));
+}
+
+/** Press a shortcut until what it opens shows. A press that arrives before the
+ * page has attached its key listener does nothing, and a slow runner shows the
+ * server-rendered page well before that. The press repeats only while nothing
+ * shows, so a toggle never closes what it opened. Extra presses are reported. */
+export async function openWithHotkey(page: Page, name: keyof typeof HOTKEYS, opened: Locator, report: Record<string, unknown>, timeout = 60_000) {
+  const started = Date.now();
+  for (let presses = 1; ; presses++) {
+    await hotkey(page, name);
+    const shown = await opened.waitFor({ timeout: 5_000 }).then(() => true, async error => {
+      if (await opened.isVisible()) return true;
+      if (Date.now() - started >= timeout) throw error;
+      return false;
+    });
+    if (!shown) continue;
+    if (presses > 1) ((report.hotkeyRetries ??= []) as unknown[]).push({ name, presses, ms: Date.now() - started });
+    return;
+  }
 }
 
 /** Whether macOS would turn this build's alerts away. It shows them only from an app with an Apple-issued
@@ -220,6 +239,10 @@ export class AcceptanceFixture {
     await page.waitForURL(url => url.protocol === 'https:', { timeout: FIRST_START_MS });
     this.origin = new URL(page.url()).origin;
     await page.locator('aside:visible').first().waitFor();
+    // The sidebar is server-rendered, so it shows before React runs. A check
+    // that presses keys or clicks needs the page's own handlers, which the
+    // layout's desktop effect (data-ri-desktop) shows have attached.
+    await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform, { timeout: 60_000 });
     assert.equal(await page.evaluate(() => window.riDesktop?.platform), process.platform);
     assert.equal(await page.evaluate(() => typeof window.riDesktop?.settings), 'function', 'Local Home viewer requires its settings bridge');
     assert.equal(await page.evaluate(() => typeof window.riDesktop?.notifications), 'function', 'Local Home viewer requires its notification bridge');
