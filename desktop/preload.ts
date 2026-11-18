@@ -52,10 +52,12 @@ if (process.isMainFrame) {
       ipcRenderer.on('desktop:resume', listener);
       return () => ipcRenderer.removeListener('desktop:resume', listener);
     },
-    onPrepareClose: (callback: () => Promise<boolean>) => {
+    // True once nothing would be lost. Otherwise the page names what would be
+    // (a page from before it could says false), and the app shows that name.
+    onPrepareClose: (callback: () => Promise<boolean | string>) => {
       const listener = (_event: Electron.IpcRendererEvent, nonce: string) => {
-        void Promise.resolve().then(callback).then(ok => {
-          ipcRenderer.send('desktop:prepared', { nonce, ok: ok === true });
+        void Promise.resolve().then(callback).then(result => {
+          ipcRenderer.send('desktop:prepared', { nonce, ok: result === true, ...(typeof result === 'string' ? { waitingFor: result } : {}) });
         }, () => ipcRenderer.send('desktop:prepared', { nonce, ok: false }));
       };
       ipcRenderer.on('desktop:prepare-close', listener);

@@ -65,6 +65,15 @@ async function companionDiagnostics(fixture: AcceptanceFixture) {
     };
   })()`), 'companion page diagnostics', 5_000).catch(error => ({ unreadable: String(error) }));
 }
+/** Where a viewer window was and whether it was frozen for a close check
+ * (the app logs why it asked before closing as "Asked before closing"). */
+async function viewerDiagnostics(fixture: AcceptanceFixture) {
+  const page = fixture.page;
+  if (!page || page.isClosed()) return undefined;
+  return bounded(page.evaluate(() => ({ url: location.href, readyState: document.readyState, inert: document.body.inert,
+    hydrated: !!document.documentElement.dataset.riDesktop, dialogs: [...document.querySelectorAll('[role="dialog"], [role="alertdialog"]')].map(dialog => dialog.getAttribute('aria-label') ?? dialog.textContent?.trim().slice(0, 80)) })),
+  'viewer page diagnostics', 5_000).catch(error => ({ unreadable: String(error) }));
+}
 async function openDesktopSettings(fixture: AcceptanceFixture) {
   await fixture.app!.evaluate(({ Menu, BrowserWindow }) => {
     const item = Menu.getApplicationMenu()?.getMenuItemById('ri-desktop-preferences');
@@ -336,6 +345,7 @@ void (async () => {
     failure = error;
     report.error = error instanceof Error ? error.stack : String(error);
     report.companionPages = { home: await companionDiagnostics(home), connected: await companionDiagnostics(connected) };
+    report.viewerPages = { home: await viewerDiagnostics(home), connected: await viewerDiagnostics(connected) };
     for (const fixture of [home, connected]) await fixture.page?.screenshot({ path: path.join(fixture.base, 'failure.png'), timeout: 3000 }).catch(() => {});
   } finally {
     offline = false;

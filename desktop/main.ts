@@ -53,6 +53,7 @@ import { isLocalViewer, isViewerReload, trustedViewerFrame, viewerPermission, vi
 import { ViewerTransitions } from './viewer-transitions';
 import { signInDesktopSession } from './session-auth';
 import { automatedFailure, connectionFailure } from './connection-failure';
+import { CLOSE_ANSWER_MS, closeDialogDetail, closeHold, closeHoldLog, type CloseHold } from './close-guard';
 import { DesktopConnection } from './connection-state';
 import { teamsFile } from './teams';
 import { teamFlow } from './team-flow';
@@ -147,7 +148,7 @@ const viewerTransitions = new ViewerTransitions<BackendReady>();
 let localService: ServiceStatus | undefined;
 let installedRuntime: BackendReady['runtime'];
 let preparingClose = false;
-let closeGuard: { nonce: string; resolve: (ok: boolean) => void } | undefined;
+let closeGuard: { nonce: string; resolve: (hold: CloseHold | null) => void } | undefined;
 let preparation: Promise<boolean> | undefined;
 let backgroundGuard: { nonce: string; resolve: (ok: boolean) => void } | undefined;
 let backgroundPending = false;
@@ -835,19 +836,20 @@ function prepareClose(intent: 'quit' | 'continue' = 'continue'): Promise<boolean
 
 async function prepareCloseOnce(intent: 'quit' | 'continue'): Promise<boolean> {
   if (!window || window.isDestroyed() || !appOrigin || !sameOrigin(window.webContents.getURL(), appOrigin)) return true;
-  const ok = await new Promise<boolean>(resolve => {
+  const hold = await new Promise<CloseHold | null>(resolve => {
     const nonce = randomUUID();
-    const timer = setTimeout(() => { closeGuard = undefined; resolve(false); }, 15_000);
+    const timer = setTimeout(() => { closeGuard = undefined; resolve('no-answer'); }, CLOSE_ANSWER_MS);
     closeGuard = { nonce, resolve: result => { clearTimeout(timer); closeGuard = undefined; resolve(result); } };
     window!.webContents.send('desktop:prepare-close', nonce);
   });
-  if (ok) return true;
+  if (!hold) return true;
+  console.warn(`[desktop] ${closeHoldLog(hold)}`);
   // A Quit from the menu bar must not leave its save/recording dialog attached
   // to a hidden window. Reopening alone never resumes a guarded renderer.
   showAppWindow();
   const result = await dialog.showMessageBox(window, {
     type: 'warning', message: 'Some changes have not finished saving',
-    detail: 'Keep Ri open to finish your recording or upload and retry pending saves. Saved document, chat and capture drafts can be recovered. Content that could not be saved on this device may be lost if you continue.',
+    detail: closeDialogDetail(hold),
     buttons: ['Keep open', intent === 'quit' ? 'Quit anyway' : 'Continue without saving'], defaultId: 0, cancelId: 0,
   });
   if (result.response !== 1) window?.webContents.send('desktop:resume');
@@ -1205,8 +1207,8 @@ async function start() {
   ipcMain.on('desktop:prepared', (event, message: unknown) => {
     if (event.sender !== window?.webContents || event.senderFrame !== window.webContents.mainFrame || !appOrigin || !sameOrigin(event.senderFrame.url, appOrigin)) return;
     if (!message || typeof message !== 'object') return;
-    const reply = message as { nonce?: unknown; ok?: unknown };
-    if (reply.nonce === closeGuard?.nonce) closeGuard?.resolve(reply.ok === true);
+    const reply = message as { nonce?: unknown; ok?: unknown; waitingFor?: unknown };
+    if (reply.nonce === closeGuard?.nonce) closeGuard?.resolve(closeHold(reply));
   });
   ipcMain.handle('desktop:open-external', async (event, raw: unknown) => {
     if (event.sender !== window?.webContents || event.senderFrame !== window.webContents.mainFrame || !appOrigin || !sameOrigin(event.senderFrame.url, appOrigin)) throw new Error('Untrusted window');

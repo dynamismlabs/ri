@@ -2,20 +2,12 @@ import { documentSaves } from './document-saves';
 import { flushCaptureDrafts, hasPendingCapture } from './capture-draft';
 import { flushChatDrafts } from './chat-drafts';
 import { hasActiveInput } from './active-input';
+import type { UnloadBlocker } from './unload-blockers';
+
+export { UNLOAD_BLOCKER_MESSAGES, type UnloadBlocker } from './unload-blockers';
 
 let preparedReload = false;
 export function isPreparedVersionReload() { return preparedReload; }
-
-export type UnloadBlocker = 'chat' | 'document' | 'input' | 'capture' | 'request';
-
-/** The browser's leave dialog can't say why, so the view explains it. */
-export const UNLOAD_BLOCKER_MESSAGES: Record<UnloadBlocker, string> = {
-  chat: 'A chat draft isn\'t saved yet, usually because a file is still uploading.',
-  document: 'Edits to a task, note or area haven\'t reached Ri yet.',
-  input: 'Voice input is still recording or transcribing.',
-  capture: 'A capture isn\'t saved on this device yet.',
-  request: 'Something you typed is still on its way to Ri.',
-};
 
 /** Ordinary reloads have no asynchronous save handshake. Prove chat retention
  * synchronously and name the first thing a reload right now would lose. */

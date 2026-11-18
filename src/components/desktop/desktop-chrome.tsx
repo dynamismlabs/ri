@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { hasActiveInput } from '@/lib/client/active-input';
 import { flushCaptureDrafts } from '@/lib/client/capture-draft';
-import { UNLOAD_BLOCKER_MESSAGES, viewerUnloadBlocker } from '@/lib/client/version-reload';
+import { UNLOAD_BLOCKER_MESSAGES, viewerUnloadBlocker, type UnloadBlocker } from '@/lib/client/version-reload';
 import { flushChatDrafts } from '@/lib/client/chat-drafts';
 import { documentSaves } from '@/lib/client/document-saves';
 import { countUnsavedMutations } from '@/lib/query/mutation-meta';
@@ -13,6 +13,18 @@ import { countUnsavedMutations } from '@/lib/query/mutation-meta';
 import { installHistoryNavigation } from '@/lib/client/history-navigation';
 import '@/lib/client/desktop';
 import { DesktopNavButtons } from './desktop-nav-buttons';
+
+/** Saves what it can before the desktop app closes or replaces this page, and
+ * names the first thing that still isn't saved (null once nothing is). */
+async function closeBlocker(unsavedRequests: () => number): Promise<UnloadBlocker | null> {
+  try { await documentSaves.flushAll(); } catch { return 'document'; }
+  try { await flushCaptureDrafts(); } catch { return 'capture'; }
+  try { flushChatDrafts(); } catch { return 'chat'; }
+  const deadline = Date.now() + 10_000;
+  while (unsavedRequests() && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 50));
+  if (unsavedRequests()) return 'request';
+  return documentSaves.has() ? 'document' : null;
+}
 
 /** Navigation and save handshakes belong to every viewer document, including
  * team spaces. Personal service controls mount separately in the layout. */
@@ -41,18 +53,13 @@ export function DesktopChrome() {
     // window open until voice capture/transcription is finished or cancelled.
     const background = window.riDesktop?.onPrepareBackground?.(() => !hasActiveInput());
     const unsubscribe = window.riDesktop?.onPrepareClose?.(async () => {
-      if (hasActiveInput()) return false;
+      if (hasActiveInput()) return 'input';
       document.body.inert = true;
       try {
-        await documentSaves.flushAll();
-        await flushCaptureDrafts();
-        flushChatDrafts();
-        const deadline = Date.now() + 10_000;
-        while (countUnsavedMutations(queryClient) && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 50));
-        const ready = countUnsavedMutations(queryClient) === 0 && !documentSaves.has();
-        if (!ready) document.body.inert = false;
-        return ready;
-      } catch { document.body.inert = false; return false; }
+        const blocker = await closeBlocker(() => countUnsavedMutations(queryClient));
+        if (blocker) document.body.inert = false;
+        return blocker ?? true;
+      } catch (error) { document.body.inert = false; throw error; }
     });
     const resume = window.riDesktop?.onResume?.(() => { document.body.inert = false; });
     return () => { resume?.(); background?.(); document.body.inert = false; window.removeEventListener('beforeunload', beforeUnload); document.removeEventListener('visibilitychange', visibility); unsubscribe?.(); };
