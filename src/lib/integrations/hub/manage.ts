@@ -30,11 +30,29 @@ export interface HubAppView {
   personalAppId: string | null;
 }
 
+/** Where a hub app says it runs: its own address and where its sign-ins return. */
+function hubAppOrigins(app: HubAppRecord): Set<string> {
+  return new Set([app.clientUri, ...(registeredClient(app.clientId)?.redirectUris ?? [])].map(appOrigin).filter((origin): origin is string => !!origin));
+}
+
 /** A personal app in Ri whose address is this hub app's. */
 function linkedPersonalApp(app: HubAppRecord): string | null {
-  const origins = new Set([app.clientUri, ...(registeredClient(app.clientId)?.redirectUris ?? [])].map(appOrigin).filter(Boolean));
-  const entry = getMcpServerStore().list().find((server) => server.app && origins.has(appOrigin(server.url)));
+  const origins = hubAppOrigins(app);
+  const entry = getMcpServerStore().list().find((server) => server.app && origins.has(appOrigin(server.url)!));
   return entry?.app?.id ?? null;
+}
+
+/**
+ * Turn off the hub access of the app at an address (an app Ri connects to at `url`), as its
+ * panel's switch does. For removing an app Ri can't confirm stopped (src/lib/apps/remove.ts).
+ * Returns how many hub apps were on and are now off.
+ */
+export function turnOffHubAppsAt(url: string): number {
+  const origin = appOrigin(url);
+  if (!origin) return 0;
+  const apps = listHubApps().filter((app) => !app.revokedAt && hubAppOrigins(app).has(origin));
+  for (const app of apps) turnOffHubApp(app.id);
+  return apps.length;
 }
 
 async function options(): Promise<HubConsentOptions> {

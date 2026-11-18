@@ -13,7 +13,7 @@ vi.mock('../runtime', () => ({
   getMcpServerStore: () => ({ list: () => [] }),
 }));
 const q = await import('@/lib/db/queries');
-const { getHubAppView, narrowHubApp } = await import('./manage');
+const { getHubAppView, narrowHubApp, turnOffHubAppsAt } = await import('./manage');
 
 describe('the hub panel with one Google account behind Gmail and Calendar', () => {
   it('labels each row by its own service, and takes back one service without the other', async () => {
@@ -31,5 +31,21 @@ describe('the hub panel with one Google account behind Gmail and Calendar', () =
     expect(narrowHubApp(app.id, { connectionId: 'c-home', toolkitId: 'gmail' })?.accounts).toEqual([
       { connectionId: 'c-home', toolkitId: 'google_calendar', tools: ['google_calendar__list_events'] },
     ]);
+  });
+});
+
+describe('turning off the hub access of the app at an address', () => {
+  it('turns off every app there, the same app at another loopback name too, and nothing elsewhere', () => {
+    const at = (clientId: string, clientUri: string) => q.upsertHubApp({ clientId, name: clientId, clientUri, grant: { accounts: [], services: ['list_tasks'] } });
+    const travel = at('travel', 'http://127.0.0.1:4313');
+    const alias = at('travel-alias', 'http://localhost:4313');
+    const bookmarks = at('bookmarks', 'http://127.0.0.1:4314');
+    expect(turnOffHubAppsAt('http://127.0.0.1:4313/mcp')).toBe(2);
+    expect(q.getHubApp(travel.id)?.revokedAt).toEqual(expect.any(String));
+    expect(q.getHubApp(alias.id)?.revokedAt).toEqual(expect.any(String));
+    expect(q.getHubApp(bookmarks.id)?.revokedAt).toBeNull();
+    // Already off: nothing more to turn off.
+    expect(turnOffHubAppsAt('http://127.0.0.1:4313/mcp')).toBe(0);
+    expect(turnOffHubAppsAt('not a url')).toBe(0);
   });
 });

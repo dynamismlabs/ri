@@ -7,8 +7,8 @@ import { AppBuildError } from '@/lib/apps/builder';
 import { removeApp } from '@/lib/apps/remove';
 
 /** Remove an app Ri installed, its kit's refusals said as this router says its own. */
-async function removeAppWithBuildErrors(sourceId: string) {
-  try { return await removeApp(sourceId); }
+async function removeAppWithBuildErrors(sourceId: string, turnOffAccess?: boolean) {
+  try { return await removeApp(sourceId, { turnOffAccess }); }
   catch (error) {
     if (error instanceof AppBuildError) throw new PersonalAppError(error.code === 'setup' ? 'invalid' : error.code, error.message);
     throw error;
@@ -49,9 +49,10 @@ export const personalAppsRouter = router({
     .mutation(({ input }) => run(() => removePersonalAppFromAgent(input))),
   // An app Ri installed is uninstalled too, keeping its folder and data (src/lib/apps/remove.ts).
   // One added by its address is only disconnected: it runs on its own.
-  remove: p.input(z.object({ appId: id }).strict()).mutation(({ input }) => run(async () => {
+  // `turnOffAccess`: an installed app whose folder is gone may keep running, so the person may turn off its hub access too.
+  remove: p.input(z.object({ appId: id, turnOffAccess: z.boolean().optional() }).strict()).mutation(({ input }) => run(async () => {
     const source = getAppSourceForApp(input.appId);
-    if (source?.createdByRi) return removeAppWithBuildErrors(source.id);
+    if (source?.createdByRi) return removeAppWithBuildErrors(source.id, input.turnOffAccess);
     await removePersonalApp(input.appId);
     return null;
   })),

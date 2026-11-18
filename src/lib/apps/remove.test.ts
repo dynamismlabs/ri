@@ -117,8 +117,13 @@ describe('removing an app Ri installed', () => {
     git(installed.folder!, 'add', '-A');
     git(installed.folder!, 'commit', '-q', '-m', 'My notes');
 
-    const removed = await removeApp(source.id);
-    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir, stillInstalled: null });
+    // It borrows the person's accounts through the hub, as kit apps do.
+    const hub = q.upsertHubApp({ clientId: 'tide-log-hub', name: 'Tide Log', clientUri: new URL(installed.url!).origin, grant: { accounts: [], services: ['list_tasks'] } });
+
+    // Uninstalled for sure, so its hub access stays for Add to pick back up, even if asked to go.
+    const removed = await removeApp(source.id, { turnOffAccess: true });
+    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir, stillInstalled: null, accessTurnedOff: false });
+    expect(q.getHubApp(hub.id)?.revokedAt).toBeNull();
     // Stopped and uninstalled with the kit's own command.
     expect(await answers(installed.url!)).toBe(false);
     expect(fs.existsSync(path.join(dataDir, 'releases', 'service.process'))).toBe(false);
@@ -150,9 +155,16 @@ describe('removing an app Ri installed', () => {
     // What the Remove dialog reads to say so before it runs.
     expect(await appStatus(source.id, { fresh: true })).toMatchObject({ state: 'unknown', problem: 'no_folder' });
 
-    const removed = await removeApp(source.id);
+    // Its hub access, and another app's at another address.
+    const hub = q.upsertHubApp({ clientId: 'tide-log-hub', name: 'Tide Log', clientUri: new URL(installed.url!).origin, grant: { accounts: [], services: ['list_tasks'] } });
+    const other = q.upsertHubApp({ clientId: 'other-hub', name: 'Other', clientUri: 'http://127.0.0.1:1', grant: { accounts: [], services: ['list_tasks'] } });
+
+    // Ri can't confirm it stopped, and the person kept "also turn off its access" ticked.
+    const removed = await removeApp(source.id, { turnOffAccess: true });
     const kit = appToolchain().kit;
-    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir: null, stillInstalled: { command: kit ? `pnpm exec ${kit.name} serve --uninstall` : null } });
+    expect(removed).toEqual({ name: 'Tide Log', folder: installed.folder, dataDir: null, stillInstalled: { command: kit ? `pnpm exec ${kit.name} serve --uninstall` : null }, accessTurnedOff: true });
+    expect(q.getHubApp(hub.id)?.revokedAt).toEqual(expect.any(String));
+    expect(q.getHubApp(other.id)?.revokedAt).toBeNull();
     // It says so because it's so: the kit never ran, and the app still answers.
     expect(await answers(installed.url!)).toBe(true);
     expect(fs.existsSync(path.join(dataDir, 'releases', 'service.process'))).toBe(true);

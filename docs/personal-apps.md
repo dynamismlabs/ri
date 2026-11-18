@@ -126,11 +126,12 @@ Ri builds and changes apps with the kit's own commands (shared spec §2, and the
 - **Then disconnects it,** every place: Ri's own chats and every agent, with their scopes.
 - **Takes it off Ri's lists:** Running on this computer, Apps you're building, its connection, and the catalog row, which offers Add again. The app's record is kept apart (`app_sources.removed_at`).
 - **Keeps its folder,** with any changes the person made, and **its data**, in the kit's data directory (the kit keeps it by the app's id). The dialog names both paths, from the kit's `status --json` (`dataDir`). Deleting them is the person's to do.
-- **Its access through Ri's hub stays** as the person allowed it, so an app added again picks that up too. The hub panel turns it off.
+- **Its access through Ri's hub stays** as the person allowed it, so an app added again picks that up too. The hub panel turns it off. The one exception is an app whose folder is gone, below.
 
 **If its folder is gone,** the kit can't uninstall it, since the kit finds the app's service from its folder.
 - The dialog says so before anything runs. The app's status reports `no_folder`.
 - Remove still disconnects it and takes it off Ri's lists.
+- Since it may keep running, the dialog also offers **Also turn off its access to your accounts**, ticked to start with (`turnOffAccessChoice`). Kept ticked, Remove turns off the hub access of the app at its address as the panel's switch does (`turnOffHubAppsAt` in `hub/manage.ts`): its tokens stop at its next call, and the requests waiting for the person and the approvals it hasn't used are dropped. The notice says so.
 - The result's `stillInstalled` says the app may still be running. The notice stays up until it's dismissed and gives the kit's uninstall, `pnpm exec <kit> serve --uninstall`, to run once the folder is back. Ri names the kit's command from the kit it carries (`CarriedKit.name`), since an app's own copy has the same command.
 
 **Adding it again** picks both back up. Add in Recommended apps, or New app with the same name, revives the record and installs the kept folder as it is, not a fresh clone. The app finds its data where it left it. Its catalog version and any change in progress come back with it. If its folder was deleted, Add clones the catalog version afresh, and the app's data still comes back.
