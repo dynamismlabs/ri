@@ -12,6 +12,7 @@ import { demoEnvironment } from './config';
 import { desktopPackageLayout } from './package-layout';
 import { serviceStatus, stopService } from '../src/lib/service/client';
 import { HOTKEYS, type Hotkey } from '../src/constants/commands';
+import { desktopNeedsSignedBuild, type DesktopNotificationStatus } from '../src/lib/notifications/desktop-contract';
 import { relayDesktopOutput, viewerPage } from './acceptance-surfaces';
 
 export async function bounded<T>(promise: Promise<T>, description: string, timeout = 30_000): Promise<T> {
@@ -35,6 +36,31 @@ export async function eventually(check: () => Promise<boolean>, description: str
 export async function hotkey(page: Page, name: keyof typeof HOTKEYS) {
   const key: Hotkey = HOTKEYS[name];
   await page.keyboard.press([key.meta && (process.platform === 'darwin' ? 'Meta' : 'Control'), key.shift && 'Shift', key.key].filter(Boolean).join('+'));
+}
+
+/** Whether macOS would turn this build's alerts away. It shows them only from an app with an Apple-issued
+ * signature, and CI and local packages have none, so Ri says so and won't turn them on (the same rule the
+ * Settings page uses). A smoke checks that refusal there and leaves delivery to a build that can notify. */
+export async function needsSignedBuild(page: Page): Promise<boolean> {
+  const status = await bounded(page.evaluate(() => window.riDesktop!.notifications!('status')), 'desktop notification status', 15_000) as DesktopNotificationStatus;
+  return desktopNeedsSignedBuild(process.platform, status);
+}
+
+/** Notifications settings on a build macOS won't let notify: the card says why and offers no way to turn
+ * them on. A local viewer's bridge refuses if asked anyway. A connected Home's would ask the person first. */
+export async function assertNoAlertsWithoutSignature(page: Page, options: { askBridge: boolean }) {
+  const card = page.getByRole('region', { name: 'Desktop notifications on this computer', exact: true });
+  await card.getByRole('status').filter({ hasText: 'Not in this build' }).waitFor();
+  assert.equal(await page.getByRole('button', { name: 'Enable desktop notifications', exact: true }).count(), 0, 'An unsigned Mac build offered to turn on notifications');
+  if (options.askBridge) {
+    const refusal = await page.evaluate(async () => {
+      try { await window.riDesktop!.notifications!('enable'); return 'turned on'; }
+      catch (error) { return error instanceof Error ? error.message : String(error); }
+    });
+    assert.match(refusal, /unavailable/, 'An unsigned Mac build turned on notifications');
+  }
+  const status = await bounded(page.evaluate(() => window.riDesktop!.notifications!('status')), 'desktop notification status', 15_000) as DesktopNotificationStatus;
+  assert.equal(status.enabled, false, 'An unsigned Mac build reports notifications on');
 }
 
 export async function api<T>(page: Page, route: string, method = 'GET', body?: unknown): Promise<T> {

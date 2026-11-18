@@ -12,7 +12,7 @@ import type { AddressInfo } from 'node:net';
 import type { Page } from 'playwright-core';
 import type { Notification } from 'electron';
 import Database from 'better-sqlite3';
-import { AcceptanceFixture, api, eventually } from './acceptance-fixture';
+import { AcceptanceFixture, api, assertNoAlertsWithoutSignature, eventually, needsSignedBuild } from './acceptance-fixture';
 import { desktopPackageLayout } from './package-layout';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
 import { ensureServiceStatus, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
@@ -84,7 +84,8 @@ function remoteDeliveries(deviceId: string): RemoteDelivery[] {
  * asks the person in a native dialog over its window, and only Allow turns
  * them on. Turning them off needs no dialog (desktop/notification-consent.ts).
  */
-async function remoteNotificationConsent(page: Page, deviceId: string) {
+/** Whether this computer could show the connected Home's alerts (an unsigned Mac build can't). */
+async function remoteNotificationConsent(page: Page, deviceId: string): Promise<boolean> {
   await connected.app!.evaluate(({ Notification, dialog }) => {
     const shown: Notification[] = [];
     const questions: string[] = [];
@@ -106,6 +107,13 @@ async function remoteNotificationConsent(page: Page, deviceId: string) {
   const shown = () => connected.app!.evaluate(() => (globalThis as NotificationFixtureGlobal).companionAlerts.map(alert => ({ id: alert.id, title: alert.title })));
   const questions = () => connected.app!.evaluate(() => [...(globalThis as NotificationFixtureGlobal).consentQuestions]);
   await connected.navigate('/?settings=notifications');
+  if (await needsSignedBuild(page)) {
+    await assertNoAlertsWithoutSignature(page, { askBridge: false });
+    assert.deepEqual(await questions(), [], 'An unsigned Mac build asked to show notifications it cannot show');
+    assert.deepEqual(remoteDeliveries(deviceId), []);
+    passed('A connected Home on an unsigned Mac build says why this computer cannot notify, and asks nothing');
+    return false;
+  }
   const deviceCard = page.getByRole('region', { name: 'Desktop notifications on this computer', exact: true });
   const state = deviceCard.getByRole('status');
   await state.filter({ hasText: 'Off' }).waitFor();
@@ -140,6 +148,7 @@ async function remoteNotificationConsent(page: Page, deviceId: string) {
   await state.filter({ hasText: 'Off' }).waitFor();
   assert.equal(await page.evaluate(() => performance.timeOrigin), viewerIdentity, 'Turning alerts off must not reload the viewer');
   passed('Home channel re-enable cannot override local native notification refusal');
+  return true;
 }
 
 async function consentToExecution(fixture: AcceptanceFixture) {
@@ -236,7 +245,7 @@ void (async () => {
     assert.deepEqual(seenCapabilities, []);
     passed('First-run setup and remote Home share one native window with consent-mediated settings, no local task database and no arbitrary native bridge');
 
-    await remoteNotificationConsent(page, pair.device.id);
+    const alertsShown = await remoteNotificationConsent(page, pair.device.id);
 
     // Control only the human consent dialog response. Enrollment, service,
     // worker stream, stop, persisted preference and reconnect are real.
@@ -285,8 +294,11 @@ void (async () => {
     assert.equal((await serviceStatus())?.runId, session.runId);
     assert.deepEqual(seenCapabilities, []);
     assert.equal(fs.existsSync(path.join(connected.root, 'data.db')), false);
-    assert.equal(remoteDeliveries(pair.device.id)[1].status, 'pending');
-    assert.equal(remoteDeliveries(pair.device.id)[1].attempts, 0);
+    if (alertsShown) {
+      // The Home's queued test from the notification step is still waiting for this computer's consent.
+      assert.equal(remoteDeliveries(pair.device.id)[1].status, 'pending');
+      assert.equal(remoteDeliveries(pair.device.id)[1].attempts, 0);
+    }
     passed('Local stop survives controller restart without stopping Home or creating worker task data');
     report.limits = ['The connected journey uses the source Electron shell with explicit loopback development HTTP and a certificate-validating fixture proxy. Production trusted-HTTPS remote viewing still needs deployment qualification.', 'Native consent dialog answers and OS notification presentation/history/support are controlled. No OS login job, real harness, real account or production data was used.'];
   } catch (error) {
