@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import type { Request, WebSocketRoute } from 'playwright-core';
-import { acceptance, api, bounded, eventually, type AcceptanceFixture } from './acceptance-fixture';
+import { acceptance, api, bounded, eventually, hydrated, type AcceptanceFixture } from './acceptance-fixture';
 import { API_PROTOCOL, apiCompatibilityIssue } from '../src/lib/releases/api-contract';
 
 async function openCapture(fixture: AcceptanceFixture) {
@@ -141,15 +141,26 @@ void acceptance('version-smoke', async fixture => {
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   assert.equal(await page.evaluate(() => performance.timeOrigin), before);
   fixture.check('Ordinary renderer reload remains blocked while unsupported edits are pending');
+  // How long each part of the reload took, so a slow one says which part.
+  const timings: Record<string, number> = {};
+  const started = Date.now();
   await reload.click();
+  timings.clickedMs = Date.now() - started;
   try { await page.waitForFunction(previous => performance.timeOrigin !== previous, before); }
   finally {
+    timings.newDocumentMs = Date.now() - started;
     fixture.report.versionReload = {
+      timings,
       renderer: await page.evaluate(() => (window as unknown as { versionReloadEvents?: unknown }).versionReloadEvents).catch(() => undefined),
       native: await fixture.app!.evaluate(() => (globalThis as unknown as { versionReloadNative?: unknown }).versionReloadNative).catch(() => undefined),
     };
   }
+  // The new document fetches every script again (routing turns off the HTTP
+  // cache), so give it the time a first launch gets to attach its handlers.
+  await hydrated(page);
+  timings.hydratedMs = Date.now() - started;
   await title.waitFor();
+  timings.titleMs = Date.now() - started;
   assert.equal((await api<{ title: string }>(page, `/api/notes/${note.id}`)).title, 'Before Home update');
   await page.getByRole('button', { name: 'Restore draft', exact: true }).click();
   await eventually(async () => (await api<{ title: string }>(page, `/api/notes/${note.id}`)).title === retainedTitle, 'explicit document draft recovery');

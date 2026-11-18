@@ -346,6 +346,9 @@ void (async () => {
     report.error = error instanceof Error ? error.stack : String(error);
     report.companionPages = { home: await companionDiagnostics(home), connected: await companionDiagnostics(connected) };
     report.viewerPages = { home: await viewerDiagnostics(home), connected: await viewerDiagnostics(connected) };
+    report.rendererErrors = { home: home.rendererErrors, connected: connected.rendererErrors };
+    try { report.homeService = home.homeEvidence(); }
+    catch (error) { report.homeService = { unreadable: String(error) }; }
     for (const fixture of [home, connected]) await fixture.page?.screenshot({ path: path.join(fixture.base, 'failure.png'), timeout: 3000 }).catch(() => {});
   } finally {
     offline = false;

@@ -16,6 +16,21 @@ import { desktopNeedsSignedBuild, type DesktopNotificationStatus } from '../src/
 import { relayDesktopOutput, viewerPage } from './acceptance-surfaces';
 import { FIRST_START_MS } from './first-run';
 import { CAPTURE_DRAFT_PREFIX } from '../src/lib/client/capture-storage';
+import { servicePaths } from '../src/lib/service/paths';
+import { redactServiceLine } from '../src/lib/service/logging';
+import { perfLogPaths } from '../src/lib/perf/recorder';
+import { PAIRING_TOKEN_FRAGMENT_KEY } from '../src/constants/app';
+
+/** How long a page may take to attach its own handlers after it shows. */
+export const HYDRATION_MS = 60_000;
+
+/** Waits for the layout's desktop effect to mark the page (data-ri-desktop),
+ * which shows React has attached the page's own handlers. The sidebar is
+ * server-rendered, so a slow runner shows a page, a reloaded one included,
+ * well before a click or a key press there does anything. */
+export async function hydrated(page: Page, timeout = HYDRATION_MS) {
+  await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform, { timeout });
+}
 
 export async function bounded<T>(promise: Promise<T>, description: string, timeout = 30_000): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -97,7 +112,7 @@ export async function api<T>(page: Page, route: string, method = 'GET', body?: u
 
 /** Navigate through a real renderer link and Electron's save guard. */
 export async function nativeNavigate(page: Page, target: string, report: Record<string, unknown> = {}) {
-  await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform);
+  await hydrated(page);
   assert.equal(new URL(target).origin, new URL(page.url()).origin, 'Acceptance navigation must stay on the fixture origin');
   for (let attempt = 0; attempt < 2; attempt++) {
     await page.waitForFunction(() => !document.body.inert);
@@ -116,12 +131,12 @@ export async function nativeNavigate(page: Page, target: string, report: Record<
     }
   }
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform);
+  await hydrated(page);
 }
 
 /** Invoke native Reload, allowing one recorded retry if pending saves veto it. */
 export async function nativeReload(app: ElectronApplication, page: Page, report: Record<string, unknown> = {}) {
-  await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform);
+  await hydrated(page);
   const previous = await bounded(page.evaluate(() => performance.timeOrigin), 'reload document identity', 5_000);
   for (let attempt = 0; attempt < 2; attempt++) {
     await bounded(app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].webContents.reload()), 'native reload dispatch', 10_000);
@@ -134,7 +149,7 @@ export async function nativeReload(app: ElectronApplication, page: Page, report:
     }
   }
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform);
+  await hydrated(page);
 }
 
 /** CI stages the packaged release once (desktop/stage-acceptance-release.ts)
@@ -154,6 +169,9 @@ export class AcceptanceFixture {
   app?: ElectronApplication;
   page?: Page;
   origin?: string;
+  /** What the viewer's pages threw or logged as errors, latest last, for a
+   * failure report. A page that never finishes starting usually says why. */
+  readonly rendererErrors: string[] = [];
 
   constructor(name: string, options: { chooseHome?: boolean; source?: boolean; development?: boolean } = {}) {
     this.source = options.source === true;
@@ -224,6 +242,12 @@ export class AcceptanceFixture {
     // Playwright's automatic handler otherwise turns that benign race into
     // an unhandled "No dialog is showing" rejection outside our cleanup.
     page.on('dialog', dialog => { void dialog.dismiss().catch(() => {}); });
+    const noteError = (error: string) => {
+      this.rendererErrors.push(`${new Date().toISOString().slice(11, 23)} ${error.slice(0, 400)}`);
+      if (this.rendererErrors.length > 20) this.rendererErrors.shift();
+    };
+    page.on('pageerror', error => noteError(`pageerror: ${error.message}`));
+    page.on('console', message => { if (message.type() === 'error') noteError(`console: ${message.text()}`); });
     // Refuse renderer requests to external services during these checks.
     await page.route('**/*', route => {
       const url = new URL(route.request().url());
@@ -239,10 +263,9 @@ export class AcceptanceFixture {
     await page.waitForURL(url => url.protocol === 'https:', { timeout: FIRST_START_MS });
     this.origin = new URL(page.url()).origin;
     await page.locator('aside:visible').first().waitFor();
-    // The sidebar is server-rendered, so it shows before React runs. A check
-    // that presses keys or clicks needs the page's own handlers, which the
-    // layout's desktop effect (data-ri-desktop) shows have attached.
-    await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform, { timeout: 60_000 });
+    // The sidebar shows before React runs, and a check that presses keys or
+    // clicks needs the page's own handlers.
+    await hydrated(page);
     assert.equal(await page.evaluate(() => window.riDesktop?.platform), process.platform);
     assert.equal(await page.evaluate(() => typeof window.riDesktop?.settings), 'function', 'Local Home viewer requires its settings bridge');
     assert.equal(await page.evaluate(() => typeof window.riDesktop?.notifications), 'function', 'Local Home viewer requires its notification bridge');
@@ -261,6 +284,39 @@ export class AcceptanceFixture {
   async reload() {
     assert(this.app && this.page, 'Launch before reloading');
     await nativeReload(this.app, this.page, this.report);
+  }
+
+  /** The Home's own account of a failed check: the end of its service log and
+   * the longest stalls its perf log recorded (docs/server-perf-log.md). With
+   * the page's side of the report it shows whether the server or the page
+   * stopped. Reads files only, so it works when the Home doesn't answer. */
+  homeEvidence() {
+    this.select();
+    const { log, identity } = servicePaths();
+    const redact = (line: string) => redactServiceLine(line, []).replace(new RegExp(`#${PAIRING_TOKEN_FRAGMENT_KEY}=[^\\s]+`, 'g'), '#[pairing token redacted]').slice(0, 300);
+    const tail = (file: string, bytes: number) => {
+      const size = fs.statSync(file).size;
+      const handle = fs.openSync(file, 'r');
+      try {
+        const buffer = Buffer.alloc(Math.min(size, bytes));
+        fs.readSync(handle, buffer, 0, buffer.length, size - buffer.length);
+        // The first line may start mid-way, unless the whole file fit.
+        return buffer.toString('utf8').split('\n').slice(size > bytes ? 1 : 0).filter(Boolean);
+      } finally { fs.closeSync(handle); }
+    };
+    type PerfRecord = { t?: string; type?: string; ms?: number; db?: { ms?: number }; inFlight?: Array<{ label: string; ms: number }>; loop?: { maxMs?: number } };
+    const perfLog = perfLogPaths(identity.work).current;
+    const records = fs.existsSync(perfLog) ? tail(perfLog, 512 * 1024).flatMap(line => {
+      try { return [JSON.parse(line) as PerfRecord]; } catch { return []; }
+    }) : [];
+    return {
+      serviceLog: fs.existsSync(log) ? tail(log, 32 * 1024).slice(-40).map(redact) : 'No service log',
+      stalls: records.filter(record => record.type === 'stall').sort((a, b) => (b.ms ?? 0) - (a.ms ?? 0)).slice(0, 8).map(record => ({
+        t: record.t, ms: Math.round(record.ms ?? 0), dbMs: Math.round(record.db?.ms ?? 0),
+        inFlight: record.inFlight?.slice(0, 4).map(work => `${work.label} ${Math.round(work.ms)}ms`),
+      })),
+      longestLoopDelayMs: Math.round(Math.max(0, ...records.map(record => record.loop?.maxMs ?? 0))),
+    };
   }
 
   check(name: string, detail?: unknown) {
@@ -300,7 +356,21 @@ export async function acceptance(name: string, run: (fixture: AcceptanceFixture)
     failure = error;
     fixture.report.error = error instanceof Error ? error.stack : String(error);
     fixture.report.renderer = fixture.page ? await bounded(fixture.page.evaluate(async capturePrefix => ({
-      url: location.href, readyState: document.readyState, desktop: document.documentElement.dataset.riDesktop,
+      // Null when React never attached the page's handlers (see hydrated()).
+      url: location.href, readyState: document.readyState, desktop: document.documentElement.dataset.riDesktop ?? null,
+      bridge: typeof window.riDesktop,
+      // How far this document got and how long each part took: a slow server
+      // shows in the response, a slow script in the resources, a page that
+      // threw in rendererErrors below.
+      documentAgeMs: Math.round(performance.now()),
+      navigation: (performance.getEntriesByType('navigation') as PerformanceNavigationTiming[]).map(entry => ({
+        type: entry.type, responseStart: Math.round(entry.responseStart), responseEnd: Math.round(entry.responseEnd),
+        domContentLoaded: Math.round(entry.domContentLoadedEventEnd), load: Math.round(entry.loadEventEnd),
+      }))[0],
+      slowestResources: (performance.getEntriesByType('resource') as PerformanceResourceTiming[])
+        .sort((a, b) => b.duration - a.duration).slice(0, 5)
+        .map(entry => `${new URL(entry.name).pathname.slice(-80)} ${Math.round(entry.duration)}ms`),
+      body: document.body.innerText.trim().replace(/\s+/g, ' ').slice(0, 300),
       bodyInert: document.body.inert, activeElement: document.activeElement?.tagName,
       visibility: document.visibilityState, hasFocus: document.hasFocus(),
       editors: [...document.querySelectorAll('[contenteditable]')].map(element => ({ editable: element.getAttribute('contenteditable'), label: element.getAttribute('aria-label'), disabled: element.getAttribute('aria-disabled') })),
@@ -321,6 +391,9 @@ export async function acceptance(name: string, run: (fixture: AcceptanceFixture)
       }),
       locks: await navigator.locks?.query().then(state => ({ held: state.held?.map(lock => lock.name), pending: state.pending?.map(lock => lock.name) })).catch(() => undefined),
     }), CAPTURE_DRAFT_PREFIX), 'failed renderer diagnostics', 5_000).catch(() => undefined) : undefined;
+    fixture.report.rendererErrors = fixture.rendererErrors;
+    try { fixture.report.home = fixture.homeEvidence(); }
+    catch (error) { fixture.report.home = { unreadable: String(error) }; }
     await fixture.page?.screenshot({ path: path.join(fixture.base, 'failure.png'), timeout: 5_000 }).catch(() => {});
   }
   finally {
