@@ -180,7 +180,8 @@ export const userState = sqliteTable('user_state', {
   // Null → never started, or finished before steps were recorded.
   onboarding: text({ mode: 'json' }).$type<OnboardingRecord>(),
   // Which levels highlight Usage in the top bar (docs/subscription-usage.md).
-  // NULL follows the product default (on). Preferences, never DB defaults.
+  // NULL follows each level's product default. Preferences, never DB defaults.
+  usageWarningAboveZero: integer({ mode: 'boolean' }),
   usageWarning50: integer({ mode: 'boolean' }),
   usageWarning80: integer({ mode: 'boolean' }),
   usageWarning90: integer({ mode: 'boolean' }),
