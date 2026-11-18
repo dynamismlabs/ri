@@ -52,7 +52,7 @@ import { localDeviceMenu } from './local-device-menu';
 import { isLocalViewer, isViewerReload, trustedViewerFrame, viewerPermission, viewerNotificationAction } from './viewer-trust';
 import { ViewerTransitions } from './viewer-transitions';
 import { signInDesktopSession } from './session-auth';
-import { connectionFailure } from './connection-failure';
+import { automatedFailure, connectionFailure } from './connection-failure';
 import { DesktopConnection } from './connection-state';
 import { teamsFile } from './teams';
 import { teamFlow } from './team-flow';
@@ -131,8 +131,12 @@ const STARTUP_LIMIT_MS = 4 * 60_000;
 const STARTUP_LIMIT_MESSAGE = 'The app did not finish starting within four minutes. Check the backend output and retry.';
 const PREPARE_LIMIT_MS = 30 * 60_000;
 function startupLimit(ms: number, message: string) {
+  clearStartupLimit();
+  startupTimer = setTimeout(() => { startupTimer = undefined; fail(message); }, ms);
+}
+function clearStartupLimit() {
   clearTimeout(startupTimer);
-  startupTimer = setTimeout(() => fail(message), ms);
+  startupTimer = undefined;
 }
 let appOrigin: string | undefined;
 let appToken: string | undefined;
@@ -861,7 +865,7 @@ async function quit(skipGuard = false) {
   tray?.destroy(); tray = undefined;
   oauthAbort.abort();
   notifications?.stop(); notificationAbort.abort();
-  clearTimeout(startupTimer);
+  clearStartupLimit();
   if (backend && backend.exitCode === null && backend.signalCode === null) {
     const exited = once(backend, 'exit');
     if (backend.connected) backend.send({ type: 'stop' });
@@ -881,12 +885,13 @@ function fail(error: unknown, issue = connectionFailure(error)) {
   if (quitting) return;
   const message = redactServiceLine(issue.detail, [appToken ?? '']);
   console.error(`[desktop] ${message}`);
-  // Automation must report failure instead of hanging on a modal dialog.
-  clearTimeout(startupTimer);
+  // An automated run ends here, or keeps its startup limit while Ri retries.
+  const automated = automatedFailure(process.env, issue, startupTimer !== undefined);
+  if (automated !== 'wait') clearStartupLimit();
   selectionError = message;
   connecting = false;
   updateActivity({ connection: 'disconnected' });
-  if (process.env.RI_DESKTOP_SMOKE && !process.env.RI_DESKTOP_RECOVERY_SMOKE) { exitCode = 1; void quit(true); return; }
+  if (automated === 'quit') { exitCode = 1; void quit(true); return; }
   desktopConnection.failed({ ...issue, detail: message });
 }
 
@@ -1032,7 +1037,7 @@ async function openApp(ready: BackendReady) {
     commit: () => {
       selectionError = undefined;
       connecting = false;
-      clearTimeout(startupTimer);
+      clearStartupLimit();
       desktopConnection.connected();
       activateViewerMonitors(ready, revealViewer);
     },
@@ -1304,7 +1309,7 @@ async function start() {
 function startConnection() {
   connecting = true;
   desktopConnection.begin();
-  clearTimeout(startupTimer);
+  clearStartupLimit();
   const child = fork(path.join(repo, 'dist/desktop/backend.cjs'), [], { cwd: repo, execPath: process.env.RI_DESKTOP_NODE,
     execArgv: [], env, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
   backend = child;
@@ -1322,7 +1327,7 @@ function startConnection() {
     if (message.type === 'preparing' && connecting) startupLimit(PREPARE_LIMIT_MS, 'Ri is still preparing its first start after 30 minutes. Check the backend output and retry.');
     if (message.type === 'prepared' && connecting) startupLimit(STARTUP_LIMIT_MS, STARTUP_LIMIT_MESSAGE);
     if (message.type === 'setup') {
-      connecting = false; clearTimeout(startupTimer);
+      connecting = false; clearStartupLimit();
       if (viewerTransitions.current) fail(message.status.reason ?? 'Review this computer’s connection in Desktop Settings.');
       else {
         desktopConnection.reset(); void showSetup();

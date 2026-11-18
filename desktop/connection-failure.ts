@@ -27,3 +27,16 @@ export function connectionFailure(error: unknown, local = false): DesktopConnect
 export function retryingStartIssue(reason: string): DesktopConnectionIssue {
   return { kind: 'attention', message: 'Ri couldn’t start. It keeps trying by itself.', detail: reason, retryable: true };
 }
+
+/**
+ * What a failure does to an automated run (RI_DESKTOP_SMOKE). It must end the
+ * run instead of waiting on a person at a modal dialog. A failure Ri retries by
+ * itself while it is still starting, such as a Home slow to answer its first
+ * sign-in on a slow computer, waits like the app does: the backend tries again
+ * in two seconds, and the startup limit still ends the run if it never comes up.
+ * `show` is the app's ordinary path, for a person or the recovery smoke.
+ */
+export function automatedFailure(env: Record<string, string | undefined>, issue: Pick<DesktopConnectionIssue, 'retryable'>, starting: boolean): 'quit' | 'wait' | 'show' {
+  if (!env.RI_DESKTOP_SMOKE || env.RI_DESKTOP_RECOVERY_SMOKE) return 'show';
+  return issue.retryable && starting ? 'wait' : 'quit';
+}
