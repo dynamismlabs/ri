@@ -16,7 +16,7 @@
  * The /triggers pages show the same parts for deep links.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEventHandler } from 'react';
 import { ArrowLeft, Clock, Pause, Play, Plus, X } from 'lucide-react';
 import { useTrigger, useTriggers, useUpdateTrigger } from '@/hooks/use-triggers';
 import { describeFrequency } from '@/lib/scheduler/frequency';
@@ -50,28 +50,30 @@ type View =
 
 export function TriggersModal() {
   const { open, openId, triggerId } = useSchedulesWindow();
-  const [view, setView] = useState<View>({ kind: 'list' });
+  if (!open) return null;
+  return <SchedulesWindow key={openId} triggerId={triggerId} />;
+}
 
-  // Each opening starts where it was asked to. Reset while rendering, so a
-  // reopened window never flashes the view it was closed on.
-  const [openedFor, setOpenedFor] = useState(openId);
-  if (openId !== openedFor) {
-    setOpenedFor(openId);
-    setView(triggerId ? { kind: 'edit', id: triggerId } : { kind: 'list' });
-  }
+function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
+  const [view, setView] = useState<View>(() => triggerId ? { kind: 'edit', id: triggerId } : { kind: 'list' });
+  const listButton = useRef<HTMLButtonElement | null>(null);
+  const backButton = useRef<HTMLButtonElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (view.kind === 'list') listButton.current?.focus({ preventScroll: true });
+    else backButton.current?.focus({ preventScroll: true });
+  }, [view.kind]);
 
   // Escape closes the window, unless something inside it (a menu, the
   // chat's composer) already used the key.
   useEffect(() => {
-    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && !e.defaultPrevented) closeSchedulesWindow();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, []);
 
-  if (!open) return null;
   const withChat = view.kind === 'new' || view.kind === 'edit';
   const toList = () => setView({ kind: 'list' });
 
@@ -94,13 +96,21 @@ export function TriggersModal() {
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        <Header view={view} onBack={toList} />
+        <Header view={view} onBack={toList} backButton={backButton} />
 
-        {view.kind === 'list' && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
-            <ListBody onNew={() => setView({ kind: 'new' })} onOpen={(id) => setView({ kind: 'edit', id })} />
-          </div>
-        )}
+        {/* Keep the list's scroll position and buttons when switching to a detail. */}
+        <div hidden={view.kind !== 'list'} className="flex-1 min-h-0 overflow-y-auto px-6 py-5">
+          <ListBody
+            onNew={(e) => {
+              listButton.current = e.currentTarget;
+              setView({ kind: 'new' });
+            }}
+            onOpen={(id, button) => {
+              listButton.current = button;
+              setView({ kind: 'edit', id });
+            }}
+          />
+        </div>
         {view.kind === 'new' && (
           <NewBody
             onOpen={(id) => setView({ kind: 'edit', id })}
@@ -170,7 +180,7 @@ function EditBody({ id, onGone }: { id: string; onGone: () => void }) {
   return (
     <WithChat chat={<ScheduleChatPanel chat={chat} scheduleRef={id} />}>
       {trigger ? (
-        <TriggerDetail trigger={trigger} onDeleted={onGone} />
+        <TriggerDetail trigger={trigger} onDeleted={onGone} onNavigateAway={closeSchedulesWindow} />
       ) : isLoading ? (
         <p className="text-sm text-muted-foreground">Loading…</p>
       ) : (
@@ -187,7 +197,11 @@ function EditBody({ id, onGone }: { id: string; onGone: () => void }) {
 
 // ── Window chrome ────────────────────────────────────────────
 
-function Header({ view, onBack }: { view: View; onBack: () => void }) {
+function Header({ view, onBack, backButton }: {
+  view: View;
+  onBack: () => void;
+  backButton: React.Ref<HTMLButtonElement>;
+}) {
   const editing = view.kind === 'edit' ? view.id : null;
   const { data: trigger } = useTrigger(editing);
   const title =
@@ -202,22 +216,21 @@ function Header({ view, onBack }: { view: View; onBack: () => void }) {
   return (
     <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
       {view.kind !== 'list' ? (
-        <Tip label="All schedules">
-          <button
-            type="button"
-            onClick={onBack}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-            aria-label="Back to schedules"
-          >
-            <ArrowLeft size={16} />
-          </button>
-        </Tip>
+        <button
+          ref={backButton}
+          type="button"
+          onClick={onBack}
+          className="flex shrink-0 items-center gap-1.5 p-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+        >
+          <ArrowLeft size={16} />
+          All schedules
+        </button>
       ) : (
         <Clock size={16} className="text-primary mx-1.5" />
       )}
       <h2 className="text-sm font-semibold truncate">{title}</h2>
       {trigger && view.kind === 'edit' && (
-        <span className="flex-shrink-0 text-[11px] text-muted-foreground truncate">
+        <span className="hidden sm:block flex-shrink-0 text-[11px] text-muted-foreground truncate">
           {describeFrequency(trigger)}
           {trigger.enabled ? '' : ' · paused'}
         </span>
@@ -241,8 +254,8 @@ function ListBody({
   onNew,
   onOpen,
 }: {
-  onNew: () => void;
-  onOpen: (id: string) => void;
+  onNew: MouseEventHandler<HTMLButtonElement>;
+  onOpen: (id: string, button: HTMLButtonElement) => void;
 }) {
   const { data: triggers, isLoading } = useTriggers();
   const updateTrigger = useUpdateTrigger();
@@ -258,7 +271,7 @@ function ListBody({
       key={s.id}
       trigger={s}
       onToggle={(enabled) => updateTrigger.mutate({ id: s.id, enabled })}
-      onOpen={() => onOpen(s.id)}
+      onOpen={(e) => onOpen(s.id, e.currentTarget)}
     />
   );
 
@@ -303,7 +316,7 @@ function ListBody({
   );
 }
 
-function NewTriggerButton({ onClick }: { onClick: () => void }) {
+function NewTriggerButton({ onClick }: { onClick: MouseEventHandler<HTMLButtonElement> }) {
   return (
     <button
       type="button"
@@ -316,7 +329,7 @@ function NewTriggerButton({ onClick }: { onClick: () => void }) {
   );
 }
 
-function EmptyState({ onNew }: { onNew: () => void }) {
+function EmptyState({ onNew }: { onNew: MouseEventHandler<HTMLButtonElement> }) {
   return (
     <div className="flex flex-col items-center justify-center text-center py-16 px-6 gap-3">
       <div className="p-3 rounded-full bg-primary/10 text-primary">
@@ -342,7 +355,7 @@ function Row({
 }: {
   trigger: TriggerWithLastRun;
   onToggle: (enabled: boolean) => void;
-  onOpen: () => void;
+  onOpen: MouseEventHandler<HTMLButtonElement>;
 }) {
   const cadence = describeFrequency({
     kind: trigger.kind,

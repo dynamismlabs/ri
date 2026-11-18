@@ -26,7 +26,11 @@ import { isWaitingForChat, lateBy, overdueLabel } from '@/lib/triggers/lateness'
 import { isReservedTrigger, lockedFieldsFor, RESERVED_TRIGGER_IDS, type ReservedLockableField } from '@/lib/triggers/reserved';
 import { TriggerForm } from './trigger-form';
 
-export function TriggerDetail({ trigger, onDeleted }: { trigger: TriggerView; onDeleted: () => void }) {
+export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
+  trigger: TriggerView;
+  onDeleted: () => void;
+  onNavigateAway?: () => void;
+}) {
   const id = trigger.id;
   const { data: recentRuns } = useRuns({ triggerId: id, limit: 20 });
   const update = useUpdateTrigger();
@@ -67,6 +71,7 @@ export function TriggerDetail({ trigger, onDeleted }: { trigger: TriggerView; on
               {lastFailedRun && (
                 <Link
                   href={`/runs/${lastFailedRun.id}`}
+                  onNavigate={onNavigateAway}
                   className="px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
                 >
                   View last failed run
@@ -134,7 +139,7 @@ export function TriggerDetail({ trigger, onDeleted }: { trigger: TriggerView; on
         </div>
       )}
 
-      <TriggerForm key={id} trigger={trigger} />
+      <TriggerForm key={id} trigger={trigger} onNavigateAway={onNavigateAway} />
 
       {trigger.kind === 'webhook' && trigger.webhookPublicId && (
         <section>
@@ -155,7 +160,7 @@ export function TriggerDetail({ trigger, onDeleted }: { trigger: TriggerView; on
         {recentRuns && recentRuns.length > 0 && (
           <div className="space-y-1">
             {recentRuns.slice(0, 10).map((run) => (
-              <RunRowSmall key={run.id} run={run} />
+              <RunRowSmall key={run.id} run={run} onNavigateAway={onNavigateAway} />
             ))}
           </div>
         )}
@@ -190,7 +195,7 @@ export function TriggerDetail({ trigger, onDeleted }: { trigger: TriggerView; on
   );
 }
 
-function RunRowSmall({ run }: { run: RunRecord }) {
+function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?: () => void }) {
   const late = run.startedAt ? lateBy(run.scheduledFor, run.startedAt) : null;
   const terminal =
     run.status === 'completed' || run.status === 'failed' || run.status === 'skipped' || run.status === 'cancelled'
@@ -199,6 +204,7 @@ function RunRowSmall({ run }: { run: RunRecord }) {
   return (
     <Link
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
+      onNavigate={onNavigateAway}
       className="flex items-center gap-3 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
     >
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />

@@ -22,6 +22,8 @@ agent, provider and model, timing, and the advanced rules (time limit, what
 happens when the last run is still going, active hours). **Save changes**
 sends only what changed. **Discard changes** puts the form back. Run now,
 Pause and Delete sit above the form, and its recent runs below.
+**All schedules** takes you back to the same spot in the list. Opening a
+run or a linked chat in the current tab closes the window so you can see it.
 
 The window is mounted once in the dashboard and opened through
 `src/lib/client/schedules-window.ts`, so a chat's Schedule button can open it

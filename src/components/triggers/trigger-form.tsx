@@ -41,6 +41,7 @@ export interface TriggerFormProps {
   onCreated?(trigger: TriggerRecord, webhook?: WebhookCredentials): void;
   /** Creating: the Cancel button. Editing discards in place instead. */
   onCancel?(): void;
+  onNavigateAway?(): void;
 }
 
 interface Values {
@@ -184,7 +185,7 @@ function patchFor(trigger: TriggerView, base: Values, next: Values): UpdateTrigg
   return patch;
 }
 
-export function TriggerForm({ trigger, onCreated, onCancel }: TriggerFormProps) {
+export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: TriggerFormProps) {
   const createTrigger = useCreateTrigger();
   const updateTrigger = useUpdateTrigger({ carriesInput: true });
   const { data: workspaces } = useWorkspaces();
@@ -356,7 +357,11 @@ export function TriggerForm({ trigger, onCreated, onCancel }: TriggerFormProps) 
       {trigger?.targetKind === 'session' && (
         <section className="space-y-1">
           <span className="block text-[12px] font-medium text-foreground">Sends to</span>
-          <TriggerTargetChat sessionId={trigger.targetSessionId} concurrencyPolicy={values.concurrencyPolicy} />
+          <TriggerTargetChat
+            sessionId={trigger.targetSessionId}
+            concurrencyPolicy={values.concurrencyPolicy}
+            onNavigateAway={onNavigateAway}
+          />
         </section>
       )}
 

@@ -16,9 +16,11 @@ import type { TriggerConcurrencyPolicy } from '@/db/types';
 export function TriggerTargetChat({
   sessionId,
   concurrencyPolicy,
+  onNavigateAway,
 }: {
   sessionId: string | null;
   concurrencyPolicy: TriggerConcurrencyPolicy;
+  onNavigateAway?: () => void;
 }) {
   const { data: chat, isLoading } = useSession(sessionId);
 
@@ -34,6 +36,7 @@ export function TriggerTargetChat({
     <div className="space-y-1">
       <Link
         href={`/?session=${sessionId}`}
+        onNavigate={onNavigateAway}
         className="flex items-center gap-2 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
       >
         <MessageCircle size={14} className="flex-shrink-0 text-muted-foreground" />

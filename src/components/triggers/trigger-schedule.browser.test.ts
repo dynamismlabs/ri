@@ -1,4 +1,4 @@
-/** The real schedule form in Chromium, with only data and harness controls replaced. */
+/** The schedule form and window in Chromium, with fixture data and chat. */
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,14 +32,31 @@ beforeAll(async () => {
       const targetKind=new URLSearchParams(location.search).get('target') || 'workspace';
       const [trigger,setTrigger]=useState({id:'fixture-job',name:'Daily briefing',kind,description:null,
         prompt:'Keep my instructions',enabled:false,timezone:'America/Denver',targetKind,workspaceId:'agent-id',
+        targetSessionId:targetKind==='session'?'target-chat':null,
         provider:'codex',harness:'codex',model:'gpt-5.5',effort:null,serviceTier:null,timeoutSeconds:null,
         concurrencyPolicy:'coalesce_if_active',activeHoursStart:null,activeHoursEnd:null,
         cronExpression:kind==='cron'?'0 9 * * *':null,intervalSeconds:kind==='every'?90:null,
         runAt:kind==='at'?(location.search.includes('fold')?'2030-11-03T08:30:45.000Z':'2030-10-20T15:30:00.000Z'):null,nextRunAt:null});
+      const triggers=Array.from({length:30},(_,i)=>({...trigger,id:'schedule-'+(i+1),name:'Briefing '+(i+1),enabled:true,consecutiveFailures:3}));
       window.refreshTrigger=()=>setTrigger(t=>({...t,prompt:'New instructions from another viewer'}));
-      return <Context.Provider value={{trigger,setTrigger}}>{children}</Context.Provider>;
+      return <Context.Provider value={{trigger,triggers,setTrigger}}>{children}</Context.Provider>;
     }
     export const useFixture=()=>useContext(Context);
+    export const useTriggers=()=>({data:useFixture().triggers});
+    export const useTrigger=(id)=>({data:useFixture().triggers.find(trigger=>trigger.id===id)});
+    export const useRuns=()=>({data:[
+      {id:'failed-run',status:'failed',errorMessage:'Could not finish'},
+      {id:'completed-run',status:'completed',chatSessionId:'run-chat',summary:'Briefing delivered'},
+    ]});
+    export const useRunTrigger=()=>({});
+    export const useDeleteTrigger=()=>({});
+    export const useResetTriggerFailures=()=>({});
+    export const useSession=()=>({data:{label:'Briefing chat'}});
+    export const useLaptopHome=()=>null;
+    export const useScheduleChat=()=>({});
+    export const useAdoptMovedScheduleChat=()=>()=>{};
+    export const ScheduleChatPanel=()=>null;
+    export const RunActivityBadge=()=>null;
     export function useUpdateTrigger() {
       const {setTrigger}=useFixture();
       const [error,setError]=useState(null);
@@ -62,13 +79,22 @@ beforeAll(async () => {
       import React from 'react';
       import {createRoot} from 'react-dom/client';
       import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
+      import {RouterContext} from 'next/dist/shared/lib/router-context.shared-runtime';
       import {FixtureProvider,useFixture} from 'fixture-hooks';
       import {TriggerForm} from '@/components/triggers/trigger-form';
+      import {TriggersModal} from '@/components/triggers/triggers-modal';
+      import {openSchedulesWindow} from '@/lib/client/schedules-window';
       window.changes=[];
-      function App(){const {trigger}=useFixture();return <main className="mx-auto max-w-xl p-6">
+      const router={push:(href)=>history.pushState(null,'',href),prefetch:async()=>{}};
+      function App(){const {trigger}=useFixture();
+        if(new URLSearchParams(location.search).has('modal')) return <>
+          <button onClick={()=>openSchedulesWindow()}>Open schedules</button>
+          <TriggersModal/>
+        </>;
+        return <main className="mx-auto max-w-xl p-6">
         {location.search.includes('create')?<TriggerForm onCreated={()=>{}} onCancel={()=>{}}/>:<TriggerForm trigger={trigger}/>}
       </main>;}
-      createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient()}><FixtureProvider><App/></FixtureProvider></QueryClientProvider>);
+      createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient()}><RouterContext.Provider value={router}><FixtureProvider><App/></FixtureProvider></RouterContext.Provider></QueryClientProvider>);
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },
@@ -76,7 +102,7 @@ beforeAll(async () => {
       onResolve(options: { filter: RegExp }, callback: () => { path: string; namespace: string }): void;
       onLoad(options: { filter: RegExp; namespace: string }, callback: () => { contents: string; loader: string; resolveDir: string }): void;
     }) {
-      api.onResolve({ filter: /^(?:fixture-hooks|@\/hooks\/use-(?:triggers|workspaces|user-state|harness-models)|@\/components\/workspaces\/launcher\/launch-controls)$/ },
+      api.onResolve({ filter: /^(?:fixture-hooks|@\/hooks\/use-(?:triggers|workspaces|user-state|harness-models|devices|execution)|@\/components\/(?:workspaces\/launcher\/launch-controls|runs\/run-activity-badge)|\.\/(?:schedule-chat-panel|use-schedule-chat))$/ },
         () => ({ path: 'fixture-hooks', namespace: 'fixture' }));
       api.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: fixture, loader: 'tsx', resolveDir: process.cwd() }));
     } }],
@@ -227,5 +253,53 @@ it('says a one-time message to a chat waits for it, where a repeating one skips'
     expect(await skip.textContent()).toBe('Wait until the chat is free');
     await page.getByLabel('Frequency').selectOption('daily');
     expect(await skip.textContent()).toBe('Skip this run');
+  } finally { await page.close(); }
+});
+
+it('opens a schedule in the window and returns to the same scroll position and row', async () => {
+  const page = await open('?modal');
+  try {
+    await page.getByRole('button', { name: 'Open schedules' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Schedules and Triggers' });
+    const row = dialog.getByRole('button', { name: /Briefing 24/ });
+    await row.scrollIntoViewIfNeeded();
+    const list = dialog.locator('.overflow-y-auto').first();
+    const scrollTop = await list.evaluate(el => el.scrollTop);
+    expect(scrollTop).toBeGreaterThan(0);
+
+    await row.press('Enter');
+    await dialog.getByRole('heading', { name: 'Briefing 24' }).waitFor();
+    expect(page.url()).toBe(base + '/?modal');
+    const back = dialog.getByRole('button', { name: 'All schedules' });
+    expect(await back.evaluate(el => el === document.activeElement)).toBe(true);
+    await back.press('Enter');
+
+    expect(await row.evaluate(el => el === document.activeElement)).toBe(true);
+    expect(await list.evaluate(el => el.scrollTop)).toBe(scrollTop);
+    await dialog.getByRole('button', { name: /Briefing 25/ }).click();
+    await dialog.getByRole('heading', { name: 'Briefing 25' }).waitFor();
+  } finally { await page.close(); }
+});
+
+it.each([
+  ['Briefing delivered', '/?session=run-chat'],
+  ['Could not finish', '/runs/failed-run'],
+  ['View last failed run', '/runs/failed-run'],
+  ['Briefing chat', '/?session=target-chat'],
+])('closes the window when navigating through %s in the current tab', async (name, destination) => {
+  const page = await open('?modal&target=session');
+  try {
+    await page.getByRole('button', { name: 'Open schedules' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Schedules and Triggers' });
+    await dialog.getByRole('button', { name: /Briefing 24/ }).click();
+    const link = dialog.getByRole('link', { name });
+
+    await link.click({ modifiers: ['ControlOrMeta'] });
+    expect(await dialog.isVisible()).toBe(true);
+    expect(page.url()).toBe(base + '/?modal&target=session');
+
+    await link.click();
+    await page.waitForURL(base + destination);
+    await dialog.waitFor({ state: 'hidden' });
   } finally { await page.close(); }
 });
