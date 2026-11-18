@@ -129,10 +129,17 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
     await page.keyboard.type('#', { delay: 120 });
     expect(await composer.inputValue()).toBe('hello there, Ri x again!?#');
     expect(await guest.locator('#keys').textContent()).toBe('okq');
-    // The keyboard still moves in: a Tab Ri's page leaves to the browser lets focus enter the app.
+    // The keyboard still moves in: a Tab Ri's page leaves to the browser lets focus enter the app. Each Tab
+    // moves focus one stop, and a move into the app's frame lands a moment after the key. Wait for it to land
+    // before deciding on another Tab, since one more would reach the app's field as a key.
     await composer.click();
     await page.mouse.move(5, 5);
-    for (let i = 0; i < 4 && await page.evaluate(() => document.activeElement?.getAttribute('aria-label')) !== 'App view'; i++) await page.keyboard.press('Tab');
+    for (let i = 0; i < 4 && await page.evaluate(() => document.activeElement?.getAttribute('aria-label')) !== 'App view'; i++) {
+      const from = await page.evaluateHandle(() => document.activeElement);
+      await page.keyboard.press('Tab');
+      await page.waitForFunction(from => document.activeElement !== from, from);
+      await from.dispose();
+    }
     await focusSettledInApp();
     await page.keyboard.type('t', { delay: 40 });
     expect(await guest.locator('#keys').textContent()).toBe('okqt');
