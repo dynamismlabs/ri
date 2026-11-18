@@ -146,7 +146,7 @@ export const SECTIONS: readonly SettingsSectionDef[] = [
     id: 'external-ai',
     label: `${APP_NAME} in other agents`,
     icon: Cable,
-    title: `Use ${APP_NAME} in other agents`,
+    title: `Use ${APP_NAME} in other agents through MCP`,
     description: `Add ${APP_NAME}’s MCP server to Claude Code, Codex, ChatGPT and other agents so they can read and update your tasks, notes and deck.`,
   },
   {

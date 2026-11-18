@@ -29,7 +29,7 @@ export function SettingsPanel({ navigation, title, description, children, compac
     {navigation}
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <DialogHeader className="gap-1 border-b border-border px-5 py-4 pr-12 text-left">
-        <DialogTitle className="text-[15px] font-semibold">{title}</DialogTitle>
+        <DialogTitle className="text-balance text-[15px] font-semibold">{title}</DialogTitle>
         <DialogDescription className="text-[12px] leading-snug">{description}</DialogDescription>
       </DialogHeader>
       <div ref={bodyRef} data-settings-scroll className={cn('min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-5 pb-5 pt-5', bodyClassName)}>
