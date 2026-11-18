@@ -215,8 +215,12 @@ void acceptance('native-features-smoke', async fixture => {
     fixture.check('Desktop Settings and capture share the identical native window, bounds and title bar while preserving the authenticated document, draft and local privilege boundary');
 
     // A genuine navigation still exercises the durable draft recovery path.
+    // Settings opens from the address once the page loads. A capture opened
+    // before it would end up underneath, hidden from the accessibility tree.
+    const generalSettings = page.getByRole('dialog', { name: 'General', exact: true });
     await fixture.navigate('/?settings=general');
     await page.waitForFunction(() => !document.body.inert);
+    await generalSettings.waitFor();
     await menu('ri-quick-capture'); await capture.waitFor();
     assert.equal(await capture.locator('textarea').inputValue(), '');
     await capture.getByRole('button', { name: 'Restore capture', exact: true }).click();
@@ -228,6 +232,7 @@ void acceptance('native-features-smoke', async fixture => {
     await eventually(async () => await capture.locator('textarea').inputValue() === '', 'explicit discard clears capture');
     await capture.getByRole('button', { name: 'Close', exact: true }).click();
     await fixture.reload();
+    await generalSettings.waitFor();
     await menu('ri-quick-capture'); await capture.waitFor();
     assert.equal(await capture.getByRole('button', { name: 'Restore capture', exact: true }).count(), 0);
     await capture.getByRole('button', { name: 'Close', exact: true }).click();
@@ -244,15 +249,16 @@ void acceptance('native-features-smoke', async fixture => {
       const contents = fs.readFileSync(entry, 'utf8'); assert(contents.includes('--ri-background')); assert(contents.includes('Hidden=false'));
     }
     assert.equal((await settings({ type: 'login', enabled: false })).login.enabled, false);
-    await fixture.navigate('/?settings=general');
-    await page.getByRole('heading', { name: 'Desktop', exact: true }).waitFor();
+    // The desktop app's own controls are on This computer.
+    await fixture.navigate('/?settings=this-computer');
+    await page.getByRole('region', { name: 'Agents on this computer', exact: true }).waitFor();
     const shortcutSwitch = page.getByRole('switch', { name: 'Global Quick Capture', exact: true });
     await shortcutSwitch.waitFor();
     assert.equal(await shortcutSwitch.getAttribute('aria-checked'), 'false');
     assert.equal(await page.getByLabel('Keyboard shortcut', { exact: true }).inputValue(), alternateShortcut);
     assert.equal(await page.getByRole('switch', { name: 'Open Ri at login', exact: true }).getAttribute('aria-checked'), 'false');
     await shortcutSwitch.click();
-    await eventually(async () => (await shortcutSwitch.getAttribute('aria-checked')) === 'true' && !(await shortcutSwitch.isDisabled()), 'General settings enables the global shortcut');
+    await eventually(async () => (await shortcutSwitch.getAttribute('aria-checked')) === 'true' && !(await shortcutSwitch.isDisabled()), 'This computer settings enable the global shortcut');
     assert.equal((await settings({ type: 'status' })).shortcut.state, 'active');
     await page.getByLabel('Keyboard shortcut', { exact: true }).fill('Invalid unsaved shortcut text');
     await shortcutSwitch.click();
@@ -262,7 +268,7 @@ void acceptance('native-features-smoke', async fixture => {
     assert.deepEqual(JSON.parse(fs.readFileSync(shortcutFile, 'utf8')), { enabled: false, accelerator: alternateShortcut });
     assert.equal(await page.getByLabel('Keyboard shortcut', { exact: true }).inputValue(), alternateShortcut);
     await page.screenshot({ path: path.join(fixture.base, 'native-desktop-settings.png') });
-    fixture.check('GUI login supports enable/readback/approval/disable, and General settings can enable then disable the shortcut even with an invalid unsaved shortcut edit');
+    fixture.check('GUI login supports enable/readback/approval/disable, and This computer settings can enable then disable the shortcut even with an invalid unsaved shortcut edit');
 
     const realActivity = await api<DesktopActivityData>(page, '/api/desktop/activity');
     assert.deepEqual({ running: realActivity.running, needsInput: realActivity.needsInput, unread: realActivity.unread }, { running: 0, needsInput: 0, unread: 0 });
