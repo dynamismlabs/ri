@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tip } from '@/components/ui/tip';
+import { ApprovalDetails } from '@/components/chat-ui/approvals/approval-details';
 import { APP_NAME } from '@/constants/app';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -130,12 +131,22 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
       {data.approvals.length > 0 && (
         <section aria-labelledby={`waiting-${id}`} className="space-y-1.5">
           <h3 id={`waiting-${id}`} className="text-xs font-semibold">Waiting for you</h3>
-          {data.approvals.map((approval) => (
-            <div key={approval.id} className="flex items-center gap-2 rounded-md border border-border p-2 text-xs">
-              <span className="min-w-0 flex-1"><span className="font-mono">{approval.actionId}</span>
-                <span className="block text-muted-foreground">{approval.account ?? ''}{approval.hubApp ? ` · ${STARTED_BY[approval.hubApp.startedBy.kind] ?? ''}${approval.hubApp.startedBy.label ? ` (${approval.hubApp.startedBy.label})` : ''}` : ''}</span></span>
-              <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}>Deny</Button>
-              <Button size="xs" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}>Approve</Button>
+          {data.approvals.map(({ view, ...approval }) => (
+            <div key={approval.id} className="space-y-1.5 rounded-md border border-border p-2 text-xs">
+              <div className="flex items-start gap-2">
+                <span className="min-w-0 flex-1">
+                  <span className="font-medium text-foreground">{view.actionLabel}</span>
+                  <span className="text-muted-foreground"> · {view.toolkitName}{view.account ? ` (${view.account})` : ''}</span>
+                  <span className="block break-words text-foreground/90">{view.summary}</span>
+                  <span className="block text-muted-foreground">
+                    {view.outward ? 'Reaches other people. ' : ''}
+                    {approval.hubApp ? `${STARTED_BY[approval.hubApp.startedBy.kind] ?? ''}${approval.hubApp.startedBy.label ? ` (${approval.hubApp.startedBy.label})` : ''}` : ''}
+                  </span>
+                </span>
+                <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}>Deny</Button>
+                <Button size="xs" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}>Approve</Button>
+              </div>
+              {view.details.length > 0 && <ApprovalDetails details={view.details} />}
             </div>
           ))}
         </section>

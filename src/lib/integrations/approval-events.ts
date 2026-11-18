@@ -169,13 +169,16 @@ function queueNotification(p: PendingApproval, view: ApprovalRequestView): void 
   }, NOTIFY_BATCH_MS);
 }
 
-/** A new pending approval: card in the asking chat's transcript, plus a (batched) notification. */
-export async function recordApprovalRequested(p: PendingApproval): Promise<void> {
+/**
+ * One paused call in plain words, as its card shows it: the action, the service and account, what
+ * it touches and every argument that decides its effect (approval-describe.ts).
+ */
+export async function describeApproval(p: PendingApproval): Promise<ApprovalRequestView> {
   const runtime = await runtimeOrNull();
   const meta = actionMeta(runtime, p);
   const subject = await lookUpSubject(runtime, meta, p);
   const { summary, details } = summarizeCall(p.preview, subject);
-  const view: ApprovalRequestView = {
+  return {
     approvalId: p.id,
     ...baseView(p, meta),
     providerId: meta.providerId,
@@ -185,6 +188,32 @@ export async function recordApprovalRequested(p: PendingApproval): Promise<void>
     summary,
     details,
   };
+}
+
+/** Each pending approval's view, worked out once: naming a target can mean a read on the account. */
+const approvalViews = processState('integrations.approval-views', () => new Map<string, ApprovalRequestView>());
+
+/**
+ * The views of pending approvals a page lists (an app's panel), in order, the same ones the chat
+ * cards show. Views of approvals no longer pending are dropped as the list is read.
+ */
+export async function describePendingApprovals(pending: readonly PendingApproval[]): Promise<ApprovalRequestView[]> {
+  const live = new Set(pending.map((p) => p.id));
+  for (const id of [...approvalViews.keys()]) if (!live.has(id)) approvalViews.delete(id);
+  return Promise.all(pending.map(async (p) => {
+    const known = approvalViews.get(p.id);
+    if (known) return known;
+    const view = await describeApproval(p);
+    approvalViews.set(p.id, view);
+    return view;
+  }));
+}
+
+/** A new pending approval: card in the asking chat's transcript, plus a (batched) notification. */
+export async function recordApprovalRequested(p: PendingApproval): Promise<void> {
+  const view = await describeApproval(p);
+  approvalViews.set(p.id, view);
+  const { summary } = view;
   if (p.sessionId && getChatSessionWithExecution(p.sessionId)) {
     insertChatEvent({
       sessionId: p.sessionId,

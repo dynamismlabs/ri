@@ -7,6 +7,7 @@ import { getHubApp, listHubApps, listHubCalls, revokeHubApp, setHubAppGrant, typ
 import type { HubGrant } from '@/lib/db/schema';
 import { registeredClient } from '@/lib/oauth/clients';
 import { listPendingApprovals, revokeHubApprovals } from '../approval';
+import { describePendingApprovals } from '../approval-events';
 import { getMcpServerStore, getIntegrationOwnerId, getIntegrationRuntime } from '../runtime';
 import { hubConsentOptions, sameHubAccount, type HubConsentOptions } from './grant';
 import { appOrigin } from './origin';
@@ -64,9 +65,12 @@ export async function listHubAppViews(): Promise<HubAppView[]> {
 export async function getHubAppView(id: string) {
   const app = getHubApp(id);
   if (!app) return null;
+  const pending = listPendingApprovals().filter((approval) => approval.hubApp?.appId === app.id);
+  // In the words the chat cards use: what it does, on which account, and every field that decides it.
+  const views = await describePendingApprovals(pending);
   return {
     ...view(app, await options()),
-    approvals: listPendingApprovals().filter((pending) => pending.hubApp?.appId === app.id),
+    approvals: pending.map((approval, index) => ({ ...approval, view: views[index]! })),
     calls: listHubCalls(app.id, 50),
   };
 }
