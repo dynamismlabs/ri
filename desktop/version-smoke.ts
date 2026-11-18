@@ -23,30 +23,42 @@ void acceptance('version-smoke', async fixture => {
   const note = await api<{ id: string }>(page, '/api/notes', 'POST', { title: 'Before Home update', body: 'Saved original body.' });
   // The Home is replaced under this view by one that speaks only a newer API. Its WebSocket drops, a
   // reconnect is refused, and the view saves over HTTP in the meantime, where the new Home answers 426.
-  // The view's own reload (`upgraded`) brings the newer client, and the real Home serves it again.
+  // The view's own reload brings the newer client, and the real Home serves it again.
   const newer = API_PROTOCOL + 1;
   const issue = apiCompatibilityIssue(String(API_PROTOCOL), [newer]);
   assert.equal(issue?.update, 'client');
   let homeUpdated = false;
-  let upgraded = false;
   const sockets = new Set<WebSocketRoute>();
+  // What the stand-in Home saw and decided, by time, for a failure report.
+  const traceStart = Date.now();
+  const trace: string[] = [];
+  const mark = (line: string) => { if (trace.length < 200) trace.push(`${Date.now() - traceStart}ms ${line}`); };
+  page.on('framenavigated', frame => mark(`framenavigated ${frame === page.mainFrame() ? 'main' : 'child'} ${frame.url()}`));
+  fixture.report.trace = trace;
+  // Once the Home is replaced, everything the old page sends is marked, and the newer Home refuses
+  // exactly that: its requests carry a header and its sockets a query parameter. The new page
+  // marks nothing. A real newer Home tells them apart by the API protocol a client sends, and both
+  // pages here are the same build, so it goes by document instead. Going by navigation let old
+  // saves through twice: the old page saves again as the reload hides it (desktop-chrome.tsx, on
+  // visibilitychange), after `framenavigated` for the new document, and the Refresh itself makes
+  // a same-document navigation first, which also fires `framenavigated`, so its WebSocket was
+  // let through with the reload still to come.
+  const OLD_CLIENT_HEADER = 'x-acceptance-old-client';
+  const OLD_CLIENT_PARAM = 'acceptance-old-client';
+  const fromOldClient = (request: Request) => request.headers()[OLD_CLIENT_HEADER] === '1';
+  const oldSocket = (url: string) => new URL(url).searchParams.get(OLD_CLIENT_PARAM) === '1';
   // Routing applies to documents loaded after it, so it goes in before the note opens.
-  // A browser WebSocket carries no header of ours, so the socket goes by navigation. The new
-  // page opens its socket only after it has loaded, well after `framenavigated`.
   await page.routeWebSocket(url => url.pathname === '/api/trpc/ws', ws => {
-    if (homeUpdated && !upgraded) { void ws.close({ code: 1012, reason: 'Ri was updated' }); return; }
+    const refused = homeUpdated && oldSocket(ws.url());
+    mark(`websocket ${refused ? 'refused' : 'connected'} ${ws.url()}`);
+    if (refused) { void ws.close({ code: 1012, reason: 'Ri was updated' }); return; }
     sockets.add(ws);
     ws.connectToServer();
   });
-  // Every request the old page sends once the Home is replaced carries this header, and the
-  // newer Home refuses exactly those. Going by navigation instead let one old save through: the
-  // old page saves again as the reload hides it (desktop-chrome.tsx, on visibilitychange), and
-  // that request can reach the route after `framenavigated`. The new page never has the header.
-  const OLD_CLIENT_HEADER = 'x-acceptance-old-client';
-  const fromOldClient = (request: Request) => request.headers()[OLD_CLIENT_HEADER] === '1';
   const isNoteSave = (request: Request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/trpc/notes.update';
   let rejected = 0;
   await page.route(url => url.pathname === '/api/trpc/notes.update', async route => {
+    if (homeUpdated) mark(`notes.update ${fromOldClient(route.request()) ? 'old client' : 'no header'} ${route.request().method()}`);
     if (homeUpdated && fromOldClient(route.request()) && isNoteSave(route.request())) {
       rejected++;
       await route.fulfill({ status: 426, contentType: 'application/json', body: JSON.stringify(issue) });
@@ -67,16 +79,26 @@ void acceptance('version-smoke', async fixture => {
   const retainedTitle = 'An edit retained across an incompatible Home update';
   assert(sockets.size > 0, 'The note view opened no Home WebSocket to drop');
   // From here on this page is the old client. Ri's API client calls the global fetch for each
-  // request, so wrapping it marks them all, the saves it sends while unloading included.
-  await page.evaluate(header => {
+  // request, and tRPC's WebSocket client the global WebSocket for each connection, so wrapping
+  // both marks everything, the saves it sends while unloading included.
+  await page.evaluate(({ header, param }) => {
     const send = window.fetch.bind(window);
     window.fetch = (input, init) => {
       const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
       headers.set(header, '1');
       return send(input, { ...init, headers });
     };
-  }, OLD_CLIENT_HEADER);
+    const Native = window.WebSocket;
+    window.WebSocket = class extends Native {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        const marked = new URL(url, window.location.href);
+        marked.searchParams.set(param, '1');
+        super(marked, protocols);
+      }
+    };
+  }, { header: OLD_CLIENT_HEADER, param: OLD_CLIENT_PARAM });
   homeUpdated = true;
+  mark('home updated');
   for (const socket of sockets) await socket.close({ code: 1012, reason: 'Ri was updated' });
   sockets.clear();
   await title.fill(retainedTitle);
@@ -121,8 +143,6 @@ void acceptance('version-smoke', async fixture => {
   await page.evaluate(() => (window as unknown as { restoreAcceptanceStorage: () => void }).restoreAcceptanceStorage());
   // The old page's saves stay refused through the reload. The person explicitly
   // chooses to carry durable patches into the new view rather than lose them.
-  // Its WebSocket is the new page's once the reload commits.
-  page.once('framenavigated', () => { upgraded = true; });
   await page.evaluate(() => {
     const events: Array<{ type: string; value: string | boolean }> = [];
     (window as unknown as { versionReloadEvents: typeof events }).versionReloadEvents = events;
@@ -156,6 +176,7 @@ void acceptance('version-smoke', async fixture => {
     }, { once: true });
     window.location.reload();
   });
+  mark('ordinary reload asked');
   await Promise.all([page.waitForFunction(() => (window as unknown as { ordinaryReloadPrevented?: boolean }).ordinaryReloadPrevented === true), ordinarySave]);
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
   assert.equal(await page.evaluate(() => performance.timeOrigin), before);
@@ -163,6 +184,7 @@ void acceptance('version-smoke', async fixture => {
   // How long each part of the reload took, so a slow one says which part.
   const timings: Record<string, number> = {};
   const started = Date.now();
+  mark('version reload clicked');
   await reload.click();
   timings.clickedMs = Date.now() - started;
   try { await page.waitForFunction(previous => performance.timeOrigin !== previous, before); }

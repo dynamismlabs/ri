@@ -391,7 +391,8 @@ export async function acceptance(name: string, run: (fixture: AcceptanceFixture)
       captureDrafts: Object.keys(localStorage).filter(key => key.startsWith(capturePrefix)).map(key => {
         try {
           const record = JSON.parse(localStorage.getItem(key)!) as { deleted?: boolean; text?: string; files?: unknown[]; submission?: string };
-          return { id: key.slice(-8), deleted: !!record.deleted, textLength: record.text?.length ?? 0, images: record.files?.length ?? 0, submission: record.submission };
+          // Its opening words too: test homes hold only the smokes' own text, and they say where it came from.
+          return { id: key.slice(-8), deleted: !!record.deleted, textLength: record.text?.length ?? 0, textStart: record.text?.slice(0, 24), images: record.files?.length ?? 0, submission: record.submission };
         } catch { return { id: key.slice(-8), unreadable: true }; }
       }),
       locks: await navigator.locks?.query().then(state => ({ held: state.held?.map(lock => lock.name), pending: state.pending?.map(lock => lock.name) })).catch(() => undefined),
