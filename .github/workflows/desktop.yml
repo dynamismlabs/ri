@@ -72,6 +72,12 @@ jobs:
         # building the package took 69 minutes in one run and 112 in the next
         # (19 compiling, 74 in Next's TypeScript pass), against 12 on Intel.
         # That run used all of 150 minutes before the packaged-app steps began.
+        # Intel finished the recovery smoke 134 minutes in, with ten packaged-app
+        # steps still to come. `smoke_minutes` limits each packaged-app step and
+        # `smokes_minutes` the step that runs three. A packaged first start that
+        # copied the release took about 4 minutes on Apple chips and up to 14 on
+        # Intel, against under a minute on Linux. One that finds it already
+        # staged only hashes it, once.
         include:
           - os: macos-15
             platform: darwin
@@ -79,13 +85,17 @@ jobs:
             package: release/desktop/mac-arm64/Ri.app
             speech: true
             timeout: 300
+            smoke_minutes: 40
+            smokes_minutes: 60
           - os: macos-15-intel
             platform: darwin
             arch: x64
             package: release/desktop/mac/Ri.app
             speech: false
             no_speech: The speech helper's engine (onnxruntime) has no build for Intel Macs.
-            timeout: 210
+            timeout: 300
+            smoke_minutes: 40
+            smokes_minutes: 60
           - os: ubuntu-24.04
             platform: linux
             arch: x64
@@ -93,6 +103,8 @@ jobs:
             speech: false
             no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
             timeout: 90
+            smoke_minutes: 15
+            smokes_minutes: 30
           - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
@@ -100,6 +112,8 @@ jobs:
             speech: false
             no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
             timeout: 90
+            smoke_minutes: 15
+            smokes_minutes: 30
     runs-on: ${{ matrix.os }}
     timeout-minutes: ${{ matrix.timeout }}
     env:
@@ -241,8 +255,19 @@ jobs:
       - name: Exercise Linux recovery in a virtual display
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum pnpm exec tsx desktop/recovery-smoke.ts
+      # Every packaged acceptance Home below shares one install root, where this
+      # stages the release once. Each first start then finds it in the store, as
+      # a later Home on one computer does, instead of copying it again. The
+      # recovery smoke above keeps its own root, so it checks a first start
+      # from nothing.
+      - name: Stage the packaged release once for the acceptance Homes
+        timeout-minutes: ${{ matrix.smoke_minutes }}
+        run: |
+          root="$RUNNER_TEMP/ri-acceptance-install"
+          echo "RI_ACCEPTANCE_INSTALL_ROOT=$root" >> "$GITHUB_ENV"
+          RI_ACCEPTANCE_INSTALL_ROOT="$root" pnpm exec tsx desktop/stage-acceptance-release.ts
       - name: Exercise Home selection and connected-device companion lifecycle
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -255,7 +280,7 @@ jobs:
             pnpm desktop:version-smoke
           fi
       - name: Exercise packaged shortcuts, editor navigation and downloads
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -266,7 +291,7 @@ jobs:
             pnpm exec tsx desktop/interaction-smoke.ts
           fi
       - name: Exercise packaged endurance and recovery over three bounded cycles
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
           RI_DESKTOP_ENDURANCE_CYCLES: '3'
@@ -278,7 +303,7 @@ jobs:
             pnpm exec tsx desktop/endurance-smoke.ts
           fi
       - name: Exercise native and remote browser OAuth on the shared service
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -295,7 +320,7 @@ jobs:
             pnpm exec tsx desktop/oauth-smoke.ts
           fi
       - name: Exercise packaged notification routing with mocked OS presentation
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -306,7 +331,7 @@ jobs:
             pnpm exec tsx desktop/notifications-smoke.ts
           fi
       - name: Exercise menu bar, global capture, login controls and availability
-        timeout-minutes: 30
+        timeout-minutes: ${{ matrix.smokes_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |

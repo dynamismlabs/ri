@@ -14,6 +14,7 @@ import { serviceStatus, stopService } from '../src/lib/service/client';
 import { HOTKEYS, type Hotkey } from '../src/constants/commands';
 import { desktopNeedsSignedBuild, type DesktopNotificationStatus } from '../src/lib/notifications/desktop-contract';
 import { relayDesktopOutput, viewerPage } from './acceptance-surfaces';
+import { FIRST_START_MS } from './first-run';
 
 export async function bounded<T>(promise: Promise<T>, description: string, timeout = 30_000): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -116,6 +117,13 @@ export async function nativeReload(app: ElectronApplication, page: Page, report:
   await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform);
 }
 
+/** CI stages the packaged release once (desktop/stage-acceptance-release.ts)
+ * and every Home here finds it in that shared store, as a later Home on one
+ * computer does. Otherwise each fixture installs into its own folder. */
+function acceptanceInstallRoot(base: string) {
+  return process.env.RI_ACCEPTANCE_INSTALL_ROOT || path.join(base, 'runtime');
+}
+
 export class AcceptanceFixture {
   readonly base: string;
   readonly root: string;
@@ -150,7 +158,7 @@ export class AcceptanceFixture {
       ...(process.platform === 'win32' ? { USERPROFILE: home, APPDATA: path.join(home, 'AppData/Roaming'), LOCALAPPDATA: path.join(home, 'AppData/Local') } : {}),
       PATH: process.platform === 'win32' ? `${process.env.SystemRoot}\\System32;${process.env.SystemRoot}\\System32\\WindowsPowerShell\\v1.0` : '/usr/bin:/bin:/usr/sbin:/sbin',
       RI_DESKTOP_STATE_DIR: path.join(this.base, 'desktop-state'), RI_DESKTOP_ROOT: this.root,
-      RI_INSTALL_ROOT: path.join(this.base, 'runtime'), RI_DESKTOP_SMOKE: '1',
+      RI_INSTALL_ROOT: acceptanceInstallRoot(this.base), RI_DESKTOP_SMOKE: '1',
     }, options.development ? 'development' : 'production')).filter((entry): entry is [string, string] => typeof entry[1] === 'string'));
     // Empty values prevent Next from filling provider secrets back from a
     // source checkout's .env.local during isolated acceptance.
@@ -208,7 +216,7 @@ export class AcceptanceFixture {
   async launch(args: string[] = [], options: { executable?: string; chromiumSandbox?: boolean } = {}) {
     const started = Date.now();
     const page = await this.launchRaw(args, options);
-    await page.waitForURL(url => url.protocol === 'https:', { timeout: 240_000 });
+    await page.waitForURL(url => url.protocol === 'https:', { timeout: FIRST_START_MS });
     this.origin = new URL(page.url()).origin;
     await page.locator('aside:visible').first().waitFor();
     assert.equal(await page.evaluate(() => window.riDesktop?.platform), process.platform);
@@ -255,6 +263,7 @@ export class AcceptanceFixture {
     // Preserve the small data home, logs and screenshots for investigation.
     // The immutable runtime is identified in the report and remains in the
     // input package, so repeated acceptance runs need not keep duplicate GBs.
+    // A shared install root (CI) stays for the next smoke's Home.
     fs.rmSync(path.join(this.base, 'runtime'), { recursive: true, force: true });
   }
 }

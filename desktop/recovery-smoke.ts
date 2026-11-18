@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import electron from 'electron';
 import { _electron, type ElectronApplication } from 'playwright-core';
-import { waitForHome } from './first-run';
+import { FIRST_START_MS, waitForHome } from './first-run';
 import { demoEnvironment } from './config';
 import { installationEnvironment, localInstallation } from './installation';
 import { ensureService, serviceStatus, stopService } from '../src/lib/service/client';
@@ -26,10 +26,9 @@ const packageFile = process.env.RI_DESKTOP_PACKAGE;
 const executablePath = packageFile ? desktopPackageLayout(packageFile).executable : electron as unknown as string;
 const args = packageFile ? [] : [path.join(repo, 'dist/desktop/main.cjs')];
 let instance: ElectronApplication | undefined;
-// The packaged app first stages its bundled release: hashing and copying it
-// took about 4 minutes on CI's Apple-chip Mac and 8 on its Intel one. Only then
-// does the controller try the broken endpoint and say why.
-const FIRST_START_MS = 15 * 60_000;
+// The packaged app first stages its bundled release (FIRST_START_MS). Only then
+// does the controller try the broken endpoint and say why. This smoke keeps its
+// own install root, so it checks that first start from nothing.
 const seconds = (since: number) => `${((Date.now() - since) / 1000).toFixed(1)} s`;
 function select(environment: NodeJS.ProcessEnv) { for (const name of ['RI_DB_PATH', 'RI_CONFIG_DIR', 'RI_WORK_DIR']) delete process.env[name]; Object.assign(process.env, environment); }
 async function close() {

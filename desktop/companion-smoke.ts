@@ -14,6 +14,7 @@ import type { Notification } from 'electron';
 import Database from 'better-sqlite3';
 import { AcceptanceFixture, api, assertNoAlertsWithoutSignature, eventually, needsSignedBuild } from './acceptance-fixture';
 import { desktopPackageLayout } from './package-layout';
+import { FIRST_START_MS } from './first-run';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
 import { ensureServiceStatus, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
 import { hasLoginSupervision } from '../src/lib/service/install';
@@ -46,7 +47,7 @@ async function openDesktopSettings(fixture: AcceptanceFixture) {
 }
 async function mainPage(fixture: AcceptanceFixture, origin?: string) {
   const page = fixture.page!;
-  await page.waitForURL(url => origin ? url.origin === origin : url.protocol === 'https:', { timeout: 240_000 });
+  await page.waitForURL(url => origin ? url.origin === origin : url.protocol === 'https:', { timeout: FIRST_START_MS });
   await page.waitForFunction(() => window.riDesktop?.platform);
   fixture.origin = new URL(page.url()).origin;
   return page;
