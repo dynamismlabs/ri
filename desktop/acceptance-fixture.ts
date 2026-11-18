@@ -15,6 +15,7 @@ import { HOTKEYS, type Hotkey } from '../src/constants/commands';
 import { desktopNeedsSignedBuild, type DesktopNotificationStatus } from '../src/lib/notifications/desktop-contract';
 import { relayDesktopOutput, viewerPage } from './acceptance-surfaces';
 import { FIRST_START_MS } from './first-run';
+import { CAPTURE_DRAFT_PREFIX } from '../src/lib/client/capture-storage';
 
 export async function bounded<T>(promise: Promise<T>, description: string, timeout = 30_000): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -275,14 +276,28 @@ export async function acceptance(name: string, run: (fixture: AcceptanceFixture)
   catch (error) {
     failure = error;
     fixture.report.error = error instanceof Error ? error.stack : String(error);
-    fixture.report.renderer = fixture.page ? await bounded(fixture.page.evaluate(() => ({
+    fixture.report.renderer = fixture.page ? await bounded(fixture.page.evaluate(async capturePrefix => ({
       url: location.href, readyState: document.readyState, desktop: document.documentElement.dataset.riDesktop,
       bodyInert: document.body.inert, activeElement: document.activeElement?.tagName,
       visibility: document.visibilityState, hasFocus: document.hasFocus(),
       editors: [...document.querySelectorAll('[contenteditable]')].map(element => ({ editable: element.getAttribute('contenteditable'), label: element.getAttribute('aria-label'), disabled: element.getAttribute('aria-disabled') })),
       activeInputs: [...document.querySelectorAll('[data-active-input]')].map(element => element.getAttribute('data-active-input')),
       draftKeys: Object.keys(localStorage).filter(key => key.startsWith('ri:document-draft:v1:')),
-    })), 'failed renderer diagnostics', 5_000).catch(() => undefined) : undefined;
+      // Open dialogs and what they say: one hidden under another modal drops
+      // out of role queries, and a status line names a save that failed.
+      dialogs: [...document.querySelectorAll('[role="dialog"]')].map(dialog => ({
+        title: dialog.getAttribute('aria-labelledby') ? document.getElementById(dialog.getAttribute('aria-labelledby')!)?.textContent : dialog.getAttribute('aria-label'),
+        hidden: !!dialog.closest('[aria-hidden="true"]'),
+        said: [...dialog.querySelectorAll('[role="status"],[role="alert"]')].map(element => element.textContent?.trim().slice(0, 200)).filter(Boolean),
+      })),
+      captureDrafts: Object.keys(localStorage).filter(key => key.startsWith(capturePrefix)).map(key => {
+        try {
+          const record = JSON.parse(localStorage.getItem(key)!) as { deleted?: boolean; text?: string; files?: unknown[]; submission?: string };
+          return { id: key.slice(-8), deleted: !!record.deleted, textLength: record.text?.length ?? 0, images: record.files?.length ?? 0, submission: record.submission };
+        } catch { return { id: key.slice(-8), unreadable: true }; }
+      }),
+      locks: await navigator.locks?.query().then(state => ({ held: state.held?.map(lock => lock.name), pending: state.pending?.map(lock => lock.name) })).catch(() => undefined),
+    }), CAPTURE_DRAFT_PREFIX), 'failed renderer diagnostics', 5_000).catch(() => undefined) : undefined;
     await fixture.page?.screenshot({ path: path.join(fixture.base, 'failure.png'), timeout: 5_000 }).catch(() => {});
   }
   finally {

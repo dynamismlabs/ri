@@ -301,7 +301,9 @@ void acceptance('capture-smoke', async fixture => {
     });
     const unsafe = 'This in-memory draft cannot be written while storage fails.';
     await capture.locator('textarea').fill(unsafe);
-    await capture.getByText(/could not.*sav|cannot.*sav|not.*saved|storage.*unavailable|unable.*sav/i).waitFor();
+    // The quota failure's own words. "Device storage is unavailable" means the
+    // capture lost its storage session, which this step must not pass for.
+    await capture.getByRole('alert').filter({ hasText: 'This capture could not be saved on this device.' }).waitFor();
     let unsafeSubmissionRequests = 0;
     await page.route('**/api/stream', route => {
       if (route.request().method() !== 'POST') return route.continue();
