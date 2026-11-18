@@ -259,7 +259,10 @@ export function isPrivateHost(hostname: string): boolean {
     const [a, b] = [Number(v4[1]), Number(v4[2])];
     return a === 0 || a === 10 || a === 127 || (a === 100 && b >= 64 && b <= 127) || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || a >= 224;
   }
-  return host.includes(':') && (host === '::1' || host === '::' || /^f[cd]/.test(host) || /^fe[89ab]/.test(host) || host.startsWith('::ffff:'));
+  // IPv6: loopback, unspecified, unique-local (fc00::/7), link-local (fe80::/10), the deprecated
+  // site-local block (fec0::/10, RFC 3879) that older networks still route privately, and IPv4
+  // mapped into IPv6.
+  return host.includes(':') && (host === '::1' || host === '::' || /^f[cd]/.test(host) || /^fe[89a-f]/.test(host) || host.startsWith('::ffff:'));
 }
 
 /** A client ID that names its own metadata document (draft-ietf-oauth-client-id-metadata-document). */

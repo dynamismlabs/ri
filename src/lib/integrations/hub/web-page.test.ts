@@ -37,6 +37,7 @@ beforeAll(async () => {
       case '/redirect': response.writeHead(302, { location: '/page' }); return response.end();
       case '/loop': response.writeHead(302, { location: '/loop' }); return response.end();
       case '/to-private': response.writeHead(302, { location: 'http://169.254.169.254/latest/meta-data/' }); return response.end();
+      case '/to-site-local': response.writeHead(302, { location: 'http://[fec0::1]/' }); return response.end();
       case '/to-file': response.writeHead(302, { location: 'file:///etc/passwd' }); return response.end();
       case '/slow': return void setTimeout(() => html('late'), 5000);
       case '/cut': response.writeHead(200, { 'content-type': 'text/html', 'content-length': '1000' }); response.write('partial'); return void setTimeout(() => response.destroy(), 20);
@@ -101,12 +102,18 @@ describe('the private-network floor', () => {
   it('refuses this computer and its network by address and by name', async () => {
     for (const url of [
       `${base}/page`, 'http://localhost/', 'http://foo.localhost/', 'http://10.0.0.1/', 'http://172.16.0.1/', 'http://192.168.1.1/', 'http://169.254.169.254/latest/meta-data/', 'http://100.64.0.1/', 'http://0.0.0.0/',
-      'http://[::1]/', 'http://[fd00::1]/', 'http://[fe80::1]/', 'http://[::ffff:127.0.0.1]/', 'http://2130706433/', 'http://0x7f.0.0.1/', 'http://printer.local/', 'http://metadata.google.internal/', 'http://router/',
+      'http://[::1]/', 'http://[fd00::1]/', 'http://[fe80::1]/', 'http://[fec0::1]/', 'http://[feff:1::2]/', 'http://[::ffff:127.0.0.1]/', 'http://2130706433/', 'http://0x7f.0.0.1/', 'http://printer.local/', 'http://metadata.google.internal/', 'http://router/',
     ]) expect((await readWebPage(url, never)).outcome, url).toBe('blocked');
   });
   it('checks every redirect', async () => {
     const network: WebPageNetwork = { ...open, isBlocked: host => host !== '127.0.0.1' };
     expect((await readWebPage(`${base}/to-private`, never, network)).outcome).toBe('blocked');
+  });
+  it('refuses a redirect to a site-local IPv6 address (fec0::/10) with the real floor, past the first hop', async () => {
+    const { isPrivateHost } = await import('@/lib/oauth/clients');
+    // The local test server stands in for a public one. Only that one address is let through.
+    const network: WebPageNetwork = { ...open, isBlocked: host => host !== '127.0.0.1' && isPrivateHost(host) };
+    expect((await readWebPage(`${base}/to-site-local`, never, network)).outcome).toBe('blocked');
   });
   it('refuses a public name that resolves to a private address, where the socket connects', async () => {
     const rebinding = publicLookup(((_host: string, _options: dns.LookupOptions, callback: (error: null, address: string, family: number) => void) => callback(null, '127.0.0.1', 4)) as never);
