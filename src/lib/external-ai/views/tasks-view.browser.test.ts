@@ -15,6 +15,7 @@ import path from 'node:path';
 import type { DeckView, ViewTask } from './data';
 import type { BoardView, CalendarView, ItemView, NotesView, SearchView, StreamView, ViewNote } from './screens';
 import { TASKS_VIEW_HTML } from './tasks-view.html';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const task = (over: Partial<ViewTask>): ViewTask => ({
   id: 'task', title: 'Task', status: 'todo', area: null, deadline: null, daysUntil: null, blocked: false, recurring: false, nextOccurrence: null, reason: null, statusChangedCount: 0, url: null, ...over,
@@ -204,7 +205,8 @@ beforeAll(async () => {
 afterAll(async () => { await browser?.close(); server?.closeAllConnections(); await new Promise<void>(resolve => server ? server.close(() => resolve()) : resolve()); });
 
 async function open(theme: 'light' | 'dark', display: 'inline' | 'fullscreen' = 'inline', options: { drafts?: boolean; width?: number; entry?: boolean } = {}): Promise<Page> {
-  const page = await browser.newPage({ viewport: options.width ? { width: options.width, height: 740 } : display === 'fullscreen' || options.entry ? { width: 1060, height: 740 } : { width: 720, height: 720 } });
+  // A step that waits too long fails naming what it waited on, well inside the test's own 30 s.
+  const page = testTimeouts(await browser.newPage({ viewport: options.width ? { width: options.width, height: 740 } : display === 'fullscreen' || options.entry ? { width: 1060, height: 740 } : { width: 720, height: 720 } }), 15_000);
   await page.goto(`${origin}/?theme=${theme}&display=${display}${options.drafts ? '&drafts=1' : ''}${options.entry ? '&entry=1' : ''}`);
   await page.frameLocator('iframe').locator('li[data-task="ship"]').first().waitFor();
   return page;
@@ -576,6 +578,12 @@ it('says when it can’t update, keeps what Ri answered so the next change works
   // Undoing sends the count Ri just answered, not the one the view was drawn with.
   await row.getByRole('button', { name: 'Reopen Ship the OAuth sign-in' }).click();
   await expect.poll(async () => (await log(page)).calls.find(call => call.name === 'transition_task')?.arguments.expected_status_changed_count).toBe(2);
+  // Ri answers again only once the view has asked for its redraw after Reopen, and been refused. Turned
+  // back on sooner, a slow runner let that redraw through first: the notice went, with no Try again to press.
+  await expect.poll(async () => {
+    const names = (await log(page)).calls.map(call => call.name);
+    return names.lastIndexOf('show_deck') > names.indexOf('transition_task');
+  }).toBe(true);
   await page.evaluate(() => { (window as unknown as { __failRefresh: boolean }).__failRefresh = false; });
   await view.getByRole('button', { name: 'Try again' }).click();
   await expect.poll(async () => view.getByText('This view may be out of date.', { exact: false }).count()).toBe(0);
