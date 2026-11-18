@@ -19,7 +19,8 @@ import { createRuntimeManifest, getRuntimeInstallDir, stageRuntime, installedRun
 import { writeOrigin } from '../src/lib/service/origin';
 import { releasePolicyFile } from '../src/lib/service/release-trust';
 import { ensureService, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
-import { fileDigest, verifyCheckpoint } from '../src/lib/service/checkpoint';
+import { fileDigest } from '../src/lib/service/checkpoint';
+import { readSnapshot } from '../src/lib/service/snapshot';
 import type { UpdateRecord } from '../src/lib/service/update';
 import type { ReleasePreferences } from '../src/lib/service/update-settings';
 
@@ -233,7 +234,17 @@ try {
   const current = await serviceRequest<ServiceSession>('/session');
   assert.equal(current.version, '0.1.1'); assert.equal(current.origin, initial.origin); assert.notEqual(current.pid, initial.pid);
   assert.equal(installedRuntime()?.id, manifest.id);
-  const record = await update(); assert.equal(record.phase, 'committed'); assert(record.checkpoint); verifyCheckpoint(record.checkpoint);
+  const record = await update(); assert.equal(record.phase, 'committed'); assert(record.checkpoint);
+  // The update's snapshot (src/lib/service/snapshot.ts): this Home's database
+  // and config from before the update, named for the releases it moved between.
+  const snapshot = readSnapshot(record.checkpoint);
+  assert.equal(snapshot.from, first.id); assert.equal(snapshot.to, manifest.id);
+  const before = new Database(path.join(record.checkpoint, 'database.sqlite'), { readonly: true, fileMustExist: true });
+  try {
+    assert.equal(before.pragma('integrity_check', { simple: true }), 'ok');
+    assert.equal(before.prepare("SELECT name FROM sqlite_master WHERE name='desktop_update_smoke'").get(), undefined, 'The snapshot was taken after the migration');
+    assert(before.prepare('SELECT id FROM notes WHERE id = ?').get(noteId), 'The snapshot lacks the note written before the update');
+  } finally { before.close(); }
   const db = new Database(path.join(process.env.RI_ROOT!, 'data.db'), { readonly: true });
   try { assert(db.prepare("SELECT name FROM sqlite_master WHERE name='desktop_update_smoke'").get()); }
   finally { db.close(); }
@@ -265,7 +276,7 @@ try {
   const after = await request(current, '/api/notes', { body: 'New data after upgrade.' }); assert.equal(after.status, 201);
   assert.equal(fs.readFileSync(unpublished, 'utf8'), 'unpublished work');
   assert(fs.existsSync(first.repo));
-  result = { passed: true, guiAttached: !!gui, notificationBridgeReconnected: !!gui, guiNavigation, malformedRequestsRejected: true, downloadPreferencesVerified: !!gui, maintenanceWindowVerified: !!gui, originStable: true, publisherVerified: true, migrated: true, controllerReplaced: true, priorRuntimeRetained: true, newWritesAccepted: true, checkpointVerified: true, temporary };
+  result = { passed: true, guiAttached: !!gui, notificationBridgeReconnected: !!gui, guiNavigation, malformedRequestsRejected: true, downloadPreferencesVerified: !!gui, maintenanceWindowVerified: !!gui, originStable: true, publisherVerified: true, migrated: true, controllerReplaced: true, priorRuntimeRetained: true, newWritesAccepted: true, snapshotVerified: true, temporary };
 } finally {
   if (gui) {
     await Promise.all([
