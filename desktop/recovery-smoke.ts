@@ -12,7 +12,7 @@ import { installationEnvironment, localInstallation } from './installation';
 import { ensureService, serviceStatus, stopService } from '../src/lib/service/client';
 import { installedRuntime } from '../src/lib/service/runtime';
 import { desktopPackageLayout } from './package-layout';
-import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot, relayDesktopOutput, viewerPage } from './acceptance-surfaces';
+import { assertLocalIsolation, assertSameNativeWindow, localPage, relayDesktopOutput, settledWindowSnapshot, viewerPage } from './acceptance-surfaces';
 import { serviceEvidence } from './acceptance-fixture';
 
 const repo = path.resolve(__dirname, '..');
@@ -57,7 +57,7 @@ try {
   instance = relayDesktopOutput(await _electron.launch({ executablePath, args, env: { ...env, RI_DESKTOP_SMOKE: '1', RI_DESKTOP_RECOVERY_SMOKE: '1' }, timeout: 240_000 }));
   await instance.firstWindow();
   const main = await viewerPage(instance);
-  const initialWindow = await nativeWindowSnapshot(instance);
+  const initialWindow = await settledWindowSnapshot(instance);
   const setup = await localPage(instance, 'companion');
   // The controller never gives up on a failed start (docs/always-on-spec.md
   // 6.2). The app says why while it keeps trying, and its database stays unopened.
@@ -71,7 +71,7 @@ try {
   let recovery = await openRecovery();
   recovery.on('console', message => { if (message.type() === 'error') console.error('[recovery-ui]', message.text()); });
   console.info('Recovery view loaded inside Ri');
-  assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(instance));
+  await assertSameNativeWindow(instance, initialWindow);
   await assertLocalIsolation(instance, recovery, 'maintenance');
   assert.match(await recovery.locator('#reason').innerText(), /endpoint configuration/);
   // Recovery from an update record is for a stopped, failed backend. A start that keeps trying needs none.
@@ -93,7 +93,7 @@ try {
   await recovery.getByRole('button', { name: 'Connect or retry startup', exact: true }).click();
   await waitForHome(main, FIRST_START_MS);
   console.info(`Ri opened ${seconds(repaired)} after the fix`);
-  assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(instance));
+  await assertSameNativeWindow(instance, initialWindow);
   const running = await serviceStatus();
   assert.equal(running?.phase, 'running');
   assert.equal(running?.runId, failed?.runId, 'The same controller kept trying until it started');
@@ -115,7 +115,7 @@ try {
   select(env);
   const viewerBeforeRecovery = { url: main.url(), timeOrigin: await main.evaluate(() => performance.timeOrigin) };
   recovery = await openRecovery();
-  assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(instance));
+  await assertSameNativeWindow(instance, initialWindow);
   assert.equal(main.url(), viewerBeforeRecovery.url);
   assert.equal(await main.evaluate(() => performance.timeOrigin), viewerBeforeRecovery.timeOrigin);
   await recovery.locator('#choose-installation > summary').click();

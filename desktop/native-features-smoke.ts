@@ -14,7 +14,7 @@ import type { AwakeStatus } from '../src/lib/service/awake-settings';
 import { installedRuntime } from '../src/lib/service/runtime';
 import { serviceStatus } from '../src/lib/service/client';
 import { acceptance, api, bounded, eventually } from './acceptance-fixture';
-import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
+import { assertLocalIsolation, assertSameNativeWindow, localPage, settledWindowSnapshot } from './acceptance-surfaces';
 
 interface NativeState {
   shortcuts: Map<string, () => void>;
@@ -193,11 +193,11 @@ void acceptance('native-features-smoke', async fixture => {
     await capture.locator('textarea').fill(recoveredText);
     await capture.getByText('Draft saved on this device.', { exact: true }).waitFor();
     await app.evaluate(() => { const state = (globalThis as NativeGlobal).riNativeAcceptance; state.dialogs = []; });
-    const beforeSettings = await nativeWindowSnapshot(app);
+    const beforeSettings = await settledWindowSnapshot(app);
     await menu('ri-desktop-preferences');
     const desktopControls = await localPage(app, 'companion');
     await desktopControls.locator('#settings:not([hidden])').waitFor();
-    assertSameNativeWindow(beforeSettings, await nativeWindowSnapshot(app));
+    await assertSameNativeWindow(app, beforeSettings);
     await assertLocalIsolation(app, desktopControls, 'companion');
     assert.equal(page.url(), url);
     assert.equal(await page.evaluate(() => performance.timeOrigin), timeOrigin, 'Desktop Settings must preserve the authenticated document');
@@ -211,7 +211,7 @@ void acceptance('native-features-smoke', async fixture => {
     await menu('ri-quick-capture'); await foreground(); await capture.waitFor();
     assert.equal(await capture.locator('textarea').inputValue(), recoveredText);
     assert.equal(await page.evaluate(() => performance.timeOrigin), timeOrigin);
-    assertSameNativeWindow(beforeSettings, await nativeWindowSnapshot(app));
+    await assertSameNativeWindow(app, beforeSettings);
     fixture.check('Desktop Settings and capture share the identical native window, bounds and title bar while preserving the authenticated document, draft and local privilege boundary');
 
     // A genuine navigation still exercises the durable draft recovery path.

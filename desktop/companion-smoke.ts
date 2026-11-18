@@ -15,7 +15,7 @@ import Database from 'better-sqlite3';
 import { AcceptanceFixture, api, assertNoAlertsWithoutSignature, bounded, eventually, needsSignedBuild } from './acceptance-fixture';
 import { desktopPackageLayout } from './package-layout';
 import { FIRST_START_MS } from './first-run';
-import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
+import { assertLocalIsolation, assertSameNativeWindow, localPage, settledWindowSnapshot } from './acceptance-surfaces';
 import { ensureServiceStatus, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
 import { hasLoginSupervision } from '../src/lib/service/install';
 
@@ -211,14 +211,14 @@ void (async () => {
     home.select();
     await home.launchRaw();
     const initial = await companion(home);
-    const initialWindow = await nativeWindowSnapshot(home.app!);
+    const initialWindow = await settledWindowSnapshot(home.app!);
     await assertLocalIsolation(home.app!, initial, 'companion');
     await initial.screenshot({ path: path.join(home.base, 'first-run.png') });
     assert.equal(fs.existsSync(path.join(home.root, 'data.db')), false);
     assert.equal(await serviceStatus(), null);
     await (await firstRunChoice(initial)).click();
     const homePage = await mainPage(home);
-    assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(home.app!));
+    await assertSameNativeWindow(home.app!, initialWindow);
     await homePage.screenshot({ path: path.join(home.base, 'home.png') });
     assert.equal(await homePage.evaluate(() => typeof window.riDesktop?.settings), 'function');
     assert.equal((await serviceStatus())?.role, 'home');
@@ -251,7 +251,7 @@ void (async () => {
     }
     await connected.launchRaw();
     const setup = await companion(connected);
-    const connectedWindow = await nativeWindowSnapshot(connected.app!);
+    const connectedWindow = await settledWindowSnapshot(connected.app!);
     await assertLocalIsolation(connected.app!, setup, 'companion');
     assert.equal(fs.existsSync(path.join(connected.root, 'data.db')), false);
     assert.equal((await serviceStatus())?.role ?? null, sourceHome ? 'first-run' : null);
@@ -271,7 +271,7 @@ void (async () => {
     await setup.locator('#link-destination').filter({ hasText: 'Pairing link for ' }).waitFor();
     await setup.getByRole('button', { name: 'Connect', exact: true }).click();
     const page = await mainPage(connected, proxyOrigin);
-    assertSameNativeWindow(connectedWindow, await nativeWindowSnapshot(connected.app!));
+    await assertSameNativeWindow(connected.app!, connectedWindow);
     assert.equal((await api<{ id: string }>(page, '/api/home')).id, expectedHome.id);
     assert.equal((await api<{ body: string }>(page, `/api/notes/${sharedNote.id}`)).body, 'Stored only on the disposable Home.');
     await page.locator('aside:visible').first().waitFor();
@@ -292,7 +292,7 @@ void (async () => {
     await consentToExecution(connected);
     const viewerBeforeSettings = { url: page.url(), timeOrigin: await page.evaluate(() => performance.timeOrigin) };
     const controls = await openDesktopSettings(connected);
-    assertSameNativeWindow(connectedWindow, await nativeWindowSnapshot(connected.app!));
+    await assertSameNativeWindow(connected.app!, connectedWindow);
     assert.equal(new URL(page.url()).searchParams.get('settings'), 'this-computer');
     assert.equal(await page.evaluate(() => performance.timeOrigin), viewerBeforeSettings.timeOrigin);
     await controls.getByRole('button', { name: 'Enable local execution', exact: true }).click();

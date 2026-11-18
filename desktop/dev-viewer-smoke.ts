@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import type { BrowserWindow } from 'electron';
 import { waitForHome } from './first-run';
 import { acceptance, api } from './acceptance-fixture';
-import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
+import { assertLocalIsolation, assertSameNativeWindow, localPage, settledWindowSnapshot } from './acceptance-surfaces';
 import { serviceStatus } from '../src/lib/service/client';
 
 void acceptance('development-viewer', async fixture => {
@@ -23,14 +23,14 @@ void acceptance('development-viewer', async fixture => {
       return original(url, options);
     };
   });
-  const initialWindow = await nativeWindowSnapshot(fixture.app!);
+  const initialWindow = await settledWindowSnapshot(fixture.app!);
   let setup = await localPage(fixture.app!, 'companion');
   await assertLocalIsolation(fixture.app!, setup, 'companion');
   await setup.locator('#create-home').click();
   setup = await localPage(fixture.app!, 'companion');
   await setup.waitForFunction(() => document.getElementById('connection-error')?.textContent?.includes('HTTP 500'));
   const reason = await setup.locator('#connection-error').textContent();
-  assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(fixture.app!));
+  await assertSameNativeWindow(fixture.app!, initialWindow);
   assert.match(reason ?? '', /local Ri service/);
   assert.doesNotMatch(reason ?? '', /Connect this device again|credential|Untrusted upstream/);
   const before = await serviceStatus();
@@ -38,7 +38,7 @@ void acceptance('development-viewer', async fixture => {
   fixture.check('An HTTP 500 sign-in failure reports the server error without asking to pair again');
   await setup.locator('#open').click();
   await waitForHome(page);
-  assertSameNativeWindow(initialWindow, await nativeWindowSnapshot(fixture.app!));
+  await assertSameNativeWindow(fixture.app!, initialWindow);
   fixture.origin = new URL(page.url()).origin;
   const home = await api<{ id: string }>(page, '/api/home');
   assert(home.id);
