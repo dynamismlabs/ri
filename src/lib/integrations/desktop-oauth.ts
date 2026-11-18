@@ -1,5 +1,6 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import http from 'node:http';
+import { CONNECTED_RESULT } from './connected-notice';
 
 export const DESKTOP_OAUTH_TTL = 10 * 60_000;
 export type DesktopOAuthStatus = 'connected' | 'cancelled' | 'error';
@@ -172,7 +173,7 @@ export class DesktopOAuthManager {
     try {
       this.completing.add(flow.key);
       await flow.complete(params);
-      this.finish(flow, 'connected', 'Connected');
+      this.finish(flow, 'connected', CONNECTED_RESULT);
     } catch {
       this.finish(flow, 'error', 'Connection failed. Please try again.');
     } finally {
