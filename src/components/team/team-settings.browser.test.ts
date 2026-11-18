@@ -281,7 +281,7 @@ it.skipIf(!enabled)('lists every agent and makes a key inside its item the momen
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(`${address}/?panel=settings&settings=external-ai`);
-    await page.getByText('Connected apps work on Team Huffine’s shared tasks', { exact: false }).waitFor();
+    await page.getByText('Connected agents work on Team Huffine’s shared tasks', { exact: false }).waitFor();
     const order = await page.locator('[data-agent-client]').evaluateAll(items => items.map(item => item.getAttribute('data-agent-client')));
     expect(order.slice(0, 4)).toEqual(['claude_code', 'codex', 'cursor', 'vscode']);
     expect(order.slice(-3)).toEqual(['chatgpt', 'ri', 'other']);
@@ -338,7 +338,7 @@ it.skipIf(!enabled)('keeps all phone sections reachable and hides owner-only set
     await nav.getByRole('button', { name: 'Your account', exact: true }).click();
     await page.getByRole('button', { name: 'Sign in on another device', exact: true }).click();
     await page.getByText('Ask a team owner', { exact: false }).waitFor();
-    await nav.getByRole('button', { name: 'Team in other apps', exact: true }).click();
+    await nav.getByRole('button', { name: 'Team in other agents', exact: true }).click();
     await page.locator('[data-agent-client=claude_code]').waitFor();
     expect(await page.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true);
     // A long blurb truncates, keeping every item's chevron inside the list.
@@ -367,7 +367,7 @@ it.skipIf(!enabled)('preserves the personal settings checklist and search', asyn
     expect(await nav.getByRole('button', { name: 'Models', exact: true }).getAttribute('aria-current')).toBe('page');
     // MCP is only in descriptions: Ri's own MCP server, and the servers Ri's agents use.
     await page.getByRole('textbox', { name: 'Search settings', exact: true }).fill('mcp');
-    expect(await nav.getByRole('button').allInnerTexts()).toEqual(['Plugins', 'Ri in other apps']);
+    expect(await nav.getByRole('button').allInnerTexts()).toEqual(['Plugins', 'Ri in other agents']);
   } finally { await page.close(); }
 }, 20_000);
 
@@ -375,7 +375,7 @@ it.skipIf(!enabled)('sets up an agent on this computer in one click, and disconn
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(`${address}/?personal=1&external=1`);
-    await page.getByText('Apps on other computers use your remote address.', { exact: false }).waitFor();
+    await page.getByText('Agents on other computers use your remote address.', { exact: false }).waitFor();
     await page.getByText('https://home.example.test/api/orchestrator/mcp', { exact: true }).waitFor();
     // Ri's skills close the section, with no key.
     await page.getByRole('heading', { name: 'Ri’s skills', exact: true }).waitFor();

@@ -104,7 +104,7 @@ const KNOWN_HOSTS: ReadonlyArray<[RegExp, AiClientKind]> = [
   [/(^|\.)claude\.(ai|com)$/, 'claude_desktop'],
 ];
 
-/** The Ri in other apps item for a host that proved it's a known app. */
+/** The Ri in other agents item for a host that proved it's a known app. */
 export function clientKindFor(host: string | null): AiClientKind {
   for (const [pattern, kind] of KNOWN_HOSTS) if (host && pattern.test(host)) return kind;
   return 'other';

@@ -10,7 +10,7 @@ import { ConnectAgents, waitingForAgent } from '../connect-agents';
 import { setSettingsSection } from '../settings-store';
 
 /**
- * Settings → Ri in other apps, for a personal Ri: every outside AI app's
+ * Settings → Ri in other agents, for a personal Ri: every outside agent's
  * steps, one-click Set up for the agents on the computer running Ri, and Ri's
  * skills for agents there (docs/external-ai.md).
  */
@@ -47,13 +47,13 @@ export function ExternalAiSection() {
         }}
       >
         <p className="text-xs text-muted-foreground">
-          {`Connected apps can search, read and update your tasks, notes, areas and deck, private notes included, with their own model. They can’t start ${APP_NAME} chats, change settings or reach this computer’s files. Each app gets its own key, and you can disconnect it here any time.`}
+          {`Connected agents can search, read and update your tasks, notes, areas and deck, private notes included, with their own model. They can’t start ${APP_NAME} chats, change settings or reach this computer’s files. Each agent gets its own key, and you can disconnect it here any time.`}
         </p>
         <div className="rounded-md border border-border p-3 text-xs">
           {address.data?.reachable ? <>
-            <p>Apps on other computers use your remote address. The computer running {APP_NAME} must stay on and reachable.</p>
+            <p>Agents on other computers use your remote address. The computer running {APP_NAME} must stay on and reachable.</p>
             <p className="mt-1 break-all font-mono text-muted-foreground">{address.data.mcpUrl}</p>
-          </> : <p>Apps on this computer connect without anything else. To connect one on another computer, set a remote address first.</p>}
+          </> : <p>Agents on this computer connect without anything else. To connect one on another computer, set a remote address first.</p>}
           <button type="button" className="mt-2 underline" onClick={() => setSettingsSection('devices')}>Remote access in Devices</button>
         </div>
         {(keys.isError || address.isError || local.isError) && <p role="alert" className="text-xs text-destructive">

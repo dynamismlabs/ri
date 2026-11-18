@@ -136,10 +136,10 @@ manage tasks and notes from any project. That global install:
   home) is never switched on, since the global skills belong to whichever Ri
   installed them.
 - Is installed for one agent when that agent is connected on this computer
-  (Settings → Ri in other apps → Set up, `connect_agent`, `ri mcp connect`),
+  (Settings → Ri in other agents → Set up, `connect_agent`, `ri mcp connect`),
   and shown with one-click install and uninstall at the end of Connect your
   agent (`src/components/settings/agent-skill-access.tsx`, docs/external-ai.md).
-  The Get started item is Use Ri in other AI apps itself. Models no longer carries it.
+  The Get started item is Use Ri in other agents itself. Models no longer carries it.
 - Reports what's on disk, not the saved choice (`inspectGlobalSkills`): a
   link or copy deleted by hand reads as not installed, and an entry holding
   the name that isn't this home's (someone's own skill, another live home's
@@ -325,7 +325,7 @@ home backups and comparisons include `skill-drafts` (`src/lib/home/`).
 | `src/lib/skills/file-placement.ts` | Which folder a file added by hand goes in, and the 1 MB limit |
 | `src/components/skills/skill-files.tsx` | The editor's Files list: add, open, replace, remove |
 | `src/lib/agent-skills/shipped.ts` | Ri's shipped skills: materializing, the home links, the global links and copies, `inspectGlobalSkills` |
-| `src/components/settings/agent-skill-access.tsx` | The one-click install and uninstall at the end of Ri in other apps |
+| `src/components/settings/agent-skill-access.tsx` | The one-click install and uninstall at the end of Ri in other agents |
 
 ## Not built yet
 

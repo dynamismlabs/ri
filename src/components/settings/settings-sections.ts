@@ -138,15 +138,16 @@ export const SECTIONS: readonly SettingsSectionDef[] = [
     description: 'Bring local projects and chats from Claude Code and Codex into Ri.',
   },
   {
-    // Outside AI apps (Claude Code, Codex, ChatGPT...) using Ri's MCP
+    // Outside agents (Claude Code, Codex, ChatGPT...) using Ri's MCP server
     // (docs/external-ai.md). Named for the direction, Ri going into other
-    // apps, so it can't be read as adding one of Ri's own agents. The id
-    // predates the name and stays, since links carry it.
+    // agents, so it reads as neither adding one of Ri's own agents nor an MCP
+    // server for Ri (those are Plugins). The id predates the name and stays,
+    // since links carry it.
     id: 'external-ai',
-    label: `${APP_NAME} in other apps`,
+    label: `${APP_NAME} in other agents`,
     icon: Cable,
-    title: `Use ${APP_NAME} in other AI apps`,
-    description: `Let ChatGPT, Claude Code, Codex and other AI apps read and update your tasks, notes and deck through ${APP_NAME}’s MCP server.`,
+    title: `Use ${APP_NAME} in other agents`,
+    description: `Add ${APP_NAME}’s MCP server to Claude Code, Codex, ChatGPT and other agents so they can read and update your tasks, notes and deck.`,
   },
   {
     id: 'notifications',

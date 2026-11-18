@@ -83,8 +83,8 @@ export interface ConnectAgentsProps {
 }
 
 /**
- * Settings → Ri in other apps (Team in other apps), for a personal Ri and
- * for a team: every outside AI app Ri knows, most popular first, each with its complete steps
+ * Settings → Ri in other agents (Team in other agents), for a personal Ri and
+ * for a team: every outside agent Ri knows, most popular first, each with its complete steps
  * (`src/lib/external-ai/client-config.ts`). A key is made inside an item the
  * moment its steps, install link or setup prompt need one, never in a
  * separate dialog, and each agent's keys are listed and disconnected in its
@@ -205,7 +205,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
     const text = aiClientSetupPrompt(client.kind, { ...target, mcpUrl: key.mcpUrl }, key.token);
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Setup prompt copied', { description: `Paste it into ${client.kind === 'other' ? 'your app' : client.label} on the other computer.` });
+      toast.success('Setup prompt copied', { description: `Paste it into ${client.kind === 'other' ? 'your agent' : client.label} on the other computer.` });
       setPrompt(null);
     } catch {
       // Some browsers only copy on the click itself. Show it to copy from.
@@ -288,7 +288,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                       </Tip>
                     )}
                     {client.kind !== 'ri' && !client.signsIn && (
-                      <Tip label="A prompt with a new key that the app on another computer follows to set itself up">
+                      <Tip label="A prompt with a new key that an agent on another computer follows to set itself up">
                         <button type="button" className={buttonClass} disabled={!ready || makeKey.isPending} onClick={() => void copyPrompt()}>
                           <ClipboardCopy size={12} aria-hidden /> Copy setup prompt
                         </button>
@@ -296,7 +296,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                     )}
                   </div>
                 </div>}
-                {prompt && <CopyBlock label="Copy this prompt into the app on the other computer." text={prompt} />}
+                {prompt && <CopyBlock label="Copy this prompt into the agent on the other computer." text={prompt} />}
                 {steps && (
                   <ol className="space-y-2.5">
                     {steps.steps.map((step, index) => (
@@ -325,7 +325,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                   <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
                     {target?.space.kind === 'team'
                       ? 'This address works only on the computer hosting the team until it has an address people can reach. Its owner sets one in Settings.'
-                      : 'This is a local address, so these steps work only on the computer running Ri. Set a remote address in Settings → Devices to connect an app elsewhere.'}
+                      : 'This is a local address, so these steps work only on the computer running Ri. Set a remote address in Settings → Devices to connect an agent elsewhere.'}
                   </p>
                 )}
                 {steps?.caveat && <p className="text-xs text-muted-foreground">{steps.caveat}</p>}

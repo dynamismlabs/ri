@@ -1,6 +1,6 @@
 # MCP sign-in and views
 
-ChatGPT, Claude and other MCP apps connect to Ri the way they connect to Todoist: you give the app Ri's MCP address, it finds Ri's sign-in on its own, and you choose Allow in Ri. Nobody makes an app or copies a key. The app gets the same content tools a key from Ri in other apps gives ([external-ai.md](external-ai.md)), and apps that draw MCP Apps views can show today's deck and task lists you act on in place.
+ChatGPT, Claude and other MCP apps connect to Ri the way they connect to Todoist: you give the app Ri's MCP address, it finds Ri's sign-in on its own, and you choose Allow in Ri. Nobody makes an app or copies a key. The app gets the same content tools a key from Ri in other agents gives ([external-ai.md](external-ai.md)), and apps that draw MCP Apps views can show today's deck and task lists you act on in place.
 
 Built October 31, 2026. Code: `src/lib/oauth/`, `src/app/oauth/authorize/`, `src/app/api/oauth/`, `src/app/.well-known/`, and the views in `src/lib/external-ai/views/`.
 
@@ -8,11 +8,11 @@ Built October 31, 2026. Code: `src/lib/oauth/`, `src/app/oauth/authorize/`, `src
 
 Cloud apps reach Ri from the internet, so Ri needs a remote address first (Settings → Devices, Use Beamd URL or your own HTTPS address). The MCP address is that address with `/api/orchestrator/mcp`.
 
-**ChatGPT.** Plugins → + → Add custom MCP server. Name it Ri, paste the MCP address as its server URL and choose OAuth under Authentication. ChatGPT finds Ri's sign-in on its own and picks its metadata document (CIMD), so there's no client to set up. Accept the warning and choose Create as a plugin. ChatGPT opens Ri's sign-in page in your browser. Choose Allow. Settings → Ri in other apps → ChatGPT has the same steps with your address filled in, and lists each connection with when it was last used and Disconnect. OpenAI's steps: [Connect and test](https://developers.openai.com/plugins/deploy/connect-chatgpt).
+**ChatGPT.** Plugins → + → Add custom MCP server. Name it Ri, paste the MCP address as its server URL and choose OAuth under Authentication. ChatGPT finds Ri's sign-in on its own and picks its metadata document (CIMD), so there's no client to set up. Accept the warning and choose Create as a plugin. ChatGPT opens Ri's sign-in page in your browser. Choose Allow. Settings → Ri in other agents → ChatGPT has the same steps with your address filled in, and lists each connection with when it was last used and Disconnect. OpenAI's steps: [Connect and test](https://developers.openai.com/plugins/deploy/connect-chatgpt).
 
-**Claude** (claude.ai, the desktop app, the phone). Settings → Connectors → Add custom connector, paste the MCP address, and sign in to Ri when it asks. The Claude app item in Ri in other apps says so beside its local bridge, which needs no remote address.
+**Claude** (claude.ai, the desktop app, the phone). Settings → Connectors → Add custom connector, paste the MCP address, and sign in to Ri when it asks. The Claude app item in Ri in other agents says so beside its local bridge, which needs no remote address.
 
-**Agents on a computer.** Any client that supports MCP authorization can sign in instead of holding a key: `claude mcp add --transport http ri <address>` with no header, then `/mcp` in Claude Code to authenticate. VS Code, Cursor and others do the same from their MCP settings. Ri in other apps' Set up still writes a key for agents on the computer running Ri, which needs no browser at all.
+**Agents on a computer.** Any client that supports MCP authorization can sign in instead of holding a key: `claude mcp add --transport http ri <address>` with no header, then `/mcp` in Claude Code to authenticate. VS Code, Cursor and others do the same from their MCP settings. Ri in other agents' Set up still writes a key for agents on the computer running Ri, which needs no browser at all.
 
 ## The sign-in page
 
@@ -43,7 +43,7 @@ What Ri implements, and the specs it follows: the [MCP authorization spec](https
 
 **Codes** live five minutes in the server's memory (`processState`), are used once, and are bound to the client, redirect, PKCE challenge, resource and issuer. A wrong verifier spends the code. A restart between Allow and the app's exchange loses it, and the app asks you to connect again.
 
-**Keys from a sign-in don't expire and there is no refresh token**, like every other Ri key (browser sign-ins last a year, Ri in other apps keys until disconnected). A connection ends with Disconnect in Settings, the app's own revocation, or the key's expiry if one is ever set. Short-lived tokens with rotating refresh would bound a token leaked in transit to an hour, at the cost of a grant table and rotation edge cases (a lost refresh response ends the connection). Revisit if Ri's keys get lifetimes generally.
+**Keys from a sign-in don't expire and there is no refresh token**, like every other Ri key (browser sign-ins last a year, Ri in other agents keys until disconnected). A connection ends with Disconnect in Settings, the app's own revocation, or the key's expiry if one is ever set. Short-lived tokens with rotating refresh would bound a token leaked in transit to an hour, at the cost of a grant table and rotation edge cases (a lost refresh response ends the connection). Revisit if Ri's keys get lifetimes generally.
 
 ## Security
 
@@ -55,7 +55,7 @@ Each rule names who it stops and what they'd get.
 | Each registration holds a random value, so the same details register as a new ID and secret | Someone who reads a client's ID and registers its details again | That client's secret | Kept. They'd still need a code and its verifier, but the fix is one field. |
 | A metadata document is fetched only for a signed-in owner, over HTTPS, without redirects, within 5 seconds and 64 KiB, and kept ten minutes. Its address is checked after DNS, where the socket connects (`publicLookup`), so a public name that resolves or rebinds to this computer or its network is refused like a literal one | Anyone who can make the Home's sign-in page load | Making the Home fetch URLs on its own network for them | Kept. Before sign-in the page names the app from its ID alone (`clientLabel`). |
 | The page always names where Allow sends the code, beside the host that serves the app's details when they differ, and the form submits that same place | An app whose details sit on a trusted-looking host and whose callback is its own | A key from an owner who saw only the trusted name | Kept. It's the only defense against a link that gets the owner to approve someone else's app. |
-| An app's logo, company and Ri in other apps item come only from the host that proved it: the document's host, or the host its code goes back to (`kindFor`) | An app that registers itself as "ChatGPT" | OpenAI's logo and wording on the consent page | Kept. Its own name still shows, beside "Returns you to evil.example". |
+| An app's logo, company and Ri in other agents item come only from the host that proved it: the document's host, or the host its code goes back to (`kindFor`) | An app that registers itself as "ChatGPT" | OpenAI's logo and wording on the consent page | Kept. Its own name still shows, beside "Returns you to evil.example". |
 | Redirects must be registered exactly. HTTP only to loopback, an app's own scheme allowed, never `javascript:`, `data:` or `file:`, never a fragment. A listener on this computer, `localhost` included, may pick its port (RFC 8252 §7.3, and what Claude Code does) | A link that sends the owner's code elsewhere | The owner's connection | Kept. A redirect that doesn't match is a page error, never a redirect. |
 | A request error is shown on the page with a link back, never redirected unasked (RFC 9700 §4.11.2) | Anyone, since registration is open: a client of their own with their own redirect and a malformed request | Ri's own address as a link that lands on their site | Kept. Errors after the owner's Allow or Cancel still redirect, since the owner chose. |
 | PKCE S256 required, codes single-use and bound, and redeemed only at the address that approved them | Someone who sees a code | A key | Kept. |

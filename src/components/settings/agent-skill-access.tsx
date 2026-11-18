@@ -18,7 +18,7 @@ import { agentSkillState } from './agent-skill-state';
  * folder, so switching harnesses never loses them. A new home's first run
  * installs them (`src/components/onboarding/agent-skill-install.ts`),
  * connecting an agent installs them for it (`src/lib/external-ai/local-setup.ts`),
- * and Settings → Ri in other apps ends with their one-click install and
+ * and Settings → Ri in other agents ends with their one-click install and
  * uninstall. Uninstalling removes only Ri's own links
  * (`src/lib/agent-skills/shipped.ts`) and never touches a project.
  */
@@ -56,7 +56,7 @@ const buttonClass =
 const HARNESS_NAMES = listJoin(HARNESS_IDS.map((id) => HARNESS_REGISTRY[id].name));
 
 /**
- * The end of Ri in other apps: Ri's skills for the coding tools on this
+ * The end of Ri in other agents: Ri's skills for the coding tools on this
  * computer, whether they're there, and the one button. Nothing in the desktop
  * app, which keeps them in its own folder until an agent is connected.
  */

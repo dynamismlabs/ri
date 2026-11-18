@@ -98,7 +98,7 @@ it('separates built-in AI, external assistants and remote access into named sect
   expect(container.querySelector<HTMLElement>('[data-team-settings-section=ai]')?.hidden).toBe(false);
   expect(container.querySelector<HTMLElement>('[data-team-settings-section=ai]')?.textContent).toBe('Team AI');
   expect(container.textContent).not.toContain('Connect your AI');
-  await click('Team in other apps');
+  await click('Team in other agents');
   expect(container.querySelector<HTMLElement>('[data-team-settings-section=ai]')?.hidden).toBe(true);
   expect(container.querySelector<HTMLElement>('[data-team-settings-section=external-ai]')?.textContent).toBe('Connect your AI');
   await click('Team address');

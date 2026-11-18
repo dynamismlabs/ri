@@ -1,6 +1,6 @@
 /**
  * One-click setup for outside agents on the computer running Ri: Settings →
- * Ri in other apps → Set up, the `connect_agent` action and `ri mcp connect`
+ * Ri in other agents → Set up, the `connect_agent` action and `ri mcp connect`
  * all come here. In one action it makes the agent's own key, writes Ri's server
  * into the agent's user-level configuration the agent's own way (its CLI, or
  * the file its docs name), with the key where the agent reads it, and puts
@@ -379,7 +379,7 @@ export const LOCAL_CLIENTS: readonly AiClientKind[] = AI_CLIENTS.filter(client =
 function localAdapter(kind: AiClientKind): { client: AiClientDef; adapter: Adapter } {
   const client = aiClient(kind);
   const adapter = adapterFor(client);
-  if (!adapter) throw new LocalSetupError('unsupported', `Ri can’t set up ${client.label} on this computer. Follow its steps in Settings → Ri in other apps instead.`);
+  if (!adapter) throw new LocalSetupError('unsupported', `Ri can’t set up ${client.label} on this computer. Follow its steps in Settings → Ri in other agents instead.`);
   return { client, adapter };
 }
 

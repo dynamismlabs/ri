@@ -1,5 +1,5 @@
 /**
- * Every outside AI app listed in Settings → Ri in other apps, most popular
+ * Every outside agent listed in Settings → Ri in other agents, most popular
  * first, and how each one reaches Ri's MCP: its steps by hand on any computer,
  * its one-click install link when it has one, the prompt an agent can follow to
  * set itself up, and, for the computer running Ri, where Ri writes its

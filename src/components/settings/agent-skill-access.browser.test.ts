@@ -6,14 +6,14 @@ import { build } from 'esbuild';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 
-// Ri's user-level skills at the end of Ri in other apps, and its Get started
+// Ri's user-level skills at the end of Ri in other agents, and its Get started
 // item (the real checklist hook), against a fake server that keeps state.
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let browser: Browser;
 let server: http.Server;
 let address: string;
 
-const LABEL = 'Use Ri in other AI apps';
+const LABEL = 'Use Ri in other agents';
 const CONFLICT = '~/.claude/skills/agent-work-tasks-notes_ri';
 const FOLDERS = 'in ~/.agents/skills, ~/.claude/skills and ~/.gemini/config/skills';
 
@@ -32,7 +32,7 @@ beforeAll(async () => {
         const checklist = useSetupChecklist(true);
         return <div className='flex gap-8 p-6'>
           <main aria-label='Get started' style={{flex:1}}><GetStartedSection checklist={checklist}/></main>
-          <aside aria-label='Ri in other apps' style={{flex:1}}><AgentSkillFooter/></aside>
+          <aside aria-label='Ri in other agents' style={{flex:1}}><AgentSkillFooter/></aside>
         </div>;
       }
       createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}><App/><Toaster/></QueryClientProvider>);
@@ -102,7 +102,7 @@ it.skipIf(!enabled)('says the skills are on and takes them off and back in one c
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
     await page.goto(address);
-    const footer = page.getByRole('complementary', { name: 'Ri in other apps' });
+    const footer = page.getByRole('complementary', { name: 'Ri in other agents' });
     await footer.getByText(FOLDERS, { exact: true }).waitFor();
     // Every harness, so switching later loses nothing, and the CLI works before connecting.
     await footer.getByText('Codex, Claude Code, Cursor, OpenCode and Antigravity on this computer have Ri’s skills', { exact: false }).waitFor();
@@ -127,7 +127,7 @@ it.skipIf(!enabled)('folds the skills into connecting an agent, in Get started',
     expect(await page.getByText('Let your coding tools manage tasks and notes', { exact: true }).count()).toBe(0);
     await row(page).getByRole('button', { name: 'Set up', exact: true }).waitFor();
     await row(page).getByRole('button', { name: 'Skip', exact: true }).click();
-    await row(page).getByText('Add it to ChatGPT, Claude Code or another AI app from the Ri in other apps tab any time.', { exact: true }).waitFor();
+    await row(page).getByText('Add Ri’s MCP server to Claude Code, Codex, ChatGPT or another agent from the Ri in other agents tab any time.', { exact: true }).waitFor();
     await row(page).getByRole('button', { name: 'Undo', exact: true }).click();
     await row(page).getByRole('button', { name: 'Set up', exact: true }).waitFor();
     // Any agent with its own key counts.
@@ -140,7 +140,7 @@ it.skipIf(!enabled)('names what holds the skill name', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
     await page.goto(`${address}/?blocked=1`);
-    const footer = page.getByRole('complementary', { name: 'Ri in other apps' });
+    const footer = page.getByRole('complementary', { name: 'Ri in other agents' });
     await footer.getByRole('alert').getByText(`Another skill is already at ${CONFLICT}`, { exact: false }).waitFor();
     await screenshot(page, 'agent-skill-blocked.png');
     await footer.getByRole('button', { name: 'Install', exact: true }).click();
@@ -155,7 +155,7 @@ it.skipIf(!enabled)('shows no skill controls in the desktop app, where the skill
   try {
     await page.goto(`${address}/?desktop=1`);
     await page.getByText('1/7 done', { exact: true }).waitFor();
-    expect(await page.getByRole('complementary', { name: 'Ri in other apps' }).getByRole('button').count()).toBe(0);
+    expect(await page.getByRole('complementary', { name: 'Ri in other agents' }).getByRole('button').count()).toBe(0);
     await row(page).getByRole('button', { name: 'Set up', exact: true }).waitFor();
   } finally { await page.close(); }
 }, 30_000);

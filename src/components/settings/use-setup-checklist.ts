@@ -131,7 +131,7 @@ export function useSetupChecklist(enabled: boolean): SetupChecklist {
     // Done when the capability is on and a browser is available. Signing into a
     // site is the optional next step, surfaced in the Browser tab itself.
     const browserDone = !!browser.data?.enabled && (browser.data?.config.detected.length ?? 0) > 0;
-    // Any outside AI app with its own key: Set up, its steps or its setup prompt.
+    // Any outside agent with its own key: Set up, its steps or its setup prompt.
     const agentDone = (agentKeys.data?.length ?? 0) > 0;
 
     const base: Omit<ChecklistItem, 'dismissed'>[] = [
@@ -143,7 +143,7 @@ export function useSetupChecklist(enabled: boolean): SetupChecklist {
       { id: 'connectors', section: 'plugins', label: 'Connect an app', hint: 'Connect one in Plugins any time.', done: integrationsDone },
       { id: 'browser', section: 'browser', label: 'Set up the agent browser', hint: 'Pick a browser and sign into sites in the Browser tab any time.', done: browserDone },
       // Ids are saved in DISMISS_KEY, so this one keeps its first spelling.
-      { id: 'connect-agent', section: 'external-ai', label: `Use ${APP_NAME} in other AI apps`, hint: `Add it to ChatGPT, Claude Code or another AI app from the ${APP_NAME} in other apps tab any time.`, done: agentDone },
+      { id: 'connect-agent', section: 'external-ai', label: `Use ${APP_NAME} in other agents`, hint: `Add ${APP_NAME}’s MCP server to Claude Code, Codex, ChatGPT or another agent from the ${APP_NAME} in other agents tab any time.`, done: agentDone },
     ];
     return base.map((i) => ({ ...i, dismissed: dismissed.has(i.id) }));
   }, [userState?.description, userState?.defaultHarness, baseUrls.data, channels.data, connections.data, browser.data, agentKeys.data, dismissed]);

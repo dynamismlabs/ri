@@ -3,7 +3,7 @@
  *
  * Connect an outside agent on this computer (Claude Code, Codex, Cursor,
  * VS Code, Gemini CLI, ...) to Ri's MCP in one step, the same setup as
- * Settings → Ri in other apps → Set up. They run the `connect_agent`,
+ * Settings → Ri in other agents → Set up. They run the `connect_agent`,
  * `disconnect_agent` and `list_agent_connections` actions, so a chat that
  * asks for it and a person at a terminal get the same result.
  */
