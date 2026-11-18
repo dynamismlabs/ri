@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { APP_NAME } from '@/constants/app';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowUpCircle, Library, Loader2 } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
@@ -65,6 +66,7 @@ export function AppCatalogList({ onOpen }: { onOpen: (sourceId: string) => void 
               <p className="text-sm">{app.name} <span className="text-[11px] text-muted-foreground">{versionLabel(app.installedVersion ?? app.version)}</span></p>
               <p className="text-xs text-muted-foreground">{app.description}</p>
               <p className="text-[11px] text-muted-foreground">{app.reaches.length ? `Can reach: ${app.reaches.join(', ')}.` : 'Keeps to its own data.'}</p>
+              {!app.sourceId && <p className="text-[11px] text-muted-foreground">{APP_NAME} builds and runs this app on your computer.</p>}
             </div>
             {!app.sourceId ? (
               <Button size="xs" disabled={add.isPending} onClick={() => add.mutate(app.id)}>
