@@ -17,7 +17,7 @@ import { HarnessToolSetup } from './harness-tools';
 import type { DesktopComputerStatus } from '../src/lib/client/desktop';
 import { parseDeepLink, resultLocation, watchOAuthResults } from './oauth-client';
 import { servicePaths } from '../src/lib/service/paths';
-import { awaitingRetry, serviceRequest, serviceStatus, type ServiceStatus } from '../src/lib/service/client';
+import { serviceRequest, serviceStatus, type ServiceStatus } from '../src/lib/service/client';
 import { redactServiceLine } from '../src/lib/service/logging';
 import { assertExistingInstallation, installationEnvironment, localInstallation, readInstallation, saveInstallation, type InstallationInspection } from './installation';
 import { maintenanceWindow } from './maintenance-window';
@@ -54,6 +54,7 @@ import { ViewerTransitions } from './viewer-transitions';
 import { signInDesktopSession } from './session-auth';
 import { automatedFailure, connectionFailure } from './connection-failure';
 import { CLOSE_ANSWER_MS, closeDialogDetail, closeHold, closeHoldLog, type CloseHold } from './close-guard';
+import { prepareRetry } from './retry-connection';
 import { DesktopConnection } from './connection-state';
 import { teamsFile } from './teams';
 import { teamFlow } from './team-flow';
@@ -396,11 +397,7 @@ async function detachConnection() {
 
 async function retryConnection() {
   if (selectionInvalid) throw new Error('Choose and verify an installation before retrying. The saved selection could not be opened.');
-  const status = await serviceStatus();
-  if (status?.phase === 'failed') throw new Error('The service needs recovery before it can restart.');
-  // A Home waiting for its next try after a failed start tries now: whoever
-  // pressed this has likely fixed the cause.
-  if (awaitingRetry(status)) await serviceRequest('/restart', 'POST', 10_000);
+  await prepareRetry({ status: serviceStatus, restart: () => serviceRequest('/restart', 'POST', 10_000) });
   selectionError = undefined;
   connecting = true;
   try {

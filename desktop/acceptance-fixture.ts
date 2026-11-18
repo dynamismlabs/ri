@@ -32,6 +32,38 @@ export async function hydrated(page: Page, timeout = HYDRATION_MS) {
   await page.waitForFunction(platform => document.documentElement.dataset.riDesktop === platform, process.platform, { timeout });
 }
 
+/** The selected Home's own account of a failed check: the end of its service
+ * log and the longest stalls its perf log recorded (docs/server-perf-log.md).
+ * With the page's side of a report it shows whether the server or the page
+ * stopped. Reads files only, so it works when the Home doesn't answer. */
+export function serviceEvidence() {
+  const { log, identity } = servicePaths();
+  const redact = (line: string) => redactServiceLine(line, []).replace(new RegExp(`#${PAIRING_TOKEN_FRAGMENT_KEY}=[^\\s]+`, 'g'), '#[pairing token redacted]').slice(0, 300);
+  const tail = (file: string, bytes: number) => {
+    const size = fs.statSync(file).size;
+    const handle = fs.openSync(file, 'r');
+    try {
+      const buffer = Buffer.alloc(Math.min(size, bytes));
+      fs.readSync(handle, buffer, 0, buffer.length, size - buffer.length);
+      // The first line may start mid-way, unless the whole file fit.
+      return buffer.toString('utf8').split('\n').slice(size > bytes ? 1 : 0).filter(Boolean);
+    } finally { fs.closeSync(handle); }
+  };
+  type PerfRecord = { t?: string; type?: string; ms?: number; db?: { ms?: number }; inFlight?: Array<{ label: string; ms: number }>; loop?: { maxMs?: number } };
+  const perfLog = perfLogPaths(identity.work).current;
+  const records = fs.existsSync(perfLog) ? tail(perfLog, 512 * 1024).flatMap(line => {
+    try { return [JSON.parse(line) as PerfRecord]; } catch { return []; }
+  }) : [];
+  return {
+    serviceLog: fs.existsSync(log) ? tail(log, 32 * 1024).slice(-40).map(redact) : 'No service log',
+    stalls: records.filter(record => record.type === 'stall').sort((a, b) => (b.ms ?? 0) - (a.ms ?? 0)).slice(0, 8).map(record => ({
+      t: record.t, ms: Math.round(record.ms ?? 0), dbMs: Math.round(record.db?.ms ?? 0),
+      inFlight: record.inFlight?.slice(0, 4).map(work => `${work.label} ${Math.round(work.ms)}ms`),
+    })),
+    longestLoopDelayMs: Math.round(Math.max(0, ...records.map(record => record.loop?.maxMs ?? 0))),
+  };
+}
+
 export async function bounded<T>(promise: Promise<T>, description: string, timeout = 30_000): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
@@ -286,37 +318,10 @@ export class AcceptanceFixture {
     await nativeReload(this.app, this.page, this.report);
   }
 
-  /** The Home's own account of a failed check: the end of its service log and
-   * the longest stalls its perf log recorded (docs/server-perf-log.md). With
-   * the page's side of the report it shows whether the server or the page
-   * stopped. Reads files only, so it works when the Home doesn't answer. */
+  /** This fixture's Home, by `serviceEvidence`. */
   homeEvidence() {
     this.select();
-    const { log, identity } = servicePaths();
-    const redact = (line: string) => redactServiceLine(line, []).replace(new RegExp(`#${PAIRING_TOKEN_FRAGMENT_KEY}=[^\\s]+`, 'g'), '#[pairing token redacted]').slice(0, 300);
-    const tail = (file: string, bytes: number) => {
-      const size = fs.statSync(file).size;
-      const handle = fs.openSync(file, 'r');
-      try {
-        const buffer = Buffer.alloc(Math.min(size, bytes));
-        fs.readSync(handle, buffer, 0, buffer.length, size - buffer.length);
-        // The first line may start mid-way, unless the whole file fit.
-        return buffer.toString('utf8').split('\n').slice(size > bytes ? 1 : 0).filter(Boolean);
-      } finally { fs.closeSync(handle); }
-    };
-    type PerfRecord = { t?: string; type?: string; ms?: number; db?: { ms?: number }; inFlight?: Array<{ label: string; ms: number }>; loop?: { maxMs?: number } };
-    const perfLog = perfLogPaths(identity.work).current;
-    const records = fs.existsSync(perfLog) ? tail(perfLog, 512 * 1024).flatMap(line => {
-      try { return [JSON.parse(line) as PerfRecord]; } catch { return []; }
-    }) : [];
-    return {
-      serviceLog: fs.existsSync(log) ? tail(log, 32 * 1024).slice(-40).map(redact) : 'No service log',
-      stalls: records.filter(record => record.type === 'stall').sort((a, b) => (b.ms ?? 0) - (a.ms ?? 0)).slice(0, 8).map(record => ({
-        t: record.t, ms: Math.round(record.ms ?? 0), dbMs: Math.round(record.db?.ms ?? 0),
-        inFlight: record.inFlight?.slice(0, 4).map(work => `${work.label} ${Math.round(work.ms)}ms`),
-      })),
-      longestLoopDelayMs: Math.round(Math.max(0, ...records.map(record => record.loop?.maxMs ?? 0))),
-    };
+    return serviceEvidence();
   }
 
   check(name: string, detail?: unknown) {

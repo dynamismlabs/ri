@@ -13,6 +13,7 @@ import { ensureService, serviceStatus, stopService } from '../src/lib/service/cl
 import { installedRuntime } from '../src/lib/service/runtime';
 import { desktopPackageLayout } from './package-layout';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, nativeWindowSnapshot, relayDesktopOutput, viewerPage } from './acceptance-surfaces';
+import { serviceEvidence } from './acceptance-fixture';
 
 const repo = path.resolve(__dirname, '..');
 const base = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-recovery-smoke-'));
@@ -162,6 +163,13 @@ try {
   await close();
   assert.equal((await serviceStatus())?.runId, associated?.runId);
   console.info(JSON.stringify({ passed: true, failedStartRetried: true, advancedIdentity: advanced, savedSelectionVerified, guiQuitPreservesService: true, artifacts: base }, null, 2));
+} catch (error) {
+  // What the Home's controller was doing, so a stop says whether it was the service or the app.
+  const evidence: Record<string, unknown> = {};
+  try { select(env); evidence.status = await serviceStatus(); } catch (reason) { evidence.status = String(reason); }
+  try { evidence.home = serviceEvidence(); } catch (reason) { evidence.home = String(reason); }
+  console.error(JSON.stringify({ passed: false, artifacts: base, ...evidence }, null, 2));
+  throw error;
 } finally {
   await close().catch(() => {});
   for (const environment of [env, demoEnvironment(repo, { ...env, ...installationEnvironment(advanced) }, 'production')]) {
