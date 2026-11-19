@@ -102,8 +102,11 @@ describe('the guide', () => {
     }
   });
 
-  it('never uses long dashes', () => {
-    for (const page of pages) expect(page.text, page.id).not.toMatch(/[—–]/);
+  it('never uses long dashes, or semicolons outside code', () => {
+    for (const page of pages) {
+      expect(page.text, page.id).not.toMatch(/[—–]/);
+      expect(prose(page.text), `${page.id} has a semicolon`).not.toMatch(/;/);
+    }
   });
 
   it('reads like ri.app: no semicolons, the app\'s words, no internal paths', () => {

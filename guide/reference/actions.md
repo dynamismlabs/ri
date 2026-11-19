@@ -91,7 +91,7 @@ ri agent attach_execution_to_task <execution_id> <task_id>
 
 ## begin_stream_sweep
 
-Open a triage sweep: returns your full instructions, the pending captures with combine/merge candidates, the user’s recent corrections, and the autonomy config. Call this FIRST when triaging the stream; conflict means another sweep is already running (stop quietly). Finish with finish_stream_sweep.
+Open a triage sweep: returns your full instructions, the pending captures with combine/merge candidates, the user’s recent corrections, and the autonomy config. Call this FIRST when triaging the stream. Conflict means another sweep is already running (stop quietly). Finish with finish_stream_sweep.
 
 Changes data.
 
@@ -519,7 +519,7 @@ ri agent create_task [--param value]
 
 ## create_trigger
 
-Create a trigger. Kind-specific fields are enforced (cron requires cron_expression, every requires interval_seconds, at requires run_at, webhook generates credentials, manual takes no cadence fields and only fires via run_trigger). target_kind decides where each fire runs. session sends the prompt into one existing chat as a message from the trigger: target_session_id names it, and called from a chat it defaults to that chat, so a chat can schedule its own check-ins. The chat keeps its own provider and model, and a fire while it is busy is skipped unless concurrency_policy says otherwise, except a one-time fire, which waits until the chat is free. workspace starts a fresh chat in that agent on every fire. orchestrator starts a fresh Ri chat on every fire. provider picks who runs a workspace or orchestrator trigger (defaults to the user's default provider); model and effort are validated against that provider. Enabling an automation authorizes its run chats to message and delegate within the assignment without per-send coordination approval. Create schedules only within the user's intent, never to bypass a denied send.
+Create a trigger. Kind-specific fields are enforced (cron requires cron_expression, every requires interval_seconds, at requires run_at, webhook generates credentials, manual takes no cadence fields and only fires via run_trigger). target_kind decides where each fire runs. session sends the prompt into one existing chat as a message from the trigger: target_session_id names it, and called from a chat it defaults to that chat, so a chat can schedule its own check-ins. The chat keeps its own provider and model, and a fire while it is busy is skipped unless concurrency_policy says otherwise, except a one-time fire, which waits until the chat is free. workspace starts a fresh chat in that agent on every fire. orchestrator starts a fresh Ri chat on every fire. provider picks who runs a workspace or orchestrator trigger (defaults to the user's default provider). Model and effort are validated against that provider. Enabling an automation authorizes its run chats to message and delegate within the assignment without per-send coordination approval. Create schedules only within the user's intent, never to bypass a denied send.
 
 Changes data. A tool in every chat.
 
@@ -635,7 +635,7 @@ ri agent describe_chat_source [--param value]
 
 ## describe_device_harnesses
 
-The harnesses a device can run: installed, version, and capabilities. By default its worker's last report; with fresh=true Ri asks the worker now, which needs it connected.
+The harnesses a device can run: installed, version, and capabilities. By default its worker's last report. With fresh=true Ri asks the worker now, which needs it connected.
 
 Reads only.
 
@@ -1184,7 +1184,7 @@ ri agent list_email_accounts
 
 ## list_executions
 
-List active execution sessions across all workspaces with status flags: running (turn in flight), awaitingInput (blocked on a prompt), unread (output the user has not viewed, what the rail's Unread section shows, minus currently-running sessions), inactive (no activity for longer than the user's inactive threshold, so the rail folds it away; leave these out of "what needs my attention" unless the user asks about older work). The returned sessionId is the handle for get_session_messages, message_agent, and [[execution:SESSION_ID]] links. When available, resumeCommand is the provider CLI command for the external session id.
+List active execution sessions across all workspaces with status flags: running (turn in flight), awaitingInput (blocked on a prompt), unread (output the user has not viewed, what the rail's Unread section shows, minus currently-running sessions), inactive (no activity for longer than the user's inactive threshold, so the rail folds it away. Leave these out of "what needs my attention" unless the user asks about older work). The returned sessionId is the handle for get_session_messages, message_agent, and [[execution:SESSION_ID]] links. When available, resumeCommand is the provider CLI command for the external session id.
 
 Reads only.
 
@@ -1321,7 +1321,7 @@ ri agent list_published_results [--param value]
 
 ## list_reference_folders
 
-List reference folders (the folders beside a workspace its agents work with, called linked folders in the app), resolved to absolute paths with existence and git state. `readOnly: true` means agents are told not to change it; false or null means they may. Pass workspaceId to see what that workspace sees (its own plus every global one); omit it for the global ones alone.
+List reference folders (the folders beside a workspace its agents work with, called linked folders in the app), resolved to absolute paths with existence and git state. `readOnly: true` means agents are told not to change it. False or null means they may. Pass workspaceId to see what that workspace sees (its own plus every global one). Omit it for the global ones alone.
 
 Reads only.
 
@@ -2048,7 +2048,7 @@ ri agent set_workspace_folder <agent> <folder> [--param value]
 
 ## transition_task
 
-Apply a semantic task lifecycle transition. Commands: move_to_todo (Consider->Todo, commit), move_to_consider (Todo->Consider, uncommit; rejected while the task has a deadline/recurrence/blocker or a genuinely running workstream), start (Consider|Todo->In progress), return_to_todo (In progress->Todo), reopen (Done->Todo), archive (Consider|Todo|In progress->Archived), restore (Archived->Todo). Task lifecycle is independent of execution lifecycle: a change never stops or detaches a shared execution. Use complete_task to finish. Safe under retry with the same idempotency_key; pass expected_status_changed_count for conflict detection. To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
+Apply a semantic task lifecycle transition. Commands: move_to_todo (Consider->Todo, commit), move_to_consider (Todo->Consider, uncommit. Rejected while the task has a deadline/recurrence/blocker or a genuinely running workstream), start (Consider|Todo->In progress), return_to_todo (In progress->Todo), reopen (Done->Todo), archive (Consider|Todo|In progress->Archived), restore (Archived->Todo). Task lifecycle is independent of execution lifecycle: a change never stops or detaches a shared execution. Use complete_task to finish. Safe under retry with the same idempotency_key. Pass expected_status_changed_count for conflict detection. To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
 
 Changes data. Open to other agents.
 
@@ -2139,7 +2139,7 @@ ri agent update_email_draft [--param value]
 
 ## update_heartbeat
 
-Change the heartbeat. All fields optional; unspecified fields keep their value. intervalSeconds is the gap between check-ins, at least 300. activeHoursStart/activeHoursEnd are HH:MM in the heartbeat's timezone, set together, or both null for any time of day. instructions replace the user's instructions verbatim (the app's ground rules are added separately and cannot be edited). resetInstructions restores the default instructions. Changing provider resets model and effort unless the same call sets them. Turning it on schedules the first check-in one interval out, inside the active hours. Use run_trigger with the returned triggerId to check in now.
+Change the heartbeat. All fields optional. Unspecified fields keep their value. intervalSeconds is the gap between check-ins, at least 300. activeHoursStart/activeHoursEnd are HH:MM in the heartbeat's timezone, set together, or both null for any time of day. instructions replace the user's instructions verbatim (the app's ground rules are added separately and cannot be edited). resetInstructions restores the default instructions. Changing provider resets model and effort unless the same call sets them. Turning it on schedules the first check-in one interval out, inside the active hours. Use run_trigger with the returned triggerId to check in now.
 
 Changes data.
 
@@ -2210,7 +2210,7 @@ ri agent update_reference_folder <id> [--param value]
 
 ## update_task
 
-Update a task by id (content and metadata only). All fields optional; unspecified fields keep their value. Lifecycle status is NOT settable here, use transition_task (move_to_todo / move_to_consider / start / return_to_todo / reopen / archive / restore) or complete_task, so history, idempotency, and invariants hold. On a task shared with a team (sourceTeamId set), title, description, body, outcome and hardDeadline go to the team, where teammates see them, and private fields stay here. Never put private context in a shared field: use userContext. A shared body edit is checked against the team revision it was made from (expected_body_revision, defaulting to source.bodyRevision as last read). To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
+Update a task by id (content and metadata only). All fields optional. Unspecified fields keep their value. Lifecycle status is NOT settable here, use transition_task (move_to_todo / move_to_consider / start / return_to_todo / reopen / archive / restore) or complete_task, so history, idempotency, and invariants hold. On a task shared with a team (sourceTeamId set), title, description, body, outcome and hardDeadline go to the team, where teammates see them, and private fields stay here. Never put private context in a shared field: use userContext. A shared body edit is checked against the team revision it was made from (expected_body_revision, defaulting to source.bodyRevision as last read). To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
 
 Changes data. Open to other agents.
 

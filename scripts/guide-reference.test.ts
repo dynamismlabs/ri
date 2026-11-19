@@ -29,6 +29,11 @@ describe('inlineText', () => {
     expect(inlineText('desktop | laptop', { table: true })).toBe('desktop \\| laptop');
   });
 
+  it('ends a sentence where the code used a semicolon, but leaves code alone', () => {
+    expect(inlineText('Safe under retry; pass the same key')).toBe('Safe under retry. Pass the same key');
+    expect(inlineText('Run `a; b` first;')).toBe('Run `a; b` first.');
+  });
+
   it('sets anything that reads as a tag or an expression as code, with its whole word', () => {
     expect(inlineText('Write a snapshot to <app-root>/snapshots/.')).toBe('Write a snapshot to `<app-root>/snapshots/`.');
     expect(inlineText('front it at <name>.localhost (default: ri)')).toBe('front it at `<name>.localhost` (default: ri)');

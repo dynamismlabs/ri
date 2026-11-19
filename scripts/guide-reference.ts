@@ -31,17 +31,19 @@ export const REFERENCE_PAGES = {
 const GENERATED_NOTE = 'This page is generated from the code by `pnpm guide:reference`. Edit the code, not this page.';
 
 /**
- * Text from the code, made safe for the guide: one line, no long dashes (the
- * guide's voice), table pipes escaped, and anything that reads as a tag or an
- * expression (`<dir>`, `{...}`) set as code so no Markdown renderer takes it
- * for HTML.
+ * Text from the code, made safe for the guide: one line, no long dashes or
+ * semicolons outside code (the guide's voice), table pipes escaped, and
+ * anything that reads as a tag or an expression (`<dir>`, `{...}`) set as code
+ * so no Markdown renderer takes it for HTML.
  */
 export function inlineText(text: string, { table = false } = {}): string {
   const flat = text.replace(/\s+/g, ' ').replace(/\s*[—–]\s*/g, ', ').trim();
   const safe = flat.split(/(`[^`]*`)/).map((part, i) => {
     if (i % 2 === 1) return part;
+    // A semicolon between clauses becomes the end of a sentence.
+    const sentences = part.replace(/;\s+(\S)/g, (_, next: string) => `. ${next.toUpperCase()}`).replace(/;$/, '.');
     // The whole word around it (`<app-root>/snapshots/`), less closing punctuation.
-    return part.replace(/[^\s(]*(?:<[^<>]*>|\{[^{}]*\})[^\s(),;]*/g, (match) => {
+    return sentences.replace(/[^\s(]*(?:<[^<>]*>|\{[^{}]*\})[^\s(),;]*/g, (match) => {
       const [, word, tail] = /^(.*?)([.:]*)$/.exec(match)!;
       return `\`${word}\`${tail}`;
     });
