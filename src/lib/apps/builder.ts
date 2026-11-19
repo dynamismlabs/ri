@@ -25,6 +25,7 @@ import { promisify } from 'node:util';
 import { parse as parseYaml } from 'yaml';
 import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
 import { getAppRoot, getWorkDir } from '@/lib/config/paths';
+import { getRuntimeBaseDir } from '@/lib/service/paths';
 import { createAppSource, getAppSource, listAppSources, listRemovedAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
 import { processState } from '@/lib/process-state';
 import { untraced } from '@/lib/utils/untraced';
@@ -140,6 +141,17 @@ export function newJob(sourceId: string, kind: AppJob['kind']): AppJob {
   return job;
 }
 
+/**
+ * The kit's message without its notice that the app's service runs a Node kept in one Node version's
+ * folder, when that Node is Ri's own (toolchain.ts `appNode`): Ri never removes those, so there is
+ * nothing for the person to do. A Node Ri doesn't manage keeps the notice, since removing it would
+ * stop the app.
+ */
+export function withoutManagedNodeNotice(message: string, managed: string = path.join(/* turbopackIgnore: true */ getRuntimeBaseDir(), 'app-node')): string {
+  return message.replace(/\s*Its service runs Node from (.+?), which belongs to one Node version[\s\S]*?with that Node\./, (notice, node: string) =>
+    node.startsWith(`${managed}${path.sep}`) ? '' : notice).trim();
+}
+
 /** One line of the kit's `--json` output, folded into the job. */
 export function foldKitLine(job: Pick<AppJob, 'steps' | 'result'>, line: string): void {
   let event: { event?: string; step?: string; status?: string; detail?: string; outcome?: string; message?: string; release?: string; previous?: string; log?: string };
@@ -150,7 +162,7 @@ export function foldKitLine(job: Pick<AppJob, 'steps' | 'result'>, line: string)
     if (existing) Object.assign(existing, next); else job.steps.push(next);
   } else if (event.event === 'result' && event.outcome) {
     job.result = {
-      outcome: event.outcome as KitOutcome, message: String(event.message ?? '').slice(0, 1000),
+      outcome: event.outcome as KitOutcome, message: withoutManagedNodeNotice(String(event.message ?? '')).slice(0, 1000),
       ...(event.release ? { release: String(event.release) } : {}), ...(event.previous ? { previous: String(event.previous) } : {}), ...(event.log ? { log: String(event.log) } : {}),
     };
   }
