@@ -254,6 +254,27 @@ function applyProviderConfig(spec: SessionSpec, config: Partial<ProviderConfig>)
   if (config.disallowedTools) spec.disallowedTools = [...config.disallowedTools];
 }
 
+/**
+ * Add the connector instructions block for a chat that reaches the integrations endpoint. The
+ * endpoint's `?ws=` is the place whose tools it serves, so the block names exactly those servers.
+ * A failure to read them leaves them out rather than stopping the chat.
+ */
+async function applyConnectorInstructions(spec: SessionSpec, chatSessionId: string, providerType: string): Promise<void> {
+  const server = spec.mcpServers.find((candidate) => candidate.name === INTEGRATIONS_MCP_SERVER_NAME) as { url?: unknown } | undefined;
+  if (typeof server?.url !== 'string') return;
+  let workspaceId: string | null;
+  try { workspaceId = new URL(server.url).searchParams.get('ws'); } catch { return; }
+  // Loaded here: the integrations runtime stays out of every module that only builds a spec.
+  const text = await import('@/lib/integrations/server-instructions').then(m => m.chatConnectorInstructions({ chatId: chatSessionId, workspaceId })).catch((error: unknown) => {
+    console.warn('[executor] connector instructions were left out:', error instanceof Error ? error.message : error);
+    return '';
+  });
+  if (!text) return;
+  const plan = planSessionInstructions(providerType, [{ name: 'connector instructions', text }]);
+  if (plan.text) spec.instructions = [spec.instructions, plan.text].filter(Boolean).join('\n\n');
+  if (plan.undelivered.length > 0) spec.messagePreamble = [spec.messagePreamble, text].filter(Boolean).join('\n\n');
+}
+
 export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarget = HOME): Promise<SessionSpec> {
   if (!args.teamTurnId) assertPersonalCapability('Personal session configuration');
   const providerType = harnessDefinition(args.harness).agentexProviderId;
@@ -510,6 +531,11 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
   }
 
   }
+
+  // What each server whose tools this chat lists directly says about using
+  // them (src/lib/integrations/server-instructions.ts): only where the chat
+  // reaches the integrations endpoint, scoped as that endpoint scopes it.
+  if (!args.teamTurnId) await applyConnectorInstructions(spec, args.chatSessionId, providerType);
 
   // An agent's main chat runs in the user's own folder, so it gets no user
   // skills on a harness that would write them there.

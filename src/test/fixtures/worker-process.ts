@@ -18,14 +18,37 @@
  *
  * Usage: `tsx src/test/fixtures/worker-process.ts <homeUrl> <homeId> <workerKey> <root>`.
  * `startWorkerProcess` in the test does this and waits for it to connect.
+ *
+ * It lives only as long as the test that started it. A real worker keeps
+ * retrying an unreachable home for as long as it runs, and so does this one,
+ * heartbeating every 300 ms with a `ps -ax` each time. So the test holds a pipe
+ * to its stdin, and when that closes the worker stops. The pipe closes however
+ * the test process ends, a timeout or a SIGKILL included, where an `afterEach`
+ * never runs. Before this, interrupted runs left over a hundred of them going
+ * on one Mac for hours, loading it until most other tests timed out.
  */
 
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 
+/** How long a worker whose test has gone gets to stop on its own before it exits anyway. */
+const ORPHAN_GRACE_MS = 3_000;
+
 async function main(): Promise<void> {
   const [homeUrl, homeId, workerKey, root] = process.argv.slice(2);
   if (!homeUrl || !homeId || !workerKey || !root) throw new Error('usage: worker-process <homeUrl> <homeId> <workerKey> <root>');
+  const controller = new AbortController();
+  process.on('SIGTERM', () => controller.abort());
+  process.on('SIGINT', () => controller.abort());
+  // The test's end of stdin closed: it's gone, and its home with it. Stop as
+  // Ctrl-C would, and exit regardless once the grace is up, since telling a
+  // home that's gone can only wait.
+  process.stdin.on('end', () => {
+    controller.abort();
+    setTimeout(() => process.exit(0), ORPHAN_GRACE_MS).unref();
+  });
+  process.stdin.on('error', () => {});
+  process.stdin.resume();
   process.env.RI_ROOT = root;
   process.env.RI_CONFIG_DIR = path.join(root, '.config');
   process.env.RI_WORK_DIR = path.join(root, '.work');
@@ -74,9 +97,6 @@ async function main(): Promise<void> {
   const { installRunnerSink } = await import('@/lib/runner/sink');
   const { executionHandlers, executionRequests } = await import('@/lib/worker/handlers');
   const { runWorker } = await import('@/lib/worker/run');
-  const controller = new AbortController();
-  process.on('SIGTERM', () => controller.abort());
-  process.on('SIGINT', () => controller.abort());
 
   const capability = { supported: true, status: 'supported' };
   const exit = await runWorker({
@@ -125,15 +145,20 @@ export interface WorkerProcess {
   kill(): Promise<void>;
 }
 
-/** Start a worker process and wait until it has connected to the home. */
-export async function startWorkerProcess(args: {
+interface WorkerProcessArgs {
   homeUrl: string;
   homeId: string;
   workerKey: string;
   root: string;
   /** Environment for that device, such as where its harnesses keep their history. */
   env?: Record<string, string>;
-}): Promise<WorkerProcess> {
+}
+
+/**
+ * Start a worker process without waiting for it. Its stdin is a pipe held by
+ * this process, which it stops on when it closes (see the top of this file).
+ */
+export function spawnWorkerProcess(args: WorkerProcessArgs): ChildProcess {
   const repo = path.resolve(__dirname, '../../..');
   // Node itself, with tsx's loader, rather than the tsx wrapper: the wrapper
   // runs the script as a child of its own, so a SIGKILL meant as a crash
@@ -145,13 +170,30 @@ export async function startWorkerProcess(args: {
     // to say so ("none of the git remotes ... point to a known GitHub host"), where with no sign-in at
     // all it would only ask for one.
     env: { ...process.env, NODE_OPTIONS: '', GH_CONFIG_DIR: path.join(args.root, '.config', 'gh'), GH_TOKEN: 'placeholder-for-tests', ...args.env },
-    stdio: ['ignore', 'pipe', 'pipe'],
+    stdio: ['pipe', 'pipe', 'pipe'],
   });
+  // Nothing is ever written to it. A worker that already exited only makes it EPIPE.
+  child.stdin!.on('error', () => {});
+  return child;
+}
+
+/**
+ * Start a worker process and wait until it has connected to the home. One
+ * that doesn't connect in time is killed before this rejects, so a slow start
+ * never leaves a worker retrying after its test.
+ */
+export async function startWorkerProcess(args: WorkerProcessArgs & { connectTimeoutMs?: number }): Promise<WorkerProcess> {
+  const connectTimeoutMs = args.connectTimeoutMs ?? 30_000;
+  const child = spawnWorkerProcess(args);
   let out = '';
   child.stdout!.on('data', (d) => (out += d.toString()));
   child.stderr!.on('data', (d) => (out += d.toString()));
   await new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`The worker process didn't connect:\n${out}`)), 30_000);
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      child.kill('SIGKILL');
+    }, connectTimeoutMs);
     const check = () => {
       if (out.includes('WORKER_CONNECTED')) {
         clearTimeout(timer);
@@ -159,9 +201,12 @@ export async function startWorkerProcess(args: {
       }
     };
     child.stdout!.on('data', check);
-    child.on('exit', (code) => {
+    // Rejects only once it has exited, so a caller never holds a failed start that's still running.
+    child.on('exit', (code, signal) => {
       clearTimeout(timer);
-      reject(new Error(`The worker process exited (${code}):\n${out}`));
+      reject(new Error(timedOut
+        ? `The worker process didn't connect within ${connectTimeoutMs} ms, so it was stopped:\n${out}`
+        : `The worker process exited (${code ?? signal}):\n${out}`));
     });
   });
   return {

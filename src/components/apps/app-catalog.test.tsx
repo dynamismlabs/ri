@@ -36,6 +36,8 @@ it('offers each app with what it can reach, and Add, Update or Added by where it
   expect(html).toContain('Keeps to its own data.');
   expect(html).toContain('Can reach: Your email, to find bookings.');
   expect(html).toMatch(/>Add<\/button>/);
+  // Said once, beside Add: an added app has been built already.
+  expect(html.match(/builds and runs this app on your computer\./g)).toHaveLength(1);
   expect(html).toMatch(/Update to (<!-- -->)?v1\.1\.0/);
   expect(html).toContain('Added');
   // Added but its install never finished: nothing is running, so no update, just the way back.

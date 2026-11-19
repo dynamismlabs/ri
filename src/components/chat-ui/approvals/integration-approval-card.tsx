@@ -1,6 +1,7 @@
 'use client';
 
 import { INTEGRATION_LABELS } from '@/constants/integrations';
+import { ApprovalDetails } from './approval-details';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { useLiveIntegrationApprovals, useResolveIntegrationApprovals } from '@/hooks/use-integration-approvals';
 import { useSessionEvents } from '@/hooks/use-execution';
@@ -249,16 +250,7 @@ function ApprovalItem({
           </span>
         )}
       </div>
-      {expanded && (
-        <dl className="ml-5 mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[10.5px]">
-          {view.details.map((d) => (
-            <div key={d.label} className="contents">
-              <dt className="text-muted-foreground/70">{d.label}</dt>
-              <dd className="min-w-0 break-words font-mono text-muted-foreground">{d.value}</dd>
-            </div>
-          ))}
-        </dl>
-      )}
+      {expanded && <ApprovalDetails details={view.details} className="ml-5 mt-1" />}
     </li>
   );
 }

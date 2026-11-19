@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tip } from '@/components/ui/tip';
+import { ApprovalDetails } from '@/components/chat-ui/approvals/approval-details';
 import { APP_NAME } from '@/constants/app';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -68,7 +69,7 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
   const [error, setError] = useState<string | null>(null);
   const failed = (e: unknown) => setError(e instanceof Error ? e.message : String(e));
   const narrow = useMutation({
-    mutationFn: (remove: { connectionId: string; tool?: string } | { service: string }) => trpcClient.hubApps.narrow.mutate({ id, ...remove }),
+    mutationFn: (remove: { connectionId: string; toolkitId: string; tool?: string } | { service: string }) => trpcClient.hubApps.narrow.mutate({ id, ...remove }),
     onSuccess: () => { setError(null); void refresh(); },
     onError: failed,
   });
@@ -102,16 +103,16 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
       {!data.off && (
         <ul className="space-y-2">
           {data.accounts.map((account) => (
-            <li key={account.connectionId} className="rounded-md border border-border p-2">
+            <li key={`${account.connectionId}:${account.toolkitId}`} className="rounded-md border border-border p-2">
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-sm">{account.service} <span className="text-muted-foreground">· {account.account}</span></span>
-                <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId })}>Remove</Button>
+                <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId })}>Remove</Button>
               </div>
               <ul className="mt-1 flex flex-wrap gap-1">
                 {account.tools.map((tool) => (
                   <li key={tool} className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
                     {tool}
-                    <Tip label="Take this tool back"><button type="button" aria-label={`Remove ${tool}`} disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, tool })}><X size={11} /></button></Tip>
+                    <Tip label="Take this tool back"><button type="button" aria-label={`Remove ${tool}`} disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId, tool })}><X size={11} /></button></Tip>
                   </li>
                 ))}
               </ul>
@@ -130,12 +131,22 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
       {data.approvals.length > 0 && (
         <section aria-labelledby={`waiting-${id}`} className="space-y-1.5">
           <h3 id={`waiting-${id}`} className="text-xs font-semibold">Waiting for you</h3>
-          {data.approvals.map((approval) => (
-            <div key={approval.id} className="flex items-center gap-2 rounded-md border border-border p-2 text-xs">
-              <span className="min-w-0 flex-1"><span className="font-mono">{approval.actionId}</span>
-                <span className="block text-muted-foreground">{approval.account ?? ''}{approval.hubApp ? ` · ${STARTED_BY[approval.hubApp.startedBy.kind] ?? ''}${approval.hubApp.startedBy.label ? ` (${approval.hubApp.startedBy.label})` : ''}` : ''}</span></span>
-              <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}>Deny</Button>
-              <Button size="xs" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}>Approve</Button>
+          {data.approvals.map(({ view, ...approval }) => (
+            <div key={approval.id} className="space-y-1.5 rounded-md border border-border p-2 text-xs">
+              <div className="flex items-start gap-2">
+                <span className="min-w-0 flex-1">
+                  <span className="font-medium text-foreground">{view.actionLabel}</span>
+                  <span className="text-muted-foreground"> · {view.toolkitName}{view.account ? ` (${view.account})` : ''}</span>
+                  <span className="block break-words text-foreground/90">{view.summary}</span>
+                  <span className="block text-muted-foreground">
+                    {view.outward ? 'Reaches other people. ' : ''}
+                    {approval.hubApp ? `${STARTED_BY[approval.hubApp.startedBy.kind] ?? ''}${approval.hubApp.startedBy.label ? ` (${approval.hubApp.startedBy.label})` : ''}` : ''}
+                  </span>
+                </span>
+                <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}>Deny</Button>
+                <Button size="xs" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}>Approve</Button>
+              </div>
+              {view.details.length > 0 && <ApprovalDetails details={view.details} />}
             </div>
           ))}
         </section>

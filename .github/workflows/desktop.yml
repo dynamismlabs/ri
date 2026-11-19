@@ -1,53 +1,15 @@
 name: Desktop and headless runtime
+# The full run: the packaged app on all four platforms, with its walkthroughs.
+# It takes two to five hours, and most of its failures come from slow runners,
+# so pull requests wait on the quick checks in checks.yml instead. This runs
+# nightly on main, and by hand on any branch (Actions > Desktop and headless
+# runtime > Run workflow, or `gh workflow run desktop.yml --ref <branch>`).
+# Before tagging a release, run it on main and wait for it to pass
+# (docs/publishing.md).
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - 'desktop/**'
-      - 'src/lib/service/**'
-      - 'src/lib/releases/**'
-      - 'src/lib/worker/**'
-      - 'src/lib/executor/**'
-      - 'src/hooks/use-document*'
-      - 'src/lib/workers/**'
-      - 'src/lib/connection/**'
-      - 'src/app/api/workers/**'
-      - 'src/app/api/devices/**'
-      - 'src/app/api/version/**'
-      - 'src/proxy*'
-      - 'src/lib/stt/**'
-      - 'src/lib/client/**'
-      - 'src/lib/integrations/**'
-      - 'src/lib/notifications/**'
-      - 'src/service/**'
-      - 'src/app/api/service/**'
-      - 'src/app/api/desktop/**'
-      - 'src/app/api/integrations/**'
-      - 'src/app/api/notifications/**'
-      - 'src/app/api/transcribe/**'
-      - 'src/app/manifest.ts'
-      - 'src/app/layout.tsx'
-      - 'src/app/apple-icon.png'
-      - 'src/hooks/use-voice-input*'
-      - 'src/components/desktop/**'
-      - 'src/components/chat/editor/**'
-      - 'src/components/settings/**'
-      - 'src/components/dashboard/command-input.tsx'
-      - 'src/components/dashboard/quick-capture-modal.tsx'
-      - 'src/components/executions/execution-composer.tsx'
-      - 'public/brand/**'
-      - 'public/notifications-sw.js'
-      - 'public/offline.html'
-      - 'scripts/smoke-phone-web-app.ts'
-      - 'packages/integrations/**'
-      - 'next.config.ts'
-      - 'tsconfig*.json'
-      - 'src/types/**'
-      - '.nvmrc'
-      - 'tsup.config.ts'
-      - '.github/workflows/desktop.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
+  schedule:
+    - cron: '23 7 * * *'
 permissions:
   contents: read
 jobs:

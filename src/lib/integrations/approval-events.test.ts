@@ -65,6 +65,7 @@ vi.mock('./runtime', () => ({
 
 import {
   allowWithoutAsking,
+  describePendingApprovals,
   recordApprovalDecision,
   recordApprovalRequested,
   recordApprovalsSettled,
@@ -109,6 +110,28 @@ beforeEach(() => {
 afterEach(async () => {
   await vi.runAllTimersAsync();
   vi.useRealTimers();
+});
+
+describe('describePendingApprovals (an app\'s hub panel)', () => {
+  it('shows a hub app\'s waiting send in the words the chat card uses, every recipient included, working each out once', async () => {
+    const to = Array.from({ length: 12 }, (_, i) => `guest${i}@example.com`);
+    const send = pending('hub-1', { actionId: 'gmail.send_email', sessionId: null, preview: { to, cc: ['boss@example.com'], subject: 'Offer', body: 'Line one.\n\nLine two.' } });
+    const [view] = await describePendingApprovals([send]);
+    expect(view).toMatchObject({ approvalId: 'hub-1', actionLabel: 'Send email', account: 'clhuffine@gmail.com', outward: true });
+    expect(view!.details).toEqual([
+      { label: 'To', value: to.join(', ') },
+      { label: 'Cc', value: 'boss@example.com' },
+      { label: 'Subject', value: 'Offer' },
+      { label: 'Body', value: 'Line one.\n\nLine two.' },
+    ]);
+    expect(view!.summary).toMatch(/ and \d+ more · Offer$/);
+    // A delete names its target with a read, once, however often the panel refreshes.
+    h.lookup.mockResolvedValue({ ok: true, result: { summary: 'Team standup' } });
+    const remove = pending('hub-2', { sessionId: null });
+    expect((await describePendingApprovals([send, remove]))[1]!.summary).toBe('Team standup');
+    expect((await describePendingApprovals([remove]))[0]!.summary).toBe('Team standup');
+    expect(h.lookup).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('recordApprovalRequested', () => {

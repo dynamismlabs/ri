@@ -30,7 +30,8 @@ import { processState } from '@/lib/process-state';
 import { untraced } from '@/lib/utils/untraced';
 import { toSlug } from '@/lib/integrations/mcp-servers';
 import { appToolchain, gitHelp, type AppToolchain } from './toolchain';
-import { catalogEntry, catalogRef } from './catalog-entries';
+import { catalogRef } from './catalog-entries';
+import { catalogEntry } from './catalog-feed';
 
 const run = promisify(execFile);
 
@@ -444,7 +445,7 @@ export async function releaseCommit(folder: string, release: string | null | und
 export async function recordCatalogVersion(source: AppSourceRecord, running: string): Promise<boolean> {
   if (!source.catalogId || !source.folder) return false;
   let entry;
-  try { entry = catalogEntry(source.catalogId); } catch { return false; }
+  try { entry = await catalogEntry(source.catalogId); } catch { return false; }
   if (!entry || entry.version === source.catalogVersion) return false;
   try {
     const { stdout } = await git(source.folder, ['rev-parse', '-q', '--verify', `${catalogRef(entry.version)}^{commit}`]);

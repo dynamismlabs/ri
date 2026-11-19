@@ -2,11 +2,11 @@
  * Ri's catalog of recommended apps (docs/personal-apps.md "The catalog", shared spec §2 "The
  * catalog"): first-party apps Ri offers the way it used to offer its bundled ones, without carrying
  * their code. Each entry pins one version of an app's own git repository and a checksum of that
- * version's files. The list ships in `catalog.json`. `RI_APP_CATALOG` names another file, for
- * development and tests.
+ * version's files. The list ships in `catalog.json`, and Ri also reads the same file from Ri's main
+ * branch between releases (catalog-feed.ts, which also says how `RI_APP_CATALOG` overrides both).
  *
  * Add a real entry with `pnpm tsx scripts/app-catalog-entry.ts <git url> <version> ...`, which
- * computes the checksum.
+ * computes the checksum and bumps the catalog's serial.
  */
 import fs from 'node:fs';
 import { z } from 'zod/v4';
@@ -44,8 +44,21 @@ export const CatalogEntrySchema = z.object({
 
 export type CatalogEntry = z.infer<typeof CatalogEntrySchema>;
 
-export const CatalogSchema = z.object({ apps: z.array(CatalogEntrySchema) }).strict()
+export const CatalogSchema = z.object({
+  /**
+   * Which of two catalogs is newer: one more each time the list changes (the entry script bumps
+   * it). Ri uses a feed only when its serial is above the shipped list's (catalog-feed.ts). A
+   * catalog without one counts as 0.
+   */
+  serial: z.number().int().min(0).optional(),
+  apps: z.array(CatalogEntrySchema),
+}).strict()
   .refine((catalog) => new Set(catalog.apps.map((app) => app.id)).size === catalog.apps.length, 'Each app in the catalog needs its own ID.');
+
+export type Catalog = z.infer<typeof CatalogSchema>;
+
+/** A catalog's serial, 0 when it has none. */
+export const catalogSerial = (catalog: Catalog): number => catalog.serial ?? 0;
 
 export class CatalogError extends Error {
   constructor(message: string) {
@@ -54,21 +67,24 @@ export class CatalogError extends Error {
   }
 }
 
-/** The catalog: the shipped list, or the file `RI_APP_CATALOG` names. */
-export function loadCatalog(): CatalogEntry[] {
-  const file = process.env.RI_APP_CATALOG;
-  let raw: unknown = bundled;
-  if (file) {
-    try { raw = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ file, 'utf8')); }
-    catch (error) { throw new CatalogError(`Ri can’t read the app catalog at ${file}: ${error instanceof Error ? error.message : String(error)}`); }
-  }
+/** A catalog from `where` (a file or an address), or a CatalogError that says what's wrong with it. */
+export function parseCatalog(raw: unknown, where?: string): Catalog {
   const parsed = CatalogSchema.safeParse(raw);
-  if (!parsed.success) throw new CatalogError(`The app catalog${file ? ` at ${file}` : ''} isn’t valid: ${parsed.error.issues.map((issue) => `${issue.path.join('.')} ${issue.message}`).join(', ')}`);
-  return parsed.data.apps;
+  if (!parsed.success) throw new CatalogError(`The app catalog${where ? ` at ${where}` : ''} isn’t valid: ${parsed.error.issues.map((issue) => `${issue.path.join('.')} ${issue.message}`).join(', ')}`);
+  return parsed.data;
 }
 
-export function catalogEntry(id: string): CatalogEntry | null {
-  return loadCatalog().find((entry) => entry.id === id) ?? null;
+/** The catalog this copy of Ri shipped with. */
+export function bundledCatalog(): Catalog {
+  return parseCatalog(bundled);
+}
+
+/** A catalog in a file on this computer, for development. */
+export function readCatalogFile(file: string): Catalog {
+  let raw: unknown;
+  try { raw = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ file, 'utf8')); }
+  catch (error) { throw new CatalogError(`Ri can’t read the app catalog at ${file}: ${error instanceof Error ? error.message : String(error)}`); }
+  return parseCatalog(raw, file);
 }
 
 /** Where Ri keeps a fetched catalog version in an app's repository, so it can tell later whether a commit includes it. */

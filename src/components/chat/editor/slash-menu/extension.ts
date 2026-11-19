@@ -11,6 +11,7 @@ import { createSuggestionRenderer } from './renderer'
 import { rankCommands, type CommandMatch } from './ranking'
 import { SLASH_CHIP_NAME } from './slash-chip-node'
 import type { SlashCommand } from './types'
+import type { ChatAppPrompt } from '@/lib/integrations/app-prompts'
 
 // Each Suggestion plugin needs its own PluginKey — without one they
 // all default to `suggestion$` and ProseMirror throws "Adding different
@@ -27,6 +28,10 @@ interface SlashMenuOptions {
   getCommands?: () => SlashCommand[]
   /** True while the session/launch slash-command list is still fetching. */
   isLoading?: () => boolean
+  /** Picks an app's prompt (`SlashCommand.appPrompt`), after its `/query` is taken out of the draft. */
+  onAppPrompt?: () => ((prompt: ChatAppPrompt) => void) | undefined
+  /** The menu opened: a chance to list commands again. */
+  onOpen?: () => (() => void) | undefined
 }
 
 interface SlashMenuStorage {
@@ -65,7 +70,7 @@ export const SlashMenuExtension = Extension.create<SlashMenuOptions, SlashMenuSt
   priority: 200,
 
   addOptions() {
-    return { getCommands: undefined, isLoading: undefined }
+    return { getCommands: undefined, isLoading: undefined, onAppPrompt: undefined, onOpen: undefined }
   },
 
   addStorage() {
@@ -99,6 +104,13 @@ export const SlashMenuExtension = Extension.create<SlashMenuOptions, SlashMenuSt
         range: { from: number; to: number }
         props: CommandMatch
       }) => {
+        // An app's prompt is text the app writes for the person, not a command the harness runs.
+        const prompt = match.command.appPrompt
+        if (prompt) {
+          editor.chain().focus().deleteRange(range).run()
+          this.options.onAppPrompt?.()?.(prompt)
+          return
+        }
         const after = editor.state.doc.textBetween(
           range.to,
           Math.min(range.to + 1, editor.state.doc.content.size),
@@ -141,6 +153,7 @@ export const SlashMenuExtension = Extension.create<SlashMenuOptions, SlashMenuSt
           onStart: (props) => {
             current = props
             renderer.onStart?.(withCommands(props))
+            this.options.onOpen?.()?.()
           },
           onUpdate: (props) => {
             current = props
@@ -165,7 +178,7 @@ export const SlashMenuExtension = Extension.create<SlashMenuOptions, SlashMenuSt
           const before = view.state.doc.textBetween(0, from, '\n', '\uFFFC')
           const parsed = splitLeadingSlashCommand(before)
           if (!parsed || parsed.rest !== '') return false
-          const match = getCommands().find((c) => c.name.toLowerCase() === parsed.name.toLowerCase())
+          const match = getCommands().find((c) => !c.appPrompt && c.name.toLowerCase() === parsed.name.toLowerCase())
           if (!match) return false
           const tokenFrom = from - parsed.token.length
           const chip = chipType.create({

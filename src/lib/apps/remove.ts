@@ -33,6 +33,20 @@ export interface RemovedApp {
    * uninstall as the person runs it in the folder once it's back, when Ri knows the kit's name.
    */
   stillInstalled: { command: string | null } | null;
+  /**
+   * Its access to the person's accounts through Ri's hub was turned off too. Only ever true for an
+   * app Ri couldn't uninstall, when the person kept that choice ticked (`RemoveOptions`).
+   */
+  accessTurnedOff: boolean;
+}
+
+export interface RemoveOptions {
+  /**
+   * When Ri can't confirm the app stopped (its folder is gone), also turn off its access to the
+   * person's accounts, as its hub panel's switch does: its tokens stop and its waiting and unused
+   * approvals go. Otherwise Remove keeps that access, so Add picks it back up.
+   */
+  turnOffAccess?: boolean;
 }
 
 /**
@@ -60,7 +74,7 @@ function requireRiApp(sourceId: string): AppSourceRecord {
  * Remove an app Ri installed. The service goes first: when the kit can't uninstall it, nothing else
  * changes and the person is told why. Then every connection goes, and the app leaves Ri's lists.
  */
-export async function removeApp(sourceId: string): Promise<RemovedApp> {
+export async function removeApp(sourceId: string, options: RemoveOptions = {}): Promise<RemovedApp> {
   const source = requireRiApp(sourceId);
   if (latestAppJob(source.id)?.state === 'running') throw new AppBuildError('conflict', 'Something is already running for this app. Wait for it to finish.');
   const folder = source.folder && fs.existsSync(/* turbopackIgnore: true */ source.folder) ? source.folder : null;
@@ -87,9 +101,13 @@ export async function removeApp(sourceId: string): Promise<RemovedApp> {
   // Installed, but its folder is gone, so the kit can't find its service to uninstall it. It's
   // still removed from Ri, and the person is told what may still be running and how to stop it.
   const stillInstalled = source.url && !folder ? { command: uninstallCommand() } : null;
+  // An app that may still be running keeps reaching the person's accounts unless they say otherwise.
+  const accessTurnedOff = !!stillInstalled && options.turnOffAccess === true && source.url
+    ? (await import('@/lib/integrations/hub/manage')).turnOffHubAppsAt(source.url) > 0
+    : false;
   if (source.personalAppId) await removePersonalApp(source.personalAppId);
   updateAppSource(source.id, { url: null, personalAppId: null, removedAt: new Date().toISOString() });
-  return { name: source.name, folder: source.folder, dataDir, stillInstalled };
+  return { name: source.name, folder: source.folder, dataDir, stillInstalled, accessTurnedOff };
 }
 
 /**

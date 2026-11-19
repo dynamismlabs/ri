@@ -5,7 +5,9 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as q from '@/lib/db/queries';
 import { treeChecksum } from './catalog-checksum';
-import type { CatalogEntry } from './catalog-entries';
+import { catalogSerial, type Catalog, type CatalogEntry } from './catalog-entries';
+import { forgetCatalogFeed, savedFeedFile } from './catalog-feed';
+import bundled from './catalog.json';
 
 vi.setConfig({ testTimeout: 60_000 });
 
@@ -85,7 +87,7 @@ describe('adding an app the person removed', () => {
     const folder = path.join(apps, 'tide-log');
     fs.writeFileSync(path.join(folder, 'mine.txt'), 'my change\n');
     q.updateAppSource(source.id, { removedAt: new Date().toISOString() });
-    expect(listCatalogApps().apps[0]).toMatchObject({ sourceId: null });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ sourceId: null });
 
     const { source: back } = await addCatalogApp('tide-log');
     expect(back).toMatchObject({ id: source.id, folder, removedAt: null });
@@ -108,7 +110,7 @@ describe('adding an app from the catalog', () => {
     const pinned = git(upstream, 'rev-parse', 'v1.0.0');
     commitUpstream('later.txt', 'not pinned\n');
     await publish('v1.0.0');
-    expect(listCatalogApps().apps[0]).toMatchObject({ id: 'tide-log', sourceId: null, updateAvailable: false });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ id: 'tide-log', sourceId: null, updateAvailable: false });
 
     const { source } = await addCatalogApp('tide-log');
     const folder = path.join(apps, 'tide-log');
@@ -119,12 +121,12 @@ describe('adding an app from the catalog', () => {
     expect(git(folder, 'remote')).toBe('upstream');
     expect(git(folder, 'status', '--porcelain')).toBe('');
     expect(installed).toEqual([source.id]);
-    expect(listCatalogApps().apps[0]).toMatchObject({ sourceId: source.id, installedVersion: null, updateAvailable: false });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ sourceId: source.id, installedVersion: null, updateAvailable: false });
     await expect(updateCatalogApp(source.id)).rejects.toThrow(/isn’t installed yet/);
     // The install is running the pinned commit: now it has a version.
     expect(await nowRunning(source.id, pinned)).toBe(true);
     expect(q.getAppSource(source.id)).toMatchObject({ catalogVersion: 'v1.0.0', catalogCommit: pinned });
-    expect(listCatalogApps().apps[0]).toMatchObject({ installedVersion: 'v1.0.0', updateAvailable: false });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ installedVersion: 'v1.0.0', updateAvailable: false });
     await expect(addCatalogApp('tide-log')).rejects.toThrow(/already added/);
   });
 
@@ -139,8 +141,34 @@ describe('adding an app from the catalog', () => {
     await publish('v1.0.0', { checksum: `sha256-${'0'.repeat(64)}` });
     await expect(addCatalogApp('tide-log')).rejects.toThrow(/doesn’t match/);
     expect(fs.existsSync(path.join(apps, 'tide-log'))).toBe(false);
+    expect(fs.readdirSync(apps)).toEqual([]);
     expect(q.listAppSources()).toEqual([]);
     expect(installed).toEqual([]);
+  });
+
+  it('refuses a second Add of the same app while the first runs, and the first finishes whole', async () => {
+    await publish('v1.0.0');
+    const first = addCatalogApp('tide-log');
+    await expect(addCatalogApp('tide-log')).rejects.toThrow('Tide Log is already being added.');
+    const { source } = await first;
+    expect(git(source.folder!, 'rev-parse', 'HEAD')).toBe(git(upstream, 'rev-parse', 'v1.0.0'));
+    expect(installed).toEqual([source.id]);
+    // Done: the next Add says it's added, not that it's under way.
+    await expect(addCatalogApp('tide-log')).rejects.toThrow(/already added/);
+  });
+
+  it('removes only what its own attempt made when it fails, never a folder something else made meanwhile', async () => {
+    await publish('v1.0.0');
+    const folder = path.join(apps, 'tide-log');
+    // The folder appears while the clone runs (the person, another Ri): it's theirs, and it stays.
+    const adding = addCatalogApp('tide-log');
+    fs.mkdirSync(folder, { recursive: true });
+    fs.writeFileSync(path.join(folder, 'mine.txt'), 'keep me\n');
+    await expect(adding).rejects.toThrow(/already exists/);
+    expect(fs.readFileSync(path.join(folder, 'mine.txt'), 'utf8')).toBe('keep me\n');
+    // A failed attempt leaves no half-cloned copy beside it either.
+    expect(fs.readdirSync(apps)).toEqual(['tide-log']);
+    expect(q.listAppSources()).toEqual([]);
   });
 
   it('says so when it can\'t get the app', async () => {
@@ -163,7 +191,7 @@ describe('updating an app from the catalog', () => {
     const source = await addAndInstall();
     const next = commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
     await publish('v1.1.0');
-    expect(listCatalogApps().apps[0]).toMatchObject({ installedVersion: 'v1.0.0', updateAvailable: true });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ installedVersion: 'v1.0.0', updateAvailable: true });
 
     const update = await updateCatalogApp(source.id);
     expect(update).toMatchObject({ mode: 'switch', version: 'v1.1.0' });
@@ -227,7 +255,7 @@ describe('updating an app from the catalog', () => {
     expect(switched).toEqual([{ sourceId: source.id, commit: next }]);
     // Still offered until the switch is running it.
     expect(q.getAppSource(source.id)?.catalogVersion).toBe('v1.0.0');
-    expect(listCatalogApps().apps[0]).toMatchObject({ updateAvailable: true });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ updateAvailable: true });
     // A recorded version never comes from the folder alone either.
     expect(await recordCatalogVersion(q.getAppSource(source.id)!, v1)).toBe(false);
   });
@@ -243,5 +271,77 @@ describe('updating an app from the catalog', () => {
 
   it('asks in plain words', () => {
     expect(mergeRequest({ name: 'Tide Log', version: 'v2' }, 'abc', 'v1')).not.toMatch(/—|;/);
+  });
+});
+
+describe('adding and updating from the hosted feed', () => {
+  // One of Ri's own repositories on GitHub, which git serves from this test's folder.
+  const feedGit = 'https://github.com/dynamismlabs/app-tide-log.git';
+  const shipped = bundled as Catalog;
+  let feed: Catalog;
+  let published = 0;
+
+  /** The feed now lists Tide Log at `version`, one serial newer. */
+  async function serve(version: string) {
+    published++;
+    const entry: CatalogEntry = { id: 'tide-log', name: 'Tide Log', description: 'Tides you saw.', reaches: [], git: feedGit, version, checksum: await treeChecksum(upstream, version) };
+    feed = { serial: catalogSerial(shipped) + published, apps: [...shipped.apps, entry] };
+    // Due again, as it is ten minutes later.
+    forgetCatalogFeed();
+  }
+
+  beforeEach(() => {
+    published = 0;
+    vi.stubEnv('RI_APP_CATALOG', undefined);
+    vi.stubEnv('GIT_CONFIG_COUNT', '1');
+    vi.stubEnv('GIT_CONFIG_KEY_0', `url.${upstream}.insteadOf`);
+    vi.stubEnv('GIT_CONFIG_VALUE_0', feedGit);
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(feed))));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    forgetCatalogFeed();
+    fs.rmSync(savedFeedFile(), { force: true });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    forgetCatalogFeed();
+    fs.rmSync(savedFeedFile(), { force: true });
+  });
+
+  const tideLog = async () => (await listCatalogApps()).apps.find((app) => app.id === 'tide-log');
+
+  it('adds an app only the feed lists, and "Update to v1.1.0" works from the feed as from the shipped list', async () => {
+    await serve('v1.0.0');
+    expect(await tideLog()).toMatchObject({ version: 'v1.0.0', sourceId: null });
+    const { source } = await addCatalogApp('tide-log');
+    expect(git(source.folder!, 'config', '--get', 'remote.upstream.url')).toBe(feedGit);
+    expect(await nowRunning(source.id, git(source.folder!, 'rev-parse', 'HEAD'))).toBe(true);
+
+    const next = commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
+    await serve('v1.1.0');
+    expect(await tideLog()).toMatchObject({ version: 'v1.1.0', installedVersion: 'v1.0.0', updateAvailable: true });
+    expect(await updateCatalogApp(source.id)).toMatchObject({ mode: 'switch', version: 'v1.1.0' });
+    expect(switched).toEqual([{ sourceId: source.id, commit: next }]);
+    expect(await nowRunning(source.id, next)).toBe(true);
+    expect(q.getAppSource(source.id)).toMatchObject({ catalogVersion: 'v1.1.0', catalogCommit: next });
+
+    // Restarted with the feed out of reach: the saved feed still says v1.1.0, so Ri never offers the
+    // shipped list's older entry (here, none) as an update.
+    forgetCatalogFeed();
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('fetch failed'); }));
+    expect(await tideLog()).toMatchObject({ version: 'v1.1.0', installedVersion: 'v1.1.0', updateAvailable: false });
+    expect(await updateCatalogApp(source.id)).toEqual({ mode: 'current', version: 'v1.1.0' });
+  });
+
+  it('never uses a feed version whose files don\'t match its checksum', async () => {
+    await serve('v1.0.0');
+    const { source } = await addCatalogApp('tide-log');
+    await nowRunning(source.id, git(source.folder!, 'rev-parse', 'HEAD'));
+    commitUpstream('tides.md', 'High at noon\n', 'v1.1.0');
+    await serve('v1.1.0');
+    feed = { ...feed, apps: feed.apps.map((app) => app.id === 'tide-log' ? { ...app, checksum: `sha256-${'0'.repeat(64)}` } : app) };
+    await expect(updateCatalogApp(source.id)).rejects.toThrow(/doesn’t match what Ri’s catalog lists/);
+    expect(switched).toEqual([]);
   });
 });

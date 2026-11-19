@@ -36,7 +36,8 @@ import {
   type HostedMcpEndpointSetup,
 } from '@integrations/engine/providers';
 import { toToolSet } from '@integrations/engine/ai-sdk';
-import { connectMcpClient, ingestMcpServers, isMcpAuthenticationError, isMcpRequestTimeout, McpFormError, MCP_CONNECT_TIMEOUT_MS, MCP_DISCOVERY_TIMEOUT_MS, type ConnectedMcpClient, type McpToolDef } from '@integrations/engine/mcp';
+import { connectMcpClient, ingestMcpServers, isMcpAuthenticationError, isMcpRequestTimeout, McpFormError, MCP_CONNECT_TIMEOUT_MS, MCP_DISCOVERY_TIMEOUT_MS, type ConnectedMcpClient, type McpPromptDef, type McpPromptResult, type McpToolDef } from '@integrations/engine/mcp';
+import { McpPromptCache } from './prompt-cache';
 import { mcpFormOptions } from '@/lib/mcp-apps/elicitation';
 import type { ToolSet } from 'ai';
 import { appApprovalPolicy } from './approval';
@@ -515,6 +516,10 @@ export interface McpViewConnection {
   snapshot: McpServerEntry;
   tools: McpToolDef[];
   readResource: ConnectedMcpClient['readResource'];
+  /** The server's prompts, kept until it says they changed. Empty when it offers none. */
+  listPrompts(): Promise<McpPromptDef[]>;
+  /** One prompt filled in. Refused when the server offers no prompts. */
+  getPrompt(params: { name: string; arguments?: Record<string, string> }): Promise<McpPromptResult>;
   /** What the server reported when this transport opened: protocol, extension capabilities, identity. */
   server?: ConnectedMcpClient['server'];
 }
@@ -650,6 +655,7 @@ async function build(): Promise<Built> {
     ready: boolean;
     unavailable?: boolean;
     readResource?: ConnectedMcpClient['readResource'];
+    prompts: McpPromptCache;
   }
   const prepared: PreparedAccount[] = [];
   const recordFailure = async (entry: McpServerEntry, error: unknown, phase: McpServerFailure['phase']) => {
@@ -686,7 +692,7 @@ async function build(): Promise<Built> {
     };
     prepared.push({ entry, tools: redactor.redact(cached.capabilities.tools) as McpToolDef[],
       client: { listTools: async () => ({ tools: [] }), callTool: unavailable, readResource: unavailable, close: async () => {} },
-      sessionToken: 'mcp-session', changed: false, discoveryStarted: false, ready: false, unavailable: true });
+      sessionToken: 'mcp-session', changed: false, discoveryStarted: false, ready: false, unavailable: true, prompts: new McpPromptCache() });
   };
   for (const entry of entries) {
     if (!entry.enabled) continue;
@@ -697,7 +703,9 @@ async function build(): Promise<Built> {
       continue;
     }
     let client: ConnectedMcpClient | undefined;
-    const candidate = { entry, changed: false, discoveryStarted: false, ready: false } as PreparedAccount;
+    const candidate = { entry, changed: false, discoveryStarted: false, ready: false, prompts: new McpPromptCache() } as PreparedAccount;
+    // Prompts change on their own: only the list is read again, never the tools or the connection.
+    const onPromptsChanged = () => candidate.prompts.changed();
     const onToolsChanged = () => {
       // An initial notification before discovery is covered by the first read.
       // During pagination it can invalidate pages already read, so restart.
@@ -711,7 +719,7 @@ async function build(): Promise<Built> {
       if (hosted?.localCommand) {
         // The executable comes only from our catalog. A custom URL can never launch a process.
         client = await withTimeout(
-          connectMcpClient({ command: hosted.localCommand, name: entry.slug, onToolsChanged, knownLegacy: mcpKnownLegacy(entry), ...mcpFormOptions(entry) }),
+          connectMcpClient({ command: hosted.localCommand, name: entry.slug, onToolsChanged, onPromptsChanged, knownLegacy: mcpKnownLegacy(entry), ...mcpFormOptions(entry) }),
           MCP_TIMEOUT_MS, `connect MCP "${entry.slug}"`, lateClient => lateClient.close(),
         );
       } else if (entry.auth.kind === 'oauth') {
@@ -723,7 +731,7 @@ async function build(): Promise<Built> {
           continue;
         }
         client = await withTimeout(
-          connectMcpClient({ url: entry.url, name: entry.slug, onToolsChanged, knownLegacy: mcpKnownLegacy(entry), ...mcpFormOptions(entry), ...mcpOAuthTransportOptions(entry), authProvider: mcpOAuthProviderFor(entry, undefined, { onState: state => registerMcpSecrets(redactor, state) }) }),
+          connectMcpClient({ url: entry.url, name: entry.slug, onToolsChanged, onPromptsChanged, knownLegacy: mcpKnownLegacy(entry), ...mcpFormOptions(entry), ...mcpOAuthTransportOptions(entry), authProvider: mcpOAuthProviderFor(entry, undefined, { onState: state => registerMcpSecrets(redactor, state) }) }),
           MCP_TIMEOUT_MS, `connect MCP "${entry.slug}"`, lateClient => lateClient.close(),
         );
         const tokens = (await mcpStore.getOAuthState(entry.id))?.tokens as { access_token?: string } | undefined;
@@ -746,7 +754,7 @@ async function build(): Promise<Built> {
         }
         sessionToken = secret ?? 'mcp-session';
         client = await withTimeout(
-          connectMcpClient({ url: entry.url, name: entry.slug, headers: mcpAuthHeaders(entry.auth, secret, hosted?.tokenAuth?.scheme), onToolsChanged, knownLegacy: mcpKnownLegacy(entry), ...mcpFormOptions(entry) }),
+          connectMcpClient({ url: entry.url, name: entry.slug, headers: mcpAuthHeaders(entry.auth, secret, hosted?.tokenAuth?.scheme), onToolsChanged, onPromptsChanged, knownLegacy: mcpKnownLegacy(entry), ...mcpFormOptions(entry) }),
           MCP_TIMEOUT_MS, `connect MCP "${entry.slug}"`, lateClient => lateClient.close(),
         );
       }
@@ -820,7 +828,9 @@ async function build(): Promise<Built> {
           if (!snapshot) throw new Error(`The ${INTEGRATION_LABELS.singular.toLowerCase()} was removed during discovery.`);
           const facts = account.client.server;
           if (facts && !account.unavailable) {
-            await mcpStore.recordProtocol(current.id, redactor.redact(mcpServerProtocol(facts, new Date().toISOString())), facts.negotiation === 'known-legacy');
+            const instructionsChanged = await mcpStore.recordProtocol(current.id, redactor.redact(mcpServerProtocol(facts, new Date().toISOString())), facts.negotiation === 'known-legacy');
+            // Chats told the old instructions get the new ones when they're next idle (server-instructions.ts).
+            if (instructionsChanged) void import('./server-instructions').then(m => m.recycleForInstructionsChange(current)).catch(() => {});
           }
           account.entry = snapshot;
           const hosted = hostedMcpDefinition(snapshot);
@@ -888,9 +898,17 @@ async function build(): Promise<Built> {
           });
           accepted.add(account.entry.id);
           mcpClients.push(account.client);
+          // A prompt is the person's own request, so reading one never retires the transport.
+          const offersPrompts = !!account.client.server?.capabilities?.prompts && !!account.client.listPrompts && !!account.client.getPrompt;
+          const promptClient = account.client;
           mcpViews.set(account.entry.id, {
             snapshot: account.entry, tools: account.tools,
             readResource: account.readResource!,
+            listPrompts: () => offersPrompts ? account.prompts.read(async () => redactor.redact((await promptClient.listPrompts!()).prompts)) : Promise.resolve([]),
+            getPrompt: async (params) => {
+              if (!offersPrompts) throw new IntegrationError('not_found', `${account.entry.displayName} offers no prompts.`);
+              return redactor.redact(await promptClient.getPrompt!(params));
+            },
             ...(account.client.server ? { server: redactor.redact(account.client.server) } : {}),
           });
         }
@@ -991,8 +1009,9 @@ function refreshBuilt(): Promise<Built> {
   return inFlight;
 }
 
-export async function getIntegrationRuntime(): Promise<IntegrationRuntime> {
-  return (await getBuilt()).runtime;
+/** The runtime. `stale` takes the current build even past its age, as a check does (`getBuilt`). */
+export async function getIntegrationRuntime(options: { stale?: boolean } = {}): Promise<IntegrationRuntime> {
+  return (await getBuilt(options)).runtime;
 }
 
 /** Per-account UI definitions and resource access from the existing transport. */
@@ -1093,8 +1112,10 @@ export async function getIntegrationTools(
 export async function resolveWorkspaceIntegrationFilter(
   workspaceId: string,
   ownerId: string = getIntegrationOwnerId(),
+  /** A build the caller already holds. Omitted: the current one. */
+  runtime?: IntegrationRuntime,
 ): Promise<WorkspaceIntegrationFilter> {
   const scopes = getWorkspace(workspaceId)?.integrationScopes ?? [];
   if (scopes.length === 0) return { toolkits: [], connectionPins: {}, allowedAccounts: {} };
-  return resolveIntegrationFilter(scopes, await getIntegrationRuntime(), ownerId, workspaceId);
+  return resolveIntegrationFilter(scopes, runtime ?? await getIntegrationRuntime(), ownerId, workspaceId);
 }

@@ -42,6 +42,9 @@ import { AgentResponse } from '@/components/chat-ui/messages/agent-response';
 import { ConnectedView } from '@/components/mcp-apps/view';
 import { ConnectedCompanion } from '@/components/mcp-apps/companion';
 import { AppContextStrip, type AppContextGroupView } from '@/components/chat-ui/references/app-context-strip';
+import { AppPromptDialog } from '@/components/chat-ui/app-prompts/app-prompt-dialog';
+import { appPromptCommand } from '@/hooks/use-app-prompts';
+import type { ChatAppPrompt } from '@/lib/integrations/app-prompts';
 import { ModelMenuPreview } from './model-menu-preview';
 import { galleryExample, type ChatUiExampleId } from './catalog';
 
@@ -300,6 +303,31 @@ function AddMenuExample() {
   </ChatComposer></div>;
 }
 
+/** Fictional prompts from a People app: one that goes straight in, one that asks who first. */
+const GALLERY_PROMPTS: ChatAppPrompt[] = [
+  { serverId: 'gallery-people', toolkitId: 'app_people', app: 'People', command: 'people:weekly-review', name: 'weekly-review', title: 'Weekly review', description: 'Go over this week\u2019s conversations and what you offered to do.', arguments: [] },
+  { serverId: 'gallery-people', toolkitId: 'app_people', app: 'People', command: 'people:prepare-for-a-meeting', name: 'prepare-for-a-meeting', title: 'Prepare for a meeting', description: 'Get ready to talk to someone you know.',
+    arguments: [{ name: 'person', title: 'Person', description: 'Who you\u2019re meeting: a person or a company.', required: true }, { name: 'focus', title: 'Focus', required: false }] },
+];
+
+/** The real editor and form, with the app's answer made up here: nothing reaches an app. */
+function AppPromptsExample() {
+  const editor = useRef<ChatInputEditorHandle | null>(null);
+  const [open, setOpen] = useState<ChatAppPrompt | null>(config.state === 'form' ? GALLERY_PROMPTS[1]! : null);
+  const fill = (prompt: ChatAppPrompt, args: Record<string, string>) => {
+    const text = prompt.name === 'weekly-review'
+      ? 'Review my week in People: who I talked to, what each of us offered to do, and what is still open.'
+      : `Prepare me for my meeting with ${args.person}${args.focus ? `, focusing on ${args.focus}` : ''}. Start with what we discussed last and what I owe them.`;
+    editor.current?.insertAppPrompt(null, [{ type: 'text', text }]);
+  };
+  return <div className="pt-80"><ChatComposer status="This example saves nothing and asks no app.">
+    <ChatInputEditor ref={editor} ariaLabel="Example message" placeholder="Type / for skills and app prompts" attachmentsEnabled={false}
+      slashCommands={[{ id: 'review', name: 'review', description: 'Review the diff', source: 'installed-user', userInvocable: true, available: true, execution: { kind: 'provider-slash', provider: 'claude', commandText: '/review' } }, ...GALLERY_PROMPTS.map(appPromptCommand)]}
+      onAppPrompt={(prompt) => { if (prompt.arguments.length) setOpen(prompt); else fill(prompt, {}); }} />
+    <AppPromptDialog prompt={open} onOpenChange={(next) => { if (!next) setOpen(null); }} onFill={async (args) => { if (open) fill(open, args); setOpen(null); }} />
+  </ChatComposer></div>;
+}
+
 function Example() {
   const revision = useSyncExternalStore(runtime.subscribe, runtime.snapshot, runtime.snapshot);
   const example = galleryExample(__GALLERY_EXAMPLE__);
@@ -323,6 +351,7 @@ function Example() {
     {__GALLERY_EXAMPLE__ === 'chat-messages' && <ChatMessages />}
     {__GALLERY_EXAMPLE__ === 'coordination' && <div className="space-y-5"><div className="flex justify-end"><ChatMenu sessionId={CHAT_ID} /></div>{config.state === 'forward-failed' ? <ExecutionEvent sessionId={CHAT_ID} handoffActions={false} event={event('system', {role:'system',content:'coordination_send_failed',raw:{agentCoordination:{deliveryId:'gallery-coordination-send'}}})} /> : config.state === 'shared' ? <ExecutionEvent sessionId={CHAT_ID} handoffActions={false} event={event('user', {id:'gallery-shared',role:'user',content:'Full original review content.',raw:{agentCoordination:{senderKind:'human',kind:'message',sourceSessionId:CHAT_ID,sourceEventId:'gallery-original',content:'Full original review content.',directions:'Compare this with your implementation.'}}})} /> : config.state === 'unavailable' ? <ExecutionEvent sessionId={CHAT_ID} handoffActions={false} event={event('error', {role:'system',content:'[Ri routing text remains saved]',raw:{agentCoordination:{senderKind:'system',kind:'failed',content:'The destination agent is unavailable. The assigned work did not start.',originalRequest:'Review the date boundary handling before we ship.'}}})} /> : ['idle', 'manager', 'active', 'finished', 'held'].includes(config.state) ? <p className="text-sm text-muted-foreground">{config.state === 'manager' ? 'This main chat manages work across other chats.' : config.state === 'idle' ? 'An ordinary chat, ready for your next message.' : config.state === 'finished' ? 'The review is complete. Its linked messages remain in the transcript.' : config.state === 'held' ? 'Incoming messages are queued until you resume.' : 'The other chat is reviewing the date handling.'}</p> : <CoordinationApproval deliveryId="gallery-coordination-send" sessionId={CHAT_ID} />}<CoordinationComposer /></div>}
     {__GALLERY_EXAMPLE__ === 'app-context' && <AppContext />}
+    {__GALLERY_EXAMPLE__ === 'app-prompts' && <AppPromptsExample />}
     {__GALLERY_EXAMPLE__ === 'model-menu' && <ModelMenuPreview state={config.state} />}
     {__GALLERY_EXAMPLE__ === 'add-menu' && <AddMenuExample />}
     {__GALLERY_EXAMPLE__ === 'edits' && <div className="space-y-4 text-sm"><p>I clarified the agenda and made the next steps easier to scan.</p><EntityEditChip entityType="note" entityId={RECORD_ID} /></div>}
