@@ -6,7 +6,7 @@ import { parse } from 'yaml';
 // The two workflows that publish (docs/publishing.md, docs/alpha-builds.md). They hold the
 // signing keys, so what they may run and write is pinned here.
 type Step = { name?: string, uses?: string, run?: string, if?: string, with?: Record<string, string>, env?: Record<string, string> };
-type Job = { permissions?: Record<string, string>, environment?: string, steps: Step[], strategy?: { matrix: { include?: Record<string, string>[] } } };
+type Job = { permissions?: Record<string, string>, environment?: string, needs?: string | string[], if?: string, steps: Step[], strategy?: { matrix: { include?: Record<string, string>[] } } };
 type Workflow = { permissions: Record<string, string>, env?: Record<string, string>, jobs: Record<string, Job> };
 
 const read = (name: string) => fs.readFileSync(path.resolve(__dirname, '../.github/workflows', name), 'utf8');
@@ -48,6 +48,33 @@ describe('release.yml', () => {
     // Both sign with the release key, which can be scoped to this environment.
     expect(release.jobs.publish.environment).toBe('release');
     expect(release.jobs.maintain.environment).toBe('release');
+  });
+
+  it('checks the signing key is listed before building, and signs with it only beside the root public key', () => {
+    // Hours of building wait on the check, which runs where the key is.
+    expect(release.jobs.keys).toMatchObject({ if: "github.event_name == 'push'", environment: 'release' });
+    expect(release.jobs.keys.permissions).toBeUndefined();
+    expect(release.jobs.build.needs).toBe('keys');
+    expect(runs(release, 'keys')).toContain('node desktop/publish-release.mjs check --existing feed-now');
+    for (const job of ['keys', 'publish', 'maintain']) {
+      const signing = steps(release, job).filter(step => step.env?.RI_RELEASE_SIGNING_KEY);
+      expect(signing.length).toBeGreaterThan(0);
+      for (const step of signing) {
+        expect(step.env!.RI_RELEASE_SIGNING_KEY).toBe('${{ secrets.RI_RELEASE_SIGNING_KEY }}');
+        // The root's public half, a variable. Its private half is never in GitHub.
+        expect(step.env!.RI_RELEASE_PUBLIC_KEY).toBe('${{ vars.RI_RELEASE_PUBLIC_KEY }}');
+      }
+    }
+    expect(RELEASE).not.toMatch(/secrets\.RI_RELEASE_ROOT|RI_RELEASE_ROOT_KEY/);
+  });
+
+  it('puts the keys file on the feed before the files it vouches for', () => {
+    for (const job of ['publish', 'maintain']) {
+      const script = runs(release, job);
+      const keys = script.indexOf('gh release upload feed feed-next/keys.json --clobber');
+      expect(keys).toBeGreaterThan(-1);
+      expect(keys).toBeLessThan(script.indexOf('gh release upload feed feed-next/* --clobber'));
+    }
   });
 
   it('pins installations, and the install script, to releases.ri.app', () => {

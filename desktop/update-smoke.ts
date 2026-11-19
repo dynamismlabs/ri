@@ -9,7 +9,7 @@ import { nativeNavigate, nativeReload } from './acceptance-fixture';
 import os from 'node:os';
 import https from 'node:https';
 import { once } from 'node:events';
-import { generateKeyPairSync, sign } from 'node:crypto';
+import { generateKeyPairSync } from 'node:crypto';
 import Database from 'better-sqlite3';
 import { _electron, type ElectronApplication, type Page } from 'playwright-core';
 import * as tar from 'tar';
@@ -18,6 +18,7 @@ import { getCaCertPath } from '../src/lib/config/tls';
 import { createRuntimeManifest, getRuntimeInstallDir, stageRuntime, installedRuntime } from '../src/lib/service/runtime';
 import { writeOrigin } from '../src/lib/service/origin';
 import { releasePolicyFile } from '../src/lib/service/release-trust';
+import { signEnvelope, signKeys } from './release-keys.mjs';
 import { ensureService, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
 import { fileDigest } from '../src/lib/service/checkpoint';
 import { readSnapshot } from '../src/lib/service/snapshot';
@@ -36,6 +37,7 @@ Object.assign(process.env, { HOME: fixtureHome, XDG_CONFIG_HOME: path.join(fixtu
 writeDesktopHomeIntent();
 let server: https.Server | undefined;
 let envelope: object;
+let keysEnvelope: object;
 let archive: string;
 let gui: ElectronApplication | undefined;
 const guiNavigation: Record<string, unknown> = {};
@@ -174,16 +176,19 @@ try {
     // The channel's pointer and the release's own file, as desktop/publish-release.mjs
     // writes them. The updater checks the version's file again just before it downloads.
     if ([`/feed/stable-${process.platform}-${process.arch}.json`, `/feed/${manifest.version}-${process.platform}-${process.arch}.json`].includes(req.url!)) res.end(JSON.stringify(envelope));
+    else if (req.url === '/feed/keys.json') res.end(JSON.stringify(keysEnvelope));
     else if (req.url === '/runtime.tar.gz') fs.createReadStream(archive).pipe(res);
     else { res.statusCode = 404; res.end(); }
   });
   server.listen(0, '127.0.0.1'); await once(server, 'listening');
   const origin = `https://localhost:${(server.address() as { port: number }).port}`;
-  const keys = generateKeyPairSync('ed25519');
+  // A root key vouching for one online key, as desktop/release-keys.mjs makes them.
+  const root = generateKeyPairSync('ed25519');
+  const online = generateKeyPairSync('ed25519');
+  keysEnvelope = signKeys(1, [online.publicKey], root.privateKey);
   const release = { format: 1, sequence: 1, version: manifest.version, channel: 'stable', publishedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 86400000).toISOString(), platform: process.platform, arch: process.arch, minimumUpdater: 1, apiProtocol: 1, configFormat: 1, withdrawn: false, notes: 'Isolated updater smoke', migrationHistory: fileDigest(journalFile), runtime: { id: manifest.id, url: `${origin}/runtime.tar.gz`, sha256: fileDigest(archive), size: fs.statSync(archive).size, unpackedSize: manifest.files.reduce((sum, file) => sum + (file.sha256 ? fs.statSync(path.join(candidate, file.name)).size : 0), 0) + fs.statSync(path.join(candidate, 'runtime-manifest.json')).size } };
-  const payload = Buffer.from(JSON.stringify(release));
-  envelope = { payload: payload.toString('base64'), signature: sign(null, payload, keys.privateKey).toString('base64') };
-  fs.writeFileSync(releasePolicyFile(), JSON.stringify({ format: 1, feed: `${origin}/feed/`, publicKey: keys.publicKey.export({ type: 'spki', format: 'pem' }) }));
+  envelope = signEnvelope(release, online.privateKey);
+  fs.writeFileSync(releasePolicyFile(), JSON.stringify({ format: 2, feed: `${origin}/feed/`, rootKey: root.publicKey.export({ type: 'spki', format: 'pem' }) }));
   // Off and limited, so this fixture controls the actual large download below.
   writeOrigin({ auto: false, metered: true });
   console.info('Starting the standalone service');

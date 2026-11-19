@@ -2,12 +2,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { feedFile, releasePolicy, releasePolicyFile, releasePreferences, updateReleasePreferences } from './release-trust';
+import { feedFile, feedUrl, releasePolicy, releasePolicyFile, releasePreferences, updateReleasePreferences } from './release-trust';
 import { MaintenanceWindowSchema, UpdateActionSchema, UpdatePreferencesSchema } from './update-settings';
 
 let root: string;
 let file: string;
-const publisher = { format: 1, feed: 'https://publisher.example/feed/', publicKey: 'publisher public key' };
+const publisher = { format: 2, feed: 'https://publisher.example/feed/', rootKey: 'publisher root key' };
 const preferences = { channel: 'stable', auto: true, metered: false };
 beforeEach(() => {
   root = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-update-settings-'));
@@ -26,10 +26,10 @@ it('keeps a person\'s choices apart from what the release ships', () => {
   expect(releasePolicy()).toEqual({ ...publisher, channel: 'latest', auto: false, metered: true });
   expect(JSON.parse(fs.readFileSync(file, 'utf8'))).toEqual(publisher);
   expect(releasePreferences()).not.toHaveProperty('feed');
-  expect(releasePreferences()).not.toHaveProperty('publicKey');
+  expect(releasePreferences()).not.toHaveProperty('rootKey');
 });
 
-it.each([{ feed: 'https://attacker.example' }, { publicKey: 'attacker' }, { channel: 'beta' }, { auto: true, url: 'https://attacker.example' }, { auto: 'true' }, {}, { metered: 'yes' }])('refuses renderer-controlled policy mutation %j', input => {
+it.each([{ feed: 'https://attacker.example' }, { rootKey: 'attacker' }, { publicKey: 'attacker' }, { channel: 'beta' }, { auto: true, url: 'https://attacker.example' }, { auto: 'true' }, {}, { metered: 'yes' }])('refuses renderer-controlled policy mutation %j', input => {
   expect(() => updateReleasePreferences(input)).toThrow();
   expect(releasePolicy()).toEqual({ ...publisher, ...preferences });
 });
@@ -42,13 +42,17 @@ it('cannot create publisher configuration through preference controls', () => {
   expect(fs.existsSync(file)).toBe(false);
 });
 
-it('finds each file in the feed by name and platform', () => {
+it('finds each file in the feed by name and platform, and the keys file by its own name', () => {
+  expect(feedUrl({ feed: 'https://publisher.example/feed' }, 'keys.json')).toBe('https://publisher.example/feed/keys.json');
   expect(feedFile({ feed: 'https://publisher.example/feed' }, 'stable', 'darwin', 'arm64')).toBe('https://publisher.example/feed/stable-darwin-arm64.json');
   expect(feedFile({ feed: 'https://publisher.example/feed/' }, '0.2.0', 'linux', 'x64')).toBe('https://publisher.example/feed/0.2.0-linux-x64.json');
 });
 
 it('refuses malformed disk policy instead of treating strings as enabled booleans', () => {
   fs.writeFileSync(file, JSON.stringify({ ...publisher, feed: 'not a url' }));
+  expect(() => releasePolicy()).toThrow();
+  // One key that signed releases directly, from before the root key, is no publisher at all.
+  fs.writeFileSync(file, JSON.stringify({ format: 1, feed: publisher.feed, publicKey: 'publisher public key' }));
   expect(() => releasePolicy()).toThrow();
 });
 

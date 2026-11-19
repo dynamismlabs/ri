@@ -92,10 +92,11 @@ export function registerServiceCommand(program: Command) {
     console.info(JSON.stringify((await import('@/lib/releases/runtime-identity')).runtimePeerRelease().compatibility));
   });
   // What the install script runs, from the release it just downloaded (scripts/install.sh).
-  service.command('install-release <resources>', { hidden: true }).requiredOption('--envelope <file>').requiredOption('--public-key <file>').option('--channel <channel>')
-    .action(async (resources: string, options: { envelope: string; publicKey: string; channel?: 'stable' | 'latest' }) => {
+  service.command('install-release <resources>', { hidden: true }).requiredOption('--envelope <file>').requiredOption('--keys <file>').requiredOption('--root-key <file>').option('--channel <channel>')
+    .action(async (resources: string, options: { envelope: string; keys: string; rootKey: string; channel?: 'stable' | 'latest' }) => {
       const { installPublishedRelease } = await import('@/lib/service/install-release');
-      const installed = installPublishedRelease(path.resolve(resources), JSON.parse(fs.readFileSync(options.envelope, 'utf8')), fs.readFileSync(options.publicKey, 'utf8'), options.channel);
+      const json = (file: string) => JSON.parse(fs.readFileSync(file, 'utf8'));
+      const installed = installPublishedRelease(path.resolve(resources), json(options.envelope), json(options.keys), fs.readFileSync(options.rootKey, 'utf8'), options.channel);
       if (!installed.launcher.installed) console.info(installed.launcher.reason);
     });
   // What the desktop app's Add `ri` to Terminal runs, because the app can't load this code itself.

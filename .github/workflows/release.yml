@@ -1,7 +1,8 @@
 name: Publish a release
 # docs/publishing.md. Pushing a tag like v0.2.0 publishes it to the latest channel.
 # Promote it to stable, withdraw it, or refresh the feed's expiry by running this by hand.
-# Nothing here publishes without the signing key, which lives in the `release` environment.
+# Nothing here publishes without the online signing key, which lives in the `release`
+# environment and must be one the root-signed desktop/release-keys.json lists.
 on:
   push:
     tags: ['v[0-9]*']
@@ -30,7 +31,30 @@ env:
   RI_RELEASE_FEED: https://releases.ri.app/
 
 jobs:
+  # Before hours of building: publishing would refuse a signing key the keys file doesn't list.
+  keys:
+    if: github.event_name == 'push'
+    name: Check the signing key
+    runs-on: ubuntu-24.04
+    environment: release
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '26.5.0'
+      - name: Check the signing key is listed in the keys file
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RI_RELEASE_PUBLIC_KEY: ${{ vars.RI_RELEASE_PUBLIC_KEY }}
+          RI_RELEASE_SIGNING_KEY: ${{ secrets.RI_RELEASE_SIGNING_KEY }}
+        run: |
+          mkdir -p feed-now
+          # The feed's keys file too, since publishing uses the newer of the two.
+          if gh release view feed >/dev/null 2>&1; then gh release download feed --dir feed-now --pattern keys.json || true; fi
+          node desktop/publish-release.mjs check --existing feed-now
+
   build:
+    needs: keys
     if: github.event_name == 'push'
     name: Build ${{ matrix.platform }} ${{ matrix.arch }}
     timeout-minutes: 150
@@ -75,12 +99,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Check the tag matches the version
         run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+      # The root key's public half, which every installation pins.
       - name: Write the public key
         if: runner.os != 'Windows'
         env:
           RI_RELEASE_PUBLIC_KEY: ${{ vars.RI_RELEASE_PUBLIC_KEY }}
         run: |
-          test -n "$RI_RELEASE_PUBLIC_KEY" || { echo "Run pnpm release:keygen and add the public key. See docs/publishing.md."; exit 1; }
+          test -n "$RI_RELEASE_PUBLIC_KEY" || { echo "Run pnpm release:keygen and add the root public key. See docs/publishing.md."; exit 1; }
           printf '%s\n' "$RI_RELEASE_PUBLIC_KEY" > "$RUNNER_TEMP/release-public.pem"
       - name: Set up the Developer ID, when there is one
         id: apple
@@ -244,6 +269,7 @@ jobs:
       - name: Sign and upload
         env:
           GH_TOKEN: ${{ github.token }}
+          RI_RELEASE_PUBLIC_KEY: ${{ vars.RI_RELEASE_PUBLIC_KEY }}
           RI_RELEASE_SIGNING_KEY: ${{ secrets.RI_RELEASE_SIGNING_KEY }}
         run: |
           VERSION="$(node -p "require('./package.json').version")"
@@ -258,6 +284,8 @@ jobs:
           # The app shows notes.txt as what changed. The release page also says how to check a file.
           { cat notes.txt; printf '\nCheck a download against SHA256SUMS, or run `gh attestation verify <file> --repo %s` to see the build that made it.\n' "$GITHUB_REPOSITORY"; } > release-notes.md
           gh release create "v$VERSION" assets/* --title "Ri $VERSION" --notes-file release-notes.md --verify-tag
+          # The keys first, so no computer meets a file signed by a key it hasn't been told about.
+          gh release upload feed feed-next/keys.json --clobber
           gh release upload feed feed-next/* --clobber
       - name: Rebuild the website
         env:
@@ -269,7 +297,8 @@ jobs:
   maintain:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
-    # It signs with the same key as publishing, so it runs where that key is.
+    # It signs with the same key as publishing, so it runs where that key is. After a
+    # rotation, its refresh signs every file again with the new key.
     environment: release
     concurrency:
       group: release-feed
@@ -287,6 +316,7 @@ jobs:
         id: feed
         env:
           GH_TOKEN: ${{ github.token }}
+          RI_RELEASE_PUBLIC_KEY: ${{ vars.RI_RELEASE_PUBLIC_KEY }}
           RI_RELEASE_SIGNING_KEY: ${{ secrets.RI_RELEASE_SIGNING_KEY }}
         run: |
           # Nothing published yet: nothing to refresh.
@@ -304,6 +334,8 @@ jobs:
             withdraw)
               node desktop/release-downloads.mjs withdraw --existing feed-now --version "$VERSION" > stale.txt ;;
           esac
+          # The keys first, so no computer meets a file signed by a key it hasn't been told about.
+          gh release upload feed feed-next/keys.json --clobber
           gh release upload feed feed-next/* --clobber
           while read -r name; do gh release delete-asset feed "$name" --yes; done < stale.txt
           echo "changed=true" >> "$GITHUB_OUTPUT"

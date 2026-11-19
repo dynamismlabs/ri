@@ -18,7 +18,7 @@ it('forwards only a validated preference patch to the private owner', async () =
   expect(response.headers.get('cache-control')).toBe('no-store');
   expect(mocks.request).toHaveBeenCalledWith('/update/policy', 'PATCH', 3000, { metered: true });
 });
-it.each([{ auto: true, feed: 'https://attacker.example' }, { publicKey: 'attacker' }, { channel: 'beta' }, {}, { metered: 'yes' }])('rejects an unauthorized policy shape %j', async body => {
+it.each([{ auto: true, feed: 'https://attacker.example' }, { rootKey: 'attacker' }, { publicKey: 'attacker' }, { channel: 'beta' }, {}, { metered: 'yes' }])('rejects an unauthorized policy shape %j', async body => {
   expect((await PATCH(request(body))).status).toBe(400);
   expect(mocks.request).not.toHaveBeenCalled();
 });
