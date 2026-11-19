@@ -6,13 +6,14 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { trpc, trpcClient } from '@/lib/trpc/client';
+import { useAllowApp } from './allow-app';
 
 /**
  * Add a personal app that is already running, by the MCP address it prints (docs/personal-apps.md).
  * Ri connects its own chats first. The app's consent screen opens next, and asks what Ri may see
- * and whether it may make changes. Agents get their own connection from their settings.
+ * and whether it may make changes (useAllowApp says when it can't open from this device). Agents
+ * get their own connection from their settings.
  */
 export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [name, setName] = useState('');
@@ -20,6 +21,7 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const allowApp = useAllowApp();
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -32,10 +34,10 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() }),
         queryClient.invalidateQueries({ queryKey: trpc.integrations.pathKey() }),
       ]);
-      if (result.requiresAuth) await openIntegrationAuthorization(result.authUrl);
       setName('');
       setUrl('');
       onOpenChange(false);
+      if (result.requiresAuth && result.app.ri) await allowApp.allow(result.app.ri.serverId);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -43,7 +45,7 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
     }
   };
 
-  return (
+  return (<>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <form onSubmit={submit} className="space-y-4">
@@ -76,5 +78,6 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
         </form>
       </DialogContent>
     </Dialog>
-  );
+    {allowApp.dialog}
+  </>);
 }

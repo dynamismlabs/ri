@@ -1,6 +1,20 @@
 {
-  "serial": 1,
+  "serial": 2,
   "apps": [
+    {
+      "id": "people",
+      "name": "People",
+      "description": "Your relationships, conversations and follow-ups in one place: people, companies, meetings, lists and keep-in-touch reminders.",
+      "reaches": [
+        "your Gmail through Ri (read only)",
+        "your Google Calendar through Ri (read only)",
+        "Ri's tasks",
+        "Ri's AI model"
+      ],
+      "git": "https://github.com/dynamismlabs/app-people.git",
+      "version": "v0.1.4",
+      "checksum": "sha256-148de409ba4d9178a44ec70f338fb8ebb2628e9768d03c040a5d683c2fc34165"
+    },
     {
       "id": "bookmarks",
       "name": "Bookmarks",
@@ -25,20 +39,6 @@
       "git": "https://github.com/dynamismlabs/app-job-search.git",
       "version": "v0.1.5",
       "checksum": "sha256-21ca719e4da6a67688132423ac471b67f1d5c08a59fb0bf5066bc5288ee53d10"
-    },
-    {
-      "id": "people",
-      "name": "People",
-      "description": "Your relationships, conversations and follow-ups in one place: people, companies, meetings, lists and keep-in-touch reminders.",
-      "reaches": [
-        "your Gmail through Ri (read only)",
-        "your Google Calendar through Ri (read only)",
-        "Ri's tasks",
-        "Ri's AI model"
-      ],
-      "git": "https://github.com/dynamismlabs/app-people.git",
-      "version": "v0.1.4",
-      "checksum": "sha256-148de409ba4d9178a44ec70f338fb8ebb2628e9768d03c040a5d683c2fc34165"
     },
     {
       "id": "travel",

@@ -67,6 +67,23 @@ export class CatalogError extends Error {
   }
 }
 
+/**
+ * The catalog's apps with `entry` in place of the one with its ID, or added at the end. The catalog's
+ * order is the order people see it in, so a new version never moves an app.
+ */
+export function withEntry(apps: CatalogEntry[], entry: CatalogEntry): CatalogEntry[] {
+  const at = apps.findIndex((app) => app.id === entry.id);
+  return at < 0 ? [...apps, entry] : apps.map((app, index) => (index === at ? entry : app));
+}
+
+/** The catalog's apps with `ids` first, in that order, and the rest after them as they were. */
+export function orderedApps(apps: CatalogEntry[], ids: string[]): CatalogEntry[] {
+  const unknown = ids.filter((id) => !apps.some((app) => app.id === id));
+  if (unknown.length) throw new CatalogError(`The catalog has no ${unknown.join(', ')}.`);
+  const first = [...new Set(ids)];
+  return [...first.map((id) => apps.find((app) => app.id === id)!), ...apps.filter((app) => !first.includes(app.id))];
+}
+
 /** A catalog from `where` (a file or an address), or a CatalogError that says what's wrong with it. */
 export function parseCatalog(raw: unknown, where?: string): Catalog {
   const parsed = CatalogSchema.safeParse(raw);

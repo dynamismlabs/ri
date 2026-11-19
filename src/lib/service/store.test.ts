@@ -118,6 +118,20 @@ it('deletes only releases nothing uses', async () => {
   expect(fs.readdirSync(path.join(getRuntimeBaseDir(), 'cache')).filter(entry => entry.startsWith('.trash-'))).toEqual([]);
 });
 
+it('never prunes the Node apps run on, whatever release it came from', () => {
+  // Each app's background service names its Node by path (apps/toolchain.ts appNode), so one gone
+  // would stop the app. Apps move to a newer Node only when they're next installed or changed.
+  const [old, current] = [['a', '0.1.0'], ['b', '0.2.0']].map(([name, version]) => stageRelease(release(name!, version!)).id);
+  const node = path.join(getRuntimeBaseDir(), 'app-node', 'v24.2.0-darwin-arm64', 'bin', 'node');
+  fs.mkdirSync(path.dirname(node), { recursive: true });
+  fs.writeFileSync(node, 'node');
+  const install = getRuntimeInstallDir();
+  fs.mkdirSync(install, { recursive: true });
+  fs.writeFileSync(path.join(install, 'active-release'), `${current}\n`);
+  expect(pruneReleases({ running: () => [] })).toEqual([old]);
+  expect(fs.readFileSync(node, 'utf8')).toBe('node');
+});
+
 it('keeps the release an activation names until the launcher is done with it', () => {
   const [kept, candidate, gone] = [['a', '0.3.0'], ['b', '0.1.0'], ['c', '0.2.0']].map(([name, version]) => stageRelease(release(name!, version!)).id);
   const install = getRuntimeInstallDir();

@@ -5,7 +5,9 @@ import { BookOpen, LayoutGrid, MessageCircle, Settings2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useSkill } from '@/hooks/use-skills';
-import { itemType, type ReviewItem } from './catalog';
+import { APP_NAME } from '@/constants/app';
+import { versionLabel } from '@/lib/apps/version-label';
+import { itemType, type CatalogApp, type ReviewItem } from './catalog';
 import { useReview } from './context';
 import { ItemMark, PrimaryButton } from './items';
 import s from './review.module.css';
@@ -26,17 +28,29 @@ export function ItemDetails({ item }: { item: ReviewItem }) {
       <Button variant="ghost" size="icon-xs" aria-label="Close details" onClick={() => review.patch({ item: undefined, panel: undefined })}><X size={15} /></Button>
     </div>
     <p className={s.detailCopy}>{item.description}</p>
-    <div className={s.actions}><PrimaryButton item={item} />{item.added && item.view && item.chat && item.usable !== false && !item.attention && <Button size="xs" variant="outline" onClick={() => review.chat(item)}><MessageCircle size={12} />Try in chat</Button>}</div>
+    <div className={s.actions}><PrimaryButton item={item} />{item.added && item.view && item.chat && item.usable !== false && !item.attention && item.target.kind !== 'catalog-app' && <Button size="xs" variant="outline" onClick={() => review.chat(item)}><MessageCircle size={12} />Try in chat</Button>}</div>
     <div className={s.detailTabs} aria-label="Addition details"><button type="button" aria-pressed={!settings} onClick={() => review.details(item)}>Overview</button>{item.added && <button type="button" aria-pressed={settings} onClick={() => review.details(item, true)}>Settings</button>}</div>
     {settings && item.added ? <>
       {item.target.kind === 'mcp' && item.enabled !== undefined && <div className={s.setting}><span>Available to Ri<small>Turning this off keeps its setup.</small></span><Switch checked={item.enabled} disabled={review.busy} onCheckedChange={() => review.toggle(item)} aria-label={`Allow Ri to use ${item.name}`} /></div>}
       <div className={s.setting}><span>{item.kind === 'skills' ? 'Instructions and installation' : 'Accounts and access'}<small>{item.kind === 'skills' ? 'Edit, move, try, or uninstall this skill.' : 'Update setup, permissions, or removal.'}</small></span><Button size="xs" variant="outline" onClick={() => review.manage(item)}><Settings2 size={12} />Manage</Button></div>
     </> : <>
       <div className="my-5 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">{item.view && <span className="flex items-center gap-1.5"><LayoutGrid size={13} />Opens in Ri</span>}{item.chat && <span className="flex items-center gap-1.5"><MessageCircle size={13} />Works in chat</span>}{item.kind === 'skills' && <span className="flex items-center gap-1.5"><BookOpen size={13} />Repeatable workflow</span>}</div>
-      {item.target.kind === 'skill' ? <StoredSkillBody skillRef={item.target.ref} /> : item.starter ? <div className={s.demo}><span className={s.eyebrow}>The workflow</span><div className="mt-3 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">{item.starter.body}</div></div> : <div className={s.demo}><h3>{item.added ? 'Ready for your work' : 'Make it available to Ri'}</h3><p className={s.muted}>{item.kind === 'skills' ? 'Open this skill to read its instructions, try it, or choose which agents use it.' : item.view ? 'Open the app to use its full interface and your records.' : 'Connect an account and choose its access. Then bring the information into a conversation.'}</p></div>}
-      {!item.added && <p className={`${s.muted} mt-5`}>{item.kind === 'connectors' ? 'Connect your account, then choose what Ri can use.' : 'Preview and customize it before you choose to install it.'}</p>}
+      {item.catalogApp ? <CatalogAppBody app={item.catalogApp} /> : item.target.kind === 'skill' ? <StoredSkillBody skillRef={item.target.ref} /> : item.starter ? <div className={s.demo}><span className={s.eyebrow}>The workflow</span><div className="mt-3 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">{item.starter.body}</div></div> : <div className={s.demo}><h3>{item.added ? 'Ready for your work' : 'Make it available to Ri'}</h3><p className={s.muted}>{item.kind === 'skills' ? 'Open this skill to read its instructions, try it, or choose which agents use it.' : item.view ? 'Open the app to use its full interface and your records.' : 'Connect an account and choose its access. Then bring the information into a conversation.'}</p></div>}
+      {!item.added && <p className={`${s.muted} mt-5`}>{item.catalogApp ? `Add it, and ${APP_NAME} installs it, then asks what it may do in it.` : item.kind === 'connectors' ? 'Connect your account, then choose what Ri can use.' : 'Preview and customize it before you choose to install it.'}</p>}
     </>}
   </section>;
+}
+
+/** A catalog app before it's added: what it can reach, its version, and where it runs. */
+function CatalogAppBody({ app }: { app: CatalogApp }) {
+  return <div className={s.demo}>
+    <span className={s.eyebrow}>What it can reach</span>
+    {app.reaches.length ? <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-muted-foreground">{app.reaches.map(reach => <li key={reach}>{reach}</li>)}</ul>
+      : <p className="mt-2 text-xs text-muted-foreground">Only its own data.</p>}
+    <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+      {APP_NAME} builds {app.name} {versionLabel(app.version)} from its own repository and runs it on your computer, with its own data. It’s yours to change with the builder.
+    </p>
+  </div>;
 }
 
 function StoredSkillBody({ skillRef }: { skillRef: string }) {

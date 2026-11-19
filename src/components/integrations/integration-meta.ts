@@ -17,6 +17,7 @@ export type IntegrationCategory =
   | 'Storage'
   | 'Documents & agreements'
   | 'Websites & publishing'
+  | 'Personal'
   | 'Finance';
 
 /** The order categories render in the catalog. */
@@ -30,6 +31,7 @@ export const CATEGORY_ORDER: IntegrationCategory[] = [
   'Storage',
   'Documents & agreements',
   'Websites & publishing',
+  'Personal',
   'Finance',
 ];
 
@@ -59,6 +61,11 @@ export interface IntegrationMeta {
    * with no mention in it. Without one, a plain generic question is used.
    */
   starterPrompt?: string;
+  /**
+   * The service has screens of its own (MCP Apps views), so Discover lists it as an app before
+   * it's connected. Once it is, Ri tells from the views it actually offers.
+   */
+  screens?: boolean;
 }
 
 export const INTEGRATION_META: Record<string, IntegrationMeta> = {
@@ -372,6 +379,18 @@ export const INTEGRATION_META: Record<string, IntegrationMeta> = {
       'Enable the workflows you want to access through MCP.',
       'Sign in with your n8n account. Your instance may require approval for this app’s callback address.',
     ],
+  },
+  lore: {
+    category: 'Personal',
+    description: 'Your family’s memories: voice notes, writing and photos, kept in collections you share.',
+    brandHex: '111111',
+    docsUrl: 'https://github.com/dynamismlabs/lore',
+    setup: [
+      'Use your own Lore’s address, such as https://lore.example.com. To run one, deploy it from its repository.',
+      'Sign in to Lore when it asks, then choose what Ri may do there.',
+    ],
+    starterPrompt: 'What memories did we add this month?',
+    screens: true,
   },
   intercom: {
     category: 'Sales & CRM',

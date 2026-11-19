@@ -35,6 +35,8 @@ export interface LibrarySources {
   connections?: RouterOutputs['integrations']['connectionsGet']['connections'];
   servers?: RouterOutputs['integrations']['mcpServersGet']['servers'];
   skills?: SkillSummary[];
+  /** Ri's catalog of apps it builds and runs (docs/personal-apps.md "The catalog"), for Discover. */
+  catalogApps?: RouterOutputs['appBuilds']['catalog']['apps'];
 }
 
 /**
@@ -55,9 +57,10 @@ export function libraryItems({ providers = [], connections = [], servers = [], s
     const attention = accounts.some(account => account.status !== 'active') || hosted.some(server => server.enabled && server.lastStatus !== 'ok');
     const accountNames = accounts.map(account => account.label || account.email || account.accountId).join(' · ');
     const meta = integrationMeta(provider.id);
+    // A service with screens of its own is an app, before it's connected too.
     items.push({ key: `provider:${provider.id}`, name: provider.displayName, description: meta.description,
-      keywords: `${provider.id} ${meta.category} ${accountNames}`, kind: 'connectors', providerId: provider.id,
-      target: { kind: 'provider', id: provider.id }, chat: true, view: false,
+      keywords: `${provider.id} ${meta.category} ${accountNames}`, kind: meta.screens ? 'apps' : 'connectors', providerId: provider.id,
+      target: { kind: 'provider', id: provider.id }, chat: true, view: !!meta.screens,
       status: attention ? 'Needs attention' : accounts.length > 1 ? `${accounts.length} accounts` : accounts.length === 1 ? accountNames : added ? 'Finish setup' : 'Connect account',
       attention, added });
   }
@@ -83,7 +86,7 @@ export function libraryItems({ providers = [], connections = [], servers = [], s
 
 export function filterLibrary(items: LibraryItem[], mode: LibraryMode, filter: LibraryFilter, query: string): LibraryItem[] {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
-  return items.filter(item => (mode === 'discover' ? item.kind === 'connectors' || !!item.connectedAppId : item.added)
+  return items.filter(item => (mode === 'discover' ? item.kind === 'connectors' || !!item.providerId || !!item.connectedAppId : item.added)
     && (filter === 'all' || item.kind === filter || (filter === 'connectors' && !!item.connectedAppId))
     && terms.every(term => `${item.name} ${item.description} ${item.keywords}`.toLocaleLowerCase().includes(term)));
 }

@@ -121,5 +121,6 @@ export async function reconnectApp(sourceId: string, request?: RequestLike, retu
   const added = await addPersonalApp({ name: source.name, url: source.url, ...(returnTo ? { returnTo } : {}) }, request)
     .catch((error: unknown) => { throw new AppBuildError('setup', error instanceof Error ? error.message : String(error)); });
   updateAppSource(source.id, { personalAppId: added.app.id });
-  return added.requiresAuth ? { requiresAuth: true as const, authUrl: added.authUrl } : { requiresAuth: false as const };
+  const serverId = added.app.ri?.serverId ?? null;
+  return added.requiresAuth ? { requiresAuth: true as const, authUrl: added.authUrl, serverId } : { requiresAuth: false as const, serverId };
 }

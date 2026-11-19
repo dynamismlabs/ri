@@ -30,7 +30,8 @@ describe('provider catalog', () => {
         expect(new Set(provider.endpoint.options.map((option) => option.id)).size).toBe(provider.endpoint.options.length);
       }
       if (provider.endpoint?.kind === 'deployment') expect(provider.endpoint.path).toBe('/mcp');
-      if (provider.endpoint?.kind === 'instance') expect(provider.endpoint.path).toBe('/mcp-server/http');
+      // Each self-hosted service's own MCP path, appended to the address the person enters.
+      if (provider.endpoint?.kind === 'instance') expect(provider.endpoint.path).toBe(({ n8n: '/mcp-server/http', lore: '/mcp' } as Record<string, string>)[provider.id]);
     }
   });
 

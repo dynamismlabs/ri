@@ -19,17 +19,23 @@ vi.mock('@/lib/trpc/client', () => ({
   trpcClient: {},
 }));
 
-const render = async () => {
+const render = async (version?: string) => {
   const { AppStatusLine } = await import('./app-status');
-  return renderToStaticMarkup(<AppStatusLine sourceId="s1" name="Tide Log" />);
+  return renderToStaticMarkup(<AppStatusLine sourceId="s1" name="Tide Log" version={version} />);
 };
 
-it('says it\'s running, with its release, and offers Restart and Logs', async () => {
-  mocks.status = { state: 'running', release: '3f2a9c1d0b7e', since: new Date(Date.now() - 2 * 3600_000).toISOString(), lastError: null, checkedAt: '' };
-  const html = await render();
-  expect(html).toContain('Running, release 3f2a9c1d0b7e, since 2 hr ago');
+it('says it\'s running on the Home\'s computer, with its version rather than its release, and offers Restart and Logs', async () => {
+  mocks.status = { state: 'running', release: '3f2a9c1d0b7e', since: new Date(Date.now() - 2 * 3600_000).toISOString(), lastError: null, checkedAt: '', computer: 'AI Mac Mini' };
+  const html = await render('v0.1.4');
+  expect(html).toContain('Running on AI Mac Mini · v0.1.4 · since 2 hr ago');
+  expect(html).not.toContain('3f2a9c1d0b7e');
   expect(html).toContain('Restart');
   expect(html).toContain('Logs');
+});
+
+it('says only that it\'s running when Ri doesn\'t know the computer\'s name, and an app made in Ri has no version', async () => {
+  mocks.status = { state: 'running', release: '3f2a9c1d0b7e', since: new Date(Date.now() - 2 * 3600_000).toISOString(), lastError: null, checkedAt: '', computer: null };
+  expect(await render()).toContain('Running · since 2 hr ago');
 });
 
 it('shows the last error when it stopped', async () => {

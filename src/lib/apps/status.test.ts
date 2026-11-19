@@ -85,6 +85,12 @@ describe('an app\'s state', () => {
     expect(await appStatus(source.id, { fresh: true })).toMatchObject({ state: 'unknown', problem: 'not_prepared' });
   });
 
+  it('keeps where the app\'s host key is, which lets Ri allow itself in the app without a browser', () => {
+    expect(parseStatus({ state: 'running', dataDir: '/data/people', hostKeyPath: '/data/people/host-key' }, 'now')).toMatchObject({ hostKeyPath: '/data/people/host-key' });
+    // A kit from before the grant doesn't say.
+    expect(parseStatus({ state: 'running' }, 'now').hostKeyPath).toBeNull();
+  });
+
   it('takes only the states the kit documents', () => {
     expect(parseStatus({ state: 'exploded' }, 'now')).toMatchObject({ state: 'unknown', problem: 'failed' });
     expect(lastJsonObject('pnpm says hi\n{"state":"stopped"}\n\n')).toEqual({ state: 'stopped' });
