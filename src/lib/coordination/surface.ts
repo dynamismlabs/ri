@@ -13,6 +13,8 @@ export const COORDINATION_TOOLS = [
   'create_trigger', 'list_triggers', 'get_trigger', 'update_trigger', 'delete_trigger',
   // The chat's status line, set at the end of a turn (docs/chat-status-lines.md).
   'set_chat_status',
+  // Ri's user guide, for questions about how Ri works (src/lib/guide/).
+  'read_docs',
 ] as const;
 
 export function coordinationMcpServer(sessionId: string): McpServerConfig | null {

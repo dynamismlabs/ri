@@ -39,7 +39,7 @@ it('is a standard MCP Apps page that reaches nothing on the network', () => {
 it('hints every content tool as reading or changing work, from its own action', async () => {
   const { actions } = await import('@/lib/orchestrator/registry');
   const reads = HOME_CONTENT_ACTIONS.filter(name => contentToolAnnotations(actions.find(action => action.name === name)!).readOnlyHint);
-  expect([...reads].sort()).toEqual(['get_area', 'get_deck', 'get_note', 'get_task', 'list_areas', 'list_backlinks', 'list_deadlines', 'list_notes', 'list_outgoing_links', 'list_tasks', 'search']);
+  expect([...reads].sort()).toEqual(['get_area', 'get_deck', 'get_note', 'get_task', 'list_areas', 'list_backlinks', 'list_deadlines', 'list_notes', 'list_outgoing_links', 'list_tasks', 'read_docs', 'search']);
 });
 
 describe('over MCP', () => {

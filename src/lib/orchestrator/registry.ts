@@ -21,6 +21,7 @@ import { speedForTriggerModel, triggerSpeedModel } from '@/lib/triggers/model-sp
 import { HUMAN_LINES_PER_HOUR } from '@/lib/work/lines';
 import { resultActions } from './result-actions';
 import { emailActions } from './email-actions';
+import { docsActions } from './docs-actions';
 import { agentConnectionActions } from './agent-connection-actions';
 import { getWorkResultSourceWorkspace } from '@/lib/work-results/reviewer-preferences';
 import { normalizeWorkResultGuidance, WorkResultGuidanceError } from '@/lib/instructions/preferences';
@@ -3552,6 +3553,7 @@ export const typedActions = [
   list_workspace_setups_action,
   describe_paths,
   describe_schema,
+  ...docsActions,
   list_tasks_action,
   list_deadlines_action,
   get_task_action,

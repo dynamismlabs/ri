@@ -64,6 +64,7 @@ import { workResultsMcpServer } from '@/lib/work-results/instructions';
 import { emailMcpServer, EMAIL_COMPOSER_INSTRUCTIONS } from '@/lib/email/surface';
 import { handoffPreamble } from '@/lib/transfer/handoff';
 import { coordinationMcpServer, COORDINATION_INSTRUCTIONS } from '@/lib/coordination/surface';
+import { GUIDE_INSTRUCTION } from '@/lib/guide/instructions';
 import { configureTeamSession } from './team-session-policy';
 import { assertPersonalCapability } from '@/lib/home/authority';
 import { conservativePlanReturn } from './permission-map';
@@ -490,6 +491,7 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
       ...(spec.mcpServers.some(server => server.name === BROWSER_MCP_SERVER_NAME) ? [{ name: 'agent browser', text: BROWSER_CONNECTION_INSTRUCTIONS }] : []),
       ...(args.surfaceKind !== 'result_review' ? [{ name: 'agent coordination', text: COORDINATION_INSTRUCTIONS }] : []),
       ...(args.surfaceKind !== 'result_review' ? [{ name: 'email composer', text: EMAIL_COMPOSER_INSTRUCTIONS }] : []),
+      ...(args.surfaceKind !== 'result_review' ? [{ name: 'user guide', text: GUIDE_INSTRUCTION }] : []),
     ];
 
     // Reference folders (docs/reference-folders-spec.md §6/§7). The prompt

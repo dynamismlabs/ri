@@ -19,7 +19,7 @@ const shareBuild = process.argv.includes('--share');
 const signing = macSigning({ release: releaseBuild, share: shareBuild });
 const { build, Platform, Arch } = await import('electron-builder');
 const tar = await import('tar');
-const { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, LINUX_ICON_RELATIVE_PATH, MAC_MINIMUM_SYSTEM_VERSION, MAC_SIGN_IGNORE, pruneDependencySourceMaps, removeUnusedPackageCopy, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
+const { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, LINUX_ICON_RELATIVE_PATH, MAC_MINIMUM_SYSTEM_VERSION, MAC_SIGN_IGNORE, pruneDependencySourceMaps, removeUnusedPackageCopy, SERVER_FOLDERS, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
 const { signRuntime } = await import('./sign-runtime.mjs');
 const { stageSpeechHelper } = await import('./speech/package.mjs');
 
@@ -70,7 +70,7 @@ rebaseResourceLinks(server, deployed);
 fs.rmSync(deployed, { recursive: true, force: true });
 fs.mkdirSync(path.join(server, 'src/styles'), { recursive: true });
 fs.copyFileSync(path.join(repo, 'src/styles/theme.css'), path.join(server, 'src/styles/theme.css'));
-for (const name of ['public', 'drizzle', 'skills', 'dist']) fs.cpSync(path.join(repo, name), path.join(server, name), { recursive: true });
+for (const name of SERVER_FOLDERS) fs.cpSync(path.join(repo, name), path.join(server, name), { recursive: true });
 if (process.argv.includes('--with-speech')) stageSpeechHelper(path.join(repo, 'release/speech-helper'), path.join(server, 'speech-helper'));
 fs.cpSync(path.join(repo, '.next-desktop'), path.join(server, '.next-desktop'), {
   recursive: true,

@@ -9,6 +9,8 @@ export const HOME_CONTENT_ACTIONS = [
   'list_areas', 'get_area', 'create_area', 'update_area', 'get_deck', 'update_deck', 'search',
   // Capture only: an outside app can add to the Stream for Rye to triage, and never reads it.
   'create_stream_item',
+  // Ri's user guide: read-only, and the same pages are public at ri.app/docs.
+  'read_docs',
 ] as const;
 
 export function permitsHomeContentAction(name: string): boolean {

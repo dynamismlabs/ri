@@ -2,6 +2,9 @@ export const APP_NAME = 'Ri';
 export const APP_DESCRIPTION = 'Productivity framework for humans <> agents';
 export const APP_SHORT_ID = 'ri';
 
+/** Where Ri's user guide (`guide/`) is published. A page's address is this plus its id. */
+export const DOCS_URL = 'https://ri.app/docs';
+
 /**
  * Installed name of the shipped agent skill that teaches any agent to drive
  * the tasks + notes + deck + execution surface. Composed from APP_SHORT_ID so
