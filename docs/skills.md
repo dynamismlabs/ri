@@ -137,9 +137,10 @@ manage tasks and notes from any project. That global install:
   installed them.
 - Is installed for one agent when that agent is connected on this computer
   (Settings → Ri in other agents → Set up, `connect_agent`, `ri mcp connect`),
-  and shown with one-click install and uninstall at the end of Connect your
-  agent (`src/components/settings/agent-skill-access.tsx`, docs/external-ai.md).
-  The Get started item is Use Ri in other agents itself. Models no longer carries it.
+  and shown with one-click install and uninstall at the end of Ri in other
+  agents (`src/components/settings/agent-skill-access.tsx`, docs/external-ai.md).
+  Get started has no item for it, or for connecting outside agents: both are
+  optional, and a step there reads as part of getting Ri ready.
 - Reports what's on disk, not the saved choice (`inspectGlobalSkills`): a
   link or copy deleted by hand reads as not installed, and an entry holding
   the name that isn't this home's (someone's own skill, another live home's
@@ -148,8 +149,8 @@ manage tasks and notes from any project. That global install:
   neither: no tool can be using it, so installing replaces it. Otherwise
   installing and uninstalling touch only this home's links and copies, never
   a project.
-- Uninstalled on purpose counts as skipped in Get started, so it isn't asked
-  again. `ri start` reinstalls it only while the saved choice is on.
+- Uninstalled on purpose stays uninstalled: `ri start` reinstalls it only
+  while the saved choice is on.
 - Isn't offered in the desktop app, which keeps the skills in its own home
   (docs/desktop.md).
 

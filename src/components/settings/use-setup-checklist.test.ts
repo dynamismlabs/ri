@@ -8,10 +8,7 @@ import { useSetupChecklist, type SetupChecklist } from './use-setup-checklist';
 // The data sources aren't what's under test: every query reads as not loaded.
 vi.mock('@/hooks/use-user-state', () => ({ useUserState: () => ({ data: undefined }) }));
 vi.mock('@/lib/api/settings', () => ({ settingsApi: {} }));
-vi.mock('@/lib/trpc/client', () => ({
-  trpc: { externalAi: { list: { queryOptions: () => ({ queryKey: ['agent-keys'] }) } } },
-  trpcClient: {},
-}));
+vi.mock('@/lib/trpc/client', () => ({ trpcClient: {} }));
 vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: undefined, isFetched: false }) }));
 
 const DISMISS_KEY = 'ri.setup.dismissed';
@@ -98,5 +95,12 @@ describe('setup checklist dismissals', () => {
       return createElement('p', null, `dismissed:${items.filter((i) => i.dismissed).length}`);
     }
     expect(renderToString(createElement(ServerProbe))).toContain('dismissed:0');
+  });
+});
+
+describe('setup checklist items', () => {
+  it('leaves using Ri in other agents out of setup', () => {
+    mount('modal');
+    expect(latest.modal.items.map((i) => i.section)).toEqual(['profile', 'models', 'devices', 'notifications', 'plugins', 'browser']);
   });
 });

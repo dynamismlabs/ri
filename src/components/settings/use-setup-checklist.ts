@@ -2,11 +2,10 @@
 
 import { useUserState } from '@/hooks/use-user-state';
 import { settingsApi } from '@/lib/api/settings';
-import { trpc, trpcClient } from '@/lib/trpc/client';
+import { trpcClient } from '@/lib/trpc/client';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import type { SectionId } from './settings-sections';
-import { APP_NAME } from '@/constants/app';
 
 /**
  * Drives the "Get started" checklist. Each item's "done" is derived from real
@@ -103,7 +102,6 @@ export function useSetupChecklist(enabled: boolean): SetupChecklist {
     queryFn: () => trpcClient.browser.list.query({}),
     enabled,
   });
-  const agentKeys = useQuery({ ...trpc.externalAi.list.queryOptions(), enabled });
 
   // Per-browser, read from localStorage. Every copy of the checklist and every
   // tab follows a dismissal, and the server render starts with none.
@@ -131,9 +129,10 @@ export function useSetupChecklist(enabled: boolean): SetupChecklist {
     // Done when the capability is on and a browser is available. Signing into a
     // site is the optional next step, surfaced in the Browser tab itself.
     const browserDone = !!browser.data?.enabled && (browser.data?.config.detected.length ?? 0) > 0;
-    // Any outside agent with its own key: Set up, its steps or its setup prompt.
-    const agentDone = (agentKeys.data?.length ?? 0) > 0;
 
+    // Only what makes this Ri work better for the person. Using Ri in other
+    // agents (Settings → Ri in other agents) is optional and has no item: next
+    // to Pick a default model it read as part of getting Ri ready.
     const base: Omit<ChecklistItem, 'dismissed'>[] = [
       { id: 'profile', section: 'profile', label: 'Tell your assistant about you', hint: 'Fill this out in the Profile tab any time.', done: profileDone },
       { id: 'model', section: 'models', label: 'Pick a default model', hint: 'Choose one in the Models tab any time.', done: modelDone },
@@ -142,16 +141,13 @@ export function useSetupChecklist(enabled: boolean): SetupChecklist {
       // Ids are saved in DISMISS_KEY, so this one keeps its pre-rename spelling.
       { id: 'connectors', section: 'plugins', label: 'Connect an app', hint: 'Connect one in Plugins any time.', done: integrationsDone },
       { id: 'browser', section: 'browser', label: 'Set up the agent browser', hint: 'Pick a browser and sign into sites in the Browser tab any time.', done: browserDone },
-      // Ids are saved in DISMISS_KEY, so this one keeps its first spelling.
-      { id: 'connect-agent', section: 'external-ai', label: `Use ${APP_NAME} in other agents`, hint: `Add ${APP_NAME}’s MCP server to Claude Code, Codex, ChatGPT or another agent from the ${APP_NAME} in other agents tab any time.`, done: agentDone },
     ];
     return base.map((i) => ({ ...i, dismissed: dismissed.has(i.id) }));
-  }, [userState?.description, userState?.defaultHarness, baseUrls.data, channels.data, connections.data, browser.data, agentKeys.data, dismissed]);
+  }, [userState?.description, userState?.defaultHarness, baseUrls.data, channels.data, connections.data, browser.data, dismissed]);
 
   const doneCount = items.filter((i) => i.done).length;
   const pending = items.filter((i) => !i.done && !i.dismissed);
-  // The agent check is optional to setup, so a failed one doesn't hold the tab back.
-  const ready = !!(userState && baseUrls.data && channels.data && connections.data && browser.data && agentKeys.isFetched);
+  const ready = !!(userState && baseUrls.data && channels.data && connections.data && browser.data);
 
   return {
     items,

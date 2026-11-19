@@ -3,18 +3,17 @@ import http from 'node:http';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { build } from 'esbuild';
-import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
+import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
-// Ri's user-level skills at the end of Ri in other agents, and its Get started
-// item (the real checklist hook), against a fake server that keeps state.
+// Ri's user-level skills at the end of Ri in other agents, and that Get started
+// (the real checklist hook) leaves both out, against a fake server that keeps state.
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let browser: Browser;
 let server: http.Server;
 let address: string;
 
-const LABEL = 'Use Ri in other agents';
 const CONFLICT = '~/.claude/skills/agent-work-tasks-notes_ri';
 const FOLDERS = 'in ~/.agents/skills, ~/.claude/skills and ~/.gemini/config/skills';
 
@@ -96,7 +95,6 @@ async function screenshot(page: Page, name: string) {
   await page.screenshot({ path: path.join(process.env.RI_ARTIFACT_SCREENSHOTS, name), animations: 'disabled' });
 }
 
-const row = (page: Page): Locator => page.getByRole('listitem').filter({ hasText: LABEL });
 const calls = (page: Page) => page.evaluate('window.skillCalls');
 
 it.skipIf(!enabled)('says the skills are on and takes them off and back in one click', async () => {
@@ -120,20 +118,17 @@ it.skipIf(!enabled)('says the skills are on and takes them off and back in one c
   } finally { await page.close(); }
 }, 30_000);
 
-it.skipIf(!enabled)('folds the skills into connecting an agent, in Get started', async () => {
+it.skipIf(!enabled)('keeps outside agents and Ri’s skills out of Get started', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
     await page.goto(address);
-    await page.getByText('1/7 done', { exact: true }).waitFor();
-    expect(await page.getByText('Let your coding tools manage tasks and notes', { exact: true }).count()).toBe(0);
-    await row(page).getByRole('button', { name: 'Set up', exact: true }).waitFor();
-    await row(page).getByRole('button', { name: 'Skip', exact: true }).click();
-    await row(page).getByText('Add Ri’s MCP server to Claude Code, Codex, ChatGPT or another agent from the Ri in other agents tab any time.', { exact: true }).waitFor();
-    await row(page).getByRole('button', { name: 'Undo', exact: true }).click();
-    await row(page).getByRole('button', { name: 'Set up', exact: true }).waitFor();
-    // Any agent with its own key counts.
+    const getStarted = page.getByRole('main', { name: 'Get started' });
+    await getStarted.getByText('1/6 done', { exact: true }).waitFor();
+    // Optional, so it isn't part of getting Ri ready, and a key doesn't move the count.
+    expect(await getStarted.getByText('in other agents', { exact: false }).count()).toBe(0);
+    expect(await getStarted.getByText('Let your coding tools manage tasks and notes', { exact: true }).count()).toBe(0);
     await page.goto(`${address}/?keys=1`);
-    await page.getByText('2/7 done', { exact: true }).waitFor();
+    await getStarted.getByText('1/6 done', { exact: true }).waitFor();
   } finally { await page.close(); }
 }, 30_000);
 
@@ -155,8 +150,7 @@ it.skipIf(!enabled)('shows no skill controls in the desktop app, where the skill
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
     await page.goto(`${address}/?desktop=1`);
-    await page.getByText('1/7 done', { exact: true }).waitFor();
+    await page.getByText('1/6 done', { exact: true }).waitFor();
     expect(await page.getByRole('complementary', { name: 'Ri in other agents' }).getByRole('button').count()).toBe(0);
-    await row(page).getByRole('button', { name: 'Set up', exact: true }).waitFor();
   } finally { await page.close(); }
 }, 30_000);
