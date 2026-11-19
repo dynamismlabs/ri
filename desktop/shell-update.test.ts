@@ -124,7 +124,7 @@ it('refreshes eligibility again before an explicit native quit after staging', a
 });
 
 it('also refreshes Linux eligibility after downloading and before AppImage installation', async () => {
-  vi.stubGlobal('process', { ...process, platform: 'linux' });
+  vi.stubGlobal('process', { ...process, platform: 'linux', env: { ...process.env, APPIMAGE: '/home/me/Ri.AppImage' } });
   const linuxRelease = { ...release, shell: { ...release.shell, url: 'https://releases.example/Ri.AppImage' } };
   mocks.checkRelease.mockResolvedValueOnce(linuxRelease).mockRejectedValueOnce(new Error('Release expired during download'));
   mocks.updater.checkForUpdates.mockResolvedValue({ isUpdateAvailable: true, updateInfo: { version: release.version, files: [linuxRelease.shell] } });
@@ -144,6 +144,20 @@ it('tells an unsigned Mac copy plainly that it can\'t replace itself, and touche
   expect(mocks.checkRelease).not.toHaveBeenCalled();
   expect(mocks.dialog.showErrorBox).not.toHaveBeenCalled();
   await downloadDesktopUpdateInBackground();
+  expect(mocks.updater.downloadUpdate).not.toHaveBeenCalled();
+});
+
+it('leaves a copy installed from a .deb to the package manager, and touches nothing', async () => {
+  // Only an AppImage has APPIMAGE set (the test above is one).
+  const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => name !== 'APPIMAGE'));
+  vi.stubGlobal('process', { ...process, platform: 'linux', env });
+  await updateDesktop(window as unknown as BrowserWindow, vi.fn(), vi.fn());
+  expect(mocks.dialog.showMessageBox).toHaveBeenCalledWith(window, expect.objectContaining({
+    message: "This copy of the app can't update itself", detail: expect.stringContaining('installed from a .deb updates when you install the newer .deb'),
+  }));
+  await downloadDesktopUpdateInBackground();
+  expect(mocks.checkRelease).not.toHaveBeenCalled();
+  expect(mocks.updater.setFeedURL).not.toHaveBeenCalled();
   expect(mocks.updater.downloadUpdate).not.toHaveBeenCalled();
 });
 

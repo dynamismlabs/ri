@@ -34,9 +34,9 @@ const ARTIFACTS: Record<string, { build: object, files: string[] }> = {
   'ri-darwin-x64': { build: { platform: 'darwin', arch: 'x64', commit: COMMIT, builtAt: '2026-11-19T11:05:00.123Z', notarized: true },
     files: ['ri-runtime-0.2.0-darwin-x64.tar.gz', 'desktop/Ri-0.2.0.dmg', 'desktop/Ri-0.2.0-mac.zip', 'desktop/x64-mac.yml'] },
   'ri-linux-x64': { build: { platform: 'linux', arch: 'x64', commit: COMMIT, builtAt: '2026-11-19T10:40:00Z', notarized: false },
-    files: ['ri-runtime-0.2.0-linux-x64.tar.gz', 'desktop/Ri-0.2.0.AppImage', 'desktop/x64-linux.yml'] },
+    files: ['ri-runtime-0.2.0-linux-x64.tar.gz', 'desktop/Ri-0.2.0.AppImage', 'desktop/ri-desktop_0.2.0_amd64.deb', 'desktop/x64-linux.yml'] },
   'ri-linux-arm64': { build: { platform: 'linux', arch: 'arm64', commit: COMMIT, builtAt: '2026-11-19T10:45:00Z', notarized: false },
-    files: ['ri-runtime-0.2.0-linux-arm64.tar.gz', 'desktop/Ri-0.2.0-arm64.AppImage', 'desktop/arm64-linux-arm64.yml'] },
+    files: ['ri-runtime-0.2.0-linux-arm64.tar.gz', 'desktop/Ri-0.2.0-arm64.AppImage', 'desktop/ri-desktop_0.2.0_arm64.deb', 'desktop/arm64-linux-arm64.yml'] },
   'ri-win32-x64': { build: { platform: 'win32', arch: 'x64', commit: COMMIT, builtAt: '2026-11-19T10:50:00Z', notarized: false },
     files: ['desktop/Ri-Setup-0.2.0-x64.exe'] },
 };
@@ -70,8 +70,8 @@ it('lists every installer and runtime of a version, Windows included, in the sit
     'mac arm64 dmg Ri-0.2.0-arm64.dmg', 'mac arm64 runtime ri-runtime-0.2.0-darwin-arm64.tar.gz',
     'mac x64 dmg Ri-0.2.0.dmg', 'mac x64 runtime ri-runtime-0.2.0-darwin-x64.tar.gz',
     'windows x64 exe Ri-Setup-0.2.0-x64.exe',
-    'linux arm64 appimage Ri-0.2.0-arm64.AppImage', 'linux arm64 runtime ri-runtime-0.2.0-linux-arm64.tar.gz',
-    'linux x64 appimage Ri-0.2.0.AppImage', 'linux x64 runtime ri-runtime-0.2.0-linux-x64.tar.gz',
+    'linux arm64 appimage Ri-0.2.0-arm64.AppImage', 'linux arm64 deb ri-desktop_0.2.0_arm64.deb', 'linux arm64 runtime ri-runtime-0.2.0-linux-arm64.tar.gz',
+    'linux x64 appimage Ri-0.2.0.AppImage', 'linux x64 deb ri-desktop_0.2.0_amd64.deb', 'linux x64 runtime ri-runtime-0.2.0-linux-x64.tar.gz',
   ]);
   const windows = stable.files.find(file => file.kind === 'exe')!;
   expect(Object.keys(windows)).toEqual(['platform', 'arch', 'kind', 'name', 'url', 'sha256', 'size', 'commit', 'builtAt']);
@@ -80,12 +80,20 @@ it('lists every installer and runtime of a version, Windows included, in the sit
     sha256: sha('Ri-Setup-0.2.0-x64.exe'), size: 'bytes of Ri-Setup-0.2.0-x64.exe'.length, commit: 'abc1234', builtAt: '2026-11-19T10:50:00Z',
   });
   expect(stable.files.find(file => file.name === 'Ri-0.2.0.dmg')!.builtAt).toBe('2026-11-19T11:05:00Z');
+  // Ubuntu and Debian get a deb on both architectures, beside the AppImage.
+  expect(stable.files.filter(file => file.kind === 'deb')).toEqual([
+    { platform: 'linux', arch: 'arm64', kind: 'deb', name: 'ri-desktop_0.2.0_arm64.deb', url: `${BASE}ri-desktop_0.2.0_arm64.deb`, sha256: sha('ri-desktop_0.2.0_arm64.deb'), size: 'bytes of ri-desktop_0.2.0_arm64.deb'.length, commit: 'abc1234', builtAt: '2026-11-19T10:45:00Z' },
+    { platform: 'linux', arch: 'x64', kind: 'deb', name: 'ri-desktop_0.2.0_amd64.deb', url: `${BASE}ri-desktop_0.2.0_amd64.deb`, sha256: sha('ri-desktop_0.2.0_amd64.deb'), size: 'bytes of ri-desktop_0.2.0_amd64.deb'.length, commit: 'abc1234', builtAt: '2026-11-19T10:40:00Z' },
+  ]);
   // SHA256SUMS also covers the Mac app archive the desktop app updates from, never updater metadata.
   const listed = sums.trim().split('\n').map(line => line.split('  ')[1]);
   expect(listed).toEqual([...listed].sort());
   expect(listed).toContain('Ri-0.2.0-arm64-mac.zip');
   expect(listed).toHaveLength(stable.files.length + 2);
   expect(sums).toContain(`${sha('Ri-Setup-0.2.0-x64.exe')}  Ri-Setup-0.2.0-x64.exe\n`);
+  // SHA256SUMS is also what the release workflow attests from.
+  expect(sums).toContain(`${sha('ri-desktop_0.2.0_amd64.deb')}  ri-desktop_0.2.0_amd64.deb\n`);
+  expect(sums).toContain(`${sha('ri-desktop_0.2.0_arm64.deb')}  ri-desktop_0.2.0_arm64.deb\n`);
   expect(sums).not.toMatch(/\.yml|blockmap|payload|build\.json/);
 });
 

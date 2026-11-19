@@ -188,7 +188,7 @@ console.info(`Headless runtime: ${runtimeOutput}`);
 console.info(`Update payload: ${runtimeArchive}`);
 if (!headless) {
   const platform = process.platform === 'darwin' ? Platform.MAC : process.platform === 'win32' ? Platform.WINDOWS : Platform.LINUX;
-  const platformTargets = process.platform === 'darwin' ? (releaseBuild && !shareBuild ? ['dmg', 'zip'] : ['dmg']) : process.platform === 'win32' ? ['nsis'] : shareBuild ? ['AppImage', 'deb'] : ['AppImage'];
+  const platformTargets = process.platform === 'darwin' ? (releaseBuild && !shareBuild ? ['dmg', 'zip'] : ['dmg']) : process.platform === 'win32' ? ['nsis'] : ['AppImage', 'deb'];
   const targets = (shareBuild || releaseBuild) ? platformTargets : ['dir'];
   const resourcesToCopy = ['server', 'node', 'desktop-config.json', 'runtime-manifest.json', ...(fs.existsSync(policy) ? ['release-policy.json'] : [])];
   // electron-builder normalizes its configuration in place. Each installer
@@ -202,6 +202,11 @@ if (!headless) {
     mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: signing.identity, signIgnore: MAC_SIGN_IGNORE, minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION, hardenedRuntime: true, notarize: signing.notarize,
       extendInfo: { NSMicrophoneUsageDescription: 'Ri uses the microphone when you record a voice message.', NSCameraUsageDescription: 'Ri uses the camera when you scan a pairing code.' } },
     linux: { executableName: 'ri', syncDesktopName: true, icon: path.join(repo, LINUX_ICON_RELATIVE_PATH), category: 'Office', maintainer: 'Ri contributors' },
+    // The package manager owns a deb install, so its app never replaces itself
+    // (desktop/shell-update.ts). No updater files: without them electron-builder
+    // doesn't mark the install as a deb, or list the deb in the AppImage's
+    // latest-linux.yml. The runtime inside still updates from the feed.
+    deb: { publish: null },
     win: { icon: path.join(repo, 'assets/brand/icons/icon.ico'), signExecutable: false, artifactName: 'Ri-Setup-${version}-${arch}.exe' },
     nsis: { oneClick: false, perMachine: false, allowElevation: false, allowToChangeInstallationDirectory: true, deleteAppDataOnUninstall: false, differentialPackage: false, include: path.join(repo, 'desktop/windows-installer.nsh') },
     // Only so electron-builder writes the updater's latest*.yml. The app never reads this

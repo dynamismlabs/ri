@@ -68,6 +68,15 @@ describe('release.yml', () => {
     expect(signing.if).toBe("runner.os == 'Windows' && env.WINDOWS_SIGNING == 'true'");
   });
 
+  it('builds and attaches the Linux deb beside the AppImage, with no feed entry', () => {
+    const upload = steps(release, 'build').find(step => step.uses?.startsWith('actions/upload-artifact@'))!;
+    expect(upload.with!.path.split('\n')).toEqual(expect.arrayContaining(['release/desktop/*.AppImage', 'release/desktop/*.deb']));
+    expect(runs(release, 'build')).toContain('set -- release/desktop/*.deb');
+    expect(runs(release, 'publish')).toContain("-o -name '*.deb'");
+    // The feed's metadata names one shell file per platform, the AppImage, never the deb.
+    expect(runs(release, 'build')).toContain('for candidate in release/desktop/*.zip release/desktop/*.AppImage; do');
+  });
+
   it('checksums, attests, then publishes each version with its downloads list', () => {
     const publish = steps(release, 'publish');
     const order = (match: (step: Step) => boolean) => publish.findIndex(match);

@@ -120,6 +120,19 @@ jobs:
             macOS) if [ -n "$CSC_NAME" ]; then pnpm desktop:release; else pnpm desktop:dmg; fi ;;
             *) pnpm desktop:release ;;
           esac
+      - name: Check this platform's installers exist
+        run: |
+          case "$RUNNER_OS" in
+            macOS) set -- release/desktop/*.dmg ;;
+            Windows) set -- release/desktop/Ri-Setup-*-x64.exe ;;
+            # Both, as alpha builds them. The deb has no feed entry: its app doesn't
+            # replace itself, while the runtime inside updates from the feed.
+            Linux)
+              set -- release/desktop/*.deb
+              test -f "$1" || { echo "Missing the Debian package"; exit 1; }
+              set -- release/desktop/*.AppImage ;;
+          esac
+          test -f "$1" || { echo "Missing this platform's installer"; exit 1; }
       - name: Check the signature, notarization and Gatekeeper
         if: runner.os == 'macOS' && steps.apple.outputs.identity != ''
         env:
@@ -183,6 +196,7 @@ jobs:
             release/desktop/*.dmg
             release/desktop/*.zip
             release/desktop/*.AppImage
+            release/desktop/*.deb
             release/desktop/*.exe
             release/desktop/*.yml
             !release/desktop/builder-debug.yml
@@ -216,7 +230,7 @@ jobs:
           VERSION="$(node -p "require('./package.json').version")"
           mkdir -p payloads assets
           find artifacts -name '*.payload.json' -exec cp {} payloads/ \;
-          find artifacts -type f \( -name 'ri-runtime-*.tar.gz' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.exe' -o -name '*.yml' -o -name '*.blockmap' \) -exec cp {} assets/ \;
+          find artifacts -type f \( -name 'ri-runtime-*.tar.gz' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.exe' -o -name '*.yml' -o -name '*.blockmap' \) -exec cp {} assets/ \;
           # SHA256SUMS for every installer and runtime, and downloads.json, this version's
           # files for the website, which promoting copies to stable.
           node desktop/release-downloads.mjs version --artifacts artifacts --out assets \

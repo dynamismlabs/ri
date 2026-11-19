@@ -18,7 +18,8 @@ Each version is a GitHub Release tagged `vX.Y.Z`, holding the files people and u
 | --- | --- |
 | `ri-runtime-<version>-<platform>-<arch>.tar.gz` | The install script and automatic updates, Mac and Linux |
 | `Ri-<version>-arm64.dmg`, `Ri-<version>.dmg` | People installing the Mac app, Apple silicon and Intel |
-| `Ri-<version>-arm64.AppImage`, `Ri-<version>.AppImage` | People installing the Linux app, arm64 and x64 |
+| `Ri-<version>-arm64.AppImage`, `Ri-<version>.AppImage` | People installing the Linux app, arm64 and x64. It updates itself |
+| `ri-desktop_<version>_arm64.deb`, `ri-desktop_<version>_amd64.deb` | People installing on Ubuntu or Debian, with `sudo apt install ./ri-desktop_<version>_amd64.deb`. No feed entry: the app is updated by installing the newer deb, while the runtime inside it updates from the feed |
 | `Ri-Setup-<version>-x64.exe` | People installing on Windows. It has no feed entry and doesn't update itself yet |
 | `Ri-<version>-*-mac.zip`, `*.yml` and `*.blockmap` | The desktop app updating itself. Mac only with a Developer ID |
 | `SHA256SUMS` | The checksum of every installer, runtime and app archive above |
@@ -34,7 +35,7 @@ One more release, tagged `feed`, holds the signed metadata and the website's dow
 | `install.sh` | The install script, with this feed and public key written in |
 | `downloads-stable.json`, `downloads-latest.json` | What the website offers on each channel (below). Not signed |
 
-The signed files cover `darwin` and `linux`, which is all the metadata format knows. Windows has only its installer, on the version's release and in the downloads lists.
+The signed files cover `darwin` and `linux`, which is all the metadata format knows. Each names one runtime and, where the app can replace itself, one app file: the Mac zip or the AppImage. The Linux deb and the Windows installer have no feed entry. They are on the version's release, in `SHA256SUMS`, attested, and in the downloads lists.
 
 Metadata expires after 30 days, so a frozen feed can't hold anyone back. A workflow signs everything again each Monday.
 
@@ -131,7 +132,7 @@ git tag v0.2.0
 git push origin main v0.2.0
 ```
 
-CI builds all five platforms (Mac arm64 and x64, Linux x64 and arm64, Windows x64). A Mac build with a Developer ID is signed, notarized, stapled and checked by Gatekeeper before anything uploads. Then the publish job writes `SHA256SUMS`, attests every file, signs the feed for `latest`, creates the version's release, writes `downloads-latest.json` and rebuilds the website. The notes come from the `feat:` and `fix:` commit subjects since the previous tag. Everyone on `latest` updates at their next quiet moment.
+CI builds all five platforms (Mac arm64 and x64, Linux x64 and arm64 as an AppImage and a deb, Windows x64). A Mac build with a Developer ID is signed, notarized, stapled and checked by Gatekeeper before anything uploads. Then the publish job writes `SHA256SUMS`, attests every file, signs the feed for `latest`, creates the version's release, writes `downloads-latest.json` and rebuilds the website. The notes come from the `feat:` and `fix:` commit subjects since the previous tag. Everyone on `latest` updates at their next quiet moment.
 
 When it has proven itself, run the **Publish a release** workflow by hand with `promote` and the version, which moves `stable` to it and writes `downloads-stable.json`.
 
@@ -167,7 +168,7 @@ With `CSC_NAME` set and the certificate in your keychain, the same command signs
 - **One signing key, with no rotation yet.** Every installation trusts the one public key it pinned. If the private key leaks, the only remedy today is a new feed, and every installation moving by hand. A later release can add a root key and key rotation through a normal update, as long as the current key is still safe when it ships. Until then, the key lives in the `release` environment and the password manager only.
 - **Windows doesn't update itself, and isn't signed.** Its installer is attached to each release and listed for the website, with no feed entry, so people install newer versions by hand. Without a code signing certificate, Windows warns on first run ("Windows protected your PC"). `release.yml` has an optional signing step, off until a provider is chosen and its secret `WINDOWS_SIGNING_CREDENTIALS` added. The step then needs the provider's signing command, and refuses to publish until it has one.
 - **The dmg itself isn't notarized.** The app inside it is signed, notarized and stapled, which is what Gatekeeper checks when it opens. A notarized dmg would also skip the check when the disk image opens.
-- **Linux releases ship the AppImage only.** Alpha also builds a Debian package, but a deb install can't replace itself the way an AppImage does, so production waits until that path is built.
+- **The deb's app doesn't update itself.** A copy installed from the `.deb` belongs to the package manager, so the app never replaces itself (`desktop/shell-update.ts`) and says so when asked to update. People get a newer app by installing the newer deb. The runtime inside it, which runs the Home and serves the pages the app shows, is staged into the installation's store on first launch and updates from the feed like any other, so most changes still arrive without a new deb. An apt repository would let `apt upgrade` cover the app too.
 - **The Linux builds run on the oldest Ubuntu GitHub still offers**, since native modules only work on systems at least as new as the one that built them. When GitHub retires `ubuntu-22.04`, move to the next one and note which servers that leaves behind.
 
 GitHub Releases are free for a public repository, and so are its Actions minutes.
