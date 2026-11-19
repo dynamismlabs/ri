@@ -65,3 +65,14 @@ it('opens an app being built at its build route', async () => {
   renderToStaticMarkup(<AppsShell route="build/source-1" />);
   expect(mocks.builds).toEqual(['source-1']);
 });
+
+it('gives every route the space beside the rail and side panels, so a page never sits in a narrow column', async () => {
+  const { AppsShell } = await import('./apps-shell');
+  for (const route of ['', '~connected/canvas', 'build/source-1', 'finances/views/1']) {
+    mocks.activeView = { kind: 'apps', route };
+    const html = renderToStaticMarkup(<AppsShell route={route} />);
+    const root = html.match(/^<div([^>]*)>/)?.[1] ?? '';
+    expect(root, route).toContain('data-apps-route');
+    for (const name of ['flex-1', 'min-w-0', 'min-h-0', 'flex-col']) expect(root, `${route} ${name}`).toContain(name);
+  }
+});
