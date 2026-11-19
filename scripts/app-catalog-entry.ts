@@ -2,12 +2,13 @@
  * Make an entry for Ri's catalog of recommended apps (docs/personal-apps.md "The catalog").
  *
  *   pnpm tsx scripts/app-catalog-entry.ts <git url or folder> <tag or commit> \
- *     --id people --name People --description "..." [--reaches "..."]... [--write [<catalog file>]]
+ *     --id people --name People --description "..." [--reaches "..."]... [--from <folder>] [--write [<catalog file>]]
  *   pnpm tsx scripts/app-catalog-entry.ts --order people,bookmarks [<catalog file>]
  *
  * Reads the app's repository at that version (a folder in place, read-only, or a temporary clone of a
  * URL), computes the checksum of its files the way Ri checks it on Add and Update, and prints the
- * entry. `--write` puts it in `src/lib/apps/catalog.json` (or the file given): in place of an entry
+ * entry. `--from` reads the version from a copy of the repository on this computer instead of
+ * cloning the URL, read-only, when that copy has the URL as a remote. The entry still names the URL. `--write` puts it in `src/lib/apps/catalog.json` (or the file given): in place of an entry
  * with the same ID, or last. `--order` moves the apps it names to the top, in that order, and keeps
  * the rest after them, without fetching anything. Either bumps the catalog's serial.
  *
@@ -28,7 +29,7 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     id: { type: 'string' }, name: { type: 'string' }, description: { type: 'string' },
-    reaches: { type: 'string', multiple: true }, write: { type: 'boolean' }, order: { type: 'string' },
+    reaches: { type: 'string', multiple: true }, write: { type: 'boolean' }, order: { type: 'string' }, from: { type: 'string' },
   },
 });
 const defaultCatalog = () => path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/lib/apps/catalog.json');
@@ -55,16 +56,24 @@ if (values.order !== undefined) {
 
 const [git, version, catalogArg] = positionals;
 if (!git || !version || !values.id || !values.name || !values.description) {
-  console.error('Usage: pnpm tsx scripts/app-catalog-entry.ts <git url or folder> <tag or commit> --id <id> --name <name> --description <text> [--reaches <text>]... [--write [<catalog file>]]');
+  console.error('Usage: pnpm tsx scripts/app-catalog-entry.ts <git url or folder> <tag or commit> --id <id> --name <name> --description <text> [--reaches <text>]... [--from <folder>] [--write [<catalog file>]]');
   process.exit(64);
+}
+
+/** A copy of the repository at `git` on this computer: it must have that URL as one of its remotes. */
+function localCopyOf(folder: string, git: string): string {
+  const repo = path.resolve(folder);
+  const remotes = execFileSync('git', ['remote', '-v'], { cwd: repo, encoding: 'utf8' }).split('\n').map((line) => line.split(/\s+/)[1]).filter(Boolean);
+  if (!remotes.includes(git)) throw new Error(`${repo} has no remote at ${git}, so it isn't a copy of that repository.`);
+  return repo;
 }
 
 async function main(git: string, version: string) {
   const local = git.startsWith('/') && fs.existsSync(git);
-  let repo = git;
+  let repo = values.from ? localCopyOf(values.from, git) : git;
   let temporary: string | null = null;
   try {
-    if (!local) {
+    if (!local && !values.from) {
       temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-catalog-entry-'));
       repo = path.join(temporary, 'repo.git');
       execFileSync('git', ['clone', '-q', '--bare', '--', git, repo], { stdio: 'inherit' });

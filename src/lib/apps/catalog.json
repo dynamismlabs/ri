@@ -1,5 +1,5 @@
 {
-  "serial": 2,
+  "serial": 8,
   "apps": [
     {
       "id": "people",
@@ -12,8 +12,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-people.git",
-      "version": "v0.1.4",
-      "checksum": "sha256-148de409ba4d9178a44ec70f338fb8ebb2628e9768d03c040a5d683c2fc34165"
+      "version": "v0.1.5",
+      "checksum": "sha256-22f5e6f1effa15c24c8c89df2b9fa610309d016c2666d89fa38190a35edce829"
     },
     {
       "id": "bookmarks",
@@ -23,8 +23,8 @@
         "the web pages you save (read through Ri)"
       ],
       "git": "https://github.com/dynamismlabs/app-bookmarks.git",
-      "version": "v0.1.5",
-      "checksum": "sha256-194499634a759d7f04ceef1e12d439dfb6a4ec634d814abf17c422ff5a3f71a7"
+      "version": "v0.1.6",
+      "checksum": "sha256-e7b7fbc525fcdbfcc834047d9119e867612f4dfb94c678541393fb04bad422e7"
     },
     {
       "id": "job-search",
@@ -37,8 +37,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-job-search.git",
-      "version": "v0.1.5",
-      "checksum": "sha256-21ca719e4da6a67688132423ac471b67f1d5c08a59fb0bf5066bc5288ee53d10"
+      "version": "v0.1.6",
+      "checksum": "sha256-fc5dda1bf22bb85bcd2b27d6552b6c9acc86f52dd0d135bca58516afc27143b2"
     },
     {
       "id": "travel",
@@ -51,8 +51,19 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-travel.git",
-      "version": "v0.1.5",
-      "checksum": "sha256-d3ce03f2c50167b2b81eed8a6d0cd2b006fd72521a308860b14e406b75809881"
+      "version": "v0.1.6",
+      "checksum": "sha256-b7b60f9dda03557eb3beba4a1f2dd6c975352f0d9279f2ace6b51940d4ed8db5"
+    },
+    {
+      "id": "bloom",
+      "name": "Bloom",
+      "description": "Your baby's name shortlist, first foods, daily logs and milestones, in one place.",
+      "reaches": [
+        "Ri's AI model"
+      ],
+      "git": "https://github.com/dynamismlabs/app-bloom.git",
+      "version": "v0.1.1",
+      "checksum": "sha256-0a21ff3ae1e3c8f283ea2a1fba7c34ddc51d605b5a2e42a69d421ef933f13e69"
     }
   ]
 }
