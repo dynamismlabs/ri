@@ -108,6 +108,9 @@ export const HOSTED_MCP_PROVIDERS: readonly HostedMcpProvider[] = [
     { id: 'eu', label: 'Europe', url: 'https://mcp.eu.intercom.com/mcp' },
   ] }, defaultMutationRisk: 'high' },
   { id: 'n8n', displayName: 'n8n', endpoint: { kind: 'instance', label: 'Instance URL', placeholder: 'https://your-instance.app.n8n.cloud', path: '/mcp-server/http' }, defaultMutationRisk: 'high' },
+  // Lore (https://github.com/dynamismlabs/lore): each person deploys their own, an MCP server with
+  // public OAuth discovery, dynamic registration and MCP Apps screens. It has no delete tools.
+  { id: 'lore', displayName: 'Lore', endpoint: { kind: 'instance', label: 'Your Lore address', placeholder: 'https://lore.example.com', path: '/mcp' } },
   { id: 'airtable', displayName: 'Airtable', url: 'https://mcp.airtable.com/mcp', defaultMutationRisk: 'high' },
   { id: 'readwise', displayName: 'Readwise', url: 'https://mcp2.readwise.io/mcp' },
   { id: 'stripe', displayName: 'Stripe', url: 'https://mcp.stripe.com', defaultMutationRisk: 'high' },
