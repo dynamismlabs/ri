@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import bundled from './catalog.json';
-import { CatalogEntrySchema, CatalogSchema, catalogSerial } from './catalog-entries';
+import { CatalogEntrySchema, CatalogSchema, catalogSerial, orderedApps, withEntry } from './catalog-entries';
 import { catalogEntry, readCatalog } from './catalog-feed';
 
 const entry = {
@@ -54,5 +54,23 @@ describe('catalog entries', () => {
     expect(catalogSerial(CatalogSchema.parse({ apps: [entry] }))).toBe(0);
     expect(CatalogSchema.safeParse({ serial: -1, apps: [] }).success).toBe(false);
     expect(CatalogSchema.safeParse({ serial: 1.5, apps: [] }).success).toBe(false);
+  });
+});
+
+describe('the catalog\'s order, which is the order people see', () => {
+  const app = (id: string, version = 'v1.0.0') => ({ ...entry, id, name: id, version });
+  it('keeps an app where it is when its entry changes, and puts a new one last', () => {
+    const apps = [app('people'), app('bookmarks'), app('travel')];
+    expect(withEntry(apps, app('bookmarks', 'v1.1.0')).map((item) => `${item.id}@${item.version}`)).toEqual(['people@v1.0.0', 'bookmarks@v1.1.0', 'travel@v1.0.0']);
+    expect(withEntry(apps, app('tide-log')).map((item) => item.id)).toEqual(['people', 'bookmarks', 'travel', 'tide-log']);
+  });
+  it('moves the apps it names to the top, in that order, and keeps the rest as they were', () => {
+    const apps = [app('bookmarks'), app('job-search'), app('people'), app('travel')];
+    expect(orderedApps(apps, ['people']).map((item) => item.id)).toEqual(['people', 'bookmarks', 'job-search', 'travel']);
+    expect(orderedApps(apps, ['travel', 'people', 'travel']).map((item) => item.id)).toEqual(['travel', 'people', 'bookmarks', 'job-search']);
+    expect(() => orderedApps(apps, ['peple'])).toThrow(/no peple/);
+  });
+  it('ships with People first', () => {
+    expect(CatalogSchema.parse(bundled).apps[0]?.id).toBe('people');
   });
 });
