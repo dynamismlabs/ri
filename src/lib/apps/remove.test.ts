@@ -130,7 +130,7 @@ describe('removing an app Ri installed', () => {
     // Disconnected and off every list, its folder and data where they were.
     expect(listPersonalApps()).toEqual([]);
     expect(q.listAppSources()).toEqual([]);
-    expect(listCatalogApps().apps[0]).toMatchObject({ sourceId: null, installedVersion: null });
+    expect((await listCatalogApps()).apps[0]).toMatchObject({ sourceId: null, installedVersion: null });
     expect(fs.readFileSync(path.join(installed.folder!, 'NOTES.md'), 'utf8')).toBe('Mine\n');
     expect(JSON.parse(fs.readFileSync(path.join(dataDir, 'visits.json'), 'utf8'))).toEqual({ visits: 1 });
 

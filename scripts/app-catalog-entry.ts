@@ -7,7 +7,9 @@
  * Reads the app's repository at that version (a folder in place, read-only, or a temporary clone of a
  * URL), computes the checksum of its files the way Ri checks it on Add and Update, and prints the
  * entry. `--write` adds it to `src/lib/apps/catalog.json` (or the file given), replacing an entry with
- * the same ID.
+ * the same ID, and bumps the catalog's serial. Merged to Ri's main branch, that file is also the
+ * hosted feed every Ri reads (src/lib/apps/catalog-feed.ts), so a change reaches people without a
+ * release. A feed reaches them only when its serial is above their shipped list's.
  */
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -56,8 +58,9 @@ async function main(git: string, version: string) {
       const file = catalogArg ? path.resolve(catalogArg) : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../src/lib/apps/catalog.json');
       const catalog = CatalogSchema.parse(JSON.parse(fs.readFileSync(file, 'utf8')));
       const apps = [...catalog.apps.filter((app) => app.id !== entry.id), entry].sort((a, b) => a.name.localeCompare(b.name));
-      fs.writeFileSync(file, JSON.stringify({ apps }, null, 2) + '\n');
-      console.error(`Wrote it to ${file}.`);
+      const serial = (catalog.serial ?? 0) + 1;
+      fs.writeFileSync(file, JSON.stringify({ serial, apps }, null, 2) + '\n');
+      console.error(`Wrote it to ${file}, as serial ${serial}.`);
     }
   } finally {
     if (temporary) fs.rmSync(temporary, { recursive: true, force: true });
