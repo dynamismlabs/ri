@@ -97,6 +97,9 @@ it('discovers only content tools and refuses calls to private or hidden tools by
     expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain('assigneeMemberId');
     if (!['complete_task','transition_task'].includes(tool.name)) expect(Object.keys(tool.inputSchema.properties ?? {})).not.toContain('idempotency_key');
   }
+  const docs = await call(client, 'read_docs', { query: 'connect your phone' });
+  expect(docs.isError, docs.text).toBe(false);
+  expect(docs.json().result.results[0]).toMatchObject({ id: 'getting-started/devices', url: 'https://ri.app/docs/getting-started/devices' });
   for (const name of ['describe_paths', 'describe_schema', 'delegate_work', 'list_sessions', 'message_agent', 'regenerate_deck', 'report_result', 'get_result', 'list_results', 'query', 'run_sql']) {
     expect((await call(client, name)).isError, name).toBe(true);
   }

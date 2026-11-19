@@ -206,7 +206,7 @@ export function renderActionsReference(actions: readonly Action[]): string {
     '',
     `- ${APP_NAME}'s main chat and each agent's main chat can use every action.`,
     `- A chat in an agent has the actions marked "A tool in every chat" as tools, and reaches the rest with \`${APP_SHORT_ID} agent\` from its shell.`,
-    `- Other agents you connect in Settings, under ${APP_NAME} in other agents, get only the actions marked "Open to other agents": your tasks, notes, areas, the deck, search, and adding to the Stream. See [Use ${APP_NAME} from other agents](/docs/guides/other-agents).`,
+    `- Other agents you connect in Settings, under ${APP_NAME} in other agents, get only the actions marked "Open to other agents": your tasks, notes, areas, the deck, search, adding to the Stream, and these docs. See [Use ${APP_NAME} from other agents](/docs/guides/other-agents).`,
     '',
     `Names come from the code, which calls an agent a workspace and a chat an execution or a session. ${INTEGRATION_LABELS.plural} are integrations. There are no delete actions: you archive instead.`,
     '',

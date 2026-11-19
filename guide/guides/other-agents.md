@@ -23,7 +23,7 @@ From a terminal on the computer that runs your Ri, `ri mcp connect` followed by 
 
 ## What they can do
 
-Connected tools can search, read and update your tasks, notes, areas and deck, private notes included, with their own model. They can add to your [Stream](/docs/concepts/capture-and-stream) for your assistant to sort, but can't read it.
+Connected tools can search, read and update your tasks, notes, areas and deck, private notes included, with their own model. They can add to your [Stream](/docs/concepts/capture-and-stream) for your assistant to sort, but can't read it. They can also read these docs, so they can answer questions about Ri itself.
 
 They can't start Ri chats, change settings, read your scratchpad or chats, or reach the files on your computer. Nothing they can do deletes anything.
 

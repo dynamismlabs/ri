@@ -7,7 +7,7 @@ Actions are how agents read and change your Ri: your tasks, notes, agents, chats
 
 - Ri's main chat and each agent's main chat can use every action.
 - A chat in an agent has the actions marked "A tool in every chat" as tools, and reaches the rest with `ri agent` from its shell.
-- Other agents you connect in Settings, under Ri in other agents, get only the actions marked "Open to other agents": your tasks, notes, areas, the deck, search, and adding to the Stream. See [Use Ri from other agents](/docs/guides/other-agents).
+- Other agents you connect in Settings, under Ri in other agents, get only the actions marked "Open to other agents": your tasks, notes, areas, the deck, search, adding to the Stream, and these docs. See [Use Ri from other agents](/docs/guides/other-agents).
 
 Names come from the code, which calls an agent a workspace and a chat an execution or a session. Connectors are integrations. There are no delete actions: you archive instead.
 
@@ -1684,7 +1684,7 @@ ri agent rank_task <id> <rank>
 
 Read Ri's user guide, the pages at https://ri.app/docs as they are for this version of Ri. With no params, lists every page in order (id, title, description, url). query searches titles and text and returns the best pages with a snippet each. page returns one page's full Markdown by its id, such as "getting-started/install". Use it before answering how Ri works (a feature, a setting, setup or an error), answer from the page, and give its url.
 
-Reads only. A tool in every chat.
+Reads only. A tool in every chat. Open to other agents.
 
 | Parameter | Type | Required | What it is |
 | --- | --- | --- | --- |

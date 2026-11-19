@@ -54,6 +54,7 @@ function contentInstructions(): string {
 - There is no delete. Archive instead.
 - If you can show MCP Apps views, show_deck draws today's deck and show_tasks a list of tasks, where the user can start or finish them. Use them when the user should see the result, and the list_* and get_* tools to read for yourself.
 - When the user wants something kept but it isn't clearly a task or note yet, capture it with create_stream_item. ${APP_NAME}'s own assistant sorts the Stream later. You can add to the Stream but never read it.
+- When the user asks how ${APP_NAME} itself works, look it up with read_docs (query to search, page to read) and answer from that page, with its url.
 - The user may have ${APP_NAME} open beside the chat. When they open a task or note there, you're told its ID: "this" usually means that item.
 
 These tools act directly on the user's ${APP_NAME}. They do not start ${APP_NAME} chats or run commands, and they can't read the Stream, the scratchpad, chats, files or settings.
