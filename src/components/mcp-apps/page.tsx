@@ -153,7 +153,8 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
  * personal app that's connected but has no screens says how to use it instead: in chat.
  */
 function NoScreen({serverId, navigate, loading, error}: {serverId: string; navigate: Navigate; loading: boolean; error: string | null}) {
-  const apps = useQuery(trpc.personalApps.list.queryOptions());
+  // Only once the catalog has answered without this connection: a service it lists never asks.
+  const apps = useQuery({...trpc.personalApps.list.queryOptions(), enabled: !loading && !error});
   const allowApp = useAllowApp();
   const dashboard = useDashboard();
   const [failure, setFailure] = useState<string | null>(null);
@@ -166,8 +167,8 @@ function NoScreen({serverId, navigate, loading, error}: {serverId: string; navig
     catch (e) { setFailure(e instanceof Error ? e.message : String(e)); }
   };
   let body: React.ReactNode;
-  if (loading || (apps.isPending && !error)) body = <p role="status" className="text-muted-foreground">Loading app…</p>;
-  else if (error) body = <p role="alert" className="text-destructive">{error}</p>;
+  if (error) body = <p role="alert" className="text-destructive">{error}</p>;
+  else if (loading || apps.isPending) body = <p role="status" className="text-muted-foreground">Loading app…</p>;
   else if (personal && place && place.status !== 'connected') body = <>
     <h1 className="text-lg font-semibold">{place.label} isn’t allowed in {personal.name} yet</h1>
     <p className="text-muted-foreground">{place.status === 'unavailable' && place.error ? `${place.error} ` : ''}Allow {place.label} in {personal.name} to open it here and use it in chat.</p>
