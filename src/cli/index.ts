@@ -40,6 +40,7 @@ import { registerTeamCommand, selectTeamRoot } from './commands/team';
 import { spawnSync } from 'node:child_process';
 import { delegationTarget, selectDefaultHome, selectExplicitRoot } from './lib/release-delegation';
 import { registerHomeControlCommands } from './commands/home-control';
+import { outsideRi, riCommands, runRubyRi } from './lib/ruby-ri';
 
 // Layout migration is NOT automatic — existing installs run `pnpm migrate:layout`
 // (scripts/migrate-layout.ts) once to move into the home + .config + .work shape.
@@ -185,6 +186,15 @@ registerUpdateCommand(program);
 registerAttachmentCommand(program);
 registerTeamCommand(program);
 installRoleGuard(program);
+
+// Ruby's documentation tool is called `ri` too: hand it a Ruby lookup, and
+// explain a word that isn't a command instead of starting Ri over it.
+const outside = outsideRi(process.argv.slice(2), riCommands(program));
+if (outside.forward) process.exit(runRubyRi(outside.forward, process.argv.slice(2)));
+if (outside.error) {
+  console.error(outside.error);
+  process.exit(1);
+}
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err instanceof Error ? err.message : err);
