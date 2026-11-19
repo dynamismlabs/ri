@@ -42,12 +42,26 @@ const guiNavigation: Record<string, unknown> = {};
 let result: Record<string, unknown> | undefined;
 async function waitFor<T>(read: () => Promise<T>, ready: (value: T) => boolean, label: string, timeout = 240_000): Promise<T> {
   const deadline = Date.now() + timeout;
+  let last: T | undefined;
   while (Date.now() < deadline) {
-    try { const value = await read(); if (ready(value)) return value; }
+    try { const value = last = await read(); if (ready(value)) return value; }
     catch (error) { if (!['ENOENT', 'ECONNREFUSED'].includes((error as NodeJS.ErrnoException).code ?? '')) throw error; }
     await new Promise(resolve => setTimeout(resolve, 300));
   }
-  throw new Error(`Timed out: ${label}. See ${temporary}`);
+  const phase = last && typeof last === 'object' && 'phase' in last ? ` (still ${String(last.phase)})` : '';
+  throw new Error(`Timed out after ${Math.round(timeout / 1000)} s: ${label}${phase}. See ${temporary}`);
+}
+/** The service refuses to stop while an update action runs, such as preparing a
+ * download after a wait for it timed out. Let that finish so cleanup stops it. */
+async function stopFixtureService() {
+  const deadline = Date.now() + 600_000;
+  for (;;) {
+    try { await stopService(); return; }
+    catch (error) {
+      if (!/service action is in progress/.test((error as Error).message) || Date.now() > deadline) throw error;
+      await new Promise(resolve => setTimeout(resolve, 5_000));
+    }
+  }
 }
 async function update() { return (await serviceRequest<{ update: UpdateRecord & { policy: ReleasePreferences | null } }>('/update')).update; }
 async function action(action: string) { await serviceRequest('/update', 'POST', 30_000, { action }); }
@@ -218,7 +232,13 @@ try {
   assert.equal((await update()).phase, 'available');
   if (gui) await (await gui.firstWindow()).getByRole('button', { name: 'Download update', exact: true }).click();
   else await action('download');
-  const downloaded = await waitFor(update, v => ['ready', 'failed'].includes(v.phase), 'verified download', 600_000);
+  // After the transfer, preparing the release reads its 2.5 GB of small files
+  // several times (src/lib/service/release.ts: list, extract, hash, stage, hash).
+  // That took 2.5 min on the Linux runners, 7 min on macos-15 and over 10 min on
+  // macos-15-intel, so the budget leaves the slowest runner room.
+  const downloadStarted = Date.now();
+  const downloaded = await waitFor(update, v => ['ready', 'failed'].includes(v.phase), 'verified download', 1_500_000);
+  const downloadSeconds = Math.round((Date.now() - downloadStarted) / 1000);
   assert.equal(downloaded.phase, 'ready', downloaded.error);
   if (gui) {
     const page = await gui.firstWindow();
@@ -276,7 +296,7 @@ try {
   const after = await request(current, '/api/notes', { body: 'New data after upgrade.' }); assert.equal(after.status, 201);
   assert.equal(fs.readFileSync(unpublished, 'utf8'), 'unpublished work');
   assert(fs.existsSync(first.repo));
-  result = { passed: true, guiAttached: !!gui, notificationBridgeReconnected: !!gui, guiNavigation, malformedRequestsRejected: true, downloadPreferencesVerified: !!gui, maintenanceWindowVerified: !!gui, originStable: true, publisherVerified: true, migrated: true, controllerReplaced: true, priorRuntimeRetained: true, newWritesAccepted: true, snapshotVerified: true, temporary };
+  result = { passed: true, guiAttached: !!gui, notificationBridgeReconnected: !!gui, guiNavigation, malformedRequestsRejected: true, downloadPreferencesVerified: !!gui, maintenanceWindowVerified: !!gui, originStable: true, publisherVerified: true, migrated: true, controllerReplaced: true, priorRuntimeRetained: true, newWritesAccepted: true, snapshotVerified: true, downloadSeconds, temporary };
 } finally {
   if (gui) {
     await Promise.all([
@@ -284,9 +304,12 @@ try {
       gui.evaluate(({ app }) => { app.quit(); }),
     ]).catch(() => { gui?.process().kill('SIGKILL'); });
   }
-  await stopService().catch(error => console.error('Isolated service cleanup:', error.message));
+  await stopFixtureService().catch(error => console.error('Isolated service cleanup:', error.message));
   server?.closeAllConnections(); await new Promise<void>(resolve => server ? server.close(() => resolve()) : resolve());
-  assert.equal(await serviceStatus(), null, 'Update fixture service was left running');
+  // An assertion thrown here would replace the error that ended the run.
+  const leftRunning = await serviceStatus();
+  if (result) assert.equal(leftRunning, null, 'Update fixture service was left running');
+  else if (leftRunning) console.error(`Update fixture service was left running (pid ${leftRunning.pid}) after the failure below`);
   if (result) {
     // Keep the database, checkpoint, update journal and logs. Successful
     // rehearsals need not retain duplicate GBs of immutable runtime bytes.
