@@ -2,9 +2,10 @@
 # Install Ri on a Mac or Linux computer: curl -fsSL <this file's address> | sh
 #
 # Installs software only, and asks no questions, since a piped script has no usable
-# input on an SSH session. It checks the download against the release's signature and
-# every file against its manifest, then makes sure `ri` in a new terminal runs Ri
-# rather than Ruby's own `ri`. Run `ri start` afterwards. Options: --channel latest
+# input on an SSH session. It checks the release's signature against the keys the root
+# key below vouches for, and every file against its manifest, then makes sure `ri` in a
+# new terminal runs Ri rather than Ruby's own `ri`. Run `ri start` afterwards.
+# Options: --channel latest
 #
 # Everything is in functions and the last line calls main, so a download cut off
 # partway runs nothing.
@@ -13,7 +14,8 @@ set -u
 main() {
   set -e
   FEED="${RI_INSTALL_FEED:-__RI_FEED__}"
-  PUBLIC_KEY_BASE64="${RI_INSTALL_PUBLIC_KEY_BASE64:-__RI_PUBLIC_KEY_BASE64__}"
+  # The publisher's root key, which every installation trusts for good (docs/publishing.md).
+  ROOT_KEY_BASE64="${RI_INSTALL_ROOT_KEY_BASE64:-__RI_ROOT_KEY_BASE64__}"
   CHANNEL=stable
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -45,6 +47,8 @@ main() {
   FEED="${FEED%/}"
   echo "Finding the newest Ri on the $CHANNEL channel for $PLATFORM-$ARCH..."
   curl -fsSL --proto '=https' --tlsv1.2 -o "$WORK/release.json" "$FEED/$CHANNEL-$PLATFORM-$ARCH.json" || fail "no release found at $FEED."
+  # The keys that may sign a release, as the root key signed them.
+  curl -fsSL --proto '=https' --tlsv1.2 -o "$WORK/keys.json" "$FEED/keys.json" || fail "no signing keys found at $FEED."
   PAYLOAD="$(sed -n 's/.*"payload":"\([^"]*\)".*/\1/p' "$WORK/release.json")"
   [ -n "$PAYLOAD" ] || fail "the release feed answered with something unexpected."
   printf '%s' "$PAYLOAD" | base64 --decode > "$WORK/payload.json" 2>/dev/null || printf '%s' "$PAYLOAD" | base64 -D > "$WORK/payload.json" || fail "the release feed answered with something unexpected."
@@ -58,9 +62,9 @@ main() {
   [ "$(sha256 "$WORK/runtime.tar.gz")" = "$SHA256" ] || fail "the download doesn't match its checksum."
   mkdir "$WORK/release"
   tar -xzf "$WORK/runtime.tar.gz" -C "$WORK/release" || fail "the download couldn't be unpacked."
-  printf '%s' "$PUBLIC_KEY_BASE64" | base64 --decode > "$WORK/public.pem" 2>/dev/null || printf '%s' "$PUBLIC_KEY_BASE64" | base64 -D > "$WORK/public.pem"
+  printf '%s' "$ROOT_KEY_BASE64" | base64 --decode > "$WORK/root.pem" 2>/dev/null || printf '%s' "$ROOT_KEY_BASE64" | base64 -D > "$WORK/root.pem"
   echo "Checking the signature and every file..."
-  RI_RUNTIME_REPO="$WORK/release/server" "$WORK/release/node/bin/node" "$WORK/release/server/dist/cli/index.mjs" service install-release "$WORK/release" --envelope "$WORK/release.json" --public-key "$WORK/public.pem" --channel "$CHANNEL" || fail "the release didn't pass its checks."
+  RI_RUNTIME_REPO="$WORK/release/server" "$WORK/release/node/bin/node" "$WORK/release/server/dist/cli/index.mjs" service install-release "$WORK/release" --envelope "$WORK/release.json" --keys "$WORK/keys.json" --root-key "$WORK/root.pem" --channel "$CHANNEL" || fail "the release didn't pass its checks."
   BIN="${RI_COMMAND_DIR:-$HOME/.local/bin}"
   echo
   ri_terminal "$BIN/ri" || :

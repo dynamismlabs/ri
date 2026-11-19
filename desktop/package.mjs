@@ -160,11 +160,12 @@ if (process.env.RI_RELEASE_FEED || process.env.RI_RELEASE_PUBLIC_KEY_FILE) {
   if (!process.env.RI_RELEASE_FEED || !process.env.RI_RELEASE_PUBLIC_KEY_FILE) throw new Error('Configure both RI_RELEASE_FEED and RI_RELEASE_PUBLIC_KEY_FILE');
   const feed = new URL(process.env.RI_RELEASE_FEED);
   if (feed.protocol !== 'https:' || feed.username || feed.password) throw new Error('Release feed must use HTTPS');
-  const publicKey = fs.readFileSync(process.env.RI_RELEASE_PUBLIC_KEY_FILE, 'utf8');
-  if (!publicKey.startsWith('-----BEGIN PUBLIC KEY-----') || createPublicKey(publicKey).asymmetricKeyType !== 'ed25519') throw new Error('Supply an Ed25519 PUBLIC key, never the signing private key');
-  fs.writeFileSync(policy, JSON.stringify({ format: 1, feed: feed.href, publicKey }));
+  // The root key's public half, which every installation pins (docs/publishing.md, "Signing keys").
+  const rootKey = fs.readFileSync(process.env.RI_RELEASE_PUBLIC_KEY_FILE, 'utf8');
+  if (!rootKey.startsWith('-----BEGIN PUBLIC KEY-----') || createPublicKey(rootKey).asymmetricKeyType !== 'ed25519') throw new Error('Supply the Ed25519 root PUBLIC key, never a private key');
+  fs.writeFileSync(policy, JSON.stringify({ format: 2, feed: feed.href, rootKey }));
 }
-if (releaseBuild && !fs.existsSync(policy)) throw new Error('Release builds require a publisher public key and HTTPS feed');
+if (releaseBuild && !fs.existsSync(policy)) throw new Error('Release builds require the publisher root public key and an HTTPS feed');
 if (releaseDir) {
   fs.rmSync(releaseDir, { recursive: true, force: true });
   fs.mkdirSync(releaseDir, { recursive: true });

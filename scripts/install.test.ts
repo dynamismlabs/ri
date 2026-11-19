@@ -57,6 +57,13 @@ it('runs nothing when the download stops partway', () => {
   expect(fs.readdirSync(home)).toEqual([]);
 });
 
+it('checks the release against the keys the root key it carries vouches for', () => {
+  expect(text).toContain('ROOT_KEY_BASE64="${RI_INSTALL_ROOT_KEY_BASE64:-__RI_ROOT_KEY_BASE64__}"');
+  expect(text).toContain('-o "$WORK/keys.json" "$FEED/keys.json" || fail');
+  expect(text).toContain('service install-release "$WORK/release" --envelope "$WORK/release.json" --keys "$WORK/keys.json" --root-key "$WORK/root.pem" --channel "$CHANNEL"');
+  expect(text).not.toContain('PUBLIC_KEY_BASE64');
+});
+
 it('ends by calling main', () => {
   expect(text.trimEnd().split('\n').at(-1)).toBe('main "$@"');
 });

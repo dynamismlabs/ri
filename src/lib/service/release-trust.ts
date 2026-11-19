@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { verify } from 'node:crypto';
+import { KeyObject, createHash, createPublicKey, verify } from 'node:crypto';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
 import { atomicWriteFile } from '@/lib/config/atomic-write';
@@ -26,15 +26,20 @@ export const ReleaseSchema = z.object({
   compatibility: RuntimeCompatibilitySchema.optional(),
 }).strict();
 export type Release = z.infer<typeof ReleaseSchema>;
-/** What a release ships: where to look and whose signature to trust. Neither
- * ever changes on a computer. The person's choices live in the origin. */
-const ReleasePolicySchema = z.object({ format: z.literal(1), feed: httpsUrl, publicKey: z.string().min(1).max(16000) }).strict();
+/** What a release ships: where to look and the root key to trust. Neither ever
+ * changes on a computer. The root key signs the list of keys that sign releases
+ * (docs/publishing.md, "Signing keys"). The person's choices live in the origin. */
+const ReleasePolicySchema = z.object({ format: z.literal(2), feed: httpsUrl, rootKey: z.string().min(1).max(16000) }).strict();
 export type ReleasePolicy = z.infer<typeof ReleasePolicySchema> & ReleasePreferences;
 
+/** A file on the feed by its whole name. */
+export function feedUrl(policy: Pick<ReleasePolicy, 'feed'>, name: string) {
+  return new URL(name, policy.feed.endsWith('/') ? policy.feed : `${policy.feed}/`).href;
+}
 /** One file per channel and platform, one per version and platform, and an
  * index of the versions kept (docs/publishing.md). */
 export function feedFile(policy: Pick<ReleasePolicy, 'feed'>, name: string, platform: string = process.platform, arch: string = process.arch) {
-  return new URL(`${name}-${platform}-${arch}.json`, policy.feed.endsWith('/') ? policy.feed : `${policy.feed}/`).href;
+  return feedUrl(policy, `${name}-${platform}-${arch}.json`);
 }
 
 /** One per computer, like the store: the first release staged here brings it. */
@@ -55,11 +60,49 @@ export function updateReleasePreferences(input: unknown): ReleasePreferences {
   writeOrigin(UpdatePreferencesSchema.parse(input));
   return releasePreferences();
 }
-export function verifyRelease(envelope: unknown, policy: Pick<ReleasePolicy, 'publicKey' | 'channel'>, minimumSequence = 0, now = Date.now()): Release {
-  const { payload, signature } = z.object({ payload: z.string().max(128000), signature: z.string().max(200) }).strict().parse(envelope);
+
+/** A key's id: the start of the SHA-256 of its public half, as desktop/release-keys.mjs makes it. */
+export function releaseKeyId(key: string | KeyObject) {
+  const publicKey = key instanceof KeyObject && key.type === 'public' ? key : createPublicKey(key);
+  return createHash('sha256').update(publicKey.export({ type: 'spki', format: 'der' })).digest('hex').slice(0, 16);
+}
+const KeyIdSchema = z.string().regex(/^[a-f0-9]{16}$/);
+const EnvelopeSchema = z.object({ keyid: KeyIdSchema, payload: z.string().max(128000), signature: z.string().max(200) }).strict();
+const ReleaseKeysSchema = z.object({
+  format: z.literal(1), version: z.number().int().positive(),
+  keys: z.array(z.object({ id: KeyIdSchema, publicKey: z.string().max(1000) }).strict()).min(1).max(16),
+}).strict();
+/** The online keys the root key vouches for, by id, and the keys file's version. */
+export interface ReleaseKeys { version: number; keys: Map<string, KeyObject> }
+
+/** The payload, once the key the envelope names is one of `keys` and its signature checks. */
+function openSigned(envelope: unknown, keys: Map<string, KeyObject>, unlisted: string): unknown {
+  const { keyid, payload, signature } = EnvelopeSchema.parse(envelope);
+  const key = keys.get(keyid);
+  if (!key) throw new Error(unlisted);
   const bytes = Buffer.from(payload, 'base64');
-  if (!verify(null, bytes, policy.publicKey, Buffer.from(signature, 'base64'))) throw new Error('Release publisher signature is invalid');
-  const release = ReleaseSchema.parse(JSON.parse(bytes.toString('utf8')));
+  if (!verify(null, bytes, key, Buffer.from(signature, 'base64'))) throw new Error('Release publisher signature is invalid');
+  return JSON.parse(bytes.toString('utf8'));
+}
+
+/** The feed's keys file, checked against the root key this installation pinned, and
+ * no older than the newest one it has seen. */
+export function verifyReleaseKeys(envelope: unknown, rootKey: string, minimumVersion = 0): ReleaseKeys {
+  const root = createPublicKey(rootKey);
+  const body = ReleaseKeysSchema.parse(openSigned(envelope, new Map([[releaseKeyId(root), root]]), 'The release signing keys are not signed by the root key this installation trusts'));
+  if (body.version < minimumVersion) throw new Error('Release feed attempted to roll back its signing keys');
+  const keys = new Map<string, KeyObject>();
+  for (const entry of body.keys) {
+    const key = createPublicKey(entry.publicKey);
+    if (key.asymmetricKeyType !== 'ed25519' || releaseKeyId(key) !== entry.id || keys.has(entry.id)) throw new Error('The release signing keys are malformed');
+    keys.set(entry.id, key);
+  }
+  return { version: body.version, keys };
+}
+
+const unlistedKey = 'Release is signed by a key its publisher does not list';
+export function verifyRelease(envelope: unknown, policy: { keys: ReleaseKeys; channel: ReleasePreferences['channel'] }, minimumSequence = 0, now = Date.now()): Release {
+  const release = ReleaseSchema.parse(openSigned(envelope, policy.keys.keys, unlistedKey));
   if (release.channel !== policy.channel || release.platform !== process.platform || release.arch !== process.arch) throw new Error('Release does not match this installation');
   if (release.sequence < minimumSequence) throw new Error('Release feed attempted a downgrade');
   if (Date.parse(release.expiresAt) <= now || Date.parse(release.publishedAt) > now + 5 * 60_000) throw new Error('Release metadata expired or has an invalid date');
@@ -103,20 +146,36 @@ async function fetchEnvelope(url: string) {
   }
   return JSON.parse(Buffer.concat(chunks).toString());
 }
-/** The newest pointer seen on a channel, so a feed can't move it backwards. Each
- * channel has its own: `stable` is often behind `latest`, on purpose. */
-function seenSequence(channel: ReleasePreferences['channel']) {
-  const seenFile = path.join(/* turbopackIgnore: true */ getRuntimeBaseDir(), `release-sequence-${channel}`);
+/** The highest number this installation has seen for something that only goes up. */
+function seenNumber(name: string) {
+  const seenFile = path.join(/* turbopackIgnore: true */ getRuntimeBaseDir(), name);
   const seen = fs.existsSync(/* turbopackIgnore: true */ seenFile) ? Number(fs.readFileSync(/* turbopackIgnore: true */ seenFile, 'utf8')) : 0;
-  if (!Number.isSafeInteger(seen) || seen < 0) throw new Error('Invalid saved release sequence');
+  if (!Number.isSafeInteger(seen) || seen < 0) throw new Error(`Invalid saved ${name}`);
   return { seen, seenFile };
 }
-const notConfigured = 'Updates are not configured. This build needs a publisher public key and HTTPS release feed.';
+/** The newest pointer seen on a channel, so a feed can't move it backwards. Each
+ * channel has its own: `stable` is often behind `latest`, on purpose. */
+const seenSequence = (channel: ReleasePreferences['channel']) => seenNumber(`release-sequence-${channel}`);
+/** The newest keys file seen, so a feed can't bring back a key its publisher left out. */
+export const seenKeysVersion = () => seenNumber('release-keys-version').seen;
+export function rememberReleaseKeys(keys: ReleaseKeys) {
+  const { seen, seenFile } = seenNumber('release-keys-version');
+  if (keys.version > seen) atomicWriteFile(seenFile, `${keys.version}\n`);
+}
+/** The keys that may sign releases now: the feed's keys file, every time, since a
+ * revoked key must stop working at the next check. */
+async function trustedKeys(policy: ReleasePolicy) {
+  const keys = verifyReleaseKeys(await fetchEnvelope(feedUrl(policy, 'keys.json')), policy.rootKey, seenKeysVersion());
+  rememberReleaseKeys(keys);
+  return keys;
+}
+const notConfigured = 'Updates are not configured. This build needs a publisher root key and HTTPS release feed.';
 export async function checkRelease(): Promise<Release> {
   const policy = releasePolicy();
   if (!policy) throw new Error(notConfigured);
+  const keys = await trustedKeys(policy);
   const { seen, seenFile } = seenSequence(policy.channel);
-  const release = verifyRelease(await fetchEnvelope(feedFile(policy, policy.channel)), policy, seen);
+  const release = verifyRelease(await fetchEnvelope(feedFile(policy, policy.channel)), { keys, channel: policy.channel }, seen);
   atomicWriteFile(seenFile, `${release.sequence}\n`);
   return release;
 }
@@ -126,8 +185,9 @@ export async function checkRelease(): Promise<Release> {
 export async function checkReleaseVersion(version: string): Promise<Release> {
   const policy = releasePolicy();
   if (!policy) throw new Error(notConfigured);
+  const keys = await trustedKeys(policy);
   const envelope = await fetchEnvelope(feedFile(policy, version));
-  const release = verifyRelease(envelope, { ...policy, channel: readEnvelopeChannel(envelope) });
+  const release = verifyRelease(envelope, { keys, channel: readEnvelopeChannel(envelope) });
   if (release.version !== version) throw new Error('The release feed answered with a different version');
   return release;
 }
@@ -138,10 +198,8 @@ const VersionIndexSchema = z.object({ format: z.literal(1), versions: z.array(z.
 export async function checkReleaseIndex() {
   const policy = releasePolicy();
   if (!policy) throw new Error(notConfigured);
-  const { payload, signature } = z.object({ payload: z.string().max(128000), signature: z.string().max(200) }).strict().parse(await fetchEnvelope(feedFile(policy, 'index')));
-  const bytes = Buffer.from(payload, 'base64');
-  if (!verify(null, bytes, policy.publicKey, Buffer.from(signature, 'base64'))) throw new Error('Release publisher signature is invalid');
-  return VersionIndexSchema.parse(JSON.parse(bytes.toString('utf8'))).versions;
+  const keys = await trustedKeys(policy);
+  return VersionIndexSchema.parse(openSigned(await fetchEnvelope(feedFile(policy, 'index')), keys.keys, unlistedKey)).versions;
 }
 function readEnvelopeChannel(envelope: { payload?: unknown }) {
   // Only used to accept either channel. verifyRelease checks the signature over these same bytes.

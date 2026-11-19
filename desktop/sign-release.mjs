@@ -1,11 +1,13 @@
-/** Create authenticated release metadata. Does not upload or publish anything. */
+/** Create authenticated release metadata. Does not upload or publish anything. The key
+ * must be an online signing key listed in the keys file (docs/publishing.md, "Signing keys"). */
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { createPrivateKey, sign } from 'node:crypto';
+import { createPrivateKey } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { verifySpeechDistribution } from './speech/package.mjs';
 import { reviewedRuntime, verifyRuntimeArtifact, verifyShellArtifact } from './release-artifacts.mjs';
+import { signEnvelope } from './release-keys.mjs';
 const { values: v } = parseArgs({ options: {
   resources: { type: 'string' }, runtime: { type: 'string' }, 'runtime-url': { type: 'string' },
   shell: { type: 'string' }, 'shell-url': { type: 'string' }, sequence: { type: 'string' },
@@ -53,6 +55,5 @@ if (shellArtifact) {
 }
 const privateKey = createPrivateKey(fs.readFileSync(v['private-key']));
 if (privateKey.asymmetricKeyType !== 'ed25519') throw new Error('Release metadata requires an Ed25519 signing key');
-const payload = Buffer.from(JSON.stringify(release));
-fs.writeFileSync(v.out, JSON.stringify({ payload: payload.toString('base64'), signature: sign(null, payload, privateKey).toString('base64') }) + '\n', { flag: 'wx', mode: 0o644 });
+fs.writeFileSync(v.out, JSON.stringify(signEnvelope(release, privateKey)) + '\n', { flag: 'wx', mode: 0o644 });
 console.info(`Signed release ${release.version}, sequence ${sequence}: ${v.out}`);

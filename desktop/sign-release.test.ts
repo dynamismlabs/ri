@@ -5,6 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { createHash, generateKeyPairSync, verify } from 'node:crypto';
 import * as tar from 'tar';
 import { afterEach, expect, it } from 'vitest';
+import { keyId } from './release-keys.mjs';
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) fs.rmSync(root, { recursive: true, force: true }); });
@@ -43,6 +44,8 @@ it('retains ordinary release signing when speech is not bundled', async () => {
   const f = await fixture(false); const result = f.run(); expect(result.stderr).toBe(''); expect(result.status).toBe(0);
   const envelope = JSON.parse(fs.readFileSync(f.output, 'utf8'));
   expect(verify(null, Buffer.from(envelope.payload, 'base64'), f.publicKey, Buffer.from(envelope.signature, 'base64'))).toBe(true);
+  // It names its key, which the keys file must list for any computer to accept it.
+  expect(envelope.keyid).toBe(keyId(f.publicKey));
 });
 it('cannot sign an unreviewed speech-bearing archive using a no-speech resources directory', async () => {
   const reviewed = await fixture(false); const other = await fixture(true);
