@@ -632,7 +632,7 @@ The Windows desktop port runs its Home while its window is open. Its Scheduled T
 
 1. **Agent work outside the server.** Chats are children of the server, so every server restart ends them. Moving the agent runners into the controller, or into their own supervised process, would let updates and memory restarts happen without waiting for idle or interrupting anything. This is future work, after this spec.
 2. **Publishing.** The owner will choose the hosting. Nothing in phases A or B depends on it. What does depend on it:
-   - Before phase C: a download address to keep. The feed's address is written into every installation (`release-policy.json`), so changing it later means migrating every installation. Also a release signing key: the format already expects an Ed25519 key.
+   - Before phase C: a download address to keep. The feed's address is written into every installation (`release-policy.json`), so changing it later means migrating every installation. Also release signing keys: an offline Ed25519 root key every installation pins, and online keys the root lists in a signed keys file, so a leaked online key is replaced without reinstalling anything (docs/publishing.md, "Signing keys").
    - Before the desktop app goes to anyone else: a Developer ID. macOS opens an unsigned downloaded app only after a warning, and the desktop updater can't apply an update to an unsigned Mac app. This is the same Developer ID decision already open for notifications.
 3. **Starting in a safe mode after repeated crashes.**
    - **Failure:** a message whose reply crashes the server is sent again at each retry, so the Home keeps crashing and spends a harness's usage each time.

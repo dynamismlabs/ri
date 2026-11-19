@@ -580,9 +580,9 @@ Native quit keeps the window alive through the save acknowledgement and connecti
 
 Release builds use `pnpm desktop:release` (macOS DMG/ZIP or Linux AppImage). `pnpm runtime:package` builds the display-free archive. The build pins ordinary Node 26.5.0, Electron 44.4.5, electron-builder 26.17.0 and electron-updater 6.8.9 through package/lock configuration. The desktop workflow builds and tests native macOS/Linux jobs without public publication.
 
-Publisher configuration consists of `RI_RELEASE_FEED` (an HTTPS folder, `https://releases.ri.app/` for published releases, which redirects to the GitHub release tagged `feed`) and `RI_RELEASE_PUBLIC_KEY_FILE` (Ed25519 PUBLIC PEM). The channel is each computer's own preference, not part of a build. macOS releases additionally require the actual Developer ID identity in `CSC_NAME` and an App Store Connect API key for notarization (`APPLE_API_KEY`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER`), checked before packaging starts (docs/publishing.md). Native Node/addon bytes are signed before the immutable manifest is computed, excluded from subsequent re-signing, and verified after outer-app signing. No signing private key belongs in the application or runtime archive.
+Publisher configuration consists of `RI_RELEASE_FEED` (an HTTPS folder, `https://releases.ri.app/` for published releases, which redirects to the GitHub release tagged `feed`) and `RI_RELEASE_PUBLIC_KEY_FILE` (the release root key's Ed25519 PUBLIC PEM, which every installation pins, docs/publishing.md "Signing keys"). The channel is each computer's own preference, not part of a build. macOS releases additionally require the actual Developer ID identity in `CSC_NAME` and an App Store Connect API key for notarization (`APPLE_API_KEY`, `APPLE_API_KEY_ID`, `APPLE_API_ISSUER`), checked before packaging starts (docs/publishing.md). Native Node/addon bytes are signed before the immutable manifest is computed, excluded from subsequent re-signing, and verified after outer-app signing. No signing private key belongs in the application or runtime archive.
 
-After building, sign exact artifact metadata offline:
+After building, sign exact artifact metadata offline, with an online signing key the root-signed `desktop/release-keys.json` lists. The envelope names its key's id, and installations refuse a key the feed's `keys.json` doesn't list:
 
 ```sh
 node desktop/sign-release.mjs \
@@ -591,7 +591,7 @@ node desktop/sign-release.mjs \
   --runtime-url https://YOUR-RELEASE-HOST/runtime.tar.gz \
   --shell /path/to/Ri.zip \
   --shell-url https://YOUR-RELEASE-HOST/Ri.zip \
-  --sequence 1 --private-key /private/path/publisher.pem \
+  --sequence 1 --private-key /private/path/release-signing-<id>.pem \
   --out /path/to/release.json
 ```
 
@@ -601,7 +601,7 @@ The release signer checks the actual runtime archive and the runtime embedded in
 
 Use the ZIP/AppImage produced by `pnpm desktop:release` and its matching electron-builder metadata. The configured builder preserves symbolic links and produces ZIP64 when needed. A local manual `ditto` probe wrapped its 16-bit entry count for this large app and produced an invalid archive. The verifier rejects that file. Valid bounded macOS AppleDouble provenance sidecars are checked against their corresponding app members, with no resource/data-fork payloads or unknown attributes permitted.
 
-Version numbers and publisher sequence must advance. Publish immutable artifacts and platform metadata first, then the short-lived signed envelope. The signing script never uploads. The package command uses `publish: never`. Keep expired/withdrawn releases unavailable for new activation, subject to the [native Squirrel staging boundary](#post-implementation-review). A changed publisher key requires an explicit trusted policy/bridge update, not accepting an arbitrary key from the feed. Ordinary unsigned local builds have no configured feed and clearly report that updates are unavailable.
+Version numbers and publisher sequence must advance. Publish immutable artifacts and platform metadata first, then the short-lived signed envelope. The signing script never uploads. The package command uses `publish: never`. Keep expired/withdrawn releases unavailable for new activation, subject to the [native Squirrel staging boundary](#post-implementation-review). Installations pin only the root key. The online keys that sign metadata come from the root-signed keys file on the feed, so one is rotated or revoked by publishing a newer keys file, never by accepting an arbitrary key from the feed. A changed root key requires installing again (docs/publishing.md). Ordinary unsigned local builds have no configured feed and clearly report that updates are unavailable.
 
 Do not run `db:push`, a baseline rebuild or an older legacy binary against an updating installation. Cooperative CLI DB connections hold a shared access lease, and migration waits for all of them. `lsof` blocks activation when an older uncooperative process still has the database open. lsof checks every mounted volume, so one drive that stops answering leaves it stuck in the kernel for good. The check stops waiting after 30 seconds, the update fails with that reason, and the Home starts again on the version it ran. These are operational fences, not protection from an administrator manually replacing files.
 
