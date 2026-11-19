@@ -78,9 +78,15 @@ jobs:
       - name: Install the test browsers
         if: steps.browser_cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright-core install chromium webkit
-      # About 126 MB of packages. Ubuntu's mirror sometimes serves them at
-      # 75 kB/s (28 minutes), so the downloaded packages are cached and apt
-      # only fetches what changed since.
+      # About 126 MB of packages. Some runners list a regional EC2 mirror
+      # first (us-east-2.ec2.archive.ubuntu.com), which served them at 76 kB/s
+      # and took 28 minutes. So apt uses Azure's mirror, then Ubuntu's own, and
+      # the downloaded packages are cached so apt only fetches what changed.
+      - name: Use a fast Ubuntu mirror
+        run: |
+          if [ -f /etc/apt/apt-mirrors.txt ]; then
+            printf 'http://azure.archive.ubuntu.com/ubuntu/\tpriority:1\nhttp://archive.ubuntu.com/ubuntu/\tpriority:2\n' | sudo tee /etc/apt/apt-mirrors.txt
+          fi
       - name: Restore the test browsers' system packages
         uses: actions/cache@v4
         with:
