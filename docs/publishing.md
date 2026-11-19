@@ -35,6 +35,8 @@ The Linux builds run on the oldest Ubuntu GitHub still offers, since native modu
 
 ## Publishing a version
 
+First run **Desktop and headless runtime** on main (Actions, then Run workflow) and wait for it to pass. It's the full run of the packaged app on all four platforms, which pull requests don't wait on.
+
 ```sh
 npm version 0.2.0 --no-git-tag-version
 git commit -am "chore: release 0.2.0"
