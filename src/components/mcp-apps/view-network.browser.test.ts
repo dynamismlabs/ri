@@ -14,6 +14,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { createRequire } from 'node:module';
 import { declaredCsp } from '@ri/mcp-apps-host/csp';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
 
@@ -76,7 +77,7 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
   const browser = await chromium.launch({ executablePath: chromium.executablePath(), headless: true, chromiumSandbox: true, args: ['--disable-features=IsolateSandboxedIframes'] });
   try {
     const page = await browser.newPage(), errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-    page.setDefaultTimeout(10_000);
+    testTimeouts(page, 10_000);
     const guest = page.frameLocator('iframe[aria-label="App view"]').frameLocator('iframe');
     const run = async () => {
       await page.goto(`http://127.0.0.1:${(server.address() as { port: number }).port}`);

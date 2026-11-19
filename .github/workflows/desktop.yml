@@ -59,25 +59,63 @@ jobs:
         # Native builds, never cross-compiled native dependencies. Labels are
         # explicit so a change to a *-latest alias cannot silently change CPU.
         # https://docs.github.com/en/actions/reference/runners/github-hosted-runners
+        # `speech` is whether the package includes the optional local speech
+        # helper, and `no_speech` says why not where it doesn't. Ri offers the
+        # other providers there (docs/desktop.md).
+        # `timeout` is the job's budget in minutes. The macOS runners take two
+        # to three times as long for the same steps (pnpm test took 27 minutes
+        # on Apple chips, 31 on Intel and 12 to 14 on Linux), and the Intel Mac
+        # spends about 8 minutes staging the runtime for each lifecycle smoke.
+        # Intel reached the OS supervision step after 75 minutes, with the
+        # packaged-app steps still to come. The Apple-chip runner has 7 GB of
+        # memory and the package build peaks at about 12 GB, so it swaps:
+        # building the package took 69 minutes in one run and 112 in the next
+        # (19 compiling, 74 in Next's TypeScript pass), against 12 on Intel.
+        # That run used all of 150 minutes before the packaged-app steps began.
+        # Intel finished the recovery smoke 134 minutes in, with ten packaged-app
+        # steps still to come. `smoke_minutes` limits each packaged-app step and
+        # `smokes_minutes` the step that runs three. A packaged first start that
+        # copied the release took about 4 minutes on Apple chips and up to 14 on
+        # Intel, against under a minute on Linux. One that finds it already
+        # staged only hashes it, once.
         include:
           - os: macos-15
             platform: darwin
             arch: arm64
             package: release/desktop/mac-arm64/Ri.app
+            speech: true
+            timeout: 300
+            smoke_minutes: 40
+            smokes_minutes: 60
           - os: macos-15-intel
             platform: darwin
             arch: x64
             package: release/desktop/mac/Ri.app
+            speech: false
+            no_speech: The speech helper's engine (onnxruntime) has no build for Intel Macs.
+            timeout: 300
+            smoke_minutes: 40
+            smokes_minutes: 60
           - os: ubuntu-24.04
             platform: linux
             arch: x64
             package: release/desktop/linux-unpacked
+            speech: false
+            no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
+            timeout: 90
+            smoke_minutes: 15
+            smokes_minutes: 30
           - os: ubuntu-24.04-arm
             platform: linux
             arch: arm64
             package: release/desktop/linux-arm64-unpacked
+            speech: false
+            no_speech: The speech helper bundles PyAV's X11 and DRM libraries here, and their sources aren't recorded yet.
+            timeout: 90
+            smoke_minutes: 15
+            smokes_minutes: 30
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 90
+    timeout-minutes: ${{ matrix.timeout }}
     env:
       MACOSX_DEPLOYMENT_TARGET: '13.5'
     steps:
@@ -99,6 +137,7 @@ jobs:
           EXPECTED_ARCH: ${{ matrix.arch }}
         run: node -e 'const assert = require("node:assert/strict"); assert.equal(process.platform, process.env.EXPECTED_PLATFORM); assert.equal(process.arch, process.env.EXPECTED_ARCH); console.info(process.platform, process.arch, process.versions.node)'
       - name: Install the pinned speech build tool
+        if: matrix.speech
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
         with:
           version: '0.10.3'
@@ -109,6 +148,34 @@ jobs:
           sudo apt-get update
           sudo apt-get install --no-install-recommends -y xvfb xauth openbox libgtk-3-0 libnss3 libasound2t64
       - run: pnpm install --frozen-lockfile
+      # The browser tests, and the phone web app smoke below, drive a real
+      # Chromium through playwright-core, and the composer's touch and menu
+      # tests WebKit too. The builds are cached for each OS, architecture and
+      # playwright-core version. Linux also needs their system libraries,
+      # which aren't cached.
+      - name: Find the test browsers' version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright-core --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Restore the test browsers
+        id: browser_cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.os == 'macOS' && '~/Library/Caches/ms-playwright' || '~/.cache/ms-playwright' }}
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+      - name: Install the test browsers
+        if: steps.browser_cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright-core install chromium webkit
+      - name: Install the test browsers' system libraries
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright-core install-deps chromium webkit
+      # Several tests run the app frame in Chromium's sandbox, as Ri does.
+      # Ubuntu 24.04 keeps unprivileged user namespaces, which that sandbox
+      # needs, behind AppArmor. This disposable runner allows them.
+      - name: Let the test Chromium use its sandbox
+        if: runner.os == 'Linux'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Point the browser tests at the test Chromium
+        run: node -e 'const fs = require("node:fs"); const file = require("playwright-core").chromium.executablePath(); if (!fs.existsSync(file)) throw new Error(`No test Chromium at ${file}`); fs.appendFileSync(process.env.GITHUB_ENV, `RI_REVIEW_CHROMIUM=${file}\n`)'
       - run: pnpm ts
         # The full app type graph exceeds Node's 2 GiB default on macOS runners.
         env:
@@ -118,11 +185,20 @@ jobs:
       - run: pnpm --filter @integrations/engine test
       # Includes a frozen helper for each native target, but never downloads a
       # model or starts speech inference without the user's installation choice.
-      - run: pnpm speech:build
+      - name: Build the speech helper
+        if: matrix.speech
+        run: pnpm speech:build
+      - name: Leave the speech helper out of this package
+        if: ${{ !matrix.speech }}
+        env:
+          NO_SPEECH: ${{ matrix.no_speech }}
+        run: echo "::notice title=No local speech on ${{ matrix.platform }}/${{ matrix.arch }}::$NO_SPEECH So this package ships without it. Ri says so in Settings and transcribes with its other providers (docs/desktop.md)."
       - name: Verify audio decoding boundaries
+        if: matrix.speech
         run: .electron-demo/speech-build/venv/bin/python -m unittest discover -s desktop/speech -p 'test_*.py'
       - name: Prepare verified speech sources and native inventory
         id: speech_materials
+        if: matrix.speech
         run: |
           mkdir -p release/qualification
           .electron-demo/speech-build/venv/bin/python desktop/speech/release_materials.py fetch
@@ -133,7 +209,9 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           RI_BUILD_MEMORY_LIMIT_GB: '16'
-        run: pnpm desktop:package --with-speech
+        run: |
+          mkdir -p release/qualification
+          pnpm desktop:package ${{ matrix.speech && '--with-speech' || '' }}
       - name: Select the packaged application
         run: |
           echo "RI_DESKTOP_PACKAGE=${{ matrix.package }}" >> "$GITHUB_ENV"
@@ -151,19 +229,45 @@ jobs:
           echo "XDG_RUNTIME_DIR=/run/user/${account_uid}" >> "$GITHUB_ENV"
           echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/${account_uid}/bus" >> "$GITHUB_ENV"
       - name: Qualify real login supervision on the disposable CI account
+        id: os_supervision
         # This exact opt-in is required in addition to hosted-runner identity.
         # The harness refuses self-hosted CI and never installs OS jobs locally.
         env:
           RI_SERVICE_SMOKE_SUPERVISOR: install-test-job-on-disposable-github-hosted-account
         run: pnpm exec tsx desktop/service-lifecycle-smoke.ts "$RI_RUNTIME_PACKAGE" --os-supervisor --report release/qualification/service-native.json
+      # launchd and systemd both write the controller's output to the fixture's
+      # service.log, which a failed run keeps and the upload below collects.
+      # systemd's own lines about the unit (starts, exits, restart limits) are
+      # in the journal. `--user-unit` matches the caller's own units, so it runs
+      # as this account: under sudo it looked for root's and found nothing.
+      - name: Save the test login job's journal
+        if: failure() && steps.os_supervision.outcome == 'failure' && runner.os == 'Linux'
+        run: |
+          {
+            echo "== The test unit's journal, read as $USER"
+            journalctl --user --no-pager -o short-precise --user-unit 'app.ri.service.*' 2>&1
+            echo "== Everything $USER's processes logged in the last hour, read as root"
+            sudo journalctl --no-pager -o short-precise _UID="$(id -u)" --since '1 hour ago' -n 5000 2>&1
+          } > "$RUNNER_TEMP/ri-service-journal.log" || true
       - name: Exercise packaged macOS recovery
         if: runner.os == 'macOS'
         run: pnpm exec tsx desktop/recovery-smoke.ts
       - name: Exercise Linux recovery in a virtual display
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum pnpm exec tsx desktop/recovery-smoke.ts
+      # Every packaged acceptance Home below shares one install root, where this
+      # stages the release once. Each first start then finds it in the store, as
+      # a later Home on one computer does, instead of copying it again. The
+      # recovery smoke above keeps its own root, so it checks a first start
+      # from nothing.
+      - name: Stage the packaged release once for the acceptance Homes
+        timeout-minutes: ${{ matrix.smoke_minutes }}
+        run: |
+          root="$RUNNER_TEMP/ri-acceptance-install"
+          echo "RI_ACCEPTANCE_INSTALL_ROOT=$root" >> "$GITHUB_ENV"
+          RI_ACCEPTANCE_INSTALL_ROOT="$root" pnpm exec tsx desktop/stage-acceptance-release.ts
       - name: Exercise Home selection and connected-device companion lifecycle
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -176,7 +280,7 @@ jobs:
             pnpm desktop:version-smoke
           fi
       - name: Exercise packaged shortcuts, editor navigation and downloads
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -187,7 +291,7 @@ jobs:
             pnpm exec tsx desktop/interaction-smoke.ts
           fi
       - name: Exercise packaged endurance and recovery over three bounded cycles
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
           RI_DESKTOP_ENDURANCE_CYCLES: '3'
@@ -199,7 +303,7 @@ jobs:
             pnpm exec tsx desktop/endurance-smoke.ts
           fi
       - name: Exercise native and remote browser OAuth on the shared service
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -216,7 +320,7 @@ jobs:
             pnpm exec tsx desktop/oauth-smoke.ts
           fi
       - name: Exercise packaged notification routing with mocked OS presentation
-        timeout-minutes: 15
+        timeout-minutes: ${{ matrix.smoke_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -227,7 +331,7 @@ jobs:
             pnpm exec tsx desktop/notifications-smoke.ts
           fi
       - name: Exercise menu bar, global capture, login controls and availability
-        timeout-minutes: 30
+        timeout-minutes: ${{ matrix.smokes_minutes }}
         env:
           TMPDIR: ${{ runner.temp }}/ri-acceptance
         run: |
@@ -248,8 +352,6 @@ jobs:
             pnpm exec tsx desktop/capture-smoke.ts
           fi
       - run: pnpm exec tsx desktop/update-smoke.ts "$RI_RUNTIME_PACKAGE"
-      - name: Install test Chromium
-        run: pnpm exec playwright-core install --with-deps chromium
       - name: Exercise phone manifest and private-cache boundaries
         run: pnpm exec tsx scripts/smoke-phone-web-app.ts
       - uses: actions/upload-artifact@v4
@@ -257,9 +359,14 @@ jobs:
         with:
           name: ri-qualification-${{ matrix.platform }}-${{ matrix.arch }}
           # Upload small reports and screenshots, not runtime copies or private
-          # fixture homes. Failed cleanup must not publish helper binaries.
+          # fixture homes. Failed cleanup must not publish helper binaries. The
+          # service logs exist only when a lifecycle smoke failed, which keeps
+          # its disposable fixture for diagnosis. The fixture has no credentials.
           path: |
             release/qualification/*.json
+            ${{ runner.temp }}/ri-service-lifecycle-*/work/service.log
+            ${{ runner.temp }}/ri-service-lifecycle-*/work/service.log.previous
+            ${{ runner.temp }}/ri-service-journal.log
             ${{ runner.temp }}/ri-acceptance/ri-version-smoke-*/report.json
             ${{ runner.temp }}/ri-acceptance/ri-version-smoke-*/*.png
             ${{ runner.temp }}/ri-acceptance/ri-companion-home-*/companion-report.json

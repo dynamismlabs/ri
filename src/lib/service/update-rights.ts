@@ -7,6 +7,7 @@
  */
 import { getRequestKey } from '@/lib/auth/request-key';
 import { isTeamAuthority } from '@/lib/home/authority';
+import { hasTeamCapability } from '@/lib/team/capabilities';
 import { isDefaultHomeTeam } from './home-lookup';
 import { isInstallationOwner } from './owner-auth';
 import type { ServiceStatus } from './client';
@@ -25,7 +26,8 @@ export function updateRights(request: Pick<Request, 'headers'>): UpdateRights {
   if (!key) return { manage: false, use: false };
   // A team's Settings changes nothing when the computer also runs a personal Home,
   // since the switch belongs to the computer. On a team server, its owner has it.
-  if (isTeamAuthority()) return { manage: false, use: key.scope === 'member' && key.memberRole === 'owner' && isDefaultHomeTeam() };
+  // The proxy sets a member's role from their live membership, so the key's role is current.
+  if (isTeamAuthority()) return { manage: false, use: key.scope === 'member' && !!key.memberRole && hasTeamCapability({ role: key.memberRole, status: 'active' }, 'useUpdates') && isDefaultHomeTeam() };
   return { manage: false, use: key.scope === 'viewer' };
 }
 

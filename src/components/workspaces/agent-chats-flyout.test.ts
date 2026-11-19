@@ -7,6 +7,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 interface FixtureWindow extends Window {
   actions: { kind: string; value: unknown }[];
@@ -165,7 +166,9 @@ async function expectFullHeight(panel: Locator, rail: Locator) {
 
 it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, and preserves navigation and dismissal', async (style) => {
   const page = await browser.newPage();
-  page.setDefaultTimeout(3_000);
+  // The page's own clock, so the brief crossing below can hold time still.
+  await page.clock.install();
+  testTimeouts(page, 3_000);
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?style=${style}`);
@@ -179,11 +182,17 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
     await page.locator('#outside').hover();
     await apps.waitFor({ state: 'hidden' });
     const header = page.locator('#agent-row .group').first();
-    // Crossing a row briefly never opens a menu.
+    // Crossing a row briefly never opens a menu. Time stands still while the pointer crosses, so
+    // the crossing is brief however slowly this computer moves it, then runs past the open delay.
+    // Any page timer that fires between reading the clock and pausing it moves the clock on,
+    // past a 1 ms lead on a busy CI Mac, so pause a few seconds ahead. Nothing is hovered
+    // while it jumps.
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 5_000));
     await header.hover();
     await page.locator('#outside').hover();
-    await page.waitForTimeout(250);
+    await page.clock.runFor(250);
     expect(await flyout(page).count()).toBe(0);
+    await page.clock.resume();
     // Hover the icon rather than the name to exercise the whole header.
     await header.locator('button').first().hover();
     await flyout(page).waitFor();
@@ -243,9 +252,14 @@ it.each(['agents', 'classic'])('%s: chooses a collapsed chat without unfolding, 
   } finally { await page.close(); }
 }, 20_000);
 
-it('keeps inactive chats and nested menus usable, including inside the collapsed rail', async () => {
+// Slowed too. Choosing a chat inside a held chooser presses without changing its state. With
+// useState, React settled that press ahead of time and could apply it after navigating had closed
+// the Agents chooser, which then stayed open. It took a slow page: the Apple-chip CI Mac, or here
+// the CPU slowed 4 to 8 times, where it showed in most runs of this path and in some of this test's.
+it.each([1, 6])('keeps inactive chats and nested menus usable, including inside the collapsed rail (CPU slowed %i times)', async (slowdown) => {
   const page = await browser.newPage();
-  page.setDefaultTimeout(3_000);
+  testTimeouts(page, 3_000 * slowdown);
+  if (slowdown > 1) await (await page.context().newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: slowdown });
   page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(`${base}/?nested=1`);
@@ -268,25 +282,28 @@ it('keeps inactive chats and nested menus usable, including inside the collapsed
     await flyout(page).getByText('Inactive chat', { exact: true }).waitFor();
     await flyout(page).getByRole('button', { name: /Inactive chat/ }).click();
     await flyout(page).waitFor({ state: 'hidden' });
-    expect(await page.getByRole('dialog', { name: 'Agents', exact: true }).count()).toBe(0);
+    // Choosing a chat closes the Agents chooser too, once its exit animation ends.
+    await page.getByRole('dialog', { name: 'Agents', exact: true }).waitFor({ state: 'detached' });
     expect(await actions(page)).toEqual([{ kind: 'navigate', value: { kind: 'execution', id: 'inactive' } }]);
   } catch (error) {
     await page.screenshot({ path: path.join(os.tmpdir(), 'agent-chats-flyout-failure.png') });
     console.error({ actions: await actions(page), body: await page.locator('body').innerText() });
     throw error;
   } finally { await page.close(); }
-}, 20_000);
+}, 120_000);
 
 it('scrolls long chat lists below a fixed header and follows the rail height on resize', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-  page.setDefaultTimeout(3_000);
+  testTimeouts(page, 3_000);
   try {
     await page.goto(base);
     await nameButton(page).waitFor();
     await page.evaluate(() => (window as unknown as FixtureWindow).fixture.patch({ many: true }));
     await nameButton(page).hover();
     const panel = flyout(page);
-    await panel.waitFor();
+    // Drawing 87 chats with React's development build takes seconds on a slow runner (4.5 s with
+    // the CPU slowed 20 times), past the 3 s a step gets. It opens, just later.
+    await panel.waitFor({ timeout: 15_000 });
     await expectFullHeight(panel, page.locator('aside'));
     const header = panel.locator(':scope > div').first();
     const headerTop = (await header.boundingBox())!.y;

@@ -289,7 +289,9 @@ describe('an agent that lives on a connected device', () => {
     form.append('file', new Blob([bytes]), 'photo.bin');
     const uploaded = await upload(new NextRequest(`http://127.0.0.1/api/workspaces/${workspaceId}/file/upload`, { method: 'POST', body: form }), { params: Promise.resolve({ id: workspaceId }) });
     expect(uploaded.status).toBe(200);
-    expect(fs.readFileSync(path.join(repo, 'uploads/photo.bin'))).toEqual(Buffer.from(bytes));
+    // One memcmp. `toEqual` walks the 6 MB byte by byte and holds the event loop for tens of
+    // seconds, long enough that the home misses its pings and the laptop reconnects mid-test.
+    expect(fs.readFileSync(path.join(repo, 'uploads/photo.bin')).equals(Buffer.from(bytes))).toBe(true);
     expect(fs.existsSync(path.join(homeFolder, 'uploads'))).toBe(false);
     expect(await call('dir', 'POST', { path: 'drafts' })).toMatchObject({ status: 200 });
     expect(await call('file/rename', 'POST', { from: 'empty.txt', to: 'drafts/empty.txt' })).toMatchObject({ status: 200 });

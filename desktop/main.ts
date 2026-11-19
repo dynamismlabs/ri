@@ -26,6 +26,8 @@ import { remoteNotificationChanges } from './notification-consent';
 import { appleSigned } from './app-signature';
 import { DesktopNotifications } from './notifications';
 import { backgroundWindow, revealWindow } from './window-visibility';
+import { initialWindowBounds, MIN_WINDOW_SIZE } from './window-bounds';
+import { SUPERVISOR_OPT_IN } from './platform-qualification';
 import { createDesktopTray, desktopMenuCommands, activityMenuItems, updateDesktopTray } from './tray';
 import { CaptureShortcut } from './shortcut';
 import { ensureDesktopPortalIdentity } from './portal';
@@ -50,7 +52,9 @@ import { localDeviceMenu } from './local-device-menu';
 import { isLocalViewer, isViewerReload, trustedViewerFrame, viewerPermission, viewerNotificationAction } from './viewer-trust';
 import { ViewerTransitions } from './viewer-transitions';
 import { signInDesktopSession } from './session-auth';
-import { connectionFailure } from './connection-failure';
+import { automatedFailure, connectionFailure } from './connection-failure';
+import { CLOSE_ANSWER_MS, closeDialogDetail, closeHold, closeHoldLog, type CloseHold } from './close-guard';
+import { prepareRetry } from './retry-connection';
 import { DesktopConnection } from './connection-state';
 import { teamsFile } from './teams';
 import { teamFlow } from './team-flow';
@@ -125,6 +129,17 @@ let quitting = false;
 let finished = false;
 let exitCode = 0;
 let startupTimer: ReturnType<typeof setTimeout> | undefined;
+const STARTUP_LIMIT_MS = 4 * 60_000;
+const STARTUP_LIMIT_MESSAGE = 'The app did not finish starting within four minutes. Check the backend output and retry.';
+const PREPARE_LIMIT_MS = 30 * 60_000;
+function startupLimit(ms: number, message: string) {
+  clearStartupLimit();
+  startupTimer = setTimeout(() => { startupTimer = undefined; fail(message); }, ms);
+}
+function clearStartupLimit() {
+  clearTimeout(startupTimer);
+  startupTimer = undefined;
+}
 let appOrigin: string | undefined;
 let appToken: string | undefined;
 let localViewer = false;
@@ -134,7 +149,7 @@ const viewerTransitions = new ViewerTransitions<BackendReady>();
 let localService: ServiceStatus | undefined;
 let installedRuntime: BackendReady['runtime'];
 let preparingClose = false;
-let closeGuard: { nonce: string; resolve: (ok: boolean) => void } | undefined;
+let closeGuard: { nonce: string; resolve: (hold: CloseHold | null) => void } | undefined;
 let preparation: Promise<boolean> | undefined;
 let backgroundGuard: { nonce: string; resolve: (ok: boolean) => void } | undefined;
 let backgroundPending = false;
@@ -382,8 +397,7 @@ async function detachConnection() {
 
 async function retryConnection() {
   if (selectionInvalid) throw new Error('Choose and verify an installation before retrying. The saved selection could not be opened.');
-  const status = await serviceStatus();
-  if (status?.phase === 'failed') throw new Error('The service needs recovery before it can restart.');
+  await prepareRetry({ status: serviceStatus, restart: () => serviceRequest('/restart', 'POST', 10_000) });
   selectionError = undefined;
   connecting = true;
   try {
@@ -758,6 +772,12 @@ const canKeepRunning = () => process.platform !== 'win32' && !!installedRuntime?
 function runServiceCli(action: 'install' | 'uninstall' | 'start' | 'stop' | 'add-to-terminal') {
   const options = cliInstallation();
   if (action === 'install' && !options.launcher) throw new Error('Keeping Ri running needs an installed release.');
+  // A login job belongs to the computer's account, not to the temporary Home a
+  // check runs in. Run on someone's computer, a check would leave a real launchd
+  // or systemd job behind, so only a disposable CI account that opted in gets one.
+  if (action === 'install' && process.env.RI_DESKTOP_SMOKE && process.env.RI_SERVICE_SMOKE_SUPERVISOR !== SUPERVISOR_OPT_IN) {
+    return Promise.reject(new Error('This automated run does not install login jobs.'));
+  }
   const command = options.launcher ?? options.node;
   const args = options.launcher ? ['cli', 'service', action] : [options.cli, 'service', action];
   return new Promise<string>((resolve, reject) => execFile(command, args, { env, timeout: 240_000, maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => error ? reject(new Error(stderr || error.message)) : resolve(stdout)));
@@ -813,19 +833,20 @@ function prepareClose(intent: 'quit' | 'continue' = 'continue'): Promise<boolean
 
 async function prepareCloseOnce(intent: 'quit' | 'continue'): Promise<boolean> {
   if (!window || window.isDestroyed() || !appOrigin || !sameOrigin(window.webContents.getURL(), appOrigin)) return true;
-  const ok = await new Promise<boolean>(resolve => {
+  const hold = await new Promise<CloseHold | null>(resolve => {
     const nonce = randomUUID();
-    const timer = setTimeout(() => { closeGuard = undefined; resolve(false); }, 15_000);
+    const timer = setTimeout(() => { closeGuard = undefined; resolve('no-answer'); }, CLOSE_ANSWER_MS);
     closeGuard = { nonce, resolve: result => { clearTimeout(timer); closeGuard = undefined; resolve(result); } };
     window!.webContents.send('desktop:prepare-close', nonce);
   });
-  if (ok) return true;
+  if (!hold) return true;
+  console.warn(`[desktop] ${closeHoldLog(hold)}`);
   // A Quit from the menu bar must not leave its save/recording dialog attached
   // to a hidden window. Reopening alone never resumes a guarded renderer.
   showAppWindow();
   const result = await dialog.showMessageBox(window, {
     type: 'warning', message: 'Some changes have not finished saving',
-    detail: 'Keep Ri open to finish your recording or upload and retry pending saves. Saved document, chat and capture drafts can be recovered. Content that could not be saved on this device may be lost if you continue.',
+    detail: closeDialogDetail(hold),
     buttons: ['Keep open', intent === 'quit' ? 'Quit anyway' : 'Continue without saving'], defaultId: 0, cancelId: 0,
   });
   if (result.response !== 1) window?.webContents.send('desktop:resume');
@@ -843,7 +864,7 @@ async function quit(skipGuard = false) {
   tray?.destroy(); tray = undefined;
   oauthAbort.abort();
   notifications?.stop(); notificationAbort.abort();
-  clearTimeout(startupTimer);
+  clearStartupLimit();
   if (backend && backend.exitCode === null && backend.signalCode === null) {
     const exited = once(backend, 'exit');
     if (backend.connected) backend.send({ type: 'stop' });
@@ -863,12 +884,13 @@ function fail(error: unknown, issue = connectionFailure(error)) {
   if (quitting) return;
   const message = redactServiceLine(issue.detail, [appToken ?? '']);
   console.error(`[desktop] ${message}`);
-  // Automation must report failure instead of hanging on a modal dialog.
-  clearTimeout(startupTimer);
+  // An automated run ends here, or keeps its startup limit while Ri retries.
+  const automated = automatedFailure(process.env, issue, startupTimer !== undefined);
+  if (automated !== 'wait') clearStartupLimit();
   selectionError = message;
   connecting = false;
   updateActivity({ connection: 'disconnected' });
-  if (process.env.RI_DESKTOP_SMOKE && !process.env.RI_DESKTOP_RECOVERY_SMOKE) { exitCode = 1; void quit(true); return; }
+  if (automated === 'quit') { exitCode = 1; void quit(true); return; }
   desktopConnection.failed({ ...issue, detail: message });
 }
 
@@ -965,7 +987,15 @@ async function openApp(ready: BackendReady) {
     installedRuntime = ready.runtime;
     if (canKeepRunning() && !hasLoginSupervision()) {
       try { await runServiceCli('install'); return; }
-      catch (error) { console.warn('[desktop] Could not keep the new Home running:', error instanceof Error ? error.message : 'Failed'); }
+      catch (error) {
+        console.warn('[desktop] Could not keep the new Home running:', error instanceof Error ? error.message : 'Failed');
+        // Installing hands the running service to the OS before the OS starts its
+        // own, so a failure can leave nothing serving the Home and this address
+        // gone. Connecting again starts the Home the ordinary way when it isn't
+        // running, and keeps the one that is.
+        await retryConnection();
+        return;
+      }
     }
   }
   let revealViewer = false;
@@ -1006,7 +1036,7 @@ async function openApp(ready: BackendReady) {
     commit: () => {
       selectionError = undefined;
       connecting = false;
-      clearTimeout(startupTimer);
+      clearStartupLimit();
       desktopConnection.connected();
       activateViewerMonitors(ready, revealViewer);
     },
@@ -1090,13 +1120,10 @@ async function start() {
   const icon = nativeImage.createFromPath(path.join(repo, 'public/brand/ri-desktop-icon.png'));
   app.dock?.setIcon(icon);
   const ses = session.fromPartition('persist:ri-desktop-demo');
-  let bounds: { x?: number; y?: number; width: number; height: number } = { width: 1440, height: 980 };
-  try {
-    const saved = JSON.parse(fs.readFileSync(path.join(profile, 'window.json'), 'utf8'));
-    if (['x', 'y', 'width', 'height'].every(key => Number.isFinite(saved[key])) && saved.width >= 800 && saved.height >= 600 &&
-        screen.getAllDisplays().some(display => saved.x + 100 > display.workArea.x && saved.x < display.workArea.x + display.workArea.width && saved.y + 50 > display.workArea.y && saved.y < display.workArea.y + display.workArea.height)) bounds = saved;
-  } catch { /* first window or disconnected display */ }
-  window = new BrowserWindow({ ...bounds, show: false, minWidth: 800, minHeight: 600, title: APP_NAME, icon,
+  let saved: unknown;
+  try { saved = JSON.parse(fs.readFileSync(path.join(profile, 'window.json'), 'utf8')); } catch { /* first window */ }
+  const bounds = initialWindowBounds(saved, screen.getAllDisplays().map(display => display.workArea), screen.getPrimaryDisplay().workArea);
+  window = new BrowserWindow({ ...bounds, show: false, minWidth: MIN_WINDOW_SIZE.width, minHeight: MIN_WINDOW_SIZE.height, title: APP_NAME, icon,
     ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset' as const, trafficLightPosition: { x: 12, y: 12 } } : {}),
     backgroundColor: appearance.get() === 'dark' ? '#09090b' : '#ffffff', webPreferences: { preload: path.join(__dirname, 'preload.cjs'), session: ses, nodeIntegration: false, contextIsolation: true, sandbox: true, webviewTag: false } });
   let boundsTimer: ReturnType<typeof setTimeout> | undefined;
@@ -1177,8 +1204,8 @@ async function start() {
   ipcMain.on('desktop:prepared', (event, message: unknown) => {
     if (event.sender !== window?.webContents || event.senderFrame !== window.webContents.mainFrame || !appOrigin || !sameOrigin(event.senderFrame.url, appOrigin)) return;
     if (!message || typeof message !== 'object') return;
-    const reply = message as { nonce?: unknown; ok?: unknown };
-    if (reply.nonce === closeGuard?.nonce) closeGuard?.resolve(reply.ok === true);
+    const reply = message as { nonce?: unknown; ok?: unknown; waitingFor?: unknown };
+    if (reply.nonce === closeGuard?.nonce) closeGuard?.resolve(closeHold(reply));
   });
   ipcMain.handle('desktop:open-external', async (event, raw: unknown) => {
     if (event.sender !== window?.webContents || event.senderFrame !== window.webContents.mainFrame || !appOrigin || !sameOrigin(event.senderFrame.url, appOrigin)) throw new Error('Untrusted window');
@@ -1281,7 +1308,7 @@ async function start() {
 function startConnection() {
   connecting = true;
   desktopConnection.begin();
-  clearTimeout(startupTimer);
+  clearStartupLimit();
   const child = fork(path.join(repo, 'dist/desktop/backend.cjs'), [], { cwd: repo, execPath: process.env.RI_DESKTOP_NODE,
     execArgv: [], env, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe', 'ipc'] });
   backend = child;
@@ -1294,8 +1321,12 @@ function startConnection() {
   }
   backend.on('message', (message: BackendMessage) => {
     if (backend !== child || quitting) return;
+    // A first launch stages the bundled release before anything else: minutes
+    // on a slow disk, so it has its own limit and the startup clock starts after.
+    if (message.type === 'preparing' && connecting) startupLimit(PREPARE_LIMIT_MS, 'Ri is still preparing its first start after 30 minutes. Check the backend output and retry.');
+    if (message.type === 'prepared' && connecting) startupLimit(STARTUP_LIMIT_MS, STARTUP_LIMIT_MESSAGE);
     if (message.type === 'setup') {
-      connecting = false; clearTimeout(startupTimer);
+      connecting = false; clearStartupLimit();
       if (viewerTransitions.current) fail(message.status.reason ?? 'Review this computer’s connection in Desktop Settings.');
       else {
         desktopConnection.reset(); void showSetup();
@@ -1319,7 +1350,7 @@ function startConnection() {
   });
   child.once('error', (error) => { if (backend === child) fail(error); });
   child.once('exit', (code) => { if (!quitting && backend === child && !selectionError) fail(`The desktop connection helper stopped (${code ?? 'signal'}). Inspect the service and retry.`); });
-  startupTimer = setTimeout(() => fail('The app did not finish starting within four minutes. Check the backend output and retry.'), 240_000);
+  startupLimit(STARTUP_LIMIT_MS, STARTUP_LIMIT_MESSAGE);
 }
 
 app.on('before-quit', (event) => { if (!finished) { event.preventDefault(); void quit(); } });

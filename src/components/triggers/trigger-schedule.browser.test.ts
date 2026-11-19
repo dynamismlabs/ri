@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 interface FixtureWindow extends Window {
   changes: Record<string, unknown>[];
@@ -129,7 +130,7 @@ afterAll(async () => {
 
 async function open(query = ''): Promise<Page> {
   const page = await browser.newPage({ timezoneId: 'Asia/Tokyo', viewport: { width: 680, height: 1000 } });
-  page.setDefaultTimeout(3_000);
+  testTimeouts(page, 3_000);
   await page.goto(base + query);
   return page;
 }
@@ -151,6 +152,7 @@ it('edits cron through presets or a raw expression, validates input, and merges 
     // The builder chat or another screen changes the message meanwhile: the
     // untouched message takes it, the schedule being edited keeps the draft.
     await page.evaluate(() => (window as unknown as FixtureWindow).refreshTrigger());
+    // A change from outside an event renders in a later task, so wait for it to land.
     await expect.poll(() => page.getByLabel('Message').inputValue()).toBe('New instructions from another viewer');
     expect(await page.getByLabel('Time', { exact: true }).inputValue()).toBe('16:45');
     await save(page).click();

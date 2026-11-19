@@ -3,6 +3,7 @@ import { build } from 'esbuild';
 import { chromium, webkit, type Browser, type BrowserContextOptions, type Page } from 'playwright-core';
 import http from 'node:http';
 import type {} from '@/test/fixtures/touch-composer';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Enter in a chat composer follows the input device, not the width: on a
 // phone or tablet it adds a line and Send sends, on a computer it sends and
@@ -45,7 +46,7 @@ async function open(browser: Browser, options: BrowserContextOptions) {
   const page = await context.newPage();
   const errors: string[] = [];
   page.on('pageerror', error => { errors.push(error.message); });
-  page.setDefaultTimeout(6000);
+  testTimeouts(page, 6000);
   await page.goto(origin);
   await page.waitForFunction(() => 'touchComposer' in window);
   return { context, page, errors };

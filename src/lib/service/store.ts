@@ -13,7 +13,7 @@ import { randomUUID } from 'node:crypto';
 import { atomicWriteFile, withFileLock } from '@/lib/config/atomic-file';
 import { getRuntimeBaseDir, getRuntimeInstallDir, serviceIdentity } from './paths';
 import { untraced } from '@/lib/utils/untraced';
-import { verifyRuntime, type RuntimeManifest } from './runtime-manifest';
+import { checkRuntime, verifyRuntime, type RuntimeManifest } from './runtime-manifest';
 import { clonesOnMac } from './clone';
 import { compareVersions } from './version-order';
 
@@ -175,9 +175,15 @@ function linkReleaseCache(base: string, id: string, directory: string) {
  * one already stored are hard-linked, so a release that changes only code
  * costs only its changed files. Never changes which release a Home runs.
  * `move` takes the files out of `resources` instead of copying them, for a
- * build's own output (source-build.ts), so it costs no second copy. */
+ * build's own output (source-build.ts), so it costs no second copy.
+ *
+ * What gets verified in full is what the store keeps: the copy, or the release
+ * already stored. Hashing the source as well read every byte twice, and a
+ * desktop app's release is over 4 GB, so it doubled the minutes a first start
+ * spends here. A moved build is checked before it leaves its folder, so a bad
+ * one is never taken apart. */
 export function stageRelease(resources: string, base = getRuntimeBaseDir(), options: { move?: boolean } = {}): RuntimeManifest {
-  const manifest = verifyRuntime(resources);
+  const manifest = options.move ? verifyRuntime(resources) : checkRuntime(resources);
   const store = storeDirectory(base);
   fs.mkdirSync(/* turbopackIgnore: true */ store, { recursive: true, mode: 0o700 });
   const destination = path.join(/* turbopackIgnore: true */ store, manifest.id);
@@ -190,7 +196,9 @@ export function stageRelease(resources: string, base = getRuntimeBaseDir(), opti
     else {
       fs.mkdirSync(/* turbopackIgnore: true */ temporary, { mode: 0o700 });
       copyRelease(resources, temporary, manifest, storedFiles(store, manifest.id), !!options.move);
-      verifyRuntime(temporary);
+      // The copy carries the source's manifest file, read again here, so a
+      // source that changed while it was copied can't be stored under this id.
+      if (verifyRuntime(temporary).id !== manifest.id) throw new Error('Runtime files do not match the manifest');
     }
     return withStoreLock(() => {
       if (!fs.existsSync(/* turbopackIgnore: true */ destination)) {

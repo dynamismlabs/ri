@@ -11,6 +11,7 @@ import { hostedMcpDefinition } from './hosted-mcp';
 import { getIntegrationRuntime, getMcpServerStore, getProviderStatuses, invalidateIntegrationRuntime } from './runtime';
 import { resolveIntegrationFilter } from './workspace-filter';
 import { validateMcpUrl } from './mcp-validate';
+import { pidsIn } from '@/test/pids';
 
 vi.mock('@/lib/db/queries', () => ({ getWorkspace: vi.fn(), deleteChannelsForConnection: vi.fn() }));
 
@@ -56,7 +57,7 @@ readline.createInterface({ input: process.stdin }).on('line', line => {
 afterEach(async () => {
   invalidateIntegrationRuntime();
   const pidFile = path.join(dir, 'pids');
-  const pids = fs.existsSync(pidFile) ? fs.readFileSync(pidFile, 'utf8').trim().split('\n').map(Number) : [];
+  const pids = pidsIn(pidFile);
   try {
     await vi.waitFor(() => { expect(pids.filter(running)).toEqual([]); });
   } finally {
@@ -95,7 +96,7 @@ describe('1Password local connector', () => {
     expect(JSON.parse(mutation.content[0]!.text)).toMatchObject({ status: 'approval_required' });
     expect(fs.readFileSync(path.join(dir, 'calls'), 'utf8')).not.toContain('rename_environment');
 
-    const pid = Number(fs.readFileSync(path.join(dir, 'pids'), 'utf8').trim());
+    const [pid] = pidsIn(path.join(dir, 'pids'));
     expect(running(pid)).toBe(true);
     expect(await disconnect({ body: { id: connection.id } }, context)).toMatchObject({ ok: true });
     await vi.waitFor(() => expect(running(pid)).toBe(false));

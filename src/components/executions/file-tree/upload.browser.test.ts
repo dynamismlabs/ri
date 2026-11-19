@@ -2,6 +2,7 @@ import { afterAll, beforeAll, expect, it } from 'vitest';
 import type { Plugin } from 'esbuild';
 import type { Page } from 'playwright-core';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Real tree, menus, folder hooks and multipart client. Only folder reads,
 // the viewer, and the HTTP server are fixtures.
@@ -68,7 +69,7 @@ afterAll(async () => { await fixture?.close(); });
 
 async function open(query = '') {
   const page = await fixture.browser.newPage({ viewport: { width: 1000, height: 800 } });
-  page.setDefaultTimeout(6000);
+  testTimeouts(page, 6000);
   await page.goto(fixture.url + query);
   await page.getByRole('button', { name: 'docs', exact: true }).waitFor();
   return page;

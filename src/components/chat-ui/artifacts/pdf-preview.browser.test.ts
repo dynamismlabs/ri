@@ -8,6 +8,7 @@ import { afterAll, beforeAll, expect, it } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { makePdf } from '@/test/fixtures/pdf';
 import { pdfResponse } from '@/lib/attachments/pdf-delivery';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // PDF cards and the preview dialog in a real Chromium with its PDF viewer:
 // thumbnails drawn by the Home's renderer, the browser's viewer, Download,
@@ -112,7 +113,7 @@ async function openPage(options: { noViewer?: boolean } = {}) {
   // Android's Chrome reports no PDF viewer.
   if (options.noViewer) await context.addInitScript(() => Object.defineProperty(Navigator.prototype, 'pdfViewerEnabled', { get: () => false }));
   const page = await context.newPage();
-  page.setDefaultTimeout(15_000);
+  testTimeouts(page, 15_000);
   await page.goto(address);
   return page;
 }

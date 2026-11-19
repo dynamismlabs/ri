@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { build } from 'esbuild';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright-core';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // No Home or database. Run with RI_CHAT_LINK_BROWSER_TEST=1 pnpm exec vitest run <this file>.
 const enabled = process.env.RI_CHAT_LINK_BROWSER_TEST === '1';
@@ -57,7 +58,7 @@ beforeEach(async () => {
   await context.route('https://example.com/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Opened website</h1>' }));
   await context.addInitScript(() => Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (value: string) => { (window as unknown as { copied: string }).copied = value; } } }));
   page = await context.newPage();
-  page.setDefaultTimeout(2000);
+  testTimeouts(page, 2000);
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(address);
   await page.getByRole('link', { name: 'Website', exact: true }).waitFor();

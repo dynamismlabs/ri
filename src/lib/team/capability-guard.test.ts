@@ -17,7 +17,8 @@ it('keeps role decisions in the team capability table, following aliases and des
     return teamRoleDecisions(source, checker).map(line => `${path.relative(process.cwd(), file)}:${line}`);
   });
   expect(problems).toEqual([]);
-}, 30_000);
+  // Type-checking the whole app takes over 30 seconds on the Intel Mac runner. It asserts nothing about time.
+}, 120_000);
 
 it.each([
   "m.role === 'owner'", "m['role'] === 'owner'", "['owner'].includes(m.role)",

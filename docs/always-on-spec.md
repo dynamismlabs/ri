@@ -208,7 +208,7 @@ Checking it found that most interrupted chats were dropped silently. Startup re-
 | OS | Supervisor | Starts after a reboot | Ri checks and says |
 | --- | --- | --- | --- |
 | macOS | Per-user LaunchAgent `app.ri.service.<id>`, as today, in the GUI login domain (`gui/<uid>`) | When the user's session starts, so on an unattended Mac only with automatic login | If automatic login is off: after a restart or power cut, the Home waits until someone logs in. If FileVault is on: after an unplanned restart nothing starts until someone unlocks the disk, and planned restarts can use `sudo fdesetup authrestart`. Whether the Mac restarts after a power failure (`pmset autorestart`), and whether it sleeps (keep-awake already exists: `ri service awake`). |
-| Linux | systemd user unit, as today | At boot only with lingering on | If linger is off, prints the one command to fix it (`sudo loginctl enable-linger $USER`), since Ri can't run `sudo` quietly. |
+| Linux | systemd user unit, as today. It restarts a failed launcher every 30 s with no start limit, as launchd does, and writes the controller's output to the service log | At boot only with lingering on | If linger is off, prints the one command to fix it (`sudo loginctl enable-linger $USER`), since Ri can't run `sudo` quietly. |
 | Windows | Task Scheduler (section 6.6) | At boot and at logon | n/a until built |
 
 Both `ri doctor` and Settings also warn when free disk space drops below the larger of 20 GiB or the database's size, because a full disk takes a Home down whatever supervises it, and an update's snapshot needs room (section 7.4).
@@ -337,7 +337,7 @@ A typical update is a drain, a stop, a WAL checkpoint and clone, the check-only 
 
 ### 7.5 Keeping releases
 
-**One lock for the whole installation** (a lock file in the store) covers publishing a staged release, switching any Home's pointers and deleting a release. Hashing and copying a release take minutes and run outside it, because a Home switching its pointers while it's offline waits only 5 seconds for the lock. Today's staging lock is per Home's runtime folder (`stageRuntime` in `src/lib/service/runtime.ts`) and the updater's busy flag lives in one controller's memory (`src/lib/service/update.ts`), so neither covers two Homes sharing a store.
+**One lock for the whole installation** (a lock file in the store) covers publishing a staged release, switching any Home's pointers and deleting a release. Hashing and copying a release take minutes and run outside it, because a Home switching its pointers while it's offline waits only 5 seconds for the lock. Staging hashes in full only what the store keeps, the new copy or the release already stored, and reads just the manifest from the folder it copies from. Hashing both read a desktop app's 4 GB release twice on every first start (`stageRelease` in `src/lib/service/store.ts`). Today's staging lock is per Home's runtime folder (`stageRuntime` in `src/lib/service/runtime.ts`) and the updater's busy flag lives in one controller's memory (`src/lib/service/update.ts`), so neither covers two Homes sharing a store.
 
 **A release is kept while anything uses it:**
 - any Home's record names it (running, previous, or waiting to activate)

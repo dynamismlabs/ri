@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { fork, type ChildProcess } from 'node:child_process';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { establishRuntimeJobOwner } from './runtime-job-owner';
+import { pidIn } from '@/test/pids';
 
 const require = createRequire(import.meta.url);
 const project = process.cwd();
@@ -107,7 +108,7 @@ async function runningController() {
   controller = fork(path.join(directory, 'controller.cjs'), [], { cwd: project, env: environment, execArgv: [], stdio: ['ignore', 'ignore', 'pipe', 'ipc'] });
   controller.stderr?.resume();
   await received(controller, 'ready');
-  helperPid = await until(() => fs.existsSync(path.join(directory, 'started')) ? Number(fs.readFileSync(path.join(directory, 'started'), 'utf8')) : undefined);
+  helperPid = await until(() => pidIn(path.join(directory, 'started')));
   return controller;
 }
 

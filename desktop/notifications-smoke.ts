@@ -7,7 +7,7 @@ import https from 'node:https';
 import path from 'node:path';
 import Database from 'better-sqlite3';
 import type { Notification } from 'electron';
-import { acceptance, api, eventually } from './acceptance-fixture';
+import { acceptance, api, assertNoAlertsWithoutSignature, eventually, needsSignedBuild } from './acceptance-fixture';
 import { serviceRequest, type ServiceSession } from '../src/lib/service/client';
 
 interface PresentationFixture { shown: Notification[]; mode: 'show' | 'fail' }
@@ -60,6 +60,16 @@ void acceptance('notifications-smoke', async fixture => {
   fixture.check('Ordinary owner client cannot claim desktop delivery and renderer IPC actions are narrow');
 
   await fixture.navigate('/?settings=notifications');
+  if (await needsSignedBuild(page)) {
+    await assertNoAlertsWithoutSignature(page, { askBridge: true });
+    assert.equal((await channel())?.enabled ?? false, false);
+    assert.deepEqual(deliveries(), []);
+    fixture.check('An unsigned Mac build says why it cannot notify, offers no way to turn alerts on, and its bridge refuses');
+    fixture.report.hostReportedSupport = hostSupported;
+    fixture.report.limits = ['This Mac package has no Apple-issued signature, so macOS would turn its alerts away and Ri refuses them. Delivery, history, click and failure checks run on Linux and on a Developer ID build.'];
+    await page.screenshot({ path: path.join(fixture.base, 'notifications.png') });
+    return;
+  }
   await page.getByRole('button', { name: 'Enable desktop notifications', exact: true }).click();
   await page.getByRole('button', { name: 'Disable desktop notifications', exact: true }).waitFor();
   const enabled = await channel();

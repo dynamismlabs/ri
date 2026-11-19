@@ -42,8 +42,10 @@ export interface CaptureBlobStore {
   prune(draftId: string, keepKeys: string[]): Promise<void>;
 }
 
+/** `acquire` gives a release function. Its promise settles once the lock is
+ * actually free, which the browser's lock manager confirms asynchronously. */
 export interface CaptureLocks {
-  acquire(name: string, ifAvailable: boolean): Promise<(() => void) | null>;
+  acquire(name: string, ifAvailable: boolean): Promise<(() => void | Promise<void>) | null>;
 }
 
 interface FileRecord {
@@ -128,7 +130,17 @@ export function createCaptureStorage(options: {
     return found;
   }
 
-  function session(initial: Journal, unlock: () => void, recovered?: Map<File, string>): CaptureDraftSession {
+  // One window checks its drafts one operation at a time. Two checks at once
+  // each skipped a draft the other had just locked, so opening Quick Capture
+  // right after a reload could list no saved captures at all.
+  let turn: Promise<unknown> = Promise.resolve();
+  function inTurn<T>(operation: () => Promise<T>): Promise<T> {
+    const result = turn.then(operation, operation);
+    turn = result.catch(() => {});
+    return result;
+  }
+
+  function session(initial: Journal, unlock: () => void | Promise<void>, recovered?: Map<File, string>): CaptureDraftSession {
     let record = initial;
     let released = false;
     let tail: Promise<void> = Promise.resolve();
@@ -224,7 +236,7 @@ export function createCaptureStorage(options: {
         if (released) return;
         released = true;
         // Another window must not restore a journal while this session still changes its images.
-        void tail.then(unlock);
+        void tail.then(unlock).catch(() => {});
       },
     };
   }
@@ -238,10 +250,10 @@ export function createCaptureStorage(options: {
   const empty = (record: Journal) => record.submission === 'editing' && !record.text.trim() && !record.files.length;
 
   return {
-    async create() {
+    create: () => inTurn(async () => {
       const registry = await locks.acquire(`${LOCK_PREFIX}registry`, false);
       if (!registry) throw new Error('Capture storage is busy. Retry in a moment.');
-      let release: (() => void) | null = null;
+      let release: (() => void | Promise<void>) | null = null;
       try {
         for (const record of records()) {
           if (!record.deleted && !empty(record)) continue;
@@ -250,7 +262,7 @@ export function createCaptureStorage(options: {
           try {
             const current = read(record.id);
             if (current && (current.deleted || empty(current))) await reap(current);
-          } finally { available(); }
+          } finally { await available(); }
         }
         if (records().filter(record => !record.deleted).length >= MAX_DRAFTS) {
           throw new Error('The saved capture limit is 10. Recover or discard an earlier capture before saving another.');
@@ -263,11 +275,11 @@ export function createCaptureStorage(options: {
         write(initial);
         return session(initial, release);
       } catch (error) {
-        release?.();
+        await release?.();
         throw persistenceError(error);
-      } finally { registry(); }
-    },
-    async recoverable() {
+      } finally { await registry(); }
+    }),
+    recoverable: () => inTurn(async () => {
       try {
         const result: CaptureDraftSummary[] = [];
         for (const candidate of records()) {
@@ -279,12 +291,12 @@ export function createCaptureStorage(options: {
             if (!record) continue;
             if (record.deleted || empty(record)) { await reap(record); continue; }
             result.push({ id: record.id, text: record.text, updatedAt: record.updatedAt, imageCount: record.files.length, submission: record.submission });
-          } finally { release(); }
+          } finally { await release(); }
         }
         return result.sort((a, b) => b.updatedAt - a.updatedAt);
       } catch (error) { throw persistenceError(error); }
-    },
-    async restore(id) {
+    }),
+    restore: id => inTurn(async () => {
       if (!validId(id)) throw new Error('This saved capture identifier is invalid.');
       const release = await locks.acquire(LOCK_PREFIX + id, true);
       if (!release) throw new Error('This capture is already open in another window.');
@@ -309,8 +321,8 @@ export function createCaptureStorage(options: {
           draft: { text: record.text, usedVoice: record.usedVoice, files, submission: record.submission },
           missingFiles,
         };
-      } catch (error) { release(); throw persistenceError(error); }
-    },
+      } catch (error) { await release(); throw persistenceError(error); }
+    }),
   };
 }
 
@@ -319,10 +331,13 @@ function browserLocks(): CaptureLocks {
     acquire(name, ifAvailable) {
       if (!navigator.locks) return Promise.reject(new Error('Capture storage needs browser lock support. Open Ri in a secure, current browser.'));
       return new Promise((resolve, reject) => {
-        void navigator.locks.request(name, { mode: 'exclusive', ifAvailable }, async lock => {
+        // request() settles only after the lock is released, so the release
+        // function hands that back for a caller that must see it free.
+        const released: Promise<unknown> = navigator.locks.request(name, { mode: 'exclusive', ifAvailable }, async lock => {
           if (!lock) { resolve(null); return; }
-          await new Promise<void>(unlock => resolve(unlock));
-        }).catch(reject);
+          await new Promise<void>(unlock => resolve(() => { unlock(); return released.then(() => {}, () => {}); }));
+        });
+        released.catch(reject);
       });
     },
   };
