@@ -52,6 +52,12 @@ if (!process.env.PORT) {
 process.env.RI_INSTALL_ROOT = path.join(process.env[APP_ROOT_ENV]!, 'installation');
 process.env.RI_COMMAND_DIR = path.join(process.env[APP_ROOT_ENV]!, 'command');
 
+/**
+ * No test reads the hosted app catalog from GitHub. The shipped list only, unless a test names
+ * another (`RI_APP_CATALOG`), and the feed's own tests stub `fetch` and clear this.
+ */
+process.env.RI_APP_CATALOG = 'bundled';
+
 /** Native providers must be mocked or explicitly pointed at a test binary.
  * A missed mock must fail locally rather than use the operator's signed-in CLI.
  * Tests with controlled stand-ins set their command override after setup. */
