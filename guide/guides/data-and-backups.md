@@ -13,7 +13,7 @@ Your tasks, notes, chats and files live in one folder on the computer that runs 
 | --- | --- |
 | `data.db` | Your tasks, notes, areas, chats and settings, in one database. |
 | `attachments` | The files you and your agents added. |
-| `tasks`, `notes`, `areas`, `stream` | A readable Markdown copy of your tasks, notes, areas and Stream, kept in step by Ri. It opens in Obsidian. Ri writes it from the database, so edits made here are overwritten. |
+| `tasks`, `notes`, `areas`, `streams` | A readable Markdown copy of your tasks, notes, areas and Stream, kept in step by Ri. It opens in Obsidian. Ri writes it from the database, so edits made here are overwritten. |
 | `USER.md`, `SOUL.md`, `MEMORY.md` | What your assistant knows about you and itself. See [Your main chat](/docs/concepts/main-chat). |
 | `skills`, `skill-drafts` | Your [skills](/docs/concepts/skills). |
 | `.config` | This computer's keys and private settings. Never share it or copy it to another computer. |
