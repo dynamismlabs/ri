@@ -6,12 +6,12 @@ import { AlertCircle, Bot, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
-import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
 import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';
 import { toast } from 'sonner';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { APP_NAME } from '@/constants/app';
+import { useAllowApp } from './allow-app';
 import { HubAppPanel } from './hub-access';
 import { TurnOffAccessChoice } from './turn-off-access-choice';
 
@@ -21,12 +21,14 @@ const statusText = (status: PlaceStatus, app: string, error?: string) =>
 
 /**
  * Who uses a personal app (docs/personal-apps.md): Ri's own chats, and each agent allowed to. Each
- * is its own connection with its own OAuth client, so the app's consent screen set what each sees.
- * Allowing an agent says what that means first (spec Decision 3).
+ * is its own connection with its own OAuth client, so the app's choice set what each sees, asked in
+ * Ri's own dialog or on the app's consent screen (useAllowApp). Allowing an agent says what that
+ * means first (spec Decision 3).
  */
 export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemoved: () => void }) {
   const queryClient = useQueryClient();
   const confirm = useConfirm();
+  const allowApp = useAllowApp();
   const app = useQuery(trpc.personalApps.get.queryOptions({ appId }));
   // An app Ri installed: removing it uninstalls it, keeping its folder and data (src/lib/apps/remove.ts).
   const source = useQuery(trpc.appBuilds.forApp.queryOptions({ personalAppId: appId }));
@@ -45,12 +47,14 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const failed = (e: unknown) => setError(e instanceof Error ? e.message : String(e));
 
   const allow = useMutation({
-    mutationFn: async (agent: { id: string; name: string }) => {
+    mutationFn: async (agent: { id: string; name: string; serverId?: string }) => {
+      // Already allowed and waiting on the app: only the app's own question is left.
+      if (agent.serverId) return void await allowApp.allow(agent.serverId);
       const name = app.data!.name;
-      if (!await confirm({ title: `Let ${agent.name} use ${name}?`, description: allowConsequence(name, agent.name), confirmLabel: `Continue to ${name}` })) return;
+      if (!await confirm({ title: `Let ${agent.name} use ${name}?`, description: allowConsequence(name, agent.name), confirmLabel: 'Continue' })) return;
       const start = await trpcClient.personalApps.allow.mutate({ appId, workspaceId: agent.id, returnTo: returnTo() });
       await refresh();
-      if (start.requiresAuth) await openIntegrationAuthorization(start.authUrl);
+      if (start.requiresAuth) await allowApp.allow(start.serverId);
     },
     onError: failed,
   });
@@ -66,9 +70,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const reconnectRi = useMutation({
     mutationFn: async () => {
       const ri = app.data?.ri;
-      if (!ri) return;
-      const start = await trpcClient.integrations.mcpServerPost.mutate({ params: { id: ri.serverId }, body: { returnTo: returnTo() } });
-      if ('authUrl' in start && start.authUrl) await openIntegrationAuthorization(start.authUrl);
+      if (ri) await allowApp.allow(ri.serverId);
     },
     onError: failed,
   });
@@ -97,7 +99,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const { name, ri, agents } = app.data;
   const allowed = new Map(agents.flatMap((place) => place.place.kind === 'agent' ? [[place.place.workspaceId, place] as const] : []));
   const others = (workspaces ?? []).filter((workspace) => !allowed.has(workspace.id));
-  const busy = allow.isPending || disallow.isPending || remove.isPending || reconnectRi.isPending;
+  const busy = allow.isPending || disallow.isPending || remove.isPending || reconnectRi.isPending || allowApp.checking;
 
   return (
     <section aria-labelledby="app-access" className="space-y-2">
@@ -118,7 +120,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
             <Bot size={14} className="shrink-0 text-muted-foreground" aria-hidden />
             <span className="min-w-0 flex-1"><span className="block truncate">{place.label}</span>
               <span className="block text-xs text-muted-foreground">{statusText(place.status, name, place.error)}</span></span>
-            {place.status !== 'connected' && <Button size="xs" variant="outline" disabled={busy} onClick={() => allow.mutate({ id: workspaceId, name: place.label })}>{place.status === 'sign_in' ? 'Continue' : 'Reconnect'}</Button>}
+            {place.status !== 'connected' && <Button size="xs" variant="outline" disabled={busy} onClick={() => allow.mutate({ id: workspaceId, name: place.label, serverId: place.serverId })}>{place.status === 'sign_in' ? 'Continue' : 'Reconnect'}</Button>}
             <Button size="xs" variant="ghost" disabled={busy} onClick={() => disallow.mutate({ id: workspaceId, name: place.label })}>Remove</Button>
           </li>
         ))}
@@ -134,6 +136,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
         <Button size="xs" variant="ghost" className="text-destructive" disabled={busy} onClick={() => remove.mutate()}>Remove {name}</Button>
       </div>
       {hubApp && <div className="pt-4"><HubAppPanel id={hubApp.id} embedded /></div>}
+      {allowApp.dialog}
     </section>
   );
 }

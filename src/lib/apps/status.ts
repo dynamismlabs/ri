@@ -30,6 +30,8 @@ export interface AppStatus {
   address?: string | null;
   /** Where the app keeps its data, which removing it from Ri keeps (the kit's `APP_DATA_DIR`). */
   dataDir?: string | null;
+  /** The app's host key, which lets Ri allow itself in the app without a browser (host-access.ts). Kits before the grant don't say. */
+  hostKeyPath?: string | null;
   lastChange?: { at?: string; outcome?: string; release?: string; previous?: string; message?: string; kind?: string } | null;
   /** The last error the kit found, set only when it isn't running. */
   lastError?: string | null;
@@ -65,7 +67,7 @@ export function parseStatus(raw: Record<string, unknown>, checkedAt: string): Ap
     ...(state === 'unknown' ? { problem: 'failed' as const, message: 'The app kit reported a state Ri doesn’t know.' } : {}),
     service: text(raw.service, 40), pid: typeof raw.pid === 'number' ? raw.pid : null, since: text(raw.since, 40),
     release: text(raw.release, 80), answering: text(raw.answering, 80), core: text(raw.core, 40), address: text(raw.address, 300),
-    dataDir: text(raw.dataDir, 1000),
+    dataDir: text(raw.dataDir, 1000), hostKeyPath: text(raw.hostKeyPath, 1000),
     lastChange: change ? {
       ...(text(change.at, 40) ? { at: text(change.at, 40)! } : {}), ...(text(change.outcome, 40) ? { outcome: text(change.outcome, 40)! } : {}),
       ...(text(change.release, 80) ? { release: text(change.release, 80)! } : {}), ...(text(change.previous, 80) ? { previous: text(change.previous, 80)! } : {}),

@@ -5,6 +5,7 @@ import { safeReturnPath } from './oauth-return';
 import { getAppSourceForApp } from '@/lib/db/queries';
 import { AppBuildError } from '@/lib/apps/builder';
 import { removeApp } from '@/lib/apps/remove';
+import { ACCESS_KINDS, allowPlaceHere, placeAccess } from '@/lib/apps/host-access';
 
 /** Remove an app Ri installed, its kit's refusals said as this router says its own. */
 async function removeAppWithBuildErrors(sourceId: string, turnOffAccess?: boolean) {
@@ -45,6 +46,11 @@ export const personalAppsRouter = router({
     .mutation(({ input, ctx }) => run(() => addPersonalApp({ ...input, returnTo: safeReturnPath(input.returnTo) ?? undefined }, ctx.request))),
   allow: p.input(z.object({ appId: id, workspaceId: id, returnTo }).strict())
     .mutation(({ input, ctx }) => run(() => allowPersonalAppInAgent({ ...input, returnTo: safeReturnPath(input.returnTo) ?? undefined }, ctx.request))),
+  // What a place may do in an app, asked in Ri's own dialog when Ri installed the app, and allowing
+  // it there without a browser (src/lib/apps/host-access.ts). Otherwise the app's own page asks.
+  accessChoices: p.input(z.object({ serverId: id }).strict()).query(({ input }) => run(() => placeAccess(input.serverId))),
+  allowHere: p.input(z.object({ serverId: id, access: z.enum(ACCESS_KINDS) }).strict())
+    .mutation(({ input }) => run(() => allowPlaceHere(input.serverId, input.access))),
   disallow: p.input(z.object({ appId: id, workspaceId: id }).strict())
     .mutation(({ input }) => run(() => removePersonalAppFromAgent(input))),
   // An app Ri installed is uninstalled too, keeping its folder and data (src/lib/apps/remove.ts).

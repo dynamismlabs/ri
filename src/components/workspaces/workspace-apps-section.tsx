@@ -5,35 +5,38 @@ import { AlertCircle, AppWindow, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import { openIntegrationAuthorization } from '@/lib/client/desktop';
+import { useAllowApp } from '@/components/apps/allow-app';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 
 /**
  * Which personal apps an agent may use (docs/personal-apps.md). Allowing one is an access decision,
- * so Ri says what it means first, then the app's own consent screen asks which of its data this
- * agent may see and whether it may make changes. Each agent connects with its own OAuth client and
- * token, so that choice belongs to this agent alone.
+ * so Ri says what it means first, then the app asks what this agent may do: in Ri's own dialog for an
+ * app Ri installed, or on the app's consent screen (useAllowApp). Each agent connects with its own
+ * OAuth client and token, so that choice belongs to this agent alone.
  */
 export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspaceId: string; workspaceName: string }) {
   const apps = useQuery(trpc.personalApps.list.queryOptions());
   const queryClient = useQueryClient();
   const confirm = useConfirm();
+  const allowApp = useAllowApp();
   const [error, setError] = useState<string | null>(null);
   const refresh = () => queryClient.invalidateQueries({ queryKey: trpc.personalApps.pathKey() });
   const returnTo = typeof window === 'undefined' ? undefined : `${window.location.pathname}${window.location.search}`;
 
   const allow = useMutation({
-    mutationFn: async (app: { id: string; name: string }) => {
+    mutationFn: async (app: { id: string; name: string; serverId?: string }) => {
+      // Already allowed and waiting on the app: only the app's own question is left.
+      if (app.serverId) return void await allowApp.allow(app.serverId);
       const go = await confirm({
         title: `Let ${workspaceName} use ${app.name}?`,
         description: allowConsequence(app.name, workspaceName),
-        confirmLabel: `Continue to ${app.name}`,
+        confirmLabel: 'Continue',
       });
       if (!go) return;
       const start = await trpcClient.personalApps.allow.mutate({ appId: app.id, workspaceId, returnTo });
       await refresh();
-      if (start.requiresAuth) await openIntegrationAuthorization(start.authUrl);
+      if (start.requiresAuth) await allowApp.allow(start.serverId);
     },
     onError: (e) => setError(e instanceof Error ? e.message : String(e)),
     onSuccess: () => setError(null),
@@ -90,7 +93,7 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
                   </p>
                 </div>
                 {mine && mine.status !== 'connected' && (
-                  <Button size="xs" variant="outline" disabled={busy} onClick={() => allow.mutate({ id: app.id, name: app.name })}>
+                  <Button size="xs" variant="outline" disabled={busy || allowApp.checking} onClick={() => allow.mutate({ id: app.id, name: app.name, serverId: mine.serverId })}>
                     {mine.status === 'sign_in' ? 'Continue' : 'Reconnect'}
                   </Button>
                 )}
@@ -102,6 +105,7 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
           })}
         </ul>
       )}
+      {allowApp.dialog}
     </div>
   );
 }
