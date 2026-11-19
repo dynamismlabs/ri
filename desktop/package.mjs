@@ -6,9 +6,17 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { createPublicKey } from 'node:crypto';
-import { assertDesktopPackagingRuntime, DESKTOP_NODE_VERSION } from './package-preflight.mjs';
+import { assertDesktopPackagingRuntime, DESKTOP_NODE_VERSION, macSigning } from './package-preflight.mjs';
 
 assertDesktopPackagingRuntime();
+const headless = process.argv.includes('--headless');
+const releaseBuild = process.argv.includes('--release');
+// An installer to hand to someone, without publisher keys (docs/publishing.md). On
+// macOS it is ad-hoc signed, since Apple silicon won't run an app with no signature at
+// all, unless CSC_NAME names a Developer ID. Can't update itself.
+const shareBuild = process.argv.includes('--share');
+// A Developer ID signs and notarizes the Mac app. Checked before anything is built.
+const signing = macSigning({ release: releaseBuild, share: shareBuild });
 const { build, Platform, Arch } = await import('electron-builder');
 const tar = await import('tar');
 const { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, LINUX_ICON_RELATIVE_PATH, MAC_MINIMUM_SYSTEM_VERSION, MAC_SIGN_IGNORE, pruneDependencySourceMaps, removeUnusedPackageCopy, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
@@ -17,12 +25,6 @@ const { stageSpeechHelper } = await import('./speech/package.mjs');
 
 const repo = fileURLToPath(new URL('../', import.meta.url));
 const require = createRequire(import.meta.url);
-const headless = process.argv.includes('--headless');
-const releaseBuild = process.argv.includes('--release');
-// An installer to hand to someone, without publisher keys or a Developer ID
-// (docs/publishing.md). Ad-hoc signed on macOS, since Apple silicon won't run
-// an app with no signature at all, and an AppImage on Linux. Can't update itself.
-const shareBuild = process.argv.includes('--share');
 // A release built from a checkout for this computer (docs/always-on-spec.md
 // section 8): written straight into this folder, with no distribution copy or
 // archive, since the release store takes its files from here.
@@ -136,9 +138,8 @@ fs.writeFileSync(desktopConfig, JSON.stringify({ callbackUrl, relayProviders: pr
 console.info(`Verified ${rebaseResourceLinks(stage, stage, server)} portable resource links.`);
 copyNextVectorExtension(server);
 run(portableNode, [path.join(repo, 'desktop/native-probe.mjs')], server, process.env, 35_000);
-if (releaseBuild && process.platform === 'darwin') {
-  if (!process.env.CSC_NAME) throw new Error('Signed macOS releases require CSC_NAME with your Developer ID Application identity');
-  signRuntime(stage, process.env.CSC_NAME, path.join(repo, 'desktop/runtime-entitlements.plist'));
+if (signing.notarize) {
+  signRuntime(stage, signing.codesignIdentity, path.join(repo, 'desktop/runtime-entitlements.plist'), signing.keychain);
   if (process.argv.includes('--with-speech')) {
     // Signing changes native bytes. Inventory the final signed helper before
     // freezing the runtime so publisher review can bind to this candidate.
@@ -187,7 +188,7 @@ console.info(`Headless runtime: ${runtimeOutput}`);
 console.info(`Update payload: ${runtimeArchive}`);
 if (!headless) {
   const platform = process.platform === 'darwin' ? Platform.MAC : process.platform === 'win32' ? Platform.WINDOWS : Platform.LINUX;
-  const platformTargets = process.platform === 'darwin' ? (releaseBuild && !shareBuild ? ['dmg', 'zip'] : ['dmg']) : process.platform === 'win32' ? ['nsis'] : shareBuild ? ['AppImage', 'deb'] : ['AppImage'];
+  const platformTargets = process.platform === 'darwin' ? (releaseBuild && !shareBuild ? ['dmg', 'zip'] : ['dmg']) : process.platform === 'win32' ? ['nsis'] : ['AppImage', 'deb'];
   const targets = (shareBuild || releaseBuild) ? platformTargets : ['dir'];
   const resourcesToCopy = ['server', 'node', 'desktop-config.json', 'runtime-manifest.json', ...(fs.existsSync(policy) ? ['release-policy.json'] : [])];
   // electron-builder normalizes its configuration in place. Each installer
@@ -196,14 +197,21 @@ if (!headless) {
     appId: 'app.ri.desktop', productName: 'Ri', electronVersion: pkg.devDependencies.electron,
     directories: { app: shell, output: path.join(repo, 'release/desktop'), buildResources: path.join(repo, 'assets/brand/icons') },
     files: [...SHELL_ENTRYPOINTS, 'package.json', '!node_modules/**/*'], asar: true,
-    npmRebuild: false, nodeGypRebuild: false, forceCodeSigning: releaseBuild && process.platform === 'darwin',
+    npmRebuild: false, nodeGypRebuild: false, forceCodeSigning: signing.notarize,
     protocols: [{ name: 'Ri OAuth callback', schemes: ['ri'] }],
-    mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: releaseBuild ? process.env.CSC_NAME : shareBuild ? '-' : null, signIgnore: MAC_SIGN_IGNORE, minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION, hardenedRuntime: true, notarize: releaseBuild,
+    mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: signing.identity, signIgnore: MAC_SIGN_IGNORE, minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION, hardenedRuntime: true, notarize: signing.notarize,
       extendInfo: { NSMicrophoneUsageDescription: 'Ri uses the microphone when you record a voice message.', NSCameraUsageDescription: 'Ri uses the camera when you scan a pairing code.' } },
     linux: { executableName: 'ri', syncDesktopName: true, icon: path.join(repo, LINUX_ICON_RELATIVE_PATH), category: 'Office', maintainer: 'Ri contributors' },
+    // The package manager owns a deb install, so its app never replaces itself
+    // (desktop/shell-update.ts). No updater files: without them electron-builder
+    // doesn't mark the install as a deb, or list the deb in the AppImage's
+    // latest-linux.yml. The runtime inside still updates from the feed.
+    deb: { publish: null },
     win: { icon: path.join(repo, 'assets/brand/icons/icon.ico'), signExecutable: false, artifactName: 'Ri-Setup-${version}-${arch}.exe' },
     nsis: { oneClick: false, perMachine: false, allowElevation: false, allowToChangeInstallationDirectory: true, deleteAppDataOnUninstall: false, differentialPackage: false, include: path.join(repo, 'desktop/windows-installer.nsh') },
-    // The native updater obtains the eligible URL from signed Ri metadata.
+    // Only so electron-builder writes the updater's latest*.yml. The app never reads this
+    // address: it points the updater at the folder of the shell file named in the signed
+    // release (desktop/shell-update.ts), which is the version's GitHub release, not the feed.
     publish: process.env.RI_RELEASE_FEED ? [{ provider: 'generic', url: new URL('.', process.env.RI_RELEASE_FEED).href }] : null,
     afterPack: async context => {
       const resources = process.platform === 'darwin' ? path.join(context.appOutDir, 'Ri.app/Contents/Resources') : path.join(context.appOutDir, 'resources');

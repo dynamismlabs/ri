@@ -10,10 +10,16 @@ import { installShellUpdate, stageMacUpdate } from './shell-install';
 let updating = false;
 let backgroundVersion: string | undefined;
 
-/** macOS only lets an app with an Apple-issued signature replace itself. */
+/** macOS only lets an app with an Apple-issued signature replace itself. On Linux only
+ * an AppImage can: a copy installed from a .deb belongs to the package manager. */
 function canReplaceItself() {
+  if (process.platform === 'linux') return !!process.env.APPIMAGE;
   return process.platform !== 'darwin' || appleSigned(path.resolve(app.getPath('exe'), '../../..'));
 }
+
+const cantReplaceItself = () => process.platform === 'linux'
+  ? 'A copy installed from a .deb updates when you install the newer .deb. Ri itself still updates, and so do the pages the app shows.'
+  : 'macOS only lets an app signed by its developer replace itself. Ri itself still updates. To get a newer app, install a new copy from its dmg.';
 
 function installedAppPart() {
   try { return (JSON.parse(fs.readFileSync(path.join(process.resourcesPath, 'desktop-config.json'), 'utf8')) as { appPart?: string }).appPart; }
@@ -67,7 +73,7 @@ export async function relaunchWithHome(homeVersion: string, prepare: () => Promi
 export async function updateDesktop(window: BrowserWindow, prepare: () => Promise<boolean>, install: () => void) {
   if (updating) return;
   if (app.isPackaged && releasePolicy() && !(await canReplaceItself())) {
-    await dialog.showMessageBox(window, { message: 'This copy of the app can\'t update itself', detail: 'macOS only lets an app signed by its developer replace itself. Ri itself still updates. To get a newer app, install a new copy from its dmg.' });
+    await dialog.showMessageBox(window, { message: 'This copy of the app can\'t update itself', detail: cantReplaceItself() });
     return;
   }
   if (!app.isPackaged || !releasePolicy()) { await dialog.showMessageBox(window, { message: 'Desktop updates are not configured', detail: 'This build needs a signed release and a publisher feed.' }); return; }

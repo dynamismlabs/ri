@@ -9,6 +9,8 @@
  *
  * Each platform has a file per channel, a file per version, and a signed index of
  * the versions kept, which is how a connected computer finds a bridge release.
+ * Other files on the feed (install.sh, the downloads manifests the website reads) are
+ * not signed metadata, so these commands leave them alone.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,6 +34,9 @@ function compareVersions(a, b) {
   if (left.pre === right.pre) return 0;
   return !left.pre ? 1 : !right.pre ? -1 : left.pre < right.pre ? -1 : 1;
 }
+/** A signed metadata file: `<channel, version or index>-<platform>-<arch>.json`. */
+const SIGNED_FILE = /^(.+)-(?:darwin|linux)-(?:arm64|x64)\.json$/;
+const signedFiles = folder => fs.readdirSync(folder).filter(name => SIGNED_FILE.test(name));
 const dated = (days, now) => ({ publishedAt: new Date(now).toISOString(), expiresAt: new Date(now + days * 86_400_000).toISOString() });
 const write = (out, name, value) => fs.writeFileSync(path.join(out, name), `${JSON.stringify(value)}\n`);
 const read = (folder, name) => { const file = path.join(folder, name); return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : null; };
@@ -69,7 +74,7 @@ export function promote({ existing, version, key, out, sequence, days = 30, now 
   const publicKey = createPublicKey(key);
   fs.mkdirSync(out, { recursive: true });
   // Exactly this version: 0.2.0 isn't 0.2.0-rc.1.
-  const names = fs.readdirSync(existing).filter(name => /^(.+)-(?:darwin|linux)-(?:arm64|x64)\.json$/.exec(name)?.[1] === version);
+  const names = signedFiles(existing).filter(name => SIGNED_FILE.exec(name)?.[1] === version);
   if (!names.length) throw new Error(`Version ${version} is not on this feed`);
   for (const name of names) {
     const release = openEnvelope(read(existing, name), publicKey);
@@ -84,7 +89,7 @@ export function refresh({ existing, key, out, days = 30, now = Date.now() }) {
   const publicKey = createPublicKey(key);
   fs.mkdirSync(out, { recursive: true });
   let count = 0;
-  for (const name of fs.readdirSync(existing).filter(file => file.endsWith('.json'))) {
+  for (const name of signedFiles(existing)) {
     const value = openEnvelope(read(existing, name), publicKey);
     write(out, name, envelope(value.expiresAt ? { ...value, expiresAt: new Date(now + days * 86_400_000).toISOString() } : value, key));
     count++;
@@ -96,7 +101,7 @@ export function withdraw({ existing, version, key, out, sequence, days = 30, now
   const publicKey = createPublicKey(key);
   fs.mkdirSync(out, { recursive: true });
   let count = 0;
-  for (const name of fs.readdirSync(existing).filter(file => file.endsWith('.json') && !file.startsWith('index-'))) {
+  for (const name of signedFiles(existing).filter(file => !file.startsWith('index-'))) {
     const release = openEnvelope(read(existing, name), publicKey);
     if (release.version !== version) continue;
     write(out, name, envelope({ ...release, withdrawn: true, sequence, ...dated(days, now) }, key));
@@ -106,10 +111,20 @@ export function withdraw({ existing, version, key, out, sequence, days = 30, now
   return count;
 }
 
+/**
+ * The feed's address, as every installation pins it: an HTTPS folder on a host that may
+ * only redirect, as https://releases.ri.app/ redirects to the GitHub release tagged `feed`.
+ */
+export function feedAddress(value) {
+  const feed = new URL(value);
+  if (feed.protocol !== 'https:' || feed.username || feed.password || feed.search || feed.hash) throw new Error('The release feed must be a plain HTTPS address');
+  return feed.href.endsWith('/') ? feed.href : `${feed.href}/`;
+}
+
 /** The install script, with this feed and key written in. */
 export function writeInstallScript({ template, feed, key, out }) {
   const publicKey = createPublicKey(key).export({ type: 'spki', format: 'pem' }).toString();
-  const script = fs.readFileSync(template, 'utf8').replaceAll('__RI_FEED__', feed).replaceAll('__RI_PUBLIC_KEY_BASE64__', Buffer.from(publicKey).toString('base64'));
+  const script = fs.readFileSync(template, 'utf8').replaceAll('__RI_FEED__', feedAddress(feed)).replaceAll('__RI_PUBLIC_KEY_BASE64__', Buffer.from(publicKey).toString('base64'));
   fs.writeFileSync(path.join(out, 'install.sh'), script, { mode: 0o755 });
 }
 

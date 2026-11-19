@@ -41,6 +41,27 @@ it('lets a computer on stable fetch a release promoted after it was published', 
   expect(version).toMatchObject({ version: '0.2.0', sequence: 10 });
 });
 
+it('follows the feed at releases.ri.app through its redirect to the GitHub release', async () => {
+  publishTo('0.2.0', 'a', 'latest', 10);
+  promoteTo('0.2.0', 20);
+  fs.writeFileSync(releasePolicyFile(), JSON.stringify({ format: 1, feed: 'https://releases.ri.app/', publicKey }));
+  const asked: string[] = [];
+  vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+    asked.push(url);
+    const { host, pathname } = new URL(url);
+    // The domain only redirects, temporarily, and GitHub redirects again to its storage.
+    if (host === 'releases.ri.app') return new Response(null, { status: 307, headers: { location: `https://github.com/dynamismlabs/ri/releases/download/feed${pathname}` } });
+    if (host === 'github.com') return new Response(null, { status: 302, headers: { location: `https://release-assets.githubusercontent.com/${path.basename(pathname)}?token=t` } });
+    return new Response(fs.readFileSync(path.join(feed, path.basename(pathname))));
+  }));
+  expect(await checkRelease()).toMatchObject({ version: '0.2.0', channel: 'stable' });
+  expect(asked).toEqual([
+    `https://releases.ri.app/stable-${process.platform}-${process.arch}.json`,
+    `https://github.com/dynamismlabs/ri/releases/download/feed/stable-${process.platform}-${process.arch}.json`,
+    `https://release-assets.githubusercontent.com/stable-${process.platform}-${process.arch}.json?token=t`,
+  ]);
+});
+
 it('keeps a separate order for each channel, since stable is often behind latest', async () => {
   publishTo('0.2.0', 'a', 'latest', 10);
   promoteTo('0.2.0', 20);
