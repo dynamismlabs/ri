@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Cpu, MessageSquarePlus, Loader2 } from 'lucide-react';
+import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import {
   effortOptionsForModel,
   explicitEffortForModel,
@@ -28,7 +28,7 @@ import {
 import { VisibleModelOptions } from '@/components/settings/visible-model-options';
 import { MakeDefaultRow } from '@/components/settings/make-default-row';
 import { useDefaultSelection } from '@/hooks/use-default-selection';
-import { ProviderIcon } from '@/components/settings/harness-connection-ui';
+import { HarnessMark, ProviderIcon } from '@/components/settings/harness-connection-ui';
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { readProviderEffort } from '@/lib/executions/provider-effort';
 import { readProviderSpeed } from '@/lib/executions/provider-speed';
@@ -184,7 +184,7 @@ export function ComposerProviderMenu({
               'disabled:opacity-50',
             )}
           >
-            <Cpu size={11} className="text-primary/70" />
+            <HarnessMark id={currentProvider} />
             <ModelMenuLabel model={fallbackLabel} effort={effortLabel} variant={variantLabel} speed={serviceTier ?? undefined} />
           </button>
         </Tip>

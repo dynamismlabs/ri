@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Gauge, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { HarnessIcon, harnessLogo } from '@/components/settings/harness-connection-ui';
+import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { UsageWarningsSetting } from '@/components/settings/usage-warnings-setting';
 import { useHarnessRateLimits } from '@/hooks/use-harness-rate-limits';
 import { useUserState } from '@/hooks/use-user-state';
@@ -11,9 +11,7 @@ import {
   ageLabel, enabledUsageWarnings, rateLimitRows, rateLimitStatus, rateLimitWarning, RATE_LIMIT_WARNING_MAX_AGE_MS,
   type RateLimitRow, type RateLimitTone,
 } from '@/lib/harness/rate-limit-display';
-import { type HarnessId } from '@/lib/harness/registry';
 import { cn } from '@/lib/utils';
-import { isDarkBrandMark } from '@/components/integrations/integration-logo';
 
 // One control for account usage: inspect all windows, or see each provider's
 // closest-to-full allowance past a threshold that's on. Badges use fresh
@@ -94,7 +92,7 @@ export function RateLimitsPill() {
           <Gauge size={11} aria-hidden="true" />
           {warnings.map(({ harness, row }) => (
             <span key={harness} aria-hidden="true" className="flex min-w-5 flex-col items-center gap-0.5">
-              <UsageLogo harness={harness} size={12} />
+              <HarnessMark id={harness} />
               <span className={cn('font-mono text-[10px] leading-none tabular-nums', TEXT_TONE[row.tone])}>
                 {row.percent === undefined ? '!' : usagePercentLabel(row.percent)}
               </span>
@@ -139,7 +137,7 @@ export function RateLimitsPill() {
             {harnesses.map((entry) => (
               <section key={entry.harness} className="space-y-1.5">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="flex items-center gap-1.5 text-xs font-medium"><UsageLogo harness={entry.harness} size={12} />{entry.name}</span>
+                  <span className="flex items-center gap-1.5 text-xs font-medium"><HarnessMark id={entry.harness} />{entry.name}</span>
                   <span className="text-[10.5px] text-muted-foreground">{ageLabel(entry.observedAt)}</span>
                 </div>
                 {rateLimitRows(entry.buckets).map((row) => <LimitRow key={row.key} row={row} />)}
@@ -151,14 +149,6 @@ export function RateLimitsPill() {
       </PopoverContent>
     </Popover>
   );
-}
-
-function UsageLogo({ harness, size }: { harness: HarnessId; size: number }) {
-  const logo = harnessLogo(harness);
-  // Match the model selector's shared brand colors. Near-black marks use
-  // the theme foreground so they stay visible in both appearances.
-  const monochrome = isDarkBrandMark(logo.hex);
-  return <span className="flex text-foreground" style={monochrome ? undefined : { color: `#${logo.hex}` }}><HarnessIcon id={harness} size={size} /></span>;
 }
 
 const BAR_TONE: Record<RateLimitTone, string> = {

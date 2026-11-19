@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Cpu } from 'lucide-react';
 import { toast } from 'sonner';
+import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { ModelList } from '@/components/settings/model-list';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useUserState } from '@/hooks/use-user-state';
@@ -66,7 +66,7 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
   return (
     <div className="space-y-2 text-xs">
       <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
-        <Cpu size={12} />
+        <HarnessMark id={harness} />
         <span>{modelId ? `${findProvider(harness)?.name ?? harness} · ${model?.label ?? modelId}${effort ? ` · ${effort}` : ''}` : 'Your normal reviewer settings'}</span>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild><button type="button" className="text-primary hover:underline">Change</button></PopoverTrigger>

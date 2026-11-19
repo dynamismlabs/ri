@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Cpu } from 'lucide-react';
+import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { MakeDefaultRow } from '@/components/settings/make-default-row';
 import type { ModelSelection } from '@/components/settings/model-list';
 import { VisibleModelOptions } from '@/components/settings/visible-model-options';
@@ -98,7 +98,7 @@ export function ModelControl({
             disabled={disabled}
             className={TRIGGER_CLASS}
           >
-            <Cpu size={11} className="text-primary/70" />
+            <HarnessMark id={selection.harness} />
             <ModelMenuLabel model={label} effort={effortLabel} variant={variantLabel} speed={speed ?? undefined} />
           </button>
         </Tip>

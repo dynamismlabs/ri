@@ -45,6 +45,20 @@ export function HarnessIcon({ id, size = 16, className }: { id: ProviderId; size
   );
 }
 
+/**
+ * The bare logo in its brand color, for a chosen model's engine shown inline
+ * (the model picker, the reviewer line, the usage pill). Near-black marks take
+ * the text color so they show in dark mode.
+ */
+export function HarnessMark({ id, size = 12 }: { id: ProviderId; size?: number }) {
+  const { hex } = harnessLogo(id);
+  return (
+    <span className="flex shrink-0 text-foreground" style={isDarkBrandMark(hex) ? undefined : { color: `#${hex}` }}>
+      <HarnessIcon id={id} size={size} />
+    </span>
+  );
+}
+
 /** The logo on a tile, in its brand color. Near-black marks take the text color so they show in dark mode. */
 export function ProviderIcon({ id, size = 15 }: { id: ProviderId; size?: number }) {
   const { hex } = harnessLogo(id);

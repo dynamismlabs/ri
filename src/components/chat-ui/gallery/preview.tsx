@@ -34,6 +34,7 @@ import { ComposerMentionRows } from '@/components/chat-ui/add-menu/composer-ment
 import { ConfirmProvider } from '@/components/ui/confirm-dialog';
 import { WorkContext, type WorkActivity, type WorkNavigation } from '@/contexts/work-context';
 import { ModelMenuContent, ModelMenuLabel } from '@/components/chat-ui/model-menu/model-menu';
+import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { ModelMenuProvider } from '@/components/chat-ui/model-menu/model-menu-provider';
 import { ChatInputEditor, type ChatInputEditorHandle } from '@/components/chat/editor/chat-input-editor';
 import { MCP_FORM_EVENT, MCP_FORM_RESPONSE_EVENT } from '@/lib/mcp-apps/form-events';
@@ -154,7 +155,7 @@ function SharedConversation() {
         <ChatInputEditor ref={editor} ariaLabel="Example shared message" placeholder="Write an example message" disabled={off} attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
         <div className="flex items-center gap-2 px-1.5 pb-1.5">
           <Popover open={modelMenuOpen} onOpenChange={setModelMenuOpen}>
-            <PopoverTrigger asChild><Tip label="Choose an example model"><button type="button" disabled={off} aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`} className="rounded-md border border-border px-2 py-1 text-xs disabled:opacity-50"><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></button></Tip></PopoverTrigger>
+            <PopoverTrigger asChild><Tip label="Choose an example model"><button type="button" disabled={off} aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs disabled:opacity-50"><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></button></Tip></PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="start"><ModelMenuContent disabled={off}>
               <ModelMenuProvider harness="claude" models={models} additionalModels={[]} selectedModel={model} disabled={off} onSelect={option => { setModel(option.id); setModelMenuOpen(false); }} />
             </ModelMenuContent></PopoverContent>

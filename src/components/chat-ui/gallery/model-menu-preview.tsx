@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ModelMenuProvider } from '@/components/chat-ui/model-menu/model-menu-provider';
+import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import {
   Dialog,
   DialogContent,
@@ -108,6 +109,7 @@ export function ModelMenuPreview({ state }: { state: string }) {
         aria-label="Current model"
         className="mt-4 inline-flex max-w-full items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px]"
       >
+        <HarnessMark id={selection.harness} />
         <ModelMenuLabel
           model={selection.model.label}
           effort={efforts.find((option) => option.id === effort)?.label}
