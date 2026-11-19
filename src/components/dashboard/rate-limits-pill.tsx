@@ -42,7 +42,7 @@ export function RateLimitsPill() {
     return row ? [{ ...entry, row }] : [];
   });
   const label = warnings.length
-    ? `Usage. ${warnings.map(({ name, row }) => [name, row.label, row.percent === undefined ? undefined : `${Math.round(row.percent)} percent`, rateLimitStatus(row), row.reset].filter(Boolean).join(', ')).join('. ')}`
+    ? `Usage. ${warnings.map(({ name, row }) => [name, row.label, row.percent === undefined ? undefined : usagePercentLabel(row.percent, true), rateLimitStatus(row), row.reset].filter(Boolean).join(', ')).join('. ')}`
     : 'Usage';
 
   const pinned = useRef(false);
@@ -96,7 +96,7 @@ export function RateLimitsPill() {
             <span key={harness} aria-hidden="true" className="flex min-w-5 flex-col items-center gap-0.5">
               <UsageLogo harness={harness} size={12} />
               <span className={cn('font-mono text-[10px] leading-none tabular-nums', TEXT_TONE[row.tone])}>
-                {row.percent === undefined ? '!' : `${Math.round(row.percent)}%`}
+                {row.percent === undefined ? '!' : usagePercentLabel(row.percent)}
               </span>
             </span>
           ))}
@@ -116,7 +116,7 @@ export function RateLimitsPill() {
           if (returnFocus.current) { returnFocus.current = false; trigger.current?.focus(); }
         }}
         onEscapeKeyDown={() => { cancelHover(); returnFocus.current = true; }}
-        className="w-72 max-w-[calc(100vw-16px)] bg-popover text-popover-foreground"
+        className="max-h-[var(--radix-popover-content-available-height)] w-72 max-w-[calc(100vw-16px)] overflow-y-auto bg-popover text-popover-foreground"
       >
         <div className="flex items-center justify-between gap-2 pb-2">
           <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Usage</p>
@@ -132,7 +132,7 @@ export function RateLimitsPill() {
           <p className="text-xs text-muted-foreground">Usage is unavailable. We will try again shortly.</p>
         ) : !harnesses?.length ? (
           <p className="text-xs leading-normal text-muted-foreground">
-            {updating ? 'Reading your plan limits.' : 'No plan limits to show. Claude Code and Codex report them when signed in with a subscription.'}
+            {updating ? 'Reading your plan limits.' : 'No plan limits to show. Sign in to Claude Code, Codex or Antigravity to see available limits.'}
           </p>
         ) : (
           <div className="space-y-3">
@@ -172,17 +172,22 @@ const TEXT_TONE: Record<RateLimitTone, string> = {
   critical: 'text-red-600 dark:text-red-400',
 };
 
+function usagePercentLabel(percent: number, spoken = false): string {
+  if (percent > 0 && percent < 1) return spoken ? 'less than 1 percent' : '<1%';
+  return `${Math.round(percent)}${spoken ? ' percent' : '%'}`;
+}
+
 function LimitRow({ row }: { row: RateLimitRow }) {
-  const percent = row.percent === undefined ? undefined : Math.round(row.percent);
+  const { percent } = row;
   const status = rateLimitStatus(row);
   return (
     <div className="space-y-0.5">
       <div className="flex items-baseline gap-2 text-[11px]">
-        <span className="min-w-0 flex-1 truncate">{row.label}</span>
+        <span className="min-w-0 flex-1 break-words">{row.label}</span>
         {percent !== undefined ? (
           <>
             {row.reset && <span className="shrink-0 text-muted-foreground">{row.reset}</span>}
-            <span className={cn('w-9 shrink-0 text-right font-mono tabular-nums', TEXT_TONE[row.tone])}>{percent}%</span>
+            <span className={cn('w-9 shrink-0 text-right font-mono tabular-nums', TEXT_TONE[row.tone])}>{usagePercentLabel(percent)}</span>
           </>
         ) : (
           <span className={cn('shrink-0 text-muted-foreground', row.blocked && TEXT_TONE.critical)}>{[row.detail, row.reset].filter(Boolean).join(', ')}</span>

@@ -73,9 +73,9 @@ async function openPage(dark = false, width = 736) {
   return page;
 }
 
-/** One of the card's connected [50%][80%][90%] buttons. */
+/** One of the card's connected usage buttons. */
 function threshold(page: Page, percent: number) {
-  return page.getByRole('group', { name: 'Warn at' }).getByRole('button', { name: `${percent}%`, exact: true });
+  return page.getByRole('group', { name: 'Show at' }).getByRole('button', { name: percent === 0 ? 'Above 0%' : `${percent}%`, exact: true });
 }
 
 async function counts(page: Page) {
@@ -103,10 +103,11 @@ it.skipIf(!enabled)('renders compact stacked marks in both themes, with keyboard
     await page.screenshot({ path: path.join(output, `usage-implemented-${dark ? 'dark' : 'light'}.png`) });
     await button.focus();
     await page.keyboard.press('Enter');
-    // The keyboard lands on the first threshold. All three start on.
-    const toggle = threshold(page, 50);
+    // The keyboard lands on the first option, which starts off.
+    const toggle = threshold(page, 0);
     await toggle.waitFor();
     await expect.poll(() => toggle.evaluate(node => node === document.activeElement)).toBe(true);
+    expect(await toggle.getAttribute('aria-pressed')).toBe('false');
     for (const percent of [50, 80, 90]) expect(await threshold(page, percent).getAttribute('aria-pressed')).toBe('true');
     await page.keyboard.press('Escape');
     await page.getByRole('dialog').waitFor({ state: 'hidden' });
@@ -166,6 +167,36 @@ it.skipIf(!enabled)('persists each threshold while keeping usage accessible and 
   await page.close();
 });
 
+it.skipIf(!enabled)('remembers above-zero usage on its own and displays fractional use until it reaches zero', async () => {
+  const page = await openPage();
+  await page.getByRole('button', { name: /^Usage\./ }).click();
+  for (const percent of [50, 80, 90]) await threshold(page, percent).click();
+  await threshold(page, 0).click();
+  await page.reload();
+  const usage = page.getByRole('button', { name: /^Usage(?:\.|$)/ });
+  await page.getByRole('button', { name: /^Usage\./ }).waitFor();
+
+  await page.evaluate(`
+    usageFixture.harnesses[0].buckets[0].usedPercent=0.1;
+    usageFixture.harnesses[1].buckets[0].usedPercent=0;
+    for(const listener of usageFixture.listeners)listener('rate_limits_updated',{});
+  `);
+  await page.clock.runFor(200);
+  await page.getByRole('button', { name: /^Usage\. Claude Code, Weekly, less than 1 percent/ }).waitFor();
+  expect(await usage.locator('.font-mono').allTextContents()).toEqual(['<1%']);
+  await usage.click();
+  expect(await threshold(page, 0).getAttribute('aria-pressed')).toBe('true');
+  for (const percent of [50, 80, 90]) expect(await threshold(page, percent).getAttribute('aria-pressed')).toBe('false');
+  await page.keyboard.press('Escape');
+
+  await page.evaluate("usageFixture.harnesses[0].buckets[0].usedPercent=0;for(const listener of usageFixture.listeners)listener('rate_limits_updated',{});");
+  await page.clock.runFor(200);
+  await page.getByRole('button', { name: 'Usage', exact: true }).waitFor();
+  await page.clock.fastForward(120_000);
+  await page.waitForFunction('usageFixture.read >= 2');
+  await page.close();
+});
+
 it.skipIf(!enabled)('shows a quiet badge from 50%, and changes color only at the thresholds that are on', async () => {
   await fs.mkdir(output, { recursive: true });
   const page = await openPage();
@@ -197,6 +228,28 @@ it.skipIf(!enabled)('shows a quiet badge from 50%, and changes color only at the
   await setClaude(95);
   await badge(95).waitFor();
   expect(await percentClass(95)).toMatch(/text-red/);
+  await page.close();
+});
+
+it.skipIf(!enabled)('shows an Antigravity badge and separate model-pool limits in the card', async () => {
+  const page = await openPage(false, 390);
+  await page.evaluate(`
+    const observedAt = new Date().toISOString();
+    const resetAt = new Date(Date.now() + 3600000).toISOString();
+    const pools = [['Gemini Models', 'gemini', 87], ['Claude and GPT models', '3p', 13]];
+    const buckets = pools.map(([label, id, usedPercent]) => ({
+      id, label, usedPercent, resetAt, observedAt, durationMs: 604800000,
+      owner: {kind:'account'}, applicability: {kind:'provider_pool', pool:id},
+    }));
+    usageFixture.harnesses.push({harness:'antigravity', name:'Antigravity', observedAt, buckets});
+    for (const listener of usageFixture.listeners) listener('rate_limits_updated', {});
+  `);
+  await page.clock.runFor(200);
+  await page.getByRole('button', { name: /Antigravity, Gemini Models Weekly, 87 percent, Near limit/ }).click();
+  const card = page.getByRole('dialog', { name: 'Subscription usage' });
+  await card.getByText('Gemini Models Weekly', { exact: true }).waitFor();
+  await card.getByText('Claude and GPT models Weekly', { exact: true }).waitFor();
+  expect(await card.getByText('13%', { exact: true }).count()).toBe(1);
   await page.close();
 });
 

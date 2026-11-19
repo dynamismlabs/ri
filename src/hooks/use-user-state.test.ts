@@ -33,6 +33,7 @@ function record(overrides: Partial<UserStateRecord> = {}): UserStateRecord {
     description: 'Original profile',
     workResultGuidance: 'Original guidance',
     voiceAutoSend: false,
+    usageWarningAboveZero: null,
     usageWarning50: null,
     usageWarning80: null,
     usageWarning90: null,

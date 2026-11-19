@@ -13,8 +13,8 @@ export function UsageWarningsSetting({ compact = false }: { compact?: boolean })
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <p id={`${id}-label`} className={compact ? 'text-[11px]' : 'text-[12px] font-medium'}>Warn at</p>
-        {!compact && <p id={`${id}-description`} className="mt-0.5 text-[11px] text-muted-foreground">Highlight Usage when a subscription reaches a level you leave on.</p>}
+        <p id={`${id}-label`} className={compact ? 'text-[11px]' : 'text-[12px] font-medium'}>Show at</p>
+        {!compact && <p id={`${id}-description`} className="mt-0.5 text-[11px] text-muted-foreground">Choose when subscription usage appears in the top bar.</p>}
       </div>
       {/* Every button keeps its left border, so two neighbors that are both on still read as two. */}
       <ButtonGroup
@@ -23,7 +23,8 @@ export function UsageWarningsSetting({ compact = false }: { compact?: boolean })
         className="shrink-0 [&>*:not(:first-child)]:border-l [&>*:not(:last-child)]:border-r-0"
       >
         {USAGE_WARNING_THRESHOLDS.map((threshold) => {
-          const on = preference.data?.[threshold.field] ?? true;
+          const on = preference.data?.[threshold.field] ?? threshold.defaultOn;
+          const aboveZero = threshold.percent === 0;
           return (
             <Button
               key={threshold.percent}
@@ -32,10 +33,11 @@ export function UsageWarningsSetting({ compact = false }: { compact?: boolean })
               variant={on ? 'default' : 'outline'}
               className="px-2 text-[11px] tabular-nums"
               disabled={!preference.isSuccess}
+              aria-label={aboveZero ? 'Above 0%' : undefined}
               aria-pressed={on}
               onClick={() => update.mutate({ [threshold.field]: !on })}
             >
-              {threshold.percent}%
+              {aboveZero ? '>0%' : `${threshold.percent}%`}
             </Button>
           );
         })}

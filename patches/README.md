@@ -1,6 +1,6 @@
 # agentex OpenCode control channel
 
-`@agentex__agent@0.0.51.patch` changes the shared integration's shipped source and JavaScript. It avoids requiring an unpublished library release or modifying the linked agentex checkout.
+`@agentex__agent@0.0.52.patch` changes the shared integration's shipped source and JavaScript. It avoids requiring an unpublished library release or modifying the linked agentex checkout.
 
 OpenCode can interpret port 0 as a fixed default. Two ordinary Home processes using the same folder could attach to, or stop, each other's native server. This patch allocates an explicit free loopback port for each new server. A race for that port fails startup rather than attaching to an unrelated server. Native control authentication keeps the SDK's generated random password.
 
@@ -22,7 +22,7 @@ an upstream release supports pruning ignored directories during traversal.
 
 # Windows harness launching and skills
 
-The same `@agentex__agent@0.0.51.patch` also carries the Windows fixes from
+The same `@agentex__agent@0.0.52.patch` also carries the Windows fixes from
 [agentex branch `ri/windows-first-version`](https://github.com/dynamismlabs/agentex/tree/ri/windows-first-version).
 It resolves npm `.cmd` shims, including paths with spaces and native Claude
 executables, and uses directory junctions for skill links without elevation.
