@@ -21,6 +21,7 @@ const skill = (name: string) => ({ ref: `ri:${name.toLowerCase().replace(/\s+/g,
 function fixtureResponses(): Record<string, unknown> {
   return {
     'connectedApps.catalog': [],
+    'appBuilds.catalog': { apps: [], error: null },
     'integrations.statusGet': { providers: [{ id: 'google', displayName: 'Google', method: 'oauth2', configured: true }, { id: 'linear', displayName: 'Linear', method: 'api_key', configured: true, credentialFields: [] }], redirectUri: 'https://fixture.test/oauth' },
     'integrations.connectionsGet': { connections: [{ id: 'work', providerId: 'google', accountId: 'work', label: 'Work', email: 'work@example.test', status: 'active', scopes: [] }] },
     'integrations.mcpServersGet': { servers: [structuredClone(custom)], approvalSettings: { defaultPolicy: 'writes', override: null } },
@@ -146,6 +147,33 @@ it('shows one grouped library, visible creation buttons and discovery at desktop
   } finally { await page.close(); }
 }, 90_000);
 
+it('lists Ri\'s own apps in Discover, People first, and adds one from its details', async () => {
+  const app = (id: string, name: string, reaches: string[]) => ({
+    id, name, description: `${name}, built and run by Ri.`, reaches, git: `https://github.com/dynamismlabs/app-${id}.git`, version: 'v0.1.5',
+    checksum: `sha256-${'a'.repeat(64)}`, sourceId: null, personalAppId: null, installedVersion: null, updateAvailable: false,
+  });
+  responses['appBuilds.catalog'] = { apps: [app('people', 'People', ['your Gmail through Ri (read only)']), app('bookmarks', 'Bookmarks', [])], error: null };
+  responses['appBuilds.addFromCatalog'] = { source: { id: 'source-people' }, job: { id: 'job-1', state: 'running', steps: [] } };
+  const page = await open();
+  try {
+    const discover = page.getByRole('region', { name: 'Discover and details', exact: true });
+    await discover.locator('[data-item="catalog:people"]').waitFor();
+    const order = () => discover.getByRole('article').evaluateAll(elements => elements.map(element => element.getAttribute('data-item')));
+    expect((await order()).slice(0, 2)).toEqual(['catalog:people', 'catalog:bookmarks']);
+    await page.getByRole('button', { name: 'Apps', exact: true }).click();
+    await expect.poll(async () => (await order()).slice(0, 2)).toEqual(['catalog:people', 'catalog:bookmarks']);
+    // The library lists only what the person has.
+    const library = page.getByRole('region', { name: 'Your library', exact: true });
+    expect(await library.locator('[data-item^="catalog:"]').count()).toBe(0);
+    await discover.getByRole('button', { name: 'Details for People', exact: true }).click();
+    const details = page.getByRole('region', { name: 'People details', exact: true });
+    await details.getByText('your Gmail through Ri (read only)').waitFor();
+    await details.getByRole('button', { name: 'Add People', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { actions: string[][] }).actions)).toContainEqual(['navigate', 'build/source-people']);
+    expect(writes.find(write => write.procedure === 'appBuilds.addFromCatalog')!.input).toMatchObject({ id: 'people' });
+  } finally { await page.close(); }
+});
+
 it('keeps the library beside real settings and persists changes without switching screens', async () => {
   const page = await open();
   try {
@@ -261,7 +289,7 @@ it('handles an empty library and recovers a failed source without blocking disco
     responses['skills.list'] = { skills: [], projects: [] };
     await page.getByRole('alert').getByRole('button', { name: 'Retry', exact: true }).click();
     await page.getByRole('alert').waitFor({ state: 'hidden' });
-    for (const label of ['No apps yet.', 'No connectors yet.', 'No skills yet.']) expect(await page.getByText(label, { exact: true }).isVisible()).toBe(true);
+    for (const label of ['No apps yet. Find one in Discover, or make one with New app.', 'No connectors yet.', 'No skills yet.']) expect(await page.getByText(label, { exact: true }).isVisible()).toBe(true);
     await page.getByRole('region', { name: 'Discover and details', exact: true }).getByRole('button', { name: 'Connectors', exact: true }).click();
     await page.getByRole('button', { name: 'Connect Linear', exact: true }).waitFor();
   } finally { await page.close(); }

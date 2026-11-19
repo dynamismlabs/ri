@@ -2,16 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Loader2, RotateCcw, ScrollText, Server } from 'lucide-react';
+import { AlertCircle, ArrowUpCircle, Info, Loader2, MoreHorizontal, RotateCcw, ScrollText, Server } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tip } from '@/components/ui/tip';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
+import { versionLabel } from '@/lib/apps/version-label';
 import { trpc, trpcClient } from '@/lib/trpc/client';
+import { AppMark } from './app-mark';
 
 type Status = Awaited<ReturnType<typeof trpcClient.appBuilds.status.query>>;
+type Source = Awaited<ReturnType<typeof trpcClient.appBuilds.list.query>>[number];
 
 const LABELS: Record<Status['state'], string> = {
   running: 'Running', starting: 'Starting', stopped: 'Stopped', not_installed: 'Not installed', unknown: 'State unknown',
@@ -24,19 +28,20 @@ function dotClass(status: Status) {
   return 'bg-muted-foreground/50';
 }
 
-/** What the status says in words: its state, release and how long it's been up. */
-export function statusSummary(status: Status): string {
-  const parts = [LABELS[status.state]];
-  if (status.state === 'running' && status.release) parts.push(`release ${status.release.slice(0, 12)}`);
-  if (status.state === 'running' && status.since) parts.push(`since ${ageLabel(status.since)}`);
-  return parts.join(', ');
+/**
+ * What the status says in words: its state on the computer it runs on, its version when it came from
+ * the catalog, and how long it's been up. The kit's release (a commit) is for the tooltip.
+ */
+export function statusSummary(status: Pick<Status, 'state' | 'since'> & { computer?: string | null }, options: { version?: string | null; since?: boolean } = {}): string {
+  const where = status.computer && (status.state === 'running' || status.state === 'starting' || status.state === 'stopped') ? ` on ${status.computer}` : '';
+  const parts = [`${LABELS[status.state]}${where}`];
+  if (options.version) parts.push(versionLabel(options.version));
+  if (options.since !== false && status.state === 'running' && status.since) parts.push(`since ${ageLabel(status.since)}`);
+  return parts.join(' · ');
 }
 
-/**
- * An installed app's state with Restart and Logs (docs/personal-apps.md "Status, Restart and
- * Logs"), from the kit's own commands. Ri never starts or reads the app's process itself.
- */
-export function AppStatusLine({ sourceId, name, compact = false }: { sourceId: string; name: string; compact?: boolean }) {
+/** An installed app's state from the kit, and its Restart and Logs, shared by its page and its card. */
+function useAppControls(sourceId: string) {
   const queryClient = useQueryClient();
   const [jobId, setJobId] = useState<string | null>(null);
   const [logsOpen, setLogsOpen] = useState(false);
@@ -54,39 +59,63 @@ export function AppStatusLine({ sourceId, name, compact = false }: { sourceId: s
     void queryClient.invalidateQueries({ queryKey: trpc.appBuilds.status.queryKey({ id: sourceId }) });
     void queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
   }, [job.data, queryClient, sourceId]);
-
   const data = status.data;
-  const failure = error ?? (job.data?.state === 'failed' ? job.data.error ?? job.data.result?.message ?? 'Restart didn’t finish.' : null);
-  const canControl = !!data && data.problem !== 'kit_too_old' && data.problem !== 'not_prepared' && data.problem !== 'no_folder' && data.state !== 'not_installed';
+  return {
+    data, restarting, restart, logsOpen, setLogsOpen,
+    failure: error ?? (job.data?.state === 'failed' ? job.data.error ?? job.data.result?.message ?? 'Restart didn’t finish.' : null),
+    restarted: job.data?.state === 'done' ? job.data.result?.message ?? null : null,
+    canControl: !!data && data.problem !== 'kit_too_old' && data.problem !== 'not_prepared' && data.problem !== 'no_folder' && data.state !== 'not_installed',
+  };
+}
 
+/** The state in words with its dot, and the running release on hover. */
+function StatusText({ data, restarting, name, version, since = true, wrap = false }: { data: Status | undefined; restarting: boolean; name: string; version?: string | null; since?: boolean; wrap?: boolean }) {
+  if (!data) return <span className="flex items-center gap-1.5 text-muted-foreground"><Loader2 size={12} className="animate-spin" />Checking {name}</span>;
+  const release = data.answering ?? data.release;
+  const text = <span className={`flex min-w-0 gap-1.5 ${wrap ? 'items-start' : 'items-center'}`} role="status">
+    <span className={`size-2 shrink-0 rounded-full ${dotClass(data)} ${wrap ? 'mt-1' : ''}`} aria-hidden />
+    <span className={wrap ? 'break-words' : 'truncate'}>{restarting ? 'Restarting' : statusSummary(data, { version, since })}</span>
+  </span>;
+  return release && !restarting ? <Tip label={`Release ${release.slice(0, 12)}`}>{text}</Tip> : text;
+}
+
+/**
+ * An installed app's state with Restart and Logs (docs/personal-apps.md "Status, Restart and
+ * Logs"), from the kit's own commands. Ri never starts or reads the app's process itself.
+ */
+export function AppStatusLine({ sourceId, name, version, compact = false }: { sourceId: string; name: string; version?: string | null; compact?: boolean }) {
+  const controls = useAppControls(sourceId);
+  const { data, restarting, restart } = controls;
   return (
     <div className="space-y-1 text-xs">
       <div className="flex flex-wrap items-center gap-2">
-        {!data ? <span className="flex items-center gap-1.5 text-muted-foreground"><Loader2 size={12} className="animate-spin" />Checking {name}</span> : (
-          <span className="flex min-w-0 items-center gap-1.5" role="status">
-            <span className={`size-2 shrink-0 rounded-full ${dotClass(data)}`} aria-hidden />
-            <span className="truncate">{restarting ? 'Restarting' : statusSummary(data)}</span>
-          </span>
-        )}
-        {canControl && (
+        <StatusText data={data} restarting={restarting} name={name} version={version} />
+        {controls.canControl && (
           <span className="ml-auto flex gap-1.5">
             <Tip label={`Stop ${name} and start it again`}>
               <Button size="xs" variant="outline" disabled={restarting || restart.isPending} onClick={() => restart.mutate()}>
                 {restarting ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} aria-hidden />}Restart
               </Button>
             </Tip>
-            <Button size="xs" variant="outline" onClick={() => setLogsOpen(true)}><ScrollText size={12} aria-hidden />Logs</Button>
+            <Button size="xs" variant="outline" onClick={() => controls.setLogsOpen(true)}><ScrollText size={12} aria-hidden />Logs</Button>
           </span>
         )}
       </div>
-      {data?.lastError && <p className="flex items-start gap-1.5 text-destructive"><AlertCircle size={12} className="mt-0.5 shrink-0" /><span className="break-words font-mono text-[11px]">{data.lastError}</span></p>}
-      {data?.message && !compact && <p className="text-muted-foreground">{data.message}</p>}
-      {data?.message && compact && data.problem === 'kit_too_old' && <p className="text-muted-foreground">An older app kit. Update it to see its state.</p>}
-      {failure && <p role="alert" className="flex items-start gap-1.5 text-destructive"><AlertCircle size={12} className="mt-0.5 shrink-0" />{failure}</p>}
-      {job.data?.state === 'done' && job.data.result?.message && <p className="text-muted-foreground">{job.data.result.message}</p>}
-      <AppLogsDialog sourceId={sourceId} name={name} open={logsOpen} onOpenChange={setLogsOpen} />
+      <StatusNotes controls={controls} compact={compact} />
+      <AppLogsDialog sourceId={sourceId} name={name} open={controls.logsOpen} onOpenChange={controls.setLogsOpen} />
     </div>
   );
+}
+
+function StatusNotes({ controls, compact }: { controls: ReturnType<typeof useAppControls>; compact: boolean }) {
+  const { data, failure, restarted } = controls;
+  return <>
+    {data?.lastError && <p className="flex items-start gap-1.5 text-destructive"><AlertCircle size={12} className="mt-0.5 shrink-0" /><span className="break-words font-mono text-[11px]">{data.lastError}</span></p>}
+    {data?.message && !compact && <p className="text-muted-foreground">{data.message}</p>}
+    {data?.message && compact && data.problem === 'kit_too_old' && <p className="text-muted-foreground">An older app kit. Update it to see its state.</p>}
+    {failure && <p role="alert" className="flex items-start gap-1.5 text-destructive"><AlertCircle size={12} className="mt-0.5 shrink-0" />{failure}</p>}
+    {restarted && <p className="text-muted-foreground">{restarted}</p>}
+  </>;
 }
 
 /** The end of an app's log: what its server printed, or its last install or change. */
@@ -137,23 +166,68 @@ export function AppLogsDialog({ sourceId, name, open, onOpenChange }: { sourceId
 }
 
 /**
- * The apps Ri installed, each with its state, Restart and Logs, on the Apps page.
+ * The apps Ri installed (docs/personal-apps.md "Status, Restart and Logs"), each a card that opens
+ * the app, with its state, where it runs and its version. Restart, Logs and its details are in the
+ * card's menu. One Ri can't use yet goes to its page, where the person allows Ri in it.
  */
-export function InstalledAppsList({ onOpen }: { onOpen: (sourceId: string) => void }) {
+export function YourAppsList({ only, onOpen, onDetails }: { only?: string[]; onOpen: (serverId: string) => void; onDetails: (sourceId: string) => void }) {
   const sources = useQuery(trpc.appBuilds.list.queryOptions(undefined, { staleTime: 10_000 }));
-  const installed = (sources.data ?? []).filter((source) => source.createdByRi && source.url && source.folder);
+  const apps = useQuery(trpc.personalApps.list.queryOptions(undefined, { staleTime: 10_000 }));
+  const catalog = useQuery(trpc.appBuilds.catalog.queryOptions(undefined, { staleTime: 60_000 }));
+  const installed = installedApps(sources.data ?? []).filter((source) => !only || only.includes(source.id));
   if (!installed.length) return null;
   return (
-    <section aria-labelledby="installed-apps" className="space-y-2">
-      <h3 id="installed-apps" className="flex items-center gap-1.5 text-xs font-semibold"><Server size={13} aria-hidden />Running on this computer</h3>
-      <ul className="divide-y divide-border rounded-lg border border-border">
-        {installed.map((source) => (
-          <li key={source.id} className="space-y-1 px-3 py-2">
-            <button type="button" onClick={() => onOpen(source.id)} className="text-left text-sm hover:underline">{source.name}</button>
-            <AppStatusLine sourceId={source.id} name={source.name} compact />
-          </li>
-        ))}
-      </ul>
-    </section>
+    <ul aria-label="Apps Ri installed" className="space-y-2">
+      {installed.map((source) => {
+        const ri = apps.data?.find((app) => app.id === source.personalAppId)?.ri ?? null;
+        const entry = catalog.data?.apps.find((app) => app.sourceId === source.id);
+        return <YourAppCard key={source.id} source={source} serverId={ri?.status === 'connected' ? ri.serverId : null}
+          update={entry?.updateAvailable ? entry.version : null} onOpen={onOpen} onDetails={onDetails} />;
+      })}
+    </ul>
+  );
+}
+
+/** The apps Ri installed and still runs, which "Your apps" lists. */
+export function installedApps<T extends Pick<Source, 'createdByRi' | 'url' | 'folder'>>(sources: T[]): T[] {
+  return sources.filter((source) => source.createdByRi && source.url && source.folder);
+}
+
+function YourAppCard({ source, serverId, update, onOpen, onDetails }: { source: Source; serverId: string | null; update: string | null; onOpen: (serverId: string) => void; onDetails: (sourceId: string) => void }) {
+  const controls = useAppControls(source.id);
+  const { data, restarting, restart } = controls;
+  const open = () => serverId ? onOpen(serverId) : onDetails(source.id);
+  const action = serverId ? 'Open' : 'Finish connecting';
+  return (
+    <li className="rounded-lg border border-border bg-card text-xs transition-colors hover:bg-muted/30">
+      <div className="flex items-center gap-3 px-3 pt-3">
+        <button type="button" onClick={open} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-label={`${action} ${source.name}`}>
+          <AppMark name={source.name} size="lg" />
+          <span className="min-w-0 flex-1 truncate text-sm font-medium">{source.name}</span>
+        </button>
+        <Button size="xs" variant={serverId ? 'default' : 'outline'} onClick={open}>{action}</Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Tip label="Restart, logs and details"><Button size="icon-xs" variant="ghost" aria-label={`More for ${source.name}`}><MoreHorizontal size={14} /></Button></Tip>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {controls.canControl && <DropdownMenuItem disabled={restarting || restart.isPending} onSelect={() => restart.mutate()}><RotateCcw size={14} />Restart</DropdownMenuItem>}
+            {controls.canControl && <DropdownMenuItem onSelect={() => controls.setLogsOpen(true)}><ScrollText size={14} />Logs</DropdownMenuItem>}
+            <DropdownMenuItem onSelect={() => onDetails(source.id)}><Info size={14} />Details</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      {/* Its own line under the name, wrapping, so a narrow column still says where it runs. */}
+      <div className="pb-3 pl-15 pr-3 pt-0.5 text-muted-foreground">
+        <StatusText data={data} restarting={restarting} name={source.name} version={source.catalogVersion} since={false} wrap />
+      </div>
+      {update && (
+        <div className="pb-3 pl-15 pr-3">
+          <Button size="xs" variant="outline" onClick={() => onDetails(source.id)}><ArrowUpCircle size={12} aria-hidden />Update to {versionLabel(update)}</Button>
+        </div>
+      )}
+      {(data?.lastError || controls.failure || controls.restarted || data?.problem === 'kit_too_old') && <div className="space-y-1 pb-3 pl-15 pr-3"><StatusNotes controls={controls} compact /></div>}
+      <AppLogsDialog sourceId={source.id} name={source.name} open={controls.logsOpen} onOpenChange={controls.setLogsOpen} />
+    </li>
   );
 }

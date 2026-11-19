@@ -9,7 +9,7 @@ import { useStartSkill } from '@/hooks/use-start-skill';
 import { connectedAppsQuery } from '@/components/mcp-apps/catalog';
 import { libraryRoute, type LibraryItem } from '@/components/apps/library-model';
 import { useLibrary } from '@/components/apps/use-library';
-import { COLLECTIONS, collectionItems, discoverable, matchesReview, primaryLabel, reviewItems, STARTER_SKILLS, type ReviewFilter, type ReviewItem } from '@/components/apps/layout-review/catalog';
+import { COLLECTIONS, collectionItems, discoverable, inLibrary as owned, matchesReview, primaryLabel, reviewItems, STARTER_SKILLS, type ReviewFilter, type ReviewItem } from '@/components/apps/layout-review/catalog';
 import { parseSkillFile } from '@/lib/skills/format';
 import { skillsApi } from '@/lib/api/skills';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -26,6 +26,8 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
   const { query, navigate } = props;
   const sources = useLibrary();
   const connected = useQuery(connectedAppsQuery());
+  // Ri's own apps, which Discover offers beside connectors and skills (docs/personal-apps.md "The catalog").
+  const catalog = useQuery(trpc.appBuilds.catalog.queryOptions(undefined, { staleTime: 60_000 }));
   const qc = useQueryClient();
   const dashboard = useDashboard();
   const createSkill = useCreateSkill();
@@ -38,10 +40,10 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
   if (lastSearch !== (query.q ?? '')) { setLastSearch(query.q ?? ''); setSearch(query.q ?? ''); }
   const items = useMemo(() => reviewItems({ providers: sources.providers.data?.providers,
     connections: sources.connections.data?.connections, servers: sources.servers.data?.servers,
-    skills: sources.skills.data?.skills, connectedApps: connected.data }),
-  [sources.providers.data, sources.connections.data, sources.servers.data, sources.skills.data, connected.data]);
+    skills: sources.skills.data?.skills, connectedApps: connected.data, catalogApps: catalog.data?.apps }),
+  [sources.providers.data, sources.connections.data, sources.servers.data, sources.skills.data, connected.data, catalog.data]);
   const filter = (['All', 'Apps', 'Skills', INTEGRATION_LABELS.plural].includes(query.filter) ? query.filter : 'All') as ReviewFilter;
-  const library = items.filter(item => item.added && !item.draft);
+  const library = items.filter(owned);
   const drafts = items.filter(item => item.draft);
   const selected = items.find(item => item.key === query.item) ?? null;
   const inLibrary = query.browse === 'yours';
@@ -66,7 +68,9 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
   };
   const manage = (item: ReviewItem) => {
     const target = item.target;
-    if (target.kind === 'skill') dashboard.openSkill(target.ref);
+    // An added catalog app's page: how its install went, its state, and its updates.
+    if (target.kind === 'catalog-app' && item.catalogApp?.sourceId) navigate(`build/${item.catalogApp.sourceId}`);
+    else if (target.kind === 'skill') dashboard.openSkill(target.ref);
     else if (target.kind === 'provider' || target.kind === 'mcp') {
       setTrySkill(null);
       patch({ provider: undefined, mcp: undefined, item: undefined, panel: undefined, [target.kind === 'provider' ? 'provider' : 'mcp']: target.id });
@@ -88,6 +92,11 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
       const starter = STARTER_SKILLS.find(starter => starter.id === target.id)!;
       const { skill } = await createSkill.mutateAsync({ name: starter.id, description: starter.description, body: starter.body });
       dashboard.openSkill(skill.ref);
+    } else if (target.kind === 'catalog-app') {
+      // Ri clones it, then installs and connects it. Its page shows each step as it runs.
+      const { source } = await trpcClient.appBuilds.addFromCatalog.mutate({ id: target.id, returnTo: `${window.location.pathname}${window.location.search}` });
+      await qc.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() });
+      navigate(`build/${source.id}`);
     } else manage(item);
   });
   const primary = (item: ReviewItem) => {
@@ -120,6 +129,7 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
     { name: 'Custom MCPs', error: sources.servers.error, retry: refresh },
     { name: 'Skills', error: sources.skills.error, retry: refresh },
     { name: 'Connected apps', error: connected.error, retry: () => void connected.refetch() },
+    { name: 'The app catalog', error: catalog.error ?? (catalog.data?.error ? new Error(catalog.data.error) : null), retry: () => void catalog.refetch() },
   ].filter(failure => failure.error);
   // Apps are connections whose server supplies an interface, so they load with the connections.
   const connectionsLoading = sources.providers.isPending || sources.connections.isPending || sources.servers.isPending || connected.isPending;

@@ -89,6 +89,7 @@ export const PROVIDER_CATALOG: ProviderCatalogEntry[] = [
   { id: 'ticktick', displayName: 'TickTick', method: 'mcp' },
   { id: 'intercom', displayName: 'Intercom', method: 'mcp' },
   { id: 'n8n', displayName: 'n8n', method: 'mcp' },
+  { id: 'lore', displayName: 'Lore', method: 'mcp' },
   { id: 'airtable', displayName: 'Airtable', method: 'mcp' },
   { id: 'readwise', displayName: 'Readwise', method: 'mcp' },
   { id: 'stripe', displayName: 'Stripe', method: 'mcp' },

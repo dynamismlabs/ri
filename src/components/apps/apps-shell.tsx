@@ -24,6 +24,12 @@ export function AppsShell({ route }: { route: string }) {
     setActiveView({ kind: 'apps', route: location.pathname.replace(/\/+$/, '').slice(1), query: Object.fromEntries(location.searchParams) }, options);
   }, [setActiveView]);
 
+  // Every route takes the space beside the rail and any side panel (the Scratchpad, the deck), as
+  // every other view does, whatever its page renders while it loads or when something is missing.
+  return <div data-apps-route className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">{page(route, appQuery, navigate, goHome)}</div>;
+}
+
+function page(route: string, appQuery: Record<string, string>, navigate: (value: string, options?: { replace?: boolean }) => void, goHome: () => void) {
   const parts = route.split('/').filter(Boolean);
   // One page per connection, so a deep link to a screen that is open reaches its live view instead of a new one.
   if (parts[0] === '~connected' && parts[1]) return <ConnectedAppPage key={parts[1]} serverId={parts[1]} navigate={navigate} resultId={appQuery.result} screenId={appQuery.screen} launch={appQuery.open} deepLink={appQuery.path}/>;

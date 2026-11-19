@@ -59,6 +59,7 @@ beforeAll(async () => {
     export const MakeDefaultRow=()=>null;
     export const ProviderIcon=()=>null;
     export const HarnessIcon=()=>null;
+    export const HarnessMark=()=>null;
     export const useRouter=()=>({push:()=>{}});
     export default function Link({href,children,...rest}){return <a href={href} {...rest}>{children}</a>;}
     export function VisibleModelOptions(){

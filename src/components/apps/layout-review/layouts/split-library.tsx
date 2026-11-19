@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, BookOpen, LayoutGrid, MoreHorizontal, Plug, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,8 +12,9 @@ import { AddAppDialog } from '../../add-app-dialog';
 import { HubAccessList } from '../../hub-access';
 import { NewAppDialog } from '../../new-app-dialog';
 import { AppBuildsList } from '../../app-builds-list';
-import { AppCatalogList } from '../../app-catalog';
-import { InstalledAppsList } from '../../app-status';
+import { installedApps, YourAppsList } from '../../app-status';
+import { useOpenApp } from '../../use-open-app';
+import { trpc } from '@/lib/trpc/client';
 import type { LibraryFilter } from '../../library-model';
 import { useReview } from '../context';
 import { ItemDetails } from '../details';
@@ -102,23 +104,28 @@ function LibraryHeader() {
 
 function GroupedLibrary({ filter }: { filter: LibraryFilter }) {
   const review = useReview();
+  const openApp = useOpenApp(review.navigate);
+  // The apps Ri installed lead Your apps as cards that open them. Each is listed once, there.
+  const sources = useQuery(trpc.appBuilds.list.queryOptions(undefined, { staleTime: 10_000 }));
+  const installed = installedApps(sources.data ?? []).filter(source => matchesReview({ name: source.name, description: '', keywords: 'personal app', kind: 'apps' }, review.search));
+  const installedIds = new Set(installed.flatMap(source => source.personalAppId ? [`app:${source.personalAppId}`] : []));
   // Catalog type filters never hide the other things a person already owns.
-  const matching = review.library.filter(item => matchesReview(item, review.search));
+  const matching = review.library.filter(item => matchesReview(item, review.search) && !installedIds.has(item.key));
   const drafts = review.drafts.filter(item => matchesReview(item, review.search) && (filter === 'all' || item.kind === filter));
   return <>
     {GROUPS.filter(group => filter === 'all' || group.kind === filter).map(({ kind, label, description, Icon }) => {
       const items = matching.filter(item => item.kind === kind);
+      const cards = kind === 'apps' ? installed.length : 0;
       const loading = review.libraryLoading[kind];
       return <section className={s.libraryGroup} key={kind} aria-label={`Your ${label.toLowerCase()}`}>
-        <div className={s.groupHeading}><Icon size={13} /><h3>{label}</h3>{!loading && <span>{items.length}</span>}</div>
+        <div className={s.groupHeading}><Icon size={13} /><h3>{label}</h3>{!loading && <span>{items.length + cards}</span>}</div>
         <p className={s.groupDescription}>{description}</p>
+        {kind === 'apps' && <YourAppsList only={installed.map(source => source.id)} onOpen={openApp} onDetails={(id) => review.navigate(`build/${id}`)} />}
         {loading ? <LibraryRowsSkeleton label={label} /> : items.length ? items.map(item => <LibraryEntry key={item.key} item={item} />)
-          : <p className={s.groupEmpty}>{review.search ? 'No matches.' : `No ${label.toLowerCase()} yet.`}</p>}
+          : !cards && <p className={s.groupEmpty}>{review.search ? 'No matches.' : kind === 'apps' ? 'No apps yet. Find one in Discover, or make one with New app.' : `No ${label.toLowerCase()} yet.`}</p>}
       </section>;
     })}
     {(filter === 'all' || filter === 'apps') && <div className={s.libraryGroup}><AppBuildsList onOpen={(id) => review.navigate(`build/${id}`)} /></div>}
-    {(filter === 'all' || filter === 'apps') && <div className={s.libraryGroup}><InstalledAppsList onOpen={(id) => review.navigate(`build/${id}`)} /></div>}
-    {(filter === 'all' || filter === 'apps') && <div className={s.libraryGroup}><AppCatalogList onOpen={(id) => review.navigate(`build/${id}`)} /></div>}
     {(filter === 'all' || filter === 'apps') && <div className={s.libraryGroup}><HubAccessList /></div>}
     {!!drafts.length && <section className={s.libraryGroup} aria-label="In progress"><div className={s.groupHeading}><h3>In progress</h3><span>{drafts.length}</span></div>
       {drafts.map(item => <LibraryEntry key={item.key} item={item} />)}

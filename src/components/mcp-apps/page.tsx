@@ -17,6 +17,7 @@ import { ConnectedView } from './view';
 import { EntrypointIcon } from './entrypoint-icon';
 import { Tip } from '@/components/ui/tip';
 import { PersonalAppAccess } from '@/components/apps/personal-app-access';
+import { useAllowApp } from '@/components/apps/allow-app';
 import { AppSourcePanel } from '@/components/apps/app-source-panel';
 
 type App = RouterOutputs['connectedApps']['catalog'][number];
@@ -61,7 +62,7 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
     else screen.fail(app.available ? `${app.toolkitName} has no screen to open on its own. Try it in chat instead.` : 'Reconnect or turn on this account to open it.');
   }, [launch, deepLink, app, screen]);
 
-  if (!app) return <div className="space-y-3 p-6 text-sm"><Button variant="ghost" onClick={() => navigate('')}><ArrowLeft size={14}/>Apps</Button><p>{catalog.error?.message ?? (catalog.isPending ? 'Loading app…' : 'This connection does not currently offer an interface.')}</p></div>;
+  if (!app) return <NoScreen serverId={serverId} navigate={navigate} loading={catalog.isPending} error={catalog.error?.message ?? null}/>;
   const accounts = catalog.data?.filter(candidate => app.providerId ? candidate.providerId === app.providerId : candidate.id === app.id) ?? [];
   const recent = [...app.recent].sort((a, b) => b.created - a.created);
   // A result opened just now may not be in the cached list yet, and a screen that closed says so when it opens.
@@ -143,6 +144,52 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
           </li>)}</ul>}
       </section>
     </div></div>
+  </div>;
+}
+
+/**
+ * A connection with nothing to show here yet. For a personal app that's usually because Ri isn't
+ * allowed in it yet, so its tools and screens haven't loaded: the page says so and offers Allow. A
+ * personal app that's connected but has no screens says how to use it instead: in chat.
+ */
+function NoScreen({serverId, navigate, loading, error}: {serverId: string; navigate: Navigate; loading: boolean; error: string | null}) {
+  // Only once the catalog has answered without this connection: a service it lists never asks.
+  const apps = useQuery({...trpc.personalApps.list.queryOptions(), enabled: !loading && !error});
+  const allowApp = useAllowApp();
+  const dashboard = useDashboard();
+  const [failure, setFailure] = useState<string | null>(null);
+  const personal = apps.data?.find(item => item.ri?.serverId === serverId || item.agents.some(place => place.serverId === serverId));
+  const place = personal ? (personal.ri?.serverId === serverId ? personal.ri : personal.agents.find(item => item.serverId === serverId)!) : null;
+  const toChat = () => { dashboard.goHome(); dashboard.showPanelTab('chat'); dashboard.setMobileTab('chat'); if (dashboard.isFocusMode) dashboard.exitFocusMode(); };
+  const allow = async () => {
+    setFailure(null);
+    try { await allowApp.allow(serverId); }
+    catch (e) { setFailure(e instanceof Error ? e.message : String(e)); }
+  };
+  let body: React.ReactNode;
+  if (error) body = <p role="alert" className="text-destructive">{error}</p>;
+  else if (loading || apps.isPending) body = <p role="status" className="text-muted-foreground">Loading app…</p>;
+  else if (personal && place && place.status !== 'connected') body = <>
+    <h1 className="text-lg font-semibold">{place.label} isn’t allowed in {personal.name} yet</h1>
+    <p className="text-muted-foreground">{place.status === 'unavailable' && place.error ? `${place.error} ` : ''}Allow {place.label} in {personal.name} to open it here and use it in chat.</p>
+    <div className="flex flex-wrap gap-2">
+      <Button size="sm" disabled={allowApp.checking} onClick={() => void allow()}>{allowApp.checking && <Loader2 size={14} className="animate-spin"/>}Allow {place.label} in {personal.name}</Button>
+      <Button size="sm" variant="ghost" onClick={() => navigate(`?mcp=${encodeURIComponent(serverId)}`)}><Settings2 size={14}/>Connection</Button>
+    </div>
+  </>;
+  else if (personal) body = <>
+    <h1 className="text-lg font-semibold">{personal.name} has no screens to open</h1>
+    <p className="text-muted-foreground">Use it in chat. Mention {personal.name} with @ and ask for what you need, or type / to use one of its prompts.</p>
+    <div className="flex flex-wrap gap-2"><Button size="sm" onClick={toChat}><MessageCircle size={14}/>Open chat</Button></div>
+  </>;
+  else body = <p className="text-muted-foreground">This connection doesn’t offer a screen. Use it in chat with @.</p>;
+  return <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
+    <header className="flex items-center gap-2 border-b border-border px-5 py-2.5"><Button variant="ghost" size="sm" onClick={() => navigate('')}><ArrowLeft size={14}/>Apps</Button></header>
+    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-8"><div className="mx-auto max-w-xl space-y-3 text-sm">
+      {body}
+      {failure && <p role="alert" className="text-xs text-destructive">{failure}</p>}
+    </div></div>
+    {allowApp.dialog}
   </div>;
 }
 

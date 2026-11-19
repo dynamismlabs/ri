@@ -2,7 +2,7 @@
 
 After the eighth delivery wave, local 1Password, OpenSEO and MagicPath additions: **70 integrations, comprising 60 external MCP integrations and 10 native integrations.** The external entries include 59 remote services and one local desktop service. Reconciled against the TypeScript catalog on October 19, 2026. Implementation and validation details are in the [delivery tracker](integration-implementation.md) and [1Password guide](integrations-onepassword.md).
 
-**Hosted/external MCP** means the service supplies tool names, schemas and execution. We maintain connection setup, encrypted credentials, permissions and any typed app consumers. n8n connects to the user-selected instance, which may be self-hosted. OpenSEO offers Hosted and Self-hosted deployment choices. **Native** means our code implements operations against the service API. Native does not imply the same tool surface Claude exposes.
+**Hosted/external MCP** means the service supplies tool names, schemas and execution. We maintain connection setup, encrypted credentials, permissions and any typed app consumers. n8n connects to the user-selected instance, which may be self-hosted, and Lore to the person's own deployment. OpenSEO offers Hosted and Self-hosted deployment choices. **Native** means our code implements operations against the service API. Native does not imply the same tool surface Claude exposes.
 
 The eight registered-app integrations use official services of the kind exposed through Claude, with our own client registration. Hosted service adoption does not transfer Claude's app admission, account permissions or commercial terms. Generic client endpoints may differ from Claude-specific endpoints. No integration compatibility aliases remain.
 
@@ -12,7 +12,7 @@ These entries are implemented and fixture-tested. They are not a claim that all 
 
 Gmail and Google Calendar can also connect through a managed source, the user's own Composio project, set up once under Connectors → Sources. No OAuth app of their own is needed. Composio holds the account tokens and runs the calls, and Ri keeps account references, agent grants, approvals and the audit trail. Each source instance is its own toolkit namespace (`cmp<id>_gmail`, `cmp<id>_google_calendar`), so a managed account never enters a grant written for the direct toolkit. A managed Google Calendar also feeds the Calendar view, `get_day_shape` and the deck when the user turns that on for it. The reviewed actions are in `src/lib/integrations/sources/composio/catalog.ts`. Design and status: [connector sources](connector-service-spec.md). These are fixture-tested against a stand-in for Composio's API. Real-account acceptance is pending.
 
-## Hosted MCP with browser sign-in (44)
+## Hosted MCP with browser sign-in (45)
 
 | Integration | Endpoint or setup |
 | --- | --- |
@@ -34,6 +34,7 @@ Gmail and Google Calendar can also connect through a managed source, the user's 
 | Granola | `https://mcp.granola.ai/mcp` |
 | Intercom | Choose United States or Europe |
 | Linear | `https://mcp.linear.app/mcp` |
+| Lore | Enter your Lore's address. Ri adds `/mcp` |
 | MagicPath | `https://api.magicpath.ai/mcp` |
 | Make | `https://mcp.make.com` |
 | Mem | `https://mcp.mem.ai/mcp` |
@@ -133,6 +134,8 @@ Hosted integrations support multiple labeled accounts with separate credentials,
 Runtime refresh lets already-started requests finish. Temporary discovery failures retain verified tool definitions and retry on access after fifteen seconds, keeping unavailable services distinct from rejected credentials. Paid calls are never replayed automatically. The [recovery guide](integrations-recovery.md) describes the behavior and retained health diagnostics.
 
 Todoist and Jira have typed consumers for the task picker using canonical hosted tools. They read accounts independently and preserve account labels, source links and partial results. ClickUp, Trello, TickTick and Wrike picker consumers remain pending authenticated contract capture. The [evidence and capture guide](integration-audit/task-picker-expansion.md) records the exact gaps. The retired Linear and Asana picker consumers are removed. These services remain available to agents through hosted tools, but their task-picker support needs validated current input/output schemas. Other hosted additions likewise expose agent tools without automatically adding deterministic picker integrations.
+
+Lore is a family-memories app that each person deploys for themselves ([dynamismlabs/lore](https://github.com/dynamismlabs/lore), on Cloudflare or plain Node). Ri connects at the address the person enters, with Lore's own OAuth through public discovery, dynamic registration and PKCE, and the person allows Ri on Lore's consent screen. It has no delete tools. Its screens (MCP Apps views) open in Ri, so Discover lists it as an app before it's connected (`screens` in `integration-meta.ts`). Checked on November 19, 2026 against a local Lore at `56ad0f6` with a throwaway database and account: sign-in, consent, its 9 tools, and its screen showing a memory in Ri. See `src/lib/integrations/mcp-lore.test.ts`.
 
 OpenSEO adds keyword, SERP, backlink, rank tracking, AI visibility and saved project research through its [official hosted MCP](https://www.openseo.so/docs/mcp). It supports public OAuth with PKCE and refresh, or an OpenSEO API key. Self-hosted setup supports Docker without authentication and Cloudflare Access Managed OAuth. Saved URLs and authentication methods stay bound to their individual connections. Ri preserves the hosted provider's research, write and sharing annotations under the normal permission and approval gates. See the [OpenSEO implementation and validation notes](integration-audit/openseo.md).
 

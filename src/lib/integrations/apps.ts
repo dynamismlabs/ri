@@ -168,7 +168,7 @@ function sameAddress(a: string, b: string): boolean {
  * account, so the app's tools reach the agent's chats once the person allows it on the app's
  * consent screen, and never through Ri's or another agent's connection.
  */
-export async function allowPersonalAppInAgent(input: { appId: string; workspaceId: string; returnTo?: string }, request?: RequestLike): Promise<AuthorizationStart> {
+export async function allowPersonalAppInAgent(input: { appId: string; workspaceId: string; returnTo?: string }, request?: RequestLike): Promise<AuthorizationStart & { serverId: string }> {
   const workspace = getWorkspace(input.workspaceId);
   if (!workspace) throw new PersonalAppError('not_found', 'That agent isn’t here anymore.');
   const entries = appEntries().filter((entry) => entry.app!.id === input.appId);
@@ -178,10 +178,10 @@ export async function allowPersonalAppInAgent(input: { appId: string; workspaceI
   addAppScope(workspace.id, appToolkitId(app.slug), place);
   const current = entries.find((entry) => samePlace(entry.app!.place, place));
   // Signing in again replaces the agent's connection in place, keeping its client registration.
-  if (current) return beginMcpAuthorization(current, request, input.returnTo);
-  const { start } = await connectPlace(app, entries[0]!.url, place, request, input.returnTo);
+  if (current) return { ...await beginMcpAuthorization(current, request, input.returnTo), serverId: current.id };
+  const { entry, start } = await connectPlace(app, entries[0]!.url, place, request, input.returnTo);
   await recycleAgent(workspace.id);
-  return start;
+  return { ...start, serverId: entry.id };
 }
 
 /** Stop an agent using an app: its scope goes, and Ri forgets the agent's connection and token. */

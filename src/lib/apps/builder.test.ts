@@ -4,8 +4,9 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { describe, expect, it, vi } from 'vitest';
 import * as q from '@/lib/db/queries';
-import { AppBuildError, allowedBuilds, appBuildSettings, createApp, foldKitLine, kitCliFor, setAppBuildSettings, type AppJob } from './builder';
+import { AppBuildError, allowedBuilds, appBuildSettings, createApp, foldKitLine, kitCliFor, setAppBuildSettings, withoutManagedNodeNotice, type AppJob } from './builder';
 import { appToolchain } from './toolchain';
+import { getRuntimeBaseDir } from '@/lib/service/paths';
 
 vi.setConfig({ testTimeout: 60_000 });
 import { renderAppBuilderBrief } from './builder-brief';
@@ -23,6 +24,24 @@ describe('reading the kit', () => {
     ]) foldKitLine(job, line);
     expect(job.steps).toEqual([{ step: 'resolve', status: 'passed', detail: '3f2a9c1d0b7e' }, { step: 'test', status: 'failed' }]);
     expect(job.result).toEqual({ outcome: 'checks_failed', message: 'Tests failed. Nothing changed.', log: '/data/releases/change.log' });
+  });
+
+  it('leaves out the kit\'s Node notice for Ri\'s own Node, which Ri never removes, and keeps it for any other', () => {
+    // The kit's own words (core service.ts versionedNodeNotice), for a path with a space in it.
+    const notice = (node: string) => `Its service runs Node from ${node}, which belongs to one Node version: removing that version stops the app. To move it to a Node you'll keep, run serve --uninstall (data and builds are kept), then serve --install with that Node.`;
+    const managed = '/Users/agent/Library/Application Support/Ri/runtime/app-node';
+    const ours = `${managed}/v26.5.0-darwin-arm64/bin/node`;
+    expect(withoutManagedNodeNotice(`3c08635fd507 is running. ${notice(ours)}`, managed)).toBe('3c08635fd507 is running.');
+    const nvm = '/Users/agent/.nvm/versions/node/v24.2.0/bin/node';
+    expect(withoutManagedNodeNotice(`3c08635fd507 is running. ${notice(nvm)}`, managed)).toBe(`3c08635fd507 is running. ${notice(nvm)}`);
+    // A folder beside Ri's that only starts the same way is someone else's.
+    const beside = `${managed}-old/v26.5.0-darwin-arm64/bin/node`;
+    expect(withoutManagedNodeNotice(notice(beside), managed)).toBe(notice(beside));
+    // Through the job, against this computer's Ri.
+    const job: Pick<AppJob, 'steps' | 'result'> = { steps: [] };
+    const here = path.join(getRuntimeBaseDir(), 'app-node', 'v26.5.0-darwin-arm64', 'bin', 'node');
+    foldKitLine(job, JSON.stringify({ event: 'result', outcome: 'switched', message: `It's running. ${notice(here)}` }));
+    expect(job.result?.message).toBe('It\'s running.');
   });
 
   it('finds the kit command an app uses from its own start script, never assuming a name', () => {

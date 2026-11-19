@@ -30,7 +30,7 @@ export function removeAppDescription(input: RemoveCopyInput): string {
     : `${APP_NAME} takes ${name} off its apps.`;
   const kept = `Its folder stays ${where(input.folder, 'where it is')}, with any changes you made, and its data stays ${where(input.dataDir, `where ${name} keeps it`)}.`;
   const reach = input.installed ? ` What it may reach through ${APP_NAME} stays as you allowed it.` : '';
-  const back = input.fromCatalog ? `Add it again from Recommended apps to pick both back up.` : `Make a new app named ${name} to pick both back up.`;
+  const back = input.fromCatalog ? `Add it again from Discover to pick both back up.` : `Make a new app named ${name} to pick both back up.`;
   return `${what} ${kept}${reach} ${back}`;
 }
 

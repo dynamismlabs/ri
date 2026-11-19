@@ -9,6 +9,7 @@ import {
 } from './builder';
 import { addCatalogApp, listCatalogApps, updateCatalogApp } from './catalog';
 import { appLogs, appStatus, restartApp } from './status';
+import { homeComputerName } from './home-computer';
 import { isConnected, reconnectApp, removeApp } from './remove';
 import { listPersonalApps } from '@/lib/integrations/apps';
 
@@ -65,7 +66,9 @@ export const appBuildsRouter = router({
     .mutation(({ input, ctx }) => run(() => addCatalogApp(input.id, ctx.request, safeReturnPath(input.returnTo) ?? undefined))),
   updateFromCatalog: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => updateCatalogApp(input.id))),
   // An installed app's state, Restart and Logs, from the kit's own commands (docs/personal-apps.md "Status, Restart and Logs").
-  status: p.input(z.object({ id, fresh: z.boolean().optional() }).strict()).query(({ input }) => appStatus(input.id, { fresh: input.fresh })),
+  // With the computer it runs on, which the person named, for "Running on AI Mac Mini".
+  status: p.input(z.object({ id, fresh: z.boolean().optional() }).strict())
+    .query(async ({ input }) => ({ ...await appStatus(input.id, { fresh: input.fresh }), computer: homeComputerName() })),
   restart: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => restartApp(input.id))),
   logs: p.input(z.object({ id, lines: z.number().int().min(1).max(2000).optional(), since: z.string().max(40).optional(), change: z.boolean().optional() }).strict())
     .query(({ input }) => run(() => appLogs(input.id, input))),
