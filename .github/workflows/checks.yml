@@ -1,6 +1,6 @@
 name: Checks
 # The quick check every pull request and push to main waits on: typecheck,
-# lint, every test and the web build, on Linux, in about 15 minutes.
+# lint, every test and the web build, on Linux, in about 10 minutes.
 # The packaged desktop app on all four platforms is the full run in
 # desktop.yml. It runs nightly, by hand, and before a release, because it takes
 # two to five hours and its failures are mostly about slow runners.
@@ -47,7 +47,7 @@ jobs:
   tests:
     name: Tests ${{ matrix.shard }}/3
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -78,8 +78,23 @@ jobs:
       - name: Install the test browsers
         if: steps.browser_cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright-core install chromium webkit
+      # About 126 MB of packages. Ubuntu's mirror sometimes serves them at
+      # 75 kB/s (28 minutes), so the downloaded packages are cached and apt
+      # only fetches what changed since.
+      - name: Restore the test browsers' system packages
+        uses: actions/cache@v4
+        with:
+          path: ~/apt-archives
+          key: playwright-deps-ubuntu-24.04-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
       - name: Install the test browsers' system libraries
-        run: pnpm exec playwright-core install-deps chromium webkit
+        timeout-minutes: 15
+        run: |
+          echo 'APT::Keep-Downloaded-Packages "true"; Binary::apt-get::APT::Keep-Downloaded-Packages "true";' | sudo tee /etc/apt/apt.conf.d/99keep-downloads > /dev/null
+          mkdir -p ~/apt-archives
+          sudo cp ~/apt-archives/*.deb /var/cache/apt/archives/ 2>/dev/null || true
+          pnpm exec playwright-core install-deps chromium webkit
+          cp /var/cache/apt/archives/*.deb ~/apt-archives/ 2>/dev/null || true
+          echo "Cached $(ls ~/apt-archives | wc -l) packages"
       # Several tests run the app frame in Chromium's sandbox, as Ri does.
       # Ubuntu 24.04 keeps the user namespaces it needs behind AppArmor.
       - name: Let the test Chromium use its sandbox
