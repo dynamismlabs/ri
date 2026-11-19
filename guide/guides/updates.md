@@ -50,3 +50,5 @@ Change it in **Settings**, or from a terminal with `ri update --channel latest` 
 The desktop app updates itself separately from your Ri. It downloads the new app in the background and switches the next time it opens. On a Mac, a copy of the app that isn't signed by Apple can't update itself: install a new copy from its `.dmg` instead. Your Ri inside it still updates itself either way.
 
 On Windows, Ri doesn't update itself yet. Close Ri and run the newer installer. Your tasks, notes and chats stay.
+
+On Linux, the AppImage updates itself. A copy installed from the `.deb` doesn't: install the newer `.deb` to update the app. Your Ri inside it still updates itself either way.

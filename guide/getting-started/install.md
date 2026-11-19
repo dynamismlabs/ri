@@ -15,7 +15,7 @@ Download Ri for your computer from [ri.app](https://ri.app) and open it.
 | --- | --- | --- |
 | Mac | macOS 13.5 or newer, Apple silicon or Intel | A `.dmg`. Open it and drag Ri to Applications. |
 | Windows | 64-bit Windows 10 version 1809 or newer, Intel or AMD | An installer, `Ri-Setup` followed by the version. |
-| Linux | x64 or arm64. Ri is built and tested on Ubuntu 22.04. | An `.AppImage`. Make it executable, then open it. |
+| Linux | x64 or arm64. Ri is built and tested on Ubuntu 22.04. | A `.deb` for Ubuntu and Debian (`sudo apt install ./` followed by the file name), or an `.AppImage` for other systems. Make the AppImage executable, then open it. |
 
 When Ri opens, it asks how to use this computer:
 
