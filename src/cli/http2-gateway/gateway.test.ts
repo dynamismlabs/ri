@@ -16,12 +16,28 @@ function createUpstream(): Promise<{
   port: number;
   sawSlowSseClose: () => boolean;
   sawSlowUpgradeClose: () => boolean;
+  /** Drop the next request that arrives on a connection that already served one. */
+  dropNextReused: () => void;
+  drops: () => number;
 }> {
   let slowSseClosed = false;
   let slowUpgradeClosed = false;
+  const served = new WeakSet<object>();
+  let dropNext = false;
+  let drops = 0;
 
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
+    // As when the upstream closes an idle keep-alive connection just as the
+    // gateway sends on it: the request is never answered.
+    const reused = served.has(req.socket);
+    served.add(req.socket);
+    if (dropNext && reused) {
+      dropNext = false;
+      drops += 1;
+      req.socket.destroy();
+      return;
+    }
     switch (url.pathname) {
       case '/api/health':
         res.writeHead(200, { 'content-type': 'application/json' });
@@ -120,6 +136,8 @@ function createUpstream(): Promise<{
         port: (server.address() as AddressInfo).port,
         sawSlowSseClose: () => slowSseClosed,
         sawSlowUpgradeClose: () => slowUpgradeClosed,
+        dropNextReused: () => { dropNext = true; },
+        drops: () => drops,
       });
     });
   });
@@ -167,6 +185,22 @@ function h2get(pathName: string, headers: Record<string, string> = {}): Promise<
   });
 }
 
+function h2request(port: number, pathName: string, method = 'GET', body?: string, headers: Record<string, string> = {}): Promise<{ status: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const client = http2.connect(`https://127.0.0.1:${port}`, { ca: tls.probeCa, servername: 'localhost', ALPNProtocols: ['h2'] });
+    client.on('error', reject);
+    const req = client.request({ ':path': pathName, ':method': method, ...headers });
+    let status = 0;
+    let text = '';
+    req.on('response', (h) => { status = Number(h[':status']); });
+    req.setEncoding('utf8');
+    req.on('data', (c) => (text += c));
+    req.on('end', () => { client.close(); resolve({ status, body: text }); });
+    req.on('error', reject);
+    req.end(body);
+  });
+}
+
 beforeAll(async () => {
   tlsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-gw-'));
   process.env.RI_CONFIG_DIR = path.join(tlsDir, '.config');
@@ -197,6 +231,72 @@ describe('http2 gateway', () => {
     expect(res.protocol).toBe('h2');
     expect(res.status).toBe(200);
     expect(JSON.parse(res.body).ok).toBe(true);
+  });
+
+  it('sends a read again on a new connection when the upstream dropped it on a pooled one', async () => {
+    // The first read leaves a pooled connection, which the second reuses and the upstream drops.
+    expect((await h2get('/api/health')).status).toBe(200);
+    upstream.dropNextReused();
+    const before = upstream.drops();
+    const res = await h2get('/api/health');
+    expect(upstream.drops()).toBe(before + 1);
+    expect(res.status).toBe(200);
+    expect(JSON.parse(res.body).ok).toBe(true);
+  });
+
+  it('answers 502 for a write the upstream dropped, since it could have been acted on', async () => {
+    expect((await h2get('/api/health')).status).toBe(200);
+    upstream.dropNextReused();
+    const before = upstream.drops();
+    const res = await h2request(publicPort, '/echo-upload', 'POST', 'saved?');
+    expect(upstream.drops()).toBe(before + 1);
+    expect(res.status).toBe(502);
+    expect(res.body).toMatch(/^Upstream error: /);
+  });
+
+  it('closes an idle upstream connection before the upstream would, and keeps a quiet stream', async () => {
+    // An upstream that keeps idle connections far longer than the gateway does.
+    const sockets: Array<{ endedByGateway: boolean }> = [];
+    const patient = http.createServer((req, res) => {
+      if (req.url === '/quiet-sse') {
+        res.writeHead(200, { 'content-type': 'text/event-stream' });
+        res.write('event: open\ndata: hi\n\n');
+        setTimeout(() => res.end('event: late\ndata: still here\n\n'), 1200);
+        return;
+      }
+      res.end('ok');
+    });
+    patient.keepAliveTimeout = 30_000;
+    patient.on('connection', (socket) => {
+      const record = { endedByGateway: false };
+      sockets.push(record);
+      socket.on('end', () => { record.endedByGateway = true; });
+    });
+    await new Promise<void>((resolve) => patient.listen(0, '127.0.0.1', resolve));
+    const port = await getPort();
+    const idle = await startHttp2Gateway({
+      publicPort: port,
+      publicBaseUrl: `https://localhost:${port}`,
+      upstreamHost: '127.0.0.1',
+      upstreamPort: (patient.address() as AddressInfo).port,
+      tls,
+      upstreamIdleMs: 300,
+    });
+    try {
+      expect((await h2request(port, '/')).body).toBe('ok');
+      await expect.poll(() => sockets.length > 0 && sockets.every((socket) => socket.endedByGateway), { timeout: 3000 }).toBe(true);
+      // The limit is for idle connections only: streams silent for four times as long still finish,
+      // the second most likely on the connection the first left in the pool.
+      for (let i = 0; i < 2; i += 1) {
+        const stream = await h2request(port, '/quiet-sse', 'GET', undefined, { accept: 'text/event-stream' });
+        expect(stream.status).toBe(200);
+        expect(stream.body).toContain('still here');
+      }
+    } finally {
+      await idle.close(1000);
+      patient.closeAllConnections();
+      await new Promise<void>((resolve) => patient.close(() => resolve()));
+    }
   });
 
   it('readiness probe confirms real h2 negotiation + health', async () => {

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { AcceptanceFixture, api, eventually, nativeNavigate } from './acceptance-fixture';
 import { localPage } from './acceptance-surfaces';
-import { assertDisposableSupervisorAccount } from './platform-qualification';
+import { assertDisposableSupervisorAccount, SUPERVISOR_OPT_IN } from './platform-qualification';
 import { desktopPackageLayout } from './package-layout';
 import { serviceStatus } from '../src/lib/service/client';
 import { hasLoginSupervision, uninstallService } from '../src/lib/service/install';
@@ -81,6 +81,9 @@ void (async () => {
     fixture = new AcceptanceFixture('installer-home', { chooseHome: false });
     // Retain the recovery screen so a failed service can be diagnosed.
     fixture.env.RI_DESKTOP_RECOVERY_SMOKE = '1';
+    // This account is disposable (checked above), so the new Home's login job is
+    // real: the app installs it only where a run says so.
+    fixture.env.RI_SERVICE_SMOKE_SUPERVISOR = SUPERVISOR_OPT_IN;
     // systemd discovers units in the real disposable account's .config folder.
     // The Home, runtime store and desktop profile remain under the fixture.
     if (!mac) fixture.env.HOME = accountHome;

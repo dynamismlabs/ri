@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppViewController } from '@ri/mcp-apps-host';
@@ -22,6 +22,7 @@ import { viewHref } from '@/lib/client/active-view';
 import { attachmentUrl } from '@/lib/attachments/view';
 import { fileSizeLabel, MAX_VIEW_DOWNLOAD_BYTES, saveViewDownload, viewDownload, type ViewDownload } from '@/lib/mcp-apps/view-download';
 import { ConnectedViewForms } from './form/view-forms';
+import { useNoticeTimeout } from './notice-timeout';
 
 type OpenView = RouterOutputs['connectedApps']['open'];
 /**
@@ -160,6 +161,8 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
   const [saving, setSaving] = useState<PendingSave | null>(null);
   const [ready, setReady] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const dismissNotice = useCallback(() => setNotice(null), []);
+  const noticeRef = useNoticeTimeout<HTMLParagraphElement>(notice, dismissNotice);
   const onExpandRef = useRef(onExpand);
   useEffect(() => { onExpandRef.current = onExpand; }, [onExpand]);
   // Where a file the app asks to open (`openai/files/open`) shows: beside this chat, or full screen.
@@ -169,11 +172,6 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
   useEffect(() => { places.current = {companion, dashboard}; }, [companion, dashboard]);
   const dashboardRef = useRef(dashboard);
   useEffect(() => { dashboardRef.current = dashboard; }, [dashboard]);
-  useEffect(() => {
-    if (!notice) return;
-    const timer = setTimeout(() => setNotice(null), 12_000);
-    return () => clearTimeout(timer);
-  }, [notice]);
   useEffect(() => {
     const resource = view.resource;
     const frame = mount.current;
@@ -349,7 +347,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
     {pending && <ApprovalCard key={pending.ids.join(',')} pending={pending} />}
     {saving && !pending && <SaveCard app={view.app} pending={saving} />}
     {error && <p role="alert" className="border-b border-border p-3 text-xs text-destructive">{error}</p>}
-    {notice && <p role="status" className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[11px] text-muted-foreground"><span className="min-w-0 flex-1">{notice}</span><button type="button" className="shrink-0 hover:text-foreground" onClick={() => setNotice(null)}>Dismiss</button></p>}
+    {notice && <p ref={noticeRef} role="status" className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[11px] text-muted-foreground"><span className="min-w-0 flex-1">{notice}</span><button type="button" className="shrink-0 hover:text-foreground" onClick={dismissNotice}>Dismiss</button></p>}
     {!ready && !error && <p role="status" className="absolute left-3 top-3 text-xs text-muted-foreground">Loading interface…</p>}
     <ConnectedViewForms viewId={view.id} />
     {/* Inline, the frame is exactly the height the view reports (the host clamps it to 160 to 900 px), capped

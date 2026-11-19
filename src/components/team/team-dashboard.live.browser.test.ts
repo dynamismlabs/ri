@@ -4,6 +4,7 @@ import path from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { teamTRPC } from '@/lib/spaces/remote';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 type Preview = { ownerUrl: string; memberUrl?: string; taskId?: string; noteId?: string; assistantId?: string; spaceUrl?: string };
 const root = process.env.RI_TEAM_DASHBOARD_PREVIEW;
@@ -28,7 +29,7 @@ afterAll(async () => { await browser?.close(); });
 
 async function pageFor(width: number, member = false, mac = false, http = false) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
-  page.setDefaultTimeout(15_000);
+  testTimeouts(page, 15_000);
   page.on('pageerror', error => errors.push(error.message));
   if (http) await page.addInitScript(() => localStorage.setItem('ri.client.apiTransport', 'http'));
   if (mac) await page.addInitScript(() => { document.addEventListener('DOMContentLoaded', () => { document.documentElement.dataset.riDesktop = 'darwin'; }); });
@@ -155,7 +156,7 @@ it.skipIf(!enabled || !personalRoot)('uploads and removes a company logo through
   const original = (await api.userState.list.query({}))?.orchestratorImage ?? null;
   const personal = load(personalRoot!);
   const owner = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  owner.setDefaultTimeout(20_000);
+  testTimeouts(owner, 20_000);
   owner.on('pageerror', error => errors.push(error.message));
   let member: Page | undefined;
   try {
@@ -327,7 +328,7 @@ it.skipIf(!enabled)('leaves content and history readable when Team AI is off', a
 it.skipIf(!enabled || !personalRoot)('preserves the personal dashboard and keeps connected-Team agent navigation inside its document', async () => {
   const personal = load(personalRoot!);
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  page.setDefaultTimeout(20_000);
+  testTimeouts(page, 20_000);
   page.on('pageerror', error => errors.push(error.message));
   try {
     await page.goto(personal.ownerUrl, { waitUntil: 'domcontentloaded' });
@@ -356,7 +357,7 @@ it.skipIf(!enabled || !personalRoot)('preserves the personal dashboard and keeps
 it.skipIf(!enabled || !personalRoot)('expands personal panels, preserves drafts and tucks the control into More before tabs get cramped', async () => {
   const personal = load(personalRoot!);
   const page = await browser.newPage({ viewport: { width: 1920, height: 1000 } });
-  page.setDefaultTimeout(15_000);
+  testTimeouts(page, 15_000);
   page.on('pageerror', error => errors.push(error.message));
   const a = page.locator('[data-panel]#panel-a');
   const b = page.locator('[data-panel]#panel-b');

@@ -14,6 +14,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { createRequire } from 'node:module';
 import { prepareResource } from '@/lib/mcp-apps/resource';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 it('keeps focus where the person is typing when an app takes it, and still lets a click in', async () => {
   const require = createRequire(import.meta.url);
@@ -39,7 +40,7 @@ import{ConnectedView}from'@/components/mcp-apps/view';import{registerAppChatComp
 const client=new QueryClient({defaultOptions:{queries:{retry:false}}});
 function Fixture(){const[draft,setDraft]=useState('');
 useEffect(()=>registerAppChatComposer('${chatId}',text=>setDraft(d=>d+'|'+text),{appendParts:parts=>setDraft(d=>d+'|'+JSON.stringify(parts))}),[]);
-return <main className="flex h-dvh flex-col bg-background text-foreground"><textarea aria-label="Composer" className="m-4 h-16 border" onKeyDown={e=>{if(e.key==='Tab'&&e.shiftKey)e.preventDefault()}}/><div className="flex-1 overflow-auto p-5"><ConnectedView captureId="${captureId}" chatId="${chatId}"/></div>
+return <main className="flex h-dvh flex-col bg-background text-foreground"><textarea aria-label="Composer" className="m-4 h-16 border" onKeyDown={e=>{if(e.key==='Tab'&&e.shiftKey)e.preventDefault()}}/><button type="button" className="mx-4 self-start">Model</button><div className="flex-1 overflow-auto p-5"><ConnectedView captureId="${captureId}" chatId="${chatId}"/></div>
 <output data-draft>{draft}</output></main>}
 createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><Fixture/></QueryClientProvider>);
 ` }, bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' } });
@@ -62,7 +63,7 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
   const browser = await chromium.launch({ executablePath: chromium.executablePath(), headless: true, chromiumSandbox: true, args: ['--disable-features=IsolateSandboxedIframes'] });
   try {
     const page = await browser.newPage({ viewport: { width: 1100, height: 800 } }), errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-    page.setDefaultTimeout(10_000);
+    testTimeouts(page, 10_000);
     await page.goto(`http://127.0.0.1:${(server.address() as { port: number }).port}`);
     const guest = page.frameLocator('iframe[aria-label="App view"]').frameLocator('iframe');
     const composer = page.getByRole('textbox', { name: 'Composer' });
@@ -128,10 +129,27 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
     await page.keyboard.type('#', { delay: 120 });
     expect(await composer.inputValue()).toBe('hello there, Ri x again!?#');
     expect(await guest.locator('#keys').textContent()).toBe('okq');
-    // The keyboard still moves in: a Tab Ri's page leaves to the browser lets focus enter the app.
+    // A Tab that lands in Ri's page is spent there. The app, still calling focus() every 150 ms, used to
+    // come in on the second after it, and the person's next key went to the app.
     await composer.click();
     await page.mouse.move(5, 5);
-    for (let i = 0; i < 4 && await page.evaluate(() => document.activeElement?.getAttribute('aria-label')) !== 'App view'; i++) await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    const focused = () => page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.textContent ?? null);
+    expect(await focused()).toBe('Model');
+    await page.waitForTimeout(600);
+    expect(await focused()).toBe('Model');
+    expect(await guest.locator('#keys').textContent()).toBe('okq');
+    // The keyboard still moves in: a Tab Ri's page leaves to the browser lets focus enter the app, past the
+    // app's notice, which stays while its Dismiss has focus. Each Tab moves focus one stop, a moment after the
+    // key. Moving into the app's frame, which runs in its own process, passes through the page's body first,
+    // so wait for focus to reach a stop, not merely leave the last one. Another Tab while it is still on its
+    // way would reach the app's field as a key.
+    for (let i = 0; i < 4 && await page.evaluate(() => document.activeElement?.getAttribute('aria-label')) !== 'App view'; i++) {
+      const from = await page.evaluateHandle(() => document.activeElement);
+      await page.keyboard.press('Tab');
+      await page.waitForFunction(from => { const active = document.activeElement; return !!active && active !== from && active !== document.body; }, from, { timeout: 10_000 });
+      await from.dispose();
+    }
     await focusSettledInApp();
     await page.keyboard.type('t', { delay: 40 });
     expect(await guest.locator('#keys').textContent()).toBe('okqt');

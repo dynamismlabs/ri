@@ -7,6 +7,8 @@ import path from 'node:path';
 import { encodeSource, sourceMarker } from './reference';
 import type { ChatInputEditorHandle } from '@/components/chat/editor/chat-input-editor';
 import type { SourceDescriptor } from './types';
+import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 it('qualifies source picking, exact account drill-down, draft restore, both outputs and mobile chips in Chromium', async () => {
   const sources: SourceDescriptor[] = ['Work', 'Personal'].map(account => ({ sourceRef: encodeSource({ v: 1, kind: 'integration', toolkitId: 'mail', account: { accountId: account, authConfigId: null } }), label: `Mail · ${account}`, chipLabel: `Mail · ${account}`, accountLabel: account, service: 'Mail', groupId: 'mail', keywords: [account], status: 'ready', chat: true, view: 'none' }));
@@ -23,14 +25,14 @@ it('qualifies source picking, exact account drill-down, draft restore, both outp
   });
   await new Promise<void>(r => server.listen(0, '127.0.0.1', r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  const executablePath = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'].find(fs.existsSync);
+  const executablePath = testChromiumPath();
   if (!executablePath) throw new Error('Chromium is required for composer qualification');
   const browser = await chromium.launch({ executablePath, headless: true });
   const errors: string[] = [];
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     page.on('pageerror', error => { errors.push(error.message); });
-    page.setDefaultTimeout(6000);
+    testTimeouts(page, 6000);
     await page.goto(origin);
     const editor = page.locator('.tiptap'); await editor.waitFor(); await editor.click();
     await page.keyboard.type('@app:');

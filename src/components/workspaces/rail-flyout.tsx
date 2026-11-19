@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
+import { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Popover as PopoverPrimitive } from 'radix-ui';
 import { usePathname, useSearchParams } from 'next/navigation';
@@ -67,8 +67,11 @@ export function RailFlyout({
   const pathname = usePathname();
   const search = useSearchParams();
   const navigationKey = `${pathname}?${search}`;
-  const [state, setState] = useState<FlyoutState>(null);
-  const dispatch = useCallback((event: FlyoutEvent) => setState((prev) => nextFlyoutState(prev, event)), []);
+  // A reducer rather than useState. useState settles an update that changes
+  // nothing (a press inside a held flyout) ahead of time, and React can apply
+  // that settled result after a later update, so a flyout that navigating just
+  // closed opened again. A reducer's updates always run in order.
+  const [state, dispatch] = useReducer(nextFlyoutState, null as FlyoutState);
   const open = state !== null;
 
   // One pending intent at a time: a peek about to open, or about to close.
@@ -130,7 +133,7 @@ export function RailFlyout({
   const [shownOn, setShownOn] = useState(view);
   if (shownOn !== view) {
     setShownOn(view);
-    setState(null);
+    dispatch({ type: 'dismiss' });
   }
 
   // Opened from the keyboard, focus goes in, and back to the trigger after.

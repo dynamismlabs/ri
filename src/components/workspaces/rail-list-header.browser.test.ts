@@ -14,6 +14,8 @@ import type { AddressInfo } from 'node:net';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 interface FixtureWindow extends Window {
   actions: { kind: string; value: unknown }[];
@@ -90,7 +92,7 @@ beforeAll(async () => {
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const executablePath = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'].find(fs.existsSync);
+  const executablePath = testChromiumPath();
   if (!executablePath) throw new Error('Chromium is required for rail qualification');
   browser = await chromium.launch({ executablePath, headless: true });
 }, 30_000);
@@ -102,7 +104,7 @@ afterAll(async () => {
 
 async function open(theme: 'dark' | 'light'): Promise<{ page: Page; errors: string[] }> {
   const page = await browser.newPage({ viewport: { width: 400, height: 200 }, deviceScaleFactor: 2 });
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   // Every rail style has the switch. This is agents first.

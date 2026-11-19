@@ -83,13 +83,16 @@ describe('the registry surface', () => {
 
 describe('durable coordination approval surface', () => {
   it('records a delegation before approval without creating a target chat', async () => {
-    const { q, ws, agentChat } = await seed();
+    // A chat working on an execution asks first. An agent's main chat is its manager and doesn't
+    // (docs/agent-coordination.md), so it can't stand in for one here.
+    const { q, ws, execution } = await seed();
     const before = q.listChatSessions({ workspaceId: ws.id }).length;
-    const result = await run('delegate_work', { workspace_id: ws.id, request_id: 'approved-launch', prompt: 'Implement the fix.', provider: 'claude', permission_mode: 'plan' }, { remote: true, actor: { source: 'ai', sessionId: agentChat.id } });
+    expect(q.agentCoordinationPolicy(execution.id)).toMatchObject({ unrestricted: false, policy: 'ask' });
+    const result = await run('delegate_work', { workspace_id: ws.id, request_id: 'approved-launch', prompt: 'Implement the fix.', provider: 'claude', permission_mode: 'plan' }, { remote: true, actor: { source: 'ai', sessionId: execution.id } });
     expect(result).toMatchObject({ ok: true, result: { status: 'awaiting_approval', response_required: true } });
     await (await import('@/lib/coordination/service')).drainAgentCoordination();
     expect(q.listChatSessions({ workspaceId: ws.id })).toHaveLength(before);
-    expect(q.pendingAgentApprovals(agentChat.id)).toHaveLength(1);
+    expect(q.pendingAgentApprovals(execution.id)).toHaveLength(1);
     expect(serverFetch).not.toHaveBeenCalled();
   });
   it('keeps coordination preferences and Hold out of agent-facing generic update parameters', async () => {

@@ -7,8 +7,7 @@
  * `rate_limits` event through the home's sink (`executor/home-sink.ts`), and this keeps
  * one merged snapshot per harness. Visible pages poll every two minutes
  * while warnings are enabled, and refresh on return. Opening the card also
- * enables reads. Due limits are read outside any chat (`readHarnessRateLimits`,
- * agentex's sessionless `readRateLimits`: no prompt, no conversation history),
+ * enables reads. Due limits are read outside any chat (`readHarnessRateLimits`),
  * at most once every two minutes per harness across all tabs. Chat events
  * update the existing page stream immediately. See docs/subscription-usage.md.
  *
@@ -146,7 +145,7 @@ export function getHarnessRateLimits(): HarnessRateLimits[] {
   return KNOWN_HARNESS_IDS.flatMap((id) => (store[id] ? [store[id]] : []));
 }
 
-/** The enabled harnesses whose account limits can be read outside a chat (Claude Code and Codex today). */
+/** The enabled harnesses whose account limits can be read outside a chat. */
 function readableHarnesses(): HarnessId[] {
   return HARNESS_IDS.filter((id) => typeof getProvider(HARNESS_REGISTRY[id].agentexProviderId).readRateLimits === 'function');
 }

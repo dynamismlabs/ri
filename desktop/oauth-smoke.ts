@@ -99,7 +99,7 @@ void acceptance('oauth-smoke', async fixture => {
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].minimize());
     assert.equal((await fetch(callback, { redirect: 'manual', signal: AbortSignal.timeout(30_000) })).status, 200);
     await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('settings') === 'plugins');
-    await page.locator('p').filter({ hasText: /^Connected$/ }).waitFor();
+    await page.getByRole('status').filter({ hasText: /^Connected$/ }).waitFor();
     await eventually(async () => connectedServer(native.entry!.id), 'native MCP tools ingested');
     assert.equal(nativeProvider.exchanges, 1, 'Native callback did not exchange exactly once');
     assert.equal(await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].isMinimized()), false);
@@ -113,7 +113,7 @@ void acceptance('oauth-smoke', async fixture => {
     await bounded(app.evaluate(({ app }, url) => { app.emit('open-url', { preventDefault() {} }, url); }, deepLink), 'native OAuth protocol event');
     await eventually(async () => nativeProvider.exchanges === 2, 'custom-protocol token exchange');
     await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('settings') === 'plugins');
-    await page.locator('p').filter({ hasText: /^Connected$/ }).waitFor();
+    await page.getByRole('status').filter({ hasText: /^Connected$/ }).waitFor();
     await bounded(app.evaluate(({ app }, url) => { app.emit('open-url', { preventDefault() {} }, url); }, deepLink), 'replayed OAuth protocol event');
     const replay = await page.evaluate(async body => {
       const response = await fetch('/api/desktop/oauth/complete', {
@@ -160,7 +160,8 @@ void acceptance('oauth-smoke', async fixture => {
     assert(new URL(fallback.location, origin).origin === origin, 'Relative callback escaped its browser origin');
     fixture.check('Web initiation without browser-origin metadata uses a relative callback return');
 
-    await fixture.navigate('/?settings=plugins');
+    // The MCP servers tab, which lists each server by the name it was given.
+    await fixture.navigate('/?settings=plugins&plugin=mcp');
     await page.getByText('Relative return fixture', { exact: true }).first().waitFor();
     await page.screenshot({ path: path.join(fixture.base, 'oauth-connections.png') });
     fixture.report.limits = ['OAuth providers and consent are local mocks. Custom-protocol dispatch is emitted directly inside Electron. Normal packaged startup may register its protocol within the isolated Linux home. No live provider registration, external tunnel, phone browser or OS deep-link delivery is qualified.'];

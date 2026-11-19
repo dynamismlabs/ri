@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { ServiceSession, ServiceStatus } from '../src/lib/service/client';
+import { awaitingRetry, type ServiceSession, type ServiceStatus } from '../src/lib/service/client';
 import type { BackendReady } from './config';
 
 /** A viewer never picks replacement binaries for an existing owner. Older
@@ -15,6 +15,9 @@ export function runtimeForOwner(owner: Pick<ServiceStatus, 'repo' | 'node'>, act
 export async function attachExistingOwner<T extends ServiceStatus = ServiceSession>(dependencies: {
   status: () => Promise<ServiceStatus | null>;
   session: () => Promise<T>;
+  /** An owner waiting to retry a failed start answers with this instead of
+   * the wait running out: the caller says why while the controller keeps trying. */
+  retrying?: (status: ServiceStatus & { error: string }) => T | Promise<T>;
   delay?: () => Promise<void>;
   timeoutMs?: number;
 }) {
@@ -23,6 +26,7 @@ export async function attachExistingOwner<T extends ServiceStatus = ServiceSessi
     const status = await dependencies.status();
     if (!status) throw new Error('The existing service stopped while connecting. Start it with its matching CLI and retry.');
     if (status.phase === 'running') return dependencies.session();
+    if (dependencies.retrying && awaitingRetry(status)) return dependencies.retrying(status);
     if (status.phase === 'failed') throw new Error(status.error ?? 'The existing service needs recovery.');
     if (status.phase === 'stopping') throw new Error('The existing service is stopping. Wait and retry after it restarts.');
     await (dependencies.delay?.() ?? new Promise(resolve => setTimeout(resolve, 250)));

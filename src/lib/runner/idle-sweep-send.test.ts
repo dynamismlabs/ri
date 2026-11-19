@@ -79,16 +79,23 @@ it.each([['slow EOF exit', false], ['ignores SIGTERM', true]] as const)('idle sw
   runnerState.lastActivityAt.set(chat.id, Date.now() - runner.IDLE_CLOSE_MS - 1000);
   const t0 = Date.now();
   const sweep = runner.closeIdleSessions();
-  await new Promise(resolve => setTimeout(resolve, 300));
+  // Send once the close owns the chat. A message landing earlier, during the
+  // sweep's record work, wins and keeps the process, as it should: that's a
+  // different case, and a fixed 300 ms here fell into it on a busy machine.
+  const { processState } = await import('@/lib/process-state');
+  const closing = processState('runner.closing-sessions', () => new Map<string, unknown>());
+  await vi.waitFor(() => expect(closing.has(chat.id)).toBe(true), { timeout: 15_000, interval: 5 });
   const during = await sendMessage({ params: { id: chat.id }, body: { content: 'second message, typed as the sweep ran' } } as never, ctx) as { status: number };
   const closed = await sweep; const sweepMs = Date.now() - t0;
-  await new Promise(resolve => setTimeout(resolve, 2500));
+  // The message sent during the close runs once the old process has gone: wait
+  // for that turn rather than a fixed time, then a moment more for a duplicate.
+  const typed = () => fs.readFileSync(path.join(home.root, 'turns.log'), 'utf8').trim().split('\n').filter(line => line.includes('typed as the sweep ran'));
+  await vi.waitFor(() => expect(typed().length).toBeGreaterThan(0), { timeout: 20_000 }).catch(() => {});
+  await new Promise(resolve => setTimeout(resolve, 500));
   const events = q.listChatEvents(chat.id).map((e: { source: string; content?: string | null; raw?: unknown }) => `${e.source}:${((e.raw as { subtype?: string } | null)?.subtype ?? '')}:${(e.content ?? '').slice(0, 60)}`);
   const observed = { variant, firstStatus: first.status, duringStatus: during.status, closedBySweep: closed.includes(chat.id), sweepMs, oldAlive: alive(pid),
     turns: fs.readFileSync(path.join(home.root, 'turns.log'), 'utf8').trim().split('\n'), events: events.filter(e => !e.startsWith('system')).slice(-6) };
-  expect(observed.firstStatus).toBe(201);
-  expect(observed.duringStatus).toBe(201);
-  expect(observed.oldAlive).toBe(false);
-  expect(observed.closedBySweep).toBe(true);
+  // One assertion over everything observed, so a failure shows whether the sweep confirmed its close.
+  expect(observed).toMatchObject({ firstStatus: 201, duringStatus: 201, closedBySweep: true, oldAlive: false });
   expect(observed.turns.filter(line => line.includes('typed as the sweep ran'))).toHaveLength(1);
 }, 60_000);

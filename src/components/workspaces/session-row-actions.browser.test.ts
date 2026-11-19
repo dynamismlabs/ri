@@ -13,6 +13,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 interface FixtureWindow extends Window {
   actions: { kind: string; value: unknown }[];
@@ -174,7 +175,7 @@ const visibleActions = (target: Locator) =>
     .map(b => b.getAttribute('aria-label')));
 
 async function open(page: Page) {
-  page.setDefaultTimeout(3_000);
+  testTimeouts(page, 3_000);
   page.on('pageerror', error => console.error(error.message));
   await page.goto(base);
   await row(page, 'agent', /Pinned chat/).waitFor();

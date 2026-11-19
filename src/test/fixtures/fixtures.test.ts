@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createGitFixture, createTwoDeviceLayout, git } from './git';
 import { createTestDevice, createTestHome, type TestHome } from './home';
-import { installFakeHarness, type FakeHarness } from './fake-harness';
+import { installFakeHarness, userMessageOf, type FakeHarness } from './fake-harness';
 import { createDatabaseAt, migrationTags } from './migrations';
 import { openAsServer } from '@/test/fixtures/home';
 
@@ -82,6 +82,16 @@ describe('git fixtures', () => {
     } finally {
       layout.cleanup();
     }
+  });
+});
+
+describe('the fake harness reads a message as a harness does', () => {
+  it("takes the person's words after the app's guidance, and anything else as it is", async () => {
+    const { withWorkResultSessionInstructions } = await import('@/lib/work-results/instructions');
+    const wrapped = withWorkResultSessionInstructions('Fix the login bug.\n[User message follows.]\nkept', null, ['# Status line\n\nSay where this chat stands.']);
+    expect(wrapped).not.toBe('Fix the login bug.\n[User message follows.]\nkept');
+    expect(userMessageOf(wrapped)).toBe('Fix the login bug.\n[User message follows.]\nkept');
+    expect(userMessageOf('No guidance here.')).toBe('No guidance here.');
   });
 });
 

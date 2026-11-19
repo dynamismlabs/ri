@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Attachment } from '../src/db/types';
-import { acceptance, api, eventually, hotkey } from './acceptance-fixture';
+import { acceptance, api, eventually, hotkey, openWithHotkey } from './acceptance-fixture';
 
 interface NativeDownloadState { phase: string; fileName?: string; totalBytes?: number; receivedBytes?: number; url?: string }
 type DownloadFixtureGlobal = typeof globalThis & { riDownloadAcceptance: NativeDownloadState };
@@ -13,10 +13,11 @@ void acceptance('interaction-smoke', async fixture => {
   const page = await fixture.launch();
   const app = fixture.app!;
 
-  await hotkey(page, 'search');
   // cmdk's dialog wrapper has no box. Its fixed-position input is the
   // visible control, so checking wrapper dimensions would be misleading.
-  await page.getByRole('combobox').waitFor();
+  // The first shortcut after launch can beat the page's key listener on a
+  // slow runner (CI's Intel Mac), so it repeats until the palette shows.
+  await openWithHotkey(page, 'search', page.getByRole('combobox'), fixture.report);
   await page.getByRole('combobox').fill('> Create note');
   await page.getByRole('option', { name: 'Create note' }).click();
   const title = page.locator('textarea.note-title');
@@ -66,7 +67,9 @@ void acceptance('interaction-smoke', async fixture => {
     document.addEventListener('keydown', event => events.push({ phase: 'capture', key: event.key, meta: event.metaKey, ctrl: event.ctrlKey, shift: event.shiftKey, prevented: event.defaultPrevented, target: (event.target as HTMLElement)?.tagName }), { capture: true });
     window.addEventListener('keydown', event => events.push({ phase: 'window-bubble', key: event.key, meta: event.metaKey, ctrl: event.ctrlKey, shift: event.shiftKey, prevented: event.defaultPrevented, target: (event.target as HTMLElement)?.tagName }));
   });
-  await page.getByRole('button', { name: 'Back', exact: true }).focus();
+  // The note page's own Back, which says so. The desktop title bar has an icon-only Back as well.
+  const pageBack = page.getByRole('button', { name: 'Back', exact: true }).filter({ hasText: 'Back' });
+  await pageBack.focus();
   await hotkey(page, 'focusChatInput');
   fixture.report.focusShortcut = await page.evaluate(() => ({
     keys: (window as unknown as { acceptanceKeys: unknown[] }).acceptanceKeys,
@@ -100,7 +103,7 @@ void acceptance('interaction-smoke', async fixture => {
   });
   // Return through the actual app control and router history, not a CDP
   // address-bar navigation, which is a different Electron lifecycle.
-  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await pageBack.click();
   await page.waitForURL(url => url.pathname === '/');
   fixture.check('Focus-chat shortcut and full-page Back navigation');
   const rail = page.locator('aside:visible').first();

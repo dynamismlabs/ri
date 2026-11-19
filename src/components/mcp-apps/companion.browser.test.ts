@@ -13,6 +13,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { createRequire } from 'node:module';
 import { prepareResource } from '@/lib/mcp-apps/resource';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 /** A guest that counts its own clicks, so a remount (which loses the count) shows. */
 const guest = (name: string, meta?: Record<string, unknown>) => prepareResource({ contents: [{ uri: `ui://fixture/${name}.html`, mimeType: 'text/html;profile=mcp-app', ...(meta ? { _meta: meta } : {}),
@@ -73,7 +74,7 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
   try {
     const page = await browser.newPage({ viewport: { width: 1300, height: 900 } }), errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
     // A step that never happens fails on its own locator, well inside the test's timeout.
-    page.setDefaultTimeout(10_000);
+    testTimeouts(page, 10_000);
     await page.goto(`http://127.0.0.1:${(server.address() as { port: number }).port}`);
     const pane = page.getByRole('complementary', { name: 'Connected app beside this chat' });
     const paneTitle = pane.locator('span').first();

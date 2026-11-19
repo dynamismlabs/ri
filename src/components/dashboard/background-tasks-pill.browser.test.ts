@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // RI_BACKGROUND_TASKS_BROWSER_TEST=1 RI_REVIEW_CHROMIUM=<chromium> pnpm exec vitest run src/components/dashboard/background-tasks-pill.browser.test.ts
 const enabled = process.env.RI_BACKGROUND_TASKS_BROWSER_TEST === '1';
@@ -62,7 +63,7 @@ afterAll(async () => { await fixture?.close(); });
 
 it.skipIf(!enabled).each(['dark', 'light'])('shows just an icon and task count, with keyboard access and exact chat navigation (%s)', async theme => {
   const page = await fixture!.browser.newPage({ viewport: { width: 1180, height: 440 }, deviceScaleFactor: 2 });
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(`${fixture!.url}/?theme=${theme}`);
     const trigger = page.getByRole('button', { name: 'Background tasks: 4' });
@@ -98,7 +99,7 @@ it.skipIf(!enabled).each(['dark', 'light'])('shows just an icon and task count, 
 
 it.skipIf(!enabled).each(['dark', 'light'])('uses the same stable, dim zero as the other status pills after completion (%s)', async theme => {
   const page = await fixture!.browser.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(`${fixture!.url}/?theme=${theme}`);
     const active = page.getByRole('button', { name: 'Background tasks: 4' });
@@ -127,7 +128,7 @@ it.skipIf(!enabled).each(['dark', 'light'])('uses the same stable, dim zero as t
 
 it.skipIf(!enabled)('keeps the existing Working popover, chat navigation and Board action on the shared status pattern', async () => {
   const page = await fixture!.browser.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(fixture!.url);
     await page.getByRole('button', { name: 'Background tasks: 4' }).waitFor();

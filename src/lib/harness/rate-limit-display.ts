@@ -36,11 +36,12 @@ export type RateLimitTone = 'normal' | 'warn' | 'critical';
 /** Old cached readings remain inspectable, but cannot keep a warning lit forever. */
 export const RATE_LIMIT_WARNING_MAX_AGE_MS = 10 * 60_000;
 
-/** The levels that can highlight Usage, lowest first. Each is on until someone turns it off. */
+/** The levels that can highlight Usage, lowest first. */
 export const USAGE_WARNING_THRESHOLDS = [
-  { percent: 50, field: 'usageWarning50', tone: 'normal' },
-  { percent: 80, field: 'usageWarning80', tone: 'warn' },
-  { percent: 90, field: 'usageWarning90', tone: 'critical' },
+  { percent: 0, field: 'usageWarningAboveZero', tone: 'normal', defaultOn: false },
+  { percent: 50, field: 'usageWarning50', tone: 'normal', defaultOn: true },
+  { percent: 80, field: 'usageWarning80', tone: 'warn', defaultOn: true },
+  { percent: 90, field: 'usageWarning90', tone: 'critical', defaultOn: true },
 ] as const;
 
 export type UsageWarningThreshold = (typeof USAGE_WARNING_THRESHOLDS)[number];
@@ -48,7 +49,7 @@ export type UsageWarningThreshold = (typeof USAGE_WARNING_THRESHOLDS)[number];
 export function enabledUsageWarnings(
   preference?: Partial<Pick<UserStateRecord, UsageWarningThreshold['field']>>,
 ): UsageWarningThreshold[] {
-  return USAGE_WARNING_THRESHOLDS.filter((threshold) => preference?.[threshold.field] ?? true);
+  return USAGE_WARNING_THRESHOLDS.filter((threshold) => preference?.[threshold.field] ?? threshold.defaultOn);
 }
 
 /**
@@ -71,7 +72,8 @@ export function rateLimitWarning(
   }).map((bucket) => bucket.id));
   return rateLimitRows(buckets, now)
     .flatMap((row) => {
-      const tone = row.blocked ? 'critical' : thresholds.findLast(({ percent }) => (row.percent ?? 0) >= percent)?.tone;
+      const used = row.percent ?? 0;
+      const tone = row.blocked ? 'critical' : thresholds.findLast(({ percent }) => used > 0 && used >= percent)?.tone;
       return tone && fresh.has(row.key) ? [{ ...row, tone }] : [];
     })
     .sort((a, b) => Number(b.blocked) - Number(a.blocked) || (b.percent ?? 0) - (a.percent ?? 0))[0];

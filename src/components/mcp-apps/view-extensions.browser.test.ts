@@ -14,6 +14,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { createRequire } from 'node:module';
 import { prepareResource } from '@/lib/mcp-apps/resource';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const PIXEL = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 
@@ -90,7 +91,7 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
   try {
     const page = await browser.newPage({ viewport: { width: 1100, height: 900 } }), errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
     // A step that never happens fails on its own locator, well inside the test's timeout.
-    page.setDefaultTimeout(10_000);
+    testTimeouts(page, 10_000);
     const thumbnailRequests: string[] = [];
     page.on('request', request => { if (request.url().includes('thumbs.example')) thumbnailRequests.push(request.url()); });
     await page.goto(`http://127.0.0.1:${(server.address() as { port: number }).port}`);

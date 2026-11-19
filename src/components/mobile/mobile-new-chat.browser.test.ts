@@ -9,6 +9,7 @@
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import type { BrowserContext, Page, Route } from 'playwright-core';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 
@@ -119,7 +120,7 @@ async function phone(): Promise<{ context: BrowserContext; page: Page }> {
     (window as unknown as { setKeyboard: (px: number) => void }).setKeyboard = (px) => { keyboard = px; viewport.dispatchEvent(new Event('resize')); };
   });
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   page.on('pageerror', (e) => console.error(e.message));
   await skillRequests(page);
   await page.goto(fixture.url);
@@ -186,7 +187,7 @@ it('starts a chat from the phone + sheet with touch rules', async () => {
 it('keeps Enter-to-start and key hints on desktop', async () => {
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await skillRequests(page);
     await page.goto(fixture.url);
@@ -208,7 +209,7 @@ it('keeps Enter-to-start and key hints on desktop', async () => {
 it('loads skills before creating a chat and updates an open /f picker when discovery lands', async () => {
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   const skills = await skillRequests(page, true);
@@ -237,7 +238,7 @@ it('loads skills before creating a chat and updates an open /f picker when disco
 it('changes the skill list with the chosen agent and harness and opens it from +', async () => {
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   const skills = await skillRequests(page);
   try {
     await page.goto(fixture.url);
@@ -295,7 +296,7 @@ it.each([
 it('keeps the launch menu focused on context and omits unavailable agents', async () => {
   const context = await fixture.browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   await skillRequests(page);
   try {
     await page.goto(`${fixture.url}?noAgents`);

@@ -72,6 +72,26 @@ it('remote Home viewers get save/capture hooks and may ask for notifications, wi
   mocks.sendSync.mockReturnValue('local');
 });
 
+it('answers a close check with ok only for true, and passes on what the page says is unsaved', async () => {
+  vi.stubGlobal('process', { ...process, isMainFrame: true });
+  await import('./preload');
+  const bridge = mocks.expose.mock.calls[0][1] as { onPrepareClose(callback: () => Promise<boolean | string>): () => void };
+  const callback = vi.fn<() => Promise<boolean | string>>(async () => true);
+  const remove = bridge.onPrepareClose(callback);
+  const listener = mocks.on.mock.calls.find(call => call[0] === 'desktop:prepare-close')![1];
+  const answer = async (nonce: string) => { listener({ sender: { invoke: vi.fn() } }, nonce); await vi.waitFor(() => expect(mocks.send).toHaveBeenLastCalledWith('desktop:prepared', expect.objectContaining({ nonce }))); return mocks.send.mock.lastCall![1]; };
+  expect(await answer('clean')).toEqual({ nonce: 'clean', ok: true });
+  callback.mockResolvedValue('request');
+  expect(await answer('typing')).toEqual({ nonce: 'typing', ok: false, waitingFor: 'request' });
+  // A page from before it could name anything.
+  callback.mockResolvedValue(false);
+  expect(await answer('older')).toEqual({ nonce: 'older', ok: false });
+  callback.mockRejectedValue(new Error('broken page'));
+  expect(await answer('broken')).toEqual({ nonce: 'broken', ok: false });
+  remove();
+  expect(mocks.remove).toHaveBeenLastCalledWith('desktop:prepare-close', listener);
+});
+
 it('opens the in-app settings tab from the native menu without exposing the IPC event', async () => {
   vi.stubGlobal('process', { ...process, isMainFrame: true });
   await import('./preload');

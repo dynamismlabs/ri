@@ -10,7 +10,8 @@ import Database from 'better-sqlite3';
 import type { Notification } from 'electron';
 import type { DesktopNotificationStatus } from '../src/lib/notifications/desktop-contract';
 import { serviceStatus } from '../src/lib/service/client';
-import { acceptance, api, bounded, eventually } from './acceptance-fixture';
+import { acceptance, api, assertNoAlertsWithoutSignature, bounded, eventually, needsSignedBuild } from './acceptance-fixture';
+import { localPage, nativeWindowSnapshot } from './acceptance-surfaces';
 
 interface PresentationState {
   shown: { notification: Notification; hidden: boolean }[];
@@ -120,7 +121,8 @@ void acceptance('background-smoke', async fixture => {
     await app.evaluate(({ app }) => { app.emit('activate', {}, false); });
     await foreground(); await unchangedDocument(baseline);
     await closeWindow(); await background();
-    const second = spawn(fixture.executable, [], { cwd: fixture.base, env: { ...fixture.env, NODE_ENV: 'production' }, stdio: 'ignore' });
+    // A source run's Electron needs the app's entry, as the fixture's own launch passes it.
+    const second = spawn(fixture.executable, fixture.source ? [path.resolve(__dirname, '../dist/desktop/main.cjs')] : [], { cwd: fixture.base, env: { ...fixture.env, NODE_ENV: 'production' }, stdio: 'ignore' });
     try {
       const [code, signal] = await bounded(once(second, 'exit'), 'second packaged instance exit', 30_000);
       assert.equal(signal, null); assert.equal(code, 0);
@@ -131,35 +133,41 @@ void acceptance('background-smoke', async fixture => {
     await menu('ri-hide-window'); await background();
     await menu('ri-notifications');
     await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('settings') === 'notifications'); await foreground();
-    await page.getByRole('button', { name: 'Enable desktop notifications', exact: true }).click();
-    await page.getByRole('button', { name: 'Disable desktop notifications', exact: true }).waitFor();
-    const enabled = await page.evaluate(() => window.riDesktop!.notifications!('status')) as DesktopNotificationStatus;
-    assert(enabled.enabled && enabled.channelId);
-    await fixture.navigate(`/note/${note.id}`); await title.waitFor();
-    const notificationDocument = await page.evaluate(() => performance.timeOrigin);
-    await closeWindow(); await background();
-    // Calling the real HTTP route enqueues only. Do not call the bridge's test
-    // action here: its immediate pump would not prove the hidden timer works.
-    await api(page, '/api/desktop/notifications', 'POST', { action: 'test' });
-    await eventually(async () => delivery()?.status === 'sent', 'background native polling acknowledges notification', 20_000);
-    assert.equal(delivery()?.attempts, 1);
-    const shown = await app.evaluate(() => (globalThis as NativeFixture).riBackgroundAcceptance.shown.map(item => ({ hidden: item.hidden, title: item.notification.title })));
-    assert.deepEqual(shown, [{ hidden: true, title: 'Ri notifications are ready' }]);
-    await background(); await unchangedDocument(notificationDocument);
-    fixture.check('Notification-settings menu restores the window and native notification polling delivers while it is hidden');
+    const canNotify = !(await needsSignedBuild(page));
+    if (!canNotify) {
+      await assertNoAlertsWithoutSignature(page, { askBridge: true });
+      fixture.check('Notification-settings menu restores the window, where an unsigned Mac build says why it cannot notify');
+    } else {
+      await page.getByRole('button', { name: 'Enable desktop notifications', exact: true }).click();
+      await page.getByRole('button', { name: 'Disable desktop notifications', exact: true }).waitFor();
+      const enabled = await page.evaluate(() => window.riDesktop!.notifications!('status')) as DesktopNotificationStatus;
+      assert(enabled.enabled && enabled.channelId);
+      await fixture.navigate(`/note/${note.id}`); await title.waitFor();
+      const notificationDocument = await page.evaluate(() => performance.timeOrigin);
+      await closeWindow(); await background();
+      // Calling the real HTTP route enqueues only. Do not call the bridge's test
+      // action here: its immediate pump would not prove the hidden timer works.
+      await api(page, '/api/desktop/notifications', 'POST', { action: 'test' });
+      await eventually(async () => delivery()?.status === 'sent', 'background native polling acknowledges notification', 20_000);
+      assert.equal(delivery()?.attempts, 1);
+      const shown = await app.evaluate(() => (globalThis as NativeFixture).riBackgroundAcceptance.shown.map(item => ({ hidden: item.hidden, title: item.notification.title })));
+      assert.deepEqual(shown, [{ hidden: true, title: 'Ri notifications are ready' }]);
+      await background(); await unchangedDocument(notificationDocument);
+      fixture.check('Notification-settings menu restores the window and native notification polling delivers while it is hidden');
 
-    await menu('ri-show-window'); await foreground();
-    const clickTitle = 'Notification click retained the latest editor input';
-    await title.fill(clickTitle);
-    await closeWindow(); await background();
-    await app.evaluate(() => {
-      (globalThis as NativeFixture).riBackgroundAcceptance.shown[0].notification.emit('click');
-    });
-    await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('settings') === 'notifications'); await foreground();
-    assert.equal(readNote().title, clickTitle);
-    assert.equal((await app.evaluate(() => (globalThis as NativeFixture).riBackgroundAcceptance.shown.length)), 1);
-    await page.screenshot({ path: path.join(fixture.base, 'background-notification-restored.png') });
-    fixture.check('A hidden native notification click restores the same window and uses the save guard before navigation');
+      await menu('ri-show-window'); await foreground();
+      const clickTitle = 'Notification click retained the latest editor input';
+      await title.fill(clickTitle);
+      await closeWindow(); await background();
+      await app.evaluate(() => {
+        (globalThis as NativeFixture).riBackgroundAcceptance.shown[0].notification.emit('click');
+      });
+      await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('settings') === 'notifications'); await foreground();
+      assert.equal(readNote().title, clickTitle);
+      assert.equal((await app.evaluate(() => (globalThis as NativeFixture).riBackgroundAcceptance.shown.length)), 1);
+      await page.screenshot({ path: path.join(fixture.base, 'background-notification-restored.png') });
+      fixture.check('A hidden native notification click restores the same window and uses the save guard before navigation');
+    }
 
     const priorVoice = await api<{ voiceModel: string | null }>(page, '/api/user-state');
     await api(page, '/api/user-state', 'PATCH', { voiceModel: 'web/speech-recognition' });
@@ -170,7 +178,9 @@ void acceptance('background-smoke', async fixture => {
     // Keyboard behavior is already covered by interaction-smoke.
     await page.locator('aside:visible').first().waitFor();
     await page.locator('[contenteditable="true"][aria-label]:visible').first().waitFor();
-    await page.getByRole('button', { name: 'Quick capture', exact: true }).click();
+    // Quick capture is in the Create menu.
+    await page.getByRole('button', { name: 'Create', exact: true }).click();
+    await page.getByRole('button', { name: /^Quick Capture/ }).click();
     const capture = page.getByRole('dialog', { name: 'Quick Capture', exact: true }); await capture.waitFor();
     await capture.getByPlaceholder("What's on your mind?").fill('Temporary unsent voice fixture');
     await capture.getByRole('button', { name: 'Voice capture', exact: true }).click();
@@ -193,28 +203,20 @@ void acceptance('background-smoke', async fixture => {
 
     await fixture.navigate(`/note/${note.id}`); await title.waitFor();
     const recoveryDocument = await page.evaluate(() => performance.timeOrigin);
-    const [recoveryPage] = await Promise.all([app.waitForEvent('window', { timeout: 15_000 }), menu('ri-recovery')]);
+    // Recovery opens over the Home inside the same native window (desktop/local-window.ts), with the
+    // Home's renderer alive underneath. Its Back returns to that same document.
+    await menu('ri-recovery');
+    const recoveryPage = await localPage(app, 'maintenance');
     recoveryPage.on('pageerror', error => runtimeErrors.push(error.message));
     await recoveryPage.getByRole('heading', { name: 'Local installation', exact: true }).waitFor();
-    const recoveryId = await app.evaluate(({ BrowserWindow }, mainId) => {
-      const secondary = BrowserWindow.getAllWindows().find(candidate => candidate.id !== mainId);
-      if (!secondary || secondary.getTitle() !== 'Ri local installation') throw new Error('Recovery secondary window did not open');
-      secondary.focus(); return secondary.id;
-    }, windowId);
-    await bounded(Promise.all([
-      recoveryPage.waitForEvent('close', { timeout: 10_000 }),
-      app.evaluate(({ Menu, BrowserWindow }, secondaryId) => {
-        const secondary = BrowserWindow.fromId(secondaryId);
-        const item = Menu.getApplicationMenu()?.getMenuItemById('ri-hide-window');
-        if (!secondary || !item?.enabled) throw new Error('Recovery Close Window command is unavailable');
-        // Use the native focused-window argument. The ordinary helper above
-        // intentionally supplies the primary window for its other checks.
-        item.click(item, secondary, {} as never);
-      }, recoveryId),
-    ]), 'focused Recovery window close', 15_000);
+    const covered = await nativeWindowSnapshot(app);
+    assert.equal(covered.id, windowId, 'Recovery opened in another native window');
+    assert.equal(covered.local.filter(local => local.visible).length, 1);
+    await recoveryPage.locator('#back').click();
+    await eventually(async () => (await nativeWindowSnapshot(app)).local.every(local => !local.visible), 'recovery view left by its Back');
     await foreground(); await unchangedDocument(recoveryDocument);
     assert.equal(await title.inputValue(), readNote().title);
-    fixture.check('Close Window targets the focused Recovery window and leaves the primary visible with the same document');
+    fixture.check('Recovery opens inside the same window over a live document, and its Back returns to that document');
 
     await page.screenshot({ path: path.join(fixture.base, 'background-before-quit.png') });
     const finalTitle = 'Explicit Quit saved this final note'; await title.fill(finalTitle);
@@ -224,7 +226,8 @@ void acceptance('background-smoke', async fixture => {
     const afterQuit = await serviceStatus(); assert.equal(afterQuit?.phase, 'running'); assert.equal(afterQuit?.runId, initialService!.runId);
     assert.deepEqual(runtimeErrors, []);
     fixture.check('Explicit menu Quit saves the final edit and exits the viewer while its shared service remains running');
-    fixture.report.limits = ['Application-menu callbacks and a dispatched activate event exercise shared tray/Dock logic. Physical menu-bar/tray icon appearance and OS Dock clicks still require platform qualification.', 'Native Notification.show/history/support, browser SpeechRecognition and the quit confirmation response are mocked OS boundaries. No real alert, microphone or provider was used.'];
+    fixture.report.limits = ['Application-menu callbacks and a dispatched activate event exercise shared tray/Dock logic. Physical menu-bar/tray icon appearance and OS Dock clicks still require platform qualification.', 'Native Notification.show/history/support, browser SpeechRecognition and the quit confirmation response are mocked OS boundaries. No real alert, microphone or provider was used.',
+      ...(canNotify ? [] : ['This Mac package has no Apple-issued signature, so macOS would turn its alerts away and Ri refuses them. Hidden delivery and notification clicks run on Linux and on a Developer ID build.'])];
     fixture.report.windowId = windowId;
     fixture.report.closeBehavior = process.platform === 'darwin' ? 'hidden' : 'minimized-taskbar-fallback';
   } finally {

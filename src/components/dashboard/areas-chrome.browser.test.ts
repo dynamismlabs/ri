@@ -3,6 +3,7 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 beforeAll(async () => {
@@ -32,7 +33,7 @@ beforeAll(async () => {
 },120_000);
 afterAll(async()=>{await fixture?.close();});
 it.skipIf(!enabled).each([false,true])('keeps the actual Area sheet controls below the Mac 40px drag strip (list=%s)',async list=>{
-  const page=await fixture.browser.newPage({viewport:{width:1280,height:860}});page.setDefaultTimeout(5000);
+  const page=await fixture.browser.newPage({viewport:{width:1280,height:860}});testTimeouts(page, 5000);
   try{
     await page.goto(fixture.url+(list?'/?list':''));
     const sheet=page.locator('[data-slot="sheet-content"]');await sheet.waitFor();

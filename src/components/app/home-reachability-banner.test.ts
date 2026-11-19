@@ -153,7 +153,7 @@ it('keeps compatibility errors visible immediately', async () => {
   await mount();
   await act(async () => reportApiCompatibility({ error: 'api_protocol', update: 'client', message: 'Reload Ri to use this version.' }));
   expect(notice()?.textContent).toContain('Reload Ri to use this version.');
-  expect(container.querySelector('button')?.textContent).toBe('Reload with saved drafts');
+  expect(container.querySelector('button')?.textContent).toBe('Refresh');
 });
 
 it('waits for fresh confirmation after the grace period and ignores an obsolete failed check', async () => {

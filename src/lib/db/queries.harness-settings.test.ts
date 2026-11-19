@@ -50,6 +50,8 @@ describe('ensureHarnessSettings', () => {
       const row = q.getUserState();
       return [row?.usageWarning50, row?.usageWarning80, row?.usageWarning90];
     };
+    expect(q.getUserState()?.usageWarningAboveZero).toBeNull();
+    q.updateUserState({ usageWarningAboveZero: true });
     expect(state()).toEqual([null, null, null]);
     q.updateUserState({ usageWarning50: true });
     expect(state()).toEqual([true, null, null]);
@@ -59,6 +61,8 @@ describe('ensureHarnessSettings', () => {
     expect(state()).toEqual([true, false, true]);
     q.updateUserState({ usageWarning50: null, usageWarning80: null, usageWarning90: null });
     expect(state()).toEqual([null, null, null]);
+    expect(q.getUserState()?.usageWarningAboveZero).toBe(true);
+    q.updateUserState({ usageWarningAboveZero: null });
   });
   it('seeds every Claude tier alias, Fable included', () => {
     // The aliases resolve to whatever the installed CLI ships as that tier, so

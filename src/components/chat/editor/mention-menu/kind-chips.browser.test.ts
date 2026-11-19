@@ -3,6 +3,7 @@ import { build } from 'esbuild';
 import { chromium, webkit } from 'playwright-core';
 import http from 'node:http';
 import type {} from '@/test/fixtures/mention-kinds-editor';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 declare global {
   interface Window {
@@ -32,7 +33,7 @@ it.each(engines)('narrows the @ menu by kind with chips, arrows and typed names 
   try {
     const page = await browser.newPage({ viewport: { width: 900, height: 800 } });
     page.on('pageerror', error => { errors.push(error.message); });
-    page.setDefaultTimeout(6000);
+    testTimeouts(page, 6000);
     await page.goto(origin);
     await page.waitForFunction(() => 'mentionKinds' in window);
 

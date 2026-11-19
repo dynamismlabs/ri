@@ -82,7 +82,22 @@ export async function serviceStatus(): Promise<ServiceStatus | null> {
   }
 }
 
-export interface ServiceStartOptions { repo: string; node: string; env?: NodeJS.ProcessEnv; timeoutMs?: number; desktopOwned?: boolean }
+/**
+ * A Home whose server failed to start, or stopped, and that waits for the
+ * controller's next try. The controller never gives up (docs/always-on-spec.md
+ * section 6.2), so this isn't `failed`: it comes up by itself once the cause is
+ * gone. The reason is the status's error.
+ */
+export function awaitingRetry(status: ServiceStatus | null | undefined): status is ServiceStatus & { error: string } {
+  return status?.phase === 'restarting' && !!status.error && !!status.restarts?.nextAttemptAt;
+}
+
+export interface ServiceStartOptions {
+  repo: string; node: string; env?: NodeJS.ProcessEnv; timeoutMs?: number; desktopOwned?: boolean;
+  /** Return a Home that is waiting for its next try instead of waiting for
+   * that try, so the caller can say why while the controller keeps trying. */
+  untilRetrying?: boolean;
+}
 
 /** Start or attach to any role without granting a local Home session. */
 export async function ensureServiceStatus(options: ServiceStartOptions): Promise<ServiceStatus> {
@@ -115,10 +130,12 @@ export async function ensureServiceStatus(options: ServiceStartOptions): Promise
       throw error;
     }
     if (status?.phase === 'running') return status;
+    if (options.untilRetrying && awaitingRetry(status)) return status;
     if (status?.phase === 'failed') throw new Error(status.error ?? 'Service failed to start');
     if (status?.phase === 'stopping') throw new Error('The service is stopping. Wait for it to stop before reopening.');
     await new Promise(resolve => setTimeout(resolve, 250));
   }
+  if (awaitingRetry(status)) throw new Error(`The service did not start: ${status.error.replace(/\.$/, '')}. It keeps trying by itself. Read ${paths.log} for diagnostics.`);
   throw new Error(`The service did not start. Read ${paths.log} for diagnostics.`);
 }
 

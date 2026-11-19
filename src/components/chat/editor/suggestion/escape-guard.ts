@@ -82,6 +82,14 @@ export function registerOpenSuggestion(menu: OpenSuggestion): () => void {
   }
 }
 
+/**
+ * Close every open suggestion menu, for another menu taking its place: the composer's + menu sits
+ * where the `/` menu does, and two stacked menus would catch each other's clicks. The text stays.
+ */
+export function dismissOpenSuggestions(): void {
+  for (const menu of [...openMenus]) menu.dismiss()
+}
+
 /** Test seam: how many menus currently claim Escape. */
 export function openSuggestionCount(): number {
   return openMenus.size

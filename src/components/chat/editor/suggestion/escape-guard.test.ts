@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { escapeClaimants, type OpenSuggestion } from './escape-guard';
 
 function menu(isFocused: boolean): OpenSuggestion & { dismissed: number } {
@@ -51,5 +51,19 @@ describe('escapeClaimants', () => {
     const focused = menu(true);
     const background = menu(false);
     expect(escapeClaimants({ key: 'Escape' }, [background, focused])).toEqual([focused]);
+  });
+});
+
+describe('another menu taking the place of an open one', () => {
+  it('closes every open suggestion menu, once each', async () => {
+    const { dismissOpenSuggestions, openSuggestionCount, registerOpenSuggestion } = await import('./escape-guard');
+    const slash = vi.fn(), mention = vi.fn();
+    const releases = [registerOpenSuggestion({ dismiss: () => { slash(); releases[0]!(); }, isFocused: () => false }), registerOpenSuggestion({ dismiss: () => { mention(); releases[1]!(); }, isFocused: () => true })];
+    dismissOpenSuggestions();
+    expect(slash).toHaveBeenCalledOnce();
+    expect(mention).toHaveBeenCalledOnce();
+    expect(openSuggestionCount()).toBe(0);
+    dismissOpenSuggestions();
+    expect(slash).toHaveBeenCalledOnce();
   });
 });

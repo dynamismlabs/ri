@@ -1,6 +1,9 @@
 import hashlib
 import io
 import json
+import shutil
+import ssl
+import sys
 from pathlib import Path
 import subprocess
 import tarfile
@@ -11,6 +14,16 @@ import urllib.request
 
 import native_inventory as native
 import release_materials as materials
+
+
+class TlsTests(unittest.TestCase):
+    def test_source_hosts_are_verified_against_this_computers_roots(self):
+        context = materials.tls_context()
+        self.assertEqual(context.verify_mode, ssl.CERT_REQUIRED)
+        self.assertTrue(context.check_hostname)
+        if sys.platform == 'darwin':
+            # The system keychain's roots join the standalone Python's own bundle.
+            self.assertGreater(context.cert_store_stats()['x509_ca'], ssl.create_default_context().cert_store_stats()['x509_ca'])
 
 
 class MaterialTests(unittest.TestCase):
@@ -33,11 +46,17 @@ class MaterialTests(unittest.TestCase):
         materials.build_bundle(self.cache, result, self.catalog)
         return result
 
-    def helper(self):
+    def helper(self, numpy_licence=None):
         root = self.root / 'helper'; root.mkdir()
         (root / 'build.json').write_text(json.dumps({'protocol': 1, 'platform': 'linux', 'arch': 'x64'}))
         notice = root / 'licenses/native/ffmpeg/LICENSE'; notice.parent.mkdir(parents=True); notice.write_bytes(b'notice')
         rows = []
+        if numpy_licence is not None:
+            # numpy's wheel with its bundled libraries, and its licence as the build copies it.
+            licence = root / 'licenses/numpy/numpy-2.4.3.dist-info/licenses/LICENSE.txt'; licence.parent.mkdir(parents=True); licence.write_text(numpy_licence)
+            for name in ['libscipy_openblas64_-2e5251cf.so', 'libgfortran-daac5196-038a5e3c.so.5.0.0']:
+                file = root / '_internal/numpy.libs' / name; file.parent.mkdir(parents=True, exist_ok=True); file.write_bytes(b'\x7fELF' + name.encode())
+                rows.append({'file': file.relative_to(root).as_posix(), 'component': 'numpy', 'sha256': materials.digest(file), 'dependencies': ['libc.so.6']})
         for family in native.FFMPEG:
             file = root / ('lib' + family + '.so.1'); file.write_bytes(b'\x7fELF' + family.encode())
             evidence = {'version': '1.0.0', 'configuration': '--enable-version3 --enable-libx264', 'license': 'LGPL version 3 or later'}
@@ -138,6 +157,12 @@ class MaterialTests(unittest.TestCase):
         (helper / 'libavcodec.so.1').write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError, 'changed after inspection'): native.verify_inventory(helper, self.catalog)
 
+    def test_numpy_libs_count_as_numpy_only_where_its_licence_names_them(self):
+        bundled = 'This binary distribution of NumPy also bundles the following software:\nName: OpenBLAS\nName: GCC runtime library\nFiles: numpy.libs/libgfortran*.so\n'
+        self.assertEqual(len(native.verify_inventory(self.helper(bundled), self.catalog)['native']), 9)
+        shutil.rmtree(self.root / 'helper')
+        with self.assertRaisesRegex(ValueError, 'does not name its bundled libgfortran'): native.verify_inventory(self.helper('Name: OpenBLAS\n'), self.catalog)
+
     def test_native_inventory_refuses_missing_ffmpeg_evidence(self):
         helper = self.helper(); file = helper / 'native-inventory.json'; record = json.loads(file.read_text()); record['native'][0]['runtimeEvidence'] = {}; file.write_bytes(materials.json_bytes(record))
         with self.assertRaisesRegex(ValueError, 'runtime evidence'): native.verify_inventory(helper, self.catalog)
@@ -176,7 +201,27 @@ class NativePlatformTests(unittest.TestCase):
             self.assertEqual(native.component_for(name), 'opus')
         self.assertIsNone(native.component_for('_internal/av/.dylibs/libunexpected.so'))
         self.assertIsNone(native.component_for('_internal/numpy/.dylibs/libunknown.so'))
+        # numpy.libs: what the numpy wheel bundles and names, on both architectures, and nothing else.
+        for name in ['libscipy_openblas64_-2e5251cf.so', 'libgfortran-daac5196-038a5e3c.so.5.0.0', 'libquadmath-96973f99-934c22de.so.0.0.0']:
+            self.assertEqual(native.component_for('_internal/numpy.libs/' + name), 'numpy')
+        self.assertIsNone(native.component_for('_internal/numpy.libs/libunexpected-abc.so'))
+        self.assertIsNone(native.component_for('_internal/libgfortran.so.5'))
         self.assertIsNone(native.component_for('_internal/python3.12/libunknown.so'))
+
+    def test_linux_helper_takes_the_os_runtime_libraries_from_the_system(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            kept = ['_internal/av.libs/libxcb-5ddf6756.so.1.1.0', '_internal/av.libs/libz-0f2b3c4d.so.1.3.1', '_internal/libstdc++-extra.txt', '_internal/libzstd.so.1', '_internal/numpy.libs/libgfortran-daac5196-038a5e3c.so.5.0.0']
+            for name in ['_internal/libstdc++.so.6', '_internal/libgcc_s.so.1', '_internal/libz.so.1', '_internal/libmvec.so.1', *kept]:
+                (root / name).parent.mkdir(parents=True, exist_ok=True); (root / name).write_bytes(b'\x7fELF')
+            self.assertEqual(native.drop_os_libraries(root), ['_internal/libgcc_s.so.1', '_internal/libmvec.so.1', '_internal/libstdc++.so.6', '_internal/libz.so.1'])
+            # Anything else bundled stays, to be inventoried and recorded: a wheel's own renamed copy
+            # of a library, and libraries that only begin like an OS one.
+            self.assertEqual(sorted(file.relative_to(root).as_posix() for file in root.rglob('*') if file.is_file()), kept)
+            for name in ['libz.so.1', 'libmvec.so.1', 'libgcc_s.so.1']:
+                self.assertTrue(native.is_system_dependency(name, 'linux'))
+            for name in ['libzstd.so.1', 'libxcb.so.1', 'libz-0f2b3c4d.so.1.3.1']:
+                self.assertFalse(native.is_system_dependency(name, 'linux'))
 
     @patch('native_inventory.subprocess.run')
     def test_macos_excludes_library_identity_from_dependencies(self, run):
