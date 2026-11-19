@@ -7,7 +7,8 @@ import { listHomes } from '@/lib/service/store';
 import { parseFrom, readOrigin, writeOrigin, type Origin } from '@/lib/service/origin';
 import { buildRelease, selectCommit } from '@/lib/service/source-build';
 import { commandLauncherPath, installCommandLauncher } from '@/lib/service/runtime';
-import { commandCheck, resolveCommand } from '@/lib/service/os-checks';
+import { commandCheck } from '@/lib/service/os-checks';
+import { checkTerminal } from '@/lib/service/terminal-command';
 import { defaultHome, homeAtRoot } from '@/lib/service/home-lookup';
 import { describeRollback } from '@/lib/service/update-presentation';
 import { displayRoot, runUpdate, withHomeIdentity, type HomeClient, type HomeStatus } from '@/lib/service/update-run';
@@ -78,10 +79,12 @@ export function registerUpdateCommand(program: Command) {
         say: line => console.info(line), sleep: ms => new Promise(resolve => setTimeout(resolve, ms)), now: Date.now,
       });
       if (outcomes.some(outcome => outcome.result === 'failed' || outcome.result === 'reverted')) process.exitCode = 1;
-      // An installed launcher does nothing if another `ri` comes first.
+      // An installed launcher does nothing if a new terminal runs another `ri` (section 9.1).
       const launcherPath = commandLauncherPath();
-      const command = commandCheck(resolveCommand('ri'), launcherPath, fs.existsSync(launcherPath));
-      if (command.warn) console.info(`The ri command: ${command.detail}`);
+      if (process.platform !== 'win32' && fs.existsSync(launcherPath)) {
+        const command = commandCheck(await checkTerminal({ launcher: launcherPath }), launcherPath, true);
+        if (command.warn) console.info(`The ri command: ${command.detail}`);
+      }
     });
   update.command('recover').description('Retry the recorded recovery after correcting its reported problem. Then start the service again.').action(async () => {
     console.info(JSON.stringify(await serviceRequest('/recover', 'POST', 180_000), null, 2));

@@ -159,6 +159,7 @@ program
 program
   .command('doctor')
   .description('Run diagnostic checks')
+  .option('--fix', 'make `ri` in a new terminal run Ri when it runs something else, such as Ruby\'s ri')
   .action(doctorCommand);
 
 registerHomeControlCommands(program);

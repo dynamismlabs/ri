@@ -21,7 +21,8 @@ import { hasLoginSupervision } from '@/lib/service/supervision-state';
 import { readStopped } from '@/lib/service/stopped';
 import { freeBytes } from '@/lib/service/snapshot';
 import { commandLauncherPath } from '@/lib/service/runtime';
-import { commandCheck, diskCheck, linuxChecks, macChecks, resolveCommand, type OsCheck } from '@/lib/service/os-checks';
+import { commandCheck, diskCheck, linuxChecks, macChecks, type OsCheck } from '@/lib/service/os-checks';
+import { checkTerminal } from '@/lib/service/terminal-command';
 import { readLiveServerRuntime } from '@/lib/server-runtime/record';
 import { untraced } from '@/lib/utils/untraced';
 
@@ -109,7 +110,14 @@ const checks: Check[] = [
   },
 ];
 
-export async function doctorCommand() {
+export async function doctorCommand(options: { fix?: boolean } = {}) {
+  // What `ri doctor` can fix by itself: `ri` in a new terminal (section 9.1),
+  // the same way Settings > This computer > Add `ri` to Terminal does.
+  if (options.fix) {
+    const { addToTerminal } = await import('@/lib/service/add-to-terminal');
+    console.log((await addToTerminal()).message);
+    console.log();
+  }
   const results = await runDoctorChecks();
   printDoctorChecks(results);
   process.exit(results.every((r) => r.ok) ? 0 : 1);
@@ -118,15 +126,16 @@ export async function doctorCommand() {
 /**
  * Run every check and return the results without printing or exiting.
  * Reusable from `start` so we can show a quick health snapshot without
- * making the user invoke `ri doctor` separately.
+ * making the user invoke `ri doctor` separately. `terminal: false` skips
+ * opening a test terminal, whose answer is only ever a warning.
  */
-export async function runDoctorChecks(): Promise<NamedCheckResult[]> {
+export async function runDoctorChecks(options: { terminal?: boolean } = {}): Promise<NamedCheckResult[]> {
   const out: NamedCheckResult[] = [];
   for (const check of checks) {
     const result = await run(check);
     out.push({ name: check.name, ...result });
   }
-  try { out.push(...await keepRunningChecks()); }
+  try { out.push(...await keepRunningChecks(options.terminal ?? true)); }
   catch (err) { out.push({ name: 'Keeping Ri running', ok: true, warn: true, detail: err instanceof Error ? err.message : String(err) }); }
   return out;
 }
@@ -139,9 +148,10 @@ function runQuietly(command: string, args: string[]): string | null {
 
 /**
  * Whether this Home comes back by itself, and what the OS decides about it
- * (docs/always-on-spec.md section 6.5), plus the disk and the `ri` command.
+ * (docs/always-on-spec.md section 6.5), plus the disk and which `ri` a new
+ * terminal runs (section 9.1).
  */
-async function keepRunningChecks(): Promise<OsCheck[]> {
+async function keepRunningChecks(terminal: boolean): Promise<OsCheck[]> {
   const out: OsCheck[] = [];
   if (getInstallationRole() === 'home') {
     const stopped = readStopped();
@@ -153,8 +163,11 @@ async function keepRunningChecks(): Promise<OsCheck[]> {
   else if (process.platform === 'linux') out.push(...linuxChecks(runQuietly));
   const database = getDbPath();
   out.push(diskCheck(freeBytes(fs.existsSync(database) ? path.dirname(database) : getAppRoot()), fs.existsSync(database) ? fs.statSync(database).size : 0));
-  const launcher = commandLauncherPath();
-  out.push(commandCheck(resolveCommand('ri'), launcher, fs.existsSync(launcher)));
+  if (terminal && process.platform !== 'win32') {
+    const launcher = commandLauncherPath();
+    const installed = fs.existsSync(launcher);
+    out.push(commandCheck(installed ? await checkTerminal({ launcher }) : null, launcher, installed));
+  }
   return out;
 }
 

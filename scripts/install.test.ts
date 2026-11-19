@@ -1,7 +1,8 @@
 /**
  * The install script as a download: `curl ... | sh` runs whatever arrived, so a
  * connection cut partway must run nothing (the rustup pattern: everything is a
- * function, and the last line calls main).
+ * function, and the last line calls main). Its terminal setup is tested in real
+ * shells by src/lib/service/terminal-command.shells.test.ts.
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';

@@ -726,7 +726,7 @@ async function firstRunSetup(serverCreatesIt = false) {
       log.info('Skipping CLI setup (non-interactive). Run `ri onboard` to configure.');
     }
   }
-  const diagnostics = await runDoctorChecks();
+  const diagnostics = await runDoctorChecks({ terminal: false });
   // A new supervised Home's token comes from its own server, a moment from now.
   printDoctorChecks(serverCreatesIt ? diagnostics.filter(check => check.name !== 'Pairing token') : diagnostics, { compact: true });
 }

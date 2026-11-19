@@ -100,7 +100,7 @@ export function registerServiceCommand(program: Command) {
     });
   // What the desktop app's Add `ri` to Terminal runs, because the app can't load this code itself.
   service.command('add-to-terminal', { hidden: true }).action(async () => {
-    console.info((await import('@/lib/service/add-to-terminal')).addToTerminal().message);
+    console.info((await (await import('@/lib/service/add-to-terminal')).addToTerminal()).message);
   });
   service.command('manifest <resources>', { hidden: true }).action((resources: string) => {
     console.info(`Runtime manifest: ${createRuntimeManifest(path.resolve(resources)).id}`);
