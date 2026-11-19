@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createPublicKey, generateKeyPairSync } from 'node:crypto';
 import { afterEach, beforeEach, expect, it } from 'vitest';
-import { openEnvelope, promote, publish, refresh, withdraw, writeInstallScript } from './publish-release.mjs';
+import { feedAddress, openEnvelope, promote, publish, refresh, withdraw, writeInstallScript } from './publish-release.mjs';
 import { ReleaseSchema, verifyRelease } from '../src/lib/service/release-trust';
 import { CURRENT_COMPATIBILITY } from '../src/lib/releases/compatibility';
 
@@ -95,5 +95,29 @@ it('promotes exactly the version named, not a prerelease of it', () => {
   const out = path.join(root, 'next');
   expect(promote({ existing: root, version: '0.2.0', key: privateKey, out, sequence: 7, now })).toBe(1);
   expect(verifyRelease(open(out, 'stable'), { publicKey, channel: 'stable' }, 0, now).version).toBe('0.2.0');
+});
+
+it('leaves the feed\'s unsigned files alone when refreshing, withdrawing or promoting', () => {
+  publish({ payloads: [payload('0.2.0')], channel: 'latest', key: privateKey, out: root, sequence: 5, now });
+  // The website's downloads lists and the install script share the feed release.
+  fs.writeFileSync(path.join(root, 'downloads-latest.json'), JSON.stringify({ format: 1, channel: 'latest', version: '0.2.0' }));
+  fs.writeFileSync(path.join(root, 'install.sh'), '#!/bin/sh\n');
+  const refreshed = path.join(root, 'refreshed');
+  expect(refresh({ existing: root, key: privateKey, out: refreshed, now })).toBe(3);
+  expect(fs.readdirSync(refreshed).some(name => name.startsWith('downloads-'))).toBe(false);
+  const withdrawn = path.join(root, 'withdrawn');
+  expect(withdraw({ existing: root, version: '0.2.0', key: privateKey, out: withdrawn, sequence: 6, now })).toBe(2);
+  expect(fs.readdirSync(withdrawn).sort()).toEqual([`0.2.0-${process.platform}-${process.arch}.json`, `latest-${process.platform}-${process.arch}.json`]);
+  expect(promote({ existing: root, version: '0.2.0', key: privateKey, out: path.join(root, 'promoted'), sequence: 7, now })).toBe(1);
+});
+
+it('writes the feed at releases.ri.app into the install script, which only redirects to GitHub', () => {
+  expect(feedAddress('https://releases.ri.app')).toBe('https://releases.ri.app/');
+  expect(feedAddress('https://releases.ri.app/')).toBe('https://releases.ri.app/');
+  for (const bad of ['http://releases.ri.app/', 'https://user:pass@releases.ri.app/', 'https://releases.ri.app/?x=1']) expect(() => feedAddress(bad)).toThrow('plain HTTPS');
+  const template = path.join(root, 'template.sh');
+  fs.writeFileSync(template, 'FEED="${RI_INSTALL_FEED:-__RI_FEED__}"\n');
+  writeInstallScript({ template, feed: 'https://releases.ri.app', key: privateKey, out: root });
+  expect(fs.readFileSync(path.join(root, 'install.sh'), 'utf8')).toBe('FEED="${RI_INSTALL_FEED:-https://releases.ri.app/}"\n');
 });
 
