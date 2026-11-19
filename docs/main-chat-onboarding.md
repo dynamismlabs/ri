@@ -2,7 +2,7 @@
 
 A new home has no setup wizard. It opens straight on the dashboard, and its main chat walks the
 person through setup as a conversation: the orchestrator introduces itself and asks, one message at
-a time, only what this home doesn't have yet. Then it hands over to the usual starters.
+a time, only what this home doesn't have yet. Then it hands over to the starters.
 
 Built 2026-10-01. Code: `src/components/chat/onboarding/` (the steps and their order in
 `onboarding-flow.ts`, the conversation in `main-chat-onboarding.tsx`, one file per step that needs
@@ -104,6 +104,25 @@ Three things start in the background so the steps that need them rarely wait:
   dialog behind the pencil on the rail's home row are the same `IdentityEditor`.
 - **An empty chat isn't use.** `describeHomeUse` (what lets `ri connect` set a fresh home aside)
   counts only chats with something said in them, since a new home makes its main chat on first load.
+
+## After setup
+
+What a person came for is their own work, so that's where first run ends. The starters depend on
+one thing, whether this Ri has a task yet (`useAppMainChatIntro` in
+`src/components/chat/main-chat-intro.tsx`):
+
+- **No tasks yet:** "Tell me what's on your mind and I'll turn it into tasks and notes, then help
+  you plan your day", with Here's what's on my mind (finished in the composer), Plan my day with me
+  and What can you do for me?
+- **Otherwise:** the usual starters, which read the plate, the agents and the stream.
+
+Settings has no setup checklist. Until 2026-11-18 it opened on Get started while anything was
+left, a progress bar over remote access, notifications, Connectors, the agent browser and using
+Ri in other agents. Those are extras, and listed as steps they read as part of getting Ri ready:
+a tester without the background spent his first evening trusting certificates to connect an
+agent Ri already ran on. The main chat offers each extra once, when what the person says calls
+for it (`EXTRAS_SECTION` in `src/lib/orchestrator/harness-surface.ts`). Settings opens where it
+was last left, Profile at first, and `?settings=get-started` opens Profile.
 
 ## When it shows
 

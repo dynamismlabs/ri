@@ -416,6 +416,13 @@ describe('renderOrchestratorBrief', () => {
     expect(brief).toContain('browser_read');
     expect(brief).toContain(AGENT_BROWSER_SKILL_NAME);
   });
+  it('offers extras when they help, with no setup checklist to point at', () => {
+    const brief = renderOrchestratorBrief().replace(/\s+/g, ' ');
+    expect(brief).toContain('## Extras, when they\'d help');
+    expect(brief).toContain(`${APP_NAME} has no setup checklist.`);
+    expect(brief).toContain(`Settings → ${APP_NAME} in other agents. Nobody needs it to use ${APP_NAME}.`);
+    expect(brief).not.toContain('Get started');
+  });
 });
 
 describe('renderContentFocusPrompt', () => {

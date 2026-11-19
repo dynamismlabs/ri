@@ -35,3 +35,10 @@ it('does not reopen a closed modal when an old pane completes work', () => {
   expect(useSettingsStore().open).toBe(false);
   expect(useSettingsStore().anchor).toBeNull();
 });
+
+it('reopens where you last were when nothing names a section', () => {
+  openSettings('voice');
+  closeSettings();
+  openSettings();
+  expect(useSettingsStore()).toMatchObject({ open: true, section: 'voice', anchor: null });
+});

@@ -14,8 +14,8 @@ import { trpcClient } from '@/lib/trpc/client';
  * (re)installed.
  *
  * Ri itself works without them, so a conflict (someone's own skill by that
- * name) or a failed install doesn't hold up setup. Settings shows them, in
- * Get started and External AI, with one-click install and uninstall
+ * name) or a failed install doesn't hold up setup. Settings shows them at
+ * the end of Ri in other agents, with one-click install and uninstall
  * (`src/components/settings/agent-skill-access.tsx`).
  */
 export async function installAgentSkill(): Promise<void> {

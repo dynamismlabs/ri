@@ -58,7 +58,7 @@ vi.mock('@/components/workspaces/workspace-create-modal', () => ({ WorkspaceCrea
 vi.mock('@/components/chat/main-chat-intro', async () => {
   const { createElement } = await import('react');
   return {
-    appMainChatIntro: () => ({ title: 'What should we work on?', description: '', starters: [] }),
+    useAppMainChatIntro: () => ({ title: 'What should we work on?', description: '', starters: [] }),
     useEmptyChatActions: () => ({}),
     MainChatIntroPanel: ({ intro, footer }: { intro: { title: string }; footer?: ReactNode }) =>
       createElement('section', null, intro.title, footer),

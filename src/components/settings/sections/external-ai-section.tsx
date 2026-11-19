@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useUserState } from '@/hooks/use-user-state';
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { apiErrorText } from '@/lib/api/client';
@@ -24,6 +25,7 @@ export function ExternalAiSection() {
     refetchInterval: query => (waitingForAgent(local.data?.agents, query.state.data) ? 4000 : false),
   });
   const address = useQuery(trpc.externalAi.address.queryOptions());
+  const engine = useUserState().data?.defaultHarness ?? null;
   const refresh = () => { void keys.refetch(); void local.refetch(); };
   const target: AiConnectionTarget | null = address.data
     ? { space: { kind: 'personal' }, mcpUrl: address.data.mcpUrl, server: address.data.server, tokenVar: address.data.tokenVar, reachable: address.data.reachable }
@@ -38,6 +40,7 @@ export function ExternalAiSection() {
         createKey={client => trpcClient.externalAi.create.mutate({ client })}
         revokeKey={keyId => trpcClient.externalAi.revoke.mutate({ keyId })}
         onChanged={refresh}
+        engine={engine}
         local={{
           device: local.data?.device ?? null,
           agents: local.data?.agents,
@@ -46,6 +49,9 @@ export function ExternalAiSection() {
           disconnect: client => trpcClient.externalAi.disconnectLocal.mutate({ client }),
         }}
       >
+        <p className="text-[12.5px] text-foreground">
+          {`You don’t need this to use ${APP_NAME}. It’s for when you work in another agent, like Claude Code or ChatGPT, and want it to see your tasks and notes.`}
+        </p>
         <p className="text-xs text-muted-foreground">
           {`Connected agents can search, read and update your tasks, notes, areas and deck, private notes included, with their own model. They can’t start ${APP_NAME} chats, change settings or reach this computer’s files. Each agent gets its own key, and you can disconnect it here any time.`}
         </p>

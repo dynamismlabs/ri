@@ -37,9 +37,7 @@ vendor. Historical database migrations remain immutable.
 Values saved outside the code keep their old spelling, because renaming them
 would orphan what was already saved. `?settings=connectors` in old links and
 OAuth returns still opens Plugins through `SECTION_ALIASES` in
-`src/components/settings/settings-sections.ts`. The setup checklist's "Connect
-an app" item keeps the id `connectors`, which browsers store in
-`ri.setup.dismissed`.
+`src/components/settings/settings-sections.ts`.
 
 Shipped skills are Markdown and cannot import `INTEGRATION_LABELS`.
 `skills/browser/SKILL.md` and `skills/orchestrator/SKILL.md` write the label

@@ -62,8 +62,7 @@ It changes only when someone means it to:
   "default" in the list. Nothing shows outside the menu, so it never asks.
 - **First-run setup**: the harness the main chat's first run sets up, its model and the usual
   effort. One line in the conversation says what that is, with Change (`DefaultModelLine`,
-  docs/main-chat-onboarding.md). Settings' "Get started" list also has "Pick a default model",
-  done once one is set.
+  docs/main-chat-onboarding.md).
 
 All three go through `PUT /api/harness/default` (`harness.defaultPut`), which checks the pick
 against the harness's live catalog and refuses a model, variant or effort it doesn't offer rather

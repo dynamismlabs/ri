@@ -17,6 +17,7 @@ import {
   type AiConnectionTarget,
 } from '@/lib/external-ai/client-config';
 import type { LocalAgentState, LocalConnectResult } from '@/lib/external-ai/local-setup';
+import type { HarnessId } from '@/lib/harness/registry';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
@@ -77,6 +78,12 @@ export interface ConnectAgentsProps {
   revokeKey: (keyId: string) => Promise<unknown>;
   onChanged: () => void;
   local?: LocalAgents;
+  /**
+   * The harness this Ri runs on, personal only. Its item says so: the same
+   * name appears in both roles, and connecting it is only for using that
+   * agent on its own.
+   */
+  engine?: HarnessId | null;
   ready?: boolean;
   /** Notes above the list: what agents can reach and the address they use. */
   children?: ReactNode;
@@ -91,7 +98,7 @@ export interface ConnectAgentsProps {
  * own item. On a personal Ri, an agent installed on the computer running it
  * also gets Set up, which connects it in one action.
  */
-export function ConnectAgents({ target, keys, createKey, revokeKey, onChanged, local, ready = true, children }: ConnectAgentsProps) {
+export function ConnectAgents({ target, keys, createKey, revokeKey, onChanged, local, engine, ready = true, children }: ConnectAgentsProps) {
   return (
     <section className="min-w-0 space-y-3">
       {children}
@@ -106,6 +113,7 @@ export function ConnectAgents({ target, keys, createKey, revokeKey, onChanged, l
             revokeKey={revokeKey}
             onChanged={onChanged}
             local={local}
+            engine={engine}
             localState={local?.agents?.find(agent => agent.kind === client.kind)}
             ready={ready}
           />
@@ -134,7 +142,7 @@ function StatusChip({ tone, children }: { tone: 'on' | 'waiting' | 'off'; childr
   );
 }
 
-function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, local, localState, ready }: ClientItemProps) {
+function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, local, engine, localState, ready }: ClientItemProps) {
   const confirm = useConfirm();
   const [made, setMade] = useState<MadeKey | null>(null);
   const [prompt, setPrompt] = useState<string | null>(null);
@@ -178,6 +186,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
   // an agent that can't reach Ri never uses its key.
   const connectedHere = Boolean(localState?.connection);
   const anyUsed = keys.some(key => key.lastUsedAt);
+  const runsRi = Boolean(engine && client.harness === engine);
   const chip = client.limitation
     ? <StatusChip tone="off">Not available yet</StatusChip>
     : localState?.stale === 'moved'
@@ -186,9 +195,11 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
         ? <StatusChip tone="on">Connected</StatusChip>
         : keys.length > 0
           ? <StatusChip tone="waiting">{client.signsIn || connectedHere ? 'Not used yet' : 'Key not used yet'}</StatusChip>
-          : localState?.installed
-            ? <StatusChip tone="off">Installed</StatusChip>
-            : null;
+          : runsRi
+            ? <StatusChip tone="off">Ri runs on this</StatusChip>
+            : localState?.installed
+              ? <StatusChip tone="off">Installed</StatusChip>
+              : null;
 
   const openLink = async () => {
     if (!target) return;
@@ -227,6 +238,11 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
   const needsRemote = Boolean(client.signsIn && target?.space.kind === 'personal' && !target.reachable);
   // Until it's known which key Set up wrote here, it would show among the others.
   const checking = Boolean(local?.loading && client.local);
+  // Once it has a key, the one question that shows what it's for. Asking it
+  // is also the agent's first request, which makes it Connected.
+  const tryIt = client.kind !== 'ri' && (keys.length > 0 || connectedHere)
+    ? { who: client.kind === 'other' ? 'your agent' : client.label, question: target?.space.kind === 'team' ? `What’s open in ${target.space.name}?` : 'What’s on my plate in Ri?' }
+    : null;
 
   return (
     <AccordionItem value={client.kind} data-agent-client={client.kind}>
@@ -247,6 +263,11 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
           <p className="text-xs text-muted-foreground">{client.limitation}</p>
         ) : (
           <>
+            {runsRi && (
+              <p className="text-xs text-foreground">
+                Ri already runs on {client.label}, so you can chat with it in Ri now. Set this up only if you also use {client.label} on its own and want it to see your tasks and notes.
+              </p>
+            )}
             {checking && (
               <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Loader2 size={12} className="animate-spin" aria-hidden /> Checking {local!.device ?? 'this computer'}
@@ -264,6 +285,12 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                 onSetUp={() => setUp.mutate()}
                 onDisconnect={() => void askDisconnect('local')}
               />
+            )}
+
+            {tryIt && (
+              <p className="text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Try it:</span> ask {tryIt.who} “{tryIt.question}”
+              </p>
             )}
 
             {needsRemote && (

@@ -9,6 +9,8 @@ describe('sectionFromParam', () => {
 
   it('follows ids that saved links and OAuth returns still carry', () => {
     expect(sectionFromParam('connectors')).toBe('plugins');
+    // Get started is gone, and a link to it opens Profile.
+    expect(sectionFromParam('get-started')).toBe('profile');
   });
 
   it('opens nothing for an unknown or missing value', () => {

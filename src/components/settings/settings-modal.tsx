@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { SettingsPanel } from './settings-panel';
 import { SettingsNav } from './settings-nav';
@@ -9,12 +9,9 @@ import {
   openSettings,
   closeSettings,
   setSettingsSection,
-  consumeAutoLand,
 } from './settings-store';
-import { getSection, DEFAULT_SECTION, type SectionId, sectionFromParam } from './settings-sections';
-import { useSetupChecklist, type SetupChecklist } from './use-setup-checklist';
+import { getSection, type SectionId, sectionFromParam } from './settings-sections';
 
-import { GetStartedSection } from './sections/get-started-section';
 import { ProfileSection } from './sections/profile-section';
 import { GeneralSection } from './sections/general-section';
 import { HeartbeatSection } from './sections/heartbeat-section';
@@ -32,12 +29,10 @@ import { UpdatesSection } from './sections/updates-section';
 import { ThisComputerSection } from './sections/this-computer-section';
 import { ImportsSection } from './sections/imports-section';
 
-function SectionBody({ id, checklist }: { id: SectionId; checklist: SetupChecklist }) {
+function SectionBody({ id }: { id: SectionId }) {
   // Only the active pane mounts — the Notifications pane in particular fires a
   // batch of fetches on mount, so we never pay for panes the user isn't viewing.
   switch (id) {
-    case 'get-started':
-      return <GetStartedSection checklist={checklist} />;
     case 'profile':
       return <ProfileSection />;
     case 'general':
@@ -81,35 +76,9 @@ function SectionBody({ id, checklist }: { id: SectionId; checklist: SetupCheckli
  * and a single scrollable content pane (the Claude/OpenAI pattern).
  */
 export function SettingsModal() {
-  const { open, section, autoLand, anchor } = useSettingsStore();
+  const { open, section, anchor } = useSettingsStore();
   const def = getSection(section);
   useEffect(() => window.riDesktop?.onOpenSettings?.(() => openSettings('this-computer')), []);
-
-  // Single source for setup state: drives the Get-started tab + count. Only
-  // fetches while open.
-  const checklist = useSetupChecklist(open);
-
-  // The Get-started tab's visibility is decided ONCE per open (after data loads)
-  // and stays sticky until close — so skipping the last item doesn't yank the
-  // tab out from under you mid-session. `null` = not yet decided this session.
-  const [showGetStarted, setShowGetStarted] = useState<boolean | null>(null);
-  if (!open && showGetStarted !== null) setShowGetStarted(null);
-  if (open && showGetStarted === null && checklist.ready) setShowGetStarted(checklist.showGetStarted);
-  useEffect(() => {
-    if (!open || showGetStarted === null || !checklist.ready) return;
-    const shouldShow = showGetStarted;
-    // Generic open (gear/palette/mobile) → land on Get started while incomplete;
-    // an explicit-section open (CTA/deep link) keeps its target.
-    if (autoLand) {
-      if (shouldShow) setSettingsSection('get-started');
-      else consumeAutoLand();
-    }
-    // Reopened onto a now-hidden Get-started (everything got done/skipped last
-    // session) → move off it. Only at decide-time, so it's never mid-session.
-    if (!shouldShow && section === 'get-started') {
-      setSettingsSection(DEFAULT_SECTION);
-    }
-  }, [open, showGetStarted, checklist.ready, checklist.showGetStarted, autoLand, section]);
 
   // Open from a `?settings=<id>` deep link on first mount.
   useEffect(() => {
@@ -139,13 +108,9 @@ export function SettingsModal() {
         title={def.title}
         description={def.description}
         bodyClassName={section === 'plugins' ? 'pt-0' : undefined}
-        navigation={<SettingsNav
-          active={section}
-          onSelect={setSettingsSection}
-          getStarted={showGetStarted ? { done: checklist.doneCount, total: checklist.total } : null}
-        />}
+        navigation={<SettingsNav active={section} onSelect={setSettingsSection} />}
       >
-        <SectionBody id={section} checklist={checklist} />
+        <SectionBody id={section} />
       </SettingsPanel>
     </Dialog>
   );

@@ -46,7 +46,7 @@ const agent = (patch: Partial<LocalAgentState>): LocalAgentState => ({
   config: '~/.gemini/config/mcp_config.json', next: 'Start a new Antigravity conversation.', ...patch,
 });
 
-async function render(keys: AiClientView[], antigravity: LocalAgentState) {
+async function render(keys: AiClientView[], antigravity: LocalAgentState, engine: 'antigravity' | 'codex' | null = null) {
   await act(async () => root.render(createElement(QueryClientProvider, { client }, createElement(ConfirmProvider, null, createElement(ConnectAgents, {
     target: { space: { kind: 'personal' }, mcpUrl: 'http://127.0.0.1:42243/api/orchestrator/mcp', server: 'ri', tokenVar: 'RI_TOKEN', reachable: false },
     keys,
@@ -54,6 +54,7 @@ async function render(keys: AiClientView[], antigravity: LocalAgentState) {
     revokeKey: vi.fn(),
     onChanged: vi.fn(),
     local: { device: 'Test Mac', agents: [antigravity], loading: false, setUp: vi.fn(), disconnect: vi.fn() },
+    engine,
   })))));
   const item = container.querySelector('[data-agent-client="antigravity"]')!;
   await act(async () => (item.querySelector('button') as HTMLButtonElement).click());
@@ -82,6 +83,31 @@ describe('an agent Ri set up on this computer', () => {
     expect(text).not.toContain('Connected');
     expect(text).toContain('Antigravity has an old address for Ri. Set it up again to reconnect.');
     expect(text).toContain('Set up');
+  });
+});
+
+describe('what the item says it is for', () => {
+  it('names the agent Ri runs on, which needs nothing here to chat with', async () => {
+    const text = await render([], agent({}), 'antigravity');
+    expect(text).toContain('Ri runs on this');
+    expect(text).not.toContain('Installed');
+    expect(text).toContain('Ri already runs on Antigravity, so you can chat with it in Ri now. Set this up only if you also use Antigravity on its own');
+  });
+
+  it('says nothing of the kind for an agent Ri doesn’t run on', async () => {
+    const text = await render([], agent({}), 'codex');
+    expect(text).toContain('Installed');
+    expect(text).not.toContain('Ri runs on this');
+    expect(text).not.toContain('already runs on');
+  });
+
+  it('gives one thing to ask once the agent has a key', async () => {
+    const text = await render([key(null)], agent({ connection: key(null) }));
+    expect(text).toContain('Try it: ask Antigravity “What’s on my plate in Ri?”');
+  });
+
+  it('gives nothing to ask before it has a key', async () => {
+    expect(await render([], agent({}))).not.toContain('Try it');
   });
 });
 

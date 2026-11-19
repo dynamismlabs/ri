@@ -1,6 +1,6 @@
 'use client';
 
-import { MainChatIntroPanel, appMainChatIntro, useEmptyChatActions } from '@/components/chat/main-chat-intro';
+import { MainChatIntroPanel, useAppMainChatIntro, useEmptyChatActions } from '@/components/chat/main-chat-intro';
 import {
 	IdentityEditor,
 	draftFromState,
@@ -103,6 +103,7 @@ export function MainChatOnboarding() {
   const { data: mainChat } = useMainChat(null);
   const chatId = mainChat?.session?.id ?? null;
   const name = useOrchestratorName();
+  const appIntro = useAppMainChatIntro(name);
   const actions = useEmptyChatActions();
   const progress = useOnboardingProgress();
   const qc = useQueryClient();
@@ -322,7 +323,7 @@ export function MainChatOnboarding() {
 
   const intro = (footer?: ReactNode) => (
     <MainChatIntroPanel
-      intro={appMainChatIntro(name)}
+      intro={appIntro}
       onSend={actions.send}
       onDraft={actions.draft}
       disabled={actions.disabled}
@@ -657,7 +658,7 @@ function AgentStep({ onDone }: { onDone: (summary: string) => void }) {
 /** The usual starters, as the conversation's last word. */
 function Starters() {
   const actions = useEmptyChatActions();
-  const { starters } = appMainChatIntro();
+  const { starters } = useAppMainChatIntro();
   return (
     <div className="flex flex-wrap gap-1.5">
       {starters.map((s) => (

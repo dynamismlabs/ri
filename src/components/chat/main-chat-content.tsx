@@ -3,7 +3,7 @@ import { Loader2, Plus } from 'lucide-react';
 import { useOrchestratorName } from '@/hooks/use-user-state';
 import { OrchestratorAvatar } from '@/components/shared/orchestrator-mark';
 import { HarnessChat } from '@/components/chat/harness-chat';
-import { appMainChatIntro, type MainChatIntro } from '@/components/chat/main-chat-intro';
+import { useAppMainChatIntro, type MainChatIntro } from '@/components/chat/main-chat-intro';
 import { useNewMainChat, useMainChat, type MainChatScope } from '@/hooks/use-main-chat';
 import { ChatMenu } from '@/components/chat-ui/chat-menu';
 import { ScheduleChatButton } from '@/components/triggers/schedule-chat-button';
@@ -55,13 +55,15 @@ function ChatHeaderBar({
 
 export function MainChatContent({ scope = null, name, intro, enabled = true }: { scope?: MainChatScope; name: string; intro?: MainChatIntro; enabled?: boolean }) {
   const newChat = useNewMainChat(scope);
+  // A team's main chat brings its own intro. The personal one depends on this Ri.
+  const appIntro = useAppMainChatIntro(name, scope === null && !intro);
 
   return (
     <div className="flex flex-col h-full min-h-0">
       <ChatHeaderBar enabled={enabled} scope={scope} name={name} onNewChat={() => newChat.mutate()} newChatPending={newChat.isPending} />
       <HarnessChat
         scope={scope}
-        intro={intro ?? appMainChatIntro(name)}
+        intro={intro ?? appIntro}
         // Every empty main chat asks the onboarding what to show: the
         // first-run conversation, a step added since, or the usual intro.
         emptyState={scope === null ? <MainChatOnboarding /> : undefined}

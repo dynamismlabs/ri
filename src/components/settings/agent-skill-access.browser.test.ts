@@ -7,8 +7,7 @@ import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
-// Ri's user-level skills at the end of Ri in other agents, and that Get started
-// (the real checklist hook) leaves both out, against a fake server that keeps state.
+// Ri's user-level skills at the end of Ri in other agents, against a fake server that keeps state.
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let browser: Browser;
 let server: http.Server;
@@ -25,15 +24,9 @@ beforeAll(async () => {
       import {createRoot} from 'react-dom/client';
       import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
       import {Toaster} from 'sonner';
-      import {GetStartedSection} from './src/components/settings/sections/get-started-section';
       import {AgentSkillFooter} from './src/components/settings/agent-skill-access';
-      import {useSetupChecklist} from './src/components/settings/use-setup-checklist';
       function App() {
-        const checklist = useSetupChecklist(true);
-        return <div className='flex gap-8 p-6'>
-          <main aria-label='Get started' style={{flex:1}}><GetStartedSection checklist={checklist}/></main>
-          <aside aria-label='Ri in other agents' style={{flex:1}}><AgentSkillFooter/></aside>
-        </div>;
+        return <div className='p-6'><aside aria-label='Ri in other agents'><AgentSkillFooter/></aside></div>;
       }
       createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}><App/><Toaster/></QueryClientProvider>);
     ` },
@@ -41,18 +34,14 @@ beforeAll(async () => {
     define: { 'process.env': '{"NODE_ENV":"development"}' },
     plugins: [{ name: 'agent-skill-fixture', setup(b) {
       b.onResolve({ filter: /lib\/trpc\/client$/ }, () => ({ path: 'api', namespace: 'fixture' }));
-      b.onResolve({ filter: /hooks\/use-user-state$/ }, () => ({ path: 'user-state', namespace: 'fixture' }));
-      b.onResolve({ filter: /lib\/api\/settings$/ }, () => ({ path: 'settings', namespace: 'fixture' }));
       b.onLoad({ filter: /.*/, namespace: 'fixture' }, ({ path }) => ({ loader: 'tsx', resolveDir: process.cwd(), contents: {
-        'user-state': `export const useUserState=()=>({data:{description:'',defaultHarness:'claude'}});`,
-        settings: `export const settingsApi={getBaseUrls:async()=>({tunnel:null})};`,
         api: `
           const params=new URLSearchParams(location.search);
-          const desktop=params.has('desktop');const blocked=params.has('blocked');const keys=params.has('keys')?[{keyId:'k',name:'Codex',client:'codex',createdAt:'2026-10-27',lastUsedAt:null}]:[];
+          const desktop=params.has('desktop');const blocked=params.has('blocked');
           window.skillCalls=[];
           let skill={appOnly:desktop,enabled:!desktop,configured:true,installed:!desktop&&!blocked,conflicts:blocked?['${CONFLICT}']:[],folders:desktop?[]:['~/.agents/skills','~/.claude/skills','~/.gemini/config/skills']};
           const query=(name,fn)=>({queryKey:()=>[name],queryOptions:()=>({queryKey:[name],queryFn:async()=>fn()})});
-          export const trpc={harness:{skillsGlobalGet:query('skill',()=>skill)},externalAi:{list:query('agent-keys',()=>keys)}};
+          export const trpc={harness:{skillsGlobalGet:query('skill',()=>{window.skillRead=true;return skill;})}};
           export const trpcClient={
             harness:{skillsGlobalPut:{mutate:async({body})=>{
               window.skillCalls.push(body.enabled);
@@ -61,9 +50,6 @@ beforeAll(async () => {
               skill={...skill,installed:body.enabled};
               return {};
             }}},
-            notifications:{channelsGet:{query:async()=>({channels:[]})}},
-            integrations:{connectionsGet:{query:async()=>({connections:[]})}},
-            browser:{list:{query:async()=>({enabled:false,config:{detected:[]}})}},
           };
         `,
       }[path]! }));
@@ -118,20 +104,6 @@ it.skipIf(!enabled)('says the skills are on and takes them off and back in one c
   } finally { await page.close(); }
 }, 30_000);
 
-it.skipIf(!enabled)('keeps outside agents and Ri’s skills out of Get started', async () => {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
-  try {
-    await page.goto(address);
-    const getStarted = page.getByRole('main', { name: 'Get started' });
-    await getStarted.getByText('1/6 done', { exact: true }).waitFor();
-    // Optional, so it isn't part of getting Ri ready, and a key doesn't move the count.
-    expect(await getStarted.getByText('in other agents', { exact: false }).count()).toBe(0);
-    expect(await getStarted.getByText('Let your coding tools manage tasks and notes', { exact: true }).count()).toBe(0);
-    await page.goto(`${address}/?keys=1`);
-    await getStarted.getByText('1/6 done', { exact: true }).waitFor();
-  } finally { await page.close(); }
-}, 30_000);
-
 it.skipIf(!enabled)('names what holds the skill name', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
@@ -150,7 +122,10 @@ it.skipIf(!enabled)('shows no skill controls in the desktop app, where the skill
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
     await page.goto(`${address}/?desktop=1`);
-    await page.getByText('1/6 done', { exact: true }).waitFor();
-    expect(await page.getByRole('complementary', { name: 'Ri in other agents' }).getByRole('button').count()).toBe(0);
+    await page.waitForFunction('window.skillRead === true');
+    const footer = page.getByRole('complementary', { name: 'Ri in other agents' });
+    await footer.getByText('Checking', { exact: true }).waitFor({ state: 'detached' });
+    expect(await footer.getByRole('button').count()).toBe(0);
+    expect(await footer.textContent()).toBe('');
   } finally { await page.close(); }
 }, 30_000);

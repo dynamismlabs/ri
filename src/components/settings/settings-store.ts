@@ -17,13 +17,6 @@ interface SettingsState {
   open: boolean;
   section: SectionId;
   /**
-   * True when the modal was opened generically (the gear / palette / mobile),
-   * as opposed to a CTA targeting a specific section. The modal consumes this
-   * to land on "Get started" while setup is incomplete; an explicit section
-   * (budget pill, preview CTA, deep link) leaves it false so the target wins.
-   */
-  autoLand: boolean;
-  /**
    * Where within the section to land, like the Skills tab of Plugins for a
    * link that's about a skill. Reset whenever the section changes.
    */
@@ -32,25 +25,25 @@ interface SettingsState {
   requestId: number;
 }
 
-let state: SettingsState = { open: false, section: DEFAULT_SECTION, autoLand: false, anchor: null, requestId: 0 };
+let state: SettingsState = { open: false, section: DEFAULT_SECTION, anchor: null, requestId: 0 };
 const listeners = new Set<() => void>();
 
 function emit() {
   for (const listener of listeners) listener();
 }
 
-/** Open settings. With a section → land there. Without → let the modal choose. */
+/** Open settings. With a section → land there. Without → where you last were. */
 export function openSettings(section?: SectionId, opts: { anchor?: string } = {}): void {
   state = section
-    ? { open: true, section, autoLand: false, anchor: opts.anchor ?? null, requestId: state.requestId + 1 }
-    : { ...state, open: true, autoLand: true, anchor: null, requestId: state.requestId + 1 };
+    ? { open: true, section, anchor: opts.anchor ?? null, requestId: state.requestId + 1 }
+    : { ...state, open: true, anchor: null, requestId: state.requestId + 1 };
   emit();
 }
 
 
 export function closeSettings(): void {
   if (!state.open) return;
-  state = { ...state, open: false, autoLand: false, anchor: null };
+  state = { ...state, open: false, anchor: null };
   emit();
 }
 
@@ -62,15 +55,8 @@ export function setSettingsAnchor(anchor: string): void {
 }
 
 export function setSettingsSection(section: SectionId): void {
-  if (state.open && state.section === section && !state.autoLand) return;
-  state = { ...state, section, autoLand: false, anchor: null };
-  emit();
-}
-
-/** Clear the auto-land intent once the modal has resolved its landing section. */
-export function consumeAutoLand(): void {
-  if (!state.autoLand) return;
-  state = { ...state, autoLand: false };
+  if (state.open && state.section === section) return;
+  state = { ...state, section, anchor: null };
   emit();
 }
 

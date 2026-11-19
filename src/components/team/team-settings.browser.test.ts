@@ -27,8 +27,8 @@ beforeAll(async () => {
       import {useSettingsStore,setSettingsSection} from './src/components/settings/settings-store';
       import {SettingsNav} from './src/components/settings/settings-nav';
       const params = new URLSearchParams(location.search);
-      function Personal() {const {section}=useSettingsStore();return <div className='mx-auto my-6 flex w-full max-w-[900px] min-w-0 flex-col gap-6 p-4 sm:flex-row'><SettingsNav active={section} onSelect={setSettingsSection} getStarted={{done:2,total:5}}/><main style={{minWidth:0,flex:1}}>{section==='external-ai'&&<ExternalAiSection/>}</main></div>; }
-      if(params.has('personal'))setSettingsSection(params.has('external')?'external-ai':'get-started');
+      function Personal() {const {section}=useSettingsStore();return <div className='mx-auto my-6 flex w-full max-w-[900px] min-w-0 flex-col gap-6 p-4 sm:flex-row'><SettingsNav active={section} onSelect={setSettingsSection}/><main style={{minWidth:0,flex:1}}>{section==='external-ai'&&<ExternalAiSection/>}</main></div>; }
+      if(params.has('personal'))setSettingsSection(params.has('external')?'external-ai':'profile');
       const identity={team:{id:'team',name:'Team Huffine',members:2,hostedOn:'Mac Mini'},member:{id:'owner',name:'Trey',role:params.get('role')==='member'?'member':'owner'}};
       function TeamFixture(){const nav=useTeamNav();return <>{params.has('rail')&&<aside className={'fixed bottom-0 left-0 '+(params.has('collapsed')?'w-14':'w-64')}><TeamRailFooter collapsed={params.has('collapsed')}/></aside>}{params.has('phone-bar')&&<MobileTopBar onOpenSettings={()=>nav.openPanel('settings')} onOpenAccount={()=>nav.openSettings('access')}/>}<TeamSettings/></>;}
       createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}>{params.has('personal')?<Personal/>:<TeamContext.Provider value={identity}><TeamFixture/></TeamContext.Provider>}</QueryClientProvider>);
@@ -87,7 +87,7 @@ beforeAll(async () => {
             aiClients:{create:{mutate:async input=>{window.connectionCalls.push(input);const client=makeKey(input);clients=[...clients,client];return {client,token:'fictional-test-token',mcpUrl:'https://team.example.test/api/team/mcp',reachable:true};}},revoke:{mutate:async()=>{clients=[];}}},
             ai:{configure:{mutate:async input=>{status={...status,...input};}},setEnabled:{mutate:async({enabled})=>{status={...status,enabled,state:enabled?'ready':'off'};}}}
           }};
-          trpcClient.userState={list:{query:async()=>({})},update:{mutate:async input=>input}};
+          trpcClient.userState={list:{query:async()=>(params.has('personal')?{defaultHarness:'claude'}:{})},update:{mutate:async input=>input}};
           const skillParams=new URLSearchParams(location.search);const skillOwner=skillParams.get('role')!=='member';
           const makeSkill=(ref,body={})=>({ref,name:ref.split(':')[1],location:{kind:ref.split(':')[0]},description:'Review shared team work.',body:'Read the shared review checklist.',content:'Original skill file',hash:'initial',updatedAt:'2026-10-20',editable:skillOwner,linkedFrom:null,hasErrors:false,uncommitted:false,dir:'<team-home>/skills/'+ref.split(':')[1],otherKeys:[],frontmatterError:null,problems:[],files:[],git:null,canWriteGlobal:false,...body});
           let skills=[makeSkill('ri:weekly-review')];window.skillWrites=[];
@@ -283,6 +283,7 @@ it.skipIf(!enabled)('lists every agent and makes a key inside its item the momen
   try {
     await page.goto(`${address}/?panel=settings&settings=external-ai`);
     await page.getByText('Connected agents work on Team Huffine’s shared tasks', { exact: false }).waitFor();
+    await page.getByText('You don’t need this to use the team in Ri.', { exact: false }).waitFor();
     const order = await page.locator('[data-agent-client]').evaluateAll(items => items.map(item => item.getAttribute('data-agent-client')));
     expect(order.slice(0, 4)).toEqual(['claude_code', 'codex', 'cursor', 'vscode']);
     expect(order.slice(-3)).toEqual(['chatgpt', 'ri', 'other']);
@@ -356,12 +357,14 @@ it.skipIf(!enabled)('keeps all phone sections reachable and hides owner-only set
   } finally { await page.close(); }
 }, 30_000);
 
-it.skipIf(!enabled)('preserves the personal settings checklist and search', async () => {
+it.skipIf(!enabled)('opens personal settings on Profile, with no setup checklist, and searches them', async () => {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   try {
     await page.goto(`${address}/?personal=1`);
     const nav = page.getByRole('navigation', { name: 'Settings', exact: true });
-    expect(await nav.getByRole('button', { name: 'Get started 2/5' }).getAttribute('aria-current')).toBe('page');
+    expect(await nav.getByRole('button').first().textContent()).toBe('Profile');
+    expect(await nav.getByRole('button', { name: 'Profile', exact: true }).getAttribute('aria-current')).toBe('page');
+    expect(await nav.getByText('Get started').count()).toBe(0);
     await page.getByRole('textbox', { name: 'Search settings', exact: true }).fill('models');
     expect(await nav.getByRole('button').count()).toBe(1);
     await nav.getByRole('button', { name: 'Models', exact: true }).click();
@@ -377,6 +380,13 @@ it.skipIf(!enabled)('sets up an agent on this computer in one click, and disconn
   try {
     await page.goto(`${address}/?personal=1&external=1`);
     await page.getByText('Agents on other computers use your remote address.', { exact: false }).waitFor();
+    await page.getByText('You don’t need this to use Ri.', { exact: false }).waitFor();
+    // Ri runs on Claude Code here, and its item says connecting it is only for using it on its own.
+    const claude = page.locator('[data-agent-client=claude_code]');
+    await claude.getByText('Ri runs on this', { exact: true }).waitFor();
+    await claude.getByRole('button', { name: /Claude Code/ }).click();
+    await claude.getByText('Ri already runs on Claude Code, so you can chat with it in Ri now.', { exact: false }).waitFor();
+    await claude.getByRole('button', { name: /Claude Code/ }).click();
     await page.getByText('https://home.example.test/api/orchestrator/mcp', { exact: true }).waitFor();
     // Ri's skills close the section, with no key.
     await page.getByRole('heading', { name: 'Ri’s skills', exact: true }).waitFor();
@@ -390,6 +400,7 @@ it.skipIf(!enabled)('sets up an agent on this computer in one click, and disconn
     await codex.getByText('Waiting for Codex to reach Ri.', { exact: false }).waitFor();
     await codex.getByText('Ri’s skill is installed for it.', { exact: false }).waitFor();
     await codex.getByText('Not used yet', { exact: true }).waitFor();
+    await codex.getByText('Try it: ask Codex “What’s on my plate in Ri?”', { exact: true }).waitFor();
     expect(await page.evaluate('window.setUpCalls')).toEqual(['codex']);
     // Its key is the connection here, never listed again among the others.
     expect(await codex.getByText('Codex on Mac Mini', { exact: true }).count()).toBe(0);

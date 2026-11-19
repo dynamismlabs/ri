@@ -139,8 +139,7 @@ manage tasks and notes from any project. That global install:
   (Settings → Ri in other agents → Set up, `connect_agent`, `ri mcp connect`),
   and shown with one-click install and uninstall at the end of Ri in other
   agents (`src/components/settings/agent-skill-access.tsx`, docs/external-ai.md).
-  Get started has no item for it, or for connecting outside agents: both are
-  optional, and a step there reads as part of getting Ri ready.
+  Settings has no setup checklist to carry it (docs/main-chat-onboarding.md).
 - Reports what's on disk, not the saved choice (`inspectGlobalSkills`): a
   link or copy deleted by hand reads as not installed, and an entry holding
   the name that isn't this home's (someone's own skill, another live home's

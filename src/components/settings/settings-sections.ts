@@ -11,7 +11,6 @@ import {
   Laptop,
   Globe,
   Chrome,
-  ListChecks,
   Download,
   FileInput,
   HeartPulse,
@@ -29,7 +28,6 @@ import { APP_NAME } from '@/constants/app';
  * old "every sheet titled something slightly different" drift from coming back.
  */
 export type SectionId =
-  | 'get-started'
   | 'profile'
   | 'general'
   | 'heartbeat'
@@ -169,27 +167,12 @@ export const SECTIONS: readonly SettingsSectionDef[] = [
 
 export const DEFAULT_SECTION: SectionId = 'profile';
 
-/**
- * The "Get started" section is conditional (only shown while setup is
- * incomplete) and rendered specially in the nav, so it lives outside SECTIONS.
- * It still needs a def for the modal header + deep-link validation.
- */
-export const GET_STARTED_SECTION: SettingsSectionDef = {
-  id: 'get-started',
-  label: 'Get started',
-  icon: ListChecks,
-  title: 'Get started',
-  description: `A few quick steps to get the most out of ${APP_NAME}.`,
-};
-
-const ALL_SECTIONS: readonly SettingsSectionDef[] = [GET_STARTED_SECTION, ...SECTIONS];
-
 export function getSection(id: SectionId): SettingsSectionDef {
-  return ALL_SECTIONS.find((s) => s.id === id) ?? SECTIONS[0];
+  return SECTIONS.find((s) => s.id === id) ?? SECTIONS[0];
 }
 
 export function isSectionId(value: string | null | undefined): value is SectionId {
-  return !!value && ALL_SECTIONS.some((s) => s.id === value);
+  return !!value && SECTIONS.some((s) => s.id === value);
 }
 
 /**
@@ -197,7 +180,12 @@ export function isSectionId(value: string | null | undefined): value is SectionI
  * Keys are values from saved links, so they keep their old spelling through
  * any rename (docs/integrations-naming.md).
  */
-const SECTION_ALIASES: Readonly<Record<string, SectionId>> = { connectors: 'plugins' };
+const SECTION_ALIASES: Readonly<Record<string, SectionId>> = {
+  connectors: 'plugins',
+  // Settings had a Get started checklist until 2026-11-18. First run is the
+  // main chat's conversation, and Rye offers the extras when they'd help.
+  'get-started': 'profile',
+};
 
 /** The section a `?settings=` value names, following renamed ids. */
 export function sectionFromParam(value: string | null | undefined): SectionId | null {

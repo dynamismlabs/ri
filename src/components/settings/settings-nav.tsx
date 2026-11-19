@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Search, type LucideIcon } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { cn } from '@/lib/utils';
-import { SECTIONS, GET_STARTED_SECTION, type SectionId } from './settings-sections';
+import { SECTIONS, type SectionId } from './settings-sections';
 import { closeSettings } from './settings-store';
 
 /** Shared desktop sidebar and mobile navigation for personal and team settings. */
@@ -19,13 +19,12 @@ export interface SettingsNavItem<Id extends string> {
 }
 
 export function SettingsNavigation<Id extends string>({
-  active, onSelect, sections, label = 'Settings', pinned,
+  active, onSelect, sections, label = 'Settings',
 }: {
   active: Id;
   onSelect: (id: Id) => void;
   sections: readonly SettingsNavItem<Id>[];
   label?: string;
-  pinned?: SettingsNavItem<Id> & { count: string };
 }) {
   const [query, setQuery] = useState('');
   const activeButton = useRef<HTMLButtonElement>(null);
@@ -58,30 +57,6 @@ export function SettingsNavigation<Id extends string>({
           className="w-full rounded-lg border border-border bg-background py-1.5 pl-7 pr-2 text-[12px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
         />
       </div>
-
-      {pinned && !q && (
-        <button
-          type="button"
-          onClick={() => onSelect(pinned.id)}
-          ref={active === pinned.id ? activeButton : undefined}
-          aria-current={active === pinned.id ? 'page' : undefined}
-          className={cn(
-            'mb-0.5 flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors',
-            active === pinned.id
-              ? 'bg-background font-medium text-foreground shadow-sm ring-1 ring-border'
-              : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-          )}
-        >
-          <pinned.icon
-            size={15}
-            className={cn('shrink-0', active === pinned.id ? 'text-foreground' : 'text-muted-foreground')}
-          />
-          <span>{pinned.label}</span>
-          <span className="ml-auto shrink-0 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold tabular-nums text-primary">
-            {pinned.count}
-          </span>
-        </button>
-      )}
 
       {matches.map((section) => {
         const Icon = section.icon;
@@ -118,11 +93,10 @@ export function SettingsNavigation<Id extends string>({
   );
 }
 
-/** Personal settings keep the setup checklist and link Plugins to the Apps library. */
-export function SettingsNav({ active, onSelect, getStarted }: {
+/** Personal settings link Plugins to the Apps library. */
+export function SettingsNav({ active, onSelect }: {
   active: SectionId;
   onSelect: (id: SectionId) => void;
-  getStarted?: { done: number; total: number } | null;
 }) {
   const { setActiveView } = useDashboard();
   const select = (id: SectionId) => {
@@ -131,6 +105,5 @@ export function SettingsNav({ active, onSelect, getStarted }: {
       setActiveView({ kind: 'apps', route: '' });
     } else onSelect(id);
   };
-  return <SettingsNavigation active={active} onSelect={select} sections={SECTIONS}
-    pinned={getStarted ? { ...GET_STARTED_SECTION, count: `${getStarted.done}/${getStarted.total}` } : undefined} />;
+  return <SettingsNavigation active={active} onSelect={select} sections={SECTIONS} />;
 }

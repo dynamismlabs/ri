@@ -2,7 +2,9 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { ArrowUp, PenLine } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { APP_NAME } from '@/constants/app';
+import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { Tip } from '@/components/ui/tip';
 
@@ -43,8 +45,21 @@ export interface MainChatIntro {
   starters: MainChatStarter[];
 }
 
-/** The app's main chat, introducing itself by the name the user calls it. */
-export function appMainChatIntro(name: string = APP_NAME): MainChatIntro {
+/**
+ * The app's main chat, introducing itself by the name the user calls it.
+ * A `fresh` Ri, one with no tasks yet, starts with getting the person's work
+ * in: the usual starters would read an empty plate, agents and stream.
+ */
+export function appMainChatIntro(name: string = APP_NAME, { fresh = false }: { fresh?: boolean } = {}): MainChatIntro {
+  if (fresh) return {
+    title: 'What should we work on?',
+    description: `I’m ${name}. Tell me what’s on your mind and I’ll turn it into tasks and notes, then help you plan your day.`,
+    starters: [
+      { label: 'Here’s what’s on my mind', prompt: 'Here’s what’s on my mind: ', draft: true },
+      { label: 'Plan my day with me', prompt: 'Help me plan my day. Ask me what I have going on, then turn it into tasks.' },
+      { label: 'What can you do for me?', prompt: 'What can you help me with? Keep it short, and suggest one thing to try first.' },
+    ],
+  };
   return {
     title: 'What should we work on?',
     description:
@@ -56,6 +71,12 @@ export function appMainChatIntro(name: string = APP_NAME): MainChatIntro {
       { label: `Help me set up ${APP_NAME}`, prompt: `Help me set up ${APP_NAME} for how I work. Ask me what you need to know.` },
     ],
   };
+}
+
+/** The app's main chat intro for this Ri: fresh until it has a task. */
+export function useAppMainChatIntro(name?: string, enabled = true): MainChatIntro {
+  const tasks = useQuery({ ...trpc.tasks.list.queryOptions({ limit: 1 }), enabled });
+  return appMainChatIntro(name, { fresh: tasks.data?.length === 0 });
 }
 
 /** One agent's main chat. */
