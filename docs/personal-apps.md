@@ -187,6 +187,22 @@ Last on November 17, Ri moved to the kit's `main` at `7b1ba65`, still core 0.2.2
 
 The same checks passed for this move: the starter from the carried kit, now vendoring this core, and Ri's typecheck, app and toolchain tests and release build. The live check above wasn't repeated.
 
+On November 18, Ri moved to the kit's `main` at `e44b499`, still core 0.2.2, with no new migration. It brings:
+- **An app's own zod.** The kit's command loads an app's `src/app.ts` through tsx, which gives the app its own copy of zod. The core now knows that copy's fields and errors by their shape, so `build` no longer refuses a prompt with arguments, and a validation error from the app's zod says its first problem in plain words.
+- **Prompts.** An app can offer MCP prompts with `definePrompt`, with text arguments. They're listed in the app's contract and withheld from add-only connections. Ri shows them in the composer's `/` menu (see "Prompts" above).
+- **Server instructions.** An optional `instructions` string in `app.config.ts` goes to MCP clients at initialize, up to 2,000 characters. An add-only connection gets none.
+- **Revoking tokens.** A client can revoke its tokens (RFC 7009) at the `revocation_endpoint` that discovery names. Revoking a refresh token ends the connection as Settings' Disconnect does.
+- **A closed session route.** better-auth's get-session route, which answered an access token with its refresh token, now answers 404.
+- **What an app asks Ri for, in words.** Settings says in one sentence what the app uses through Ri, such as reading mail or changing the calendar.
+- **Fixtures by argument.** A pass-through tool's fixture can answer by the call's arguments.
+
+Checked with the network blocked and every install offline:
+- **The starter** from the carried kit vendored this core, built, typechecked, passed its test and applied all eleven migrations to an empty data folder. With a prompt with arguments added, it still typechecked and built, and its contract listed the prompt with its arguments.
+- **Bookmarks** at its catalog version (its tree checksum matched the catalog's), moved onto this core, built, typechecked and passed its own tests. It migrated an empty data folder, and served with the new `revocation_endpoint` in its OAuth metadata.
+- **Ri's** typecheck and its app and toolchain tests passed.
+
+The live check above wasn't repeated.
+
 ## The catalog
 
 Ri offers recommended apps the way it used to offer its bundled ones, without carrying their code (shared spec §2, "The catalog"). Only first-party apps for now.
