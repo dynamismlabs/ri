@@ -6,6 +6,7 @@ import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { HTML_PREVIEW_KEY_MESSAGE, HTML_PREVIEW_RESPONSE_CSP, HTML_PREVIEW_TAIL, htmlPreviewHead } from '@/lib/sessions/html-preview-document';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Real image load/decode failures, tooltip focus, and image and HTML preview
 // dialog interactions, keyboard included.
@@ -145,7 +146,7 @@ afterAll(async () => {
 
 async function openPage() {
   const page = await browser.newPage({ viewport: { width: 1100, height: 1000 } });
-  page.setDefaultTimeout(8_000);
+  testTimeouts(page, 8_000);
   await page.route(remote, route => route.fulfill({ status: 404, contentType: 'text/html', body: 'Not found' }));
   await page.goto(address);
   return page;

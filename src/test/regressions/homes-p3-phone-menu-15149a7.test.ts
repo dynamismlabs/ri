@@ -13,6 +13,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { chromium } from 'playwright-core';
 import { expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 it('returns focus and pointer input after selecting or dismissing the agent device sheet', async () => {
   const require = createRequire(import.meta.url);
@@ -71,7 +72,7 @@ it('returns focus and pointer input after selecting or dismissing the agent devi
     const page=await browser.newPage({viewport:{width:390,height:844},hasTouch:true});
     const pageErrors: string[]=[];
     page.on('pageerror',(error)=>pageErrors.push(error.message));
-    page.setDefaultTimeout(5000);
+    testTimeouts(page, 5000);
     await page.addInitScript(()=>localStorage.setItem('ri.client.phoneChatLens','agents'));
     await page.goto(`http://127.0.0.1:${(server.address() as AddressInfo).port}`);
     const menu=page.getByRole('button',{name:'More for Review agent'});

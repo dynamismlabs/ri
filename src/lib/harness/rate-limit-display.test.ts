@@ -24,11 +24,30 @@ describe('header usage warnings', () => {
     expect(rateLimitStatus(rateLimitWarning([bucket('five_hour', { usedPercent: 80 })], DEFAULTS, NOW)!)).toBe('Near limit');
   });
 
-  it('warns at all three until a choice is saved, and follows each saved choice alone', () => {
+  it('defaults to 50%, 80% and 90%, and follows each saved choice alone', () => {
     expect(DEFAULTS.map(({ percent }) => percent)).toEqual([50, 80, 90]);
-    expect(enabledUsageWarnings({ usageWarning50: null, usageWarning80: null, usageWarning90: null })).toEqual(DEFAULTS);
+    expect(enabledUsageWarnings({ usageWarningAboveZero: null, usageWarning50: null, usageWarning80: null, usageWarning90: null })).toEqual(DEFAULTS);
+    expect(enabledUsageWarnings({ usageWarningAboveZero: true }).map(({ percent }) => percent)).toEqual([0, 50, 80, 90]);
     expect(enabledUsageWarnings({ usageWarning80: false }).map(({ percent }) => percent)).toEqual([50, 90]);
     expect(enabledUsageWarnings({ usageWarning50: false, usageWarning80: false, usageWarning90: false })).toEqual([]);
+  });
+
+  it('shows fresh positive usage below 50% and keeps higher warning colors independent', () => {
+    const buckets = [bucket('five_hour', { usedPercent: 0.1 })];
+    expect(rateLimitWarning(buckets, only(0), NOW)).toMatchObject({ percent: 0.1, tone: 'normal' });
+    expect(rateLimitWarning(buckets, DEFAULTS, NOW)).toBeUndefined();
+    expect(rateLimitWarning([bucket('five_hour', { usedPercent: 85 })], only(0, 80), NOW)?.tone).toBe('warn');
+    expect(rateLimitWarning([bucket('five_hour', { usedPercent: 95 })], only(0, 90), NOW)?.tone).toBe('critical');
+  });
+
+  it('omits zero, unknown, reset and stale usage from the above-zero badge', () => {
+    expect(rateLimitWarning([
+      bucket('five_hour', { usedPercent: 0 }),
+      bucket('unknown'),
+      bucket('reset', { usedPercent: 1, resetAt: at(-0.01) }),
+      bucket('stale', { usedPercent: 1, observedAt: at(-1) }),
+      bucket('extra_usage', { overage: { enabled: true }, usedPercent: 25 }),
+    ], only(0), NOW)).toBeUndefined();
   });
 
   // Every combination at 60, 85 and 95 percent. Undefined is no badge.
@@ -56,6 +75,7 @@ describe('header usage warnings', () => {
 
   it('shows confirmed enforcement at any threshold, and nothing with all of them off', () => {
     const blocked = [bucket('enforcement', { enforcement: { allowed: false } })];
+    expect(rateLimitWarning(blocked, only(0), NOW)).toMatchObject({ blocked: true, tone: 'critical' });
     expect(rateLimitWarning(blocked, only(90), NOW)).toMatchObject({ blocked: true, tone: 'critical' });
     expect(rateLimitWarning(blocked, only(50), NOW)).toMatchObject({ blocked: true, tone: 'critical' });
     expect(rateLimitWarning(blocked, [], NOW)).toBeUndefined();

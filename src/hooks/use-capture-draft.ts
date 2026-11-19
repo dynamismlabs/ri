@@ -72,6 +72,11 @@ export function useCaptureDraft(open: boolean) {
       try {
         const created = await captureStorage.create();
         if (cancelled) { created.release(); return; }
+        // Opening Quick Capture right after the page loads can restore or
+        // discard a draft before this first reservation arrives. That session
+        // stays: replacing it left its lock held and made Discard throw away
+        // this empty reservation instead of the restored draft.
+        if (session.current) { created.release(); return; }
         session.current = created;
         if (dirty.current) void persist(current.current).catch(() => {});
         else setSave({ phase: 'saved' });
@@ -99,6 +104,11 @@ export function useCaptureDraft(open: boolean) {
     finally { setRecovering(false); }
   }, [persist]);
 
+  const replaceSession = useCallback((next: CaptureDraftSession) => {
+    session.current?.release();
+    session.current = next;
+  }, []);
+
   const clear = useCallback(async () => {
     ++revision.current;
     // The storage tombstone precedes asynchronous blob cleanup. Keep the
@@ -109,10 +119,14 @@ export function useCaptureDraft(open: boolean) {
     pending.current = Promise.resolve();
     missing.current = []; setMissingFiles([]); retainCaptureDraft(owner.current, false);
     setSave({ phase: 'loading' });
-    try { session.current = await captureStorage.create(); setSave({ phase: 'saved' }); }
+    try {
+      // The first reservation can land while this one waits. Keep one.
+      replaceSession(await captureStorage.create());
+      setSave({ phase: 'saved' });
+    }
     catch (error) { setSave({ phase: 'error', error: message(error) }); }
     await refreshRecoveries();
-  }, [refreshRecoveries, updateValue]);
+  }, [refreshRecoveries, replaceSession, updateValue]);
 
   const discard = useCallback(async () => {
     setRecovering(true);

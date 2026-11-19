@@ -2,6 +2,7 @@ import http from 'node:http';
 import { build } from 'esbuild';
 import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Real React effects and Tiptap node views. Run through pnpm iso with
 // `env RI_SPACES_BROWSER_TEST=1 pnpm -s vitest run ...browser.test.ts`.
@@ -65,7 +66,7 @@ afterAll(async () => {
 it.skipIf(!enabled)('keeps pending autosaves bound to their document after switching', async () => {
   const page = await browser.newPage();
   page.on('pageerror', err => console.error(err));
-  page.setDefaultTimeout(8_000);
+  testTimeouts(page, 8_000);
   try {
     await page.goto(address);
     await page.waitForFunction('window.review?.ready');
@@ -84,7 +85,7 @@ it.skipIf(!enabled)('keeps pending autosaves bound to their document after switc
 it.skipIf(!enabled)('resolves file markers through the shared editor attachment store', async () => {
   const page = await browser.newPage();
   page.on('pageerror', err => console.error(err));
-  page.setDefaultTimeout(8_000);
+  testTimeouts(page, 8_000);
   try {
     await page.goto(address);
     const link = page.locator('a[download="team-file.txt"]');
@@ -107,7 +108,7 @@ it.skipIf(!enabled)('retains a draft without sending it as a replacement sign-in
 
 it.skipIf(!enabled)('renders published summary images and file markers from their team', async () => {
   const page = await browser.newPage();
-  page.setDefaultTimeout(8_000);
+  testTimeouts(page, 8_000);
   try {
     await page.goto(address);
     const image = page.locator('img[alt="Published image"]');

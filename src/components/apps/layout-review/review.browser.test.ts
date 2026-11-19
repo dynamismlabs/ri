@@ -7,6 +7,7 @@ import type { AddressInfo } from 'node:net';
 import { build } from 'esbuild';
 import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, beforeEach, expect, it, vi } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let server: http.Server;
 let browser: Browser;
@@ -112,7 +113,7 @@ afterAll(async () => { await browser?.close(); server?.closeAllConnections(); if
 async function open(query = '') {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   page.on('pageerror', error => console.error('Review browser error:', error.message));
-  page.setDefaultTimeout(8_000);
+  testTimeouts(page, 8_000);
   await page.goto(`${base}/${query}`);
   await page.getByRole('region', { name: 'Your library', exact: true }).waitFor();
   await page.locator('[data-apps-library][aria-busy="false"]').waitFor();
@@ -269,7 +270,7 @@ it('handles an empty library and recovers a failed source without blocking disco
 it('loads rows and cards in place without moving the header or discovery content', async () => {
   for (const width of [1440, 390]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
-    page.setDefaultTimeout(8_000);
+    testTimeouts(page, 8_000);
     let release!: () => void;
     const ready = new Promise<void>(resolve => { release = resolve; });
     const pending = new Set(['integrations.connectionsGet']);

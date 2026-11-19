@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { servicePaths } from './paths';
-import { serviceRequest, serviceStatus, ensureServiceStatus, ensureService } from './client';
+import { awaitingRetry, serviceRequest, serviceStatus, ensureServiceStatus, ensureService, type ServiceStatus } from './client';
 
 let directory: string;
 let server: http.Server | undefined;
@@ -66,4 +66,24 @@ it('keeps waiting for the same starting controller after a short status probe ti
   expect((await ensureServiceStatus({ repo: '/repo', node: '/node', timeoutMs: 5_000 })).phase).toBe('running');
   expect(attempts).toBe(3);
   expect(server?.listening).toBe(true);
+}, 10_000);
+
+// A first start that failed: the controller waits for its next try, and never gives up (docs/always-on-spec.md 6.2).
+const retrying = { phase: 'restarting', error: 'Invalid local service endpoint configuration',
+  restarts: { count: 2, crashLoop: false, last: { at: '2026-11-17T12:00:00Z', reason: 'Invalid local service endpoint configuration' }, nextAttemptAt: '2026-11-17T12:00:05Z' } };
+it('knows a Home waiting for its next try from one restarting right now', () => {
+  expect(awaitingRetry(retrying as ServiceStatus)).toBe(true);
+  // Mid-try the controller clears the error, and a planned restart has no next try.
+  expect(awaitingRetry({ ...retrying, phase: 'starting', error: undefined } as ServiceStatus)).toBe(false);
+  expect(awaitingRetry({ ...retrying, restarts: { ...retrying.restarts, nextAttemptAt: undefined } } as ServiceStatus)).toBe(false);
+  expect(awaitingRetry({ ...retrying, phase: 'failed' } as ServiceStatus)).toBe(false);
+  expect(awaitingRetry(null)).toBe(false);
+});
+it('hands a caller that asks the Home waiting for its next try, and otherwise waits with the reason', async () => {
+  let attempts = 0;
+  await listen((_request, response) => { attempts++; response.end(JSON.stringify({ protocol: 1, identity: servicePaths().identity, ...(attempts === 1 ? { phase: 'starting' } : retrying) })); });
+  expect(await ensureServiceStatus({ repo: '/repo', node: '/node', timeoutMs: 5_000, untilRetrying: true })).toMatchObject({ phase: 'restarting', error: retrying.error });
+  expect(attempts).toBe(2);
+  await expect(ensureServiceStatus({ repo: '/repo', node: '/node', timeoutMs: 600 }))
+    .rejects.toThrow('The service did not start: Invalid local service endpoint configuration. It keeps trying by itself.');
 }, 10_000);

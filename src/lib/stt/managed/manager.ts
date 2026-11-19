@@ -15,6 +15,8 @@ export interface ManagedSpeechStatus {
   phase: SpeechPhase; supported: boolean; installed: boolean; enabled: boolean;
   downloadedBytes: number; totalBytes: number; error?: string; cloudFallback: boolean;
   model: string; revision: string; helperAvailable: boolean;
+  /** Why this computer can't run local speech at all, for the person. Absent where it can. */
+  unavailable?: string;
 }
 export interface SpeechPreferences { enabled: boolean; cloudFallback: boolean }
 export function speechPaths() {
@@ -29,6 +31,17 @@ export function speechPreferences(): SpeechPreferences {
     const value = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ speechPaths().settings, 'utf8'));
     return { enabled: value.enabled === true, cloudFallback: value.cloudFallback === true };
   } catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { enabled: false, cloudFallback: false }; throw error; }
+}
+
+/**
+ * Whether this computer can run the local speech helper, and why not. Its engine (onnxruntime) has
+ * builds for Linux on arm64 and x64 and for Apple-chip Macs, not for Intel Macs, so Ri doesn't
+ * build or offer it there (docs/desktop.md). Transcription uses the other providers.
+ */
+export function speechPlatform(platform: string = process.platform, arch: string = process.arch): { supported: boolean; unavailable?: string } {
+  if (platform === 'darwin' && arch === 'x64') return { supported: false, unavailable: 'Local speech isn’t available on this Mac. Its speech engine has no build for Intel Macs.' };
+  if (!['darwin', 'linux'].includes(platform) || !['arm64', 'x64'].includes(arch)) return { supported: false, unavailable: 'Local speech isn’t available on this computer.' };
+  return { supported: true };
 }
 
 export class ManagedSpeech {
@@ -47,13 +60,16 @@ export class ManagedSpeech {
   private lastCrash = 0;
   private crashes = 0;
 
+  /** `platform` is this computer's unless a test names one: where the helper can run at all. */
+  constructor(private readonly platform: ReturnType<typeof speechPlatform> = speechPlatform()) {}
+
   status(): ManagedSpeechStatus {
     const preferences = speechPreferences();
     const installed = fs.existsSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ speechPaths().model, 'verified.json'));
-    const supported = ['darwin', 'linux'].includes(process.platform) && ['arm64', 'x64'].includes(process.arch);
+    const { supported, unavailable } = this.platform;
     return {
       phase: this.phase === 'not-installed' && installed ? 'installed' : this.phase,
-      supported, installed, ...preferences, downloadedBytes: this.downloaded, totalBytes: PARAKEET_BYTES,
+      supported, ...(unavailable ? { unavailable } : {}), installed, ...preferences, downloadedBytes: this.downloaded, totalBytes: PARAKEET_BYTES,
       error: this.error, model: 'Parakeet v3 INT8', revision: PARAKEET_REVISION,
       helperAvailable: supported && fs.existsSync(/* turbopackIgnore: true */ helperPath()),
     };
@@ -89,7 +105,8 @@ export class ManagedSpeech {
     if (this.removing) throw new Error('Local speech is being removed');
     if (this.operation) return this.status();
     if (this.busy) throw new Error('Wait for the active transcription before repairing local speech');
-    if (!this.status().helperAvailable) throw new Error('This build does not include the local speech helper');
+    const status = this.status();
+    if (!status.helperAvailable) throw new Error(status.unavailable ?? 'This build does not include the local speech helper');
     this.claim();
     this.stop();
     const release = beginActivity();

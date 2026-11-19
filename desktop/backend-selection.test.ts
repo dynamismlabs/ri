@@ -37,3 +37,14 @@ it('surfaces failed and stopping owners without attempting recovery or replaceme
     expect(session).not.toHaveBeenCalled();
   }
 });
+it('hands back an owner waiting to retry a failed start, when asked, instead of waiting it out', async () => {
+  const retrying = { phase: 'restarting', error: 'Invalid local service endpoint configuration', restarts: { count: 1, crashLoop: false, last: { at: '', reason: '' }, nextAttemptAt: '2026-11-17T12:00:05Z' } } as ServiceStatus;
+  const status = vi.fn().mockResolvedValueOnce({ phase: 'starting' }).mockResolvedValue(retrying);
+  const session = vi.fn();
+  expect(await attachExistingOwner<ServiceStatus>({ status, session, retrying: owner => owner, delay: async () => {} })).toBe(retrying);
+  expect(session).not.toHaveBeenCalled();
+  // Without the option it keeps waiting, as before, until the owner is up.
+  status.mockResolvedValueOnce(retrying).mockResolvedValue({ phase: 'running' });
+  session.mockResolvedValue({ phase: 'running' });
+  expect(await attachExistingOwner({ status, session, delay: async () => {} })).toEqual({ phase: 'running' });
+});

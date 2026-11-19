@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
+import { dismissOpenSuggestions } from '@/components/chat/editor/suggestion/escape-guard';
 import { useTouchFirst } from '@/hooks/use-touch-first';
 import { cn } from '@/lib/utils';
 
@@ -58,7 +59,8 @@ export function ComposerAddMenu({ editor, onPick, disabled, skills, mentions, cl
 
   return (
     <>
-      <DropdownMenu modal={false}>
+      {/* Opening it closes a `/`, `@` or `#` menu already open over the composer, keeping what was typed. */}
+      <DropdownMenu modal={false} onOpenChange={(open) => { if (open) dismissOpenSuggestions(); }}>
         <DropdownMenuTrigger asChild disabled={disabled}>
           <Tip label="Add files and more">
             <button

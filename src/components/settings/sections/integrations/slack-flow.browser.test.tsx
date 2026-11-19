@@ -1,6 +1,7 @@
 /** Real Plugins controller, UI and toasts. Synthetic account/OAuth boundaries, never a live Slack account. */
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const enabled = process.env.RI_SLACK_ACCOUNT_BROWSER_TEST === '1';
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
@@ -51,7 +52,7 @@ afterAll(async () => { await fixture?.close(); });
 
 it.skipIf(!enabled)('saves an app, focuses the selected sign-in, and shows progress and success through verification', async () => {
   const page = await fixture.browser.newPage({viewport:{width:1000,height:1000}});
-  page.setDefaultTimeout(7000);
+  testTimeouts(page, 7000);
   const errors: string[]=[];page.on('pageerror', error=>errors.push(error.message));
   try {
     await page.goto(fixture.url);
@@ -97,7 +98,7 @@ it.skipIf(!enabled)('saves an app, focuses the selected sign-in, and shows progr
 
 it.skipIf(!enabled)('keeps multiple apps visible and recovers a blocked Slack app without repeating consent', async () => {
   const page=await fixture.browser.newPage({viewport:{width:390,height:844}});
-  page.setDefaultTimeout(7000);
+  testTimeouts(page, 7000);
   const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
   try {
     await page.goto(fixture.url+'?apps');await page.evaluate("window.release('load')");
@@ -132,7 +133,7 @@ it.skipIf(!enabled)('keeps multiple apps visible and recovers a blocked Slack ap
 
 it.skipIf(!enabled)('continues an unfinished setup with its pinned app after enabling Slack access', async () => {
   const page=await fixture.browser.newPage({viewport:{width:1000,height:900}});
-  page.setDefaultTimeout(7000);
+  testTimeouts(page, 7000);
   try {
     await page.goto(fixture.url+'?apps');await page.evaluate("window.release('load')");
     await page.getByLabel('Slack app',{exact:true}).selectOption('app-b');

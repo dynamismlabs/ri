@@ -73,4 +73,6 @@ it('keeps two-member work, approval authority, stopped outcomes and native ident
   expect((await owner.team.ai.status.query()).enabled).toBe(false);
   expect((await owner.sessions.get.query({ params: { id: chat.id } })).permissionMode).toBe('ask');
  }finally{await server?.stop();fs.rmSync(root,{recursive:true,force:true});}
-},60000);
+// Three real server starts, each with a 60 s allowance in its fixture: the Intel
+// Mac runner, busy with every worker, took more than 60 s for all of them.
+},180_000);

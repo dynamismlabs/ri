@@ -9,6 +9,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
+import { pidIn, waitForPid } from '@/test/pids';
 vi.mock('@/lib/harness/runtime', async original => {
   const { fakeHarnessRuntime, fakeHarnessAuth } = await import('@/test/fixtures/harness-runtime');
   return { ...await original<typeof import('@/lib/harness/runtime')>(), getHarnessRuntime: fakeHarnessRuntime, resolveHarnessAuth: fakeHarnessAuth };
@@ -46,7 +47,8 @@ setInterval(() => {}, 1000);
   q.updateExecution(created.execution.id, { worktreePath: worktree, branchName: 'feature', baseSha: git(worktree, 'rev-parse', 'HEAD') });
 });
 afterEach(async () => {
-  try { const pid = Number(fs.readFileSync(pidFile(), 'utf8')); try { process.kill(-pid, 'SIGKILL'); } catch { /* */ } try { process.kill(pid, 'SIGKILL'); } catch { /* */ } } catch { /* none */ }
+  const pid = pidIn(pidFile());
+  if (pid) { try { process.kill(-pid, 'SIGKILL'); } catch { /* */ } try { process.kill(pid, 'SIGKILL'); } catch { /* */ } }
   await (await import('@/lib/runner/local-runner')).closeAllSessions().catch(() => {});
   (await import('@/lib/executor/adapter'))._resetExecutorState();
   (await import('@/lib/home/identity')).resetHomeIdentityCache();
@@ -65,8 +67,7 @@ it.each(['Restart', 'Close chat', 'New'] as const)('%s waits through the real SD
   }
   const event = q.insertChatEvent({ sessionId: chatId, source: 'user', role: 'user', content: 'Work', createdAt: new Date().toISOString() })!;
   void executor.dispatch(chatId, 'Work', { sourceEventId: event.id }).catch(() => {});
-  await vi.waitFor(() => expect(fs.existsSync(pidFile())).toBe(true), { timeout: 15_000 });
-  const pid = Number(fs.readFileSync(pidFile(), 'utf8'));
+  const pid = await waitForPid(pidFile(), 15_000);
   await new Promise(resolve => setTimeout(resolve, 100));
   const context = { headers: new Headers() } as never;
   let result;

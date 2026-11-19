@@ -140,7 +140,11 @@ export async function startWorkerProcess(args: {
   // would kill only the wrapper and leave the worker running.
   const child = spawn(process.execPath, ['--import', 'tsx', path.join(repo, 'src/test/fixtures/worker-process.ts'), args.homeUrl, args.homeId, args.workerKey, args.root], {
     cwd: repo,
-    env: { ...process.env, NODE_OPTIONS: '', ...args.env },
+    // The device's own gh, signed in with a placeholder rather than as whoever runs the tests, so gh
+    // answers the same on every computer. Test repositories are never on GitHub, so gh needs no network
+    // to say so ("none of the git remotes ... point to a known GitHub host"), where with no sign-in at
+    // all it would only ask for one.
+    env: { ...process.env, NODE_OPTIONS: '', GH_CONFIG_DIR: path.join(args.root, '.config', 'gh'), GH_TOKEN: 'placeholder-for-tests', ...args.env },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let out = '';

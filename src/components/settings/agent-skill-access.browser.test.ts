@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Locator, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Ri's user-level skills at the end of Ri in other agents, and its Get started
 // item (the real checklist hook), against a fake server that keeps state.
@@ -82,7 +83,7 @@ beforeAll(async () => {
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   address = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   browser = await chromium.launch({ headless: true, executablePath: process.env.RI_REVIEW_CHROMIUM });
-  browser.on('context', context => context.on('page', page => page.setDefaultTimeout(5_000)));
+  browser.on('context', context => context.on('page', page => testTimeouts(page, 5_000)));
 }, 90_000);
 
 afterAll(async () => {

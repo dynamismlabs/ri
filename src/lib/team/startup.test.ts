@@ -73,6 +73,12 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
+  // A personal boot leaves pollers that read the database every second or two. Stopped before
+  // the paths move to the next test's home, so a tick can't create that home's database and make
+  // its folder already hold a Ri.
+  await (await import('@/lib/integrations/conversations/service')).stopConversations();
+  await (await import('@/lib/coordination/service')).stopAgentCoordination();
+  (await import('@/lib/scheduler/runner')).stopScheduler();
   for (const fake of harnesses.splice(0)) fake.restore();
   for (const [key, value] of Object.entries(savedEnv)) {
     if (value === undefined) delete process.env[key];

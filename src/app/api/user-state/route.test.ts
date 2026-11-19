@@ -42,7 +42,7 @@ beforeEach(() => {
 });
 
 describe('subscription usage warning thresholds', () => {
-  const fields = ['usageWarning50', 'usageWarning80', 'usageWarning90'];
+  const fields = ['usageWarningAboveZero', 'usageWarning50', 'usageWarning80', 'usageWarning90'];
   const choices = fields.flatMap((field) => [true, false, null].map((value) => [field, value] as const));
 
   it.each(choices)('saves %s as %s without changing the main chat', async (field, value) => {
@@ -53,6 +53,7 @@ describe('subscription usage warning thresholds', () => {
   });
 
   it('rejects a non-boolean choice and the retired single switch', async () => {
+    expect((await patch({ usageWarningAboveZero: 0 })).status).toBe(400);
     expect((await patch({ usageWarning80: 'off' })).status).toBe(400);
     expect((await patch({ usageWarnings: false })).status).toBe(400);
     expect(updateUserState).not.toHaveBeenCalled();

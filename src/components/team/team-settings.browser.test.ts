@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let browser: Browser;
@@ -120,7 +121,7 @@ beforeAll(async () => {
   browser = await chromium.launch({ headless: true, executablePath: process.env.RI_REVIEW_CHROMIUM });
   const newPage = browser.newPage.bind(browser);
   browser.newPage = async options => { const page = await newPage(options); page.on('pageerror', error => console.error('Settings fixture browser error:', error.stack)); return page; };
-  browser.on('context', context => context.on('page', page => page.setDefaultTimeout(5_000)));
+  browser.on('context', context => context.on('page', page => testTimeouts(page, 5_000)));
 }, 90_000);
 
 afterAll(async () => {

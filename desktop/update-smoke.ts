@@ -19,7 +19,8 @@ import { createRuntimeManifest, getRuntimeInstallDir, stageRuntime, installedRun
 import { writeOrigin } from '../src/lib/service/origin';
 import { releasePolicyFile } from '../src/lib/service/release-trust';
 import { ensureService, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
-import { fileDigest, verifyCheckpoint } from '../src/lib/service/checkpoint';
+import { fileDigest } from '../src/lib/service/checkpoint';
+import { readSnapshot } from '../src/lib/service/snapshot';
 import type { UpdateRecord } from '../src/lib/service/update';
 import type { ReleasePreferences } from '../src/lib/service/update-settings';
 
@@ -170,7 +171,9 @@ try {
   const leaf = await generateLeafPair({ caCertPem: ca.certPem, caKeyPem: ca.keyPem, sans: [{ type: 'dns', value: 'localhost' }], days: 1, clockSkewMs: 1000 });
   const caFile = path.join(temporary, 'fixture-ca.pem'); fs.writeFileSync(caFile, ca.certPem);
   server = https.createServer({ key: leaf.keyPem, cert: leaf.certPem }, (req, res) => {
-    if (req.url === `/feed/stable-${process.platform}-${process.arch}.json`) res.end(JSON.stringify(envelope));
+    // The channel's pointer and the release's own file, as desktop/publish-release.mjs
+    // writes them. The updater checks the version's file again just before it downloads.
+    if ([`/feed/stable-${process.platform}-${process.arch}.json`, `/feed/${manifest.version}-${process.platform}-${process.arch}.json`].includes(req.url!)) res.end(JSON.stringify(envelope));
     else if (req.url === '/runtime.tar.gz') fs.createReadStream(archive).pipe(res);
     else { res.statusCode = 404; res.end(); }
   });
@@ -231,7 +234,17 @@ try {
   const current = await serviceRequest<ServiceSession>('/session');
   assert.equal(current.version, '0.1.1'); assert.equal(current.origin, initial.origin); assert.notEqual(current.pid, initial.pid);
   assert.equal(installedRuntime()?.id, manifest.id);
-  const record = await update(); assert.equal(record.phase, 'committed'); assert(record.checkpoint); verifyCheckpoint(record.checkpoint);
+  const record = await update(); assert.equal(record.phase, 'committed'); assert(record.checkpoint);
+  // The update's snapshot (src/lib/service/snapshot.ts): this Home's database
+  // and config from before the update, named for the releases it moved between.
+  const snapshot = readSnapshot(record.checkpoint);
+  assert.equal(snapshot.from, first.id); assert.equal(snapshot.to, manifest.id);
+  const before = new Database(path.join(record.checkpoint, 'database.sqlite'), { readonly: true, fileMustExist: true });
+  try {
+    assert.equal(before.pragma('integrity_check', { simple: true }), 'ok');
+    assert.equal(before.prepare("SELECT name FROM sqlite_master WHERE name='desktop_update_smoke'").get(), undefined, 'The snapshot was taken after the migration');
+    assert(before.prepare('SELECT id FROM notes WHERE id = ?').get(noteId), 'The snapshot lacks the note written before the update');
+  } finally { before.close(); }
   const db = new Database(path.join(process.env.RI_ROOT!, 'data.db'), { readonly: true });
   try { assert(db.prepare("SELECT name FROM sqlite_master WHERE name='desktop_update_smoke'").get()); }
   finally { db.close(); }
@@ -263,7 +276,7 @@ try {
   const after = await request(current, '/api/notes', { body: 'New data after upgrade.' }); assert.equal(after.status, 201);
   assert.equal(fs.readFileSync(unpublished, 'utf8'), 'unpublished work');
   assert(fs.existsSync(first.repo));
-  result = { passed: true, guiAttached: !!gui, notificationBridgeReconnected: !!gui, guiNavigation, malformedRequestsRejected: true, downloadPreferencesVerified: !!gui, maintenanceWindowVerified: !!gui, originStable: true, publisherVerified: true, migrated: true, controllerReplaced: true, priorRuntimeRetained: true, newWritesAccepted: true, checkpointVerified: true, temporary };
+  result = { passed: true, guiAttached: !!gui, notificationBridgeReconnected: !!gui, guiNavigation, malformedRequestsRejected: true, downloadPreferencesVerified: !!gui, maintenanceWindowVerified: !!gui, originStable: true, publisherVerified: true, migrated: true, controllerReplaced: true, priorRuntimeRetained: true, newWritesAccepted: true, snapshotVerified: true, temporary };
 } finally {
   if (gui) {
     await Promise.all([

@@ -5,6 +5,8 @@ export const TEAM_ACTIONS = [
   'read', 'editContent', 'deletePermanently', 'administerMembers', 'configureAgents',
   'runTeamAgent', 'stopTurn', 'cancelQueued', 'answerQuestion', 'approvePermission',
   'archiveChat', 'editAgentFolder', 'openAgentTerminal', 'manageSignIns',
+  // A team server's automatic updates switch, Update now and Not now (src/lib/service/update-rights.ts).
+  'useUpdates',
 ] as const;
 export type TeamAction = typeof TEAM_ACTIONS[number];
 export type TeamCapabilities = Record<TeamAction, boolean>;

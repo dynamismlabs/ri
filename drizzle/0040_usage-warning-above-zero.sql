@@ -1,0 +1,1 @@
+ALTER TABLE `user_state` ADD `usage_warning_above_zero` integer;

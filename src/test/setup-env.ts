@@ -58,3 +58,16 @@ process.env.RI_COMMAND_DIR = path.join(process.env[APP_ROOT_ENV]!, 'command');
 for (const [harness, definition] of Object.entries(HARNESS_REGISTRY)) {
   process.env[definition.commandEnv] = path.join(process.env[APP_ROOT_ENV]!, 'no-real-harness', harness);
 }
+
+/**
+ * No test signals its own process group. A pid read from a file a child is
+ * still writing parses as 0, and `process.kill(0)` or `process.kill(-0)` sends
+ * the signal to every process in this group: vitest and the pnpm that started
+ * it. A test cleanup did that on CI and killed `pnpm test` mid-run with no
+ * failure to show. Read a child's pid with `src/test/pids.ts`.
+ */
+const signal = process.kill.bind(process);
+process.kill = ((pid: number, kind?: string | number) => {
+  if (pid === 0 || pid === -process.pid) throw new Error(`A test asked to signal process group ${pid}, which holds the test runner itself.`);
+  return signal(pid, kind);
+}) as typeof process.kill;

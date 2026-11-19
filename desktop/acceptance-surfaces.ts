@@ -2,11 +2,15 @@
  * renderers. ElectronApplication.windows() describes renderer targets, not
  * native BrowserWindows, so it cannot establish the single-window contract. */
 import assert from 'node:assert/strict';
+import { isDeepStrictEqual } from 'node:util';
 import type { ElectronApplication, Page } from 'playwright-core';
 
 export type LocalSurface = 'companion' | 'maintenance';
 
-export async function nativeWindowSnapshot(app: ElectronApplication) {
+/** What a window snapshot needs of the app: running code in its main process. */
+type WindowSource = Pick<ElectronApplication, 'evaluate'>;
+
+export async function nativeWindowSnapshot(app: WindowSource) {
   const windows = await app.evaluate(({ BrowserWindow, WebContentsView }) => BrowserWindow.getAllWindows().map(window => ({
     id: window.id, bounds: window.getBounds(), contentBounds: window.getContentBounds(),
     visible: window.isVisible(), minimized: window.isMinimized(),
@@ -52,6 +56,22 @@ async function findPage(app: ElectronApplication, select: (state: Awaited<Return
   throw new Error(`Timed out finding ${view ?? 'main'} renderer attached to Ri's native window`);
 }
 
+/** The app says why it gave up only in its own output (`fail` in desktop/main.ts), and a smoke run quits
+ * right after. Pass its `[desktop]` lines through, so a failed run's log names the reason. */
+export function relayDesktopOutput(app: ElectronApplication, label = 'ri') {
+  for (const stream of [app.process().stdout, app.process().stderr]) {
+    if (!stream) continue;
+    let partial = '';
+    stream.setEncoding('utf8');
+    stream.on('data', (chunk: string) => {
+      const lines = (partial + chunk).split('\n');
+      partial = lines.pop() ?? '';
+      for (const line of lines) if (line.startsWith('[desktop]')) console.info(`[${label}] ${line}`);
+    });
+  }
+  return app;
+}
+
 export function viewerPage(app: ElectronApplication) {
   return findPage(app, state => [state.viewer.target]);
 }
@@ -75,7 +95,50 @@ export async function assertLocalIsolation(app: ElectronApplication, page: Page,
   }, view), /Untrusted (?:maintenance|companion)/);
 }
 
-export function assertSameNativeWindow(before: Awaited<ReturnType<typeof nativeWindowSnapshot>>, after: Awaited<ReturnType<typeof nativeWindowSnapshot>>) {
+export type NativeWindowState = Awaited<ReturnType<typeof nativeWindowSnapshot>>;
+const geometry = (state: NativeWindowState) => ({ id: state.id, bounds: state.bounds, contentBounds: state.contentBounds, viewer: state.viewer.id });
+const pause = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+type Rect = { x: number; y: number; width: number; height: number };
+const inside = (inner: Rect, outer: Rect) => inner.x >= outer.x && inner.y >= outer.y
+  && inner.x + inner.width <= outer.x + outer.width && inner.y + inner.height <= outer.y + outer.height;
+
+/**
+ * The window as a later check should find it: shown, laid out, and holding
+ * still. Showing it and laying out its menu bar finish a moment after the calls
+ * that start them. Under Xvfb on Linux a snapshot taken as the first renderer
+ * appeared had the content below the menu bar but still the window's full
+ * height, running 27 px past its bottom edge (980 tall, then 953), so the
+ * window matched nothing it later became. A laid-out window's content lies
+ * inside its frame, and it stays where it is for `quietMs` while shown.
+ */
+export async function settledWindowSnapshot(app: WindowSource, { quietMs = 500, timeoutMs = 30_000 } = {}): Promise<NativeWindowState> {
+  const deadline = Date.now() + timeoutMs;
+  const ready = (state: NativeWindowState) => state.visible && !state.minimized && inside(state.contentBounds, state.bounds);
+  let last = await nativeWindowSnapshot(app);
+  for (;;) {
+    await pause(quietMs);
+    const next = await nativeWindowSnapshot(app);
+    if (ready(last) && ready(next) && isDeepStrictEqual(geometry(next), geometry(last))) return next;
+    if (Date.now() >= deadline) {
+      throw new Error(`Ri's window never settled: ${JSON.stringify({ visible: next.visible, minimized: next.minimized, bounds: next.bounds, contentBounds: next.contentBounds })}`);
+    }
+    last = next;
+  }
+}
+
+/**
+ * The window is the one `before` was, where it was: opening or closing local
+ * controls never moves, resizes or replaces it. A layout still landing (a slow
+ * runner, a window manager) gets `timeoutMs` to arrive. A change that stays fails.
+ */
+export async function assertSameNativeWindow(app: WindowSource, before: NativeWindowState, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  let after = await nativeWindowSnapshot(app);
+  while (!isDeepStrictEqual(geometry(after), geometry(before)) && Date.now() < deadline) {
+    await pause(100);
+    after = await nativeWindowSnapshot(app);
+  }
   assert.equal(after.id, before.id, 'Setup and the app must share the same native window');
   assert.deepEqual(after.bounds, before.bounds, 'Opening local controls must preserve window placement and size');
   assert.deepEqual(after.contentBounds, before.contentBounds, 'Local controls must preserve the title bar and content bounds');

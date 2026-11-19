@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RateLimitUpdate, TelemetryObservation } from '@agentex/agent';
 
 type Read = (ctx: unknown) => Promise<TelemetryObservation<RateLimitUpdate>>;
-const reads = vi.hoisted(() => ({ claude: vi.fn<Read>(), codex: vi.fn<Read>() }));
+const reads = vi.hoisted(() => ({ claude: vi.fn<Read>(), codex: vi.fn<Read>(), antigravity: vi.fn<Read>() }));
 
 vi.mock('./runtime', () => ({ runtimeContextForHarness: async () => ({ env: { HOME: '/home' }, config: { command: '/bin/x' } }) }));
 vi.mock('@agentex/agent', () => ({
-  getProvider: (id: string) => (id === 'claude' || id === 'codex' ? { readRateLimits: reads[id] } : {}),
+  getProvider: (id: string) => (id === 'claude' || id === 'codex' || id === 'antigravity' ? { readRateLimits: reads[id] } : {}),
 }));
 
 const { getHarnessRateLimits, rateLimitsNeedRead, readHarnessRateLimits, recordRateLimits, RATE_LIMIT_READ_AFTER_MS } = await import('./rate-limits');
@@ -33,6 +33,7 @@ describe('reading rate limits outside a chat', () => {
     delete (globalThis as Record<symbol, unknown>)[slot];
     reads.claude.mockReset();
     reads.codex.mockReset();
+    reads.antigravity.mockReset().mockResolvedValue(unavailable);
   });
   afterEach(() => {
     delete process.env.RI_CONFIG_DIR;
@@ -43,10 +44,12 @@ describe('reading rate limits outside a chat', () => {
   it('reads each readable harness once, with its runtime context, and keeps the result', async () => {
     reads.claude.mockResolvedValue(observation('claude', 15, T0));
     reads.codex.mockResolvedValue(observation('codex', 40, T0));
+    reads.antigravity.mockResolvedValue(observation('antigravity', 5, T0));
     expect(rateLimitsNeedRead(T0)).toBe(true);
     const result = await readHarnessRateLimits(T0);
-    expect(result.map((entry) => [entry.harness, entry.buckets[0]?.usedPercent])).toEqual([['codex', 40], ['claude', 15]]);
+    expect(result.map((entry) => [entry.harness, entry.buckets[0]?.usedPercent])).toEqual([['codex', 40], ['claude', 15], ['antigravity', 5]]);
     expect(reads.claude).toHaveBeenCalledWith(expect.objectContaining({ env: { HOME: '/home' }, config: { command: '/bin/x' }, timeoutMs: 15_000 }));
+    expect(reads.antigravity).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ config: { command: '/bin/x' }, timeoutMs: 15_000 }));
     expect(rateLimitsNeedRead(T0 + 1000)).toBe(false);
     expect(getHarnessRateLimits()).toEqual(result);
   });
@@ -61,6 +64,7 @@ describe('reading rate limits outside a chat', () => {
     await readHarnessRateLimits(T0 + RATE_LIMIT_READ_AFTER_MS);
     expect(reads.claude).toHaveBeenCalledTimes(1);
     expect(reads.codex).toHaveBeenCalledTimes(1);
+    expect(reads.antigravity).toHaveBeenCalledTimes(1);
   });
 
   it('lets a second hover join the read in flight', async () => {

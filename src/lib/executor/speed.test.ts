@@ -30,6 +30,17 @@ afterEach(async () => {
   await home?.cleanup();
 });
 
+/**
+ * The harness session a chat's run started, by the signed credential Ri gives each one. Other work
+ * can start sessions on the same fake harness meanwhile, so the latest one isn't necessarily it.
+ */
+async function sessionOf(chatId: string) {
+  const { SESSION_CREDENTIAL_ENV, actorFromSessionCredential } = await import('@/lib/orchestrator/session-credential');
+  const session = fake.sessions.find(candidate => actorFromSessionCredential(candidate.ctx.env?.[SESSION_CREDENTIAL_ENV])?.sessionId === chatId);
+  if (!session) throw new Error(`No harness session ran chat ${chatId}`);
+  return session;
+}
+
 describe('saved model speed reaches the harness', () => {
   it.each([null, 'default'])('initializes a fresh heartbeat to Normal with global speed %s and carries it through dispatch', async preference => {
     const q = await import('@/lib/db/queries');
@@ -46,7 +57,7 @@ describe('saved model speed reaches the harness', () => {
     const fire = await dispatchRun({ trigger, triggerKind: 'manual' });
     await vi.waitFor(() => expect(q.getRun(fire.run.id)?.status).toBe('completed'), { timeout: 15_000 });
     expect(q.getChatSession(fire.chatSession!.id)?.serviceTier).toBe('default');
-    expect(fake.latest().ctx.config?.serviceTier).toBe('default');
+    expect((await sessionOf(fire.chatSession!.id)).ctx.config?.serviceTier).toBe('default');
   });
 
   it('preserves a legacy heartbeat NULL through first read, enabling, and dispatch', async () => {
@@ -63,7 +74,7 @@ describe('saved model speed reaches the harness', () => {
     expect(saved.serviceTier).toBeNull();
     const fire = await dispatchRun({ trigger: saved, triggerKind: 'manual' });
     await vi.waitFor(() => expect(q.getRun(fire.run.id)?.status).toBe('completed'), { timeout: 15_000 });
-    expect(fake.latest().ctx.config?.serviceTier).toBeUndefined();
+    expect((await sessionOf(fire.chatSession!.id)).ctx.config?.serviceTier).toBeUndefined();
   });
 
   it('offers no initialized heartbeat speed when the selected model advertises no speed metadata', async () => {

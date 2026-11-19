@@ -8,12 +8,13 @@ vi.mock('./desktop-nav-buttons', () => ({ DesktopNavButtons: () => null }));
 import { DesktopChrome } from './desktop-chrome';
 import { useSharedBodyFor, type SharedBodyTarget } from '@/components/team/shared-body-editor';
 import { documentSaves } from '@/lib/client/document-saves';
+import { retainActiveInput } from '@/lib/client/active-input';
 import { prepareVersionReload, reloadVersion } from '@/lib/client/version-reload';
 import type { SharedBody } from '@/lib/team/shared-body';
 
 let root: Root;
 let qc: QueryClient;
-let prepare: (() => Promise<boolean>) | undefined;
+let prepare: (() => Promise<true | string>) | undefined;
 let resume: (() => void) | undefined;
 let shared: ReturnType<typeof useSharedBodyFor>;
 let storage: Map<string, string>;
@@ -33,7 +34,7 @@ beforeEach(() => {
   } });
   Object.defineProperty(window, 'riDesktop', { configurable: true, value: {
     platform: 'darwin',
-    onPrepareClose: (callback: () => Promise<boolean>) => { prepare = callback; return () => { prepare = undefined; }; },
+    onPrepareClose: (callback: () => Promise<true | string>) => { prepare = callback; return () => { prepare = undefined; }; },
     onResume: (callback: () => void) => { resume = callback; return () => { resume = undefined; }; },
   } });
   document.documentElement.dataset.riAuthority = 'space';
@@ -80,7 +81,7 @@ it('waits for a shared note autosave before allowing the desktop to leave', asyn
   const write = vi.fn(() => new Promise<SharedBody>(resolve => { release = resolve; }));
   await mount(write);
   await act(async () => shared.edit('Newest shared text'));
-  let result: boolean | undefined;
+  let result: true | string | undefined;
   let pending!: Promise<void>;
   await act(async () => { pending = prepare!().then(value => { result = value; }); });
   expect(write).toHaveBeenCalledWith({ body: 'Newest shared text', expectedBodyRevision: 1, attachments: [] });
@@ -95,7 +96,7 @@ it('keeps a failed shared save editable and blocks leaving until it succeeds', a
   const write = vi.fn<SharedBodyTarget['write']>().mockRejectedValue(new Error('offline'));
   await mount(write);
   await act(async () => shared.edit('Keep this text'));
-  await act(async () => { await expect(prepare!()).resolves.toBe(false); });
+  await act(async () => { await expect(prepare!()).resolves.toBe('document'); });
   expect(document.body.inert).toBe(false);
   expect(JSON.parse(storage.get(draftKey)!).body).toBe('Keep this text');
   write.mockResolvedValue({ body: 'Keep this text', bodyRevision: 2 });
@@ -107,7 +108,7 @@ it('does not bypass a shared conflict, even though its flush resolves', async ()
   const write = vi.fn<SharedBodyTarget['write']>();
   await mount(write);
   expect(shared.status.status).toBe('conflict');
-  await expect(prepare!()).resolves.toBe(false);
+  await expect(prepare!()).resolves.toBe('document');
   expect(document.body.inert).toBe(false);
   expect(write).not.toHaveBeenCalled();
   const unload = new window.Event('beforeunload', { cancelable: true });
@@ -134,8 +135,8 @@ it('waits for typed input requests but permits background work to continue after
   const input = qc.getMutationCache().build(qc, { meta: { carriesInput: true }, mutationFn: () => new Promise<void>(resolve => { acknowledge = resolve; }) });
   const sent = input.execute(undefined);
   await vi.waitFor(() => expect(acknowledge).toBeTypeOf('function'));
-  let finished = false;
-  const pending = prepare!().then(ok => { finished = ok; });
+  let finished: true | string | false = false;
+  const pending = prepare!().then(answer => { finished = answer; });
   await new Promise(resolve => setTimeout(resolve, 60));
   expect(finished).toBe(false);
   acknowledge();
@@ -149,4 +150,29 @@ it('waits for typed input requests but permits background work to continue after
   await expect(prepare!()).resolves.toBe(true);
   finishWork();
   await running;
+});
+
+it('names voice input as what keeps the window open, and leaves the page usable', async () => {
+  await mount();
+  const recording = {};
+  retainActiveInput(recording, true);
+  try {
+    await expect(prepare!()).resolves.toBe('input');
+    expect(document.body.inert).toBeFalsy();
+  } finally { retainActiveInput(recording, false); }
+  await expect(prepare!()).resolves.toBe(true);
+});
+
+it('names a typed request that is still unsent after ten seconds', async () => {
+  await mount();
+  const input = qc.getMutationCache().build(qc, { meta: { carriesInput: true }, mutationFn: () => new Promise<void>(() => {}) });
+  void input.execute(undefined);
+  await vi.waitFor(() => expect(qc.isMutating()).toBe(1));
+  vi.useFakeTimers();
+  try {
+    const answer = prepare!();
+    await vi.advanceTimersByTimeAsync(10_100);
+    await expect(answer).resolves.toBe('request');
+    expect(document.body.inert).toBe(false);
+  } finally { vi.useRealTimers(); }
 });

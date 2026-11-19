@@ -21,6 +21,11 @@ function xml(value: string) {
   return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&apos;');
 }
 function unit(value: string) { return `"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('%', '%%').replaceAll('\n', '\\n').replaceAll('\r', '\\r')}"`; }
+/** systemd takes `append:` paths as written, with no quoting: only `%` needs escaping. */
+function unitPath(value: string) {
+  if (!path.isAbsolute(value) || /[\0-\x1f\x7f]/.test(value) || value !== value.trim() || value.endsWith('\\')) throw new Error('The service log path cannot be written into a systemd unit');
+  return value.replaceAll('%', '%%');
+}
 
 export function serviceDefinition(options: ServiceDefinitionOptions) {
   const label = `app.ri.service.${options.id}`;
@@ -35,7 +40,13 @@ export function serviceDefinition(options: ServiceDefinitionOptions) {
       `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict>\n<key>Label</key><string>${label}</string>\n<key>ProgramArguments</key><array><string>${xml(options.launcher)}</string></array>\n<key>EnvironmentVariables</key><dict>${Object.entries(env).map(([key, value]) => `<key>${xml(key)}</key><string>${xml(value)}</string>`).join('')}</dict>\n<key>RunAtLoad</key><true/>\n<key>KeepAlive</key><dict><key>SuccessfulExit</key><false/></dict>\n<key>ThrottleInterval</key><integer>30</integer>\n<key>ExitTimeOut</key><integer>60</integer>\n<key>StandardOutPath</key><string>${xml(options.log)}</string>\n<key>StandardErrorPath</key><string>${xml(options.log)}</string>\n</dict></plist>\n` };
   }
   return { label, file: path.join(options.home, '.config/systemd/user', `${label}.service`), content:
-    `# Managed by Ri for this data root\n[Unit]\nDescription=Ri background service\nStartLimitIntervalSec=300\nStartLimitBurst=5\n\n[Service]\nType=simple\nExecStart=${unit(options.launcher)}\n${Object.entries(env).map(([key, value]) => `Environment=${unit(`${key}=${value}`)}`).join('\n')}\nRestart=on-failure\nRestartSec=30\nTimeoutStopSec=60\nKillMode=control-group\nUMask=0077\n\n[Install]\nWantedBy=default.target\n` };
+    // No start limit: systemd keeps restarting a failed launcher every 30 s, as
+    // launchd does, because a Home never gives up (docs/always-on-spec.md 6.2).
+    // The earlier limit, five starts in five minutes, refused a sixth, an
+    // explicit `ri start` included, and systemd then stopped restarting the
+    // Home. Output goes to the service log, as launchd's does, so `ri logs`
+    // reads the same file on both.
+    `# Managed by Ri for this data root\n[Unit]\nDescription=Ri background service\nStartLimitIntervalSec=0\n\n[Service]\nType=simple\nExecStart=${unit(options.launcher)}\n${Object.entries(env).map(([key, value]) => `Environment=${unit(`${key}=${value}`)}`).join('\n')}\nRestart=on-failure\nRestartSec=30\nTimeoutStopSec=60\nKillMode=control-group\nUMask=0077\nStandardOutput=append:${unitPath(options.log)}\nStandardError=append:${unitPath(options.log)}\n\n[Install]\nWantedBy=default.target\n` };
 }
 
 function definition() {
@@ -46,15 +57,16 @@ function definition() {
   return serviceDefinition({ platform: process.platform, home: os.homedir(), launcher: runtime.launcher, id: paths.id, ...paths.identity, log: paths.log });
 }
 
-// Only the immediately preceding Ri template is migratable. All identity,
-// launcher, environment, logging and restart settings must still match exactly.
-function previousDefinition(job: ReturnType<typeof serviceDefinition>) {
-  return process.platform === 'darwin'
-    ? job.content.replace('<key>ExitTimeOut</key><integer>60</integer>', '<key>ExitTimeOut</key><integer>30</integer>')
-    : job.content.replace('TimeoutStopSec=60\n', 'TimeoutStopSec=30\n');
+// Only Ri's own earlier templates are migratable, newest first. All identity,
+// launcher and environment settings must still match exactly.
+export function previousDefinitions(job: ReturnType<typeof serviceDefinition>) {
+  if (process.platform === 'darwin') return [job.content.replace('<key>ExitTimeOut</key><integer>60</integer>', '<key>ExitTimeOut</key><integer>30</integer>')];
+  // Before November 2026 the unit had systemd's start limit and wrote to the journal.
+  const limited = job.content.replace('StartLimitIntervalSec=0\n', 'StartLimitIntervalSec=300\nStartLimitBurst=5\n').replace(/^Standard(?:Output|Error)=append:.*\n/gm, '');
+  return [limited, limited.replace('TimeoutStopSec=60\n', 'TimeoutStopSec=30\n')];
 }
 function ownsDefinition(job: ReturnType<typeof serviceDefinition>, content: string) {
-  return content === job.content || content === previousDefinition(job);
+  return content === job.content || previousDefinitions(job).includes(content);
 }
 function existingDefinition(job: ReturnType<typeof serviceDefinition>) {
   return fs.existsSync(job.file) ? fs.readFileSync(job.file, 'utf8') : null;
@@ -82,9 +94,10 @@ export async function installService(dryRun = false) {
   if (afterHandoff !== null && !ownsDefinition(job, afterHandoff)) throw new Error('A different service definition already exists at this path');
   // An unreachable but still running controller cannot be safely handed off.
   // Hold its ownership lock through unloading and replacing the old template.
-  const releaseOwner = afterHandoff === previousDefinition(job) ? acquireServiceOwner() : undefined;
+  const previous = afterHandoff !== null && previousDefinitions(job).includes(afterHandoff);
+  const releaseOwner = previous ? acquireServiceOwner() : undefined;
   try {
-    if (afterHandoff === previousDefinition(job)) {
+    if (previous) {
       // The controller accepted handoff before we unload its old definition. A
       // busy backend therefore keeps both its process and login job unchanged.
       if (process.platform === 'darwin') {

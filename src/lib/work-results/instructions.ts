@@ -4,6 +4,7 @@ import { resolveServerPort } from '@/lib/orchestrator/harness-surface';
 import { readAuthConfig } from '@/lib/auth/config-file';
 import { SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/orchestrator/session-credential';
 import type { McpServerConfig } from '@agentex/agent';
+import { APP_GUIDANCE_OPEN, USER_MESSAGE_FOLLOWS } from './guidance-markers';
 
 /** A login shell keeps the server's pinned launcher, connected devices use their own CLI. */
 export function handoffCliCommand(): string { return signedCliCommand(); }
@@ -44,7 +45,7 @@ export function builtInHandoffInstructions(cliCommand = handoffCliCommand()): st
 export function withWorkResultSessionInstructions(message: string, surfaceKind: string | null, extra: readonly string[] = []): string {
   if (surfaceKind === 'result_review') return message;
   const guidance = [workResultSessionInstructions(), ...extra].filter(Boolean).join('\n\n');
-  return guidance ? `[Current Ri session capabilities, supplied by the app.]\n${guidance}\n[User message follows.]\n${message}` : message;
+  return guidance ? `${APP_GUIDANCE_OPEN}\n${guidance}\n${USER_MESSAGE_FOLLOWS}\n${message}` : message;
 }
 
 export function workResultsMcpServer(sessionId: string, port = resolveServerPort()): McpServerConfig | null {

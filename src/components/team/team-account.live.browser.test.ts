@@ -4,6 +4,7 @@ import path from 'node:path';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { teamTRPC } from '@/lib/spaces/remote';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 type Preview = { ownerUrl: string; memberUrl?: string; spaceUrl?: string };
 const root = process.env.RI_TEAM_ACCOUNT_PREVIEW;
@@ -29,7 +30,7 @@ afterAll(async () => { await browser?.close(); });
 
 async function pageFor(width = 1440, member = false) {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
-  page.setDefaultTimeout(15_000);
+  testTimeouts(page, 15_000);
   page.on('pageerror', error => errors.push(error.message));
   await page.addInitScript(() => localStorage.setItem('ri.client.apiTransport', 'http'));
   await page.goto(member ? preview.memberUrl! : preview.ownerUrl);
@@ -138,7 +139,7 @@ it.skipIf(!enabled)('keeps Your account available in the collapsed tablet rail',
 it.skipIf(!enabled || !personalRoot)('shows an existing personal Ri connection in both the sidebar and account', async () => {
   const personal = load(personalRoot!);
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  page.setDefaultTimeout(15_000);
+  testTimeouts(page, 15_000);
   page.on('pageerror', error => errors.push(error.message));
   try {
     await page.goto(personal.ownerUrl);

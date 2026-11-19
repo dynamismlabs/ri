@@ -1,11 +1,12 @@
 import { it, expect } from 'vitest';
 import { build } from 'esbuild';
 import { chromium } from 'playwright-core';
-import fs from 'node:fs';
 import http from 'node:http';
 import { decodeSource, encodeSource } from '@/lib/chat-sources/reference';
 import type { ChatInputEditorHandle } from '@/components/chat/editor/chat-input-editor';
 import type { SourceDescriptor } from '@/lib/chat-sources/types';
+import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 // Bits & Bolts' @ search, as the composer receives it from `appMentions.search`: its
 // library parts as resource links (mcp://bits-and-bolts/parts/<id>), titled by part.
@@ -51,14 +52,14 @@ it('lists an app\'s @ search results under the app and inserts the chosen item a
   });
   await new Promise<void>(r => server.listen(0, '127.0.0.1', r));
   const origin = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-  const executablePath = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'].find(fs.existsSync);
+  const executablePath = testChromiumPath();
   if (!executablePath) throw new Error('Chromium is required for composer qualification');
   const browser = await chromium.launch({ executablePath, headless: true });
   const errors: string[] = [];
   try {
     const page = await browser.newPage({ viewport: { width: 900, height: 700 } });
     page.on('pageerror', error => { errors.push(error.message); });
-    page.setDefaultTimeout(6000);
+    testTimeouts(page, 6000);
     await page.goto(origin);
     const editor = page.locator('.tiptap'); await editor.waitFor(); await editor.click();
     // A bare `@` stays short: no app is asked until something is typed.
