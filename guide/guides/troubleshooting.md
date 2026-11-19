@@ -21,13 +21,11 @@ In the desktop app, the **Tools** menu has **Service Status…**, with **Copy di
 
 A Mac comes with Ruby's documentation tool, also called `ri`, in `/usr/bin`. If your terminal finds that one first, typing `ri` shows Ruby's help instead of running Ri.
 
-Ri's installer puts its own folder, `~/.local/bin`, first in your PATH. Open a new terminal window so the change takes effect. If Ruby's `ri` still answers, add this line to the end of your shell's profile (`~/.zprofile` for the usual Mac shell) and open a new terminal:
+Ri's installer checks which `ri` a new terminal runs, and when it isn't Ri's, it adds two lines to the end of your shell's startup file (`~/.zshrc` for the usual Mac shell), each marked `# Added by Ri`. They hold even when a Ruby version manager like rbenv, asdf, mise or chruby puts its own `ri` first. Open a new terminal window so they take effect.
 
-```sh
-export PATH="$HOME/.local/bin:$PATH"
-```
+If Ruby's `ri` still answers, run `~/.local/bin/ri doctor`. It says which `ri` a new terminal runs, and `~/.local/bin/ri doctor --fix` repairs it the same way. In the desktop app, **Add `ri` to Terminal** in **Settings**, under **This computer**, does the same.
 
-`~/.local/bin/ri doctor` runs Ri's checks even before that's fixed, and says which `ri` comes first. In the desktop app, **Add `ri` to Terminal** in **Settings**, under **This computer**, sets this up for you.
+You don't lose Ruby's documentation. When you type a Ruby lookup like `ri Array#each` or `ri String`, Ri hands it to Ruby's `ri`.
 
 ## Common problems
 

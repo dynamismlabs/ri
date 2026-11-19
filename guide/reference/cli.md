@@ -121,6 +121,10 @@ Run diagnostic checks.
 ri doctor [options]
 ```
 
+| Option | What it does |
+| --- | --- |
+| `--fix` | make `ri` in a new terminal run Ri when it runs something else, such as Ruby's ri |
+
 ## ri restart
 
 Restart the Home at the next idle moment.

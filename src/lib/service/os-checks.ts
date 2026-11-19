@@ -3,9 +3,9 @@
  * about it (docs/always-on-spec.md section 6.5). Each check reads one OS
  * setting through `run`, so tests give the output each OS prints.
  */
-import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { ALIAS, describeFound, shown, stillOther, type TerminalCheck } from './terminal-command';
 
 export interface OsCheck { name: string; ok: boolean; warn?: boolean; detail: string }
 
@@ -57,29 +57,24 @@ export function diskCheck(free: number, database: number): OsCheck {
     : { name: 'Free disk space', ok: free >= 2 * GiB, warn: free >= 2 * GiB, detail: `${shown(free)} free, under ${shown(needed)}. A full disk takes Ri down, and an update's snapshot needs room` };
 }
 
-/** The first program with this name on a PATH. */
-export function resolveCommand(name: string, searchPath = process.env.PATH ?? '') {
-  for (const dir of searchPath.split(path.delimiter)) {
-    if (!dir) continue;
-    const file = path.join(/* turbopackIgnore: true */ dir, name);
-    try { fs.accessSync(/* turbopackIgnore: true */ file, fs.constants.X_OK); return file; } catch { /* not here */ }
-  }
-  return null;
-}
-
-/** Which `ri` a terminal runs: the launcher, or something that hides it. */
-export function commandCheck(resolved: string | null, launcher: string, installed: boolean): OsCheck {
+/**
+ * Which `ri` a new terminal runs (`checkTerminal`, section 9.1): the launcher,
+ * or what hides it and the one command that fixes it. The command names the
+ * launcher's full path, since plain `ri` there is the program in the way.
+ */
+export function commandCheck(check: TerminalCheck | null, launcher: string, installed: boolean, home = os.homedir()): OsCheck {
   const name = 'The ri command';
-  const shown = launcher.replace(os.homedir(), '~');
-  if (resolved === launcher) return { name, ok: true, detail: shown };
-  // Inside a Ri chat, `ri` is that chat's own, pinned to its server, which is right.
-  if (resolved && /[/\\]\.work[/\\]bin[/\\]ri(?:\.cmd)?$/.test(resolved)) return { name, ok: true, detail: `this chat's own ri. ${shown} is the one a terminal runs` };
-  if (!installed) {
-    return resolved
-      ? { name, ok: true, warn: true, detail: `${resolved} runs, and the launcher isn't installed. \`ri update\` installs it at ${shown}` }
-      : { name, ok: true, warn: true, detail: `not installed. \`ri update\` installs it at ${shown}` };
+  const at = shown(launcher, home);
+  if (!installed || !check) return { name, ok: true, warn: true, detail: `not installed. \`ri update\` installs it at ${at}` };
+  const terminal = `a new ${check.shell.name} terminal`;
+  const fix = `To fix it: ${at} doctor --fix`;
+  switch (check.status) {
+    case 'ri': return { name, ok: true, detail: `${at}, in ${terminal}` };
+    // An alias outranks any line Ri could add, so only the person can change that one.
+    case 'other': return { name, ok: true, warn: true, detail: `${terminal} runs ${describeFound(check.found, home)}, not Ri. ${check.found === ALIAS ? stillOther(ALIAS, at) : fix}` };
+    case 'missing': return { name, ok: true, warn: true, detail: `${terminal} doesn't find ri. ${fix}` };
+    default: return check.shell.family === 'zsh' || check.shell.family === 'bash' || check.shell.family === 'fish'
+      ? { name, ok: true, warn: true, detail: `Ri couldn't open a test ${check.shell.name} terminal to check. ${at} doctor --fix makes sure` }
+      : { name, ok: true, warn: true, detail: `Ri can't check ${check.shell.name} terminals. ${path.dirname(at)} has to come first on its PATH` };
   }
-  if (!resolved) return { name, ok: true, warn: true, detail: `${path.dirname(shown)} isn't on the PATH, so a terminal can't find ri. Add it to your shell's PATH` };
-  if (resolved === '/usr/bin/ri') return { name, ok: true, warn: true, detail: `/usr/bin/ri, Ruby's documentation tool, comes first. Put ${path.dirname(shown)} before /usr/bin in your shell's PATH` };
-  return { name, ok: true, warn: true, detail: `${resolved} runs instead of ${shown}. Remove it, or put ${path.dirname(shown)} first in your PATH` };
 }

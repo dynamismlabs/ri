@@ -44,7 +44,7 @@ curl -fsSL https://ri.app/install | sh
 ri start
 ```
 
-The installer asks no questions. It checks the download's signature and every file before it installs anything, then puts the `ri` command in `~/.local/bin` and adds that folder to the front of your PATH in your shell's profile. Open a new terminal before you run `ri start`.
+The installer asks no questions. It checks the download's signature and every file before it installs anything, then puts the `ri` command in `~/.local/bin` and makes sure a new terminal runs it, even if Ruby's own `ri` command is installed. Open a new terminal before you run `ri start`.
 
 The first time, `ri start` asks whether to **Start using Ri here** or **Connect to your existing Ri**. Starting here creates your Home in `~/ri` and sets Ri to run in the background: it keeps running after the terminal closes and starts again after a restart. It prints the address Ri runs at, which is port 4224, and a pairing link that opens Ri in your browser.
 

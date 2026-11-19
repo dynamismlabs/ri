@@ -42,10 +42,19 @@ it('warns under the larger of 20 GiB or the database, and fails near empty', () 
   expect(diskCheck(1 * GiB, 1 * GiB)).toMatchObject({ ok: false });
 });
 
-it("names whatever hides the launcher, Ruby's ri included", () => {
-  const launcher = `${os.homedir()}/.local/bin/ri`;
-  expect(commandCheck(launcher, launcher, true)).toMatchObject({ ok: true, detail: '~/.local/bin/ri' });
-  expect(commandCheck('/usr/bin/ri', launcher, true).detail).toBe("/usr/bin/ri, Ruby's documentation tool, comes first. Put ~/.local/bin before /usr/bin in your shell's PATH");
-  expect(commandCheck(`${os.homedir()}/Library/pnpm/bin/ri`, launcher, true).detail).toContain('Library/pnpm/bin/ri runs instead of ~/.local/bin/ri');
+it("names whatever a new terminal runs instead of the launcher, and the one command that fixes it", () => {
+  const home = os.homedir();
+  const launcher = `${home}/.local/bin/ri`;
+  const zsh = { name: 'zsh', family: 'zsh', binary: '/bin/zsh' } as const;
+  expect(commandCheck({ shell: zsh, status: 'ri' }, launcher, true)).toEqual({ name: 'The ri command', ok: true, detail: '~/.local/bin/ri, in a new zsh terminal' });
+  expect(commandCheck({ shell: zsh, status: 'other', found: '/usr/bin/ri' }, launcher, true)).toMatchObject({ ok: true, warn: true,
+    detail: "a new zsh terminal runs Ruby's ri (/usr/bin/ri), not Ri. To fix it: ~/.local/bin/ri doctor --fix" });
+  expect(commandCheck({ shell: zsh, status: 'other', found: `${home}/.rbenv/shims/ri` }, launcher, true).detail).toContain("Ruby's ri (~/.rbenv/shims/ri)");
+  // No line of Ri's outranks an alias, so the fix is the person's.
+  expect(commandCheck({ shell: zsh, status: 'other', found: 'a shell alias named ri' }, launcher, true).detail)
+    .toBe('a new zsh terminal runs a shell alias named ri, not Ri. A shell expands an alias before anything else, so remove that alias to use Ri as `ri`, or run ~/.local/bin/ri.');
+  expect(commandCheck({ shell: zsh, status: 'missing' }, launcher, true).detail).toBe("a new zsh terminal doesn't find ri. To fix it: ~/.local/bin/ri doctor --fix");
+  expect(commandCheck({ shell: zsh, status: 'unknown' }, launcher, true).detail).toContain("couldn't open a test zsh terminal");
+  expect(commandCheck({ shell: { name: 'tcsh', family: 'other', binary: '/bin/tcsh' }, status: 'unknown' }, launcher, true).detail).toBe("Ri can't check tcsh terminals. ~/.local/bin has to come first on its PATH");
   expect(commandCheck(null, launcher, false).detail).toBe('not installed. `ri update` installs it at ~/.local/bin/ri');
 });

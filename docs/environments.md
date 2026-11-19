@@ -19,7 +19,7 @@ launchd keeps all three Homes on this computer running through crashes, hangs an
 | Pick up changes | `ri update`. It builds `main` once and switches every Home, waiting for running chats (`--now` doesn't wait) |
 | Look at it | `ri status`, `ri logs`, `ri doctor` |
 
-`ri` here means `~/.local/bin/ri`, the launcher. It has to come before `/usr/bin` on the PATH, because macOS ships Ruby's own `ri` there, and `ri doctor` says which one a terminal finds. `personal/ri-homes.sh` is from before this move. Don't use it.
+`ri` here means `~/.local/bin/ri`, the launcher. macOS ships Ruby's own `ri` in `/usr/bin`, and Ruby version managers put theirs first. `ri doctor` says which one a new terminal runs, and `~/.local/bin/ri doctor --fix` makes it Ri's (section 9.1 of docs/always-on-spec.md). `personal/ri-homes.sh` is from before this move. Don't use it.
 
 Automatic updates apply to published releases. A checkout only builds when asked, so nothing on this computer changes by itself until it follows a published feed (`ri update --from published`).
 
