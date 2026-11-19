@@ -45,6 +45,8 @@ void acceptance('version-smoke', async fixture => {
   // let through with the reload still to come.
   const OLD_CLIENT_HEADER = 'x-acceptance-old-client';
   const OLD_CLIENT_PARAM = 'acceptance-old-client';
+  const UNLOADING_REFUSAL = '[acceptance] The unloading old client refused its own note save';
+  let refusedWhileUnloading = 0;
   const fromOldClient = (request: Request) => request.headers()[OLD_CLIENT_HEADER] === '1';
   const oldSocket = (url: string) => new URL(url).searchParams.get(OLD_CLIENT_PARAM) === '1';
   // Routing applies to documents loaded after it, so it goes in before the note opens.
@@ -81,11 +83,28 @@ void acceptance('version-smoke', async fixture => {
   // From here on this page is the old client. Ri's API client calls the global fetch for each
   // request, and tRPC's WebSocket client the global WebSocket for each connection, so wrapping
   // both marks everything, the saves it sends while unloading included.
-  await page.evaluate(({ header, param }) => {
+  //
+  // Routing can't refuse what the old page sends while it unloads. Its save on visibilitychange
+  // (desktop-chrome.tsx) comes after the new document has committed, and page.route never sees
+  // it: no trace line, in passing and failing runs alike. Usually the navigation cancels it, but
+  // on the macOS runners it sometimes reached the real Home, which saved the edit, and the old
+  // page then discarded the retained draft as saved. A real newer Home refuses by protocol on the
+  // server, so the old page stands in for it here: once it is unloading, its note saves get the
+  // same 426 without leaving the page.
+  page.on('console', message => { if (message.text() === UNLOADING_REFUSAL) { refusedWhileUnloading++; mark('notes.update old client refused in the unloading page'); } });
+  await page.evaluate(({ header, param, refusal, body }) => {
+    let unloading = false;
+    window.addEventListener('pagehide', () => { unloading = true; }, { capture: true });
     const send = window.fetch.bind(window);
     window.fetch = (input, init) => {
       const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
       headers.set(header, '1');
+      const url = new URL(input instanceof Request ? input.url : String(input), window.location.href);
+      const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
+      if ((unloading || document.visibilityState === 'hidden') && method === 'POST' && url.pathname === '/api/trpc/notes.update') {
+        console.info(refusal);
+        return Promise.resolve(new Response(body, { status: 426, headers: { 'content-type': 'application/json' } }));
+      }
       return send(input, { ...init, headers });
     };
     const Native = window.WebSocket;
@@ -96,7 +115,7 @@ void acceptance('version-smoke', async fixture => {
         super(marked, protocols);
       }
     };
-  }, { header: OLD_CLIENT_HEADER, param: OLD_CLIENT_PARAM });
+  }, { header: OLD_CLIENT_HEADER, param: OLD_CLIENT_PARAM, refusal: UNLOADING_REFUSAL, body: JSON.stringify(issue) });
   homeUpdated = true;
   mark('home updated');
   for (const socket of sockets) await socket.close({ code: 1012, reason: 'Ri was updated' });
@@ -193,6 +212,7 @@ void acceptance('version-smoke', async fixture => {
     fixture.report.versionReload = {
       timings,
       refusedOldSaves: rejected,
+      refusedWhileUnloading,
       renderer: await page.evaluate(() => (window as unknown as { versionReloadEvents?: unknown }).versionReloadEvents).catch(() => undefined),
       native: await fixture.app!.evaluate(() => (globalThis as unknown as { versionReloadNative?: unknown }).versionReloadNative).catch(() => undefined),
     };
