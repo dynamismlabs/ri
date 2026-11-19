@@ -33,6 +33,7 @@
 
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { COORDINATION_INSTRUCTIONS } from '@/lib/coordination/instructions';
+import { GUIDE_INSTRUCTION } from '@/lib/guide/instructions';
 import fs from 'node:fs';
 import path from 'node:path';
 // agentex is ESM-only (no CJS condition); a static value import crashes the
@@ -349,7 +350,8 @@ const RULES_SECTION = `## Rules that matter
 - **Search before creating** to avoid duplicates, and before answering
   "what was I doing about X".
 - **Act, don't describe.** When the user asks for something actionable, do
-  it with your tools, then confirm briefly.`;
+  it with your tools, then confirm briefly.
+- ${GUIDE_INSTRUCTION}`;
 
 /** `attachmentsAt` says where `[[file:<name>]]` uploads live on disk. */
 const entityReferencesSection = (attachmentsAt = '`attachments/<name>` under your home dir') => `## Entity references (required)
@@ -429,7 +431,7 @@ Plugins) via \`list_skills\`, \`get_skill\`, \`create_skill\`, \`save_skill\`,
 \`move_skill\`. Outside agent apps on this computer (Claude Code, Codex, Cursor
 and others, not Ri's own agents) connect to Ri's MCP via \`list_agent_connections\`,
 \`connect_agent\`, \`disconnect_agent\`. Plus workspace/trigger/run management and
-\`describe_paths\` / \`describe_schema\`.
+\`describe_paths\` / \`describe_schema\`. ${APP_NAME}'s own user guide via \`read_docs\`.
 
 Use these MCP tools for every read and write. Reading files in your home dir
 for ambient context is fine. Writing through anything but the tools is not.
