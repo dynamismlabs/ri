@@ -1,0 +1,18 @@
+{
+  "title": "How Ri works",
+  "pages": [
+    "home",
+    "main-chat",
+    "agents",
+    "chats",
+    "tasks-and-notes",
+    "deck",
+    "capture-and-stream",
+    "scratchpad",
+    "schedules-and-heartbeat",
+    "connectors",
+    "apps",
+    "skills",
+    "teams"
+  ]
+}
