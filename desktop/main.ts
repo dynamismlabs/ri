@@ -1,4 +1,5 @@
 import { historyMenuItems } from './history-menu';
+import { helpMenu } from './help-menu';
 import { app, BrowserWindow, dialog, type BaseWindow, ipcMain, Menu, nativeImage, Notification, session, shell, screen, clipboard, globalShortcut } from 'electron';
 import { fork, execFile, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
@@ -1258,6 +1259,8 @@ async function start() {
     ensureDesktopPortalIdentity();
   });
   captureShortcut.start();
+  // A fixed https address of Ri's own, so it opens as is in the default browser.
+  const openInBrowser = (url: string) => { void shell.openExternal(url).catch(() => {}); };
   refreshApplicationMenu = () => Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: APP_NAME, submenu: [
       ...(process.platform === 'darwin' ? [
@@ -1288,6 +1291,7 @@ async function start() {
         { label: 'Stop This Device’s Service', click: () => void serviceCommand('stop') },
       ]),
     ] },
+    helpMenu(openInBrowser),
   ]));
   refreshApplicationMenu();
   updateActivity(activityState);

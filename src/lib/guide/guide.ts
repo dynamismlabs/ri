@@ -22,10 +22,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parse as parseYaml } from 'yaml';
+import { DOCS_URL } from '@/constants/app';
 import { runtimeRepository } from '@/lib/releases/runtime-identity';
 
 /** Where the guide is published. A page's address is this plus its id. */
-export const GUIDE_URL = 'https://ri.app/docs';
+export const GUIDE_URL = DOCS_URL;
 
 /** Deeper than the guide will ever go, so a linked folder can't run away. */
 const MAX_DEPTH = 4;
