@@ -2,10 +2,27 @@
  * Recovery fixture: a disposable Home booted through the real instrumentation register(),
  * with fake providers for every harness. Usage: tsx boot-child.ts <root> <team|personal> <plant>
  * plant: none | corrupt (unreadable harness record) | survivor:<pid json> (pre-written record file)
+ *
+ * It lives only as long as the test that started it. The test holds a pipe to
+ * its stdin, which the system closes however the test process ends, a timeout
+ * or a SIGKILL included, where the test's own cleanup never runs. Then this
+ * Home closes its server if it got that far, and exits. Interrupted local runs
+ * left Homes like this running for hours before it did.
  */
 import { getProvider } from '@agentex/agent';
 import path from 'node:path';
 import fs from 'node:fs';
+
+/** How long a Home whose test has gone gets to close its server before it exits anyway. */
+const ORPHAN_GRACE_MS = 3_000;
+
+let closeServer: (() => Promise<void>) | null = null;
+process.stdin.on('end', () => {
+  setTimeout(() => process.exit(0), ORPHAN_GRACE_MS).unref();
+  void (closeServer?.() ?? Promise.resolve()).finally(() => process.exit(0));
+});
+process.stdin.on('error', () => {});
+process.stdin.resume();
 
 async function main() {
   const [root, mode, plant, extra] = process.argv.slice(2);
@@ -56,6 +73,7 @@ async function main() {
   const config = JSON.parse(fs.readFileSync(path.join(process.env.RI_CONFIG_DIR, 'config.json'), 'utf8')) as { localToken: string };
   const { startHomeServer } = await import('@/test/fixtures/home-server');
   const server = await startHomeServer({});
+  closeServer = () => server.close();
   process.stdout.write(`${JSON.stringify({ url: server.url, token: ownerToken ?? config.localToken, problem: executionRecoveryProblem(), registerMs, chatId, turnId })}\n`);
   const stop = () => void server.close().finally(() => process.exit(0));
   process.on('SIGTERM', stop);
