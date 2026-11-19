@@ -105,7 +105,7 @@ function renderCommand(help: Help, command: Command, depth: number, out: string[
 export function renderCliReference(program: Command): string {
   const help = program.createHelp();
   const out = [
-    frontmatter('CLI reference', `Every \`${APP_SHORT_ID}\` command and option, generated from the code.`),
+    frontmatter(`The ${APP_SHORT_ID} command`, `Every \`${APP_SHORT_ID}\` command and option, generated from the code.`),
     `The \`${APP_SHORT_ID}\` command runs and looks after ${APP_NAME} on a computer. Every command takes \`--help\`, which prints the same details as this page.`,
     '',
     GENERATED_NOTE,

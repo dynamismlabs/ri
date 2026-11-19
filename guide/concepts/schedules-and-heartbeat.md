@@ -29,7 +29,7 @@ Every chat has a clock at the top. Use it to have that chat come back on a sched
 
 Schedules run on your Home's computer, so they need it awake. On a laptop, a time missed while it slept runs once when it wakes. A run that starts more than a few minutes late is told how late it is, so it can skip work that no longer makes sense, and say why. The list shows runs that are late. For schedules you can count on, run Ri on [a computer that stays on](/docs/guides/always-on).
 
-From a terminal, `ri trigger` lists, creates and runs schedules. See the [CLI reference](/docs/reference/cli).
+From a terminal, `ri trigger` lists, creates and runs schedules. See the [`ri` command reference](/docs/reference/cli).
 
 ## Heartbeat
 

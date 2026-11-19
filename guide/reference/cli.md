@@ -1,5 +1,5 @@
 ---
-title: CLI reference
+title: The ri command
 description: Every `ri` command and option, generated from the code.
 ---
 
