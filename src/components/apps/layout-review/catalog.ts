@@ -1,12 +1,20 @@
+import { APP_NAME } from '@/constants/app';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
+import { versionLabel } from '@/lib/apps/version-label';
 import { libraryItems, type LibraryItem, type LibrarySources, type LibraryTarget } from '../library-model';
+
+export type CatalogApp = NonNullable<LibrarySources['catalogApps']>[number];
 
 export type Purpose = 'Work' | 'Life' | 'Create';
 export type ReviewFilter = 'All' | 'Apps' | 'Skills' | typeof INTEGRATION_LABELS.plural;
 export type ReviewItem = Omit<LibraryItem, 'target'> & {
-  target: LibraryTarget | { kind: 'catalog-skill'; id: string };
+  target: LibraryTarget | { kind: 'catalog-skill'; id: string } | { kind: 'catalog-app'; id: string };
   purpose: Purpose;
   starter?: typeof STARTER_SKILLS[number];
+  /** An app from Ri's catalog: Add builds and runs it on this computer. */
+  catalogApp?: CatalogApp;
+  /** Where the catalog lists it. The catalog's order comes first wherever additions are listed. */
+  rank?: number;
   enabled?: boolean;
 };
 
@@ -22,7 +30,7 @@ export const STARTER_SKILLS = [
     body: '# Research brief\n\nUse when the user wants to investigate a question, compare options, or summarize evidence.\n\n1. Define the decision the research should support, its scope, and the relevant date range.\n2. Search available sources. Prefer original documentation and primary evidence. Do not claim to have searched when no search tool was used.\n3. Track the origin and date of each important claim. Separate observations, estimates, and your own inferences.\n4. Compare options against the user’s criteria, including tradeoffs and missing evidence.\n5. Deliver a brief with the answer first, supporting evidence and links, uncertainty, and concrete next steps. Never fabricate sources.\n' },
 ] as const;
 
-function purpose(item: LibraryItem): Purpose {
+function purpose(item: Pick<LibraryItem, 'name' | 'description' | 'keywords' | 'kind'>): Purpose {
   const text = `${item.name} ${item.description} ${item.keywords}`.toLowerCase();
   if (/finance|money|travel|calendar|weekly|budget|trip/.test(text)) return 'Life';
   if (item.kind === 'skills' || /research|design|document|presentation|writing|publish/.test(text)) return 'Create';
@@ -42,13 +50,27 @@ export function reviewItems(sources: LibrarySources): ReviewItem[] {
       kind: 'skills', target: { kind: 'catalog-skill', id: starter.id }, chat: true, view: false,
       status: 'Starter skill', attention: false, added: false, purpose: starter.purpose, starter });
   }
-  return items.sort((a, b) => a.name.localeCompare(b.name));
+  // Ri's own apps, in the catalog's order. One already added belongs to the library, as the app it became.
+  for (const [rank, app] of (sources.catalogApps ?? []).entries()) {
+    const words = { name: app.name, description: app.description, keywords: `${app.id} personal app ${APP_NAME} app ${app.reaches.join(' ')}`, kind: 'apps' as const };
+    items.push({ ...words, key: `catalog:${app.id}`, target: { kind: 'catalog-app', id: app.id }, chat: true, view: true,
+      status: !app.sourceId ? `${APP_NAME} app` : app.installedVersion ? `Added, ${versionLabel(app.installedVersion)}` : 'Not installed yet',
+      // Added, but its install never finished: its page says why and offers it again.
+      attention: !!app.sourceId && !app.installedVersion, added: !!app.sourceId, purpose: purpose(words), catalogApp: app, rank });
+  }
+  return items.sort((a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity) || a.name.localeCompare(b.name));
 }
 
-export function itemType(item: ReviewItem) {
+/** Additions the person has, which the library lists. A catalog app they added is listed as the app it became. */
+export function inLibrary(item: ReviewItem) {
+  return item.added && !item.draft && item.target.kind !== 'catalog-app';
+}
+
+export function itemType(item: Pick<ReviewItem, 'kind'>) {
   return item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular;
 }
 export function primaryLabel(item: ReviewItem) {
+  if (item.target.kind === 'catalog-app') return item.added ? 'Manage' : 'Add';
   if (item.draft) return 'Continue setup';
   if (!item.added) return item.kind === 'skills' ? 'Preview skill' : 'Connect';
   if (item.enabled === false || item.attention || item.usable === false) return 'Manage';
@@ -57,7 +79,7 @@ export function primaryLabel(item: ReviewItem) {
   return item.view ? 'Open' : 'Try in chat';
 }
 const STOP_WORDS = new Set(['help', 'me', 'i', 'want', 'to', 'my', 'the', 'a', 'an', 'with', 'and', 'do', 'manage']);
-export function matchesReview(item: ReviewItem, search: string, filter: ReviewFilter = 'All') {
+export function matchesReview(item: Pick<ReviewItem, 'name' | 'description' | 'keywords' | 'kind'>, search: string, filter: ReviewFilter = 'All') {
   const words = search.toLowerCase().split(/\s+/).filter(word => word && !STOP_WORDS.has(word));
   const text = `${item.name} ${item.description} ${item.keywords} ${itemType(item)}`.toLowerCase();
   return words.every(word => text.includes(word)) && (filter === 'All' ||
@@ -66,7 +88,7 @@ export function matchesReview(item: ReviewItem, search: string, filter: ReviewFi
 }
 export function discoverable(item: ReviewItem) {
   // Private servers and authored skills belong to the library, never the public catalog.
-  return item.target.kind === 'provider' || !!item.starter;
+  return item.target.kind === 'provider' || item.target.kind === 'catalog-app' || !!item.starter;
 }
 export const COLLECTIONS = [
   { id: 'business', name: 'Run a small business', description: 'People, conversations, and your next proposal.', purpose: 'Work' },

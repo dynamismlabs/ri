@@ -35,6 +35,8 @@ export interface LibrarySources {
   connections?: RouterOutputs['integrations']['connectionsGet']['connections'];
   servers?: RouterOutputs['integrations']['mcpServersGet']['servers'];
   skills?: SkillSummary[];
+  /** Ri's catalog of apps it builds and runs (docs/personal-apps.md "The catalog"), for Discover. */
+  catalogApps?: RouterOutputs['appBuilds']['catalog']['apps'];
 }
 
 /**

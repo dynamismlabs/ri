@@ -6,7 +6,7 @@ it('says what removing an installed app stops, and what it keeps and where', () 
   const text = removeAppDescription({ name: 'Bookmarks', installed: true, folder: '/Users/me/ri/apps/bookmarks', dataDir: '/Users/me/.local/share/bookmarks', fromCatalog: true });
   expect(text).toContain('stops Bookmarks, uninstalls it from this computer');
   expect(text).toContain('Its folder stays at /Users/me/ri/apps/bookmarks, with any changes you made, and its data stays at /Users/me/.local/share/bookmarks.');
-  expect(text).toContain('Add it again from Recommended apps');
+  expect(text).toContain('Add it again from Discover');
   expect(text).not.toMatch(/[—;]/);
 });
 

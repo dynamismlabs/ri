@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LibrarySources } from '../library-model';
-import { collectionItems, discoverable, itemType, matchesReview, primaryLabel, reviewItems } from './catalog';
+import { collectionItems, discoverable, inLibrary, itemType, matchesReview, primaryLabel, reviewItems, type CatalogApp } from './catalog';
 
 const sources: LibrarySources = {
   providers: [{ id: 'google', displayName: 'Google', method: 'oauth2', configured: true }, { id: 'linear', displayName: 'Linear', method: 'api_key', configured: true }],
@@ -62,5 +62,39 @@ describe('one library across Apps', () => {
     expect(new Set(business.map(item => item.kind))).toEqual(new Set(['connectors', 'skills']));
     expect(business.length).toBeLessThanOrEqual(4);
     expect(business.some(item => item.target.kind === 'mcp')).toBe(false);
+  });
+});
+
+describe('Ri\'s own apps in Discover', () => {
+  const catalogApp = (over: Partial<CatalogApp>): CatalogApp => ({
+    id: 'people', name: 'People', description: 'The people you know, and what you last talked about.', reaches: ['your Gmail through Ri (read only)'],
+    git: 'https://github.com/dynamismlabs/app-people.git', version: 'v0.1.4', checksum: `sha256-${'a'.repeat(64)}`,
+    sourceId: null, personalAppId: null, installedVersion: null, updateAvailable: false, ...over,
+  });
+  const catalogApps = [catalogApp({}), catalogApp({ id: 'bookmarks', name: 'Bookmarks', reaches: [], sourceId: 's1', personalAppId: 'a1', installedVersion: 'v0.1.5' })];
+
+  it('lists them first, in the catalog\'s order, under Apps and All, with Add', () => {
+    const items = reviewItems({ ...sources, catalogApps });
+    expect(items.filter(discoverable).slice(0, 2).map(item => item.key)).toEqual(['catalog:people', 'catalog:bookmarks']);
+    const people = items.find(item => item.key === 'catalog:people')!;
+    expect(people).toMatchObject({ kind: 'apps', added: false, view: true, target: { kind: 'catalog-app', id: 'people' } });
+    expect(itemType(people)).toBe('App');
+    expect(primaryLabel(people)).toBe('Add');
+    expect(matchesReview(people, '', 'Apps')).toBe(true);
+    expect(matchesReview(people, '', 'All')).toBe(true);
+    expect(matchesReview(people, 'gmail')).toBe(true);
+    expect(matchesReview(people, '', 'Skills')).toBe(false);
+  });
+
+  it('keeps the library to what the person has: an added catalog app is listed there as the app it became', () => {
+    const items = reviewItems({ ...sources, catalogApps });
+    const bookmarks = items.find(item => item.key === 'catalog:bookmarks')!;
+    expect(bookmarks).toMatchObject({ added: true, status: 'Added, v0.1.5' });
+    expect(primaryLabel(bookmarks)).toBe('Manage');
+    expect(items.filter(inLibrary).some(item => item.target.kind === 'catalog-app')).toBe(false);
+  });
+
+  it('puts People in the bundle for running a small business', () => {
+    expect(collectionItems(reviewItems({ ...sources, catalogApps }), 'business').map(item => item.key)).toContain('catalog:people');
   });
 });
