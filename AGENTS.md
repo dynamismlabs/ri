@@ -26,6 +26,7 @@ IMPORTANT: When writing any copy or text for the website, never us em or long da
 - `pnpm build` — production build
 - `pnpm ts` — typecheck (tsc --noEmit)
 - `pnpm lint` — ESLint
+- CI: pull requests wait on **Checks** (`checks.yml`: typecheck, lint, tests and build on Linux, about 15 minutes). The full packaged-app run on all four platforms (`desktop.yml`) runs nightly and by hand (`gh workflow run desktop.yml --ref <branch>`); run it on a branch that changes `desktop/`, the service or packaging
 - `pnpm db:push` — push schema to SQLite
 - `pnpm db:generate` / `pnpm db:migrate` — generate / apply Drizzle migrations (`db:migrate` uses the app's safe runner, never `drizzle-kit migrate`)
 - `pnpm db:seed` / `pnpm db:reset` — the owner's personal Notion import (`personal/`). They act on whatever home `RI_ROOT` names, production when unset, and `db:reset` deletes that database. Never run them for dev data: use `pnpm dev:reseed`

@@ -1,0 +1,94 @@
+name: Checks
+# The quick check every pull request and push to main waits on: typecheck,
+# lint, every test and the web build, on Linux, in about 15 minutes.
+# The packaged desktop app on all four platforms is the full run in
+# desktop.yml. It runs nightly, by hand, and before a release, because it takes
+# two to five hours and its failures are mostly about slow runners.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  # A newer push to a pull request replaces the check of the older one.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  static:
+    name: Typecheck, lint and build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/setup@v3
+        with:
+          version: 12.14.0
+          install: false
+          node-version-file: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26.5.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm ts
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+      - run: pnpm lint
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+      # Also fails when server code traces the whole checkout (scripts/next-build.mjs).
+      - run: pnpm build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          RI_BUILD_MEMORY_LIMIT_GB: '14'
+
+  tests:
+    name: Tests ${{ matrix.shard }}/3
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/setup@v3
+        with:
+          version: 12.14.0
+          install: false
+          node-version-file: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '26.5.0'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The browser tests drive a real Chromium through playwright-core, and the
+      # composer's touch and menu tests WebKit too. Same setup as desktop.yml.
+      - name: Find the test browsers' version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright-core --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Restore the test browsers
+        id: browser_cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-webkit-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+      - name: Install the test browsers
+        if: steps.browser_cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright-core install chromium webkit
+      - name: Install the test browsers' system libraries
+        run: pnpm exec playwright-core install-deps chromium webkit
+      # Several tests run the app frame in Chromium's sandbox, as Ri does.
+      # Ubuntu 24.04 keeps the user namespaces it needs behind AppArmor.
+      - name: Let the test Chromium use its sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      - name: Point the browser tests at the test Chromium
+        run: node -e 'const fs = require("node:fs"); const file = require("playwright-core").chromium.executablePath(); if (!fs.existsSync(file)) throw new Error(`No test Chromium at ${file}`); fs.appendFileSync(process.env.GITHUB_ENV, `RI_REVIEW_CHROMIUM=${file}\n`)'
+      - run: pnpm test --shard=${{ matrix.shard }}/3
+      # The desktop and engine suites are small, so the first shard takes them.
+      - if: matrix.shard == 1
+        run: pnpm desktop:test
+      - if: matrix.shard == 1
+        run: pnpm --filter @integrations/engine test
