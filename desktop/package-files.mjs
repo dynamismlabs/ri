@@ -89,6 +89,11 @@ export function rebaseResourceLinks(root, sourceRoot, server) {
   return links.length;
 }
 
+/** Checkout folders that ship beside the server as they are: static files,
+ * migrations, the bundled skills, the user guide that `read_docs` and the
+ * website read (src/lib/guide/guide.ts finds it at `<server>/guide`), and the
+ * built CLI and service. */
+export const SERVER_FOLDERS = ['public', 'drizzle', 'skills', 'guide', 'dist'];
 export const SHELL_ENTRYPOINTS = ['main.cjs', 'preload.cjs', 'maintenance-preload.cjs', 'companion-preload.cjs', 'local-preload.cjs', 'find-preload.cjs', 'team-navigation.cjs'];
 export const MAC_SIGN_IGNORE = ['Contents/Resources/server(?:/|$)', 'Contents/Resources/node(?:/|$)'];
 export const MAC_MINIMUM_SYSTEM_VERSION = '13.5';

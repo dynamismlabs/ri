@@ -1,9 +1,10 @@
-import { afterEach, expect, it } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, pruneDependencySourceMaps, removeUnusedPackageCopy, assertWindowPreloadsShipped, SHELL_ENTRYPOINTS, rebaseResourceLinks } from './package-files.mjs';
+import { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, pruneDependencySourceMaps, removeUnusedPackageCopy, assertWindowPreloadsShipped, SERVER_FOLDERS, SHELL_ENTRYPOINTS, rebaseResourceLinks } from './package-files.mjs';
+import { guideRoot, loadGuide } from '@/lib/guide/guide';
 
 const dirs: string[] = [];
 afterEach(() => dirs.splice(0).forEach((d) => fs.rmSync(d, { recursive: true, force: true })));
@@ -226,4 +227,22 @@ it('leaves out what no release uses, and refuses if something turns out to use i
     expect(pruneDependencySourceMaps(path.join(server, 'node_modules'))).toBe(2);
     expect(fs.readdirSync(real).sort()).toEqual(['index.js', 'world.map']);
   } finally { fs.rmSync(server, { recursive: true, force: true }); }
+});
+
+it('ships the user guide beside the server, where read_docs finds it in a release', () => {
+  const repo = path.resolve(__dirname, '..');
+  // Packaging copies exactly this list (desktop/package.mjs), and every entry but the build output is in the checkout.
+  expect(SERVER_FOLDERS).toContain('guide');
+  expect(fs.readFileSync(path.join(repo, 'desktop/package.mjs'), 'utf8')).toContain('for (const name of SERVER_FOLDERS) fs.cpSync(path.join(repo, name), path.join(server, name)');
+  for (const folder of SERVER_FOLDERS.filter((name) => name !== 'dist')) expect(fs.existsSync(path.join(repo, folder)), folder).toBe(true);
+
+  const server = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'ri-package-guide-')), 'server'); dirs.push(path.dirname(server));
+  fs.cpSync(path.join(repo, 'guide'), path.join(server, 'guide'), { recursive: true });
+  vi.stubEnv('RI_RUNTIME_REPO', server);
+  try {
+    expect(guideRoot()).toBe(path.join(server, 'guide'));
+    const shipped = loadGuide();
+    expect(shipped?.map((page) => page.id)).toEqual(loadGuide(path.join(repo, 'guide'))?.map((page) => page.id));
+    expect(shipped?.[0]?.id).toBe('index');
+  } finally { vi.unstubAllEnvs(); }
 });
