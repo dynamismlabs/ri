@@ -36,7 +36,7 @@ Plans have usage limits. **Usage & budget**, at the bottom of **Models**, shows 
 
 | | Claude Code | Codex | Cursor | OpenCode | Antigravity |
 | --- | --- | --- | --- | --- | --- |
-| Connectors and the agent browser in chats | Yes | Yes | No | No | No |
+| Connectors and the agent browser in chats | Yes | Yes | No | Yes, on OpenCode 2 or newer | No |
 | Asks you questions and permissions in Ri | Yes | Yes | No, it follows its own permission settings | Yes | No, it follows its own permission settings |
 | Change the model in a running chat | Yes | Yes | No | Yes | No |
 

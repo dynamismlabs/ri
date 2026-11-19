@@ -29,4 +29,4 @@ If a tool you use has its own MCP server, add it with **Add MCP server** on the 
 
 ## Which harnesses can use them
 
-Chats on Claude Code and Codex can use Connectors. Chats on Cursor, OpenCode and Antigravity can't yet, because those harnesses can't be limited to the accounts an agent is allowed to use. See [Harnesses](/docs/guides/harnesses).
+Chats on Claude Code, Codex and OpenCode can use Connectors. OpenCode needs version 2 or newer. Chats on Cursor and Antigravity can't yet, because those harnesses can't be limited to the accounts an agent is allowed to use. That goes for scheduled chats too. See [Harnesses](/docs/guides/harnesses).

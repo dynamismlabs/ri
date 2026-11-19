@@ -21,6 +21,8 @@ Beside the form, a chat helps you write it. Describe what you want in plain word
 
 Under **Advanced** you can set a time limit, active hours, and what to do if the last run is still going: skip this run, add it to the running chat, or run alongside it.
 
+Each schedule runs on the harness and model you pick in its form. Work that reads your email or uses another connected account needs a harness that can use [Connectors](/docs/concepts/connectors): Claude Code, Codex or OpenCode. On Cursor or Antigravity the schedule still runs, without your accounts.
+
 ### Schedule a chat to check back
 
 Every chat has a clock at the top. Use it to have that chat come back on a schedule, with a message like "Check on progress and keep going. When the work is done, pause this schedule." Turn on **Start a new chat each time** to get a fresh chat on every run instead. Your agents can set these up themselves too, when you ask them to check back later.

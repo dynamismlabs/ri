@@ -1722,6 +1722,8 @@ Strict isolation must not be advertised until a test proves that global and repo
 
 If OpenCode configuration merging prevents this guarantee, keep `strictMcpIsolation` false and disable strict integration-scoped execution on OpenCode.
 
+November 2026 status: done in agentex 0.0.53, for OpenCode 2. Until then OpenCode dropped `mcpServers` without a word, so every scheduled job and orchestrator chat on OpenCode ran with no Ri actions over MCP and no Connectors, and the heartbeat answered `HEARTBEAT_OK` without checking anything. The servers ride `OPENCODE_CONFIG_CONTENT`, the config document OpenCode loads last, so nothing is written to the user's or project's config and there is nothing to clean up. OpenCode connects MCP servers when a session is created, not when `opencode serve` boots, and `GET /api/config` lists each source's servers, so strict isolation reads the ambient names from the booted server and restarts it with each one disabled (`disabled: true` in the same document). Unreadable sources, or a server that appears between the two reads, fail before anything starts. agentex's `tests/providers/opencode/mcp-isolation.real.test.ts` is the proving test: against a real OpenCode 2 binary a project remote server and a global local server report `disabled`, get no request and never run, while the host server connects with its headers. It fails with isolation off. OpenCode 1 runs without host servers, and the runtime probe reports `mcp` and `strictMcpIsolation` unsupported there, so Ri attaches no scoped Connectors to it. MCP health reporting is still open.
+
 ## 13. Agentex Cursor implementation
 
 ### 13.1 Transport decision record
@@ -2802,13 +2804,13 @@ Exit criteria:
 
 ### Milestone 13: MCP hardening
 
-- [ ] `[AX]` Prototype OpenCode typed MCP attachment
-- [ ] `[AX]` Keep MCP secrets out of argv
+- [x] `[AX]` Prototype OpenCode typed MCP attachment
+- [x] `[AX]` Keep MCP secrets out of argv
 - [ ] `[AX]` Add MCP health reporting
-- [ ] `[AX]` Test cleanup of app-managed MCP entries
-- [ ] `[AX]` Determine whether strict ambient MCP exclusion is provable
-- [ ] `[AX]` Advertise strict isolation only after a proving test
-- [ ] `[APP]` Enable OpenCode workspace integrations only for supported isolation level
+- [x] `[AX]` Test cleanup of app-managed MCP entries (none: the entries live only in the child's environment)
+- [x] `[AX]` Determine whether strict ambient MCP exclusion is provable
+- [x] `[AX]` Advertise strict isolation only after a proving test
+- [x] `[APP]` Enable OpenCode workspace integrations only for supported isolation level
 - [ ] `[APP]` Keep Cursor app MCP disabled until an isolated configuration contract exists
 - [ ] `[DOC]` Document the exact MCP security guarantees per harness
 
