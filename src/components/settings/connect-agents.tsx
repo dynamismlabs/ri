@@ -263,10 +263,11 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
           <p className="text-xs text-muted-foreground">{client.limitation}</p>
         ) : (
           <>
+            {/* Divs, since the item takes the margin off its paragraphs. */}
             {runsRi && (
-              <p className="text-xs text-foreground">
+              <div className="text-xs text-foreground">
                 Ri already runs on {client.label}, so you can chat with it in Ri now. Set this up only if you also use {client.label} on its own and want it to see your tasks and notes.
-              </p>
+              </div>
             )}
             {checking && (
               <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -288,9 +289,9 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
             )}
 
             {tryIt && (
-              <p className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">Try it:</span> ask {tryIt.who} “{tryIt.question}”
-              </p>
+              </div>
             )}
 
             {needsRemote && (
