@@ -14,6 +14,11 @@ These links never change, and they download without a GitHub account:
 
 The release notes give the commit, date and run each file came from, and how to
 open Ri on each platform. Send people these links rather than run artifacts.
+The release also carries
+[`SHA256SUMS`](https://github.com/dynamismlabs/ri/releases/download/alpha/SHA256SUMS)
+for checking a download, and
+[`downloads.json`](https://github.com/dynamismlabs/ri/releases/download/alpha/downloads.json),
+the list the website reads (docs/publishing.md, "Downloads for the website").
 
 ## Building
 
@@ -33,8 +38,12 @@ runtime payload, not an always-on headless installation. The installer is under
 `desktop/`. GitHub requires sign-in to download Actions artifacts, even from a
 public repository. Artifacts expire after 14 days.
 
-Alpha always uses `--share`: free ad-hoc signing on macOS, unsigned Linux and
-Windows installers, and no update feed. It never packages the optional speech
+Alpha always uses `--share`: unsigned Linux and Windows installers, and no
+update feed. On macOS it signs with the Developer ID and notarizes once the
+Apple secrets exist (docs/publishing.md, "The first release", step 3), then
+checks the result with `codesign --verify --deep --strict`, `spctl --assess`
+and `xcrun stapler validate` before uploading (`desktop/mac-signing.sh`).
+Until then it is ad-hoc signed, for free. It never packages the optional speech
 helper. The artifact-bound speech review process in `desktop/speech/RELEASE.md`
 remains a separate publisher responsibility.
 
@@ -53,14 +62,27 @@ A run from `main` ends with **Publish the alpha release**
 gives each platform that passed its fixed name from the table above, replaces that
 file on the release with `gh release upload --clobber` and rewrites the notes.
 A platform that failed, or that the run didn't build, keeps its previous file,
-and the notes say it is older. The notes keep each file's commit, date and run in
-a hidden comment, which is how the next run knows. The upgrade fixture,
-qualification reports and runtime tarballs stay in the run's artifacts.
+and the notes say it is older. The notes keep each file's commit, date, run,
+build time and notarization in a hidden comment, which is how the next run
+knows. The upgrade fixture, qualification reports and runtime tarballs stay in
+the run's artifacts.
+
+Each build job records `build.json` beside its files: its commit, when it
+finished and whether Apple notarized it (`desktop/release-downloads.mjs build`).
+Publishing rewrites `SHA256SUMS` and `downloads.json` for every file on the
+release. A file this run built is described from its bytes, and a kept one from
+the digest GitHub recorded when it was uploaded. After uploading, it checks
+GitHub's digest of each new file against the bytes it built, and stops before
+the notes change if they differ. Then it attests this run's files
+(`gh attestation verify <file> --repo dynamismlabs/ri`) and calls the website's
+deploy hook when `VERCEL_DEPLOY_HOOK` is set.
 
 Branch runs and `installer_run` retests publish nothing. The release is a
 pre-release and never Latest, and `release.yml` only starts on `v*` tags, so the
 `alpha` tag never publishes a real release. Only the publish job can write, using
-the workflow's own token with `contents: write`.
+the workflow's own token with `contents: write`, and only it can attest
+(`id-token: write`, `attestations: write`). Every action in the workflow is
+pinned to a full commit.
 
 That token can't hold GitHub's workflow permission, and without it GitHub won't
 tag a commit whose workflow files differ from the current `main`. So if a
@@ -97,9 +119,10 @@ reports. They do not republish the installer archives.
 
 ## Platform limits
 
-Mac requires macOS 13.5 or newer. After opening Ri once, use System Settings,
-Privacy & Security, Open Anyway if macOS blocks it. Native Mac notifications
-need an Apple-issued signing identity and are unavailable in these builds.
+Mac requires macOS 13.5 or newer. An ad-hoc signed build is blocked at first
+launch: after opening Ri once, use System Settings, Privacy & Security, Open
+Anyway. Native Mac notifications need an Apple-issued signing identity, so only
+Developer ID builds have them. The release notes say which kind each Mac file is.
 
 Linux builds use Ubuntu 22.04 as the baseline. FUSE mounting, other distributions
 and actual recipient hardware need separate checks.

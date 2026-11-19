@@ -38,11 +38,11 @@ The fuller product thinking lives in [`docs/prd.md`](docs/prd.md).
 On a Mac or Linux computer, once releases are published:
 
 ```bash
-curl -fsSL https://github.com/<owner>/<repo>/releases/download/feed/install.sh | sh
+curl -fsSL https://ri.app/install | sh
 ri start
 ```
 
-Or open the Mac app from its dmg and choose "Start a new Ri". Either way Ri keeps running by itself and updates itself when it's quiet. [docs/publishing.md](docs/publishing.md) covers making releases.
+Or download the app for Mac, Windows or Linux from [ri.app](https://ri.app) or the [newest release](https://github.com/dynamismlabs/ri/releases), open it and choose "Start a new Ri". Either way Ri keeps running by itself and updates itself when it's quiet (Windows doesn't update itself yet). Each release lists its files' checksums in `SHA256SUMS`. [docs/publishing.md](docs/publishing.md) covers making releases.
 
 ## Quick start from source
 
