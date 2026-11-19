@@ -6,6 +6,7 @@ import {
   Mic,
   Plug,
   Cable,
+  MessagesSquare,
   Bell,
   MonitorSmartphone,
   Laptop,
@@ -82,7 +83,7 @@ export const SECTIONS: readonly SettingsSectionDef[] = [
     title: 'Teams',
     description: 'Shared work with other people. Your personal work stays private.',
   },
-  { id: 'conversations', label: 'Slack & Buzz', icon: Cable, title: 'Slack and Buzz conversations', description: 'Add your Ri agents to Slack or Buzz for two-way conversations.' },
+  { id: 'conversations', label: 'Slack & Buzz', icon: MessagesSquare, title: 'Slack and Buzz conversations', description: 'Add your Ri agents to Slack or Buzz for two-way conversations.' },
   {
     id: 'general',
     label: 'General',
