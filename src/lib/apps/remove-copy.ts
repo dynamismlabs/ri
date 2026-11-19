@@ -34,9 +34,22 @@ export function removeAppDescription(input: RemoveCopyInput): string {
   return `${what} ${kept}${reach} ${back}`;
 }
 
+/**
+ * The choice Remove offers only when Ri can't uninstall the app (its folder is gone), ticked to
+ * start with: the app may keep running, so it could keep reaching the person's accounts.
+ */
+export function turnOffAccessChoice(name: string): { label: string; help: string } {
+  return {
+    label: `Also turn off ${name}’s access to your accounts`,
+    help: `${name} may still be running, so it could keep reaching your accounts and ${APP_NAME}’s services through ${APP_NAME}. This stops that at its next call. Requests waiting for you and approvals it hasn’t used yet are dropped.`,
+  };
+}
+
 export interface RemovedNoticeInput extends Pick<RemoveCopyInput, 'name' | 'folder' | 'dataDir'> {
   /** Ri couldn't uninstall it because its folder is gone (src/lib/apps/remove.ts). */
   stillInstalled?: { command: string | null } | null;
+  /** Its hub access was turned off with it (`turnOffAccessChoice`). */
+  accessTurnedOff?: boolean;
 }
 
 /** What the person is told once it's removed. */
@@ -44,7 +57,8 @@ export function removedNotice(input: RemovedNoticeInput): string {
   if (input.stillInstalled) {
     const folder = input.folder ? `its folder at ${input.folder}` : 'its folder';
     const run = input.stillInstalled.command ? `run ${input.stillInstalled.command} in it` : 'run the app kit’s serve --uninstall in it';
-    return `${input.name} is removed from ${APP_NAME}, but ${APP_NAME} couldn’t uninstall it. The app kit needs ${folder}, and the folder is gone. ${input.name} may still be running. To uninstall it, put the folder back and ${run}.`;
+    const access = input.accessTurnedOff ? ` Its access to your accounts through ${APP_NAME} is off.` : '';
+    return `${input.name} is removed from ${APP_NAME}, but ${APP_NAME} couldn’t uninstall it. The app kit needs ${folder}, and the folder is gone. ${input.name} may still be running.${access} To uninstall it, put the folder back and ${run}.`;
   }
   const kept = [input.folder ? `its folder at ${input.folder}` : 'its folder', input.dataDir ? `its data at ${input.dataDir}` : 'its data'];
   return `${input.name} is removed. ${APP_NAME} kept ${kept.join(' and ')}.`;

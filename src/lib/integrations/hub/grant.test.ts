@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { grantFromChoice, hubConsentOptions } from './grant';
+import { grantFromChoice, grantSummary, hubConsentOptions } from './grant';
 
 const action = (id: string, mutating = false) => ({ id, description: id, input: z.object({}), mutating });
 const toolkits = [
@@ -38,5 +38,24 @@ describe('the hub consent screen', () => {
       services: ['ai_text', 'shell'],
     });
     expect(grant).toEqual({ accounts: [{ connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages'] }], services: ['ai_text'] });
+  });
+
+  // People, Job Search and Travel ask for mail and calendar, which one Google account usually backs.
+  it('keeps both services of one Google account ticked on re-consent, and names each by its own service', () => {
+    const current = { accounts: [
+      { connectionId: 'c-home', toolkitId: 'gmail', tools: ['gmail__search_messages', 'gmail__get_message'] },
+      { connectionId: 'c-home', toolkitId: 'google_calendar', tools: ['google_calendar__list_events'] },
+    ], services: [] };
+    const options = hubConsentOptions(toolkits, connections, null, current);
+    const ticked = (service: string, account: string) => options.accounts.find(a => a.service === service && a.account === account)!.tools.filter(t => t.requested).map(t => t.name);
+    // Calendar on the same connection used to overwrite Gmail, so Gmail came back unticked.
+    expect(ticked('Gmail', 'me@example.com')).toEqual(['gmail__search_messages', 'gmail__get_message']);
+    expect(ticked('Google Calendar', 'me@example.com')).toEqual(['google_calendar__list_events']);
+    expect(ticked('Gmail', 'me@work.example')).toEqual([]);
+    // Submitting the screen unchanged grants the same two services, one row each.
+    const resubmitted = grantFromChoice(options, { tools: { 'c-home': [...ticked('Gmail', 'me@example.com'), ...ticked('Google Calendar', 'me@example.com')] }, services: [] });
+    expect(resubmitted).toEqual(current);
+    // The calendar row says Calendar, not the first service found on its connection.
+    expect(grantSummary(current, options)).toBe('Gmail (me@example.com), Google Calendar (me@example.com)');
   });
 });

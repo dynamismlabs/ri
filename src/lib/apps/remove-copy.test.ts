@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { removeAppDescription, removedNotice } from './remove-copy';
+import { removeAppDescription, removedNotice, turnOffAccessChoice } from './remove-copy';
 import { versionLabel } from './version-label';
 
 it('says what removing an installed app stops, and what it keeps and where', () => {
@@ -22,6 +22,12 @@ it('says when Ri can’t uninstall an app whose folder is gone, and how to do it
   const after = removedNotice({ name: 'Tide Log', folder: '/apps/tide-log', dataDir: null, stillInstalled: { command: 'pnpm exec tide-kit serve --uninstall' } });
   expect(after).toBe('Tide Log is removed from Ri, but Ri couldn’t uninstall it. The app kit needs its folder at /apps/tide-log, and the folder is gone. Tide Log may still be running. To uninstall it, put the folder back and run pnpm exec tide-kit serve --uninstall in it.');
   expect(removedNotice({ name: 'Tide Log', folder: null, dataDir: null, stillInstalled: { command: null } })).toContain('put the folder back and run the app kit’s serve --uninstall in it.');
+  // The choice Remove offers then, and what the notice says once it's done.
+  expect(turnOffAccessChoice('Tide Log')).toEqual({
+    label: 'Also turn off Tide Log’s access to your accounts',
+    help: 'Tide Log may still be running, so it could keep reaching your accounts and Ri’s services through Ri. This stops that at its next call. Requests waiting for you and approvals it hasn’t used yet are dropped.',
+  });
+  expect(removedNotice({ name: 'Tide Log', folder: null, dataDir: null, stillInstalled: { command: null }, accessTurnedOff: true })).toContain('Tide Log may still be running. Its access to your accounts through Ri is off. To uninstall it');
   for (const text of [before, after]) expect(text).not.toMatch(/[—;]/);
 });
 

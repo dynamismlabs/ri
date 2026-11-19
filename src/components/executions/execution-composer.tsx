@@ -79,6 +79,7 @@ import { ChatComposer } from '@/components/chat-ui/chat-composer';
 import { CoordinationControls } from '@/components/chat-ui/coordination/controls';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { AppContextStrip } from '@/components/chat-ui/references/app-context-strip';
+import { useAppPromptPicker } from '@/components/chat-ui/app-prompts/use-app-prompt-picker';
 import { useConnectedContextGroups } from '@/hooks/use-connected-context';
 
 /**
@@ -294,6 +295,10 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
 
     const sessionMeta = useSessionMeta(sessionId);
     const slashCommandsQuery = useSlashCommands(sessionId);
+    // The prompts of the apps this chat can use, after its skills in the `/` menu.
+    const appPrompts = useAppPromptPicker(sessionId, editorRef);
+    const { withPrompts } = appPrompts;
+    const slashCommands = useMemo(() => withPrompts(slashCommandsQuery.data?.commands), [withPrompts, slashCommandsQuery.data?.commands]);
     const queryClient = useQueryClient();
 
     // Worktree files/folders → @-mention items. Same data the file tree
@@ -709,6 +714,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
               we can flip `editorFocused` here without threading a
               second callback through ChatInputEditor. */}
             <AppContextStrip groups={contextGroups} onRemove={(viewId) => contextGroups.find(group => group.viewId === viewId)?.remove()} />
+            {appPrompts.dialog}
             <div
               className="relative"
               onFocus={() => setEditorFocused(true)}
@@ -755,7 +761,9 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   onSubmit={() => handleSend()}
                   onBackspaceOnEmpty={handleEditorBackspaceOnEmpty}
                   onHotkeyTargetChange={setHotkeyTarget}
-                  slashCommands={slashCommandsQuery.data?.commands}
+                  slashCommands={slashCommands}
+                  onAppPrompt={appPrompts.onAppPrompt}
+                  onSlashMenuOpen={appPrompts.refresh}
                   slashCommandsLoading={Boolean(sessionId) && slashCommandsQuery.isLoading}
                   mentionFiles={mentionFiles}
                   mentionReferenceFolders={mentionReferenceFolders}

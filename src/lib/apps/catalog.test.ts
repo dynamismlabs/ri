@@ -139,8 +139,34 @@ describe('adding an app from the catalog', () => {
     await publish('v1.0.0', { checksum: `sha256-${'0'.repeat(64)}` });
     await expect(addCatalogApp('tide-log')).rejects.toThrow(/doesn’t match/);
     expect(fs.existsSync(path.join(apps, 'tide-log'))).toBe(false);
+    expect(fs.readdirSync(apps)).toEqual([]);
     expect(q.listAppSources()).toEqual([]);
     expect(installed).toEqual([]);
+  });
+
+  it('refuses a second Add of the same app while the first runs, and the first finishes whole', async () => {
+    await publish('v1.0.0');
+    const first = addCatalogApp('tide-log');
+    await expect(addCatalogApp('tide-log')).rejects.toThrow('Tide Log is already being added.');
+    const { source } = await first;
+    expect(git(source.folder!, 'rev-parse', 'HEAD')).toBe(git(upstream, 'rev-parse', 'v1.0.0'));
+    expect(installed).toEqual([source.id]);
+    // Done: the next Add says it's added, not that it's under way.
+    await expect(addCatalogApp('tide-log')).rejects.toThrow(/already added/);
+  });
+
+  it('removes only what its own attempt made when it fails, never a folder something else made meanwhile', async () => {
+    await publish('v1.0.0');
+    const folder = path.join(apps, 'tide-log');
+    // The folder appears while the clone runs (the person, another Ri): it's theirs, and it stays.
+    const adding = addCatalogApp('tide-log');
+    fs.mkdirSync(folder, { recursive: true });
+    fs.writeFileSync(path.join(folder, 'mine.txt'), 'keep me\n');
+    await expect(adding).rejects.toThrow(/already exists/);
+    expect(fs.readFileSync(path.join(folder, 'mine.txt'), 'utf8')).toBe('keep me\n');
+    // A failed attempt leaves no half-cloned copy beside it either.
+    expect(fs.readdirSync(apps)).toEqual(['tide-log']);
+    expect(q.listAppSources()).toEqual([]);
   });
 
   it('says so when it can\'t get the app', async () => {

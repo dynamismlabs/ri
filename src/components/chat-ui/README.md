@@ -15,6 +15,7 @@ import { PendingInputArea } from '@/components/chat-ui/pending-input-area';
 | `chat-transcript.tsx` | Common event grouping, paging, scroll anchoring and subagent navigation. Personal and team adapters provide data and attribution slots. |
 | `chat-composer.tsx` | Common composer layout around `ChatInputEditor` and contextual actions. Transport, receipts and allowed tools stay in their adapters. |
 | `add-menu/` | The composer's +: files and photos, tasks, notes, available agents and skills before and after launch. Existing chats also offer connectors, schedules, linked folders, apps and plugins where supported |
+| `app-prompts/` | A personal app's prompts in the `/` menu: the small form for a prompt's arguments, and the picker that puts the app's text in the draft unsent |
 | `chat-capabilities.tsx` | Explicit delivery and result interactions, without enabling personal endpoints in a team transcript. |
 | `chat-menu.tsx` | A chat's ⋯ menu: coordination preferences (personal chats) and Restart chat for whoever may stop it, personal or shared |
 | `chat-recovery.tsx` | The inline reason and Restart chat, shown only while a chat is blocked on a harness that hasn't confirmed it stopped |

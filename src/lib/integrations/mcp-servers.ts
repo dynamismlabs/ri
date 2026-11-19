@@ -148,8 +148,27 @@ export interface McpServerProtocol {
   extensions?: Record<string, Record<string, unknown>>;
   /** `serverInfo` for display: name, title, version, description, website and icons. */
   info?: { name?: string; title?: string; version?: string; description?: string; websiteUrl?: string; icons?: McpServerIcon[] };
+  /**
+   * The server's `instructions`: how to use its tools together, for the model in a chat that can
+   * use them (src/lib/integrations/server-instructions.ts). Cut at `MCP_INSTRUCTIONS_MAX_CHARS`.
+   */
+  instructions?: string;
 }
 export type McpServerIcon = McpIcon;
+
+/** A server's instructions are kept, and given to a model, up to this long. Longer ones are cut and say so. */
+export const MCP_INSTRUCTIONS_MAX_CHARS = 4_000;
+
+/** A server's instructions as Ri keeps them: trimmed, and cut at a word near the limit, saying where. */
+export function capMcpInstructions(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const text = value.replace(/\r\n?/g, '\n').trim();
+  if (!text) return undefined;
+  if (text.length <= MCP_INSTRUCTIONS_MAX_CHARS) return text;
+  const cut = text.slice(0, MCP_INSTRUCTIONS_MAX_CHARS);
+  const space = cut.search(/\s\S*$/);
+  return `${(space > MCP_INSTRUCTIONS_MAX_CHARS * 0.8 ? cut.slice(0, space) : cut).trimEnd()} [cut at ${MCP_INSTRUCTIONS_MAX_CHARS.toLocaleString('en-US')} characters]`;
+}
 
 /** A probe fallback is remembered this long before Ri tries 2026-07-28 again. */
 export const MCP_PROBE_FALLBACK_TTL_MS = 24 * 60 * 60_000;
@@ -161,7 +180,7 @@ const MAX_EXTENSIONS_BYTES = 8 * 1024;
  */
 export function mcpServerProtocol(facts: {
   protocolVersion?: string; era?: 'modern' | 'legacy'; negotiation?: 'probe' | 'fallback' | 'known-legacy';
-  capabilities?: Record<string, unknown>; info?: Record<string, unknown>;
+  capabilities?: Record<string, unknown>; info?: Record<string, unknown>; instructions?: string;
 }, checkedAt: string): McpServerProtocol {
   const record = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
   const text = (value: unknown, max: number) => typeof value === 'string' && value.length <= max ? value : undefined;
@@ -183,6 +202,7 @@ export function mcpServerProtocol(facts: {
     checkedAt,
     ...(Object.keys(extensions).length && Buffer.byteLength(JSON.stringify(extensions)) <= MAX_EXTENSIONS_BYTES ? { extensions } : {}),
     ...(Object.keys(kept).length ? { info: kept } : {}),
+    ...(capMcpInstructions(facts.instructions) ? { instructions: capMcpInstructions(facts.instructions) } : {}),
   };
 }
 
@@ -343,7 +363,8 @@ export interface McpServerStore {
    * Keep what the server reported at connect. A connection that skipped the probe keeps the
    * recorded fallback and its time, so the probe is retried once that expires.
    */
-  recordProtocol(id: string, protocol: McpServerProtocol, skippedProbe?: boolean): Promise<void>;
+  /** Keep what the server said about itself. True when its instructions changed (or arrived, or went). */
+  recordProtocol(id: string, protocol: McpServerProtocol, skippedProbe?: boolean): Promise<boolean>;
   acknowledgeCapabilities(id: string, revision: string): Promise<McpServerEntry | null>;
   /** The unsealed auth secret for a server, or null (no secret / no entry). */
   openSecret(id: string): Promise<string | null>;
@@ -568,19 +589,21 @@ export function mcpServerStore(deps: { dir: string; secretBox: SecretBoxLike; lo
     },
 
     async recordProtocol(id, protocol, skippedProbe) {
-      await deps.lock.withLock('mcp-servers', async () => {
+      return deps.lock.withLock('mcp-servers', async () => {
         const rows = editRows();
         const row = rows.find(candidate => candidate.entry.id === id);
-        if (!row) return;
+        if (!row) return false;
         const previous = row.entry.protocol;
+        const instructionsChanged = (previous?.instructions ?? '') !== (protocol.instructions ?? '');
         const next: McpServerProtocol = skippedProbe && previous?.negotiation === 'fallback'
           ? { ...protocol, negotiation: 'fallback', checkedAt: previous.checkedAt }
           : protocol;
         // A fallback is always stamped: its time decides when the probe runs again.
         const same = (a?: McpServerProtocol, b?: McpServerProtocol) => JSON.stringify({ ...a, checkedAt: undefined }) === JSON.stringify({ ...b, checkedAt: undefined });
-        if (same(previous, next) && !(next.negotiation === 'fallback' && next.checkedAt !== previous?.checkedAt)) return;
+        if (same(previous, next) && !(next.negotiation === 'fallback' && next.checkedAt !== previous?.checkedAt)) return false;
         row.entry.protocol = next;
         writeAll(rows);
+        return instructionsChanged;
       });
     },
 

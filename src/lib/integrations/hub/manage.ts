@@ -7,8 +7,9 @@ import { getHubApp, listHubApps, listHubCalls, revokeHubApp, setHubAppGrant, typ
 import type { HubGrant } from '@/lib/db/schema';
 import { registeredClient } from '@/lib/oauth/clients';
 import { listPendingApprovals, revokeHubApprovals } from '../approval';
+import { describePendingApprovals } from '../approval-events';
 import { getMcpServerStore, getIntegrationOwnerId, getIntegrationRuntime } from '../runtime';
-import { hubConsentOptions, type HubConsentOptions } from './grant';
+import { hubConsentOptions, sameHubAccount, type HubConsentOptions } from './grant';
 import { appOrigin } from './origin';
 
 export interface HubAppView {
@@ -19,7 +20,8 @@ export interface HubAppView {
   /** The app's own words about what it's for. Shown, never enforced. */
   purpose: string | null;
   /** What it can reach, as the person granted it, with labels. */
-  accounts: { connectionId: string; service: string; account: string; tools: string[]; connected: boolean }[];
+  /** One row per service on an account: Gmail and Calendar on one Google account are two. */
+  accounts: { connectionId: string; toolkitId: string; service: string; account: string; tools: string[]; connected: boolean }[];
   services: string[];
   off: boolean;
   lastUsedAt: string | null;
@@ -28,11 +30,29 @@ export interface HubAppView {
   personalAppId: string | null;
 }
 
+/** Where a hub app says it runs: its own address and where its sign-ins return. */
+function hubAppOrigins(app: HubAppRecord): Set<string> {
+  return new Set([app.clientUri, ...(registeredClient(app.clientId)?.redirectUris ?? [])].map(appOrigin).filter((origin): origin is string => !!origin));
+}
+
 /** A personal app in Ri whose address is this hub app's. */
 function linkedPersonalApp(app: HubAppRecord): string | null {
-  const origins = new Set([app.clientUri, ...(registeredClient(app.clientId)?.redirectUris ?? [])].map(appOrigin).filter(Boolean));
-  const entry = getMcpServerStore().list().find((server) => server.app && origins.has(appOrigin(server.url)));
+  const origins = hubAppOrigins(app);
+  const entry = getMcpServerStore().list().find((server) => server.app && origins.has(appOrigin(server.url)!));
   return entry?.app?.id ?? null;
+}
+
+/**
+ * Turn off the hub access of the app at an address (an app Ri connects to at `url`), as its
+ * panel's switch does. For removing an app Ri can't confirm stopped (src/lib/apps/remove.ts).
+ * Returns how many hub apps were on and are now off.
+ */
+export function turnOffHubAppsAt(url: string): number {
+  const origin = appOrigin(url);
+  if (!origin) return 0;
+  const apps = listHubApps().filter((app) => !app.revokedAt && hubAppOrigins(app).has(origin));
+  for (const app of apps) turnOffHubApp(app.id);
+  return apps.length;
 }
 
 async function options(): Promise<HubConsentOptions> {
@@ -44,8 +64,8 @@ function view(app: HubAppRecord, offered: HubConsentOptions): HubAppView {
   return {
     id: app.id, name: app.name, clientUri: app.clientUri, purpose: app.purpose,
     accounts: app.grant.accounts.map((account) => {
-      const live = offered.accounts.find((item) => item.connectionId === account.connectionId);
-      return { connectionId: account.connectionId, service: live?.service ?? account.toolkitId, account: live?.account ?? 'An account no longer connected', tools: account.tools, connected: !!live };
+      const live = offered.accounts.find((item) => sameHubAccount(item, account));
+      return { connectionId: account.connectionId, toolkitId: account.toolkitId, service: live?.service ?? account.toolkitId, account: live?.account ?? 'An account no longer connected', tools: account.tools, connected: !!live };
     }),
     services: app.grant.services,
     off: !!app.revokedAt,
@@ -63,9 +83,12 @@ export async function listHubAppViews(): Promise<HubAppView[]> {
 export async function getHubAppView(id: string) {
   const app = getHubApp(id);
   if (!app) return null;
+  const pending = listPendingApprovals().filter((approval) => approval.hubApp?.appId === app.id);
+  // In the words the chat cards use: what it does, on which account, and every field that decides it.
+  const views = await describePendingApprovals(pending);
   return {
     ...view(app, await options()),
-    approvals: listPendingApprovals().filter((pending) => pending.hubApp?.appId === app.id),
+    approvals: pending.map((approval, index) => ({ ...approval, view: views[index]! })),
     calls: listHubCalls(app.id, 50),
   };
 }
@@ -78,8 +101,11 @@ export function turnOffHubApp(id: string): void {
   dropPending(id);
 }
 
-/** Take back one account, or one tool on it. The app's next call sees the narrower grant. */
-export function narrowHubApp(id: string, remove: { connectionId: string; tool?: string } | { service: string }): HubGrant | null {
+/**
+ * Take back one service on an account, or one tool on it. The app's next call sees the narrower
+ * grant. Without `toolkitId`, every service granted on that connection goes.
+ */
+export function narrowHubApp(id: string, remove: { connectionId: string; toolkitId?: string; tool?: string } | { service: string }): HubGrant | null {
   const app = getHubApp(id);
   if (!app) return null;
   const grant: HubGrant = 'service' in remove
@@ -87,7 +113,7 @@ export function narrowHubApp(id: string, remove: { connectionId: string; tool?: 
     : {
         ...app.grant,
         accounts: app.grant.accounts.flatMap((account) => {
-          if (account.connectionId !== remove.connectionId) return [account];
+          if (account.connectionId !== remove.connectionId || (remove.toolkitId && account.toolkitId !== remove.toolkitId)) return [account];
           const tools = remove.tool ? account.tools.filter((tool) => tool !== remove.tool) : [];
           return tools.length ? [{ ...account, tools }] : [];
         }),

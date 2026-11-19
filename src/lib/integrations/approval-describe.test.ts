@@ -62,7 +62,37 @@ describe('summarizeCall', () => {
     expect(summary).toBe('To ana@example.com, bo@example.com · Quarterly numbers');
     // Salient fields first, and the account routing field is never an argument.
     expect(details.map((d) => d.label)).toEqual(['To', 'Subject', 'Body']);
-    expect(details[2]!.value).toBe('Hi both, Attached are the numbers.');
+    // The body is what the person approves sending, so it keeps its own line breaks.
+    expect(details[2]!.value).toBe('Hi both,\n\nAttached are the numbers.');
+  });
+
+  it('never cuts who a message reaches, and shows the whole body for the card to expand', () => {
+    const to = Array.from({ length: 30 }, (_, i) => `person${i}@example.com`);
+    const body = `Numbers below.\n\n${'Row of figures. '.repeat(100)}`;
+    const { summary, details } = summarizeCall({
+      to, cc: 'lead@example.com, cfo@example.com', bcc: [{ email: 'archive@example.com', name: 'Archive' }],
+      subject: 'Quarterly numbers', body,
+    });
+    // The line names as many as fit and counts the rest, copies too, and never cuts an address.
+    expect(summary).toMatch(/^To person0@example\.com, person1@example\.com, person2@example\.com.* and \d+ more · Quarterly numbers$/);
+    expect(summary).not.toMatch(/person\d+@exa(?!mple\.com)/);
+    const shown = Number(/and (\d+) more/.exec(summary)![1]);
+    expect(shown).toBe(30 - summary.split('To ')[1]!.split(' and ')[0]!.split(', ').length + 3);
+    const field = (label: string) => details.find((d) => d.label === label)?.value;
+    expect(field('To')).toBe(to.join(', '));
+    expect(field('Cc')).toBe('lead@example.com, cfo@example.com');
+    expect(field('Bcc')).toBe('Archive <archive@example.com>');
+    expect(field('Body')).toBe(body);
+    expect(details.map((d) => d.label)).toEqual(['To', 'Cc', 'Bcc', 'Subject', 'Body']);
+  });
+
+  it('lists an event\'s guests whole, and keeps every argument that decides the effect however many others there are', () => {
+    const others = Object.fromEntries(Array.from({ length: 12 }, (_, i) => [`option${i}`, `value ${i}`]));
+    const { details } = summarizeCall({ ...others, summary: 'Planning', attendees: [{ email: 'a@example.com' }, { email: 'b@example.com', displayName: 'Bo' }], start: '2026-10-01T15:00:00Z' });
+    expect(details.slice(0, 3).map((d) => d.label)).toEqual(['Attendees', 'Summary', 'Start']);
+    expect(details[0]!.value).toBe('a@example.com, Bo <b@example.com>');
+    // Past the deciding ones, other arguments are listed up to eight.
+    expect(details).toHaveLength(3 + 8);
   });
 
   it('quotes the text of a post when there is no title', () => {

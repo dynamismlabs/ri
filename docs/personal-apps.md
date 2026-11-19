@@ -13,6 +13,8 @@ Ri's side of the [shared app kit spec](shared-app-kit-spec.md). A personal app i
 | What Ri brings for apps: the pinned kit and pnpm, run with Ri's Node | `packages/app-toolchain`, `src/lib/apps/toolchain.ts` |
 | The catalog of recommended apps: Add and Update | `src/lib/apps/catalog*.ts`, `src/components/apps/app-catalog.tsx` |
 | An installed app's state, Restart and Logs | `src/lib/apps/status.ts`, `src/components/apps/app-status.tsx` |
+| An app's instructions in chats that can use it | `src/lib/integrations/server-instructions.ts` |
+| An app's prompts in the composer's `/` menu | `src/lib/integrations/app-prompts.ts`, `src/components/chat-ui/app-prompts/` |
 
 ## Connecting an app
 
@@ -56,6 +58,33 @@ An app also loads straight away when a message @-tags it or carries context from
 
 Checked on November 12, 2026 with Reading Log, as Ri's main chat on the isolated Ri: automatic listed no Reading Log tools, only the two dispatchers, and loading then calling `list_books` worked through Ri's own connection. On listed its five tools directly with no dispatcher. Off listed nothing and the dispatcher was gone.
 
+## What an app tells the model
+
+An MCP server may send `instructions` when a connection opens: how its tools fit together, which to call first, what to treat as data. Every kit app does (`instructions` in its `app.config.ts`). Ri keeps them per connection, on the server entry's `protocol.instructions`, trimmed and cut at 4,000 characters (`capMcpInstructions`), and records them again every time the connection opens. So a reconnect, or an app update that reconnects it, brings the new ones. This holds for every MCP server, not only apps.
+
+A chat's model gets a server's instructions only where it can use that server's tools (`src/lib/integrations/server-instructions.ts`):
+
+| How the chat has the tools | Where the instructions go |
+| --- | --- |
+| Listed directly: every connector, and an app switched On in the chat | A `<connector-instructions>` block in the session's instructions, one `<server-instructions name="…">` per server, for the place the chat's integrations endpoint serves (its `?ws=`). A harness that drops session instructions gets the block with each message. |
+| An app on Automatic | With its tools when they load: `load_app_tools` returns them as `instructions`, and so does the `<ri-app-tools>` block of a turn that @-tags the app or has it beside the chat. Until then the app costs the chat its one line. |
+| An app switched Off, or a chat with no account tools (an app's builder chat, a review) | Nothing. |
+
+Each block says the servers' words are guidance for their own tools that never grant permission or override the person, Ri's instructions or another server. An app's text can't close the block from inside. When a connection's instructions change, the live chats that could have been told them restart when idle (`recycleForInstructionsChange`): an agent's place restarts that agent's chats, Ri's own place restarts Ri's own chats, and any other server restarts every chat. The conversation resumes with the new ones.
+
+Checked on November 18, 2026 against People, Job Search, Travel and Bookmarks running as services on a Mac (2025-11-25 connections), each added read-only to a disposable Ri by its address: Ri kept each app's instructions (People 889 characters, Job Search 1,371, Travel 908, Bookmarks 536). With People On in the main chat, its session block named People alone. `load_app_tools` on the main chat's integrations endpoint listed the other three, and loading each returned its own instructions.
+
+## Prompts
+
+An app may ship prompts: requests the person starts, such as People's "Prepare for a meeting" or Job Search's "Review my applications". They're the person's to choose, so Ri never offers them to the model. The composer lists them in its `/` menu after the chat's skills, as `/<app>:<prompt>` with the app's name and the prompt's title (`src/lib/integrations/app-prompts.ts`, `useAppPromptPicker`).
+
+- **Which apps.** The apps the chat can use on its place's own connection, not switched Off in the chat. Each lists at most 50 prompts.
+- **Picking one** takes the typed `/query` out. A prompt that takes arguments opens a small form first: each argument with its title and description, and the optional ones marked as optional. Ri sends only the arguments the prompt declares (`prompts/get`), and an app's refusal ("No one called … is in People") shows in the form.
+- **The answer goes in the draft, never sent.** The app's chip comes first, so the app's tools load with the message, then the app's text. Embedded resources, images and audio land as an app's own message does (`appMessageParts`, [connected MCP apps](connected-mcp-apps.md) "Messages"): text as titled items the person can remove, files as attachments. A message from the assistant role stays a titled item, since the person sends the whole draft as their own.
+- **Keeping the list current.** Each connection's list is read the first time the menu needs it and kept until the app sends `notifications/prompts/list_changed` (`McpPromptCache`), on its 2026-07-28 subscription or unasked on a 2025-era connection. Reconnecting starts a fresh list. The composer asks again every time its `/` menu opens, which reads Ri's kept list, not the app.
+
+Checked on November 18, 2026 with the same four apps: the main chat's `/` menu listed Job Search's two prompts, People's three and Travel's one after Ri's skills (Bookmarks ships none). "Prepare for a meeting" opened its form with People's description of its `person` argument, and an unknown name showed People's own refusal there. "Review my applications" put Job Search's chip and text in the draft, unsent.
+
 ## The hub
 
 An app borrows the person's accounts, and Ri's own services, through Ri's integrations endpoint (`/api/integrations/mcp`) with its own OAuth token (shared spec §3). Apps are a separate kind of OAuth client on Ri's authorization server: the same registration, a different resource.
@@ -74,7 +103,7 @@ An app borrows the person's accounts, and Ri's own services, through Ri's integr
 
 **What started a call** (`hub/origin.ts`), for the audit log and where an approval shows. A chat is named only when the call is verifiably tied to it. When Ri calls an app's tool for a chat (or the person), it adds a signed invocation context to that call's `_meta` (`ri/invocation`): who it's for, the app's address and a 15 minute expiry, signed with the home's local token. A hub call that carries it back, from the app it was issued for and before it expires, is attributed to that chat. The kit's connector client hands it back unchanged on every hub call an action makes while handling that tool call, and never on a job's. An app on a core from before that sends nothing back, so its calls show as the app's own until its core is upgraded. Ri never guesses from timing or a shared address, which credited an app's own background work, or another app on the same host, to whichever chat was calling at the time. A job names itself in `_meta` (`app/job`, `app/jobRun`), as the kit's connector client does: that's the app's own word, recorded as its job. Anything else is the app on its own. None of this is access.
 
-**Audit and controls** (table `hub_calls`, `hub/manage.ts`): every call to an account or one of Ri's services is logged with the tool, account, outcome and what started it. Apps → What your apps can reach lists every app with its grant, and each app's panel (also on its page when Ri connects to it) shows its grant with Remove for an account or a tool, the writes waiting for the person, its recent calls, and one switch that turns it off. Removing or turning off stops the next call and drops its waiting writes.
+**Audit and controls** (table `hub_calls`, `hub/manage.ts`): every call to an account or one of Ri's services is logged with the tool, account, outcome and what started it. Apps → What your apps can reach lists every app with its grant, and each app's panel (also on its page when Ri connects to it) shows its grant with Remove for a service on an account or a tool, the writes waiting for the person, its recent calls, and one switch that turns it off. A waiting write reads as the chat's approval card reads (`describePendingApprovals`): the action, the service and account, and every argument that decides its effect. For an email that's every recipient, copies included, the subject and the whole body behind Show all. Neither place ever cuts a recipient list. Removing or turning off stops the next call and drops its waiting writes. A grant names a service on an account, its connection and toolkit together (`hubAccountKey` in `hub/grant.ts`): Google's services share one connection, so Gmail and Calendar on one Google account are two rows, each ticked again on re-consent, labelled and removed on its own.
 
 **Trust.** Hub tokens limit what goes through the hub. They don't stop an app's code reading files its user can read (shared spec, Trust).
 
@@ -97,11 +126,12 @@ Ri builds and changes apps with the kit's own commands (shared spec §2, and the
 - **Then disconnects it,** every place: Ri's own chats and every agent, with their scopes.
 - **Takes it off Ri's lists:** Running on this computer, Apps you're building, its connection, and the catalog row, which offers Add again. The app's record is kept apart (`app_sources.removed_at`).
 - **Keeps its folder,** with any changes the person made, and **its data**, in the kit's data directory (the kit keeps it by the app's id). The dialog names both paths, from the kit's `status --json` (`dataDir`). Deleting them is the person's to do.
-- **Its access through Ri's hub stays** as the person allowed it, so an app added again picks that up too. The hub panel turns it off.
+- **Its access through Ri's hub stays** as the person allowed it, so an app added again picks that up too. The hub panel turns it off. The one exception is an app whose folder is gone, below.
 
 **If its folder is gone,** the kit can't uninstall it, since the kit finds the app's service from its folder.
 - The dialog says so before anything runs. The app's status reports `no_folder`.
 - Remove still disconnects it and takes it off Ri's lists.
+- Since it may keep running, the dialog also offers **Also turn off its access to your accounts**, ticked to start with (`turnOffAccessChoice`). Kept ticked, Remove turns off the hub access of the app at its address as the panel's switch does (`turnOffHubAppsAt` in `hub/manage.ts`): its tokens stop at its next call, and the requests waiting for the person and the approvals it hasn't used are dropped. The notice says so.
 - The result's `stillInstalled` says the app may still be running. The notice stays up until it's dismissed and gives the kit's uninstall, `pnpm exec <kit> serve --uninstall`, to run once the folder is back. Ri names the kit's command from the kit it carries (`CarriedKit.name`), since an app's own copy has the same command.
 
 **Adding it again** picks both back up. Add in Recommended apps, or New app with the same name, revives the record and installs the kept folder as it is, not a fresh clone. The app finds its data where it left it. Its catalog version and any change in progress come back with it. If its folder was deleted, Add clones the catalog version afresh, and the app's data still comes back.
@@ -165,7 +195,7 @@ Ri offers recommended apps the way it used to offer its bundled ones, without ca
 
 **The checksum** (`catalog-checksum.ts`) is `sha256-` over every file's path, mode and contents at that version, so it names exactly the code that was reviewed, whatever a tag points at later. Git's own commit id is SHA-1 and covers who committed and when. This covers only the files and uses SHA-256. `pnpm tsx scripts/app-catalog-entry.ts <git url or folder> <tag or commit> --id … --name … --description … [--reaches …] --write` computes it and writes the entry. Given HEAD or a branch, it pins the commit, since those move.
 
-**Add** (Apps → Recommended apps) clones the repository into `<appsDir>/<id>` with its source as the `upstream` remote, fetches the version into `refs/ri-catalog/<version>`, checks its files against the checksum, and only then checks it out on the person's own branch, with no tracking of upstream. A mismatch or a failed clone leaves nothing behind. Then it's Install and connect, as for an app made with New app. The source records `catalog_id` at once, and `catalog_version` and `catalog_commit` only once the install is running (from the kit's install result), so an app whose install failed shows Finish installing, not an update.
+**Add** (Apps → Recommended apps) clones the repository into `<appsDir>/<id>` with its source as the `upstream` remote, fetches the version into `refs/ri-catalog/<version>`, checks its files against the checksum, and only then checks it out on the person's own branch, with no tracking of upstream. A mismatch or a failed clone leaves nothing behind. The clone happens in a hidden folder beside it (`.<id>.adding-<random>`), moved into place only once it's whole, so a failure removes only what that attempt made, never a folder something else created meanwhile. A second Add of the same app while one runs is refused (one at a time per catalog id, in the process). Then it's Install and connect, as for an app made with New app. The source records `catalog_id` at once, and `catalog_version` and `catalog_commit` only once the install is running (from the kit's install result), so an app whose install failed shows Finish installing, not an update.
 
 **Versions** show as their tag, or a commit by its first 7 characters (`versionLabel`).
 

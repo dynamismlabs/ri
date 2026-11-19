@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { clientKindFor, clientLabel, kindFor, publicLookup, type MetadataFetch, isAllowedRedirectUri, isMetadataClientId, redirectMatches, registerClient, registeredClientSecret, resolveClient, secretMatches, tokenClient, OAuthClientError, RegistrationError } from './clients';
+import { clientKindFor, clientLabel, isPrivateHost, kindFor, publicLookup, type MetadataFetch, isAllowedRedirectUri, isMetadataClientId, redirectMatches, registerClient, registeredClientSecret, resolveClient, secretMatches, tokenClient, OAuthClientError, RegistrationError } from './clients';
 import { issuerFor, mcpChallenge } from './issuer';
 
 const SECRET = 'home-local-token';
@@ -125,6 +125,15 @@ describe('metadata documents', () => {
     expect(await lookup(answer([{ address: '93.184.216.34', family: 4 }, { address: '::1', family: 6 }]))).toMatchObject({ code: 'EPRIVATE' });
     expect(await lookup(answer('93.184.216.34'))).toBeNull();
     expect(await lookup(answer([{ address: '2606:2800:220:1::1', family: 6 }]))).toBeNull();
+    // The deprecated site-local block (fec0::/10, RFC 3879) is a private network too.
+    expect(await lookup(answer([{ address: '2606:2800:220:1::1', family: 6 }, { address: 'fec0::1', family: 6 }]))).toMatchObject({ code: 'EPRIVATE' });
+    expect(await lookup(answer([{ address: 'feed::5', family: 6 }]))).toMatchObject({ code: 'EPRIVATE' });
+  });
+
+  it('counts every private IPv6 block as this computer\'s network, and nothing past it', () => {
+    for (const host of ['::1', '::', 'fc00::1', 'fdff::1', 'fe80::1', 'febf::1', 'fec0::1', 'fed0::1', 'feff:ffff::1', '[fec0::1]', '::ffff:7f00:1']) expect(isPrivateHost(host), host).toBe(true);
+    // The next block after site-local, and ordinary public addresses, stay public.
+    for (const host of ['fb00::1', 'fe7f::1', '2606:2800:220:1::1', '2001:db8::1']) expect(isPrivateHost(host), host).toBe(false);
   });
 
   it('knows an app by the host that proved it, never by the name it gives', () => {

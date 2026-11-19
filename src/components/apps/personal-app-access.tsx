@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { APP_NAME } from '@/constants/app';
 import { HubAppPanel } from './hub-access';
+import { TurnOffAccessChoice } from './turn-off-access-choice';
 
 type PlaceStatus = 'connected' | 'sign_in' | 'unavailable';
 const statusText = (status: PlaceStatus, app: string, error?: string) =>
@@ -74,12 +75,16 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const remove = useMutation({
     mutationFn: async () => {
       const name = app.data!.name;
+      const folderGone = installedByRi && status.data?.problem === 'no_folder';
       const description = source.data?.createdByRi
-        ? removeAppDescription({ name, installed: installedByRi, folder: source.data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!source.data.catalogId, folderGone: status.data?.problem === 'no_folder' })
+        ? removeAppDescription({ name, installed: installedByRi, folder: source.data.folder, dataDir: status.data?.dataDir ?? null, fromCatalog: !!source.data.catalogId, folderGone })
         : `${APP_NAME} and every agent lose ${name}'s tools and screens, and ${APP_NAME} forgets every sign-in to it. ${name} keeps running with its own data.`;
-      if (!await confirm({ title: `Remove ${name} from ${APP_NAME}?`, description, confirmLabel: 'Remove', tone: 'destructive' })) return;
-      const removed = await trpcClient.personalApps.remove.mutate({ appId });
-      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() })]);
+      // Ri can't confirm it stopped, so the person may also turn off what it reaches through the hub.
+      const choice = { turnOffAccess: true };
+      const content = folderGone ? <TurnOffAccessChoice name={name} onChange={(on) => { choice.turnOffAccess = on; }} /> : undefined;
+      if (!await confirm({ title: `Remove ${name} from ${APP_NAME}?`, description, content, confirmLabel: 'Remove', tone: 'destructive' })) return;
+      const removed = await trpcClient.personalApps.remove.mutate({ appId, ...(folderGone ? { turnOffAccess: choice.turnOffAccess } : {}) });
+      await Promise.all([refresh(), queryClient.invalidateQueries({ queryKey: trpc.appBuilds.pathKey() }), queryClient.invalidateQueries({ queryKey: trpc.hubApps.pathKey() })]);
       // One Ri couldn't uninstall may still be running: that stays up until it's read.
       if (removed?.stillInstalled) toast.warning(removedNotice(removed), { duration: Infinity });
       else if (removed) toast.success(removedNotice(removed));

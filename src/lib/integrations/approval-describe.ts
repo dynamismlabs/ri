@@ -106,11 +106,40 @@ export function formatWhen(value: string): string {
   });
 }
 
-function formatValue(value: unknown): string | null {
+/** A message body or other free text in the details: this long at most, for the card to clamp and expand. */
+export const MAX_DETAIL_TEXT = 10_000;
+
+/** One recipient, from a plain address or a provider's `{ email, name }` object. */
+function recipientName(value: unknown): string | null {
+  if (typeof value === 'string') return value.trim() || null;
+  const record = asRecord(value);
+  if (!record) return null;
+  const pick = (key: string) => (typeof record[key] === 'string' && (record[key] as string).trim() ? (record[key] as string).trim() : null);
+  const address = pick('email') ?? pick('address') ?? pick('id');
+  const name = pick('displayName') ?? pick('name');
+  return name && address && name !== address ? `${name} <${address}>` : address ?? name;
+}
+
+/**
+ * Everyone a call reaches, complete: a recipient list is never cut, since one more address changes
+ * who reads it. A comma-separated string is split, so it counts the same as a list.
+ */
+export function recipientList(value: unknown): string[] {
+  const items = Array.isArray(value) ? value : typeof value === 'string' ? value.split(/[,;]/) : value === null || value === undefined ? [] : [value];
+  return items.map(recipientName).filter((name): name is string => !!name);
+}
+
+function formatValue(value: unknown, key?: string): string | null {
   if (value === null || value === undefined) return null;
+  if (key && RECIPIENT_FIELDS.has(key)) {
+    const list = recipientList(value);
+    return list.length ? list.join(', ') : null;
+  }
   if (typeof value === 'string') {
     if (!value.trim()) return null;
-    return DATE_ONLY.test(value) || DATE_TIME.test(value) ? formatWhen(value) : truncate(value, 140);
+    if (DATE_ONLY.test(value) || DATE_TIME.test(value)) return formatWhen(value);
+    // What a message says is part of what the person approves: kept whole, up to a bound.
+    return key && TEXT_FIELDS.has(key) ? clip(value, MAX_DETAIL_TEXT) : truncate(value, 140);
   }
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   if (Array.isArray(value)) {
@@ -131,11 +160,20 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 const RECIPIENT_KEYS = ['to', 'recipient', 'recipients', 'email', 'channel', 'channelId', 'channel_id', 'chatId', 'chat_id', 'phone', 'userId', 'user'];
+/** Who else a call reaches: copies, blind copies and an event's guests. Shown whole, like `to`. */
+const ALSO_TO_KEYS = ['cc', 'bcc', 'attendees', 'guests', 'invitees', 'participants'];
 const TITLE_KEYS = ['subject', 'summary', 'title', 'name', 'fileName', 'filename'];
-const TEXT_KEYS = ['text', 'body', 'message', 'content', 'description', 'caption'];
+const TEXT_KEYS = ['text', 'body', 'message', 'content', 'description', 'caption', 'htmlBody', 'html_body'];
 const WHEN_KEYS = ['start', 'startTime', 'start_time', 'date', 'due', 'dueDate', 'due_date'];
-const SALIENT = [...RECIPIENT_KEYS, ...TITLE_KEYS, ...WHEN_KEYS, ...TEXT_KEYS];
-const MAX_DETAILS = 8;
+const SALIENT = [...RECIPIENT_KEYS, ...ALSO_TO_KEYS, ...TITLE_KEYS, ...WHEN_KEYS, ...TEXT_KEYS];
+const RECIPIENT_FIELDS = new Set(['to', 'recipient', 'recipients', ...ALSO_TO_KEYS]);
+const TEXT_FIELDS = new Set(TEXT_KEYS);
+/** Arguments past the ones that decide what a call does (who, what, when), shown up to this many. */
+const MAX_OTHER_DETAILS = 8;
+
+function clip(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+}
 
 function firstValue(input: Record<string, unknown>, keys: readonly string[]): [string, string] | null {
   for (const key of keys) {
@@ -146,6 +184,24 @@ function firstValue(input: Record<string, unknown>, keys: readonly string[]): [s
 }
 
 /**
+ * Who a call reaches, for one line: every address when they fit, else as many as fit and how many
+ * more, never an address cut in the middle. The details carry the whole list.
+ */
+function recipientsLine(input: Record<string, unknown>): string | null {
+  const key = RECIPIENT_KEYS.find((candidate) => formatValue(input[candidate], candidate));
+  if (!key) return null;
+  const list = RECIPIENT_FIELDS.has(key) ? recipientList(input[key]) : [formatValue(input[key], key)!];
+  const also = ALSO_TO_KEYS.reduce((count, candidate) => count + recipientList(input[candidate]).length, 0);
+  const shown: string[] = [];
+  for (const name of list) {
+    if (shown.length && [...shown, name].join(', ').length > 90) break;
+    shown.push(name);
+  }
+  const more = list.length - shown.length + also;
+  return `To ${shown.join(', ')}${more ? ` and ${more} more` : ''}`;
+}
+
+/**
  * A one-line summary plus the salient arguments of a paused call. `subject` is what a sibling
  * read resolved the call's target to (the event's title and time for a calendar delete, whose
  * input is only an id). When present it leads, because an id alone tells the human nothing.
@@ -153,22 +209,27 @@ function firstValue(input: Record<string, unknown>, keys: readonly string[]): [s
 export function summarizeCall(preview: unknown, subject?: string | null): { summary: string; details: ApprovalDetail[] } {
   const input = asRecord(preview) ?? {};
   const keys = Object.keys(input).filter((k) => k !== 'account');
-  const ordered = [...SALIENT.filter((k) => keys.includes(k)), ...keys.filter((k) => !SALIENT.includes(k))];
+  // Who it reaches, what it says and when come first and are always all there. Other arguments follow.
   const details: ApprovalDetail[] = [];
-  for (const key of ordered) {
-    const value = formatValue(input[key]);
+  for (const key of SALIENT.filter((k) => keys.includes(k))) {
+    const value = formatValue(input[key], key);
     if (value) details.push({ label: keyLabel(key), value });
-    if (details.length >= MAX_DETAILS) break;
+  }
+  let others = 0;
+  for (const key of keys.filter((k) => !SALIENT.includes(k))) {
+    if (others >= MAX_OTHER_DETAILS) break;
+    const value = formatValue(input[key], key);
+    if (value) { details.push({ label: keyLabel(key), value }); others += 1; }
   }
 
   if (subject?.trim()) return { summary: truncate(subject, 160), details };
 
   const parts: string[] = [];
-  const recipient = firstValue(input, RECIPIENT_KEYS);
-  if (recipient) parts.push(`To ${recipient[1]}`);
+  const recipients = recipientsLine(input);
+  if (recipients) parts.push(recipients);
   const title = firstValue(input, TITLE_KEYS);
   const text = title ? null : firstValue(input, TEXT_KEYS);
-  if (title) parts.push(title[1]);
+  if (title) parts.push(truncate(title[1], 80));
   else if (text) parts.push(`“${truncate(text[1], 60)}”`);
   const when = firstValue(input, WHEN_KEYS);
   if (when) parts.push(when[1]);
@@ -180,7 +241,9 @@ export function summarizeCall(preview: unknown, subject?: string | null): { summ
     else if (details[0]) parts.push(`${details[0].label}: ${details[0].value}`);
     else parts.push('No arguments');
   }
-  return { summary: truncate(parts.join(' · '), 160), details };
+  // The recipients' own line already fits, so only what follows it is ever cut.
+  const line = parts.join(' · ');
+  return { summary: recipients && line.length > 160 ? `${recipients} · ${truncate(parts.slice(1).join(' · '), Math.max(20, 157 - recipients.length))}` : truncate(line, 160), details };
 }
 
 /**

@@ -7,14 +7,15 @@ import { AppBuildError } from '@/lib/apps/builder';
 import { removeApp } from '@/lib/apps/remove';
 
 /** Remove an app Ri installed, its kit's refusals said as this router says its own. */
-async function removeAppWithBuildErrors(sourceId: string) {
-  try { return await removeApp(sourceId); }
+async function removeAppWithBuildErrors(sourceId: string, turnOffAccess?: boolean) {
+  try { return await removeApp(sourceId, { turnOffAccess }); }
   catch (error) {
     if (error instanceof AppBuildError) throw new PersonalAppError(error.code === 'setup' ? 'invalid' : error.code, error.message);
     throw error;
   }
 }
 import { chatAppTools, setAppToolMode } from './app-tools';
+import { AppPromptError, chatAppPrompts, getChatAppPrompt, MAX_PROMPT_ARGUMENT_CHARS, MAX_PROMPT_ARGUMENTS } from './app-prompts';
 import {
   addPersonalApp, allowPersonalAppInAgent, getPersonalApp, listPersonalApps, PersonalAppError,
   removePersonalApp, removePersonalAppFromAgent,
@@ -29,6 +30,9 @@ async function run<T>(operation: () => Promise<T> | T): Promise<T> {
   catch (error) {
     if (error instanceof PersonalAppError) {
       throw new TRPCError({ code: error.code === 'not_found' ? 'NOT_FOUND' : error.code === 'conflict' ? 'CONFLICT' : 'BAD_REQUEST', message: error.message });
+    }
+    if (error instanceof AppPromptError) {
+      throw new TRPCError({ code: error.code === 'not_found' ? 'NOT_FOUND' : error.code === 'invalid' ? 'BAD_REQUEST' : 'SERVICE_UNAVAILABLE', message: error.message });
     }
     throw error;
   }
@@ -45,9 +49,10 @@ export const personalAppsRouter = router({
     .mutation(({ input }) => run(() => removePersonalAppFromAgent(input))),
   // An app Ri installed is uninstalled too, keeping its folder and data (src/lib/apps/remove.ts).
   // One added by its address is only disconnected: it runs on its own.
-  remove: p.input(z.object({ appId: id }).strict()).mutation(({ input }) => run(async () => {
+  // `turnOffAccess`: an installed app whose folder is gone may keep running, so the person may turn off its hub access too.
+  remove: p.input(z.object({ appId: id, turnOffAccess: z.boolean().optional() }).strict()).mutation(({ input }) => run(async () => {
     const source = getAppSourceForApp(input.appId);
-    if (source?.createdByRi) return removeAppWithBuildErrors(source.id);
+    if (source?.createdByRi) return removeAppWithBuildErrors(source.id, input.turnOffAccess);
     await removePersonalApp(input.appId);
     return null;
   })),
@@ -55,4 +60,12 @@ export const personalAppsRouter = router({
   chatTools: p.input(z.object({ chatId: id }).strict()).query(({ input }) => chatAppTools(input.chatId)),
   setChatTool: p.input(z.object({ chatId: id, toolkitId: id, mode: z.enum(['on', 'auto', 'off']) }).strict())
     .mutation(async ({ input }) => { await setAppToolMode(input.chatId, input.toolkitId, input.mode); return chatAppTools(input.chatId); }),
+  /** The prompts of the apps this chat can use, for its `/` menu (app-prompts.ts). */
+  chatPrompts: p.input(z.object({ chatId: id }).strict()).query(({ input }) => run(() => chatAppPrompts(input.chatId))),
+  /** One prompt filled in with the person's arguments, for the draft. Never sent. */
+  getChatPrompt: p.input(z.object({
+    chatId: id, serverId: id, name: z.string().min(1).max(200),
+    arguments: z.record(z.string().max(100), z.string().max(MAX_PROMPT_ARGUMENT_CHARS))
+      .refine((value) => Object.keys(value).length <= MAX_PROMPT_ARGUMENTS).optional(),
+  }).strict()).mutation(({ input }) => run(() => getChatAppPrompt(input.chatId, input.serverId, input.name, input.arguments))),
 });

@@ -52,7 +52,7 @@ export const appBuildsRouter = router({
   install: p.input(z.object({ id, returnTo: z.string().max(2048).optional() }).strict())
     .mutation(({ input, ctx }) => run(() => installApp(input.id, ctx.request, safeReturnPath(input.returnTo) ?? undefined))),
   // Remove an app Ri installed, keeping its folder and data, and connect one that's installed but not connected (remove.ts).
-  remove: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => removeApp(input.id))),
+  remove: p.input(z.object({ id, turnOffAccess: z.boolean().optional() }).strict()).mutation(({ input }) => run(() => removeApp(input.id, { turnOffAccess: input.turnOffAccess }))),
   reconnect: p.input(z.object({ id, returnTo: z.string().max(2048).optional() }).strict())
     .mutation(({ input, ctx }) => run(() => reconnectApp(input.id, ctx.request, safeReturnPath(input.returnTo) ?? undefined))),
   startChange: p.input(z.object({ id }).strict()).mutation(({ input }) => run(() => startChange(input.id))),

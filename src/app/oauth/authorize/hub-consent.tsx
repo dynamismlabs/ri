@@ -46,7 +46,7 @@ export async function HubConsent({ request, params, issuer }: { request: Authori
         {options.accounts.map((account) => {
           const asked = account.tools.filter((tool) => tool.requested);
           return (
-            <details key={account.connectionId} open={asked.length > 0} className="rounded-md border border-border">
+            <details key={`${account.connectionId}:${account.toolkitId}`} open={asked.length > 0} className="rounded-md border border-border">
               <summary className="cursor-pointer px-3 py-2 text-sm">
                 <span className="font-medium">{account.service}</span> <span className="text-muted-foreground">· {account.account}</span>
                 {asked.length > 0 && <span className="ml-1 text-[11px] text-muted-foreground">({asked.length} asked for)</span>}

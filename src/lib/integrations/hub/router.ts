@@ -15,7 +15,7 @@ export const hubAppsRouter = router({
   }),
   turnOff: p.input(z.object({ id }).strict()).mutation(({ input }) => { turnOffHubApp(input.id); return { ok: true }; }),
   narrow: p.input(z.union([
-    z.object({ id, connectionId: id, tool: z.string().min(1).max(200).optional() }).strict(),
+    z.object({ id, connectionId: id, toolkitId: id.optional(), tool: z.string().min(1).max(200).optional() }).strict(),
     z.object({ id, service: z.string().min(1).max(100) }).strict(),
   ])).mutation(({ input }) => {
     const { id: appId, ...remove } = input;

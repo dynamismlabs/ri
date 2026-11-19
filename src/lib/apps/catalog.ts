@@ -11,8 +11,10 @@
  * change and the builder merges the update with their changes first. The person applies that change
  * as usual, and the switch records the new version once the running commit includes it.
  */
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import { processState } from '@/lib/process-state';
 import { createAppSource, deleteAppSource, listAppSources, listRemovedAppSources, updateAppSource, type AppSourceRecord } from '@/lib/db/queries';
 import {
   AppBuildError, appBuildSettings, ensureCommitIdentity, git, installApp, recordCatalogVersion, requireFolder, startChange, switchTo, toolsWithGit,
@@ -97,8 +99,22 @@ type RequestLike = Pick<Request, 'headers' | 'url'>;
  * Add an app from the catalog: clone its pinned version into the apps folder as its own repository
  * with an `upstream` remote, then install and connect it.
  */
+/**
+ * The catalog apps an Add is under way for, by catalog id. Two Adds of one app (a double click, two
+ * tabs) would otherwise both find no folder and clone into the same place, and the one that failed
+ * would remove what the other made. The second is refused while the first runs.
+ */
+const adding = processState('apps.catalog-adding', () => new Set<string>());
+
 export async function addCatalogApp(id: string, request?: RequestLike, returnTo?: string): Promise<{ source: AppSourceRecord; job: AppJob }> {
   const entry = requireEntry(id);
+  if (adding.has(entry.id)) throw new AppBuildError('conflict', `${entry.name} is already being added.`);
+  adding.add(entry.id);
+  try { return await addOnce(entry, request, returnTo); }
+  finally { adding.delete(entry.id); }
+}
+
+async function addOnce(entry: CatalogEntry, request?: RequestLike, returnTo?: string): Promise<{ source: AppSourceRecord; job: AppJob }> {
   if (listAppSources().some((source) => source.catalogId === entry.id)) throw new AppBuildError('conflict', `${entry.name} is already added.`);
   // Removed before: its folder (with any changes the person made) and its data were kept. Install
   // that folder again rather than clone over it. Its data comes back with it, kept by the app's id.
@@ -114,18 +130,23 @@ export async function addCatalogApp(id: string, request?: RequestLike, returnTo?
   const folder = path.join(/* turbopackIgnore: true */ settings.appsDir, entry.id);
   if (fs.existsSync(/* turbopackIgnore: true */ folder)) throw new AppBuildError('conflict', `${folder} already exists. Move it, or add ${entry.name} by hand.`);
   fs.mkdirSync(/* turbopackIgnore: true */ settings.appsDir, { recursive: true });
-  let commit: string;
+  // Cloned beside its place and moved in only once it's whole, so a failure removes only what this
+  // attempt made, and the folder never exists half cloned.
+  const staging = path.join(/* turbopackIgnore: true */ settings.appsDir, `.${entry.id}.adding-${randomUUID()}`);
   try {
-    await git(settings.appsDir, ['clone', '-q', '--no-checkout', '--origin', 'upstream', '--', entry.git, folder], tools)
+    await git(settings.appsDir, ['clone', '-q', '--no-checkout', '--origin', 'upstream', '--', entry.git, staging], tools)
       .catch(() => { throw new AppBuildError('setup', `Ri couldn’t get ${entry.name} from ${entry.git}. Check your internet connection and try again.`); });
-    commit = await fetchVersion(folder, entry, tools);
+    const commit = await fetchVersion(staging, entry, tools);
     // The person's own copy, on their own branch, at the pinned version.
-    const branch = (await git(folder, ['symbolic-ref', '--short', 'HEAD'], tools).catch(() => ({ stdout: 'main' }))).stdout.trim() || 'main';
-    await git(folder, ['checkout', '-q', '-B', branch, commit], tools);
-    await git(folder, ['branch', '--unset-upstream'], tools).catch(() => {});
-    await ensureCommitIdentity(folder, tools);
+    const branch = (await git(staging, ['symbolic-ref', '--short', 'HEAD'], tools).catch(() => ({ stdout: 'main' }))).stdout.trim() || 'main';
+    await git(staging, ['checkout', '-q', '-B', branch, commit], tools);
+    await git(staging, ['branch', '--unset-upstream'], tools).catch(() => {});
+    await ensureCommitIdentity(staging, tools);
+    // Something made the folder meanwhile (the person, another Ri): leave it be.
+    if (fs.existsSync(/* turbopackIgnore: true */ folder)) throw new AppBuildError('conflict', `${folder} already exists. Move it, or add ${entry.name} by hand.`);
+    fs.renameSync(/* turbopackIgnore: true */ staging, /* turbopackIgnore: true */ folder);
   } catch (error) {
-    fs.rmSync(/* turbopackIgnore: true */ folder, { recursive: true, force: true });
+    fs.rmSync(/* turbopackIgnore: true */ staging, { recursive: true, force: true });
     throw error;
   }
   // Its version is recorded once the install is running it (builder.ts, recordCatalogVersion).
