@@ -16,6 +16,7 @@ import { AUTH_TOKEN_STORAGE_KEY } from '@/lib/api/client';
 import { makePdf } from '@/test/fixtures/pdf';
 import type { Attachment } from '@/db/types';
 import type { EditorSnapshot } from '@/components/chat/editor/chat-input-editor';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const enabled = process.env.RI_ARTIFACT_BROWSER_TEST === '1';
 let browser: Browser;
@@ -148,7 +149,7 @@ beforeAll(async () => {
   browser = await chromium.launch({ channel: 'chromium', headless: true, executablePath: process.env.RI_REVIEW_CHROMIUM });
 }, 90_000);
 afterAll(async () => { await browser?.close(); if (server) await new Promise<void>(resolve => server.close(() => resolve())); if (dir) await fs.rm(dir, { recursive: true, force: true }); });
-async function page(composer = false, touch = false) { const context = await browser.newContext({ acceptDownloads: true, hasTouch: touch, viewport: { width: 1200, height: 900 } }); const page = await context.newPage(); page.setDefaultTimeout(15_000); await page.goto(`${address}${composer ? '/?composer' : ''}`); return page; }
+async function page(composer = false, touch = false) { const context = await browser.newContext({ acceptDownloads: true, hasTouch: touch, viewport: { width: 1200, height: 900 } }); const page = await context.newPage(); testTimeouts(page, 15_000); await page.goto(`${address}${composer ? '/?composer' : ''}`); return page; }
 async function open(page: Page, name: string) { await page.getByRole('button', { name: `Open file: ${name}`, exact: true }).click(); const view = page.getByRole('region', { name: `${name}, beside the chat`, exact: true }); await view.waitFor(); return view; }
 
 it.skipIf(!enabled)('previews a long paste after upload without changing or sending the draft, and removes it separately', async () => {
@@ -436,7 +437,7 @@ it.skipIf(!enabled)('waits for cookie authentication before native playback and 
     const context = await browser.newContext({ acceptDownloads: true });
     try {
       await context.addInitScript(key => localStorage.setItem(key, 'ri_fixture_pairing'), AUTH_TOKEN_STORAGE_KEY);
-      const p = await context.newPage(); p.setDefaultTimeout(5000); await p.goto(address);
+      const p = await context.newPage(); testTimeouts(p, 5000); await p.goto(address);
       const before = deliveries.length;
       if (name === 'output.bin') {
         const view = await open(p, name);

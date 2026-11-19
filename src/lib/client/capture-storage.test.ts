@@ -430,6 +430,47 @@ describe('capture storage cross-window isolation and bounds', () => {
     expect(f.blobs.write).not.toHaveBeenCalled();
   });
 
+  it('lists a saved draft to every check one window makes at once', async () => {
+    const f = fixture();
+    const saved = await f.storage.create();
+    await saved.save(value('Saved before the reload'));
+    await release(saved);
+    // A reload's first check and Quick Capture opening run together.
+    const [onLoad, onOpen] = await Promise.all([f.storage.recoverable(), f.storage.recoverable()]);
+    expect(onLoad.map(item => item.text)).toEqual(['Saved before the reload']);
+    expect(onOpen.map(item => item.text)).toEqual(['Saved before the reload']);
+  });
+
+  it('restores a draft while the same window is still checking its drafts', async () => {
+    const f = fixture();
+    const saved = await f.storage.create();
+    await saved.save(value('Restore me'));
+    await release(saved);
+    const [, restored] = await Promise.all([f.storage.recoverable(), f.storage.restore(saved.id)]);
+    expect(restored.draft.text).toBe('Restore me');
+  });
+
+  it('waits for a lock it let go to be free before the next check takes it', async () => {
+    // The browser frees a released lock a moment later, as these locks do.
+    const f = fixture();
+    const held = new Set<string>();
+    const lateLocks: CaptureLocks = {
+      async acquire(name) {
+        if (held.has(name)) return null;
+        held.add(name);
+        return () => new Promise<void>(resolve => setTimeout(() => { held.delete(name); resolve(); }, 5));
+      },
+    };
+    const storage = createCaptureStorage({ ...f, locks: lateLocks });
+    const saved = await storage.create();
+    await saved.save(value('Still here'));
+    saved.release();
+    await new Promise(resolve => setTimeout(resolve, 20));
+    const [first, second] = await Promise.all([storage.recoverable(), storage.recoverable()]);
+    expect(first.map(item => item.text)).toEqual(['Still here']);
+    expect(second.map(item => item.text)).toEqual(['Still here']);
+  });
+
   it('re-reads a reservation after taking its lock before deciding whether to reap it', async () => {
     const f = fixture();
     const session = await f.storage.create();

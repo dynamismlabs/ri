@@ -165,15 +165,17 @@ function passthrough() {
 function injectPolicy(html: string, policy: string) {
   return `<meta http-equiv="Content-Security-Policy" content="${policy}">${html}`;
 }
-/** Focus that arrives within this long of a Tab key in Ri's page came by keyboard. Only a Tab Ri's page left to the browser counts. */
+/** Focus that arrives within this long of a Tab key in Ri's page came by keyboard. Only a Tab Ri's page left to the browser counts,
+ * and only for the first move after it: a Tab that lands in Ri's page is spent there. */
 const TAB_MS = 1_000;
 /**
  * Focus moving into a view (docs/connected-mcp-apps.md, "Security"). Chromium
  * and Firefox let a cross-origin frame call `focus()` on its own elements and
  * take focus from Ri's page, so typing meant for Ri's composer would land in
  * the app (WebKit refuses that itself). Ri keeps focus entering a view only as
- * the person moves it there: right after a Tab key in Ri's page that moves
- * focus (one Ri uses itself, as Shift+Tab for permission modes, doesn't), or by a click
+ * the person moves it there: as the first move after a Tab key in Ri's page
+ * that moves focus (one Ri uses itself, as Shift+Tab for permission modes,
+ * doesn't, and one that lands in Ri's page is spent there), or by a click
  * in the view. Ri's page can't see that click, so it puts focus back where it
  * was at once, asks the view's relay frame whether a click gave it activation,
  * and only then returns focus to the view. With the pointer off the view it
@@ -199,10 +201,18 @@ const focusGuard = {
     const pointer = (event: Event) => { for (const view of this.views) if (event.target !== view.frame) view.left(); };
     document.addEventListener("pointermove", pointer, true);
     document.addEventListener("pointerdown", pointer, true);
-    document.addEventListener("focusin", (event) => { if (event.target instanceof HTMLElement && event.target.tagName !== "IFRAME") this.last = event.target; }, true);
+    document.addEventListener("focusin", (event) => {
+      if (!(event.target instanceof HTMLElement) || event.target.tagName === "IFRAME") return;
+      this.last = event.target;
+      // A Tab whose focus landed in Ri's page lets no view in afterwards. Otherwise an app calling
+      // focus() over and over came in on the second after any Tab, and took the person's next key.
+      this.tabAt = -Infinity;
+    }, true);
     // A focus change made inside the blur that reports one is ignored, so decide just after it.
     window.addEventListener("blur", () => queueMicrotask(() => {
       for (const view of this.views) if (view.frame === document.activeElement) view.entered();
+      // The Tab, if there was one, is spent on this move, wherever focus went.
+      this.tabAt = -Infinity;
     }));
   },
 };

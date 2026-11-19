@@ -14,7 +14,7 @@
 
 import http from 'node:http';
 import http2 from 'node:http2';
-import type { AddressInfo } from 'node:net';
+import type { AddressInfo, Socket } from 'node:net';
 import type { Duplex } from 'node:stream';
 import {
   buildUpstreamRequestHeaders,
@@ -37,6 +37,42 @@ const NORMAL_MAX_SOCKETS = 64;
 const STREAM_MAX_SOCKETS = 512;
 /** Allow many concurrent multiplexed streams per session (SSE + normal). */
 const MAX_CONCURRENT_STREAMS = 256;
+/**
+ * How long a pooled upstream socket may sit idle before the gateway closes it.
+ * Node's server closes an idle keep-alive socket after 5 s, and a request sent
+ * on one just as it closes fails with ECONNRESET, which the browser sees as a
+ * 502. Closing it first, well inside that, leaves no such moment.
+ */
+const UPSTREAM_IDLE_MS = 2_000;
+
+/**
+ * A pooled upstream agent that closes an idle socket itself. Node's agent
+ * otherwise keeps one until the upstream closes it: it reads the server's
+ * `Keep-Alive: timeout=5` hint only to shorten a timeout the agent already has.
+ */
+class UpstreamAgent extends http.Agent {
+  private readonly idleMs: number;
+  constructor(options: http.AgentOptions, idleMs: number) {
+    super(options);
+    this.idleMs = idleMs;
+  }
+  // Node's typings say this returns nothing, but the agent pools the socket only on true.
+  keepSocketAlive(socket: Duplex): boolean {
+    const keep = (http.Agent.prototype.keepSocketAlive as unknown as (this: http.Agent, socket: Duplex) => boolean).call(this, socket);
+    // The agent destroys a pooled socket that times out.
+    if (keep) (socket as Socket).setTimeout(this.idleMs);
+    return keep;
+  }
+  reuseSocket(socket: Duplex, request: http.ClientRequest): void {
+    // A request in flight, a quiet SSE stream above all, has no idle limit.
+    (socket as Socket).setTimeout(0);
+    super.reuseSocket(socket, request);
+  }
+}
+
+/** Requests sent again on a new connection when the upstream dropped them on a
+ * pooled one before answering. Only reads, and only without a body. */
+const REPLAYABLE_METHODS = new Set(['GET', 'HEAD']);
 
 export interface Http2GatewayOptions {
   /** Public port to bind (the app port the browser connects to). */
@@ -52,6 +88,8 @@ export interface Http2GatewayOptions {
   /** TLS material (generated CA/leaf or a supplied pair). */
   tls: TlsMaterial;
   onLog?: (message: string) => void;
+  /** How long a pooled upstream socket may stay idle (`UPSTREAM_IDLE_MS`). */
+  upstreamIdleMs?: number;
 }
 
 export interface Http2GatewayHandle {
@@ -85,8 +123,9 @@ export function startHttp2Gateway(opts: Http2GatewayOptions): Promise<Http2Gatew
   const log = opts.onLog ?? (() => {});
 
   // Two independent upstream pools — SSE cannot starve ordinary requests.
-  const normalAgent = new http.Agent({ keepAlive: true, maxSockets: NORMAL_MAX_SOCKETS });
-  const streamAgent = new http.Agent({ keepAlive: true, maxSockets: STREAM_MAX_SOCKETS });
+  const idleMs = opts.upstreamIdleMs ?? UPSTREAM_IDLE_MS;
+  const normalAgent = new UpstreamAgent({ keepAlive: true, maxSockets: NORMAL_MAX_SOCKETS }, idleMs);
+  const streamAgent = new UpstreamAgent({ keepAlive: true, maxSockets: STREAM_MAX_SOCKETS }, idleMs);
 
   const server = http2.createSecureServer({
     key: opts.tls.key,
@@ -113,59 +152,79 @@ export function startHttp2Gateway(opts: Http2GatewayOptions): Promise<Http2Gatew
     // side), so that flag can't distinguish completion from cancellation —
     // upstream stream state can.
     let upstreamEnded = false;
+    let cancelled = false;
+    let bodyBytes = 0;
+    req.on('data', (chunk: Buffer) => { bodyBytes += chunk.length; });
 
-    const upstream = http.request(
-      {
-        host: opts.upstreamHost,
-        port: opts.upstreamPort,
-        method: req.method,
-        path: req.url,
-        headers,
-        agent,
-      },
-      (uRes) => {
-        upstreamRes = uRes;
-        const status = uRes.statusCode ?? 502;
-        const outHeaders = buildDownstreamResponseHeaders(uRes.headers, cfg);
-        try {
-          res.writeHead(status, outHeaders);
-        } catch (err) {
-          log(`response head error: ${(err as Error).message}`);
-          uRes.destroy();
-          res.destroy();
+    const send = (retry: boolean): http.ClientRequest => {
+      const request = http.request(
+        {
+          host: opts.upstreamHost,
+          port: opts.upstreamPort,
+          method: req.method,
+          path: req.url,
+          headers,
+          agent,
+        },
+        (uRes) => {
+          upstreamRes = uRes;
+          const status = uRes.statusCode ?? 502;
+          const outHeaders = buildDownstreamResponseHeaders(uRes.headers, cfg);
+          try {
+            res.writeHead(status, outHeaders);
+          } catch (err) {
+            log(`response head error: ${(err as Error).message}`);
+            uRes.destroy();
+            res.destroy();
+            return;
+          }
+          // Stream with backpressure. Node's HTTP/2 flow control pauses `uRes`
+          // when the client window fills; SSE chunks flush as they arrive with
+          // no whole-response accumulation.
+          uRes.pipe(res);
+          uRes.on('end', () => {
+            upstreamEnded = true;
+          });
+          uRes.on('error', () => res.destroy());
+        },
+      );
+
+      request.on('error', (err: NodeJS.ErrnoException) => {
+        // The upstream closed a pooled socket as this went out on it, so it
+        // never saw the request. A read without a body goes again, once, on a
+        // new connection. Anything else could have been acted on.
+        if (!retry && !cancelled && !res.headersSent && request.reusedSocket
+          && (err.code === 'ECONNRESET' || err.code === 'EPIPE')
+          && REPLAYABLE_METHODS.has(req.method ?? '') && bodyBytes === 0) {
+          upstream = send(true);
           return;
         }
-        // Stream with backpressure. Node's HTTP/2 flow control pauses `uRes`
-        // when the client window fills; SSE chunks flush as they arrive with
-        // no whole-response accumulation.
-        uRes.pipe(res);
-        uRes.on('end', () => {
-          upstreamEnded = true;
-        });
-        uRes.on('error', () => res.destroy());
-      },
-    );
+        if (!res.headersSent) {
+          res.writeHead(502, { 'content-type': 'text/plain' });
+          res.end(`Upstream error: ${err.message}`);
+        } else {
+          res.destroy();
+        }
+      });
 
-    upstream.on('error', (err) => {
-      if (!res.headersSent) {
-        res.writeHead(502, { 'content-type': 'text/plain' });
-        res.end(`Upstream error: ${err.message}`);
-      } else {
-        res.destroy();
-      }
-    });
+      // Stream the request body upstream with backpressure (uploads). The
+      // first try's pipe ends when it fails, and a read sent again has no body.
+      if (retry && req.readableEnded) request.end();
+      else req.pipe(request);
+      return request;
+    };
+    let upstream = send(false);
 
     // Cancellation: if the client cancels THIS stream (SSE disconnect, nav
     // away, reset), abort only this upstream request/response. Other streams,
     // agents, and terminals are untouched.
     res.on('close', () => {
+      cancelled = true;
       if (upstreamEnded) return; // upstream already completed — nothing to cancel
       if (upstreamRes) upstreamRes.destroy();
       upstream.destroy();
     });
 
-    // Stream the request body upstream with backpressure (uploads).
-    req.pipe(upstream);
     req.on('error', () => upstream.destroy());
   });
 

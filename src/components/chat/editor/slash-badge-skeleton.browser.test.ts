@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 
@@ -96,7 +97,7 @@ it('shows loading skeletons for @ and / immediately and badges leading slash com
   const page = await context.newPage();
   const errors: string[] = [];
   page.on('pageerror', (err) => errors.push(err.message));
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
 
   try {
     await page.goto(fixture.url);
@@ -161,7 +162,7 @@ it('shows loading skeletons for @ and / immediately and badges leading slash com
 it('keeps the caret after the separator when replacing a command before existing arguments', async () => {
   const context = await fixture.browser.newContext();
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(fixture.url);
     const editor = page.locator('.ProseMirror[contenteditable="true"]');
@@ -190,7 +191,7 @@ it('keeps the caret after the separator when replacing a command before existing
 it('preserves the selected local mention when async results insert rows before it', async () => {
   const context = await fixture.browser.newContext();
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(fixture.url);
     await page.locator('.ProseMirror[contenteditable="true"]').click();
@@ -214,7 +215,7 @@ it('preserves the selected local mention when async results insert rows before i
 it('preserves kind focus while results load and resets selection when the query changes', async () => {
   const context = await fixture.browser.newContext();
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(fixture.url);
     const editor = page.locator('.ProseMirror[contenteditable="true"]');
@@ -255,7 +256,7 @@ it('preserves kind focus while results load and resets selection when the query 
 it('copies a slash badge with its command in plain text and HTML and pastes it intact', async () => {
   const context = await fixture.browser.newContext();
   const page = await context.newPage();
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   try {
     await page.goto(fixture.url);
     const editor = page.locator('.ProseMirror[contenteditable="true"]');

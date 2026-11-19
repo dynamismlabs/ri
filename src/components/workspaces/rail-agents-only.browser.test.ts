@@ -24,7 +24,14 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, expect, it, vi } from 'vitest';
+import { testChromiumPath } from '@/test/fixtures/test-chromium';
+import { PAGE_LOAD_MS, testTimeouts } from '@/test/fixtures/browser-timeouts';
+
+// Each test first loads its page, which may take PAGE_LOAD_MS on the slowest
+// runner with every worker busy, and then does its own checks. The default
+// 30 s covered only the first of those, and timed out on CI's Intel Mac.
+vi.setConfig({ testTimeout: PAGE_LOAD_MS + 30_000 });
 
 let server: http.Server;
 let browser: Browser;
@@ -99,7 +106,10 @@ beforeAll(async () => {
       window.actions=[];
       const client=new QueryClient({defaultOptions:{queries:{retry:false,staleTime:Infinity},mutations:{retry:false}}});
       window.queryClient=client;
-      const at=(minutesAgo)=>new Date(Date.now()-minutesAgo*60_000).toISOString();
+      // One clock for the whole fixture, so chats given the same age tie exactly and keep their order. Reading
+      // it per call made a later chat a millisecond newer now and then, and it sorted first.
+      const now=Date.now();
+      const at=(minutesAgo)=>new Date(now-minutesAgo*60_000).toISOString();
       const agent=(id,name,emoji,purpose)=>({id,name,emoji,purpose,attachments:[],areaId:null,collapsed:false,isGit:true,status:'active'});
       const workspaces=[
         agent('ri','Ri','🛠️','Builds Ri'),
@@ -260,8 +270,7 @@ beforeAll(async () => {
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
-  const executablePath = process.env.RI_REVIEW_CHROMIUM
-    ?? ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser'].find(fs.existsSync);
+  const executablePath = testChromiumPath();
   browser = await chromium.launch({ executablePath, headless: true });
 }, 60_000);
 
@@ -282,7 +291,7 @@ async function open(
   heldArchives = [];
   // Touch is a tablet's: the collapsed rail, fingers on the flyout's rows.
   const page = await browser.newPage({ viewport: { width: 640, height }, deviceScaleFactor: 2, hasTouch: touch });
-  page.setDefaultTimeout(5_000);
+  testTimeouts(page, 5_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(({ style, view }) => {

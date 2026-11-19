@@ -11,5 +11,14 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'scripts/*.test.ts'],
     environment: 'node',
     setupFiles: ['src/test/setup-env.ts'],
+    // A file's first test loads its module graph cold, the database layer and executor included,
+    // which takes several seconds on the slowest CI runner (macos-15-intel) with every worker busy.
+    // The 5 second default timed out tests there that assert nothing about time. A test that
+    // depends on time moves the clock itself (vi.useFakeTimers) or sets its own limit.
+    testTimeout: 30_000,
+    hookTimeout: 60_000,
+    // expect.poll gave up after 1 s, which a dialog closing in a busy browser
+    // there outlasted. A poll that passes returns as soon as it does.
+    expect: { poll: { timeout: 10_000 } },
   },
 });

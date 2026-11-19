@@ -28,6 +28,10 @@ const protocolRoutes = new Set([
   '/preview/settings/connect-device', '/session', '/sessions/[id]/html', '/sessions/[id]/pdf', '/sessions/[id]/pdf/[...name]', '/sessions/[id]/reply-image', '/sessions/[id]/stream', '/sessions/[id]/terminals/[terminalId]/stream', '/sessions/stream',
   // Native media and downloads stream original file bytes. Preview metadata uses filePreviews.read.
   '/sessions/[id]/download', '/sessions/[id]/media',
+  // Picker and drag-and-drop uploads send a file's bytes as multipart form data, like /attachments.
+  '/sessions/[id]/file/upload', '/workspaces/[id]/file/upload',
+  // The Buzz ACP host's bridge, authenticated by its own bridge token (src/lib/integrations/conversations).
+  '/integrations/conversations/acp/[connectionId]',
   '/stt-bench', '/trpc/[trpc]', '/version', '/webhooks/pebble', '/webhooks/pocket', '/webhooks/triggers/[public_id]',
   '/workers/enroll', '/workers/grants', '/workers/me/associations', '/workers/me/attachments/[fileName]', '/workers/me/commands/[id]/ack', '/workers/me/commands/[id]/admission',
   '/workers/me/events', '/workers/me/heartbeat', '/workers/me/requests/[id]/result', '/workers/me', '/workers/me/stream',
@@ -87,7 +91,8 @@ describe('complete UI migration coverage', () => {
 
   it('keeps domain operations independent of HTTP handlers and raw database writes', () => {
     const failures: string[] = [];
-    for (const file of files('src/lib/server/operations').filter(file => file.endsWith('.ts'))) {
+    // A test may read the raw database, to pin a query plan with EXPLAIN QUERY PLAN as AGENTS.md asks.
+    for (const file of files('src/lib/server/operations').filter(file => file.endsWith('.ts') && !file.endsWith('.test.ts'))) {
       const source = fs.readFileSync(file, 'utf8');
       if (source.includes('@/app/api/') || /\bget(?:Raw)?Db\(|\.prepare\(/.test(source)) failures.push(file);
     }

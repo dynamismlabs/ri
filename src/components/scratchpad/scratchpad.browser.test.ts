@@ -1,9 +1,10 @@
 /** The real scratchpad and editor, with synthetic storage and entity mutations. */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { Page } from 'playwright-core';
+import type { Locator, Page } from 'playwright-core';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 
@@ -85,24 +86,45 @@ afterAll(async () => { await fixture?.close(); });
 
 async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
   const page = await fixture.browser.newPage({ viewport, hasTouch: viewport.width < 1024 });
+  // Short of the test's own limit, so a step that can't happen says which and why.
+  testTimeouts(page, 10_000);
   await page.goto(fixture.url);
   await page.getByRole('button', { name: 'Scratchpad', exact: true }).click();
   await page.locator('[data-scratchpad] .tiptap').waitFor();
   if (viewport.width < 1024) {
-    await page.getByRole('dialog').evaluate(async el => {
-      await Promise.all(el.getAnimations().map(animation => animation.finished));
-    });
+    await settle(page.getByRole('dialog'));
   }
   return page;
 }
 
 const editor = (page: Page) => page.locator('[data-scratchpad] .tiptap');
 
+/**
+ * Jump an element's running animations to their end, so a test reads the settled layout. Waiting
+ * for them to finish depends on frames: on a busy runner one sometimes never did, and the test
+ * timed out at one width or another.
+ */
+const settle = (locator: Locator) => locator.evaluate(el => {
+  for (const animation of el.getAnimations()) {
+    try { animation.finish(); } catch { /* An endless animation has no end to jump to. */ }
+  }
+});
+
+/**
+ * Empty the editor through its own keys. `fill('')` selects the text from outside the editor and
+ * presses Delete at once, and Chrome runs the key before the selection change that tells
+ * ProseMirror what's selected. On a busy runner ProseMirror then deleted from its old cursor and
+ * the text stayed. Its own select all and Delete both happen inside its key handler, in order.
+ */
+async function clear(page: Page) {
+  await editor(page).focus();
+  await editor(page).press('ControlOrMeta+a');
+  await editor(page).press('Delete');
+}
+
 async function expand(page: Page) {
   await page.getByRole('button', { name: 'Expand the scratchpad' }).click();
-  await page.getByRole('dialog', { name: 'Scratchpad' }).evaluate(async el => {
-    await Promise.all(el.getAnimations().map(animation => animation.finished));
-  });
+  await settle(page.getByRole('dialog', { name: 'Scratchpad' }));
 }
 
 async function capture(page: Page, name: string) {
@@ -288,7 +310,7 @@ describe('scratchpad quick view and expansion', () => {
   it.each([320, 390, 1440])('keeps the empty placeholder on one line at %ipx', async width => {
     const page = await open({ width, height: 780 });
     try {
-      await editor(page).fill('');
+      await clear(page);
       const placeholder = editor(page).locator('.is-empty[data-placeholder]').first();
       expect(await placeholder.getAttribute('data-placeholder')).toBe('Write a note…');
       const style = await placeholder.evaluate(el => {
@@ -305,6 +327,13 @@ describe('scratchpad quick view and expansion', () => {
         await expand(page);
         await capture(page, 'empty-modal');
       }
+    } catch (error) {
+      // Where the sheet and its editor were, for a failure only one platform's fonts show.
+      console.error('scratchpad layout', JSON.stringify(await page.evaluate(() => {
+        const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().toJSON() ?? null;
+        return { viewport: [innerWidth, innerHeight], sheet: box('[data-scratchpad]'), editor: box('[data-scratchpad] .tiptap'), placeholder: box('[data-scratchpad] .is-empty') };
+      }).catch(() => null)));
+      throw error;
     } finally { await page.close(); }
   });
 });
@@ -376,9 +405,7 @@ describe('the deck beside', () => {
 
   it('expands the same deck into a slideout and folds it back', async () => {
     const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
-    const settled = () => page.getByRole('dialog', { name: 'Deck' }).evaluate(async el => {
-      await Promise.all(el.getAnimations().map(animation => animation.finished));
-    });
+    const settled = () => settle(page.getByRole('dialog', { name: 'Deck' }));
     try {
       await page.goto(fixture.url);
       await page.getByRole('button', { name: 'Deck', exact: true }).click();

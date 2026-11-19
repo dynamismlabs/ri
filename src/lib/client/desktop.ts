@@ -2,6 +2,7 @@ import type { DesktopNotificationAction, DesktopNotificationStatus } from '@/lib
 import type { DesktopSettingsAction, DesktopSettingsStatus } from './desktop-settings';
 import type { DesktopConnectionAction, DesktopConnectionState } from '@/lib/connection/desktop-contract';
 import type { DesktopDeviceSettingsAction, DesktopDeviceSettingsStatus } from './desktop-device-settings';
+import type { UnloadBlocker } from './unload-blockers';
 
 export type DesktopComputerAction = { type: 'status' } | { type: 'keep-running'; on: boolean } | { type: 'add-to-terminal' };
 export interface DesktopComputerStatus { appVersion: string; keepRunning: boolean; canKeepRunning: boolean; message?: string }
@@ -10,7 +11,8 @@ export interface RiDesktop {
   platform: string;
   openExternal(url: string): Promise<void>;
   onResume(callback: () => void): () => void;
-  onPrepareClose(callback: () => Promise<boolean>): () => void;
+  /** True once nothing would be lost, or the first thing that would be. The desktop app names it when it asks before closing. */
+  onPrepareClose(callback: () => Promise<true | UnloadBlocker>): () => void;
   onPrepareBackground(callback: () => boolean): () => void;
   onQuickCapture(callback: () => void): () => void;
   connection?(action: DesktopConnectionAction): Promise<DesktopConnectionState>;

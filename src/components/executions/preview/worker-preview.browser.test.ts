@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { build } from 'esbuild';
 import { chromium, type Browser } from 'playwright-core';
 import { afterAll, beforeAll, expect, it } from 'vitest';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let browser: Browser, server: http.Server, address: string;
@@ -40,7 +41,7 @@ afterAll(async () => { await browser?.close(); if (server) await new Promise<voi
 
 it.skipIf(!enabled).each([390, 1280])('shares Run and Preview at %ipx, starts only on request with the Team server settings', async width => {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
-  page.setDefaultTimeout(5000);
+  testTimeouts(page, 5000);
   await page.route('https://preview.example.test/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Shared preview fixture</h1>' }));
   try {
     await page.goto(address);

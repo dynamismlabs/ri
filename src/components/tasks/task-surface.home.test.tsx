@@ -5,7 +5,8 @@ import { parseHTML } from 'linkedom';
 import { afterEach, expect, it, vi } from 'vitest';
 import { TaskSurface } from './task-surface';
 const h = vi.hoisted(() => ({ list: {} as Record<string, unknown>, board: {} as Record<string, unknown> }));
-vi.mock('./task-list', async () => { const React = await import('react'); return { TaskList: (props: Record<string, unknown>) => { h.list = props; return React.createElement('button', { onClick: () => (props.onViewChange as (v: string) => void)('board') }, 'Board'); } }; });
+// The list shows its own view switcher only when it has one to change, and the host's controls beside it.
+vi.mock('./task-list', async () => { const React = await import('react'); return { TaskList: (props: Record<string, unknown>) => { h.list = props; return React.createElement(React.Fragment, null, props.onViewChange ? React.createElement('button', { onClick: () => (props.onViewChange as (v: string) => void)('board') }, 'Board') : null, props.contextControls as never); } }; });
 vi.mock('./task-kanban', async () => { const React = await import('react'); return { TaskKanban: (props: Record<string, unknown>) => { h.board = props; return React.createElement('div', null, 'Inline board', props.leading as never); } }; });
 let root: Root | undefined;
 afterEach(async () => { await act(async () => root?.unmount()); vi.unstubAllGlobals(); });
@@ -22,9 +23,11 @@ async function mount(props: Parameters<typeof TaskSurface>[0]) {
 }
 it('personal Tasks opens the host Board overlay even with a saved legacy inline-board preference', async () => {
   const openBoard = vi.fn(); const { container, window } = await mount({ onOpenTask: vi.fn(), onOpenBoard: openBoard });
-  expect(container.textContent).toBe('Board');
+  // No inline switcher, whatever was saved: the host's Open board is the way to the Board.
+  expect(h.list).toMatchObject({ view: undefined, onViewChange: undefined });
+  expect(container.textContent).toBe('Open board');
   await act(async () => container.querySelector('button')!.dispatchEvent(new window.Event('click', { bubbles: true })));
-  expect(openBoard).toHaveBeenCalledOnce(); expect(container.textContent).toBe('Board');
+  expect(openBoard).toHaveBeenCalledOnce(); expect(container.textContent).toBe('Open board');
 });
 it('Team List and inline Board retain assignment, Area, create defaults, and member-scoped column preferences', async () => {
   const filter = vi.fn(), openTask = vi.fn(); const defaults = { areaId: 'team-area', assigneeMemberId: 'maya' };

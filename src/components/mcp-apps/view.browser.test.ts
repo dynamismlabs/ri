@@ -1,5 +1,5 @@
 /** Product components, isolated synthetic API, real sandboxed MCP guest. */
-import { it, expect } from 'vitest';
+import { beforeAll, it, expect } from 'vitest';
 import { build } from 'esbuild';
 import { chromium } from 'playwright-core';
 import fs from 'node:fs';
@@ -8,11 +8,23 @@ import http from 'node:http';
 import { createRequire } from 'node:module';
 import { prepareResource } from '@/lib/mcp-apps/resource';
 
-it('keeps the live iframe and draft while expanding, gates actions natively, and attaches only acknowledged context', async () => {
+const chatId='01900111-1111-7111-8111-111111111111', captureId='01900222-2222-7222-8222-222222222222', viewId='01900333-3333-7333-8333-333333333333';
+let css: { css: string };
+let bundle: { outputFiles: { text: string }[] };
+// Compiling the app's CSS and bundling the fixture took most of the test's 30 s
+// on a loaded Mac runner. As setup they get the hook limit instead.
+beforeAll(async () => {
   const require = createRequire(import.meta.url);
   const postcss = createRequire(require.resolve('@tailwindcss/postcss'))('postcss');
-  const css = await postcss([require('@tailwindcss/postcss')()]).process(fs.readFileSync('src/app/globals.css','utf8'),{from:path.resolve('src/app/globals.css')});
-  const chatId='01900111-1111-7111-8111-111111111111', captureId='01900222-2222-7222-8222-222222222222', viewId='01900333-3333-7333-8333-333333333333';
+  css = await postcss([require('@tailwindcss/postcss')()]).process(fs.readFileSync('src/app/globals.css','utf8'),{from:path.resolve('src/app/globals.css')});
+  bundle=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`
+import React,{useState,useEffect} from 'react';import{createRoot}from'react-dom/client';import{QueryClient,QueryClientProvider}from'@tanstack/react-query';
+import{ConnectedCompanion}from'@/components/mcp-apps/companion';import{ConnectedView}from'@/components/mcp-apps/view';import{registerAppChatComposer}from'@/lib/client/app-chat-intent';import{flushConnectedContext}from'@/lib/client/mcp-app-context';
+const client=new QueryClient({defaultOptions:{queries:{retry:false}}});function Fixture(){const[draft,setDraft]=useState('Keep my original question.');const[context,setContext]=useState('');useEffect(()=>registerAppChatComposer('${chatId}',text=>setDraft(previous=>previous+' '+text)),[]);return <main className="flex h-dvh flex-col bg-background text-foreground"><header className="border-b p-4 text-sm font-medium">Portfolio review</header><ConnectedCompanion chatId="${chatId}">{()=> <div className="flex min-h-0 flex-1 flex-col"><div className="flex-1 overflow-auto p-5"><p className="mb-5 text-sm">Here is the interactive result from your connected account.</p><ConnectedView captureId="${captureId}" chatId="${chatId}"/></div><div className="border-t p-4"><textarea aria-label="Chat draft" className="w-full rounded-lg border p-3" value={draft} onChange={event=>setDraft(event.target.value)}/><button onClick={async()=>setContext(JSON.stringify(await flushConnectedContext('${chatId}')))}>Preview attached context</button><output data-context>{context}</output></div></div>}</ConnectedCompanion></main>};createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><Fixture/></QueryClientProvider>);
+`},bundle:true,write:false,format:'iife',platform:'browser',jsx:'automatic',define:{'process.env.NODE_ENV':'"development"','process.env':'{}'}});
+});
+
+it('keeps the live iframe and draft while expanding, gates actions natively, and attaches only acknowledged context', async () => {
   const resource=prepareResource({contents:[{uri:'ui://fixture/index.html',mimeType:'text/html;profile=mcp-app',text:`<html><head><style>body{margin:0;padding:24px;color:#152c3b;background:#eef5f4;font:14px system-ui}h2{font-size:23px;margin:0 0 8px}p{color:#4b646e}button{background:#17645a;color:white;padding:10px 16px;border:0;border-radius:8px}output{display:block;font-size:40px;margin:20px 0}</style></head><body><h2>Portfolio calculator</h2><p>A fictional account for this test</p><output id="value">$70,000</output><button id="update">Recalculate</button><script>
 let id=0;const pending=new Map();const rpc=(method,params)=>new Promise((resolve,reject)=>{const request=++id;pending.set(request,{resolve,reject});parent.postMessage({jsonrpc:'2.0',id:request,method,params},'*')});
 const probe=()=>{const r=document.getElementById('update').getBoundingClientRect();return rpc('tools/call',{name:'probe',arguments:{value:document.getElementById('value').textContent,x:r.x+r.width/2,y:r.y+r.height/2}})};
@@ -20,11 +32,6 @@ addEventListener('message',event=>{if(event.source!==parent)return;const m=event
 document.getElementById('update').onclick=async()=>{const result=await rpc('tools/call',{name:'recalculate',arguments:{amount:9}});document.getElementById('value').textContent=result.structuredContent.value;await rpc('ui/update-model-context',{structuredContent:{selected:9}});await rpc('ui/message',{role:'user',content:[{type:'text',text:'Explain this result'}]});await probe()};
 rpc('ui/initialize',{protocolVersion:'2026-01-26',appInfo:{name:'Independent calculator',version:'1.0.0'},appCapabilities:{}}).then(()=>parent.postMessage({jsonrpc:'2.0',method:'ui/notifications/initialized',params:{}},'*'));
 </script></body></html>`}]},'ui://fixture/index.html',false);
-  const bundle=await build({stdin:{resolveDir:process.cwd(),loader:'tsx',contents:`
-import React,{useState,useEffect} from 'react';import{createRoot}from'react-dom/client';import{QueryClient,QueryClientProvider}from'@tanstack/react-query';
-import{ConnectedCompanion}from'@/components/mcp-apps/companion';import{ConnectedView}from'@/components/mcp-apps/view';import{registerAppChatComposer}from'@/lib/client/app-chat-intent';import{flushConnectedContext}from'@/lib/client/mcp-app-context';
-const client=new QueryClient({defaultOptions:{queries:{retry:false}}});function Fixture(){const[draft,setDraft]=useState('Keep my original question.');const[context,setContext]=useState('');useEffect(()=>registerAppChatComposer('${chatId}',text=>setDraft(previous=>previous+' '+text)),[]);return <main className="flex h-dvh flex-col bg-background text-foreground"><header className="border-b p-4 text-sm font-medium">Portfolio review</header><ConnectedCompanion chatId="${chatId}">{()=> <div className="flex min-h-0 flex-1 flex-col"><div className="flex-1 overflow-auto p-5"><p className="mb-5 text-sm">Here is the interactive result from your connected account.</p><ConnectedView captureId="${captureId}" chatId="${chatId}"/></div><div className="border-t p-4"><textarea aria-label="Chat draft" className="w-full rounded-lg border p-3" value={draft} onChange={event=>setDraft(event.target.value)}/><button onClick={async()=>setContext(JSON.stringify(await flushConnectedContext('${chatId}')))}>Preview attached context</button><output data-context>{context}</output></div></div>}</ConnectedCompanion></main>};createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><Fixture/></QueryClientProvider>);
-`},bundle:true,write:false,format:'iife',platform:'browser',jsx:'automatic',define:{'process.env.NODE_ENV':'"development"','process.env':'{}'}});
   let opens=0, effects=0, revision=0, approved=false, contextRequests=0;
   let acknowledgeContext!: () => void;
   const contextAcknowledgement=new Promise<void>(resolve=>{acknowledgeContext=resolve;});

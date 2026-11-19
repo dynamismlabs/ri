@@ -8,6 +8,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
+import { waitForPid } from '@/test/pids';
 vi.mock('@/lib/harness/runtime', async original => {
   const { fakeHarnessRuntime, fakeHarnessAuth } = await import('@/test/fixtures/harness-runtime');
   return { ...await original<typeof import('@/lib/harness/runtime')>(), getHarnessRuntime: fakeHarnessRuntime, resolveHarnessAuth: fakeHarnessAuth };
@@ -60,7 +61,7 @@ it('Archive confirms the real Antigravity SDK process has exited before removing
   const { hasHarnessSession } = await import('@/lib/runner/live-state');
   const event = q.insertChatEvent({ sessionId: chatId, source: 'user', role: 'user', content: 'Hello', createdAt: new Date().toISOString() })!;
   await executor.dispatch(chatId, 'Hello', { sourceEventId: event.id });
-  const pid = Number(fs.readFileSync(path.join(home.root, 'agy.pid'), 'utf8')); pids.push(pid);
+  const pid = await waitForPid(path.join(home.root, 'agy.pid')); pids.push(pid);
   expect(alive(pid)).toBe(true);
   expect((await archiveExecutionSession({ sessionId: chatId }))?.status).toBe('archived');
   expect(alive(pid)).toBe(false);

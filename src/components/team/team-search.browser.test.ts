@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+import { testTimeouts } from '@/test/fixtures/browser-timeouts';
 const enabled = process.env.RI_SPACES_BROWSER_TEST === '1';
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 beforeAll(async () => {
@@ -22,7 +23,7 @@ beforeAll(async () => {
 },120000);
 afterAll(async () => { await fixture?.close(); });
 it.skipIf(!enabled)('uses shared prefixes, recents, keyboard commands and Home destinations', async () => {
-  const page = await fixture.browser.newPage();page.setDefaultTimeout(8000);page.on('pageerror', error => console.error(error.message));
+  const page = await fixture.browser.newPage();testTimeouts(page, 8000);page.on('pageerror', error => console.error(error.message));
   try {
     await page.goto(fixture.url);
     await page.getByText('Recent shared task',{exact:true}).waitFor();
@@ -44,7 +45,7 @@ it.skipIf(!enabled)('uses shared prefixes, recents, keyboard commands and Home d
 
 
 it.skipIf(!enabled)('keeps the task entry prefix, filters recent notes and leaves general keyboard search unfiltered', async () => {
-  const page = await fixture.browser.newPage();page.setDefaultTimeout(8000);
+  const page = await fixture.browser.newPage();testTimeouts(page, 8000);
   try {
     await page.goto(fixture.url);
     const search = page.getByRole('combobox');

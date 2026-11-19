@@ -8,6 +8,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { _cacheHarnessSession, _resetExecutorState, close } from '@/lib/runner/local-runner';
 import { recordHarnessProcess, _resetHarnessProcessState } from '@/lib/runner/harness-processes';
 import { hasHarnessSession } from '@/lib/runner/live-state';
+import { waitForPid } from '@/test/pids';
 
 let dir: string; const cleanup: number[] = [];
 const alive = (pid: number) => { try { process.kill(pid, 0); return true; } catch { return false; } };
@@ -20,8 +21,7 @@ it('a bounded close stops the exact harness and its captured tool descendant', a
   const script = `process.on('SIGTERM', () => {}); const c = require('child_process').spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)', '--', 'ri-probe-tool'], { stdio: 'ignore' }); require('fs').writeFileSync(${JSON.stringify(pidFile)}, String(c.pid)); setInterval(() => {}, 1000);`;
   const harness = spawn(process.execPath, ['-e', script, '--', 'ri-probe-harness'], { stdio: 'ignore' });
   cleanup.push(harness.pid!);
-  for (let i = 0; i < 100 && !fs.existsSync(pidFile); i++) await new Promise(r => setTimeout(r, 50));
-  const tool = Number(fs.readFileSync(pidFile, 'utf8')); cleanup.push(tool);
+  const tool = await waitForPid(pidFile); cleanup.push(tool);
   await recordHarnessProcess('hung-chat', harness.pid!);
   const handle = { proc: harness, state: 'idle', close: () => new Promise<void>(() => {}) } as unknown as AgentSession;
   _cacheHarnessSession('hung-chat', handle);

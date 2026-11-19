@@ -18,6 +18,7 @@ import { McpDefaultPermissions } from '../integrations/mcp-permissions';
 import { EMPTY_MCP_FORM, errMsg, type McpForm, type McpServerEntry } from '../integrations/types';
 import { watchOAuthReturn } from '../integrations/oauth-focus-refresh';
 import { PLUGIN_CREATE_ANCHORS } from './navigation';
+import { connectedNotice } from '@/lib/integrations/connected-notice';
 
 type View = { kind: 'catalog' } | { kind: 'new' } | { kind: 'server'; id: string };
 
@@ -86,7 +87,7 @@ export function McpServersSection({ active, navigation }: {
     const params = new URLSearchParams(window.location.search);
     const connected = params.get('connected');
     const error = params.get('error');
-    if (connected) setBanner(`Connected ${connected}`);
+    if (connected) setBanner(connectedNotice(connected));
     else if (error) setError(`Connect failed: ${error}`);
     if (!connected && !error) return;
     params.delete('connected'); params.delete('error');

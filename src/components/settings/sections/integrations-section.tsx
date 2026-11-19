@@ -47,6 +47,7 @@ import { SourcesPanel } from './integrations/sources-panel';
 import { useManagedAccounts, useSourcesOverview } from '@/hooks/use-integration-sources';
 import { APPLICATIONS, isApplicationId, parseManagedToolkitId } from '@/lib/integrations/sources/applications';
 import type { ApplicationId } from '@/lib/integrations/sources/types';
+import { connectedNotice } from '@/lib/integrations/connected-notice';
 import {
 	connectionIdentity,
 	EMPTY_BYO_FORM,
@@ -238,7 +239,7 @@ export function IntegrationsSection({ active = true, navigation }: {
     const attempt = params.get('attempt');
     // A managed sign-in's page reads its own attempt, with the real reason when it failed.
     if (attempt && /^att_[a-f0-9]{32}$/.test(attempt)) setReturnedAttempt(attempt);
-    else if (connected) { const message = connected === 'Connected' ? 'Connected' : `Connected ${connected}`; setBanner(message); toast.success(message); }
+    else if (connected) { const message = connectedNotice(connected); setBanner(message); toast.success(message); }
     else if (err) { setError(`Connect failed: ${err}`); toast.error(slackMcpAccessIssue(err) ? 'Enable Slack access for this app' : 'Connection needs attention'); }
     if (connected || err || attempt) {
       params.delete('connected');

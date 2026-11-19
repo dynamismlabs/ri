@@ -29,6 +29,9 @@ const getChatSessionWithExecution = vi.fn();
 const getExecution = vi.fn();
 const insertChatEvent = vi.fn();
 const materializeEventRefs = vi.fn();
+/** A chat tied to a Slack or Buzz conversation mirrors what the person types there, and says there why a message was refused. */
+const queueConversationHumanMessage = vi.fn();
+const failConversationMessage = vi.fn();
 const budgetGate = vi.fn(() => 'ok');
 const dispatch = vi.fn(async () => {});
 /** The options the route passed to the last dispatch (`onTaken`, `onQueued`, …). */
@@ -77,6 +80,8 @@ vi.mock('@/lib/db/queries', () => ({
   // No coordination request rides on these sends.
   failAgentRequestForMessage: () => false,
   agentRequestMessageRefusal: () => null,
+  queueConversationHumanMessage: (sessionId: string, eventId: string) => queueConversationHumanMessage(sessionId, eventId),
+  failConversationMessage: (eventId: string, reason: string) => failConversationMessage(eventId, reason),
 }));
 
 // A local token, so the real session-credential module can mint and verify.
@@ -153,6 +158,8 @@ beforeEach(() => {
   skipOnboardingStepOnScreen.mockReset().mockReturnValue(false);
   insertChatEvent.mockReset();
   materializeEventRefs.mockReset();
+  queueConversationHumanMessage.mockReset();
+  failConversationMessage.mockReset();
   getExecution.mockReset().mockReturnValue({ id: EXECUTION_ID, workspaceId: 'ws-1', worktreePath: null });
   budgetGate.mockReset().mockReturnValue('ok');
   dispatch.mockReset().mockResolvedValue(undefined);
@@ -237,6 +244,8 @@ describe('POST /api/sessions/[id]/messages — pre-flight behavior', () => {
     // health's orphan logic owns the redispatch decision.
     expect(dispatch).not.toHaveBeenCalled();
     expect(beginDispatchPreparation).not.toHaveBeenCalled();
+    // The first attempt already mirrored it to a connected conversation.
+    expect(queueConversationHumanMessage).not.toHaveBeenCalled();
   });
 
   it('fresh send → 201 (happy path)', async () => {
@@ -259,6 +268,7 @@ describe('POST /api/sessions/[id]/messages — pre-flight behavior', () => {
     // (`ensureWorktreeReady`) resolves — await that deferred continuation.
     await vi.waitFor(() => expect(dispatch).toHaveBeenCalledWith(SESSION_ID, 'hello'));
     expect(ensureWorktreeReady).toHaveBeenCalled();
+    expect(queueConversationHumanMessage).toHaveBeenCalledExactlyOnceWith(SESSION_ID, CLIENT_ID);
   });
 
   it('fresh send but worktree cannot be made ready → does NOT dispatch the agent', async () => {
@@ -302,6 +312,7 @@ describe('POST /api/sessions/[id]/messages — pre-flight behavior', () => {
     );
     // Final: the refusal names its message, so opening the chat never sends it after all.
     expect(insertChatEvent).toHaveBeenCalledWith(expect.objectContaining({ raw: { subtype: 'send_refused', messageId: CLIENT_ID } }));
+    expect(failConversationMessage).toHaveBeenCalledWith(CLIENT_ID, reason);
   });
 
   it('adds nothing when a turn fails after the message was taken: the turn says why itself', async () => {
@@ -315,6 +326,7 @@ describe('POST /api/sessions/[id]/messages — pre-flight behavior', () => {
     await vi.waitFor(() => expect(dispatch).toHaveBeenCalled());
     await new Promise((r) => setTimeout(r, 20));
     expect(insertChatEvent).toHaveBeenCalledTimes(1);
+    expect(failConversationMessage).not.toHaveBeenCalled();
   });
 
   it('an import nobody took over → 409, and nothing is saved or sent', async () => {

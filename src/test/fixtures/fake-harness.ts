@@ -37,12 +37,26 @@ import { uuidv7 } from 'uuidv7';
 import { HARNESS_REGISTRY, type HarnessId } from '@/lib/harness/registry';
 import { clearHarnessRuntimeCache } from '@/lib/harness/runtime';
 import { clearHarnessModelCache } from '@/lib/harness/model-discovery';
+import { APP_GUIDANCE_OPEN, USER_MESSAGE_FOLLOWS } from '@/lib/work-results/guidance-markers';
 
 export const FAKE_MODEL_ID = 'fake-model';
 
+/**
+ * What the person wrote, without the guidance the app puts before it on an
+ * execution's messages (`withWorkResultSessionInstructions`), as a harness reads it.
+ */
+export function userMessageOf(message: string): string {
+  if (!message.startsWith(`${APP_GUIDANCE_OPEN}\n`)) return message;
+  const follows = message.indexOf(`\n${USER_MESSAGE_FOLLOWS}\n`);
+  return follows === -1 ? message : message.slice(follows + USER_MESSAGE_FOLLOWS.length + 2);
+}
+
 export interface FakeTurn {
   session: FakeSession;
+  /** What the person wrote (`userMessageOf`). */
   message: string;
+  /** Exactly what the harness was sent, the app's guidance included. */
+  received: string;
   /** Aborted when the host interrupts the turn or the session crashes. */
   signal: AbortSignal;
   say(text: string): Promise<void>;
@@ -62,7 +76,10 @@ export class FakeSession implements AgentSession {
   sessionId: string;
   state: SessionState = 'idle';
   readonly ctx: SessionContext;
+  /** What the person wrote in each message sent (`userMessageOf`). */
   readonly messages: string[] = [];
+  /** Exactly what each send carried, the app's guidance included. */
+  readonly received: string[] = [];
   readonly resumed: boolean;
   private turnChain: Promise<unknown> = Promise.resolve();
   /** The turn running now, for a message folded into it. */
@@ -105,7 +122,8 @@ export class FakeSession implements AgentSession {
 
   async send(message: string): Promise<SendHandle> {
     if (this.state === 'closed') throw new Error('Session is closed');
-    this.messages.push(message);
+    this.received.push(message);
+    this.messages.push(userMessageOf(message));
     const uuid = uuidv7();
     if (this.harness.coalesce && this.running) return { uuid, result: this.running };
     const result = (this.turnChain = this.turnChain.then(() => this.runTurn(message, uuid))) as Promise<TurnResult>;
@@ -137,7 +155,8 @@ export class FakeSession implements AgentSession {
     await this.emit({ type: 'turn_start', turnId, trigger: 'send', raw: { command_uuid: commandUuid } });
     const turn: FakeTurn = {
       session: this,
-      message,
+      message: userMessageOf(message),
+      received: message,
       signal: abort.signal,
       say: (text) => this.emit({ type: 'assistant', text }),
       ask: async (req) => {
