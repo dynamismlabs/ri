@@ -25,6 +25,7 @@ export function HarnessPicker({
         {harnesses.map(({ id, hint }) => (
           <button
             key={id}
+            data-slot="choice-row"
             type="button"
             aria-pressed={value === id}
             onClick={() => onChange(id)}

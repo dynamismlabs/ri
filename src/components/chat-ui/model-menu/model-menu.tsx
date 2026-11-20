@@ -145,7 +145,7 @@ export function ModelMenuContent({
             disabled={disabled || speed.pending}
           />
         )}
-        {onManageModels && <button
+        {onManageModels && <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={onManageModels}
           className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -299,7 +299,7 @@ function OptionRow({
   return (
     <DropdownMenu modal={false} open={open && !disabled} onOpenChange={changeOpen}>
       <DropdownMenuTrigger asChild>
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           ref={trigger}
           type="button"
           disabled={disabled}

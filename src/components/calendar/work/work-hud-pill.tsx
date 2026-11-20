@@ -46,7 +46,7 @@ export function WorkHudPill() {
         </span>
       }
     >
-      <button
+      <button data-slot="action-button"
         type="button"
         onClick={() => openCalendarModal({ view: 'day', date: today })}
         aria-label={lines.join(' ')}

@@ -89,7 +89,7 @@ export function EventPopoverContent({ event }: { event: CalendarEvent }) {
             </a>
           )}
           {event.sourceUrl && (
-            <a
+            <a data-slot="action-button"
               href={event.sourceUrl}
               target="_blank"
               rel="noreferrer"

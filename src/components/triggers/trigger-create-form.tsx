@@ -68,7 +68,7 @@ function CredentialRow({ label, value, mono = false }: { label: string; value: s
         >
           {value}
         </code>
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={() => navigator.clipboard.writeText(value)}
           className="px-2 py-1.5 rounded-md text-xs border border-border hover:bg-muted"

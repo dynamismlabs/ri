@@ -242,7 +242,7 @@ function PreviewBody({ controller: c, processControls, onOpenRun, onOpenWorkspac
             <p className="text-[13px] leading-relaxed text-muted-foreground">{c.remoteError!.hint}</p>
           )}
           {settings && (c.remoteError!.code === 'beamd_not_configured' || c.remoteError!.code === 'no_remote_provider') ? (
-            <button
+            <button data-slot="action-button" data-variant="primary"
               type="button"
               onClick={settings}
               className="flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:bg-foreground/90"
@@ -461,7 +461,7 @@ function Subtle({ children }: { children: React.ReactNode }) {
 
 function PrimaryButton({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
-    <button
+    <button data-slot="action-button" data-variant="primary"
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -477,7 +477,7 @@ function PrimaryButton({ children, onClick, disabled }: { children: React.ReactN
 
 function SecondaryButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button
+    <button data-slot="action-button"
       type="button"
       onClick={onClick}
       className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-[13px] font-medium text-foreground hover:bg-muted"
@@ -543,7 +543,7 @@ function OpenOnDeviceNudge({ onShow }: { onShow: () => void }) {
     <div className="flex items-center gap-2 border-b border-border bg-primary/5 px-3 py-1.5 text-[11px]">
       <Smartphone size={12} className="shrink-0 text-primary" />
       <span className="flex-1 text-muted-foreground">See this on your real phone: one scan, no deploy.</span>
-      <button
+      <button data-slot="action-button"
         type="button"
         onClick={() => {
           onShow();

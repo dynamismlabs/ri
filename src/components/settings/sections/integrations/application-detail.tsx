@@ -303,7 +303,7 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
               setChanging(false);
             };
             return (
-              <button
+              <button data-slot="menu-action"
                 key={key} type="button" role="radio" aria-checked={selected} onClick={onPick}
                 className="flex w-full items-start gap-2 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-muted/40"
               >
@@ -549,7 +549,7 @@ function ExistingAccounts({ applicationId, sources, onChanged, onError }: {
   if (!sourceId) return null;
   return (
     <section className="rounded-xl border border-border/70">
-      <button type="button" aria-expanded={open} onClick={() => setOpen(value => !value)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
+      <button data-slot="menu-action" type="button" aria-expanded={open} onClick={() => setOpen(value => !value)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/30">
         <ExternalLink size={14} className="shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1">
           <span className="block text-xs font-medium text-foreground">Accounts already in Composio</span>

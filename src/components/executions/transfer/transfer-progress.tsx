@@ -53,7 +53,7 @@ function Delivering({ sessionId, transfer }: { sessionId: string; transfer: Tran
       <p className="text-[12.5px] font-medium text-foreground">{count} didn&apos;t go to {where}.</p>
       <p className="mt-1 whitespace-pre-wrap text-[11.5px] text-muted-foreground">{transfer.error}</p>
       <p className="mt-1 text-[11px] text-muted-foreground/80">They stay in order, and new messages wait behind them.</p>
-      <button
+      <button data-slot="action-button" data-variant="primary"
         type="button"
         disabled={again.isPending}
         onClick={() => again.mutate()}

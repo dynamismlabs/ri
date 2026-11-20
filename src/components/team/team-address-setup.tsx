@@ -81,7 +81,7 @@ export function TeamAddressSetup({ onSaved, onDone }: { onSaved?: () => void; on
               {prefix.error && <GateNotice tone="error">{apiErrorText(prefix.error)}</GateNotice>}
               <GateButton type="submit" busy={prefix.isPending} disabled={busy || !isValidPreviewLabel(normalizedName)}>Save and continue</GateButton>
             </form>
-            <button type="button" className="w-full rounded-md border border-border px-3 py-2 text-sm" disabled={busy} onClick={onDone}>Decide later</button>
+            <button data-slot="action-button" type="button" className="w-full rounded-md border border-border px-3 py-2 text-sm" disabled={busy} onClick={onDone}>Decide later</button>
           </>
         )}
       </div>
@@ -114,16 +114,16 @@ export function TeamAddressSetup({ onSaved, onDone }: { onSaved?: () => void; on
           </> : <p className="text-xs text-muted-foreground">Choose an address to invite people, sign in on another device or connect to My Ri. A localhost address only works on the hosting computer.</p>}
         </div>
         {data.address && <div className="flex flex-wrap gap-2">
-          <button type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy || checking} onClick={() => void check()}>Check connection</button>
-          {data.autoTunnel && <button type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy} onClick={() => beamd.mutate(data.tunnelName)}>{beamd.isPending ? 'Reconnecting…' : 'Reconnect Beamd'}</button>}
-          <button type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy} onClick={() => { setEditing(!editing); setMethod(null); }}>{editing ? 'Cancel change' : 'Change address'}</button>
+          <button data-slot="action-button" type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy || checking} onClick={() => void check()}>Check connection</button>
+          {data.autoTunnel && <button data-slot="action-button" type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy} onClick={() => beamd.mutate(data.tunnelName)}>{beamd.isPending ? 'Reconnecting…' : 'Reconnect Beamd'}</button>}
+          <button data-slot="action-button" type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy} onClick={() => { setEditing(!editing); setMethod(null); }}>{editing ? 'Cancel change' : 'Change address'}</button>
         </div>}
         {beamd.error && !showMethods && <GateNotice tone="error">{apiErrorText(beamd.error)}</GateNotice>}
       </div>}
       {showMethods && <>
-      <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Team address method">
-        <button type="button" aria-pressed={method === 'custom'} disabled={busy} className="rounded-md border border-border px-3 py-2 text-sm aria-pressed:bg-muted" onClick={() => setMethod('custom')}>Use an HTTPS address</button>
-        <button type="button" aria-pressed={method === 'beamd'} disabled={busy} className="rounded-md border border-border px-3 py-2 text-sm aria-pressed:bg-muted" onClick={() => setMethod('beamd')}>Use Beamd</button>
+      <div data-slot="segmented" data-scroll className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Team address method">
+        <button data-slot="segmented-option" type="button" aria-pressed={method === 'custom'} disabled={busy} className="rounded-md border border-border px-3 py-2 text-sm aria-pressed:bg-muted" onClick={() => setMethod('custom')}>Use an HTTPS address</button>
+        <button data-slot="segmented-option" type="button" aria-pressed={method === 'beamd'} disabled={busy} className="rounded-md border border-border px-3 py-2 text-sm aria-pressed:bg-muted" onClick={() => setMethod('beamd')}>Use Beamd</button>
       </div>
       {method === 'custom' && (
         <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (!busy && customUrl.trim()) custom.mutate(); }}>

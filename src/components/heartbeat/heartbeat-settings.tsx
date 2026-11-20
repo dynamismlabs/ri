@@ -122,7 +122,7 @@ function HeartbeatSettingsBody({
         </label>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <button data-slot="action-button"
             type="button"
             onClick={() => checkIn.mutate(config.triggerId)}
             disabled={config.running || checkIn.isPending}
@@ -339,7 +339,7 @@ function IntervalInput({ seconds, onCommit }: { seconds: number; onCommit: (seco
     <div className="space-y-1">
       <div className="flex flex-wrap items-center gap-2">
         <span className="w-14 shrink-0 text-[12px] text-muted-foreground">Every</span>
-        <input
+        <input data-slot="field"
           type="number"
           min={1}
           step="any"
@@ -381,7 +381,7 @@ function TimeInput({ label, value, onCommit }: { label: string; value: string; o
     setDraft(value);
   }
   return (
-    <input
+    <input data-slot="field"
       type="time"
       aria-label={label}
       value={draft}

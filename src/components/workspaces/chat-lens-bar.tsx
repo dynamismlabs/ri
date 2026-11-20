@@ -63,6 +63,8 @@ export function ChatLensBar<T extends string>({
   return (
     <TabsPrimitive.List
       aria-label={label}
+      data-slot="segmented"
+      data-size={size}
       // Full width on the phone, the iOS norm. Inline elsewhere, like the
       // rail's Agents | Recent switch.
       className={cn('items-center gap-0.5 rounded-lg bg-muted/60 p-0.5', touch ? 'flex' : 'inline-flex', className)}

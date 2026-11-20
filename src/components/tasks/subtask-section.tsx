@@ -92,7 +92,7 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
 
         <div className="flex-1" />
 
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           onClick={() => {
             setIsAdding(true)
             setIsExpanded(true)
@@ -128,7 +128,7 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
                   </Tip>
                 ) : (
                   <Tip label={isDone ? 'Reopen' : 'Complete'}>
-                    <button
+                    <button data-slot="completion-control"
                       onClick={(e) => {
                         e.stopPropagation()
                         handleToggleComplete(subtask.id, subtask.status)

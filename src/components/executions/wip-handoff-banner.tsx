@@ -121,7 +121,7 @@ function ActionButton(props: {
   const { primary, disabled, onClick, icon, label, hint } = props;
   return (
     <Tip label={hint}>
-      <button
+      <button data-slot="action-button"
         type="button"
         disabled={disabled}
         onClick={onClick}

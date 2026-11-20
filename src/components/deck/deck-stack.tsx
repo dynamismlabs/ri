@@ -132,7 +132,7 @@ function Subtasks({ items, onCollapse, actions }: { items: SubtaskItem[]; onColl
 
             {/* Desktop hover actions */}
             {!s.completed && (
-              <div className="hidden md:flex shrink-0 opacity-0 group-hover/subtask:opacity-100 transition-opacity items-center gap-0.5">
+              <div data-slot="row-actions" className="hidden md:flex shrink-0 opacity-0 group-hover/subtask:opacity-100 transition-opacity items-center gap-0.5">
                 <Tip label="Done" side="top">
                   <button
                     aria-label="Done"
@@ -248,7 +248,7 @@ function SortableDeckItemCard({
       </div>
 
       {/* Desktop hover actions — top right */}
-      <div className="hidden md:flex absolute right-0 top-2 opacity-0 group-hover:opacity-100 transition-opacity items-center gap-1">
+      <div data-slot="row-actions" className="hidden md:flex absolute right-0 top-2 opacity-0 group-hover:opacity-100 transition-opacity items-center gap-1">
         <Tip label="Done" side="top">
           <button
             aria-label="Done"

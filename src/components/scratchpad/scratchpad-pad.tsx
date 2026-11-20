@@ -246,7 +246,7 @@ function MoveButton({ label, tip, icon: Icon, busy = false, disabled, onClick }:
   return (
     <Tip label={tip}>
       {/* Keep the editor's caret where it is, so the line stays the target. */}
-      <button type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={onClick}
+      <button data-slot="action-button" type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={onClick}
         className={cn(
           'inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-md border border-border/70 bg-background px-1 text-[11px] font-medium transition-colors pointer-coarse:h-10',
           'hover:bg-muted/60 disabled:cursor-not-allowed disabled:text-muted-foreground disabled:opacity-40',

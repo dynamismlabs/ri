@@ -827,7 +827,7 @@ function LaunchModalInner({
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
                     Start from
                   </span>
-                  <button
+                  <button data-slot="action-button"
                     type="button"
                     onClick={openBrowse}
                     className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:border-solid hover:bg-muted/50 hover:text-foreground"
@@ -840,7 +840,7 @@ function LaunchModalInner({
                     const Icon = CHIP_ICON[item.kind];
                     return (
                       <Tip key={`${item.kind}:${item.key}`} label={item.title} onlyWhenTextHidden>
-                        <button
+                        <button data-slot="action-button"
                           type="button"
                           onClick={() => handlePick(item)}
                           className="inline-flex max-w-[14rem] items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"

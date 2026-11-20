@@ -66,7 +66,7 @@ export function FileChip({ path, diff, label, className }: FileChipProps) {
   const hasDiff = !!diff && diff.lines.length > 0;
 
   const chip = (
-    <button
+    <button data-slot="attachment-chip"
       type="button"
       onClick={(e) => {
         e.stopPropagation();

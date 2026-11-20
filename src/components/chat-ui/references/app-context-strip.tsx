@@ -59,7 +59,7 @@ function AppContextChip({ group, onRemove }: { group: AppContextGroupView; onRem
       </PopoverContent>
     </Popover>
     <Tip label="Nothing from it is sent, and the app is told">
-      <button type="button" disabled={busy} onClick={() => void remove()} aria-label={`Remove context from ${group.app}`}
+      <button data-slot="action-button" data-variant="ghost" type="button" disabled={busy} onClick={() => void remove()} aria-label={`Remove context from ${group.app}`}
         className="mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded text-muted-foreground/80 transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50">
         {busy ? <Loader2 size={10} className="animate-spin" /> : <X size={10} />}
       </button>

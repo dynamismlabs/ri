@@ -46,7 +46,7 @@ export function NewAreaDialog({ open, onOpenChange, onCreated }: { open: boolean
           }}
         >
           <label className="sr-only" htmlFor="new-team-area">Area name</label>
-          <input
+          <input data-slot="field"
             id="new-team-area"
             autoFocus
             value={name}
@@ -55,7 +55,7 @@ export function NewAreaDialog({ open, onOpenChange, onCreated }: { open: boolean
             placeholder="Garden, Taxes, Launch…"
             className="min-w-0 flex-1 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-sm outline-none focus-visible:border-primary/60"
           />
-          <button
+          <button data-slot="action-button"
             type="submit"
             disabled={!name.trim() || create.isPending}
             className="rounded-md border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted/50 disabled:opacity-50"

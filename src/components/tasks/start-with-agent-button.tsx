@@ -97,7 +97,7 @@ export function StartWithAgentButton({
     <Dialog.Root open={!!chooser} onOpenChange={(o) => { if (!o) { setChooser(null); onCancel?.(); onHandled?.(); } }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
           <Dialog.Title className="text-sm font-semibold text-foreground">Continue which workstream?</Dialog.Title>
           <Dialog.Description className="mt-1 text-xs text-muted-foreground">
             Several agent workstreams are working this task. Resume one, or start another.
@@ -106,6 +106,7 @@ export function StartWithAgentButton({
             {(chooser ?? []).map((t) => (
               <button
                 key={t.executionId}
+                data-slot="choice-row"
                 onClick={() => { setChooser(null); openExecution(t.sessionId); }}
                 className="flex w-full items-center gap-2 rounded border border-border px-2.5 py-2 text-left text-xs hover:border-violet-500/50 hover:bg-violet-500/[0.06]"
               >
@@ -115,10 +116,10 @@ export function StartWithAgentButton({
             ))}
           </div>
           <div className="mt-4 flex justify-between">
-            <button onClick={() => { setChooser(null); launchNew(); }} className="rounded px-3 py-1.5 text-xs font-medium text-violet-600 hover:bg-violet-500/10 dark:text-violet-400">
+            <button data-slot="action-button" onClick={() => { setChooser(null); launchNew(); }} className="rounded px-3 py-1.5 text-xs font-medium text-violet-600 hover:bg-violet-500/10 dark:text-violet-400">
               Start another execution
             </button>
-            <button onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <button data-slot="action-button" onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
               Cancel
             </button>
           </div>

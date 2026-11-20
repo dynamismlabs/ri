@@ -35,7 +35,7 @@ export function ResultArtifacts({ result, onFeedback }: { result: WorkResultReco
           <ResultPreview key={`${link.previewTargetId}-${index}`} resultId={result.id} targetId={link.previewTargetId} label={link.label} onFeedback={onFeedback} />
         ) : (
           resultLinkUrl(link.url) ? (
-            <a key={`${link.url}-${index}`} href={resultLinkUrl(link.url)!} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs hover:bg-muted">
+            <a data-slot="action-button" key={`${link.url}-${index}`} href={resultLinkUrl(link.url)!} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs hover:bg-muted">
               <ExternalLink size={12} />{link.label}
             </a>
           ) : <span key={index} className="text-xs text-muted-foreground">{link.label}: unavailable link</span>

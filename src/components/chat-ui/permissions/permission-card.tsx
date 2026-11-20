@@ -68,7 +68,7 @@ export function PermissionCard({
       )}
 
       <div className="flex items-center gap-2 px-4 py-2.5 border-t border-border bg-muted/20">
-        <button
+        <button data-slot="action-button" data-tone="status"
           type="button"
           disabled={resolve.isPending}
           onClick={() => (showDenyInput ? deny() : setShowDenyInput(true))}
@@ -80,7 +80,7 @@ export function PermissionCard({
               ? denyReason.trim() ? 'Send deny' : 'Deny'
               : 'Deny'}
         </button>
-        <button
+        <button data-slot="action-button" data-variant="primary"
           type="button"
           disabled={resolve.isPending}
           onClick={allow}

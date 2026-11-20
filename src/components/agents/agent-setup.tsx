@@ -261,7 +261,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
           {!canConfigure && <p className="text-xs text-muted-foreground">Only the team owner can change this agent&apos;s setup. Members can start chats and use its approved tools.</p>}
           <Section title="Basics">
             <Field label="Name">
-              <input
+              <input data-slot="field"
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
                 className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
@@ -283,7 +283,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                 <div className="flex gap-3">
                   <div className="relative group">
                     <EmojiPicker onSelect={(e) => setForm((f) => ({ ...f, emoji: e, attachment: null }))}>
-                      <button
+                      <button data-slot="image-picker"
                         type="button"
                         className={cn(
                           'w-16 h-16 rounded-xl border border-border flex flex-col items-center justify-center gap-1 transition-colors cursor-pointer',
@@ -302,7 +302,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                     </EmojiPicker>
                     {form.emoji && <RemoveBadge onClick={() => set('emoji', null)} label="Remove emoji" />}
                   </div>
-                  <button
+                  <button data-slot="image-picker"
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
@@ -322,7 +322,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             </Field>
             <Field label="Area">
               <div className="relative">
-                <select
+                <select data-slot="field"
                   value={form.areaId}
                   onChange={(e) => set('areaId', e.target.value)}
                   className="w-full appearance-none pl-3 pr-9 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
@@ -342,7 +342,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               hint="What this agent is for, in a sentence or two. Its main chat keeps this in mind."
               counter={{ value: form.purpose.trim().length, max: PURPOSE_MAX }}
             >
-              <textarea
+              <textarea data-slot="field" aria-invalid={purposeOver}
                 value={form.purpose}
                 onChange={(e) => set('purpose', e.target.value)}
                 rows={2}
@@ -362,7 +362,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             description="Standing instructions every chat in this agent receives when it starts. The agent's main chat follows them too."
           >
             <Field counter={{ value: form.instructions.trim().length, max: INSTRUCTIONS_MAX }}>
-              <textarea
+              <textarea data-slot="field" aria-invalid={instructionsOver}
                 value={form.instructions}
                 onChange={(e) => set('instructions', e.target.value)}
                 rows={8}
@@ -383,7 +383,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               htmlFor="agent-work-result-guidance"
               counter={{ value: form.workResultGuidance.length, max: WORK_RESULT_GUIDANCE_MAX }}
             >
-              <textarea
+              <textarea data-slot="field"
                 id="agent-work-result-guidance"
                 aria-describedby="agent-work-result-guidance-description agent-work-result-guidance-status"
                 aria-invalid={guidanceOver || undefined}
@@ -443,7 +443,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             {workspace.isGit && (
               <>
                 <Field label="Base branch">
-                  <input
+                  <input data-slot="field"
                     value={form.baseBranch}
                     onChange={(e) => set('baseBranch', e.target.value)}
                     placeholder="main"
@@ -454,7 +454,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                   label="Worktree root"
                   hint={personalTools ? `Where ${homeName} puts this agent's worktrees. Empty uses its Ri folder. Other devices always use their own.` : "Where this team's server puts this agent's worktrees. Empty uses its Ri folder."}
                 >
-                  <input
+                  <input data-slot="field"
                     value={form.worktreeRoot}
                     onChange={(e) => set('worktreeRoot', e.target.value)}
                     placeholder={`Ri folder/.work/worktrees/${workspace.slug}`}
@@ -521,7 +521,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
           <span className="mr-auto text-[11px] text-muted-foreground" role={saveError ? 'alert' : undefined}>
             {saveError ? 'Could not save. Your changes are still here. Try again.' : saving ? 'Saving...' : 'Unsaved changes'}
           </span>
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             onClick={() => {
               setSavedWorkspace(workspace);
               setPendingWorkspace(null);
@@ -534,7 +534,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
           >
             Discard
           </button>
-          <button
+          <button data-slot="action-button" data-variant="primary"
             onClick={save}
             disabled={saving || update.isPending || purposeOver || instructionsOver || guidanceOver}
             className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40"
@@ -598,7 +598,7 @@ function Field({
 
 function RemoveBadge({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <button
+    <button data-slot="action-button" data-variant="primary"
       type="button"
       onClick={onClick}
       aria-label={label}

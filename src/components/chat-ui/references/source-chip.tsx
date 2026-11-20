@@ -139,7 +139,7 @@ export function SourceChip({ sourceRef, onRemove, tone = 'surface' }: { sourceRe
         </div>
       </PopoverContent>
     </Popover>
-    {onRemove && <Tip label="Keep the app connected and remove this reference"><button type="button" aria-label={`Remove ${label} reference`} className="-ml-0.5 rounded py-0.5 pr-1 pl-0.5 opacity-70 hover:opacity-100" onClick={onRemove}><X size={11} /></button></Tip>}
+    {onRemove && <Tip label="Keep the app connected and remove this reference"><button data-slot="action-button" data-variant="ghost" type="button" aria-label={`Remove ${label} reference`} className="-ml-0.5 rounded py-0.5 pr-1 pl-0.5 opacity-70 hover:opacity-100" onClick={onRemove}><X size={11} /></button></Tip>}
   </span>;
 }
 export function SourceText({ text, chatId, resolve = true, tone }: { text: string; chatId?: string; resolve?: boolean; tone?: SourceChipTone }) {

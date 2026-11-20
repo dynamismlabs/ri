@@ -114,9 +114,9 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="@container mx-auto w-full max-w-5xl space-y-6 px-5 py-5 sm:px-8 sm:py-7">
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border">
-            <nav aria-label="Library views" className="flex gap-6">
+            <nav data-slot="segmented" aria-label="Library views" className="flex gap-6">
               {([{ value: 'yours', label: 'Your library' }, { value: 'discover', label: 'Discover' }] as const).map(tab => (
-                <button key={tab.value} type="button" aria-current={mode === tab.value ? 'page' : undefined} onClick={() => patch({ browse: tab.value === 'discover' ? 'discover' : undefined })}
+                <button data-slot="segmented-option" aria-pressed={mode === tab.value} key={tab.value} type="button" aria-current={mode === tab.value ? 'page' : undefined} onClick={() => patch({ browse: tab.value === 'discover' ? 'discover' : undefined })}
                   className={cn('border-b-2 pb-3 text-sm font-medium transition-colors', mode === tab.value ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}>
                   {tab.label}{tab.value === 'yours' && installed.length > 0 && <span className="ml-2 text-xs tabular-nums text-muted-foreground">{installed.length}</span>}
                 </button>
@@ -129,10 +129,10 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input value={searchDraft} onChange={event => setSearchDraft(event.target.value)} onBlur={() => { if (searchDraft !== search) patch({}); }}
                 placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'} aria-label="Search library" className="h-10 rounded-lg pl-10 pr-10 text-sm" />
-              {searchDraft && <button type="button" aria-label="Clear search" onClick={() => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"><X size={15} /></button>}
+              {searchDraft && <button data-slot="action-button" data-variant="ghost" type="button" aria-label="Clear search" onClick={() => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"><X size={15} /></button>}
             </div>
-            <div aria-label="Filter library" className="flex flex-wrap gap-1.5">
-              {FILTERS.map(option => <button key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => patch({ filter: option.value === 'all' ? undefined : option.value })}
+            <div data-slot="segmented" data-scroll aria-label="Filter library" className="flex flex-wrap gap-1.5">
+              {FILTERS.map(option => <button data-slot="segmented-option" key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => patch({ filter: option.value === 'all' ? undefined : option.value })}
                 className={cn('rounded-full border px-3 py-1 text-xs transition-colors', filter === option.value ? 'border-foreground/15 bg-secondary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>
                 {option.label}
               </button>)}
@@ -168,7 +168,7 @@ function MenuCopy({ label, detail }: { label: string; detail: string }) { return
 
 function LibraryCard({ item, open, chat }: { item: LibraryItem; open: () => void; chat: () => void }) {
   return <article className="group flex min-w-0 flex-col rounded-xl border border-border bg-card/20 p-4 transition-colors hover:border-foreground/20">
-    <button type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <button data-slot="menu-action" type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
       {item.providerId ? <IntegrationLogo providerId={item.providerId} name={item.name} size={36} /> : item.kind === 'skills' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BookOpen size={18} /></span> : item.target.kind === 'mcp' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Server size={18} /></span> : <AppMark name={item.name} size="lg" />}
       <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-semibold">{item.name}</h3><p className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">{item.description}</p></div>
     </button>

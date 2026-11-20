@@ -409,7 +409,7 @@ function ActionButton({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <button data-slot="action-button"
         type="button"
         disabled={disabled}
         onClick={(e) => {

@@ -288,7 +288,7 @@ export function ExecutionChatTabs({
   const hiddenUnread = entries.some((s) => !s.isCurrent && isSessionUnread(s) && !tabs.some((t) => t.id === s.id));
 
   return (
-    <div className="flex h-9 flex-shrink-0 items-center gap-0.5 border-b border-border bg-background px-1.5">
+    <div data-slot="chat-tabs" className="flex h-9 flex-shrink-0 items-center gap-0.5 border-b border-border bg-background px-1.5">
       {/* All chats leads the strip and never scrolls: overview first, then
           the open tabs, then + for a new one. New chat is also its first row,
           since the list is where you look for a chat before starting one. */}
@@ -306,6 +306,7 @@ export function ExecutionChatTabs({
           after the last tab while there's room and pins to the edge once the
           tabs overflow. A soft fade marks whichever edge hides tabs. */}
       <div
+        data-slot="chat-tabs-scroll"
         ref={scrollRef}
         onScroll={updateEdges}
         className="no-scrollbar flex min-w-0 flex-shrink items-center gap-0.5 overflow-x-auto"
@@ -576,6 +577,7 @@ function ChatTab({
     <div
       ref={setNodeRef}
       style={style}
+      data-slot="chat-tab"
       data-current={entry.isCurrent ? 'true' : undefined}
       {...attributes}
       className={cn(
@@ -610,6 +612,7 @@ function ChatTab({
         <Tip label={tooltip}>
           <button
             type="button"
+            aria-current={entry.isCurrent ? 'page' : undefined}
             onClick={onActivate}
             onDoubleClick={onStartRename}
             // Drag the tab by its body (like a browser tab). MouseSensor's

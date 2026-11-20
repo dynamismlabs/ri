@@ -71,7 +71,7 @@ export function CurrentWorkSection() {
 
             {/* Always visible on touch (no hover there); hover-reveal on md+. */}
             <div
-              className="flex items-center gap-0.5 transition-opacity md:opacity-0 md:focus-within:opacity-100 md:group-hover:opacity-100"
+              data-slot="row-actions" className="flex items-center gap-0.5 transition-opacity md:opacity-0 md:focus-within:opacity-100 md:group-hover:opacity-100"
               onClick={(e) => e.stopPropagation()}
             >
               <StartWithAgentButton task={task} variant="icon" />

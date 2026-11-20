@@ -281,7 +281,7 @@ function ConflictHunk({
           <TriangleAlert size={11} className="text-orange-500" />
           Conflict {index + 1} of {total}
         </span>
-        <div className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
+        <div data-slot="segmented" className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
           <ChoiceButton active={resolution === 'current'} onClick={() => onChoose('current')}>
             Accept current
           </ChoiceButton>
@@ -340,6 +340,7 @@ function ChoiceButton({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={cn(
         'rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors',

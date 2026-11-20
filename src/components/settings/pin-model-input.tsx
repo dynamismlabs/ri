@@ -69,7 +69,7 @@ export function PinModelInput({
           className="min-w-0 flex-1 bg-transparent font-mono text-[11px] text-foreground outline-none placeholder:font-sans placeholder:text-muted-foreground/60 disabled:opacity-50"
         />
         <Tip label="Pin this model ID and use it">
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             type="button"
             disabled={disabled || !modelId || add.isPending}
             onClick={() => void submit()}

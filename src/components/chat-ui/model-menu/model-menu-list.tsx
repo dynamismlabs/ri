@@ -48,7 +48,7 @@ export function ModelMenuList({ children }: { children: ReactNode }) {
       </CommandList>
       {edges.above && (
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex h-9 items-start justify-center bg-gradient-to-b from-popover via-popover/95 to-transparent">
-          <button type="button" onClick={() => scroll(-1)} className="pointer-events-auto flex items-center gap-1 rounded-full bg-popover px-3 py-1 text-[10.5px] text-muted-foreground shadow-sm ring-1 ring-border transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <button data-slot="action-button" data-variant="floating" type="button" onClick={() => scroll(-1)} className="pointer-events-auto flex items-center gap-1 rounded-full bg-popover px-3 py-1 text-[10.5px] text-muted-foreground shadow-sm ring-1 ring-border transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <ChevronUp size={12} />
             More models above
           </button>
@@ -56,7 +56,7 @@ export function ModelMenuList({ children }: { children: ReactNode }) {
       )}
       {edges.below && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex h-9 items-end justify-center bg-gradient-to-t from-popover via-popover/95 to-transparent">
-          <button type="button" onClick={() => scroll(1)} className="pointer-events-auto flex items-center gap-1 rounded-full bg-popover px-3 py-1 text-[10.5px] text-muted-foreground shadow-sm ring-1 ring-border transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <button data-slot="action-button" data-variant="floating" type="button" onClick={() => scroll(1)} className="pointer-events-auto flex items-center gap-1 rounded-full bg-popover px-3 py-1 text-[10.5px] text-muted-foreground shadow-sm ring-1 ring-border transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
             More models below
             <ChevronDown size={12} />
           </button>

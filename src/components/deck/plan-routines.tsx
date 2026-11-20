@@ -29,7 +29,7 @@ export function PlanRoutines({ items, onComplete }: PlanRoutinesProps) {
             className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-card transition-all group"
           >
             <div className="flex items-center gap-2.5">
-              <button
+              <button data-slot="completion-control" aria-label={`Complete ${item.title}`}
                 onClick={() => onComplete(item.taskId)}
                 className={cn(
                   'w-4 h-4 rounded border flex items-center justify-center transition-all',

@@ -36,7 +36,7 @@ function ImagePreview({ file, remove, disabled }: { file: File; remove(): void; 
   return <div className="relative shrink-0">
     {/* eslint-disable-next-line @next/next/no-img-element */}
     <img ref={image} alt={file.name || 'Staged image'} className="h-24 w-24 rounded-xl object-cover border border-border shadow-sm" />
-    <button type="button" onClick={remove} disabled={disabled} aria-label="Remove image"
+    <button data-slot="action-button" data-variant="floating" type="button" onClick={remove} disabled={disabled} aria-label="Remove image"
       className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full border bg-background shadow-sm disabled:opacity-40"><X size={14} /></button>
   </div>;
 }
@@ -185,7 +185,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
         <div className="relative flex max-h-[85dvh] flex-col overflow-y-auto rounded-3xl border border-border/80 bg-card shadow-2xl">
           <div className="flex items-center justify-between px-5 pt-4 pb-2">
             <div className="flex items-center gap-2 text-muted-foreground"><Zap size={14} /><span className="text-sm font-medium">Quick capture</span></div>
-            <DialogPrimitive.Close asChild><button type="button" aria-label="Close" className="rounded-full bg-muted/40 p-1.5 text-muted-foreground hover:text-foreground"><X size={15} /></button></DialogPrimitive.Close>
+            <DialogPrimitive.Close asChild><button data-slot="action-button" data-variant="ghost" type="button" aria-label="Close" className="rounded-full bg-muted/40 p-1.5 text-muted-foreground hover:text-foreground"><X size={15} /></button></DialogPrimitive.Close>
           </div>
           <div className="space-y-3 px-5 pb-5 pt-2">
             {!!draft.recoveries.length && <section aria-label="Saved captures on this device" className="space-y-2 rounded-xl border bg-muted/20 p-3">
@@ -214,7 +214,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 {!!draft.missingFiles.length && <div role="alert"><p>Missing images: {draft.missingFiles.join(', ')}</p><button type="button" onClick={draft.acceptRecoveredFiles} className="underline">Keep recovered content</button></div>}
                 {transcriptOverflow && <div role="alert" className="space-y-2 text-amber-600 dark:text-amber-500">
                   <p>This transcript does not fit. Shorten the capture to add it, or copy the transcript before discarding it. It has not been saved on this device.</p>
-                  <textarea aria-label="Unadded voice transcript" readOnly value={voice.transcript} className="max-h-32 w-full rounded border bg-background p-2 text-foreground" />
+                  <textarea data-slot="field" aria-label="Unadded voice transcript" readOnly value={voice.transcript} className="max-h-32 w-full rounded border bg-background p-2 text-foreground" />
                   <button type="button" onClick={voice.clearTranscript} className="underline">Discard unadded transcript</button>
                 </div>}
                 {draft.value.submission === 'uncertain' && !imageUploading && <p role="status" className="text-amber-600 dark:text-amber-500">This capture may already have been submitted. Check your Stream before capturing again.</p>}
@@ -229,11 +229,11 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
               </div>}
               <div className="flex flex-wrap items-center justify-between gap-2 rounded-b-[20px] border-t bg-muted/10 p-2">
                 <div className="flex gap-1">
-                  <button type="button" aria-label="Voice capture" onClick={voice.toggleRecording} disabled={busy || voice.captureMode === null || voice.isTranscribing || savedRemotely} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"><Mic size={15} />{voice.isRecording ? 'Stop' : 'Speak'}</button>
-                  <button type="button" aria-label="Attach image" onClick={() => imageInputRef.current?.click()} disabled={busy || savedRemotely || images.length >= CAPTURE_MAX_IMAGES} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"><ImagePlus size={15} />Image</button>
+                  <button data-slot="action-button" data-variant="ghost" type="button" aria-label="Voice capture" onClick={voice.toggleRecording} disabled={busy || voice.captureMode === null || voice.isTranscribing || savedRemotely} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"><Mic size={15} />{voice.isRecording ? 'Stop' : 'Speak'}</button>
+                  <button data-slot="action-button" data-variant="ghost" type="button" aria-label="Attach image" onClick={() => imageInputRef.current?.click()} disabled={busy || savedRemotely || images.length >= CAPTURE_MAX_IMAGES} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"><ImagePlus size={15} />Image</button>
                   <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={event => stageFiles(Array.from(event.target.files ?? []))} />
                 </div>
-                <button type="button" aria-label="Capture" onClick={() => void handleSubmit()} disabled={!canSubmit} className="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-40">
+                <button data-slot="action-button" data-variant="primary" type="button" aria-label="Capture" onClick={() => void handleSubmit()} disabled={!canSubmit} className="flex h-9 items-center gap-1.5 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-40">
                   {imageUploading || createStream.isPending ? <Loader2 size={15} className="animate-spin" /> : <ArrowUp size={15} />}Capture
                 </button>
               </div>

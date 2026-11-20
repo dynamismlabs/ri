@@ -292,6 +292,8 @@ function PrRef({ pr }: { pr: OpenablePr }) {
         target="_blank"
         rel="noreferrer"
         aria-label={`${pr.closed ? 'Closed pull request' : 'Pull request'} #${pr.number} on GitHub`}
+        data-slot="action-button"
+        data-tone="status"
         className={cn(
           'inline-flex h-6 flex-shrink-0 items-center gap-1 rounded-[4px] border pl-1.5 pr-1 font-mono text-[12px] font-medium leading-none tabular-nums transition-colors',
           pr.closed
@@ -492,6 +494,7 @@ function Narrative({ state, base, openablePr, fit, sessionId, push, pullBase, pu
     <div className={`inline-flex ${fit ? 'w-auto' : 'w-full'} max-w-full min-w-0 items-center gap-2`}>
       {pr && <PrRef pr={pr} />}
       <div
+        data-slot="status-strip"
         className={`inline-flex ${fit ? '' : 'flex-1'} min-w-0 items-center justify-between gap-3 rounded-lg border pl-1 pr-1 py-1 text-[11px] overflow-hidden ${theme.chip}`}
       >
         <NarrativeBody

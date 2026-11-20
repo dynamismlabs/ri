@@ -175,9 +175,9 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
   return (
     <div className="space-y-2 border-t border-border/70 p-2.5">
       {(methods.data?.methods.length ?? 0) > 1 && (
-        <div className="flex flex-wrap gap-1">
+        <div data-slot="segmented" data-scroll className="flex flex-wrap gap-1">
           {methods.data!.methods.map((entry) => (
-            <button
+            <button data-slot="segmented-option" aria-pressed={entry.id === method.id}
               key={entry.id}
               type="button"
               onClick={() => { setMethodId(entry.id); setInputs({}); setFlow(null); }}

@@ -138,7 +138,7 @@ export function CalendarModal() {
     <Dialog open={open} onOpenChange={(next) => (next ? openCalendarModal() : closeCalendarModal())}>
       <DialogPortal>
         <DialogOverlay className="z-40" />
-        <DialogPrimitive.Content
+        <DialogPrimitive.Content data-slot="dialog-content"
           className={cn(
             'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl outline-none',
             'md:inset-x-4 md:top-12 md:bottom-4',
@@ -272,7 +272,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
 
   return (
     <>
-      <header className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2">
+      <header data-slot="calendar-toolbar" className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2">
         <DialogTitle className="flex items-center gap-1.5 px-1 text-sm font-semibold">
           <CalendarIcon className="size-4 text-muted-foreground" />
           Calendar
@@ -290,7 +290,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
               onChange={setView}
             />
 
-            <div className="flex items-center">
+            <div data-slot="calendar-navigation" className="flex items-center">
               <button
                 type="button"
                 onClick={() => step(-1)}
@@ -361,6 +361,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
               <button
                 type="button"
                 onClick={handleRefresh}
+                data-slot="icon-button"
                 aria-label="Refresh calendar"
                 className="relative flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
@@ -375,6 +376,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
 
         <Tip label="Close calendar" shortcut="Esc">
           <DialogPrimitive.Close
+            data-slot="icon-button"
             className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close calendar"
           >
@@ -464,7 +466,7 @@ function Segmented<T extends string>({
   onChange: (next: T) => void;
 }) {
   return (
-    <div role="group" aria-label={label} className="flex items-center overflow-hidden rounded-md border border-border">
+    <div data-slot="segmented" role="group" aria-label={label} className="flex items-center overflow-hidden rounded-md border border-border">
       {options.map((o) => (
         <button
           key={o.value}

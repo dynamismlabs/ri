@@ -60,7 +60,7 @@ export function TaskBoardModal() {
     <Dialog open={open} onOpenChange={(next) => (next ? openBoard() : closeTaskBoard())}>
       <DialogPortal>
         <DialogOverlay className="z-40" />
-        <DialogPrimitive.Content
+        <DialogPrimitive.Content data-slot="dialog-content"
           className={cn(
             'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl outline-none',
             'md:inset-x-4 md:top-12 md:bottom-4',

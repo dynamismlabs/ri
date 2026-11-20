@@ -29,6 +29,11 @@ html[data-look="edge"] {
   --edge-t4: oklch(0.67 0.004 264);
   --edge-attention: oklch(0.63 0.16 55);
   --edge-attention-bg: oklch(0.75 0.15 66 / 0.17);
+  --edge-mode-auto: var(--color-yellow-800);
+  --edge-warning-ink: var(--color-amber-800);
+  --edge-mode-edits: var(--color-purple-800);
+  --edge-mode-ask: var(--color-blue-800);
+  --edge-mode-plan: var(--color-teal-800);
   --edge-danger: oklch(0.56 0.19 25);
   --edge-working: oklch(0.55 0.15 252);
   --edge-shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
@@ -96,6 +101,11 @@ html[data-look="edge"] .dark {
   --edge-t4: oklch(0.48 0.004 264);
   --edge-attention: oklch(0.79 0.15 66);
   --edge-attention-bg: oklch(0.79 0.15 66 / 0.15);
+  --edge-mode-auto: var(--color-yellow-400);
+  --edge-warning-ink: var(--color-amber-400);
+  --edge-mode-edits: var(--color-purple-400);
+  --edge-mode-ask: var(--color-blue-400);
+  --edge-mode-plan: var(--color-teal-400);
   --edge-danger: oklch(0.7 0.17 24);
   --edge-working: oklch(0.74 0.12 250);
   --edge-shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
@@ -185,8 +195,12 @@ html[data-look="edge"] [data-slot="segmented"].contents { display: flex; }
 html[data-look="edge"] [data-slot="segmented"] { align-self: center; align-items: center; }
 html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
 html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
-html[data-look="edge"] [data-slot="segmented"] > button:hover { color: var(--edge-t1); background-color: transparent; }
+html[data-look="edge"] [data-slot="segmented"] > button:hover:not([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { color: var(--edge-t1); background-color: transparent; }
 html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+/* A label shown in the track for a choice made elsewhere (the phone's More view) reads as the chosen option. */
+html[data-look="edge"] [data-slot="segmented"] > span { border-radius: 999px; color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+/* Phone-sized switches keep their touch height and their own flex (full-width lenses, scrolling tool tabs). */
+html[data-look="edge"] [data-slot="segmented"][data-size="touch"] > button { flex: revert-layer; height: 36px; padding-inline: 12px; font-size: 13px; }
 
 /* Toolbar buttons (list toolbars, deck filters): capsules on a quiet fill, no outline. */
 html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) { height: 28px; min-width: 28px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t2); font-size: 12px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
@@ -270,12 +284,13 @@ html[data-look="edge"] [data-slot="new-agent"]:hover { background-color: var(--e
 /* Task and note pages (the slideout and the full page share them). */
 html[data-look="edge"] [data-slot="entity-kind"] { gap: 7px; }
 html[data-look="edge"] [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); }
-/* The area above a title is a quiet button: it reads as words, and shows it can be changed on hover. */
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 3px; height: 22px; margin-left: -7px; padding: 0 6px 0 7px; border-radius: 999px; background-color: transparent; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t2); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t4); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0; transition: opacity 120ms; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-track); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, :focus-visible, [data-state="open"])::after { opacity: 0.6; }
+/* The area above a title is a control you can see at rest: a soft capsule with its
+   chevron, like the other property buttons. "No area" says so in quieter type. */
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 10px; border-radius: 999px; background-color: var(--edge-track); font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0.55; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"])::after { opacity: 0.85; }
 html[data-look="edge"] [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
 html[data-look="edge"] [data-slot="properties"] > span { font-weight: 400; color: var(--edge-t3); }
 html[data-look="edge"] [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }
@@ -314,6 +329,144 @@ html[data-look="edge"] :is([data-slot="input"], [data-slot="input-group"], [data
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
-html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, .border.bg-card, [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Inside a track (which may scroll and clip), the ring sits just inside the option. */
 html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
+
+/* ── Phase 3: daily controls and the long tail ─────────────────────────── */
+/* These labels were sized for capitals. Sentence case needs a readable size.
+   Keep this broad rule weak so metadata and toolbar slots retain their own size. */
+html[data-look="edge"] :where(.uppercase.text-\[8\.5px\], .uppercase.text-\[9px\]) { font-size: 11px; line-height: 1.4; font-weight: 500; }
+
+/* Small actions share the capsule shape without changing their layout or size.
+   A solid action retains its component's foreground and hover fill. */
+html[data-look="edge"] [data-slot="action-button"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; }
+html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]) { background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]):hover:not(:disabled) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="action-button"][data-variant="ghost"] { background-color: transparent; }
+html[data-look="edge"] [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]) { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
+html[data-look="edge"] [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]):hover:not(:disabled) { background-color: color-mix(in oklch, currentColor 18%, transparent); }
+
+/* The git summary is a quiet group, with its next action nested inside. */
+html[data-look="edge"] [data-slot="status-strip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="status-strip"] [data-slot="action-button"] { min-height: 24px; }
+
+/* Finder and its menu are one capsule. The second half keeps a single divider. */
+html[data-look="edge"] [data-slot="split-button"] { border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="split-button"] > button { border-color: transparent; border-radius: 999px 0 0 999px; background-color: transparent; box-shadow: none; }
+html[data-look="edge"] [data-slot="split-button"] > button + button { border-left-color: var(--edge-line-2); border-radius: 0 999px 999px 0; }
+html[data-look="edge"] [data-slot="split-button"] > button:hover:not(:disabled) { background-color: var(--edge-selected); color: var(--edge-t1); }
+
+/* Chat tabs keep their measured scroller. Each tab includes its close button. */
+html[data-look="edge"] [data-slot="chat-tabs"] { gap: 4px; }
+html[data-look="edge"] [data-slot="chat-tabs"] > button { border-radius: 999px; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="chat-tabs"] > button:hover { color: var(--edge-t1); background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="chat-tab"] { border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="chat-tab"]:hover { background-color: var(--edge-hover); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="chat-tab"][data-current="true"] { background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="chat-tab"] > button { border-radius: 999px; }
+
+/* Hover actions are capsules. Keyboard users see the same actions on focus. */
+html[data-look="edge"] [data-slot="row-actions"]:focus-within { opacity: 1; }
+html[data-look="edge"] [data-slot="row-actions"] :where(button) { border-radius: 999px; }
+
+/* Calendar's date controls stay in their existing group and position. */
+html[data-look="edge"] [data-slot="calendar-navigation"] { gap: 2px; }
+html[data-look="edge"] [data-slot="calendar-navigation"] > button { min-height: 26px; border-radius: 999px; }
+
+/* Settings repeats a few hand-built patterns across its sections. This boundary
+   lets those patterns share the system without changing classic's utilities.
+   Explicit slots (choices, switches, editor controls) keep their own rules. */
+/* A switch keeps its own track and thumb, including inside Settings. */
+html[data-look="edge"] [data-slot="settings-body"] [data-slot="segmented"] { width: fit-content; }
+/* Independent pressed toggles are a soft selection, unlike solid action buttons. */
+html[data-look="edge"] [data-slot="settings-body"] [data-slot="button-group"] > [data-slot="button"][aria-pressed="true"] { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); box-shadow: none; }
+html[data-look="edge"] [data-slot="settings-nav"] { background-color: var(--edge-canvas); }
+html[data-look="edge"] [data-slot="settings-nav"] > button { border-radius: 8px; box-shadow: none; }
+html[data-look="edge"] [data-slot="settings-nav"] > button[aria-current="page"] { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="settings-nav"] > button:not([aria-current="page"]):hover { background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:not([data-slot], .rounded-full) { border-color: transparent; border-radius: 14px; }
+html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:is(.border-border, :not([class*="border-"])):not([data-slot], .rounded-full, [role="alert"], [role="status"]) { background-color: var(--edge-raised); }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *):hover:not(:disabled) { background-color: var(--edge-selected); }
+/* Some Settings actions use bg-foreground for their solid fill. Preserve its
+   matching text-background in both themes and on hover. */
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
+html[data-look="edge"] :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
+html[data-look="edge"] [data-slot="field"] { border-color: var(--edge-line-2); border-radius: 10px; background-color: var(--background); }
+html[data-look="edge"] [data-slot="segmented"][role="radiogroup"] { max-width: 100%; overflow-x: auto; }
+html[data-look="edge"] [data-slot="segmented"] > [aria-checked="true"] { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+
+/* Choosers hold a title and description. Their selection is a soft row, with
+   no outline or card shadow. This also covers hand-built dialog lists. */
+html[data-look="edge"] [data-slot="choice-row"] { border-color: transparent; border-radius: 8px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="choice-row"]:hover:not(:disabled) { border-color: transparent; background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="choice-row"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="status-badge"] { border-color: transparent; border-radius: 999px; font-size: 11px; line-height: 1.4; font-weight: 500; letter-spacing: normal; }
+html[data-look="edge"] [data-slot="schedule-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--edge-shadow-card); }
+html[data-look="edge"] [data-slot="schedule-row"] > button { border-radius: 999px; }
+
+/* Every control whose focus shadow the look replaces also gets an outline.
+   Inside scrolling groups it sits within the control so it cannot be clipped. */
+html[data-look="edge"] :is([data-slot="action-button"], [data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html[data-look="edge"] :is([data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
+/* Descriptive Settings choices are rows even when they have no shared component. */
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
+html[data-look="edge"] [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+
+/* Permission modes keep today's hue, at a readable shade on the quiet fill. */
+html[data-look="edge"] [data-mode="auto_all"] { --edge-mode-color: var(--edge-mode-auto); }
+html[data-look="edge"] [data-mode="auto_edits"] { --edge-mode-color: var(--edge-mode-edits); }
+html[data-look="edge"] [data-mode="ask"] { --edge-mode-color: var(--edge-mode-ask); }
+html[data-look="edge"] [data-mode="plan"] { --edge-mode-color: var(--edge-mode-plan); }
+html[data-look="edge"] [data-slot="chip-button"][data-mode] { color: var(--edge-mode-color); background-color: color-mix(in oklch, currentColor 10%, transparent); filter: none; }
+html[data-look="edge"] [data-slot="chip-button"][data-mode]:hover:not(:disabled) { color: var(--edge-mode-color); background-color: color-mix(in oklch, currentColor 16%, transparent); }
+
+/* Keep every Calendar view label visible. The date text already truncates to
+   make room, so the control track must not shrink and clip its last option. */
+html[data-look="edge"] [data-slot="calendar-toolbar"] > [data-slot="segmented"] { flex-shrink: 0; }
+
+
+/* Content remains rectangular even when the whole card opens something. Image
+   pickers and calendar events keep their content geometry and color marks. */
+html[data-look="edge"] [data-slot="content-card"] { border-color: transparent; border-radius: 14px; background-color: var(--edge-raised); box-shadow: var(--edge-shadow-card); }
+html[data-look="edge"] [data-slot="content-card"]:hover:not(:disabled) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="content-card"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="image-picker"] { border-radius: 14px; }
+html[data-look="edge"] [data-slot="calendar-event"] { border-color: transparent; border-radius: 8px; background-color: var(--edge-raised); }
+html[data-look="edge"] [data-slot="calendar-event"]:hover { background-color: var(--edge-selected); }
+/* Menu rows retain separators and their size, rather than becoming small pills. */
+html[data-look="edge"] [data-slot="menu-action"] { border-radius: 8px; }
+html[data-look="edge"] [data-slot="menu-action"]:hover:not(:disabled) { background-color: var(--edge-selected); }
+
+/* Files in a sentence are capsules. In an inverted message they inherit the
+   message's ink, so the chip and its hover stay readable on either bubble. */
+html[data-look="edge"] [data-slot="attachment-chip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="attachment-chip"]:hover { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="attachment-chip"][data-tone="bubble"] { color: inherit; background-color: color-mix(in oklch, currentColor 10%, transparent); }
+html[data-look="edge"] [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-color: color-mix(in oklch, currentColor 15%, transparent); }
+
+/* A floating action stays opaque over images and the model list's edge fades. */
+html[data-look="edge"] [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--edge-shadow-thumb); }
+html[data-look="edge"] [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--edge-raised); }
+html[data-look="edge"] [data-slot="field"][aria-invalid="true"] { border-color: var(--destructive); }
+
+/* Only these unmeasured tracks scroll here. SegmentedTabs keeps its own measured
+   scroller and edge fades. Focus sits inside the clipped option. */
+html[data-look="edge"] [data-slot="segmented"][data-scroll] { width: fit-content; max-width: 100%; overflow-x: auto; }
+html[data-look="edge"] :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* Calendar cells and pickers can clip at their container's edge. */
+html[data-look="edge"] :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
+
+/* Warning actions keep amber at a readable shade on the quiet status fill. */
+html[data-look="edge"] [data-slot="action-button"][data-tone="warning"] { color: var(--edge-warning-ink); }
+
+/* A hand-built grid choice becomes one track while retaining its classic grid. */
+html[data-look="edge"] [data-slot="segmented"].grid { display: flex; }
+/* Fields use one focus treatment. Preserve an invalid field's error border. */
+html[data-look="edge"] [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
+html[data-look="edge"] [data-slot="field"]:focus-visible { border-color: var(--edge-line-2); box-shadow: none; }
+html[data-look="edge"] [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
+/* A touch track inside a contents wrapper fills its existing padded row. */
+html[data-look="edge"] [data-slot="segmented"][data-size="touch"].contents { flex: 1; }

@@ -51,7 +51,7 @@ export function SetupRecovery({
           )}
           {isConfigure ? (
             onOpenSettings && (
-              <button
+              <button data-slot="action-button" data-variant="primary"
                 type="button"
                 onClick={onOpenSettings}
                 className="inline-flex items-center gap-1.5 rounded-md border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90"
@@ -60,7 +60,7 @@ export function SetupRecovery({
               </button>
             )
           ) : (
-            <button
+            <button data-slot="action-button" data-variant="primary"
               type="button"
               onClick={onRetry}
               disabled={isRetrying}

@@ -58,8 +58,9 @@ export default function RunsPage() {
       </header>
 
       <div className="px-6 py-3 border-b border-border flex items-center gap-2">
+        <div data-slot="segmented" className="contents">
         {(['all', 'manual', 'scheduled', 'webhook'] as Filter[]).map((f) => (
-          <button
+          <button data-slot="segmented-option" aria-pressed={filter === f}
             key={f}
             onClick={() => setFilter(f)}
             className={cn(
@@ -69,9 +70,10 @@ export default function RunsPage() {
                 : 'border-border text-muted-foreground hover:text-foreground',
             )}
           >
-            {f}
+            {f[0].toUpperCase() + f.slice(1)}
           </button>
         ))}
+        </div>
       </div>
 
       <main className="px-6 py-6 max-w-4xl mx-auto">

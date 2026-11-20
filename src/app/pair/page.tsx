@@ -177,7 +177,7 @@ export default function PairPage() {
                     disabled={validating}
                     className="w-full flex-1 bg-transparent px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none disabled:opacity-50"
                   />
-                  <button
+                  <button data-slot="action-button" data-variant="primary"
                     type="button"
                     onClick={submit}
                     disabled={!token.trim() || validating}
@@ -201,7 +201,7 @@ export default function PairPage() {
                 </div>
               )}
 
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={() => {
                   if (status.kind !== 'idle') setStatus({ kind: 'idle' });
