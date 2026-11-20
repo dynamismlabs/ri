@@ -109,9 +109,9 @@ export function registerUpdateCommand(program: Command) {
     });
   for (const action of ['check', 'download', 'apply', 'when-idle', 'later'] as const) {
     const command = update.command(action).description({ check: 'Check the configured publisher feed', download: 'Download and verify the available runtime', apply: 'Approve activation at the next safe point', 'when-idle': 'Remember approval and wait for work to finish', later: 'Cancel pending activation and keep the download' }[action]);
-    if (action === 'when-idle') command.option('--hour <hour>', 'maintenance window start, 0-23').option('--hours <hours>', 'window duration, 1-12', '2').option('--timezone <name>', 'IANA timezone', Intl.DateTimeFormat().resolvedOptions().timeZone);
+    if (action === 'when-idle') command.option('--hour <hour>', 'maintenance window start, 0-23').option('--hours <hours>', 'window duration, 1-12', '2').option('--timezone <name>', "IANA timezone (default: this computer's time zone)");
     command.action(async (options: { hour?: string; hours?: string; timezone?: string }) => {
-      const window = options.hour === undefined ? undefined : { hour: Number(options.hour), durationHours: Number(options.hours), timeZone: options.timezone };
+      const window = options.hour === undefined ? undefined : { hour: Number(options.hour), durationHours: Number(options.hours), timeZone: options.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone };
       console.info(JSON.stringify(await serviceRequest('/update', 'POST', 3000, { action, window }), null, 2));
     });
   }
