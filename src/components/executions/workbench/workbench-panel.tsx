@@ -77,6 +77,8 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
   return (
     <div className="@container/panel flex h-full min-w-0 flex-col bg-background">
       <div className="flex h-9 flex-shrink-0 items-stretch gap-0.5 border-b border-border pl-1 pr-1.5">
+        {/* The primary views: one segmented control in the new look (docs/ui-system.md). */}
+        <div data-slot="segmented" className="flex min-w-0 items-stretch gap-0.5">
         {PRIMARY_VIEWS.map((v) => {
           const Icon = VIEW_ICONS[v];
           const on = view === v;
@@ -103,6 +105,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
             </Tip>
           );
         })}
+        </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Tip label="Notes & tasks, Scratchpad">

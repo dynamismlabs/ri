@@ -63,7 +63,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/50 px-3 py-1">
-        <div role="tablist" aria-label="Edit as" className="flex items-center gap-0.5">
+        <div role="tablist" aria-label="Edit as" data-slot="segmented" className="flex items-center gap-0.5">
           {(['fields', 'file'] as const).map((m) => (
             <button
               key={m}

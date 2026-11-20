@@ -37,6 +37,7 @@ html[data-look="edge"] {
   --edge-composer-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.13), 0 1px 2px oklch(0.2 0.01 264 / 0.05), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.2);
   --edge-composer-focus: 0 0 0 1px oklch(0.2 0.01 264 / 0.18), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.22);
   --edge-bar-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.11), 0 6px 18px -12px oklch(0.2 0.02 264 / 0.16);
+  --edge-shadow-card: 0 0 0 0.5px oklch(0.2 0.01 264 / 0.09), 0 1px 3px oklch(0.2 0.01 264 / 0.07);
 
   /* shadcn names, so every existing component follows the new look. */
   --background: var(--edge-pane);
@@ -103,6 +104,7 @@ html[data-look="edge"] .dark {
   --edge-composer-shadow: 0 0 0 1px oklch(1 0 0 / 0.11), 0 12px 30px -14px oklch(0 0 0 / 0.75);
   --edge-composer-focus: 0 0 0 1px oklch(1 0 0 / 0.2), 0 12px 30px -14px oklch(0 0 0 / 0.8);
   --edge-bar-shadow: 0 0 0 1px oklch(1 0 0 / 0.1);
+  --edge-shadow-card: 0 0 0 1px oklch(1 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.35);
 
   --background: var(--edge-pane);
   --foreground: var(--edge-t1);
@@ -179,7 +181,8 @@ html[data-look="edge"] :not([data-slot="button-group"]) > [data-slot="button"] {
    switch joins it with data-slot="segmented" on the track and aria-pressed or
    aria-selected on its options. */
 html[data-look="edge"] [data-slot="segmented"] { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; }
+html[data-look="edge"] [data-slot="segmented"] { align-self: center; align-items: center; }
+html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
 html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
 html[data-look="edge"] [data-slot="segmented"] > button:hover { color: var(--edge-t1); background-color: transparent; }
 html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
@@ -263,8 +266,12 @@ html[data-look="edge"] [data-slot="new-agent"]:hover { background-color: var(--e
 /* Task and note pages (the slideout and the full page share them). */
 html[data-look="edge"] [data-slot="entity-kind"] { gap: 7px; }
 html[data-look="edge"] [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="entity-kind"] :is([data-slot="area-select"], [data-slot="area-select"]:hover) { padding: 0; border-radius: 4px; background-color: transparent; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t2); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:hover { color: var(--edge-t1); }
+/* The area above a title is a quiet button: it reads as words, and shows it can be changed on hover. */
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 3px; height: 22px; margin-left: -7px; padding: 0 6px 0 7px; border-radius: 999px; background-color: transparent; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t4); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0; transition: opacity 120ms; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-track); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, :focus-visible, [data-state="open"])::after { opacity: 0.6; }
 html[data-look="edge"] [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
 html[data-look="edge"] [data-slot="properties"] > span { font-weight: 400; color: var(--edge-t3); }
 html[data-look="edge"] [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }
@@ -276,3 +283,22 @@ html[data-look="edge"] [data-slot="header-action"]:hover { border-color: transpa
 html[data-look="edge"] [data-slot="header-action"][data-tone="agent"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 11%, transparent); }
 html[data-look="edge"] [data-slot="header-action"][data-tone="agent"]:hover { color: revert-layer; background-color: color-mix(in oklch, currentColor 17%, transparent); }
 html[data-look="edge"] [data-slot="header-action"][data-state="done"] { background-color: var(--primary); color: var(--primary-foreground); }
+
+/* Tool panel tabs outside a segmented control (a file or chat opened beside, More): capsules. */
+html[data-look="edge"] .panel-tab:not([data-slot="segmented"] > *) { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--edge-t3); }
+html[data-look="edge"] .panel-tab:not([data-slot="segmented"] > *):hover { color: var(--edge-t1); }
+html[data-look="edge"] .panel-tab.panel-tab-on:not([data-slot="segmented"] > *) { background-color: var(--edge-selected); color: var(--edge-t1); }
+
+/* Stream: the line under a capture in plain type, and its notices as soft panels. */
+html[data-look="edge"] [data-slot="stream-meta"] > :is(p, span, button, a) { font-family: inherit; font-size: 12px; letter-spacing: normal; text-transform: none; }
+html[data-look="edge"] [data-slot="stream-meta"] > svg { width: 12px; height: 12px; }
+
+/* A notice or summary inside a pane: a soft raised panel, no outline. */
+html[data-look="edge"] [data-slot="callout"] { border-color: transparent; border-radius: 14px; background-color: var(--edge-raised); }
+
+/* Hand-built buttons and cards across the app, until each one moves onto the shared components. */
+html[data-look="edge"] :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-radius: 999px; }
+html[data-look="edge"] .border.bg-card:not(input, textarea, select, [data-slot]) { border-color: transparent; box-shadow: var(--edge-shadow-card); }
+
+/* Phone: the search field and the buttons beside it. */
+html[data-look="edge"] :is([data-slot="search-field"], [data-slot="icon-button"]) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }

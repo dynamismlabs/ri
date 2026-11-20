@@ -39,6 +39,10 @@ The fix is one small system that every surface draws from, not a redesign.
 
 ## How it is built
 
+The concepts it came from are kept in `docs/ui-system-concept.html` (open it in a
+browser and pick Edge Mac at the top), so the build can be checked
+against them.
+
 The look is a trial behind a switch, so classic stays exact until the new one is
 complete.
 
@@ -88,6 +92,27 @@ These carry the system across screens. Use them before inventing a new one.
 | `properties` | The label and value grid on a task (Status, Deadline, Energy, Effort...) | |
 | `header-action` | Continue with agent and Complete at the top of a task | `data-tone="agent"`, `data-state="done"` |
 | `task-picker` | The task a note links to, in the note's `meta` line | |
+| `callout` | A notice or summary inside a pane (Stream's triage digest): a soft raised panel, no outline | |
+| `stream-meta` | The line under a Stream capture | |
+| `search-field`, `icon-button` | The phone's search field and the bordered icon buttons beside it | |
+| class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside, More). `panelTabClass` adds it | `panel-tab-on` |
+
+Two broad rules cover hand-built pieces until each moves onto the shared components:
+a hand-built `button` or `a` with `bg-primary` is a capsule, and a hand-built
+`.border.bg-card` card loses its outline for a soft shadow (Board cards, Schedules rows).
+
+### Shapes
+
+Anything you press is a capsule: buttons, chips, the options of a segmented
+control, tabs. Anything that holds content is a rounded rectangle: text fields
+(10px), the chat input (22px), cards and callouts (14px), menus and popovers (12px),
+dialogs. List rows take a small 8px radius for their hover and selection. A button
+drawn as a rounded rectangle is a leftover, not a variant.
+
+### The area above a title
+
+It reads as words ("Task · Money") and shows it can be changed on hover: a soft
+capsule and a chevron. With no area it says "No area" in the faintest text.
 
 Inside `meta`, status, energy and blocked keep the colors classic gives them:
 their rule sets `color: revert-layer`, which hands the color back to the
@@ -105,11 +130,15 @@ component's own utility classes.
    metadata as plain words, every shadcn Button a capsule. Then the task and note
    slideouts (and the full pages that share them): the kind line as plain words,
    date, repeat and priority as capsules, Energy and Effort as segmented controls,
-   the header actions as capsules, and note rows' details as plain words.
+   the header actions as capsules, and note rows' details as plain words. Then
+   Stream (its switch, toolbar and digest), the agent page (New chat, the tool
+   tabs as a segmented control, task chips), every tool panel's tabs, the
+   Agent and Document toggle, the skill editor's toggles, the phone's search
+   field, and the two broad rules above.
 3. **The long tail, then the switch goes.** Codemods for border opacities, radii and
    hand-built buttons onto the shared components, a lint rule that stops new ones,
-   the chat UI gallery checked in both looks. Left from phase 2 on purpose: the
-   bordered cards on the Board and in Settings, the git status box in a chat's
+   the chat UI gallery checked in both looks. Left from phase 2 on purpose:
+   Settings' boxed sections and bordered buttons, the git status box in a chat's
    header, the composer's mode chip, and copy still in Title Case in shared
    constants ("In Progress", "Priority Order", "Schedules and Triggers"), which
    reaches tests and the guide. Then Edge becomes the only look, its
