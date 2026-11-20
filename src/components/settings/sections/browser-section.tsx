@@ -167,6 +167,8 @@ export function BrowserSection() {
                       key={b.executablePath}
                       onClick={() => patch({ chromiumPath: b.executablePath })}
                       disabled={busy !== null}
+                      data-slot="choice-row"
+                      aria-pressed={active}
                       className={`flex w-full items-center justify-between rounded-md border p-2.5 text-left transition-all ${
                         active
                           ? 'border-primary bg-primary/5 ring-1 ring-primary/20'

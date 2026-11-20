@@ -38,6 +38,7 @@ export function SettingsNavigation<Id extends string>({
 
   return (
     <nav
+      data-slot="settings-nav"
       aria-label={label}
       className={cn(
         'mr-12 flex shrink-0 gap-1 overflow-x-auto border-b border-border bg-muted/20 p-2',

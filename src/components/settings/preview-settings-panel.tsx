@@ -131,6 +131,8 @@ function ProviderRow({
     <button
       type="button"
       onClick={onSelect}
+      data-slot="choice-row"
+      aria-pressed={selected}
       className={cn(
         'flex w-full items-start gap-2.5 rounded-md border p-2.5 text-left transition-colors',
         selected ? 'border-primary/60 bg-primary/5' : 'border-border bg-card/40 hover:bg-muted/50',

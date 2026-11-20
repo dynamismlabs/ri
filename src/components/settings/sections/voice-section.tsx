@@ -54,6 +54,8 @@ function ModelCard({
   return (
     <button
       onClick={onSelect}
+      data-slot="choice-row"
+      aria-pressed={isSelected}
       className={`w-full rounded-lg border p-3 text-left transition-all ${
         isSelected
           ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
@@ -207,10 +209,11 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
 
       {modelPickerOpen && (
         <div className="space-y-3">
-          <div className="flex gap-1">
+          <div data-slot="segmented" className="flex gap-1">
             {(serverSpeech ? PROVIDER_TABS : ['web'] as const).map((tab) => (
               <button
                 key={tab}
+                aria-pressed={!serverSpeech || activeTab === tab}
                 onClick={() => setActiveTab(tab)}
                 className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-all ${
                   (!serverSpeech || activeTab === tab)
