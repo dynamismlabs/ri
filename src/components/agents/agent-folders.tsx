@@ -81,12 +81,12 @@ export function AgentFoldersSection({ workspace }: { workspace: WorkspaceRecord 
       {error && <p className="text-[12px] text-destructive">{apiErrorText(error)}</p>}
 
       {devices.length > 1 && (
-        <div role="tablist" aria-label="Devices" className="flex flex-wrap gap-1.5">
+        <div data-slot="segmented" data-scroll role="tablist" aria-label="Devices" className="flex flex-wrap gap-1.5">
           {devices.map((c) => {
             const s = standing(c);
             const active = c.deviceId === selected?.deviceId;
             return (
-              <button
+              <button data-slot="segmented-option"
                 key={c.deviceId}
                 type="button"
                 role="tab"
@@ -466,7 +466,7 @@ function LinkedRow({
           </RowButton>
         )}
         {canBePrimary && (
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             type="button"
             onClick={onMakePrimary}
             disabled={busy}
@@ -477,7 +477,7 @@ function LinkedRow({
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               type="button"
               aria-label={`More for ${refOn.alias}`}
               className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -535,7 +535,7 @@ function RowButton({
   children: ReactNode;
 }) {
   return (
-    <button
+    <button data-slot="action-button" data-variant="ghost"
       type="button"
       onClick={onClick}
       disabled={disabled}

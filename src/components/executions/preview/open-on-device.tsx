@@ -156,7 +156,7 @@ export function OpenOnDevice({
                   {url}
                 </span>
                 <Tip label={copied ? 'Copied!' : 'Copy link'}>
-                  <button
+                  <button data-slot="action-button"
                     type="button"
                     onClick={() => copy(url)}
                     className="flex h-7 w-7 items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -166,7 +166,7 @@ export function OpenOnDevice({
                   </button>
                 </Tip>
                 <Tip label="Open in a new tab">
-                  <a
+                  <a data-slot="action-button"
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -201,7 +201,7 @@ export function OpenOnDevice({
                   beamd is already set up on this machine. Turn it on for remote previews, nothing else to configure.
                 </span>
               </div>
-              <button
+              <button data-slot="action-button" data-variant="primary"
                 type="button"
                 onClick={useBeamdAndResolve}
                 disabled={updateSettings.isPending || resolve.isPending}
@@ -224,7 +224,7 @@ export function OpenOnDevice({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button
+                <button data-slot="action-button"
                   type="button"
                   onClick={() => {
                     setState(null);
@@ -236,7 +236,7 @@ export function OpenOnDevice({
                   <RotateCw size={12} className={cn(resolve.isPending && 'animate-spin')} />
                   Retry
                 </button>
-                <button
+                <button data-slot="action-button"
                   type="button"
                   onClick={() => openSettings('remote-preview')}
                   className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"

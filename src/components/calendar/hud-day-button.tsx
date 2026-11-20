@@ -56,7 +56,7 @@ export function HudDayButton() {
       <Popover open={inviteOpen} onOpenChange={setInviteOpen}>
         <PopoverTrigger asChild>
           <Tip label="Connect your calendar" onlyWhenTextHidden>
-            <button
+            <button data-slot="action-button"
               type="button"
               aria-label="Connect your calendar"
               className="flex min-w-0 max-w-full items-center gap-1.5 h-7 px-2 whitespace-nowrap rounded-lg border border-dashed border-border text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -130,7 +130,7 @@ export function HudDayButton() {
             label={stale || degraded ? `${fullLabel}\nAs of ${formatAsOf(data.asOf)}` : fullLabel}
             onlyWhenTextHidden={!stale && !degraded}
           >
-            <button
+            <button data-slot="action-button" data-tone="status"
               type="button"
               aria-label={`Day shape: ${fullLabel}`}
               className={cn(

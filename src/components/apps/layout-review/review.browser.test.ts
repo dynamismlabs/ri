@@ -120,6 +120,65 @@ async function open(query = '') {
   await page.locator('[data-apps-library][aria-busy="false"]').waitFor();
   return page;
 }
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`keeps Edge Mac catalog switches, cards and keyboard focus with the module CSS (${theme})`, async () => {
+    const page = await open();
+    try {
+      await page.evaluate(theme => {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.dataset.look = 'edge';
+      }, theme);
+      const expected = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--edge-thumb)'; document.body.append(probe);
+        const thumb = getComputedStyle(probe).backgroundColor; probe.remove();
+        return thumb;
+      });
+      const types = page.locator('[aria-label="Discover types"]');
+      expect(await types.locator('[data-slot="segmented"]').count()).toBe(1);
+      const all = types.getByRole('button', { name: 'All', exact: true });
+      await all.hover();
+      expect(await all.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
+      await page.keyboard.press('Tab');
+      await all.focus();
+      expect(await all.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('solid');
+      expect(await all.evaluate(el => parseFloat(getComputedStyle(el).outlineOffset))).toBeLessThan(0);
+      const card = page.locator('button[data-slot="content-card"]').first();
+      await card.hover();
+      expect(await card.evaluate(el => getComputedStyle(el).borderRadius)).toBe('14px');
+      expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe('rgba(0, 0, 0, 0)');
+      await page.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
+      const details = page.locator('[aria-label="Addition details"]');
+      await details.waitFor();
+      expect(await details.locator('[data-slot="segmented"]').count()).toBe(1);
+      expect(await details.locator('[aria-pressed="true"]').evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
+      expect(writes).toEqual([]);
+    } finally { await page.close(); }
+  });
+}
+
+it('keeps catalog contents wrappers transparent to classic layout', async () => {
+  for (const details of [false, true]) {
+    const page = await open();
+    try {
+      if (details) await page.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
+      const row = page.locator(`[aria-label="${details ? 'Addition details' : 'Discover types'}"]`);
+      const state = await row.evaluate(el => {
+        const read = () => Array.from(el.querySelectorAll('button')).map(button => {
+          const { x, y, width, height } = button.getBoundingClientRect();
+          return { x, y, width, height };
+        });
+        const wrapped = read();
+        const track = el.querySelector('[data-slot="segmented"]')!;
+        track.replaceWith(...Array.from(track.childNodes));
+        return { wrapped, original: read() };
+      });
+      expect(state.wrapped).toEqual(state.original);
+    } finally { await page.close(); }
+  }
+});
+
 it('shows one grouped library, visible creation buttons and discovery at desktop and phone widths', async () => {
   // A filter the catalog doesn't know shows everything.
   const page = await open('?filter=Work');

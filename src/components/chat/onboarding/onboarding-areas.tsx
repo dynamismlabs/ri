@@ -112,7 +112,7 @@ export function AreasStep({
         {options.map((option) => {
           const on = selected.has(option.name);
           return (
-            <button
+            <button data-slot="action-button"
               key={option.name}
               type="button"
               aria-pressed={on}
@@ -135,7 +135,7 @@ export function AreasStep({
         )}
       </div>
       <div className="mt-2 flex items-center gap-1.5">
-        <input
+        <input data-slot="field"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {

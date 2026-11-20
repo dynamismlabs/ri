@@ -42,7 +42,7 @@ export function EntityHistoryButton({
   return (
     <>
       <Tip label={aiLatest ? 'Review changes' : 'History'} onlyWhenTextHidden>
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={() => setOpen(true)}
           aria-label={aiLatest ? 'Review changes' : 'History'}

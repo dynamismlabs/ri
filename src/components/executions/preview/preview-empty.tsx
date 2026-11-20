@@ -86,7 +86,7 @@ function renderBody(props: PreviewEmptyProps) {
           command && <CommandReadonly command={command} />
         )}
         {onStart && (
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             onClick={onStart}
             disabled={isStarting}
@@ -126,7 +126,7 @@ function renderBody(props: PreviewEmptyProps) {
         </Subtle>
         {command && <CommandReadonly command={command} />}
         {props.onOpenWorkspaceSettings && (
-          <button
+          <button data-slot="action-button"
             type="button"
             onClick={props.onOpenWorkspaceSettings}
             className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-[13px] font-medium text-foreground hover:bg-muted"
@@ -164,7 +164,7 @@ function renderBody(props: PreviewEmptyProps) {
         command && <CommandReadonly command={command} />
       )}
       {onStart && (
-        <button
+        <button data-slot="action-button" data-variant="primary"
           type="button"
           onClick={onStart}
           disabled={isStarting}
@@ -315,7 +315,7 @@ export function CommandEditor({
         className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-60"
       />
       <Tip label="Save" shortcut="Enter">
-        <button
+        <button data-slot="action-button" data-variant="primary"
           type="button"
           onClick={handleSave}
           disabled={isSaving}
@@ -329,7 +329,7 @@ export function CommandEditor({
         </button>
       </Tip>
       <Tip label="Cancel" shortcut="Esc">
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={handleCancel}
           disabled={isSaving}

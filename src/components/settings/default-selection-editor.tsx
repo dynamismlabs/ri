@@ -95,12 +95,12 @@ export function DefaultSelectionEditor({
       {efforts.length > 0 && (
         <div className="mt-3 border-t border-border pt-3">
           <div className="mb-1.5 px-1 text-[11px] font-medium text-muted-foreground">Effort</div>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Effort">
+          <div className="flex flex-wrap gap-1.5" data-slot="segmented" role="radiogroup" aria-label="Effort">
             {efforts.map((o) => {
               const on = draft.effort === o.id;
               return (
                 <Tip key={o.id} label={o.hint}>
-                  <button
+                  <button data-slot="segmented-option"
                     type="button"
                     role="radio"
                     aria-checked={on}
@@ -122,10 +122,10 @@ export function DefaultSelectionEditor({
       {speeds.some(speed => speed.id !== 'default') && (
         <div className="mt-3 border-t border-border pt-3">
           <div className="mb-1.5 px-1 text-[11px] font-medium text-muted-foreground">Speed</div>
-          <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Speed">
+          <div className="flex flex-wrap gap-1.5" data-slot="segmented" role="radiogroup" aria-label="Speed">
             {speeds.map(speed => (
               <Tip key={speed.id} label={speed.hint}>
-                <button type="button" role="radio" aria-checked={(draft.serviceTier ?? 'default') === speed.id}
+                <button data-slot="segmented-option" type="button" role="radio" aria-checked={(draft.serviceTier ?? 'default') === speed.id}
                   disabled={speed.disabled} onClick={() => setDraft(d => ({ ...d, serviceTier: speed.id }))}
                   className={cn('rounded-full border px-2.5 py-1 text-[11.5px] disabled:opacity-50',
                     (draft.serviceTier ?? 'default') === speed.id ? 'border-primary/60 bg-primary/10' : 'border-border text-muted-foreground')}>

@@ -58,8 +58,9 @@ export default function RunsPage() {
       </header>
 
       <div className="px-6 py-3 border-b border-border flex items-center gap-2">
+        <div data-slot="segmented" data-size="responsive" className="contents">
         {(['all', 'manual', 'scheduled', 'webhook'] as Filter[]).map((f) => (
-          <button
+          <button data-slot="segmented-option" aria-pressed={filter === f}
             key={f}
             onClick={() => setFilter(f)}
             className={cn(
@@ -69,9 +70,10 @@ export default function RunsPage() {
                 : 'border-border text-muted-foreground hover:text-foreground',
             )}
           >
-            {f}
+            {f[0].toUpperCase() + f.slice(1)}
           </button>
         ))}
+        </div>
       </div>
 
       <main className="px-6 py-6 max-w-4xl mx-auto">
@@ -107,12 +109,13 @@ function RunRow({ run }: { run: RunRecord }) {
       : undefined;
   return (
     <Link
+      data-slot="run-row"
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
       className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted text-sm"
     >
       <TriggerBadge trigger={run.triggerKind} />
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
-      <span className="flex-1 truncate text-muted-foreground text-[12px]">
+      <span data-slot="run-summary" className="flex-1 truncate text-muted-foreground text-[12px]">
         {run.status === 'failed' ? run.errorMessage ?? run.summary ?? '-' : run.summary ?? '-'}
       </span>
       <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
@@ -132,7 +135,7 @@ function TriggerBadge({ trigger }: { trigger: RunTrigger }) {
     return null; // default — no badge clutter
   }
   return (
-    <span
+    <span data-slot="status-badge"
       className={cn(
         'px-1.5 py-0.5 text-[10px] uppercase tracking-wider rounded border',
         trigger === 'webhook'

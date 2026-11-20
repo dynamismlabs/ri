@@ -232,7 +232,7 @@ function NewChatSchedule({
       <TriggerScheduleFields value={schedule} onChange={setSchedule} kinds={CHAT_KINDS} disabled={create.isPending} />
       <label className="block space-y-1 text-[12px] font-medium">
         <span>Message</span>
-        <textarea
+        <textarea data-slot="field"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={3}

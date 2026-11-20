@@ -82,7 +82,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
         <RailUpdateRow collapsed />
         <FeedbackRailButton collapsed />
         <Tip label="Settings">
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             type="button"
             onClick={() => openSettings()}
             aria-label="Settings"
@@ -95,14 +95,14 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
     );
   }
   return (
-    <footer className="flex flex-shrink-0 flex-col gap-1.5 px-2 py-2 border-t border-border/40">
+    <footer data-slot="rail-foot" className="flex flex-shrink-0 flex-col gap-1.5 px-2 py-2 border-t border-border/40">
       {/* My Ri and its teams, once one is connected (docs/homes-spec.md §3.2). */}
       <SpaceSelector variant="wide" />
       <RailUpdateRow collapsed={false} />
       <FeedbackRailButton collapsed={false} />
       <div className="flex items-stretch gap-1.5">
       <Tip label="Settings">
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={() => openSettings()}
           aria-label="Settings"
@@ -112,7 +112,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
         </button>
       </Tip>
       <Tip label={reconnect}>
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={connectAccounts}
           aria-label={reconnect ? `Connect accounts, ${needingYou.length} waiting on you` : 'Connect accounts'}

@@ -170,7 +170,7 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
     <Dialog.Root open={!!ask} onOpenChange={(o) => !o && ask?.resolve(false)}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
           <div className="flex items-start gap-3">
             <ListTree className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
@@ -225,7 +225,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
     <Dialog.Root open={!!ask} onOpenChange={(o) => !o && ask?.resolve(null)}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
@@ -266,7 +266,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
             <button onClick={() => choose(null)} disabled={busy} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
               Cancel
             </button>
-            <button
+            <button data-slot="action-button"
               onClick={() => choose('keep_running')}
               disabled={busy}
               className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60"

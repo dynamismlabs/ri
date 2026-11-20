@@ -14,8 +14,9 @@ import { Tip } from '@/components/ui/tip';
 /** A tab in a tools panel's strip, the execution view's and the agent view's: underlined while it's in front. */
 export function panelTabClass(on: boolean): string {
   return cn(
-    '-mb-px whitespace-nowrap border-b-2 px-2.5 text-[12.5px] font-medium transition-colors',
-    on ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
+    // panel-tab(-on) are style hooks for the new look (src/styles/edge.css).
+    'panel-tab -mb-px whitespace-nowrap border-b-2 px-2.5 text-[12.5px] font-medium transition-colors',
+    on ? 'panel-tab-on border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
   );
 }
 

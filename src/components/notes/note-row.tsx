@@ -93,7 +93,7 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
         )}
 
         {/* Metadata row */}
-        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+        <div data-slot="meta" className="mt-1 flex items-center gap-1.5 flex-wrap">
           <TeamLabel teamId={note.sourceTeamId} sourceArea={note.source?.area} />
           <DecisionLabel kind={note.kind} />
           <AreaSelect
@@ -101,7 +101,7 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
             onChange={(areaId) => onUpdate(note.id, 'areaId', areaId)}
           />
 
-          <span className="text-[8.5px] text-muted-foreground">
+          <span data-slot="meta-item" data-kind="date" className="text-[8.5px] text-muted-foreground">
             {formatRelativeDate(note.createdAt)}
           </span>
 
@@ -116,6 +116,8 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
+              data-slot="meta-item"
+              data-kind="link"
               className="inline-flex items-center gap-0.5 text-[8.5px] text-primary/60 font-bold uppercase tracking-wider hover:text-primary"
             >
               <ExternalLink size={8} /> Link
@@ -125,10 +127,11 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
       </div>
 
       {/* Hover actions */}
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+      <div data-slot="row-actions" className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
+              aria-label="More note actions"
               className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
               onClick={(e) => e.stopPropagation()}
             >

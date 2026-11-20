@@ -26,6 +26,7 @@ import { Tip } from '@/components/ui/tip';
 export function ListToolbar({ className, children }: { className?: string; children: React.ReactNode }) {
   return (
     <div
+      data-slot="list-toolbar"
       className={cn(
         '@container/lt flex items-center gap-1.5 border-b border-border bg-muted/40 px-3 py-1.5 flex-shrink-0',
         className,
@@ -44,8 +45,9 @@ export function ListToolbar({ className, children }: { className?: string; child
 export function toolbarButtonClass({ active, className }: { active?: boolean; className?: string } = {}) {
   return cn(
     buttonVariants({ variant: 'outline', size: 'sm' }),
-    'gap-1.5 rounded-lg text-xs font-medium',
-    active && 'border-primary/50 bg-primary/10 text-primary hover:bg-primary/15',
+    // toolbar-button(-active) are style hooks for the new look (src/styles/edge.css).
+    'toolbar-button gap-1.5 rounded-lg text-xs font-medium',
+    active && 'toolbar-button-active border-primary/50 bg-primary/10 text-primary hover:bg-primary/15',
     className,
   );
 }
@@ -68,7 +70,7 @@ export function ToolbarSearchButton({ onClick, label }: { onClick: () => void; l
         type="button"
         onClick={onClick}
         aria-label={label}
-        className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'rounded-lg')}
+        className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'toolbar-button rounded-lg')}
       >
         <Search className="size-3.5" />
       </button>
@@ -175,7 +177,7 @@ export function SegmentedTabs<T extends string>({
         className="no-scrollbar overflow-x-auto"
         style={mask ? { maskImage: mask, WebkitMaskImage: mask } : undefined}
       >
-        <div className="flex w-max items-center gap-0.5 rounded-lg bg-muted/70 p-0.5">
+        <div data-slot="segmented" className="flex w-max items-center gap-0.5 rounded-lg bg-muted/70 p-0.5">
           {options.map((opt) => {
             const isActive = opt.value === value;
             return (

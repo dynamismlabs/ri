@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import type { Theme } from '@/types/dashboard';
+import { CLIENT_THEME_KEY } from './appearance-script';
 
-export const CLIENT_THEME_KEY = 'ri.client.theme';
+export { CLIENT_THEME_KEY };
 const CHANGE_EVENT = 'ri:client-theme';
 let fallback: Theme = 'dark';
 

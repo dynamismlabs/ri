@@ -79,7 +79,7 @@ export function QuietAction({
   ...props
 }: React.ComponentProps<'button'> & { icon?: ReactNode; pressed?: boolean }) {
   return (
-    <button
+    <button data-slot="action-button"
       type="button"
       aria-pressed={pressed}
       {...props}

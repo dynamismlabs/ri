@@ -152,7 +152,7 @@ export function IdentityEditor({
           className="shadow-sm"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <input
+          <input data-slot="field"
             autoFocus={autoFocusName}
             value={draft.name}
             maxLength={ORCHESTRATOR_NAME_MAX}
@@ -189,7 +189,7 @@ export function IdentityEditor({
               {draft.image?.kind === 'art' ? <Shuffle size={12} /> : <Palette size={12} />}
             </LookButton>
             {(draft.image || draft.emoji) && (
-              <button
+              <button data-slot="action-button" data-variant="ghost"
                 type="button"
                 onClick={() => set(draft.image ? { image: null } : { emoji: null })}
                 className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
@@ -225,7 +225,7 @@ export function IdentityEditor({
             const selected = matchesPreset(draft, preset);
             return (
               <Tip key={preset.name} label={preset.note} onlyWhenTextHidden>
-                <button
+                <button data-slot="choice-row"
                   type="button"
                   aria-pressed={selected}
                   onClick={() => onChange({ name: preset.name, emoji: preset.emoji, color: preset.color, image: null })}
@@ -258,7 +258,7 @@ function LookButton({
   ...rest
 }: React.ComponentProps<'button'> & { label: string; active?: boolean }) {
   return (
-    <button
+    <button data-slot="action-button" aria-pressed={active}
       type="button"
       {...rest}
       className={cn(
@@ -314,7 +314,7 @@ function Swatch({
 }) {
   return (
     <Tip label={label}>
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         role="radio"
         aria-checked={selected}

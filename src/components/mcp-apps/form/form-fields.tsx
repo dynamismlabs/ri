@@ -110,7 +110,7 @@ function Suggestions({options, chosen, onPick, disabled}: {options: FormOption[]
   if (!options.length) return null;
   return <div className="flex flex-wrap items-center gap-1.5" aria-label="Suggestions">
     {options.map(option => {
-      const button = <button type="button" key={option.value} disabled={disabled} aria-pressed={chosen(option)} onClick={() => onPick(option)}
+      const button = <button data-slot="action-button" type="button" key={option.value} disabled={disabled} aria-pressed={chosen(option)} onClick={() => onPick(option)}
         className={cn('rounded-full border px-2 py-0.5 text-[11px] transition-colors disabled:opacity-50', chosen(option) ? 'border-primary/50 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-muted/50')}>{option.title}</button>;
       return option.description ? <Tip key={option.value} label={option.description}>{button}</Tip> : button;
     })}
@@ -131,7 +131,7 @@ function Options({options, thumbnails, multiple, chosen, onToggle, disabled, lab
   const role = multiple ? 'checkbox' : 'radio';
   // OpenAI's spec: once any option has a thumbnail, every option shows as an image, with a fallback.
   if (thumbnails) return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
-    {options.map(option => <button key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+    {options.map(option => <button data-slot="content-card" key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
       className={cn('flex min-w-0 flex-col gap-1.5 rounded-lg border p-2 text-left transition-colors disabled:opacity-50', chosen(option) ? 'border-primary bg-primary/5 ring-1 ring-primary/40' : 'border-border hover:bg-muted/40')}>
       <Thumbnail icon={option.thumbnail} className="aspect-square w-full" />
       <span className="truncate text-[11px] font-medium">{option.title}</span>
@@ -139,7 +139,7 @@ function Options({options, thumbnails, multiple, chosen, onToggle, disabled, lab
     </button>)}
   </div>;
   return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="space-y-1">
-    {options.map(option => <button key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+    {options.map(option => <button data-slot="choice-row" key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
       className={cn('flex w-full items-start gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors disabled:opacity-50', chosen(option) ? 'border-primary/50 bg-primary/5' : 'border-border hover:bg-muted/40')}>
       <span aria-hidden className={cn('mt-0.5 size-3 shrink-0 border', multiple ? 'rounded-sm' : 'rounded-full', chosen(option) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />
       <span className="min-w-0"><span className="block text-xs">{option.title}</span>
@@ -212,7 +212,7 @@ function ResourceControl(props: FormFieldsProps & {field: Extract<FormField, {ki
     </ul>}
     {removed.length > 0 && <div className="flex flex-wrap items-center gap-1.5">
       <span className="text-[11px] text-muted-foreground">Removed:</span>
-      {removed.map(option => <button key={option.uri} type="button" disabled={disabled} onClick={() => toggle(option.uri)}
+      {removed.map(option => <button data-slot="action-button" key={option.uri} type="button" disabled={disabled} onClick={() => toggle(option.uri)}
         className="flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-muted/40"><Plus size={11} />{option.title ?? option.name}</button>)}
     </div>}
     {added.length > 0 && <ul className="space-y-1">{added.map(uri => <li key={uri} className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs">
@@ -249,10 +249,10 @@ function AddYourOwn({field, files, disabled, onAdd}: FormFieldsProps & {field: E
   const directory = options.kind === 'directory';
   return <div className="space-y-1.5 rounded-md border border-dashed border-border p-2">
     <p className="text-[11px] text-muted-foreground">{directory ? 'Add a folder from this chat\'s agent' : `Add your own file${options.accept.length ? ` (${options.accept.join(', ')})` : ''}`}</p>
-    {!directory && attachments.length > 0 && <div className="flex flex-wrap gap-1.5">{attachments.map(file => <button key={file.fileName} type="button" disabled={disabled || busy} onClick={() => void add({attachment: file.fileName})}
+    {!directory && attachments.length > 0 && <div className="flex flex-wrap gap-1.5">{attachments.map(file => <button data-slot="action-button" key={file.fileName} type="button" disabled={disabled || busy} onClick={() => void add({attachment: file.fileName})}
       className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] hover:bg-muted/40 disabled:opacity-50"><FileIcon size={11} />{file.name}</button>)}</div>}
     {files.folders.length > 0 && <div className="flex flex-wrap items-center gap-1.5">
-      <select aria-label="Agent folder" value={folder} disabled={disabled || busy} onChange={event => setFolder(event.target.value)} className="h-8 max-w-44 rounded-md border bg-background px-1.5 text-xs">
+      <select data-slot="field" aria-label="Agent folder" value={folder} disabled={disabled || busy} onChange={event => setFolder(event.target.value)} className="h-8 max-w-44 rounded-md border bg-background px-1.5 text-xs">
         {files.folders.map(option => <option key={option.uri} value={option.uri}>{option.label}</option>)}
       </select>
       <Input value={relative} disabled={disabled || busy} aria-label={directory ? 'Folder inside it' : 'File path inside it'} placeholder={directory ? 'Folder inside it (optional)' : 'parts/bracket.step'}

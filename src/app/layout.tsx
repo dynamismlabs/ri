@@ -22,6 +22,7 @@ import { SpaceRoot } from '@/components/spaces/space-root';
 import { getHome, getTeamConnection } from '@/lib/db/queries';
 import { headers } from 'next/headers';
 import { ClientAppearance } from '@/lib/client/theme';
+import { APPEARANCE_SCRIPT } from '@/lib/client/appearance-script';
 import { initialHomeContextForRequest } from '@/lib/home/context';
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -56,11 +57,22 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} dark`}
+      // The defaults: dark, and the one look (docs/ui-system.md). APPEARANCE_SCRIPT
+      // applies this browser's light theme before first paint, so the server's class
+      // can differ from the document's by the time React hydrates.
+      data-look="edge"
+      suppressHydrationWarning
       data-ri-authority={team ? 'team' : space ? 'space' : 'personal'}
       data-ri-home={documentHome}
       data-ri-viewer={documentViewer}
       {...(space ? { 'data-ri-space': space.id } : {})}
     >
+      <head>
+        {/* Inline and first in the head, so it runs while the document parses, before
+            first paint. next/script's beforeInteractive queues it for Next's runtime,
+            which runs after the first frame and so let the default flash. */}
+        <script id="ri-appearance" dangerouslySetInnerHTML={{ __html: APPEARANCE_SCRIPT }} />
+      </head>
       <body className="antialiased">
         <ClientAppearance />
         <QueryProvider initialHomeContext={initialHomeContext}>

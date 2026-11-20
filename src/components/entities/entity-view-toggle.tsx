@@ -30,6 +30,7 @@ export function EntityViewToggle({
     <div
       role="tablist"
       aria-label="View"
+      data-slot="segmented"
       className={cn('inline-flex rounded-md border border-border p-0.5 text-[10.5px]', className)}
     >
       {(['agent', 'editor'] as const).map((m) => (

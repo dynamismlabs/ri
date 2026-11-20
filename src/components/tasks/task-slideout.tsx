@@ -252,6 +252,8 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                   <button
                     onClick={handleComplete}
                     aria-label={isDone ? 'Completed' : 'Complete'}
+                    data-slot="header-action"
+                    data-state={isDone ? 'done' : undefined}
                     className={cn(
                       'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
                       isDone

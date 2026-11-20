@@ -27,13 +27,14 @@ export function MobileTopBar({ onSearch = () => document.dispatchEvent(new Custo
       <SpaceSelector variant="phone" onOpenSettings={onOpenSettings} onOpenAccount={team ? onOpenAccount : undefined} />
       <button
         onClick={onSearch}
+        data-slot="search-field"
         className="min-w-0 flex-1 h-10 flex items-center gap-2.5 px-3.5 rounded-lg border border-border text-muted-foreground active:bg-muted/60 transition-colors"
         aria-label={searchLabel.replace(/…$/, '')}
       >
         <Search size={15} className="flex-shrink-0" />
         <span className="truncate text-sm text-muted-foreground/70">{searchLabel}</span>
       </button>
-      {team ? <button type="button" aria-label="Settings" onClick={onOpenSettings ?? settings ?? undefined} className="flex size-10 items-center justify-center rounded-lg border border-border text-muted-foreground"><Settings size={16} /></button> : <ScratchpadButton variant="phone" />}
+      {team ? <button type="button" aria-label="Settings" data-slot="icon-button" onClick={onOpenSettings ?? settings ?? undefined} className="flex size-10 items-center justify-center rounded-lg border border-border text-muted-foreground"><Settings size={16} /></button> : <ScratchpadButton variant="phone" />}
     </header>
   );
 }

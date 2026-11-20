@@ -72,7 +72,7 @@ export function CreateMenu() {
         <PopoverTrigger asChild>
           <Tip label="Create" onlyWhenTextHidden>
             <button type="button" aria-label="Create" className="hud-create flex shrink-0 items-center gap-1 whitespace-nowrap px-3 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg shadow-lg shadow-primary/20 hover:opacity-90 transition-all active:scale-95">
-              <Plus size={14} className="shrink-0" /> <span className="hud-create-label">CREATE</span>
+              <Plus size={14} className="shrink-0" /> <span className="hud-create-label uppercase">Create</span>
             </button>
           </Tip>
         </PopoverTrigger>

@@ -257,7 +257,7 @@ function SetupScriptErrorRow({ sessionId, error, on }: { sessionId: string; erro
       <div className="flex-1 min-w-0 space-y-1">
         <div className="text-amber-600 dark:text-amber-400 font-medium">{on ? `Setup failed on ${on}` : 'Setup script failed'}</div>
         <div className="text-muted-foreground/80 font-mono text-[10.5px] break-all whitespace-pre-wrap">{error}</div>
-        <button
+        <button data-slot="action-button" data-tone="warning"
           type="button"
           onClick={() => retry.mutate()}
           disabled={retry.isPending}
@@ -307,7 +307,7 @@ function SetupErrorRow({
         <div className="text-muted-foreground/80 font-mono text-[10.5px] break-all">
           {error}
         </div>
-        <button
+        <button data-slot="action-button" data-tone="status"
           type="button"
           onClick={handleClick}
           disabled={retry.isPending}

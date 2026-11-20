@@ -344,7 +344,7 @@ export function ExecutionHeader({
         <ScheduleChatButton sessionId={session.id} compact className="p-2" />
         {session.executionId && <ExecutionResultsShortcut executionId={session.executionId} />}
         {onOpenTools && (
-          <button
+          <button data-slot="action-button"
             type="button"
             onClick={onOpenTools}
             className="relative flex h-9 flex-shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-[13px] font-medium text-foreground/90 active:bg-muted/50"

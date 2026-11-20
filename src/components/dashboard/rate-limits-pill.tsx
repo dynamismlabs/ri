@@ -68,7 +68,7 @@ export function RateLimitsPill() {
   return (
     <Popover open={open} onOpenChange={(next) => { pinned.current = false; setOpen(next); }}>
       <PopoverTrigger asChild>
-        <button
+        <button data-slot="chip-button"
           ref={trigger}
           type="button"
           aria-label={label}

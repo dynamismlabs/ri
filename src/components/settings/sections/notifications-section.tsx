@@ -433,7 +433,7 @@ export function NotificationsSection() {
             </span>
           </div>
           {externalLinksUnreachable && (
-            <button
+            <button data-slot="choice-row"
               type="button"
               onClick={() => setSettingsSection('devices')}
               className="flex w-full items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5 text-left text-[11px] leading-normal text-amber-700 transition-colors hover:bg-amber-500/10 dark:text-amber-400"
@@ -463,7 +463,7 @@ export function NotificationsSection() {
           )}
 
           {/* Telegram */}
-          <button
+          <button data-slot="choice-row"
             ref={telegramButton}
             type="button"
             onClick={() => setAddTgOpen((v) => !v)}
@@ -523,7 +523,7 @@ export function NotificationsSection() {
                   <div className="space-y-2">
                     {botUsername ? (
                       <>
-                        <a
+                        <a data-slot="action-button" data-variant="primary"
                           href={`https://t.me/${botUsername}?start=${linkToken}`}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -583,7 +583,7 @@ export function NotificationsSection() {
                           {discoveredChats.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {discoveredChats.map((ch) => (
-                                <button
+                                <button data-slot="action-button" aria-pressed={newChatId === ch.chatId}
                                   type="button"
                                   key={ch.chatId}
                                   onClick={() => {

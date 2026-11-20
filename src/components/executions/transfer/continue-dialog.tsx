@@ -109,7 +109,7 @@ export function ContinueDialog({
         </div>
 
         <DialogFooter>
-          <button
+          <button data-slot="action-button"
             type="button"
             onClick={() => onOpenChange(false)}
             className="rounded-md border border-border px-3 py-1.5 text-[12.5px] hover:bg-muted/60"

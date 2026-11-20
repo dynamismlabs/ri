@@ -26,6 +26,8 @@ export function AreaSelect({ value, onChange, className, onNewArea }: AreaSelect
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
+          data-slot="area-select"
+          data-empty={selected ? undefined : true}
           className={cn(
             'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors',
             'hover:bg-primary/10 cursor-pointer',

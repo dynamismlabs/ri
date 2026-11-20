@@ -121,7 +121,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                 </p>
               ) : (
                 results.slice(0, SEARCH_LIMIT).map((p) => (
-                  <button
+                  <button data-slot="action-button" data-variant="ghost"
                     key={p.id}
                     type="button"
                     onClick={() => open(p)}
@@ -152,7 +152,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
 
       <div className="mt-3 flex items-center justify-end gap-1.5">
         {connectedNames.length === 0 ? (
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             type="button"
             onClick={() => onDone('Not now')}
             className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
@@ -160,7 +160,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
             Not now
           </button>
         ) : (
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             onClick={() => onDone(`Connected ${listJoin(connectedNames)}`)}
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
@@ -176,7 +176,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
 function AppTile({ provider, connected, onOpen }: { provider: ProviderStatus; connected: boolean; onOpen: () => void }) {
   return (
     <Tip label={integrationMeta(provider.id).description}>
-      <button
+      <button data-slot="content-card"
         type="button"
         onClick={onOpen}
         className={cn(

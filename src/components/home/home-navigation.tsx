@@ -107,5 +107,5 @@ export function RailLayout({ header, actions, children, footer }: { header: Reac
 
 /** Same width and overflow contract in personal and Team Homes. */
 export function RailContainer({ expanded, compact, children }: { expanded: boolean; compact?: boolean; children: ReactNode }) {
-  return <aside className={cn('relative z-30 flex shrink-0 flex-col border-r border-border bg-background transition-[width] duration-200 ease-out', expanded ? 'w-[256px]' : 'w-[44px]')} data-compact={compact || undefined} data-expanded={expanded || undefined}>{children}</aside>;
+  return <aside data-slot="rail" className={cn('relative z-30 flex shrink-0 flex-col border-r border-border bg-background transition-[width] duration-200 ease-out', expanded ? 'w-[256px]' : 'w-[44px]')} data-compact={compact || undefined} data-expanded={expanded || undefined}>{children}</aside>;
 }

@@ -132,13 +132,14 @@ export function StreamList() {
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div className={cn(
+      <div data-slot="list-toolbar" className={cn(
         'px-3 py-2 border-b border-border flex items-center gap-2 flex-shrink-0',
         isDark ? 'bg-card/50' : 'bg-muted'
       )}>
-        <div className="flex items-center gap-0.5 p-0.5 bg-card rounded border border-border">
+        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-card rounded border border-border">
           <button
             onClick={() => setView('recent')}
+            aria-pressed={view === 'recent'}
             className={cn(
               'px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-all',
               view === 'recent' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
@@ -149,6 +150,7 @@ export function StreamList() {
           {proposalCount > 0 && (
             <button
               onClick={() => setView('needs_call')}
+              aria-pressed={view === 'needs_call'}
               className={cn(
                 'px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-all',
                 view === 'needs_call' ? 'bg-primary text-primary-foreground' : 'text-primary hover:text-primary/80',
@@ -163,7 +165,7 @@ export function StreamList() {
         <Popover>
           <PopoverTrigger asChild>
             <Tip label="History">
-              <button className="flex items-center gap-1 px-1.5 py-1 rounded text-muted-foreground/70 hover:text-foreground hover:bg-muted transition-colors" aria-label="History">
+              <button data-slot="chip-button" className="flex items-center gap-1 px-1.5 py-1 rounded text-muted-foreground/70 hover:text-foreground hover:bg-muted transition-colors" aria-label="History">
                 <ListFilter size={11} />
                 <ChevronDown size={8} />
               </button>
@@ -196,6 +198,7 @@ export function StreamList() {
         {proposalCount > 0 && (
           <button
             onClick={() => setTriageOpen(true)}
+            data-slot="chip-button"
             className="flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded-md transition-colors"
           >
             Review
@@ -205,6 +208,7 @@ export function StreamList() {
           <button
             onClick={handleSweep}
             disabled={sweep.isPending}
+            data-slot="chip-button"
             className="flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded-md transition-colors disabled:opacity-50"
           >
             <ListChecks size={10} />
@@ -333,7 +337,7 @@ function StreamRow({
           </p>
           <StreamAttachments attachments={item.attachments} />
 
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <div data-slot="stream-meta" className="flex items-center gap-2 mt-0.5 flex-wrap">
             <SourceIcon size={9} className="text-muted-foreground/50" />
             <p className="text-[8.5px] text-muted-foreground font-mono uppercase">
               {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}

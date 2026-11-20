@@ -40,6 +40,8 @@ export function ActionButton({
         type="button"
         onClick={onClick}
         disabled={isDisabled}
+        data-slot="action-button"
+        data-variant={variant}
         className={cn(
           'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
           variant === 'primary'

@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '../styles/theme.css';
+@import '../styles/edge.css';
 
 @source "../../node_modules/streamdown/dist/*.js";
 

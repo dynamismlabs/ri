@@ -646,7 +646,7 @@ function LaunchModalInner({
     <>
     <DialogPrimitive.Root open onOpenChange={(o) => !o && closeLauncher()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         {/* Anchored near the top rather than vertically centered. The panel
             grows downward as browse opens and chips accumulate, so centering
             made it drift upward as it filled — and pushed the footer's popovers
@@ -657,7 +657,7 @@ function LaunchModalInner({
             (including an animated one) would become the containing block for
             the launcher's `position: fixed` popovers, which re-clips them
             inside the panel's `overflow-hidden`. See `launcher-popover.tsx`. */}
-        <DialogPrimitive.Content
+        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
           className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl px-3"
           onOpenAutoFocus={(e) => {
             // Land in the prompt, not on the first focusable (the workspace
@@ -827,7 +827,7 @@ function LaunchModalInner({
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
                     Start from
                   </span>
-                  <button
+                  <button data-slot="action-button"
                     type="button"
                     onClick={openBrowse}
                     className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:border-solid hover:bg-muted/50 hover:text-foreground"
@@ -840,7 +840,7 @@ function LaunchModalInner({
                     const Icon = CHIP_ICON[item.kind];
                     return (
                       <Tip key={`${item.kind}:${item.key}`} label={item.title} onlyWhenTextHidden>
-                        <button
+                        <button data-slot="action-button"
                           type="button"
                           onClick={() => handlePick(item)}
                           className="inline-flex max-w-[14rem] items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"

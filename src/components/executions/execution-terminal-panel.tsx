@@ -152,7 +152,7 @@ export function ExecutionTerminalPanel({
           ))}
           {!collapsed && (
             <Tip label="New terminal">
-              <button
+              <button data-slot="action-button" data-variant="ghost"
                 type="button"
                 onClick={handleNew}
                 disabled={createTerminal.isPending || !!unavailable}
@@ -168,7 +168,7 @@ export function ExecutionTerminalPanel({
         {headerExtra}
         {onToggleCollapsed && (
           <Tip label={collapseTitle ?? (collapsed ? 'Expand terminal' : 'Collapse terminal')} shortcut={collapseShortcut}>
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               type="button"
               onClick={onToggleCollapsed}
               className="inline-flex size-6 items-center justify-center rounded text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 flex-shrink-0"
@@ -207,7 +207,7 @@ export function ExecutionTerminalPanel({
               <>
                 <span className="text-zinc-300">Couldn&apos;t start terminal</span>
                 <span className="max-w-md text-zinc-500">{createErrorMessage}</span>
-                <button
+                <button data-slot="action-button"
                   type="button"
                   onClick={handleNew}
                   className="mt-1 rounded border border-zinc-700 bg-zinc-800 px-3 py-1 text-[11px] text-zinc-100 hover:bg-zinc-700"
@@ -272,7 +272,7 @@ function TerminalTab({ label, active, onActivate, onClose }: TerminalTabProps) {
         <span>{label}</span>
       </button>
       <Tip label="Close terminal">
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={onClose}
           className={cn(
