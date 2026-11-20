@@ -56,3 +56,5 @@ Agents never delete anything. They archive, and archiving can be undone. You can
 - **Board**, in the rail: your tasks in columns by state, or what your agents are doing.
 - **Calendar**, in the rail: your week or day, with your agents' work beside your events.
 - **Tasks** and **Notes**, on your Home: the full lists, with filters.
+
+When you join a Google Meet from Calendar, Ri asks Google to use the email of the connected calendar account. Sign in to that Google account in the browser that opens the link. Google may still ask you to choose an account or sign in.

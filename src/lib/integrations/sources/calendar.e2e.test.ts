@@ -68,12 +68,16 @@ const meeting = (id: string, start: string, end: string, extra: Record<string, u
 describe('managed Google Calendar in Ri\'s calendar', () => {
   it('reads a calendar the user lets Ri show, at the pinned version, through the exact account', async () => {
     const connectionId = await connectCalendar('work@example.com');
-    seedCalendar([meeting('standup', `${DATE}T15:00:00Z`, `${DATE}T15:30:00Z`), meeting('lunch', `${DATE}T18:00:00Z`, `${DATE}T19:00:00Z`, { transparency: 'transparent' })]);
+    seedCalendar([
+      meeting('standup', `${DATE}T15:00:00Z`, `${DATE}T15:30:00Z`, { hangoutLink: 'https://meet.google.com/abc-defg-hij' }),
+      meeting('lunch', `${DATE}T18:00:00Z`, `${DATE}T19:00:00Z`, { transparency: 'transparent' }),
+    ]);
     const range = await getCalendarRange({ start: DATE, days: 1, fresh: true });
     expect(range.status).toBe('ok');
     expect(range.providers).toEqual([expect.objectContaining({ connectionId, ok: true, via: 'Composio', providerId: 'google' })]);
     const titles = range.days[0]!.events.map(e => e.title);
     expect(titles).toEqual(['standup', 'lunch']);
+    expect(range.days[0]!.events[0]!.joinUrl).toBe('https://meet.google.com/abc-defg-hij?authuser=work%40example.com');
     expect(range.days[0]!.events.find(e => e.title === 'lunch')!.countsAsBusy).toBe(false);
     const reads = h.fake.state.executions.filter(e => e.slug.startsWith('GOOGLECALENDAR_') && e.slug !== 'GOOGLECALENDAR_GET_CALENDAR');
     expect(reads.every(e => e.via === 'pinned' && e.version === PINNED_TOOLKIT_VERSIONS.googlecalendar)).toBe(true);
