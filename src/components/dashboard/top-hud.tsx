@@ -45,7 +45,7 @@ export function TopHud() {
   const latestExecutionId = useLatestExecutionId();
 
   return (
-    <header data-desktop-titlebar className="flex-shrink-0 h-10 border-b border-border flex items-center px-4 gap-2 bg-background z-50">
+    <header data-desktop-titlebar data-slot="top-hud" className="flex-shrink-0 h-10 border-b border-border flex items-center px-4 gap-2 bg-background z-50">
       {/* Desktop app only, right after the window controls. */}
       <DesktopNavButtons className="-ml-1 shrink-0" />
 

@@ -108,24 +108,24 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
           <button
             onClick={() => setEnergyFilter(energyFilter === 'light' ? null : 'light')}
             className={cn(
-              'px-2 py-0.5 rounded text-[9px] font-bold transition-all',
+              'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
               energyFilter === 'light'
                 ? 'bg-sky-400/15 text-sky-400 shadow-sm'
                 : 'text-muted-foreground/50 hover:text-muted-foreground'
             )}
           >
-            LIGHT
+            Light
           </button>
           <button
             onClick={() => setEnergyFilter(energyFilter === 'deep' ? null : 'deep')}
             className={cn(
-              'px-2 py-0.5 rounded text-[9px] font-bold transition-all',
+              'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
               energyFilter === 'deep'
                 ? 'bg-orange-500/15 text-orange-500 shadow-sm'
                 : 'text-muted-foreground/50 hover:text-muted-foreground'
             )}
           >
-            DEEP
+            Deep
           </button>
         </div>
 

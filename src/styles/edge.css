@@ -1,0 +1,162 @@
+/*
+ * Edge Mac, the new look on trial (docs/ui-system.md).
+ *
+ * Everything here is scoped to html[data-look="edge"], which the Settings
+ * switch "New look (preview)" sets (src/lib/client/look.tsx). Classic never
+ * reads this file's values, so switching back is exact.
+ *
+ * The system in one paragraph: gray neutrals, a canvas (rail and top bar) one
+ * step off the panes, columns that meet at a single border, four text levels,
+ * the platform's own font in a tighter rhythm, sentence case, rounded controls
+ * (capsules for things you press), a white chat input that lifts off the page,
+ * and your own messages in a quiet gray bubble instead of an inverted one.
+ */
+
+/* ── Tokens: light ─────────────────────────────────────────────────────── */
+html[data-look="edge"] {
+  --edge-canvas: oklch(0.985 0.0012 264);
+  --edge-pane: oklch(0.999 0 0);
+  --edge-raised: oklch(0.962 0.002 264);
+  --edge-thumb: oklch(1 0 0);
+  --edge-track: oklch(0.2 0.01 264 / 0.055);
+  --edge-hover: oklch(0.2 0.01 264 / 0.045);
+  --edge-selected: oklch(0.2 0.01 264 / 0.075);
+  --edge-line: oklch(0.2 0.01 264 / 0.1);
+  --edge-line-2: oklch(0.2 0.01 264 / 0.15);
+  --edge-t1: oklch(0.21 0.0056 264);
+  --edge-t2: oklch(0.4 0.0056 264);
+  --edge-t3: oklch(0.54 0.0056 264);
+  --edge-t4: oklch(0.67 0.004 264);
+  --edge-attention: oklch(0.63 0.16 55);
+  --edge-shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
+  --edge-shadow-pop: 0 0 0 1px oklch(0 0 0 / 0.07), 0 18px 44px -14px oklch(0.2 0.01 264 / 0.28);
+  --edge-composer: oklch(1 0 0);
+  --edge-composer-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.13), 0 1px 2px oklch(0.2 0.01 264 / 0.05), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.2);
+  --edge-composer-focus: 0 0 0 1px oklch(0.2 0.01 264 / 0.18), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.22);
+
+  /* shadcn names, so every existing component follows the new look. */
+  --background: var(--edge-pane);
+  --foreground: var(--edge-t1);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--edge-t1);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--edge-t1);
+  --primary: var(--edge-t1);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: var(--edge-raised);
+  --secondary-foreground: var(--edge-t1);
+  --muted: oklch(0.962 0.002 264);
+  --muted-foreground: oklch(0.52 0.0056 264);
+  --accent: oklch(0.955 0.003 264);
+  --accent-foreground: var(--edge-t1);
+  --destructive: oklch(0.56 0.19 25);
+  --border: var(--edge-line);
+  --input: var(--edge-line-2);
+  --ring: oklch(0.6 0.012 264);
+  --radius: 0.625rem;
+  --sidebar: var(--edge-canvas);
+  --sidebar-foreground: var(--edge-t1);
+  --sidebar-accent: var(--edge-selected);
+  --sidebar-accent-foreground: var(--edge-t1);
+  --sidebar-border: var(--edge-line);
+  --surface: var(--edge-pane);
+  --surface-elevated: var(--edge-raised);
+  --text-muted: var(--edge-t3);
+  --surface-hud: var(--edge-canvas);
+  --user-bubble: oklch(0.952 0.002 264);
+  --user-bubble-foreground: var(--edge-t1);
+
+  /* The platform's own font: SF on a Mac, Segoe on Windows. Tighter than Inter at the same size. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Tokens: dark ──────────────────────────────────────────────────────── */
+/* Also on a nested .dark element: some surfaces scope the theme themselves,
+   and theme.css redeclares its classic dark values there. */
+html[data-look="edge"].dark,
+html[data-look="edge"] .dark {
+  --edge-canvas: oklch(0.145 0.0028 264);
+  --edge-pane: oklch(0.183 0.0028 264);
+  --edge-raised: oklch(0.228 0.003 264);
+  --edge-thumb: oklch(0.305 0.003 264);
+  --edge-track: oklch(1 0 0 / 0.055);
+  --edge-hover: oklch(1 0 0 / 0.045);
+  --edge-selected: oklch(1 0 0 / 0.08);
+  --edge-line: oklch(1 0 0 / 0.09);
+  --edge-line-2: oklch(1 0 0 / 0.14);
+  --edge-t1: oklch(0.955 0.003 264);
+  --edge-t2: oklch(0.8 0.004 264);
+  --edge-t3: oklch(0.62 0.004 264);
+  --edge-t4: oklch(0.48 0.004 264);
+  --edge-attention: oklch(0.79 0.15 66);
+  --edge-shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
+  --edge-shadow-pop: 0 0 0 1px oklch(1 0 0 / 0.08), 0 18px 44px -14px oklch(0 0 0 / 0.75);
+  --edge-composer: oklch(0.205 0.003 264);
+  --edge-composer-shadow: 0 0 0 1px oklch(1 0 0 / 0.11), 0 12px 30px -14px oklch(0 0 0 / 0.75);
+  --edge-composer-focus: 0 0 0 1px oklch(1 0 0 / 0.2), 0 12px 30px -14px oklch(0 0 0 / 0.8);
+
+  --background: var(--edge-pane);
+  --foreground: var(--edge-t1);
+  --card: oklch(0.205 0.003 264);
+  --card-foreground: var(--edge-t1);
+  --popover: oklch(0.215 0.003 264);
+  --popover-foreground: var(--edge-t1);
+  --primary: var(--edge-t1);
+  --primary-foreground: oklch(0.17 0.003 264);
+  --secondary: oklch(0.255 0.003 264);
+  --secondary-foreground: var(--edge-t1);
+  --muted: oklch(0.24 0.003 264);
+  --muted-foreground: oklch(0.68 0.004 264);
+  --accent: oklch(0.25 0.003 264);
+  --accent-foreground: var(--edge-t1);
+  --destructive: oklch(0.7 0.17 24);
+  --border: var(--edge-line);
+  --input: var(--edge-line-2);
+  --ring: oklch(0.55 0.01 264);
+  --sidebar: var(--edge-canvas);
+  --sidebar-foreground: var(--edge-t1);
+  --sidebar-accent: var(--edge-selected);
+  --sidebar-accent-foreground: var(--edge-t1);
+  --sidebar-border: var(--edge-line);
+  --surface: var(--edge-pane);
+  --surface-elevated: var(--edge-raised);
+  --text-muted: var(--edge-t3);
+  --surface-hud: var(--edge-canvas);
+  --user-bubble: oklch(0.255 0.003 264);
+  --user-bubble-foreground: var(--edge-t1);
+}
+
+/* ── Type: sentence case ───────────────────────────────────────────────── */
+/* Classic draws many labels in small tracked capitals. The new look shows them as written. */
+html[data-look="edge"] .uppercase { text-transform: none; letter-spacing: normal; }
+
+/* ── Frame: rail and top bar on the canvas, panes on white, one border between columns ── */
+html[data-look="edge"] [data-slot="rail"],
+html[data-look="edge"] [data-slot="top-hud"] { background-color: var(--edge-canvas); }
+
+/* ── Pane tabs: one segmented control ──────────────────────────────────── */
+html[data-look="edge"] [data-slot="pane-tabs"] { background-color: var(--background); min-height: 44px; padding-inline: 8px; gap: 4px; }
+html[data-look="edge"] [data-slot="pane-tab-group"] { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="pane-tab"] { display: inline-flex; align-items: center; height: 24px; padding-inline: 12px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="pane-tab"]:hover { color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="pane-tab"][data-active] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
+html[data-look="edge"] [data-slot="pane-tab"] [aria-label="Something needs your call"] { background-color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="pane-tab-more"] { height: 26px; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="pane-tab-more"]:hover,
+html[data-look="edge"] [data-slot="pane-tab-more"][data-active] { background-color: var(--edge-hover); color: var(--edge-t1); }
+
+/* ── Chat input: white, a fine outline, a soft lift ────────────────────── */
+html[data-look="edge"] [data-slot="chat-composer-card"] { border-color: transparent; border-radius: 22px; background-color: var(--edge-composer); box-shadow: var(--edge-composer-shadow); }
+html[data-look="edge"] [data-slot="chat-composer-card"]:focus-within { border-color: transparent; box-shadow: var(--edge-composer-focus); }
+
+/* ── Shared controls (shadcn) ──────────────────────────────────────────── */
+/* A secondary button is a quiet fill, not an outline. */
+html[data-look="edge"] [data-slot="button"][data-variant="outline"] { border-color: transparent; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="button"][data-variant="outline"]:hover { background-color: var(--edge-selected); }
+/* Menus and popovers lift off the page by shadow, not a heavy border. */
+html[data-look="edge"] :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="popover-content"], [data-slot="select-content"], [data-slot="combobox-content"]) { border-color: transparent; border-radius: 12px; box-shadow: var(--edge-shadow-pop); }
+html[data-look="edge"] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-color: transparent; box-shadow: var(--edge-shadow-pop); }
+/* Tabs (shadcn) share the pane tabs' segmented shape. */
+html[data-look="edge"] [data-slot="tabs-list"] { border-radius: 999px; background-color: var(--edge-track); padding: 2px; }
+html[data-look="edge"] [data-slot="tabs-trigger"] { border-radius: 999px; }
+html[data-look="edge"] [data-slot="tabs-trigger"][data-state="active"] { background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }

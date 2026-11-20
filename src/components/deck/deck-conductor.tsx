@@ -93,24 +93,24 @@ export function DeckConductor({
           <button
             onClick={() => onWorkModeChange(workMode === 'light' ? null : 'light')}
             className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold transition-all @max-[30rem]/conductor:px-1.5',
+              'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
               workMode === 'light'
                 ? 'bg-sky-400/15 text-sky-400 shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            LIGHT
+            Light
           </button>
           <button
             onClick={() => onWorkModeChange(workMode === 'deep' ? null : 'deep')}
             className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold transition-all @max-[30rem]/conductor:px-1.5',
+              'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
               workMode === 'deep'
                 ? 'bg-orange-500/15 text-orange-500 shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            DEEP
+            Deep
           </button>
         </div>
 
@@ -155,7 +155,7 @@ export function DeckConductor({
             onClick={() => dueTodayCount > 0 && onFilterDueTodayChange(!filterDueToday)}
             disabled={dueTodayCount === 0}
             className={cn(
-              'whitespace-nowrap px-2.5 py-1 rounded-lg text-[9px] font-bold transition-all border @max-[30rem]/conductor:px-2',
+              'whitespace-nowrap px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase transition-all border @max-[30rem]/conductor:px-2',
               filterDueToday
                 ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
                 : dueTodayCount > 0
@@ -163,7 +163,7 @@ export function DeckConductor({
                   : 'bg-card text-muted-foreground/30 border-border cursor-not-allowed'
             )}
           >
-            DUE TODAY
+            Due today
           </button>
         </Tip>
       </div>

@@ -146,13 +146,17 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
     >
       {/* Tab bar — hidden on mobile when mobileTab is set */}
       {!mobileTab && (
-        <div className={cn(
+        <div data-slot="pane-tabs" className={cn(
           'flex items-center border-b border-border shrink-0',
           isDark ? 'bg-card/30' : 'bg-muted/30'
         )}>
+          {/* `contents` keeps the classic bar flat. The new look draws this group as one segmented control. */}
+          <div data-slot="pane-tab-group" className="contents">
           {coreTabs.map((tab) => (
             <button
               key={tab.id}
+              data-slot="pane-tab"
+              data-active={(activeTab === tab.id && !isMoreTab && !fileShown) || undefined}
               onClick={() => setPanelTab(panelId, tab.id)}
               className={cn(
                 'px-3 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.08em] transition-all border-b-2',
@@ -170,6 +174,7 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
               )}
             </button>
           ))}
+          </div>
 
           {fileHost && fileHere && (
             <BesideFileTab
@@ -197,6 +202,8 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
           {/* More button */}
           <div className="relative" ref={moreRef}>
             <button
+              data-slot="pane-tab-more"
+              data-active={(isMoreTab && !fileShown) || undefined}
               onClick={() => setMoreOpen(!moreOpen)}
               className={cn(
                 'px-3 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.08em] transition-all border-b-2 flex items-center gap-1',
