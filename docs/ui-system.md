@@ -31,7 +31,9 @@ The fix is one small system that every surface draws from, not a redesign.
 - **Pane tabs are one segmented control**, the active tab drawn as a lifted thumb.
 - **The chat input is white and lifts off the page** with a fine outline and a soft
   shadow. It reads as an input, not a gray box.
-- **Your own messages sit in a quiet gray bubble**, not an inverted one.
+- **Your own messages stay inverted** (dark on a light page, light on a dark one), in
+  the system's grays, so they stand out from the agent's replies. A quiet gray bubble
+  was tried first and the inverted one won (2026-11-19).
 - **Menus, popovers and dialogs lift by shadow**, not a border.
 - **A secondary button is a quiet fill**, not an outline.
 
@@ -51,7 +53,7 @@ complete.
   - **Dark tokens apply to nested `.dark` elements too.** The dashboard and focus
     view wrap their content in their own `.dark` div, and `theme.css` redeclares
     the classic dark values there. Without the second selector those values win
-    inside the dashboard (the user bubble turned white).
+    inside the dashboard (the user bubble came out in classic's colors).
   - **Component rules** keyed by `data-slot`: shadcn's own slots (`button`,
     `dropdown-menu-content`, `tabs-list` ...) and the ones Ri adds to its
     hand-built frame (`rail`, `top-hud`, `pane-tabs`, `pane-tab-group`, `pane-tab`,
@@ -82,6 +84,10 @@ These carry the system across screens. Use them before inventing a new one.
 | `task-chip`, `task-chip-label` | The task a chat works on, in its header | `data-status` |
 | `hud-tools`, `hud-view-button` | The top bar's page tools in one capsule, and Close chat or Open latest chat | `aria-pressed`, `data-variant="close"` |
 | `rail-foot`, `new-agent` | The rail's footer rows and its New agent button | |
+| `entity-kind`, `entity-kind-label` | "Task · Money" or "Note · Tidewater Coffee" above a task or note title | |
+| `properties` | The label and value grid on a task (Status, Deadline, Energy, Effort...) | |
+| `header-action` | Continue with agent and Complete at the top of a task | `data-tone="agent"`, `data-state="done"` |
+| `task-picker` | The task a note links to, in the note's `meta` line | |
 
 Inside `meta`, status, energy and blocked keep the colors classic gives them:
 their rule sets `color: revert-layer`, which hands the color back to the
@@ -96,7 +102,10 @@ component's own utility classes.
    date, not a colored box), the review bar, the task chip, rail details (footer,
    New agent, Agents and Recent), the top bar's tools in one capsule, the deck
    filters and list toolbars as segmented controls and capsules, task and deck
-   metadata as plain words, every shadcn Button a capsule.
+   metadata as plain words, every shadcn Button a capsule. Then the task and note
+   slideouts (and the full pages that share them): the kind line as plain words,
+   date, repeat and priority as capsules, Energy and Effort as segmented controls,
+   the header actions as capsules, and note rows' details as plain words.
 3. **The long tail, then the switch goes.** Codemods for border opacities, radii and
    hand-built buttons onto the shared components, a lint rule that stops new ones,
    the chat UI gallery checked in both looks. Left from phase 2 on purpose: the

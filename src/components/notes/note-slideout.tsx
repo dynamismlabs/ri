@@ -264,7 +264,7 @@ export function NoteSlideout({ noteId, onClose, onCloseAll, hasHistory }: NoteSl
               ) : note ? (
                 <>
                   <EntityChangeBanner entityType="note" entityId={note.id} />
-                  <div className="px-4 md:px-12 py-0 flex items-center gap-2">
+                  <div data-slot="entity-kind" className="px-4 md:px-12 py-0 flex items-center gap-2">
                     <NoteKindHeading kind={note.kind} />
                     <span className="text-muted-foreground/30">·</span>
                     {team ? <TeamAreaSelect value={note.areaId} onChange={handleAreaChange} /> : <AreaSelect value={note.areaId} onChange={handleAreaChange} />}
