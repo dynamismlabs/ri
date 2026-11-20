@@ -13,7 +13,7 @@ const titleSelectors = [{
 }];
 const capitalLabelSelector = {
   selector: "JSXText[value=/^(?=[^a-z]*$)(?:[^A-Z]*[A-Z]){3}/]",
-  message: "Write labels in sentence case. Add the uppercase class if classic needs capitals.",
+  message: "Write labels in sentence case.",
 };
 const uiSystemSelectors = [...titleSelectors, {
   // :has searches className's AST, including strings in cn(), branches and

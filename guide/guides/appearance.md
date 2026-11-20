@@ -1,9 +1,9 @@
 ---
 title: Appearance
-description: Choose light or dark, and go back to the classic look if you need it.
+description: Choose light or dark for the browser or app you use Ri in.
 ---
 
-Ri should feel calm to sit in all day, so how it looks is yours to set. Both choices below belong to the browser or app you set them in. Your phone and your computer can look different, and nothing changes for anyone else on your Ri.
+Ri should feel calm to sit in all day, so how it looks is yours to set. Your choice belongs to the browser or app you set it in. Your phone and your computer can look different, and nothing changes for anyone else on your Ri.
 
 ## Light or dark
 
@@ -20,7 +20,3 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 - Task and note details as plain words, and deadlines as a colored date instead of a colored box.
 - Rounded buttons wherever you press something, and a clear outline when you move by keyboard.
 - A white message box that stands out from the page.
-
-## Go back to the classic look
-
-If something reads better the old way, turn on **Classic look** in **Settings**, under **General**. It changes this browser only, and you can turn it off again at any time. The classic look stays for now, while the new design settles in.

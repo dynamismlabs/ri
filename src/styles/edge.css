@@ -1,10 +1,10 @@
 /*
  * Edge Mac, Ri's design (docs/ui-system.md).
  *
- * Everything here is scoped to html[data-look="edge"]. The server renders it by
- * default, and Settings > General > Classic look removes it for that browser
- * (src/lib/client/look.tsx). Classic never reads this file's values, so going
- * back is exact.
+ * Everything here is scoped to html[data-look="edge"], which the root layout
+ * always renders. The scoping stays for now so the switch to this look reverts as
+ * one commit. Dropping it, and moving these values into theme.css, is a later
+ * cleanup.
  *
  * The system in one paragraph: gray neutrals, a canvas (rail and top bar) one
  * step off the panes, columns that meet at a single border, four text levels,

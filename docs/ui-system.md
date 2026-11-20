@@ -43,18 +43,19 @@ The concepts it came from are kept in `docs/ui-system-concept.html` (open it in 
 browser and pick Edge Mac at the top), so the build can be checked
 against them.
 
-Edge is the default (2026-11-20). Classic stays behind a switch while people settle
-in, and stays exact.
+Edge Mac is Ri's only look (2026-11-20). It shipped as one squash commit, so
+reverting that commit brings the previous design back. Classic was not kept behind
+a switch: with one owner, a revert is the escape hatch, and a second look costs
+upkeep on every change.
 
-- The root layout renders `data-look="edge"` on `<html>`, so the default paints
-  without a flash. `APPEARANCE_SCRIPT` (`src/lib/client/appearance-script.ts`) runs
-  in the head before first paint and applies this browser's choices instead: the
-  light theme, and Classic. That also ended the dark flash light-mode users saw.
-- `src/lib/client/look.tsx` keeps the choice (`classic | edge`) in the browser and
-  keeps the attribute in step after that. Only a choice of Classic is stored
-  (`ri.client.lookChoice`). The preview's old key (`ri.client.look`) is ignored,
-  since turning a trial off wasn't choosing the previous design.
-- Settings, General has **Classic look** beside Dark mode, off by default.
+- The root layout always renders `data-look="edge"` on `<html>`. The attribute and
+  the `html[data-look="edge"]` scoping in `edge.css` stay for now, so the switch
+  reverts cleanly. Dropping them is phase 7.
+- `APPEARANCE_SCRIPT` (`src/lib/client/appearance-script.ts`) runs first in the
+  head, before first paint, and applies a light theme this browser chose. That
+  ended the dark flash light-mode users saw on every load. `next/script`'s
+  `beforeInteractive` is too late for this: Next queues it for its runtime, which
+  runs after the first frame.
 - `src/styles/edge.css` holds everything, scoped to `html[data-look="edge"]`:
   - **Tokens.** The `--edge-*` values, mapped onto the shadcn names (`--background`,
     `--card`, `--muted`, `--border`, `--user-bubble`, `--font-sans` and the rest), so
@@ -189,15 +190,17 @@ component's own utility classes.
    keeps its shape as described below. The lint ratchet now catches new raw
    bordered controls and capital source labels. The live Apps screen's CSS-module
    cards and switches use the same hooks, with a check against its real stylesheet.
-5. **Edge by default (2026-11-20).** New browsers get Edge Mac, painted by the
-   server. Classic stays one switch away (Settings, General, Classic look), and
-   the guide's Appearance page says how to go back.
-6. **Classic goes (the owner's call, later).** Once nobody reaches for the
-   switch: remove it and `look.tsx`, move Edge's values into `theme.css`, drop the
-   `html[data-look="edge"]` scoping from `edge.css`, and retire the classic-only
-   checks. Copy still in Title Case in shared constants ("In Progress", "Priority
-   Order", "Schedules and Triggers") reaches tests and the guide, so it moves then
-   too.
+5. **Edge only (2026-11-20).** Every browser gets Edge Mac. The preview switch is
+   gone, and one squash commit carries phases 1 to 5, so one revert undoes them.
+6. **Live with it.** Revert while it's young if it isn't right: new code adopts the
+   hooks and the lint ratchet, so a revert gets harder with time.
+7. **Clean up (later).** Move Edge's values into `theme.css` and delete the
+   classic tokens, drop the `data-look` attribute and the `html[data-look="edge"]`
+   scoping, retire the classic-only checks (the classic halves of the browser
+   tests, `uppercase` classes kept only for classic), and replace hand-built
+   classes the stylesheet overrides with the shared components. Copy still in
+   Title Case in shared constants ("In Progress", "Priority Order", "Schedules and
+   Triggers") reaches tests and the guide, so it moves then too.
 
 ## Completed raw-control audit
 
