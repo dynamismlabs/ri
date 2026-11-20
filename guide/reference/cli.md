@@ -1155,7 +1155,7 @@ ri update when-idle [options]
 | --- | --- |
 | `--hour <hour>` | maintenance window start, 0-23 |
 | `--hours <hours>` | window duration, 1-12 (default: "2") |
-| `--timezone <name>` | IANA timezone (default: "America/Denver") |
+| `--timezone <name>` | IANA timezone (default: this computer's time zone) |
 
 ### ri update later
 
