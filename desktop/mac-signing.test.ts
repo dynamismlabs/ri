@@ -28,7 +28,7 @@ case "$1" in
   create-keychain) : > "\${@: -1}" ;;
   delete-keychain) rm -f "$2" ;;
   import)
-    case " $* " in *" -P $STUB_P12_PASSWORD "*) echo "1 identity imported." ;; *" -P "*) echo "security: SecKeychainItemImport: MAC verification failed during PKCS12 import (wrong password?)" >&2; exit 1 ;; esac ;;
+    case " $* " in *" -P $STUB_P12_PASSWORD "*) ;; *" -P "*) echo "security: SecKeychainItemImport: MAC verification failed during PKCS12 import (wrong password?)" >&2; exit 1 ;; esac ;;
   list-keychains) [ "$2" = -d ] && [ "$4" != -s ] && echo '    "/Users/runner/Library/Keychains/login.keychain-db"' ;;
   find-identity) if [ "$2" = -v ]; then printf '%b' "$STUB_VALID"; else printf '%b' "$STUB_ALL"; fi ;;
   find-certificate) echo '-----BEGIN CERTIFICATE-----' ;;
@@ -170,7 +170,7 @@ describe('check', () => {
     expect(result.status).toBe(0);
     for (const row of [
       'pass  Apple secrets               all set, notarizing with the Apple ID in APPLE_ID',
-      'pass  Certificate imported        1 identity imported.',
+      'pass  Certificate imported        into a keychain of its own',
       `pass  Developer ID Application    ${DEVELOPER_ID}`,
       `pass  Team is APPLE_TEAM_ID       ${DEVELOPER_ID}`,
       'pass  Expires                     Nov 20 12:00:00 2030 GMT',

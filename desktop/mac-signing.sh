@@ -103,7 +103,9 @@ import_certificate() {
     return 1
   fi
   rm -f "$CERTIFICATE"
+  # security says nothing on success on current macOS.
   IMPORTED="$(lines "$output")"
+  IMPORTED="${IMPORTED:-into a keychain of its own}"
   if ! output="$(security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$KEYCHAIN" 2>&1 >/dev/null)"; then
     error "codesign can't be given the private key in APPLE_CERTIFICATE (security: $(lines "$output")). The .p12 needs the private key, not only the certificate."
     return 1
