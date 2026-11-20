@@ -534,6 +534,13 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
 
   }
 
+  // Personal OpenCode chats still run on older installations. Only hand Ri's
+  // servers to a runtime that can enforce strict MCP isolation.
+  if (!args.teamTurnId && args.harness === 'opencode' && !caps.strictMcpIsolation) {
+    spec.mcpServers = [];
+    spec.strictMcpConfig = false;
+  }
+
   // What each server whose tools this chat lists directly says about using
   // them (src/lib/integrations/server-instructions.ts): only where the chat
   // reaches the integrations endpoint, scoped as that endpoint scopes it.

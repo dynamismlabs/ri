@@ -211,6 +211,10 @@ export const HARNESS_REGISTRY: Record<HarnessId, HarnessDefinition> = {
       questionRequests: true,
       planMode: true,
       modes: true,
+      // OpenCode 2.3+ through agentex 0.0.53. The runtime probe qualifies the
+      // private MCP server setup before Ri attaches scoped tools.
+      mcp: true,
+      strictMcpIsolation: true,
       sessionModelChange: true,
       sessionVariantChange: true,
       sessionEffortChange: true,
@@ -330,7 +334,6 @@ const CAPABILITY_LABELS: Record<keyof HarnessCapabilities, string> = {
   sessionModelChange: 'changing models in a live chat', sessionVariantChange: 'changing variants in a live chat', sessionEffortChange: 'changing effort in a live chat', sessionModeChange: 'changing modes in a live chat',
 };
 const CAPABILITY_REASONS: Partial<Record<HarnessId, Partial<Record<keyof HarnessCapabilities, string>>>> = {
-  opencode: { strictMcpIsolation: 'OpenCode can use its own configured MCP tools. This adapter does not supply a restricted MCP configuration.' },
   cursor: { permissionRequests: 'Cursor uses its CLI permission policy and does not send approval prompts to Ri.', questionRequests: 'Cursor does not expose interactive questions to Ri.', strictMcpIsolation: 'Cursor can use its own configured MCP tools in addition to the tools Ri supplies.' },
   antigravity: { permissionRequests: 'Antigravity uses its CLI permission policy and does not send approval prompts to Ri.', questionRequests: 'Antigravity does not expose interactive questions to Ri.', strictMcpIsolation: 'Antigravity can use its own configured MCP tools in addition to the tools Ri supplies.' },
 };

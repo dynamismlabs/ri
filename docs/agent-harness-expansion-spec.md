@@ -1722,6 +1722,8 @@ Strict isolation must not be advertised until a test proves that global and repo
 
 If OpenCode configuration merging prevents this guarantee, keep `strictMcpIsolation` false and disable strict integration-scoped execution on OpenCode.
 
+Agentex 0.0.53 supports strict MCP isolation on OpenCode 2.3.0 or newer. It disables OpenCode's config-driven MCP loader in a private server and checks the ordered sources from `GET /api/config` before registering any host servers. Managed settings that re-enable the loader fail startup. Host server definitions live in the verified runtime for both sessions and one-shot runs. The private runtime keeps its location alive and turns off filesystem watches for the lease. The real OpenCode test covers a project server with the same name as a host server, a global stdio command, a forced config reload, and new and resumed one-shot runs. Earlier OpenCode versions run personal chats without Ri's MCP servers. MCP health reporting is still open.
+
 ## 13. Agentex Cursor implementation
 
 ### 13.1 Transport decision record
@@ -2802,13 +2804,13 @@ Exit criteria:
 
 ### Milestone 13: MCP hardening
 
-- [ ] `[AX]` Prototype OpenCode typed MCP attachment
-- [ ] `[AX]` Keep MCP secrets out of argv
+- [x] `[AX]` Prototype OpenCode typed MCP attachment
+- [x] `[AX]` Keep MCP secrets out of argv
 - [ ] `[AX]` Add MCP health reporting
-- [ ] `[AX]` Test cleanup of app-managed MCP entries
-- [ ] `[AX]` Determine whether strict ambient MCP exclusion is provable
-- [ ] `[AX]` Advertise strict isolation only after a proving test
-- [ ] `[APP]` Enable OpenCode workspace integrations only for supported isolation level
+- [x] `[AX]` Keep app-managed MCP entries in the private runtime for its lease
+- [x] `[AX]` Determine whether strict ambient MCP exclusion is provable
+- [x] `[AX]` Advertise strict isolation only after a proving test
+- [x] `[APP]` Enable OpenCode workspace integrations only for supported isolation level
 - [ ] `[APP]` Keep Cursor app MCP disabled until an isolated configuration contract exists
 - [ ] `[DOC]` Document the exact MCP security guarantees per harness
 
