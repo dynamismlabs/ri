@@ -461,3 +461,12 @@ html[data-look="edge"] :is([data-slot="calendar-event"], [data-slot="menu-action
 
 /* Warning actions keep amber at a readable shade on the quiet status fill. */
 html[data-look="edge"] [data-slot="action-button"][data-tone="warning"] { color: var(--edge-warning-ink); }
+
+/* A hand-built grid choice becomes one track while retaining its classic grid. */
+html[data-look="edge"] [data-slot="segmented"].grid { display: flex; }
+/* Fields use one focus treatment. Preserve an invalid field's error border. */
+html[data-look="edge"] [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
+html[data-look="edge"] [data-slot="field"]:focus-visible { border-color: var(--edge-line-2); box-shadow: none; }
+html[data-look="edge"] [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
+/* A touch track inside a contents wrapper fills its existing padded row. */
+html[data-look="edge"] [data-slot="segmented"][data-size="touch"].contents { flex: 1; }

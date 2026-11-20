@@ -21,5 +21,6 @@ Ri has a new design on the way. Turn on **New look (preview)** in **Settings**, 
 - Rounded controls on a task, like the choice of energy and effort, instead of small boxes.
 - A white message box that stands out from the page.
 - Matching controls in chats, Calendar, Settings and scheduled tasks, with a clear outline when you move by keyboard.
+- The same controls when choosing an agent, connecting an account or recovering work. File chips stay readable inside your own messages.
 
-It's a preview, so some screens still look the way they always have while the rest catches up. Turn it off at any time to go straight back.
+The preview keeps your layouts and your light or dark setting. Turn it off at any time to go straight back.

@@ -31,8 +31,8 @@ export function ManageButton({ item }: { item: ReviewItem }) {
 }
 export function ItemCard({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <article className={s.card} data-item={item.key}>
-    <button className={s.cardTop} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}>
+  return <article data-slot="content-card" className={s.card} data-item={item.key}>
+    <button data-slot="menu-action" className={s.cardTop} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}>
       <ItemMark item={item} /><span className={s.cardCopy}><h3>{item.name}</h3><span className={s.description}>{item.description}</span></span>
     </button>
     <div className={s.itemType}>{item.view ? <LayoutGrid size={11} /> : item.kind === 'skills' ? <BookOpen size={11} /> : <MessageCircle size={11} />}{itemType(item)}{item.view && ' · Opens in Ri'}</div>

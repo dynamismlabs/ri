@@ -100,8 +100,9 @@ export function AgentHeader({
       </div>
       {pane && (
         <div role="tablist" aria-label="Chat or tools" className="flex gap-1 px-4 pb-2">
+          <div data-slot="segmented" data-size="touch" className="contents">
           {(['chat', 'tools'] as const).map((p) => (
-            <button
+            <button data-slot="segmented-option"
               key={p}
               role="tab"
               aria-selected={pane.value === p}
@@ -119,6 +120,7 @@ export function AgentHeader({
               )}
             </button>
           ))}
+          </div>
         </div>
       )}
     </header>

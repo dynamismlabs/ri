@@ -152,7 +152,7 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
             <span className="text-sm font-semibold text-foreground">Changes to this {noun}</span>
             {groups.length > 1 && (
               <div className="ml-2 flex items-center gap-1 text-[11px] text-muted-foreground">
-                <button
+                <button data-slot="action-button" data-variant="ghost"
                   onClick={() => setGroupIndex((i) => Math.min(i + 1, groups.length - 1))}
                   disabled={idx >= groups.length - 1}
                   className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
@@ -163,7 +163,7 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                 <span className="tabular-nums">
                   {idx + 1} / {groups.length}
                 </span>
-                <button
+                <button data-slot="action-button" data-variant="ghost"
                   onClick={() => setGroupIndex((i) => Math.max(i - 1, 0))}
                   disabled={idx <= 0}
                   className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
@@ -176,7 +176,7 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
             <div className="ml-auto flex items-center gap-1.5">
               <div data-slot="segmented" className="flex rounded-md border border-border p-0.5 text-[10.5px]">
                 {(['split', 'unified'] as const).map((m) => (
-                  <button
+                  <button data-slot="segmented-option"
                     key={m}
                     aria-pressed={viewMode === m}
                     onClick={() => setViewMode(m)}
@@ -189,7 +189,7 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                   </button>
                 ))}
               </div>
-              <button
+              <button data-slot="action-button" data-variant="ghost"
                 onClick={onClose}
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                 aria-label="Close"
@@ -231,7 +231,7 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                 {formatWhen(group.after.createdAt)}
               </div>
               <Tip label={canUndo ? 'Restore the version from before this change' : 'Nothing earlier to restore'}>
-                <button
+                <button data-slot="action-button" data-variant="primary"
                   onClick={async () => { if (group.before && (!confirmRevert || await confirmRevert())) revert.mutate(group.before.id); }}
                   disabled={!canUndo || revert.isPending}
                   className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"

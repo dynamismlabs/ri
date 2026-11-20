@@ -28,7 +28,7 @@ function SessionChatMenu({ sessionId }: { sessionId: string }) {
     <Popover>
       <PopoverTrigger asChild>
         <Tip label={coordination ? 'Chat permissions, incoming messages and restart' : 'Restart this chat'}>
-          <button type="button" aria-label="Chat menu" className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button data-slot="action-button" data-variant="ghost" type="button" aria-label="Chat menu" className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
             <MoreHorizontal size={14} />
           </button>
         </Tip>

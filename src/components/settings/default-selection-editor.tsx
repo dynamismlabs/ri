@@ -100,7 +100,7 @@ export function DefaultSelectionEditor({
               const on = draft.effort === o.id;
               return (
                 <Tip key={o.id} label={o.hint}>
-                  <button
+                  <button data-slot="segmented-option"
                     type="button"
                     role="radio"
                     aria-checked={on}
@@ -125,7 +125,7 @@ export function DefaultSelectionEditor({
           <div className="flex flex-wrap gap-1.5" data-slot="segmented" role="radiogroup" aria-label="Speed">
             {speeds.map(speed => (
               <Tip key={speed.id} label={speed.hint}>
-                <button type="button" role="radio" aria-checked={(draft.serviceTier ?? 'default') === speed.id}
+                <button data-slot="segmented-option" type="button" role="radio" aria-checked={(draft.serviceTier ?? 'default') === speed.id}
                   disabled={speed.disabled} onClick={() => setDraft(d => ({ ...d, serviceTier: speed.id }))}
                   className={cn('rounded-full border px-2.5 py-1 text-[11.5px] disabled:opacity-50',
                     (draft.serviceTier ?? 'default') === speed.id ? 'border-primary/60 bg-primary/10' : 'border-border text-muted-foreground')}>

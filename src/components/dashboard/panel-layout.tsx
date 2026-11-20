@@ -107,7 +107,7 @@ export function PanelLayout() {
 
       {/* Reset layout — context.resetLayout snaps tabs + focus + panel split */}
       {!expandedPanel && <Tip label="Reset layout to default">
-        <button
+        <button data-slot="action-button"
           onClick={resetLayout}
           aria-label="Reset layout to default"
           className={cn(

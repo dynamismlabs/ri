@@ -241,7 +241,7 @@ export function GeneralSection() {
         </p>
         <div className="space-y-1 rounded-lg border border-border bg-background p-3">
           {AUTOMATION_MODES.map((m) => (
-            <button
+            <button data-slot="choice-row" aria-pressed={autonomyState?.mode === m.id}
               key={m.id}
               onClick={() => setAutonomy.mutate({ mode: m.id })}
               className={`w-full flex items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${

@@ -131,7 +131,7 @@ Settings' generic bordered-action rules exclude the direct options of a
 segmented control. Those tracks fit their options, and the active thumb keeps its
 fill on hover. Independent pressed toggles in Settings' button groups use the
 soft selected fill. Settings search keeps its own field ring without a second
-outline.
+outline. Other text fields clear their inherited ring when the shared outline is drawn, so focus stays a single treatment.
 
 ### Shapes
 
@@ -176,11 +176,36 @@ component's own utility classes.
    with descriptive choices as rows. Schedules has shared fields, actions and
    status badges. Hand-built choosers and the frequently used launcher,
    scratchpad, task creation and tools controls gain the shared hooks.
-   Classic retains its source layout and utilities. See
-   `docs/ui-system-phase3-audit.md` for the remaining raw bordered-control sweep.
-4. **After the preview review (not started).** Copy still in Title Case in shared
+   Classic retains its source layout and utilities.
+4. **Complete the control sweep (done 2026-11-20).** Chat
+   questions, approvals, account access, files and recovery actions use the same
+   hooks. Both library surfaces, onboarding, agent setup, identity choices, team actions,
+   expanded provider settings, pairing and consent follow them too. Content
+   keeps its shape as described below. The live Apps screen's CSS-module
+   cards and switches use the same hooks, with a check against its real stylesheet.
+5. **After the preview review (not started).** Copy still in Title Case in shared
    constants ("In Progress", "Priority Order", "Schedules and Triggers") reaches
-   tests and the guide. Review the remaining controls and the chat UI gallery in
-   both looks, then consider codemods and a lint rule that stops new drift.
-   Making Edge the default, removing the switch and moving values into
-   `theme.css` all need the owner's decision. Phase 3 does none of those.
+   tests and the guide. Making Edge the default, removing the switch and moving
+   values into `theme.css` all need the owner's decision.
+
+## Completed raw-control audit
+
+The separate phase 3 inventory is folded into this spec. Every entry is now
+covered by an explicit shared hook, including the uncommon chooser, retry,
+provider setup and team states. A button containing an image, a document summary
+or an event is content as well as a press target:
+
+| Intentionally retained shape | Where and why |
+| --- | --- |
+| Content cards, 14px | Entity references, Board activity, onboarding apps and service-form thumbnail options contain a title, image or supporting text. They use `content-card` |
+| Descriptive rows, 8px | Questions, workstream and model choices, provider choices and source pickers contain descriptions or belong to a list. They use `choice-row` or `menu-action` |
+| Calendar events, 8px | Day, Week and List event blocks represent time and meeting details. `calendar-event` preserves their placement and colored stripe. Join and warning actions are capsules |
+| Image and emoji previews, 14px | Agent and area setup show the current image inside the picker. `image-picker` keeps the preview and dashed empty-state affordance |
+| Completion circles and checkboxes | Task, subtask, area and routine completion marks use `completion-control`. Their state remains recognizable at 14 to 16px |
+| Native switch track and thumb | The sent-voice Auto-send switch uses `switch`. Its existing state and track remain intact |
+
+Small actions around those pieces are capsules. File chips inherit the ink of an
+inverted bubble. Floating model-list and image actions stay opaque over their
+content. Warning actions keep amber in a readable shade in both themes. Focus
+outlines sit inside clipped event cells, menu rows, image pickers and segmented
+options. `SegmentedTabs` still owns its measured scroller.

@@ -59,7 +59,7 @@ export function EntityChangeBanner({
             AI {verb} this {noun}.
           </span>
           <div className="flex items-center gap-2 @max-[30rem]:order-last @max-[30rem]:basis-full @max-[30rem]:pl-[23px]">
-            <button
+            <button data-slot="action-button" data-variant="primary"
               onClick={() => setModalOpen(true)}
               className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md bg-primary px-2.5 py-1 text-[11.5px] font-medium text-primary-foreground hover:bg-primary/90"
             >
@@ -75,7 +75,7 @@ export function EntityChangeBanner({
               </button>
             )}
           </div>
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             onClick={() => setDismissedId(latest.after.id)}
             className="flex-shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
             aria-label="Dismiss"

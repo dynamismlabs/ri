@@ -225,7 +225,7 @@ export function SaveStatus({ status }: { status: SharedBodyStatus }) {
 
 function ConflictButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button
+    <button data-slot="action-button"
       type="button"
       onClick={onClick}
       className="rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted/60"

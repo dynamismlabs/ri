@@ -52,7 +52,7 @@ export function PublishedResultList({
           {(result.links.length > 0 || result.attachments.length > 0) && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {result.links.map((link) => (
-                <a
+                <a data-slot="action-button"
                   key={link.url}
                   href={link.url}
                   target="_blank"
@@ -64,7 +64,7 @@ export function PublishedResultList({
                 </a>
               ))}
               {result.attachments.map((file) => (
-                <a
+                <a data-slot="action-button"
                   key={file.fileName}
                   href={fileUrl(file.fileName)}
                   download={file.originalName}

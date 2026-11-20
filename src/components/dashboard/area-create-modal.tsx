@@ -132,7 +132,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                 New Area
               </span>
               <DialogPrimitive.Close asChild>
-                <button className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <button data-slot="action-button" data-variant="ghost" className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
                   <X size={16} />
                 </button>
               </DialogPrimitive.Close>
@@ -156,7 +156,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                       alt="Area image"
                       className="w-20 h-20 rounded-xl object-cover border border-border"
                     />
-                    <button
+                    <button data-slot="action-button" data-variant="primary"
                       onClick={handleRemoveImage}
                       className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
@@ -167,7 +167,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                   <div className="flex gap-3">
                     <div className="relative group">
                       <EmojiPicker onSelect={(e) => setEmoji(e)}>
-                        <button
+                        <button data-slot="image-picker"
                           className={cn(
                             "w-20 h-20 rounded-xl border border-border",
                             "flex flex-col items-center justify-center gap-1",
@@ -188,7 +188,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                         </button>
                       </EmojiPicker>
                       {emoji && (
-                        <button
+                        <button data-slot="action-button" data-variant="primary"
                           onClick={() => setEmoji(null)}
                           className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                         >
@@ -196,7 +196,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                         </button>
                       )}
                     </div>
-                    <button
+                    <button data-slot="image-picker"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
                       className={cn(
@@ -247,11 +247,11 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
             {/* Footer */}
             <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
               <DialogPrimitive.Close asChild>
-                <button className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
+                <button data-slot="action-button" data-variant="ghost" className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
                   Cancel
                 </button>
               </DialogPrimitive.Close>
-              <button
+              <button data-slot="action-button" data-variant="primary"
                 onClick={handleSubmit}
                 disabled={!name.trim() || createArea.isPending}
                 className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"

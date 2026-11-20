@@ -87,7 +87,7 @@ export function ConnectionBadge({ harness, className }: { harness: ProviderId; c
   }
   const meta = badgeMeta(connection);
   return (
-    <span
+    <span data-slot="status-badge"
       className={cn(
         'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium',
         meta.cls,
@@ -206,7 +206,7 @@ export function ConnectionPanel({
         {notInstalled ? provider.installHint : provider.loginCmd}
       </code>
       <HarnessToolSetup harness={harness} installed={!notInstalled} onComplete={() => recheck.mutate(harness)} />
-      <button
+      <button data-slot="action-button"
         type="button"
         onClick={() => recheck.mutate(harness)}
         disabled={recheck.isPending}

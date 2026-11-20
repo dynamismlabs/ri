@@ -87,7 +87,7 @@ function ModeSegment({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         role="radio"
         aria-checked={selected}
@@ -205,7 +205,7 @@ export function RunOnControl({
                   ? 'Not connected right now. The work starts when it is.'
                   : null;
             return (
-              <button
+              <button data-slot="menu-action"
                 key={choice.deviceId}
                 type="button"
                 disabled={!choice.ready && !canSetUp}
@@ -238,7 +238,7 @@ export function RunOnControl({
             );
           })}
           {oneOff && selected.ready && (
-            <button
+            <button data-slot="menu-action"
               type="button"
               disabled={savingDefault}
               onClick={() => onMakeDefault(selected.deviceId)}
@@ -321,7 +321,7 @@ export function BaseControl({
               <span className="font-mono text-foreground">#{base.prNumber}</span>. Resolved on the
               server, so it works for forks and PRs you have never checked out.
             </p>
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               type="button"
               onClick={() => { onClear(); setOpen(false); }}
               className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
@@ -347,7 +347,7 @@ export function BaseControl({
             </div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (
-                <button
+                <button data-slot="menu-action"
                   type="button"
                   onClick={() => { onClear(); setOpen(false); }}
                   className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
@@ -366,7 +366,7 @@ export function BaseControl({
                 </div>
               )}
               {filtered.map((b) => (
-                <button
+                <button data-slot="menu-action"
                   key={b}
                   type="button"
                   onClick={() => { onPickBranch(b); setOpen(false); }}

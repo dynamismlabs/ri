@@ -63,7 +63,7 @@ export function SettingsNavigation<Id extends string>({
         const Icon = section.icon;
         const isActive = section.id === active;
         return (
-          <button
+          <button data-slot="settings-nav-item"
             key={section.id}
             type="button"
             onClick={() => onSelect(section.id)}

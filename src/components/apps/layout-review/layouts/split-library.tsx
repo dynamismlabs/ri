@@ -139,7 +139,7 @@ function LibraryEntry({ item }: { item: ReviewItem }) {
   const open = () => item.draft || item.kind === 'skills' || !item.view ? review.manage(item) : review.primary(item);
   const selected = review.selected?.key === item.key || review.query.provider === (item.target.kind === 'provider' ? item.target.id : null) || review.query.mcp === (item.target.kind === 'mcp' ? item.target.id : null);
   return <div className={s.libraryEntry} data-item={item.key} data-selected={selected || undefined}>
-    <Tip label={item.name} onlyWhenTextHidden><button type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
+    <Tip label={item.name} onlyWhenTextHidden><button data-slot="menu-action" type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
       <ItemMark item={item} small /><span><strong>{item.name}</strong><small className={item.attention ? s.attention : undefined}>{item.enabled === false ? 'Off' : item.attention ? 'Needs attention' : item.target.kind === 'mcp' ? 'Custom MCP' : item.status}</small></span>
     </button></Tip>
     <ManageButton item={item} />
@@ -153,7 +153,7 @@ function Discover() {
   const showGoals = !review.search && review.filter === 'All';
   return <>
     <div className={s.discoverHeading}><h2>Discover</h2><p>Find your next useful addition.</p></div>
-    <div className={s.typeTabs} aria-label="Discover types">{types.map(type => <button type="button" key={type} className={s.filter} aria-pressed={review.filter === type} onClick={() => review.patch({ filter: type === 'All' ? undefined : type, browse: undefined })}>{type}</button>)}</div>
+    <div className={s.typeTabs} aria-label="Discover types"><div data-slot="segmented" data-scroll className="contents">{types.map(type => <button data-slot="segmented-option" type="button" key={type} className={s.filter} aria-pressed={review.filter === type} onClick={() => review.patch({ filter: type === 'All' ? undefined : type, browse: undefined })}>{type}</button>)}</div></div>
     {showGoals && <section className={s.goalSection} aria-label="Goal bundles"><SectionTitle>Start with a goal</SectionTitle><CollectionTiles /></section>}
     <SectionTitle count={review.loading ? undefined : sorted.length}>{review.search ? 'Search results' : showGoals ? 'Explore the catalog' : review.filter}</SectionTitle>
     {review.loading ? <CatalogSkeleton /> : !sorted.length && !review.search ? <Empty>You have everything in this part of the catalog. Try another type or create something of your own.</Empty>
@@ -173,7 +173,7 @@ function GoalBundle() {
     <div className={s.goalHeading}><h2>{collection.name}</h2><p>{collection.description}</p><span>{added} of {items.length} in your library</span></div>
     <p className={`${s.muted} mb-4`}>Choose the pieces that help. Each has its own setup and access.</p>
     {items.map(item => <div className={s.bundleItem} key={item.key}>
-      <button className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></button>
+      <button data-slot="menu-action" className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></button>
       <div className={s.bundleItemActions}>{item.added && !item.draft ? <ItemStatus item={item} /> : <span className={s.muted}>Not added</span>}<PrimaryButton item={item} /></div>
     </div>)}
     {!items.length && <Empty>No additions in this bundle are available yet.</Empty>}

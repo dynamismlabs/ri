@@ -55,7 +55,7 @@ export function SharedNoteBody({ note }: { note: NoteRecord }) {
             </span>
           )}
           {href && !gone && (
-            <a href={href} className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-medium text-foreground hover:bg-muted">
+            <a data-slot="action-button" href={href} className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-medium text-foreground hover:bg-muted">
               <PencilLine size={12} aria-hidden /> Edit in {teamName}
             </a>
           )}

@@ -14,7 +14,7 @@ export function WorkWithPersonalAgent({ taskId, label = 'Work in My Ri' }: { tas
   if (!space || space.status !== 'active') return null;
   return (
     <Tip label="Choose a personal agent and model. The conversation stays in My Ri." onlyWhenTextHidden>
-      <button type="button" aria-label={label} disabled={busy} className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded border px-2 text-[11px] font-medium hover:bg-muted disabled:opacity-60" onClick={async () => {
+      <button data-slot="action-button" type="button" aria-label={label} disabled={busy} className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded border px-2 text-[11px] font-medium hover:bg-muted disabled:opacity-60" onClick={async () => {
         setBusy(true);
         try {
           window.location.assign(`/?workTask=${encodeURIComponent(taskId)}&workTeam=${encodeURIComponent(space.id)}`);

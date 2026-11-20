@@ -200,7 +200,7 @@ export function BrowserSection() {
             <p className="mt-1 text-[11px] text-muted-foreground/60">
               The logged-in identity actions use when none is given. Letters, digits, underscore, or hyphen.
             </p>
-            <input
+            <input data-slot="field"
               value={profileInput}
               disabled={busy !== null}
               onChange={(e) => setProfileInput(e.target.value)}
@@ -238,7 +238,7 @@ export function BrowserSection() {
               profile, separate from your personal browser, and reused later.
             </p>
             <div className="mt-2.5 flex gap-2">
-              <button
+              <button data-slot="action-button" data-variant="primary"
                 onClick={() => void control('open')}
                 disabled={busy !== null || detected.length === 0}
                 className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
@@ -247,7 +247,7 @@ export function BrowserSection() {
                 {busy === 'open' ? 'Opening…' : 'Open to sign in'}
               </button>
               {open && (
-                <button
+                <button data-slot="action-button"
                   onClick={() => void control('stop')}
                   disabled={busy !== null}
                   className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-[12px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"

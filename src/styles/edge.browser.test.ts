@@ -34,6 +34,7 @@ beforeAll(async () => {
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
       import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
       import {ChatLenses, ChatLensBar} from '@/components/workspaces/chat-lens-bar';
+      import {WorkbenchToggles} from '@/components/executions/workbench/workbench-toggles';
       import {FileChip} from '@/components/chat-ui/artifacts/file-chip';
       import {MessageFileChip} from '@/components/chat-ui/artifacts/message-file-chip';
       const LENSES=[{value:'all',label:'All'},{value:'unread',label:'Unread',count:2,tone:'attention'},{value:'working',label:'Working'}];
@@ -92,6 +93,8 @@ beforeAll(async () => {
           {/* The agent page's chat lenses (compact) and the phone's (touch), as they render. */}
           <div data-case="lenses"><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Chats" options={LENSES}/></ChatLenses></div>
           <div data-case="lenses-touch" style={{width:360}}><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Phone chats" size="touch" options={LENSES}/></ChatLenses></div>
+          <div data-case="agent-pane" className="flex w-72 gap-1 px-4 pb-2"><div data-slot="segmented" data-size="touch" className="contents"><button aria-selected="true" className="flex flex-1 items-center justify-center rounded-md py-1.5">Chat</button><button aria-selected="false" className="flex flex-1 items-center justify-center rounded-md py-1.5">Tools</button></div></div>
+          <div data-case="workbench-toggle"><WorkbenchToggles tools={{open:true,onToggle(){},showLabel:"Files"}} fold={{label:"",kbd:""}} /></div>
           <div data-case="tail" className="flex w-72 flex-col items-start gap-3">
             <button data-tail-focus data-slot="content-card" className="w-full rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2">A saved reference<br/>With a description</button>
             <button data-tail-focus data-slot="image-picker" aria-label="Choose image" className="size-16 rounded-xl border-2 border-dashed border-border">Image</button>
@@ -105,7 +108,7 @@ beforeAll(async () => {
               <MessageFileChip tone="bubble" attachment={{fileName:'example.bin',originalName:'Design archive.zip',mimeType:'application/octet-stream',size:2048,uploadedAt:'2026-11-20'}} />
             </div>
             <button data-tail-focus data-case="floating-action" data-slot="action-button" data-variant="floating" className="rounded-full border bg-background px-3 py-1 text-muted-foreground shadow-sm">More models below</button>
-            <div data-case="filter-scroll" data-slot="segmented" data-scroll className="flex flex-wrap gap-1.5">
+            <div data-case="filter-scroll" data-slot="segmented" data-scroll className="grid gap-2 sm:grid-cols-2">
               {['All sources','Built into Ri','Connected apps','Installed skills'].map((label,i)=><button key={label} aria-pressed={i===0} className="rounded-full border px-3 py-1">{label}</button>)}
             </div>
           </div>
@@ -422,6 +425,7 @@ for (const theme of ['light', 'dark'] as const) {
           expect(state.shadow).toContain('inset');
           expect(state.shadow).toContain('30, 120, 200');
         }
+        if (state.slot === 'field') expect(state.shadow).toBe('none');
         if (state.slot === 'completion-control') expect(parseFloat(state.radius)).toBeGreaterThan(100);
       }
       const invalid = await page.locator('[data-case="invalid-field"]').evaluate(el => {
@@ -475,7 +479,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(await contrast(page, '[data-case="floating-action"]')).toBeGreaterThan(4.5);
       }
       const track = page.locator('[data-case="filter-scroll"]');
-      expect(await track.evaluate(el => ({ overflow: getComputedStyle(el).overflowX, overflows: el.scrollWidth > el.clientWidth, fits: el.getBoundingClientRect().width <= el.parentElement!.clientWidth }))).toEqual({ overflow: 'auto', overflows: true, fits: true });
+      expect(await track.evaluate(el => ({ display: getComputedStyle(el).display, overflow: getComputedStyle(el).overflowX, overflows: el.scrollWidth > el.clientWidth, fits: el.getBoundingClientRect().width <= el.parentElement!.clientWidth }))).toEqual({ display: 'flex', overflow: 'auto', overflows: true, fits: true });
       const last = track.locator('button').last();
       await last.focus();
       const state = await last.evaluate(el => {
@@ -487,3 +491,60 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
 }
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`keeps the common Tools toggle rounded, selected and focusable (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const button = page.locator('[data-case="workbench-toggle"] button');
+      await page.keyboard.press('Tab');
+      await button.focus();
+      const state = await button.evaluate(el => {
+        const s = getComputedStyle(el);
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--edge-selected)'; el.after(probe);
+        const selected = getComputedStyle(probe).backgroundColor; probe.remove();
+        return { radius: parseFloat(s.borderRadius), outline: s.outlineStyle, fill: s.backgroundColor, selected };
+      });
+      expect(state.radius).toBeGreaterThan(100);
+      expect(state.outline).toBe('solid');
+      expect(state.fill).toBe(state.selected);
+    } finally { await page.close(); }
+  });
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`keeps the narrow agent switch inside its existing header gutters (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const state = await page.locator('[data-case="agent-pane"]').evaluate(el => {
+        const row = el.getBoundingClientRect();
+        const track = el.firstElementChild!.getBoundingClientRect();
+        const buttons = Array.from(el.querySelectorAll('button')).map(button => button.getBoundingClientRect());
+        return { left: track.left - row.left, right: row.right - track.right, full: buttons[0].width + buttons[1].width, width: track.width, height: buttons[0].height };
+      });
+      expect(state.left).toBe(16);
+      expect(state.right).toBe(16);
+      expect(state.full).toBe(state.width - 4);
+      expect(state.height).toBe(36);
+    } finally { await page.close(); }
+  });
+}
+
+it('keeps the agent header contents wrapper invisible to classic layout', async () => {
+  const { page } = await open('classic', 'light');
+  try {
+    const row = page.locator('[data-case="agent-pane"]');
+    const state = await row.evaluate(el => {
+      const read = () => Array.from(el.querySelectorAll('button')).map(button => {
+        const { x, y, width, height } = button.getBoundingClientRect();
+        return { x, y, width, height };
+      });
+      const wrapped = read();
+      const track = el.firstElementChild!;
+      track.replaceWith(...Array.from(track.childNodes));
+      return { wrapped, original: read() };
+    });
+    expect(state.wrapped).toEqual(state.original);
+  } finally { await page.close(); }
+});

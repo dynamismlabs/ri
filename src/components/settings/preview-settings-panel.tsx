@@ -78,7 +78,7 @@ export function PreviewSettingsPanel() {
         {active === 'manual' && (
           <div className="rounded-md border border-border bg-card/40 p-3 space-y-2.5">
             <Field label="Default URL template">
-              <input
+              <input data-slot="field"
                 value={manualTemplate}
                 onChange={(e) => setManualTemplate(e.target.value)}
                 placeholder="https://{name}.mytunnel.com"
@@ -89,7 +89,7 @@ export function PreviewSettingsPanel() {
             <p className="text-[11px] text-muted-foreground">
               Used when no explicit URL is pasted on an execution. <code className="rounded bg-muted px-1">{'{name}'}</code> is the preview name.
             </p>
-            <button
+            <button data-slot="action-button" data-variant="primary"
               type="button"
               onClick={() => update.mutate({ manualTemplate: manualTemplate.trim() || null })}
               disabled={update.isPending}

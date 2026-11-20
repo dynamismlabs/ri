@@ -145,7 +145,7 @@ export function DayView({ date, day, workday, isToday, work }: DayViewProps) {
               {packed.overflow.map((group, i) => (
                 <Popover key={`overflow-${i}`}>
                   <PopoverTrigger asChild>
-                    <button
+                    <button data-slot="action-button"
                       type="button"
                       className="absolute z-20 w-1/3 right-2 min-h-5 rounded-md border border-border bg-muted px-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                       style={toStyle(windowPct(group, bounds))}
@@ -187,7 +187,7 @@ function EventCard({ placed, bounds }: { placed: PlacedEvent; bounds: MinuteWind
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button
+        <button data-slot="calendar-event"
           type="button"
           className={cn(
             'absolute z-20 min-h-5 rounded-md border text-left pr-2 py-0.5 overflow-hidden transition-colors',
@@ -222,7 +222,7 @@ function OverflowRow({ event, date }: { event: CalendarEvent; date: string }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button
+        <button data-slot="menu-action"
           type="button"
           className="w-full flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-muted/60 transition-colors"
         >

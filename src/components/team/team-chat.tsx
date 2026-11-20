@@ -40,6 +40,6 @@ export function TeamChat() {
   const nav = useTeamNav();
   return <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-sm text-muted-foreground">
     <p>Start a shared chat from one of the team&apos;s agents.</p>
-    <button className="rounded-md border border-border px-3 py-2 text-foreground hover:bg-muted/50" onClick={() => nav.show('agents')}>Open agents</button>
+    <button data-slot="action-button" className="rounded-md border border-border px-3 py-2 text-foreground hover:bg-muted/50" onClick={() => nav.show('agents')}>Open agents</button>
   </div>;
 }

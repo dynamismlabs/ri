@@ -264,7 +264,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
   return (
     <div data-slot="split-button" className="relative inline-flex items-stretch">
       <Tip label={primaryLabel}>
-        <button
+        <button data-slot="split-button-action"
           type="button"
           onClick={() => open(primaryTarget)}
           disabled={isBusyPrimary}
@@ -288,7 +288,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Tip label="More open options">
-            <button
+            <button data-slot="split-button-action"
               type="button"
               className={cn(
                 'flex items-center justify-center px-1.5',
