@@ -19,9 +19,11 @@ const DEVELOPER_ID_PREFIX = 'Developer ID Application: ';
 
 /**
  * How a Mac build is signed (docs/publishing.md). A Developer ID, named by CSC_NAME,
- * signs a release or share build and notarizes it with an App Store Connect API key.
- * Without one, a share build is ad-hoc signed and a release can't be made. Checked
- * before anything is built, so a wrong setup fails in seconds, not after the build.
+ * signs a release or share build, which is then notarized with an Apple ID (APPLE_ID,
+ * APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID) or an App Store Connect API key
+ * (APPLE_API_KEY, APPLE_API_KEY_ID and APPLE_API_ISSUER). Without one, a share build is
+ * ad-hoc signed and a release can't be made. Checked before anything is built, so a
+ * wrong setup fails in seconds, not after the build.
  * @param {{ platform?: NodeJS.Platform, release?: boolean, share?: boolean, env?: Record<string, string | undefined> }} build
  * @returns {{ identity: string | null, codesignIdentity?: string, notarize: boolean, keychain?: string }}
  */
@@ -33,9 +35,17 @@ export function macSigning({ platform = process.platform, release = false, share
     return { identity: '-', notarize: false };
   }
   if (identity.startsWith(DEVELOPER_ID_PREFIX)) throw new Error(`Set CSC_NAME without "${DEVELOPER_ID_PREFIX.trim()}", as in "Example Inc. (ABCDE12345)". electron-builder adds it.`);
-  if (env.APPLE_ID || env.APPLE_APP_SPECIFIC_PASSWORD) throw new Error('Ri notarizes with an App Store Connect API key, not an Apple ID. Unset APPLE_ID and APPLE_APP_SPECIFIC_PASSWORD.');
-  const missing = ['APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER'].filter(name => !env[name]?.trim());
-  if (missing.length) throw new Error(`A Developer ID build is notarized, which needs ${missing.join(', ')} (docs/publishing.md).`);
-  if (!fs.existsSync(env.APPLE_API_KEY)) throw new Error('APPLE_API_KEY must be the path to the App Store Connect key (.p8) file.');
+  const set = (/** @type {string} */ name) => Boolean(env[name]?.trim());
+  // electron-builder notarizes with the Apple ID whenever either half of it is set.
+  const appleId = set('APPLE_ID') || set('APPLE_APP_SPECIFIC_PASSWORD');
+  const apiKey = !appleId && ['APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER'].some(set);
+  if (!appleId && !apiKey) throw new Error('A Developer ID build is notarized, which needs APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID, or an App Store Connect API key in APPLE_API_KEY, APPLE_API_KEY_ID and APPLE_API_ISSUER (docs/publishing.md).');
+  const needs = appleId ? ['APPLE_ID', 'APPLE_APP_SPECIFIC_PASSWORD', 'APPLE_TEAM_ID'] : ['APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER'];
+  const missing = needs.filter(name => !set(name));
+  if (missing.length) throw new Error(`Notarizing with ${appleId ? 'an Apple ID' : 'an App Store Connect API key'} needs ${missing.join(', ')} (docs/publishing.md).`);
+  if (apiKey && !fs.existsSync(/** @type {string} */ (env.APPLE_API_KEY))) throw new Error('APPLE_API_KEY must be the path to the App Store Connect key (.p8) file.');
+  // Apple notarizes only what the team signed.
+  const team = env.APPLE_TEAM_ID?.trim();
+  if (team && !identity.endsWith(`(${team})`)) throw new Error(`CSC_NAME "${identity}" isn't a Developer ID in the team APPLE_TEAM_ID names. Sign with that team's Developer ID, or fix APPLE_TEAM_ID.`);
   return { identity, codesignIdentity: `${DEVELOPER_ID_PREFIX}${identity}`, notarize: true, ...(env.CSC_KEYCHAIN ? { keychain: env.CSC_KEYCHAIN } : {}) };
 }

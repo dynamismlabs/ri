@@ -1,6 +1,7 @@
 name: Alpha desktop builds
 # One manual, speech-free sharing path. Installer lifecycle checks are opt-in.
 # Runs from main also replace the files on the rolling `alpha` pre-release (docs/alpha-builds.md).
+# signing_check builds nothing: it only checks the Apple signing secrets (docs/publishing.md).
 on:
   workflow_dispatch:
     inputs:
@@ -17,11 +18,16 @@ on:
         description: Retest an existing alpha run without rebuilding (requires installer_checks)
         type: string
         default: ''
+      signing_check:
+        description: Only check the Apple signing secrets on a Mac, building nothing (ignores the other inputs)
+        type: boolean
+        default: false
 permissions:
   contents: read
   actions: read
 jobs:
   targets:
+    if: ${{ !inputs.signing_check }}
     runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.select.outputs.matrix }}
@@ -99,13 +105,15 @@ jobs:
         id: apple
         if: runner.os == 'macOS' && !inputs.installer_run
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          CSC_NAME: ${{ vars.CSC_NAME }}
         run: bash desktop/mac-signing.sh setup
       - name: Disable Spotlight indexing during macOS DMG creation
         if: runner.os == 'macOS' && !inputs.installer_run
@@ -142,19 +150,22 @@ jobs:
         env:
           RI_RELEASE_COMMIT: ${{ github.sha }}
           UPGRADE_TEST: ${{ runner.os == 'Windows' && inputs.installer_checks && '--upgrade-test' || '' }}
-          # A Developer ID signs and notarizes the Mac app. Empty, it is ad-hoc signed.
+          # A Developer ID signs and notarizes the Mac app. Empty, it is ad-hoc signed. Only
+          # the way setup checked reaches electron-builder, which prefers an Apple ID.
           CSC_NAME: ${{ steps.apple.outputs.identity }}
           CSC_KEYCHAIN: ${{ steps.apple.outputs.keychain }}
+          APPLE_TEAM_ID: ${{ steps.apple.outputs.identity && secrets.APPLE_TEAM_ID || '' }}
+          APPLE_ID: ${{ steps.apple.outputs.notary == 'apple-id' && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ steps.apple.outputs.notary == 'apple-id' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
           APPLE_API_KEY: ${{ steps.apple.outputs.api_key }}
-          APPLE_API_KEY_ID: ${{ steps.apple.outputs.identity && secrets.APPLE_API_KEY_ID || '' }}
-          APPLE_API_ISSUER: ${{ steps.apple.outputs.identity && secrets.APPLE_API_ISSUER || '' }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APPLE_API_KEY_ID: ${{ steps.apple.outputs.notary == 'api-key' && secrets.APPLE_API_KEY_ID || '' }}
+          APPLE_API_ISSUER: ${{ steps.apple.outputs.notary == 'api-key' && secrets.APPLE_API_ISSUER || '' }}
         shell: bash
         run: pnpm desktop:package --share --skip-build $UPGRADE_TEST
       - name: Check the signature, notarization and Gatekeeper
         if: runner.os == 'macOS' && !inputs.installer_run && steps.apple.outputs.identity != ''
         env:
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: bash desktop/mac-signing.sh verify release/desktop/mac*/Ri.app release/desktop/*.dmg
       - name: Remove the Developer ID from this runner
         if: always() && runner.os == 'macOS' && !inputs.installer_run
@@ -261,12 +272,40 @@ jobs:
             release/qualification/*.png
           if-no-files-found: ignore
           retention-days: 14
+  signing:
+    name: Check the Apple signing secrets
+    # Imports the certificate, names its identity, team and expiry, and signs in to Apple's
+    # notary service, in minutes and without building or submitting anything.
+    if: ${{ inputs.signing_check }}
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          sparse-checkout: desktop/mac-signing.sh
+          sparse-checkout-cone-mode: false
+      - name: Check the certificate, identity and notarization sign-in
+        env:
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+        run: bash desktop/mac-signing.sh check
+      - name: Remove the Developer ID from this runner
+        if: always()
+        run: bash desktop/mac-signing.sh cleanup
   publish:
     name: Publish the alpha release
     needs: build
     # Only main replaces the public downloads, with whichever platforms passed. Branch
-    # runs and retests keep their artifacts only. The alpha tag never matches release.yml.
-    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && !inputs.installer_run }}
+    # runs, retests and signing checks keep their artifacts only. The alpha tag never
+    # matches release.yml.
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' && !inputs.installer_run && !inputs.signing_check }}
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     concurrency: alpha-release

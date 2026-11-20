@@ -111,13 +111,15 @@ jobs:
         id: apple
         if: runner.os == 'macOS'
         env:
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          CSC_NAME: ${{ vars.CSC_NAME }}
         run: bash desktop/mac-signing.sh setup
       - name: Disable Spotlight indexing during macOS DMG creation
         if: runner.os == 'macOS'
@@ -130,13 +132,16 @@ jobs:
           RI_BUILD_MEMORY_LIMIT_GB: '16'
           RI_RELEASE_COMMIT: ${{ github.sha }}
           RI_RELEASE_PUBLIC_KEY_FILE: ${{ runner.temp }}/release-public.pem
-          # Empty without a Developer ID, which builds an ad-hoc signed Mac app.
+          # Empty without a Developer ID, which builds an ad-hoc signed Mac app. Only the way
+          # setup checked reaches electron-builder, which prefers an Apple ID.
           CSC_NAME: ${{ steps.apple.outputs.identity }}
           CSC_KEYCHAIN: ${{ steps.apple.outputs.keychain }}
+          APPLE_TEAM_ID: ${{ steps.apple.outputs.identity && secrets.APPLE_TEAM_ID || '' }}
+          APPLE_ID: ${{ steps.apple.outputs.notary == 'apple-id' && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ steps.apple.outputs.notary == 'apple-id' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
           APPLE_API_KEY: ${{ steps.apple.outputs.api_key }}
-          APPLE_API_KEY_ID: ${{ steps.apple.outputs.identity && secrets.APPLE_API_KEY_ID || '' }}
-          APPLE_API_ISSUER: ${{ steps.apple.outputs.identity && secrets.APPLE_API_ISSUER || '' }}
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APPLE_API_KEY_ID: ${{ steps.apple.outputs.notary == 'api-key' && secrets.APPLE_API_KEY_ID || '' }}
+          APPLE_API_ISSUER: ${{ steps.apple.outputs.notary == 'api-key' && secrets.APPLE_API_ISSUER || '' }}
         run: |
           case "$RUNNER_OS" in
             # The installer alpha builds: unsigned, and with no feed, since nothing on Windows reads one yet.
@@ -161,7 +166,7 @@ jobs:
       - name: Check the signature, notarization and Gatekeeper
         if: runner.os == 'macOS' && steps.apple.outputs.identity != ''
         env:
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: bash desktop/mac-signing.sh verify release/desktop/mac*/Ri.app release/desktop/*.dmg
       - name: Remove the Developer ID from this runner
         if: always() && runner.os == 'macOS'

@@ -43,7 +43,9 @@ update feed. On macOS it signs with the Developer ID and notarizes once the
 Apple secrets exist (docs/publishing.md, "The first release", step 3), then
 checks the result with `codesign --verify --deep --strict`, `spctl --assess`
 and `xcrun stapler validate` before uploading (`desktop/mac-signing.sh`).
-Until then it is ad-hoc signed, for free. It never packages the optional speech
+Until then it is ad-hoc signed, for free. With `signing_check` on, the run is a
+single Mac job that checks those secrets and builds nothing:
+`gh workflow run alpha.yml --ref <branch> -f signing_check=true`. It never packages the optional speech
 helper. The artifact-bound speech review process in `desktop/speech/RELEASE.md`
 remains a separate publisher responsibility.
 
