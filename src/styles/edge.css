@@ -193,7 +193,7 @@ html[data-look="edge"] [data-slot="segmented"].contents { display: flex; }
 html[data-look="edge"] [data-slot="segmented"] { align-self: center; align-items: center; }
 html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
 html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
-html[data-look="edge"] [data-slot="segmented"] > button:hover { color: var(--edge-t1); background-color: transparent; }
+html[data-look="edge"] [data-slot="segmented"] > button:hover:not([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { color: var(--edge-t1); background-color: transparent; }
 html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
 
 /* Toolbar buttons (list toolbars, deck filters): capsules on a quiet fill, no outline. */
@@ -370,18 +370,22 @@ html[data-look="edge"] [data-slot="calendar-navigation"] > button { min-height: 
 /* Settings repeats a few hand-built patterns across its sections. This boundary
    lets those patterns share the system without changing classic's utilities.
    Explicit slots (choices, switches, editor controls) keep their own rules. */
+/* A switch keeps its own track and thumb, including inside Settings. */
+html[data-look="edge"] [data-slot="settings-body"] [data-slot="segmented"] { width: fit-content; }
+/* Independent pressed toggles are a soft selection, unlike solid action buttons. */
+html[data-look="edge"] [data-slot="settings-body"] [data-slot="button-group"] > [data-slot="button"][aria-pressed="true"] { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); box-shadow: none; }
 html[data-look="edge"] [data-slot="settings-nav"] { background-color: var(--edge-canvas); }
 html[data-look="edge"] [data-slot="settings-nav"] > button { border-radius: 8px; box-shadow: none; }
 html[data-look="edge"] [data-slot="settings-nav"] > button[aria-current="page"] { background-color: var(--edge-selected); }
 html[data-look="edge"] [data-slot="settings-nav"] > button:not([aria-current="page"]):hover { background-color: var(--edge-hover); }
 html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:not([data-slot], .rounded-full) { border-color: transparent; border-radius: 14px; }
 html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:is(.border-border, :not([class*="border-"])):not([data-slot], .rounded-full, [role="alert"], [role="status"]) { background-color: var(--edge-raised); }
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"]) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"]):hover:not(:disabled) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *):hover:not(:disabled) { background-color: var(--edge-selected); }
 /* Some Settings actions use bg-foreground for their solid fill. Preserve its
    matching text-background in both themes and on hover. */
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary) { background-color: revert-layer; color: revert-layer; }
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
 html[data-look="edge"] :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
 html[data-look="edge"] [data-slot="field"] { border-color: var(--edge-line-2); border-radius: 10px; background-color: var(--background); }
 html[data-look="edge"] [data-slot="segmented"][role="radiogroup"] { max-width: 100%; overflow-x: auto; }
@@ -398,7 +402,7 @@ html[data-look="edge"] [data-slot="schedule-row"] > button { border-radius: 999p
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html[data-look="edge"] :is([data-slot="action-button"], [data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-nav"] input, [data-slot="settings-body"] :is(button, a, input, textarea, select), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html[data-look="edge"] :is([data-slot="action-button"], [data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 html[data-look="edge"] :is([data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }

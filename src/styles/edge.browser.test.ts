@@ -29,6 +29,8 @@ beforeAll(async () => {
       import React, {useState} from 'react';
       import {createRoot} from 'react-dom/client';
       import {TooltipProvider} from '@/components/ui/tooltip';
+      import {Button} from '@/components/ui/button';
+      import {ButtonGroup} from '@/components/ui/button-group';
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
       import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
       const LANES=[{value:'progress',label:'In progress',count:9},{value:'todo',label:'Todo',count:4},{value:'waiting',label:'Waiting',count:2},{value:'done',label:'Done',count:30}];
@@ -72,6 +74,17 @@ beforeAll(async () => {
             <div data-slot="segmented" className="flex overflow-hidden rounded-md border"><button>Calendar</button><button>List</button><button>Report</button></div>
           </div>
           {['auto_edits','ask','plan'].map(mode=><button key={mode} data-case={'mode-'+mode} data-slot="chip-button" data-mode={mode} className={['rounded-md border px-2 py-1 hover:brightness-110',...Object.values(PERMISSION_MODE_META[mode].classes)].join(' ')}>{PERMISSION_MODE_META[mode].shortTitle}</button>)}
+          <div data-slot="settings-body" data-case="settings-segments" style={{width:360}}>
+            <div data-slot="segmented" className="flex gap-1">
+              {['All','Local','Cloud','Browser'].map((label,i)=><button key={label} aria-pressed={i===0} className={'rounded-full border px-3 py-1 text-[11px] font-medium transition-all '+(i===0?'border-primary bg-primary/5 text-primary':'border-border text-muted-foreground hover:text-foreground')}>{label}</button>)}
+            </div>
+            <div data-slot="segmented" role="radiogroup" className="flex flex-wrap gap-1.5">
+              <button role="radio" aria-checked="true" className="rounded-full border border-primary/60 bg-primary/10 px-2.5 py-1">Normal</button>
+              <button role="radio" aria-checked="false" className="rounded-full border border-border px-2.5 py-1">Fast</button>
+            </div>
+            <ButtonGroup aria-label="Show at"><Button aria-pressed={false} variant="outline" size="xs">&gt;0%</Button><Button data-case="usage-toggle" aria-pressed size="xs">50%</Button><Button aria-pressed size="xs">80%</Button></ButtonGroup>
+          </div>
+          <div data-slot="settings-nav"><input data-case="settings-search" aria-label="Search settings" className="rounded-lg border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" /></div>
         </div>;
       }
       createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
@@ -267,3 +280,63 @@ it('keeps all Calendar view labels visible when the date needs to truncate', asy
     expect(state).toEqual({ fits: true, lastFits: true, toolbarFits: true });
   } finally { await page.close(); }
 });
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`keeps Settings segments fitted and their selected thumb visible, including hover (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const expected = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--edge-thumb)';
+        document.body.append(probe);
+        const thumb = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        return thumb;
+      });
+      const tracks = page.locator('[data-case="settings-segments"] [data-slot="segmented"]');
+      for (const track of await tracks.all()) {
+        const selected = track.locator('[aria-pressed="true"], [aria-checked="true"]');
+        expect(await selected.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
+        expect(await track.evaluate(el => el.getBoundingClientRect().width < el.parentElement!.getBoundingClientRect().width)).toBe(true);
+        await selected.hover();
+        await page.waitForTimeout(250);
+        expect(await selected.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
+        const off = track.locator('[aria-pressed="false"], [aria-checked="false"]').first();
+        await off.hover();
+        await page.waitForTimeout(250);
+        expect(await off.evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+      }
+    } finally { await page.close(); }
+  });
+
+  it(`uses a soft fill for independent Settings toggles (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const expected = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--edge-selected)';
+        probe.style.color = 'var(--edge-t1)';
+        document.body.append(probe);
+        const style = getComputedStyle(probe);
+        const result = { background: style.backgroundColor, color: style.color };
+        probe.remove();
+        return result;
+      });
+      const toggle = page.locator('[data-case="usage-toggle"]');
+      await toggle.hover();
+      await page.waitForTimeout(250);
+      expect(await toggle.evaluate(el => ({ background: getComputedStyle(el).backgroundColor, color: getComputedStyle(el).color }))).toEqual(expected);
+    } finally { await page.close(); }
+  });
+
+  it(`keeps the Settings search ring without a second outline (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      await page.keyboard.press('Tab');
+      await page.locator('[data-case="settings-search"]').focus();
+      const search = await page.locator('[data-case="settings-search"]').evaluate(el => ({ outline: getComputedStyle(el).outlineStyle, shadow: getComputedStyle(el).boxShadow }));
+      expect(search.outline).toBe('none');
+      expect(search.shadow).not.toBe('none');
+    } finally { await page.close(); }
+  });
+}

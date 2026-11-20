@@ -120,6 +120,12 @@ restyled slot joins that list. `src/styles/edge.browser.test.ts` tabs through th
 shared controls in both themes, checks the solid review action's hover contrast, and
 checks a narrow lane switch still scrolls where its edge fades look. Phase 3 adds keyboard checks for git actions, split buttons, row actions, Settings fields and choices, Calendar navigation and chat tabs, plus hover contrast and split-button geometry checks in both themes.
 
+Settings' generic bordered-action rules exclude the direct options of a
+segmented control. Those tracks fit their options, and the active thumb keeps its
+fill on hover. Independent pressed toggles in Settings' button groups use the
+soft selected fill. Settings search keeps its own field ring without a second
+outline.
+
 ### Shapes
 
 Anything you press is a capsule: buttons, chips, the options of a segmented
