@@ -24,3 +24,5 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 Search, Settings and Schedules share the same quiet backdrop.
 
 On a phone, filters have more room to tap. Run summaries sit above their smaller details, and the full calendar wraps its controls so you can reach them all.
+
+The desktop app's setup and recovery screens use the same colors and rounded controls as the rest of Ri. They use your computer's font too, including while Ri is starting or finding text on a page.

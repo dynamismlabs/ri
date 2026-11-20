@@ -1,6 +1,6 @@
 # UI system: Edge Mac
 
-Ri's next look. It keeps every screen's layout as it is and standardizes what the
+Ri's design. It keeps every screen's layout as it is and standardizes what the
 screens are drawn with: colors, type, the frame, and the shared controls. Chosen
 on 2026-11-19 after eight rounds of concepts (the review lives in
 `personal/ui-review-2026-11/`, git-ignored, and was shared through beamd).
@@ -23,7 +23,7 @@ The fix is one small system that every surface draws from, not a redesign.
   border. No floating rounded panes with gutters between them.
 - **Controls stay rounded.** Things you press are capsules. Only the
   frame is square.
-- **Four text levels** (`--edge-t1` to `--edge-t4`): title, body, secondary, faint.
+- **Four text levels** (`--t1` to `--t4`): title, body, secondary, faint.
   Hierarchy comes from these and from weight, not from boxes.
 - **The platform's font.** SF on a Mac, Segoe on Windows, a little tighter than
   Inter, so more fits.
@@ -45,41 +45,76 @@ The concepts it came from are kept in `docs/ui-system-concept.html` (open it in 
 browser and pick Edge Mac at the top), so the build can be checked
 against them.
 
-Edge Mac is Ri's only look (2026-11-20). It shipped as one squash commit, so
-reverting that commit brings the previous design back. Classic was not kept behind
-a switch: with one owner, a revert is the escape hatch, and a second look costs
-upkeep on every change.
+Edge Mac is Ri's only look (2026-11-20). The design cut is PR #39,
+`edge-mac-default`. The component migration is a separate cut,
+`edge-mac-components`, based on that design. It merges after the owner keeps the
+design, and each stage stops for review before the next one starts.
 
-- The root layout always renders `data-look="edge"` on `<html>`. The attribute and
-  the `html[data-look="edge"]` scoping in `edge.css` stay for now, so the switch
-  reverts cleanly. Dropping them is the later cleanup phase.
-- `APPEARANCE_SCRIPT` (`src/lib/client/appearance-script.ts`) runs first in the
-  head, before first paint, and applies a light theme this browser chose. That
-  ended the dark flash light-mode users saw on every load. `next/script`'s
-  `beforeInteractive` is too late for this: Next queues it for its runtime, which
-  runs after the first frame.
-- `src/styles/edge.css` holds everything, scoped to `html[data-look="edge"]`:
-  - **Tokens.** The `--edge-*` values, mapped onto the shadcn names (`--background`,
-    `--card`, `--muted`, `--border`, `--user-bubble`, `--font-sans` and the rest), so
-    every component built on them follows without a change.
-  - **Dark tokens apply to nested `.dark` elements too.** The dashboard and focus
-    view wrap their content in their own `.dark` div, and `theme.css` redeclares
-    the classic dark values there. Without the second selector those values win
-    inside the dashboard (the user bubble came out in classic's colors).
-  - **Component rules** keyed by `data-slot`: shadcn's own slots (`button`,
-    `dropdown-menu-content`, `tabs-list` ...) and the ones Ri adds to its
-    hand-built frame (`rail`, `top-hud`, `pane-tabs`, `pane-tab-group`, `pane-tab`,
-    `pane-tab-more`, `chat-composer-card`). An attribute selector under
-    `html[data-look]` outranks a Tailwind utility, so these rules win without
-    `!important`. (`edge.css` is also unlayered, and Tailwind's utilities sit in a
-    layer, so the edge rules win either way. Specificity only decides between edge
-    rules, which is why the broad ones use `:where()`.)
-  - **`.uppercase` is neutralized.** Copy is written in sentence case and the
-    classic look adds the `uppercase` class to keep its capitals. Never write a
-    label in capitals in the source: the new look can't lower it.
+- `src/styles/theme.css` owns the palette, typography, surfaces, semantic inks and
+  fills, and shadows in `:root` and `.dark`. Dark values work on the root or a
+  nested dark surface. There is no Classic palette and no `data-look` attribute.
+- `src/app/globals.css` registers product tokens in `@theme inline`: `bg-canvas`,
+  `bg-pane`, `bg-raised`, `bg-track`, `bg-selected`, `text-t1` to `text-t4`,
+  line colors, and semantic ink/fill pairs. Palette literals belong in the token
+  definitions. Existing chart and categorical series colors retain their hues.
+- Semantic tones have a theme-aware ink and fill with at least 4.5:1 text contrast:
+  attention, danger, success, working, info, Light and Deep energy, permission
+  modes, and warning. A tone's base token is its ink and `-fill` is its fill.
+  Warning uses `warning-ink` and `warning-fill`. These work offline too, without
+  Tailwind's palette variables.
+- `APPEARANCE_SCRIPT` (`src/lib/client/appearance-script.ts`) still runs before
+  first paint, so a browser that chose light mode never paints a dark frame first.
+- `src/styles/edge.css` is temporary compatibility drawing for call sites still
+  being migrated. Its unconditional `html:root` anchor preserves selector
+  specificity against CSS modules. It has no look switch or look scoping. These
+  rules stay unlayered so they keep beating the old Tailwind drawing utilities.
+  Each migration stage deletes the rules and hooks its components replace.
+- Labels are written in sentence case. The compatibility stylesheet neutralizes
+  old `uppercase` utilities and cmdk descendant variants until they are removed.
 
-Adding to it: give the element a `data-slot` that names what it is, then style that
-slot in `edge.css`. Don't branch on the look in TypeScript.
+Desktop local pages use the same tokens and shapes. Setup, connection, recovery,
+maintenance, starting, loading, the companion window and find bar load the same
+`theme.css`. Buttons are capsules, fields are 10px rectangles, and maintenance
+sections are 14px raised callouts with no outline. Their platform font comes from
+`--font-sans`, with the bundled Inter asset available only as a fallback after
+`system-ui`. Their layout, copy, bridges and actions stay as they were. This is
+an intentional stage 0 visual change, approved by the UI reviewer. The packaged
+workflow saves local-page render checks for each platform as review artifacts. The app's
+screen matrix must remain visually unchanged during the token move.
+
+## Components
+
+Product components live in `src/components/system/`, built on installed shadcn
+and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens.
+The APIs below are the migration contracts, not a claim that those components
+have shipped already. Missing installed primitives are added through the shadcn
+CLI, with its files and dependency changes checked afterward.
+
+Each component owns shape, size, typography, fill, border, shadow, hover,
+selection or pressed state, focus-visible, disabled and invalid styling, and touch
+size. Variants use named cva props. Call sites may pass layout classes only:
+margin, flex or grid placement, width and min/max width, self, order and position.
+They do not pass padding, control height, radius, fill, border, shadow, type size
+or state drawing. A component's refs, events, ARIA and children must survive a
+migration. Native local-page HTML uses its shared plain-CSS adapter.
+
+| API | Named inputs and state | Drawing and accessibility it owns | Stage |
+| --- | --- | --- | --- |
+| `Button` | primary, secondary, ghost, destructive, link. xs, sm, md, touch and icon sizes | Capsule in every state, including Send when disabled. Based on the installed Button | 1 |
+| `IconButton` | Required `label`, tone, pressed state, size | Button with an accessible name and `Tip`. Focus outline included | 1 |
+| `ChipButton` | neutral, attention, status or mode tone. Pressed state. Compact or touch | Toolbar, filter, status and header/action capsules | 1 |
+| `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
+| `Field`, `TextArea`, `NativeSelect` | Label, value, help text, invalid and disabled state | Input adapters with 10px corners, consistent type and one focus treatment | 3 |
+| `Card` | Content and layout | Raised 14px content panel | 4 |
+| `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
+| `MenuAction` | Label, action, tone and disabled state | Menu row type, hover and keyboard focus | 4 |
+| `Callout`, `StatusBadge` | info, warning, error, success, plus neutral for badges | Semantic ink/fill pairs. 14px content callouts and capsule facts | 4 |
+| `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4 |
+| `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
+| `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
+
+Until a family migrates, its existing shared hooks below remain the drawing
+contract. Do not add a parallel hand-built variant.
 
 ### Shared slots
 
@@ -164,9 +199,9 @@ A soft capsule with a chevron, at rest as well as on hover ("Task · [Money ⌄]
 reads as a control without hovering. Words alone weren't clear enough (2026-11-20).
 With no area it says "No area" in quieter type.
 
-Inside `meta`, status, energy and blocked keep the colors classic gives them:
-their rule sets `color: revert-layer`, which hands the color back to the
-component's own utility classes.
+Inside `meta`, status and energy use the shared theme-aware inks. Other colored
+facts can retain a component-owned utility through `revert-layer` until Meta
+becomes their drawing owner.
 
 ## Phases
 
@@ -216,13 +251,33 @@ component's own utility classes.
    fade would obscure the final option and its focus outline.
 7. **Live with it.** Revert while it's young if it isn't right: new code adopts the
    hooks and the lint ratchet, so a revert gets harder with time.
-8. **Clean up (later).** Move Edge's values into `theme.css` and delete the
-   classic tokens, drop the `data-look` attribute and the `html[data-look="edge"]`
-   scoping, retire the classic-only checks (the classic halves of the browser
-   tests, `uppercase` classes kept only for classic), and replace hand-built
-   classes the stylesheet overrides with the shared components. Copy still in
-   Title Case in shared constants ("In Progress", "Priority Order", "Schedules and
-   Triggers") reaches tests and the guide, so it moves then too.
+8. **Component migration (separate cut).** Stage 0 moves the one palette into
+   `theme.css`, registers the product utilities, removes look scoping and the
+   obsolete Classic checks, and brings native local pages onto the same drawing.
+   The remaining stages replace hand-built call sites with the APIs above.
+
+## Component migration stages
+
+0. **Tokens and native local pages.** Shared palette and semantic pairs, registered
+   utilities, no look attribute, native controls on the same system. Verify the
+   app matrix by pixel diff and render local-page builders in both themes.
+1. **Button family.** Mechanical AST codemod outside the repository, followed by
+   manual review of dynamic classes, asChild, drag handles and content rows.
+2. **Segmented controls.** Migrate every track after resolving tabs versus choices.
+3. **Fields.** Input, textarea and native select adapters.
+4. **Content and feedback.** Cards, descriptive rows, menu actions, callouts,
+   badges and metadata.
+5. **Overlays.** Dialogs, sheets, popovers and menus, by hand.
+6. **Remove scaffolding and lock drift.** Delete redundant compatibility rules and
+   hooks. Lint forbids raw interactive elements outside ui/system, drawing
+   classes on product components and palette colors outside tone definitions,
+   with explicit brand and visualization exceptions. The file-specific legacy
+   list is frozen and must only shrink. Keep the tooltip selectors in the same
+   shared restriction array.
+
+Commit and push after each stage, then stop for the UI reviewer before continuing.
+Each stage includes browser state checks, typecheck, zero lint errors, nearby
+tests, updated API documentation and the light/dark desktop/phone visual matrix.
 
 ## Completed raw-control audit
 
@@ -257,7 +312,8 @@ array. `no-restricted-syntax` catches:
   does not count as a border. Classes supplied only through a variable cannot be
   inspected by this syntax rule.
 - JSX text containing at least three capital letters and no lowercase letters.
-  Write labels in sentence case and keep `uppercase` for classic. Code and
+  Write labels in sentence case and remove obsolete `uppercase` utilities when
+  migrating their component. Code and
   protocol names are reviewed as exceptions, rather than rewritten as labels.
 
 The per-file `uiSystemLegacyFiles` list is deliberately small:
@@ -271,8 +327,7 @@ The per-file `uiSystemLegacyFiles` list is deliberately small:
 
 A legacy override restates only the tooltip selectors, so `title` remains
 forbidden there. To shrink the list, remove a path, run lint on that file, add
-appropriate shared hooks and convert actual labels to sentence case while
-preserving classic with `uppercase`. Keep literal protocol and code names
+appropriate shared hooks and convert actual labels to sentence case, removing obsolete `uppercase` utilities. Keep literal protocol and code names
 accurate. Do not add broad directory globs to the list.
 
 `scripts/ui-system-lint.test.ts` exercises the actual ESLint config, including

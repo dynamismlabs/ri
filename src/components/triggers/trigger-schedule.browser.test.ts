@@ -311,7 +311,7 @@ for (const theme of ['light', 'dark'] as const) {
   it(`default look Schedules shares the dialog scrim and corners (${theme})`, async () => {
     const page = await open('?modal');
     try {
-      await page.evaluate(theme => { document.documentElement.dataset.look = 'edge'; document.documentElement.classList.toggle('dark', theme === 'dark'); }, theme);
+      await page.evaluate(theme => { document.documentElement.classList.toggle('dark', theme === 'dark'); }, theme);
       await page.getByRole('button', { name: 'Open schedules' }).click();
       const dialog = page.getByRole('dialog', { name: 'Schedules and Triggers' });
       expect(await dialog.evaluate(el => { const s = getComputedStyle(el); return [s.backgroundColor, s.backdropFilter]; })).toEqual(['rgba(0, 0, 0, 0.4)', 'none']);

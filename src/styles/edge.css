@@ -1,563 +1,401 @@
 /*
- * Edge Mac, Ri's design (docs/ui-system.md).
- *
- * Everything here is scoped to html[data-look="edge"], which the root layout
- * always renders. The scoping stays for now so the switch to this look reverts as
- * one commit. Dropping it, and moving these values into theme.css, is a later
- * cleanup.
- *
- * The system in one paragraph: gray neutrals, a canvas (rail and top bar) one
- * step off the panes, columns that meet at a single border, four text levels,
- * the platform's own font in a tighter rhythm, sentence case, rounded controls
- * (capsules for things you press), a white chat input that lifts off the page,
- * and your own messages in an inverted bubble that stands out from the agent's.
+ * Compatibility drawing rules while product call sites move to components/system.
+ * theme.css owns the palette. This unconditional root anchor preserves the old
+ * specificity against CSS modules, without a look flag or a second design.
+ * Each component migration removes the rules and hooks it makes redundant.
  */
-
-/* ── Tokens: light ─────────────────────────────────────────────────────── */
-html[data-look="edge"] {
-  --edge-canvas: oklch(0.985 0.0012 264);
-  --edge-pane: oklch(0.999 0 0);
-  --edge-raised: oklch(0.962 0.002 264);
-  --edge-thumb: oklch(1 0 0);
-  --edge-track: oklch(0.2 0.01 264 / 0.055);
-  --edge-hover: oklch(0.2 0.01 264 / 0.045);
-  --edge-selected: oklch(0.2 0.01 264 / 0.075);
-  --edge-line: oklch(0.2 0.01 264 / 0.1);
-  --edge-line-2: oklch(0.2 0.01 264 / 0.15);
-  --edge-t1: oklch(0.21 0.0056 264);
-  --edge-t2: oklch(0.4 0.0056 264);
-  --edge-t3: oklch(0.54 0.0056 264);
-  --edge-t4: oklch(0.67 0.004 264);
-  --edge-attention: oklch(0.63 0.16 55);
-  --edge-attention-bg: oklch(0.75 0.15 66 / 0.17);
-  --edge-mode-auto: var(--color-yellow-800);
-  --edge-warning-ink: var(--color-amber-800);
-  --edge-mode-edits: var(--color-purple-800);
-  --edge-mode-ask: var(--color-blue-800);
-  --edge-mode-plan: var(--color-teal-800);
-  --edge-danger: oklch(0.56 0.19 25);
-  --edge-working: oklch(0.55 0.15 252);
-  --edge-shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
-  --edge-shadow-pop: 0 0 0 1px oklch(0 0 0 / 0.07), 0 18px 44px -14px oklch(0.2 0.01 264 / 0.28);
-  --edge-composer: oklch(1 0 0);
-  --edge-composer-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.13), 0 1px 2px oklch(0.2 0.01 264 / 0.05), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.2);
-  --edge-composer-focus: 0 0 0 1px oklch(0.2 0.01 264 / 0.18), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.22);
-  --edge-bar-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.11), 0 6px 18px -12px oklch(0.2 0.02 264 / 0.16);
-  --edge-shadow-card: 0 0 0 0.5px oklch(0.2 0.01 264 / 0.09), 0 1px 3px oklch(0.2 0.01 264 / 0.07);
-
-  /* shadcn names, so every existing component follows the new look. */
-  --background: var(--edge-pane);
-  --foreground: var(--edge-t1);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--edge-t1);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--edge-t1);
-  --primary: var(--edge-t1);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: var(--edge-raised);
-  --secondary-foreground: var(--edge-t1);
-  --muted: oklch(0.962 0.002 264);
-  --muted-foreground: oklch(0.52 0.0056 264);
-  --accent: oklch(0.955 0.003 264);
-  --accent-foreground: var(--edge-t1);
-  --destructive: oklch(0.56 0.19 25);
-  --border: var(--edge-line);
-  --input: var(--edge-line-2);
-  --ring: oklch(0.6 0.012 264);
-  --radius: 0.625rem;
-  --sidebar: var(--edge-canvas);
-  --sidebar-foreground: var(--edge-t1);
-  --sidebar-accent: var(--edge-selected);
-  --sidebar-accent-foreground: var(--edge-t1);
-  --sidebar-border: var(--edge-line);
-  --surface: var(--edge-pane);
-  --surface-elevated: var(--edge-raised);
-  --text-muted: var(--edge-t3);
-  --surface-hud: var(--edge-canvas);
-  /* Your own messages stay inverted, as in classic, so they stand out from the agent's. */
-  --user-bubble: oklch(0.255 0.004 264);
-  --user-bubble-foreground: oklch(0.985 0 0);
-
-  /* The platform's own font: SF on a Mac, Segoe on Windows. Tighter than Inter at the same size. */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* ── Tokens: dark ──────────────────────────────────────────────────────── */
-/* Also on a nested .dark element: some surfaces scope the theme themselves,
-   and theme.css redeclares its classic dark values there. */
-html[data-look="edge"].dark,
-html[data-look="edge"] .dark {
-  --edge-canvas: oklch(0.145 0.0028 264);
-  --edge-pane: oklch(0.183 0.0028 264);
-  --edge-raised: oklch(0.228 0.003 264);
-  --edge-thumb: oklch(0.305 0.003 264);
-  --edge-track: oklch(1 0 0 / 0.055);
-  --edge-hover: oklch(1 0 0 / 0.045);
-  --edge-selected: oklch(1 0 0 / 0.08);
-  --edge-line: oklch(1 0 0 / 0.09);
-  --edge-line-2: oklch(1 0 0 / 0.14);
-  --edge-t1: oklch(0.955 0.003 264);
-  --edge-t2: oklch(0.8 0.004 264);
-  --edge-t3: oklch(0.62 0.004 264);
-  --edge-t4: oklch(0.48 0.004 264);
-  --edge-attention: oklch(0.79 0.15 66);
-  --edge-attention-bg: oklch(0.79 0.15 66 / 0.15);
-  --edge-mode-auto: var(--color-yellow-400);
-  --edge-warning-ink: var(--color-amber-400);
-  --edge-mode-edits: var(--color-purple-400);
-  --edge-mode-ask: var(--color-blue-400);
-  --edge-mode-plan: var(--color-teal-400);
-  --edge-danger: oklch(0.7 0.17 24);
-  --edge-working: oklch(0.74 0.12 250);
-  --edge-shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
-  --edge-shadow-pop: 0 0 0 1px oklch(1 0 0 / 0.08), 0 18px 44px -14px oklch(0 0 0 / 0.75);
-  --edge-composer: oklch(0.205 0.003 264);
-  --edge-composer-shadow: 0 0 0 1px oklch(1 0 0 / 0.11), 0 12px 30px -14px oklch(0 0 0 / 0.75);
-  --edge-composer-focus: 0 0 0 1px oklch(1 0 0 / 0.2), 0 12px 30px -14px oklch(0 0 0 / 0.8);
-  --edge-bar-shadow: 0 0 0 1px oklch(1 0 0 / 0.1);
-  --edge-shadow-card: 0 0 0 1px oklch(1 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.35);
-
-  --background: var(--edge-pane);
-  --foreground: var(--edge-t1);
-  --card: oklch(0.205 0.003 264);
-  --card-foreground: var(--edge-t1);
-  --popover: oklch(0.215 0.003 264);
-  --popover-foreground: var(--edge-t1);
-  --primary: var(--edge-t1);
-  --primary-foreground: oklch(0.17 0.003 264);
-  --secondary: oklch(0.255 0.003 264);
-  --secondary-foreground: var(--edge-t1);
-  --muted: oklch(0.24 0.003 264);
-  --muted-foreground: oklch(0.68 0.004 264);
-  --accent: oklch(0.25 0.003 264);
-  --accent-foreground: var(--edge-t1);
-  --destructive: oklch(0.7 0.17 24);
-  --border: var(--edge-line);
-  --input: var(--edge-line-2);
-  --ring: oklch(0.55 0.01 264);
-  --sidebar: var(--edge-canvas);
-  --sidebar-foreground: var(--edge-t1);
-  --sidebar-accent: var(--edge-selected);
-  --sidebar-accent-foreground: var(--edge-t1);
-  --sidebar-border: var(--edge-line);
-  --surface: var(--edge-pane);
-  --surface-elevated: var(--edge-raised);
-  --text-muted: var(--edge-t3);
-  --surface-hud: var(--edge-canvas);
-  --user-bubble: oklch(0.94 0.003 264);
-  --user-bubble-foreground: oklch(0.17 0.003 264);
-}
 
 /* ── Type: sentence case ───────────────────────────────────────────────── */
 /* Classic draws many labels in small tracked capitals. The new look shows them as written. */
-html[data-look="edge"] .uppercase { text-transform: none; letter-spacing: normal; }
+html:root .uppercase { text-transform: none; letter-spacing: normal; }
 
 /* ── Frame: rail and top bar on the canvas, panes on white, one border between columns ── */
-html[data-look="edge"] [data-slot="rail"],
-html[data-look="edge"] [data-slot="top-hud"] { background-color: var(--edge-canvas); }
+html:root [data-slot="rail"],
+html:root [data-slot="top-hud"] { background-color: var(--canvas); }
 
 /* ── Pane tabs: one segmented control ──────────────────────────────────── */
-html[data-look="edge"] [data-slot="pane-tabs"] { background-color: var(--background); min-height: 44px; padding-inline: 8px; gap: 4px; }
-html[data-look="edge"] [data-slot="pane-tab-group"] { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="pane-tab"] { display: inline-flex; align-items: center; height: 24px; padding-inline: 12px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="pane-tab"]:hover { color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="pane-tab"][data-active] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
-html[data-look="edge"] [data-slot="pane-tab"] [aria-label="Something needs your call"] { background-color: var(--edge-attention); }
-html[data-look="edge"] [data-slot="pane-tab-more"] { height: 26px; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="pane-tab-more"]:hover,
-html[data-look="edge"] [data-slot="pane-tab-more"][data-active] { background-color: var(--edge-hover); color: var(--edge-t1); }
+html:root [data-slot="pane-tabs"] { background-color: var(--background); min-height: 44px; padding-inline: 8px; gap: 4px; }
+html:root [data-slot="pane-tab-group"] { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background-color: var(--track); }
+html:root [data-slot="pane-tab"] { display: inline-flex; align-items: center; height: 24px; padding-inline: 12px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--t3); }
+html:root [data-slot="pane-tab"]:hover { color: var(--t1); }
+html:root [data-slot="pane-tab"][data-active] { background-color: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
+html:root [data-slot="pane-tab"] [aria-label="Something needs your call"] { background-color: var(--attention); }
+html:root [data-slot="pane-tab-more"] { height: 26px; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--t3); }
+html:root [data-slot="pane-tab-more"]:hover,
+html:root [data-slot="pane-tab-more"][data-active] { background-color: var(--hover); color: var(--t1); }
 
 /* ── Chat input: white, a fine outline, a soft lift ────────────────────── */
-html[data-look="edge"] [data-slot="chat-composer-card"] { border-color: transparent; border-radius: 22px; background-color: var(--edge-composer); box-shadow: var(--edge-composer-shadow); }
-html[data-look="edge"] [data-slot="chat-composer-card"]:focus-within { border-color: transparent; box-shadow: var(--edge-composer-focus); }
+html:root [data-slot="chat-composer-card"] { border-color: transparent; border-radius: 22px; background-color: var(--composer); box-shadow: var(--composer-shadow); }
+html:root [data-slot="chat-composer-card"]:focus-within { border-color: transparent; box-shadow: var(--composer-focus); }
 
 /* ── Shared controls (shadcn) ──────────────────────────────────────────── */
 /* A secondary button is a quiet fill, not an outline. */
-html[data-look="edge"] [data-slot="button"][data-variant="outline"] { border-color: transparent; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="button"][data-variant="outline"]:hover { background-color: var(--edge-selected); }
+html:root [data-slot="button"][data-variant="outline"] { border-color: transparent; background-color: var(--track); }
+html:root [data-slot="button"][data-variant="outline"]:hover { background-color: var(--selected); }
 /* Menus and popovers lift off the page by shadow, not a heavy border. */
-html[data-look="edge"] :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="popover-content"], [data-slot="select-content"], [data-slot="combobox-content"]) { border-color: transparent; border-radius: 12px; box-shadow: var(--edge-shadow-pop); }
-html[data-look="edge"] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-color: transparent; box-shadow: var(--edge-shadow-pop); }
+html:root :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="popover-content"], [data-slot="select-content"], [data-slot="combobox-content"]) { border-color: transparent; border-radius: 12px; box-shadow: var(--shadow-pop); }
+html:root :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-color: transparent; box-shadow: var(--shadow-pop); }
 /* Tabs (shadcn) share the pane tabs' segmented shape. */
-html[data-look="edge"] [data-slot="tabs-list"] { border-radius: 999px; background-color: var(--edge-track); padding: 2px; }
-html[data-look="edge"] [data-slot="tabs-trigger"] { border-radius: 999px; }
-html[data-look="edge"] [data-slot="tabs-trigger"][data-state="active"] { background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+html:root [data-slot="tabs-list"] { border-radius: 999px; background-color: var(--track); padding: 2px; }
+html:root [data-slot="tabs-trigger"] { border-radius: 999px; }
+html:root [data-slot="tabs-trigger"][data-state="active"] { background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
 
 /* ── Phase 2: the daily screens ─────────────────────────────────────────── */
 
 /* Things you press are capsules, whatever radius a screen gave its shadcn Button. */
-html[data-look="edge"] :not([data-slot="button-group"]) > [data-slot="button"] { border-radius: 999px; }
+html:root :not([data-slot="button-group"]) > [data-slot="button"] { border-radius: 999px; }
 
 /* Segmented control: one soft track, the chosen option a raised thumb. Any hand-built
    switch joins it with data-slot="segmented" on the track and aria-pressed or
    aria-selected on its options. */
-html[data-look="edge"] [data-slot="segmented"] { flex-wrap: nowrap; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="segmented"].contents { display: flex; }
-html[data-look="edge"] [data-slot="segmented"] { align-self: center; align-items: center; }
-html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
-html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
-html[data-look="edge"] [data-slot="segmented"] > button:hover:not([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { color: var(--edge-t1); background-color: transparent; }
-html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+html:root [data-slot="segmented"] { flex-wrap: nowrap; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--track); }
+html:root [data-slot="segmented"].contents { display: flex; }
+html:root [data-slot="segmented"] { align-self: center; align-items: center; }
+html:root [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
+html:root [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--t3); background-color: transparent; box-shadow: none; }
+html:root [data-slot="segmented"] > button:hover:not([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { color: var(--t1); background-color: transparent; }
+html:root [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--t1); background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
 /* A label shown in the track for a choice made elsewhere (the phone's More view) reads as the chosen option. */
-html[data-look="edge"] [data-slot="segmented"] > span { border-radius: 999px; color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+html:root [data-slot="segmented"] > span { border-radius: 999px; color: var(--t1); background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
 /* Phone-sized switches keep their touch height and their own flex (full-width lenses, scrolling tool tabs). */
-html[data-look="edge"] [data-slot="segmented"][data-size="touch"] > button { flex: revert-layer; height: 36px; padding-inline: 12px; font-size: 13px; }
+html:root [data-slot="segmented"][data-size="touch"] > button { flex: revert-layer; height: 36px; padding-inline: 12px; font-size: 13px; }
 
 /* Toolbar buttons (list toolbars, deck filters): capsules on a quiet fill, no outline. */
-html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) { height: 28px; min-width: 28px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t2); font-size: 12px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
-html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]):hover:not(:disabled) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
-html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) > span { font-size: inherit; font-weight: inherit; letter-spacing: normal; color: inherit; }
-html[data-look="edge"] :is(.toolbar-button-active, [data-slot="chip-button"]:is([aria-pressed="true"], [data-on])) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="chip-button"][data-tone="attention"][aria-pressed="true"] { background-color: var(--edge-attention-bg); color: var(--edge-attention); }
-html[data-look="edge"] [data-slot="chip-button"]:disabled { background-color: transparent; color: var(--edge-t4); }
+html:root :is(.toolbar-button, [data-slot="chip-button"]) { height: 28px; min-width: 28px; border-color: transparent; border-radius: 999px; background-color: var(--track); color: var(--t2); font-size: 12px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
+html:root :is(.toolbar-button, [data-slot="chip-button"]):hover:not(:disabled) { border-color: transparent; background-color: var(--selected); color: var(--t1); }
+html:root :is(.toolbar-button, [data-slot="chip-button"]) > span { font-size: inherit; font-weight: inherit; letter-spacing: normal; color: inherit; }
+html:root :is(.toolbar-button-active, [data-slot="chip-button"]:is([aria-pressed="true"], [data-on])) { border-color: transparent; background-color: var(--selected); color: var(--t1); }
+html:root [data-slot="chip-button"][data-tone="attention"][aria-pressed="true"] { background-color: var(--attention-fill); color: var(--attention); }
+html:root [data-slot="chip-button"]:disabled { background-color: transparent; color: var(--t4); }
 /* A chip that reports a state (a paused or failing heartbeat) keeps its color, on a fill of it. */
-html[data-look="edge"] [data-slot="chip-button"][data-tone="status"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
-html[data-look="edge"] [data-slot="list-toolbar"] { background-color: var(--background); }
-html[data-look="edge"] [data-slot="chip-button"][data-urgency="low"] { background-color: transparent; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="chip-button"][data-urgency="critical"] { background-color: var(--primary); color: var(--primary-foreground); }
+html:root [data-slot="chip-button"][data-tone="status"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
+html:root [data-slot="list-toolbar"] { background-color: var(--background); }
+html:root [data-slot="chip-button"][data-urgency="low"] { background-color: transparent; color: var(--t3); }
+html:root [data-slot="chip-button"][data-urgency="critical"] { background-color: var(--primary); color: var(--primary-foreground); }
 
 /* Metadata under a title: plain words separated by dots, not a row of little boxes.
    A direct child tagged meta-item, area-select or task-badges takes part, and so does
    a status-select inside a meta-item wrapper. */
-html[data-look="edge"] [data-slot="meta"] { column-gap: 7px; }
-html[data-look="edge"] [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badge"]) { padding: 0; border-color: transparent; border-radius: 4px; background-color: transparent; font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: normal; }
-html[data-look="edge"] [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="task-picker"]) { color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="meta"] [data-slot="area-select"] { color: var(--edge-t2); }
-html[data-look="edge"] [data-slot="meta"] :where(button[data-slot="meta-item"], a[data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"]):hover { background-color: transparent; color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="meta"] > :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"]) ~ :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"])::before { content: '·'; margin-right: 7px; color: var(--edge-t4); font-weight: 400; }
-html[data-look="edge"] [data-slot="meta"] :is([data-slot="meta-item"], [data-slot="task-badge"]) svg { width: 12px; height: 12px; }
-/* Status, energy and blocked keep the colors they carry in classic (revert-layer hands the
+html:root [data-slot="meta"] { column-gap: 7px; }
+html:root [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badge"]) { padding: 0; border-color: transparent; border-radius: 4px; background-color: transparent; font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: normal; }
+html:root [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="task-picker"]) { color: var(--t3); }
+html:root [data-slot="meta"] [data-slot="area-select"] { color: var(--t2); }
+html:root [data-slot="meta"] :where(button[data-slot="meta-item"], a[data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"]):hover { background-color: transparent; color: var(--t1); }
+html:root [data-slot="meta"] > :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"]) ~ :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"])::before { content: '·'; margin-right: 7px; color: var(--t4); font-weight: 400; }
+html:root [data-slot="meta"] :is([data-slot="meta-item"], [data-slot="task-badge"]) svg { width: 12px; height: 12px; }
+/* Status, energy and blocked keep the colors carried by their existing utilities (revert-layer hands the
    color back to the component's own utility classes). */
-html[data-look="edge"] [data-slot="meta"] :is([data-kind="status"] > button, [data-kind="energy"], [data-kind="blocked"]) { color: revert-layer; }
-html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > button { font-weight: 500; }
-html[data-look="edge"] [data-slot="meta"] [data-kind="energy"] { text-transform: capitalize; }
-html[data-look="edge"] [data-slot="meta"] [data-urgency="late"] { color: var(--edge-danger); font-weight: 500; }
-html[data-look="edge"] [data-slot="meta"] [data-urgency="today"] { color: var(--edge-attention); font-weight: 500; }
-html[data-look="edge"] [data-slot="meta"] [data-slot="task-badge"] { font-weight: 500; }
+html:root [data-slot="meta"] :is([data-kind="status"] > button, [data-kind="energy"], [data-kind="blocked"]) { color: revert-layer; }
+html:root [data-slot="meta"] [data-kind="status"] > button { font-weight: 500; }
+html:root [data-slot="meta"] [data-kind="energy"] { text-transform: capitalize; }
+html:root [data-slot="meta"] [data-urgency="late"] { color: var(--danger); font-weight: 500; }
+html:root [data-slot="meta"] [data-urgency="today"] { color: var(--attention); font-weight: 500; }
+html:root [data-slot="meta"] [data-slot="task-badge"] { font-weight: 500; }
 
 /* Deadlines: a colored date on a plain row, not a tinted card. */
-html[data-look="edge"] [data-slot="deadline-head"] h3 { font-size: 12px; font-weight: 600; letter-spacing: normal; color: var(--edge-t2); }
-html[data-look="edge"] [data-slot="deadline-head"] > svg { color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="deadline-head"] > span { font-size: 12px; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="deadline-row"] { padding: 6px 10px; border-color: transparent; border-radius: 8px; background-color: transparent; }
-html[data-look="edge"] [data-slot="deadline-row"]:hover { border-color: transparent; background-color: var(--edge-hover); }
-html[data-look="edge"] [data-slot="deadline-row"] > button > span:first-child { font-size: 13.5px; }
-html[data-look="edge"] [data-slot="deadline-when"] { padding: 0; background-color: transparent; font-size: 12px; font-weight: 500; }
-html[data-look="edge"] [data-slot="deadline-when"][data-urgency="late"] { color: var(--edge-danger); }
-html[data-look="edge"] [data-slot="deadline-when"][data-urgency="today"] { color: var(--edge-attention); }
-html[data-look="edge"] [data-slot="deadline-when"][data-urgency="soon"] { color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="deadline-when"] > svg { display: none; }
+html:root [data-slot="deadline-head"] h3 { font-size: 12px; font-weight: 600; letter-spacing: normal; color: var(--t2); }
+html:root [data-slot="deadline-head"] > svg { color: var(--t3); }
+html:root [data-slot="deadline-head"] > span { font-size: 12px; color: var(--t3); }
+html:root [data-slot="deadline-row"] { padding: 6px 10px; border-color: transparent; border-radius: 8px; background-color: transparent; }
+html:root [data-slot="deadline-row"]:hover { border-color: transparent; background-color: var(--hover); }
+html:root [data-slot="deadline-row"] > button > span:first-child { font-size: 13.5px; }
+html:root [data-slot="deadline-when"] { padding: 0; background-color: transparent; font-size: 12px; font-weight: 500; }
+html:root [data-slot="deadline-when"][data-urgency="late"] { color: var(--danger); }
+html:root [data-slot="deadline-when"][data-urgency="today"] { color: var(--attention); }
+html:root [data-slot="deadline-when"][data-urgency="soon"] { color: var(--t3); }
+html:root [data-slot="deadline-when"] > svg { display: none; }
 
 /* The review bar sits on the chat input like a second, smaller input. */
-html[data-look="edge"] [data-slot="review-bar"] { padding: 5px 5px 5px 14px; border-color: transparent; border-radius: 16px; background-color: var(--edge-composer); box-shadow: var(--edge-bar-shadow); }
-html[data-look="edge"] [data-slot="review-bar-title"] { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
-html[data-look="edge"] [data-slot="review-bar"][data-state="unreviewed"] [data-slot="review-bar-title"]::before { content: ''; width: 7px; height: 7px; border-radius: 999px; background-color: var(--edge-attention); }
-html[data-look="edge"] [data-slot="review-action"] { height: 28px; padding-inline: 11px; gap: 5px; border-radius: 999px; font-size: 12px; color: var(--edge-t2); }
-html[data-look="edge"] [data-slot="review-action"]:hover { background-color: var(--edge-hover); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"] { background-color: var(--edge-track); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"]:hover { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"] { color: oklch(1 0 0); }
-html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"]:hover { background-color: revert-layer; color: oklch(1 0 0); }
-html[data-look="edge"] [data-slot="review-action"][data-active] { background-color: var(--edge-selected); color: var(--edge-t1); }
+html:root [data-slot="review-bar"] { padding: 5px 5px 5px 14px; border-color: transparent; border-radius: 16px; background-color: var(--composer); box-shadow: var(--bar-shadow); }
+html:root [data-slot="review-bar-title"] { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+html:root [data-slot="review-bar"][data-state="unreviewed"] [data-slot="review-bar-title"]::before { content: ''; width: 7px; height: 7px; border-radius: 999px; background-color: var(--attention); }
+html:root [data-slot="review-action"] { height: 28px; padding-inline: 11px; gap: 5px; border-radius: 999px; font-size: 12px; color: var(--t2); }
+html:root [data-slot="review-action"]:hover { background-color: var(--hover); color: var(--t1); }
+html:root [data-slot="review-action"][data-tone="emerald"] { background-color: var(--track); color: var(--t1); }
+html:root [data-slot="review-action"][data-tone="emerald"]:hover { background-color: var(--selected); }
+html:root [data-slot="review-action"][data-tone="emerald-solid"] { color: oklch(1 0 0); }
+html:root [data-slot="review-action"][data-tone="emerald-solid"]:hover { background-color: revert-layer; color: oklch(1 0 0); }
+html:root [data-slot="review-action"][data-active] { background-color: var(--selected); color: var(--t1); }
 
 /* The task a chat works on: a soft capsule, a dot when it's in progress. */
-html[data-look="edge"] [data-slot="task-chip-label"] { font-size: 12px; font-weight: 500; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="task-chip"] { height: 24px; gap: 6px; padding-inline: 10px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); font-size: 12.5px; font-weight: 500; color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="task-chip"]:hover { border-color: transparent; background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--edge-working); }
+html:root [data-slot="task-chip-label"] { font-size: 12px; font-weight: 500; color: var(--t3); }
+html:root [data-slot="task-chip"] { height: 24px; gap: 6px; padding-inline: 10px; border-color: transparent; border-radius: 999px; background-color: var(--track); font-size: 12.5px; font-weight: 500; color: var(--t1); }
+html:root [data-slot="task-chip"]:hover { border-color: transparent; background-color: var(--selected); }
+html:root [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--working); }
 
 /* Top bar: the page tools in one capsule, Create and the view button as capsules. */
-html[data-look="edge"] [data-slot="hud-tools"] { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="hud-tools"] button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; padding: 0; border-color: transparent; border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="hud-tools"] button:hover { color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="hud-tools"] button[aria-pressed="true"] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
-html[data-look="edge"] .hud-create { height: 30px; padding-inline: 12px; gap: 5px; border-radius: 999px; font-size: 12.5px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
-html[data-look="edge"] [data-slot="hud-view-button"] { height: 28px; padding-inline: 10px; border-color: transparent; border-radius: 999px; }
-html[data-look="edge"] [data-slot="hud-view-button"][data-variant="close"] { background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="hud-view-button"] .hud-view-label { font-size: 12px; }
+html:root [data-slot="hud-tools"] { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 999px; background-color: var(--track); }
+html:root [data-slot="hud-tools"] button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; padding: 0; border-color: transparent; border-radius: 999px; background-color: transparent; color: var(--t3); }
+html:root [data-slot="hud-tools"] button:hover { color: var(--t1); }
+html:root [data-slot="hud-tools"] button[aria-pressed="true"] { background-color: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
+html:root .hud-create { height: 30px; padding-inline: 12px; gap: 5px; border-radius: 999px; font-size: 12.5px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
+html:root [data-slot="hud-view-button"] { height: 28px; padding-inline: 10px; border-color: transparent; border-radius: 999px; }
+html:root [data-slot="hud-view-button"][data-variant="close"] { background-color: var(--track); }
+html:root [data-slot="hud-view-button"] .hud-view-label { font-size: 12px; }
 
 /* Rail: no boxes in the footer, a quiet New agent, sentence-case group labels. */
-html[data-look="edge"] [data-slot="rail-foot"] button { border-color: transparent; }
-html[data-look="edge"] [data-slot="rail-foot"] button:hover { border-color: transparent; background-color: var(--edge-hover); }
-html[data-look="edge"] [data-slot="new-agent"] { border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="new-agent"]:hover { background-color: var(--edge-selected); opacity: 1; }
+html:root [data-slot="rail-foot"] button { border-color: transparent; }
+html:root [data-slot="rail-foot"] button:hover { border-color: transparent; background-color: var(--hover); }
+html:root [data-slot="new-agent"] { border-radius: 999px; background-color: var(--track); color: var(--t1); }
+html:root [data-slot="new-agent"]:hover { background-color: var(--selected); opacity: 1; }
 
 /* Task and note pages (the slideout and the full page share them). */
-html[data-look="edge"] [data-slot="entity-kind"] { gap: 7px; }
-html[data-look="edge"] [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); }
+html:root [data-slot="entity-kind"] { gap: 7px; }
+html:root [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--t3); }
 /* The area above a title is a control you can see at rest: a soft capsule with its
    chevron, like the other property buttons. "No area" says so in quieter type. */
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 10px; border-radius: 999px; background-color: var(--edge-track); font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0.55; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-selected); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"])::after { opacity: 0.85; }
-html[data-look="edge"] [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
-html[data-look="edge"] [data-slot="properties"] > span { font-weight: 400; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }
+html:root [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 10px; border-radius: 999px; background-color: var(--track); font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--t1); }
+html:root [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--t3); }
+html:root [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0.55; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
+html:root [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--selected); color: var(--t1); }
+html:root [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"])::after { opacity: 0.85; }
+html:root [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
+html:root [data-slot="properties"] > span { font-weight: 400; color: var(--t3); }
+html:root [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }
 /* Effort's five options can outrun a narrow slideout: that track scrolls. (SegmentedTabs scrolls its own wrapper.) */
-html[data-look="edge"] [data-slot="properties"] [data-slot="segmented"] { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-html[data-look="edge"] [data-slot="chip-button"][data-urgency="late"] { color: var(--edge-danger); }
+html:root [data-slot="properties"] [data-slot="segmented"] { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+html:root [data-slot="chip-button"][data-urgency="late"] { color: var(--danger); }
 
 /* Header actions on a task or note: capsules on a quiet fill. Working with an agent keeps its violet. */
-html[data-look="edge"] [data-slot="header-action"] { height: 30px; padding-inline: 12px; gap: 6px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t1); font-size: 12.5px; font-weight: 500; }
-html[data-look="edge"] [data-slot="header-action"]:hover { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="header-action"][data-tone="agent"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 11%, transparent); }
-html[data-look="edge"] [data-slot="header-action"][data-tone="agent"]:hover { color: revert-layer; background-color: color-mix(in oklch, currentColor 17%, transparent); }
-html[data-look="edge"] [data-slot="header-action"][data-state="done"] { background-color: var(--primary); color: var(--primary-foreground); }
+html:root [data-slot="header-action"] { height: 30px; padding-inline: 12px; gap: 6px; border-color: transparent; border-radius: 999px; background-color: var(--track); color: var(--t1); font-size: 12.5px; font-weight: 500; }
+html:root [data-slot="header-action"]:hover { border-color: transparent; background-color: var(--selected); color: var(--t1); }
+html:root [data-slot="header-action"][data-tone="agent"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 11%, transparent); }
+html:root [data-slot="header-action"][data-tone="agent"]:hover { color: revert-layer; background-color: color-mix(in oklch, currentColor 17%, transparent); }
+html:root [data-slot="header-action"][data-state="done"] { background-color: var(--primary); color: var(--primary-foreground); }
 
 /* Tool panel tabs outside a segmented control (a file or chat opened beside, More): capsules. */
-html[data-look="edge"] .panel-tab:not([data-slot="segmented"] > *) { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--edge-t3); }
-html[data-look="edge"] .panel-tab:not([data-slot="segmented"] > *):hover { color: var(--edge-t1); }
-html[data-look="edge"] .panel-tab.panel-tab-on:not([data-slot="segmented"] > *) { background-color: var(--edge-selected); color: var(--edge-t1); }
+html:root .panel-tab:not([data-slot="segmented"] > *) { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--t3); }
+html:root .panel-tab:not([data-slot="segmented"] > *):hover { color: var(--t1); }
+html:root .panel-tab.panel-tab-on:not([data-slot="segmented"] > *) { background-color: var(--selected); color: var(--t1); }
 
 /* Stream: the line under a capture in plain type, and its notices as soft panels. */
-html[data-look="edge"] [data-slot="stream-meta"] > :is(p, span, button, a) { font-family: inherit; font-size: 12px; letter-spacing: normal; text-transform: none; }
-html[data-look="edge"] [data-slot="stream-meta"] > svg { width: 12px; height: 12px; }
+html:root [data-slot="stream-meta"] > :is(p, span, button, a) { font-family: inherit; font-size: 12px; letter-spacing: normal; text-transform: none; }
+html:root [data-slot="stream-meta"] > svg { width: 12px; height: 12px; }
 
 /* A notice or summary inside a pane: a soft raised panel, no outline. */
-html[data-look="edge"] [data-slot="callout"] { border-color: transparent; border-radius: 14px; background-color: var(--edge-raised); }
+html:root [data-slot="callout"] { border-color: transparent; border-radius: 14px; background-color: var(--raised); }
 
 /* Hand-built buttons and cards across the app, until each one moves onto the shared components. */
-html[data-look="edge"] :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-radius: 999px; }
-html[data-look="edge"] .border.bg-card:not(input, textarea, select, [data-slot]) { border-color: transparent; box-shadow: var(--edge-shadow-card); }
+html:root :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-radius: 999px; }
+html:root .border.bg-card:not(input, textarea, select, [data-slot]) { border-color: transparent; box-shadow: var(--shadow-card); }
 
 /* Phone: the search field and the buttons beside it. */
-html[data-look="edge"] :is([data-slot="search-field"], [data-slot="icon-button"]) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
+html:root :is([data-slot="search-field"], [data-slot="icon-button"]) { border-color: transparent; border-radius: 999px; background-color: var(--track); }
 
 /* Text fields hold content, so they're rounded rectangles, not capsules (shadcn's default here is a capsule). */
-html[data-look="edge"] :is([data-slot="input"], [data-slot="input-group"], [data-slot="textarea"]) { border-radius: 10px; }
+html:root :is([data-slot="input"], [data-slot="input-group"], [data-slot="textarea"]) { border-radius: 10px; }
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
-html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Inside a track (which may scroll and clip), the ring sits just inside the option. */
-html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
+html:root :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
 
 /* ── Phase 3: daily controls and the long tail ─────────────────────────── */
 /* These labels were sized for capitals. Sentence case needs a readable size.
    Keep this broad rule weak so metadata and toolbar slots retain their own size. */
-html[data-look="edge"] :where(.uppercase.text-\[8\.5px\], .uppercase.text-\[9px\]) { font-size: 11px; line-height: 1.4; font-weight: 500; }
+html:root :where(.uppercase.text-\[8\.5px\], .uppercase.text-\[9px\]) { font-size: 11px; line-height: 1.4; font-weight: 500; }
 
 /* Small actions share the capsule shape without changing their layout or size.
    A solid action retains its component's foreground and hover fill. */
-html[data-look="edge"] [data-slot="action-button"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; }
-html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]) { background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]):hover:not(:disabled) { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="action-button"][data-variant="ghost"] { background-color: transparent; }
-html[data-look="edge"] [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]) { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
-html[data-look="edge"] [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]):hover:not(:disabled) { background-color: color-mix(in oklch, currentColor 18%, transparent); }
+html:root [data-slot="action-button"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; }
+html:root [data-slot="action-button"]:not([data-variant="primary"]) { background-color: var(--track); }
+html:root [data-slot="action-button"]:not([data-variant="primary"]):hover:not(:disabled) { background-color: var(--selected); }
+html:root [data-slot="action-button"][data-variant="ghost"] { background-color: transparent; }
+html:root [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]) { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
+html:root [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]):hover:not(:disabled) { background-color: color-mix(in oklch, currentColor 18%, transparent); }
 
 /* The git summary is a quiet group, with its next action nested inside. */
-html[data-look="edge"] [data-slot="status-strip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="status-strip"] [data-slot="action-button"] { min-height: 24px; }
+html:root [data-slot="status-strip"] { border-color: transparent; border-radius: 999px; background-color: var(--track); }
+html:root [data-slot="status-strip"] [data-slot="action-button"] { min-height: 24px; }
 
 /* Finder and its menu are one capsule. The second half keeps a single divider. */
-html[data-look="edge"] [data-slot="split-button"] { border-radius: 999px; background-color: var(--edge-track); }
-html[data-look="edge"] [data-slot="split-button"] > button { border-color: transparent; border-radius: 999px 0 0 999px; background-color: transparent; box-shadow: none; }
-html[data-look="edge"] [data-slot="split-button"] > button + button { border-left-color: var(--edge-line-2); border-radius: 0 999px 999px 0; }
-html[data-look="edge"] [data-slot="split-button"] > button:hover:not(:disabled) { background-color: var(--edge-selected); color: var(--edge-t1); }
+html:root [data-slot="split-button"] { border-radius: 999px; background-color: var(--track); }
+html:root [data-slot="split-button"] > button { border-color: transparent; border-radius: 999px 0 0 999px; background-color: transparent; box-shadow: none; }
+html:root [data-slot="split-button"] > button + button { border-left-color: var(--line-2); border-radius: 0 999px 999px 0; }
+html:root [data-slot="split-button"] > button:hover:not(:disabled) { background-color: var(--selected); color: var(--t1); }
 
 /* Chat tabs keep their measured scroller. Each tab includes its close button. */
-html[data-look="edge"] [data-slot="chat-tabs"] { gap: 4px; }
-html[data-look="edge"] [data-slot="chat-tabs"] > button { border-radius: 999px; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="chat-tabs"] > button:hover { color: var(--edge-t1); background-color: var(--edge-hover); }
-html[data-look="edge"] [data-slot="chat-tab"] { border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="chat-tab"]:hover { background-color: var(--edge-hover); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="chat-tab"][data-current="true"] { background-color: var(--edge-selected); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="chat-tab"] > button { border-radius: 999px; }
+html:root [data-slot="chat-tabs"] { gap: 4px; }
+html:root [data-slot="chat-tabs"] > button { border-radius: 999px; color: var(--t3); }
+html:root [data-slot="chat-tabs"] > button:hover { color: var(--t1); background-color: var(--hover); }
+html:root [data-slot="chat-tab"] { border-radius: 999px; background-color: transparent; color: var(--t3); }
+html:root [data-slot="chat-tab"]:hover { background-color: var(--hover); color: var(--t1); }
+html:root [data-slot="chat-tab"][data-current="true"] { background-color: var(--selected); color: var(--t1); }
+html:root [data-slot="chat-tab"] > button { border-radius: 999px; }
 
 /* Hover actions are capsules. Keyboard users see the same actions on focus. */
-html[data-look="edge"] [data-slot="row-actions"]:focus-within { opacity: 1; }
-html[data-look="edge"] [data-slot="row-actions"] :where(button) { border-radius: 999px; }
+html:root [data-slot="row-actions"]:focus-within { opacity: 1; }
+html:root [data-slot="row-actions"] :where(button) { border-radius: 999px; }
 
 /* Calendar's date controls stay in their existing group and position. */
-html[data-look="edge"] [data-slot="calendar-navigation"] { gap: 2px; }
-html[data-look="edge"] [data-slot="calendar-navigation"] > button { min-height: 26px; border-radius: 999px; }
+html:root [data-slot="calendar-navigation"] { gap: 2px; }
+html:root [data-slot="calendar-navigation"] > button { min-height: 26px; border-radius: 999px; }
 
 /* Settings repeats a few hand-built patterns across its sections. This boundary
-   lets those patterns share the system without changing classic's utilities.
+   lets hand-built controls follow the system during the component migration.
    Explicit slots (choices, switches, editor controls) keep their own rules. */
 /* A switch keeps its own track and thumb, including inside Settings. */
-html[data-look="edge"] [data-slot="settings-body"] [data-slot="segmented"] { width: fit-content; }
+html:root [data-slot="settings-body"] [data-slot="segmented"] { width: fit-content; }
 /* Independent pressed toggles are a soft selection, unlike solid action buttons. */
-html[data-look="edge"] [data-slot="settings-body"] [data-slot="button-group"] > [data-slot="button"][aria-pressed="true"] { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); box-shadow: none; }
-html[data-look="edge"] [data-slot="settings-nav"] { background-color: var(--edge-canvas); }
-html[data-look="edge"] [data-slot="settings-nav"] > button { border-radius: 8px; box-shadow: none; }
-html[data-look="edge"] [data-slot="settings-nav"] > button[aria-current="page"] { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="settings-nav"] > button:not([aria-current="page"]):hover { background-color: var(--edge-hover); }
-html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:not([data-slot], .rounded-full) { border-color: transparent; border-radius: 14px; }
-html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:is(.border-border, :not([class*="border-"])):not([data-slot], .rounded-full, [role="alert"], [role="status"]) { background-color: var(--edge-raised); }
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *):hover:not(:disabled) { background-color: var(--edge-selected); }
+html:root [data-slot="settings-body"] [data-slot="button-group"] > [data-slot="button"][aria-pressed="true"] { border-color: transparent; background-color: var(--selected); color: var(--t1); box-shadow: none; }
+html:root [data-slot="settings-nav"] { background-color: var(--canvas); }
+html:root [data-slot="settings-nav"] > button { border-radius: 8px; box-shadow: none; }
+html:root [data-slot="settings-nav"] > button[aria-current="page"] { background-color: var(--selected); }
+html:root [data-slot="settings-nav"] > button:not([aria-current="page"]):hover { background-color: var(--hover); }
+html:root [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:not([data-slot], .rounded-full) { border-color: transparent; border-radius: 14px; }
+html:root [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:is(.border-border, :not([class*="border-"])):not([data-slot], .rounded-full, [role="alert"], [role="status"]) { background-color: var(--raised); }
+html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-color: transparent; border-radius: 999px; background-color: var(--track); box-shadow: none; }
+html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *):hover:not(:disabled) { background-color: var(--selected); }
 /* Some Settings actions use bg-foreground for their solid fill. Preserve its
    matching text-background in both themes and on hover. */
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
-html[data-look="edge"] :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
-html[data-look="edge"] [data-slot="field"] { border-color: var(--edge-line-2); border-radius: 10px; background-color: var(--background); }
-html[data-look="edge"] [data-slot="segmented"][role="radiogroup"] { max-width: 100%; overflow-x: auto; }
-html[data-look="edge"] [data-slot="segmented"] > [aria-checked="true"] { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
+html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
+html:root :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
+html:root [data-slot="field"] { border-color: var(--line-2); border-radius: 10px; background-color: var(--background); }
+html:root [data-slot="segmented"][role="radiogroup"] { max-width: 100%; overflow-x: auto; }
+html:root [data-slot="segmented"] > [aria-checked="true"] { color: var(--t1); background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
 
 /* Choosers hold a title and description. Their selection is a soft row, with
    no outline or card shadow. This also covers hand-built dialog lists. */
-html[data-look="edge"] [data-slot="choice-row"] { border-color: transparent; border-radius: 8px; background-color: var(--edge-track); box-shadow: none; }
-html[data-look="edge"] [data-slot="choice-row"]:hover:not(:disabled) { border-color: transparent; background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="choice-row"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="status-badge"] { border-color: transparent; border-radius: 999px; font-size: 11px; line-height: 1.4; font-weight: 500; letter-spacing: normal; }
-html[data-look="edge"] [data-slot="schedule-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--edge-shadow-card); }
-html[data-look="edge"] [data-slot="schedule-row"] > button { border-radius: 999px; }
+html:root [data-slot="choice-row"] { border-color: transparent; border-radius: 8px; background-color: var(--track); box-shadow: none; }
+html:root [data-slot="choice-row"]:hover:not(:disabled) { border-color: transparent; background-color: var(--selected); }
+html:root [data-slot="choice-row"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
+html:root [data-slot="status-badge"] { border-color: transparent; border-radius: 999px; font-size: 11px; line-height: 1.4; font-weight: 500; letter-spacing: normal; }
+html:root [data-slot="schedule-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--shadow-card); }
+html:root [data-slot="schedule-row"] > button { border-radius: 999px; }
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html[data-look="edge"] :is([data-slot="action-button"], [data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-html[data-look="edge"] :is([data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
+html:root :is([data-slot="action-button"], [data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
-html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
-html[data-look="edge"] [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
+html:root [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
 
 /* Permission modes keep today's hue, at a readable shade on the quiet fill. */
-html[data-look="edge"] [data-mode="auto_all"] { --edge-mode-color: var(--edge-mode-auto); }
-html[data-look="edge"] [data-mode="auto_edits"] { --edge-mode-color: var(--edge-mode-edits); }
-html[data-look="edge"] [data-mode="ask"] { --edge-mode-color: var(--edge-mode-ask); }
-html[data-look="edge"] [data-mode="plan"] { --edge-mode-color: var(--edge-mode-plan); }
-html[data-look="edge"] [data-slot="chip-button"][data-mode] { color: var(--edge-mode-color); background-color: color-mix(in oklch, currentColor 10%, transparent); filter: none; }
-html[data-look="edge"] [data-slot="chip-button"][data-mode]:hover:not(:disabled) { color: var(--edge-mode-color); background-color: color-mix(in oklch, currentColor 16%, transparent); }
+html:root [data-mode="auto_all"] { --mode-color: var(--mode-auto); }
+html:root [data-mode="auto_edits"] { --mode-color: var(--mode-edits); }
+html:root [data-mode="ask"] { --mode-color: var(--mode-ask); }
+html:root [data-mode="plan"] { --mode-color: var(--mode-plan); }
+html:root [data-slot="chip-button"][data-mode] { color: var(--mode-color); background-color: color-mix(in oklch, currentColor 10%, transparent); filter: none; }
+html:root [data-slot="chip-button"][data-mode]:hover:not(:disabled) { color: var(--mode-color); background-color: color-mix(in oklch, currentColor 16%, transparent); }
 
 /* Keep every Calendar view label visible. The date text already truncates to
    make room, so the control track must not shrink and clip its last option. */
-html[data-look="edge"] [data-slot="calendar-toolbar"] > [data-slot="segmented"] { flex-shrink: 0; }
+html:root [data-slot="calendar-toolbar"] > [data-slot="segmented"] { flex-shrink: 0; }
 
 
 /* Content remains rectangular even when the whole card opens something. Image
    pickers and calendar events keep their content geometry and color marks. */
-html[data-look="edge"] [data-slot="content-card"] { border-color: transparent; border-radius: 14px; background-color: var(--edge-raised); box-shadow: var(--edge-shadow-card); }
-html[data-look="edge"] [data-slot="content-card"]:hover:not(:disabled) { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="content-card"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="image-picker"] { border-radius: 14px; }
-html[data-look="edge"] [data-slot="calendar-event"] { border-color: transparent; border-radius: 8px; background-color: var(--edge-raised); }
-html[data-look="edge"] [data-slot="calendar-event"]:hover { background-color: var(--edge-selected); }
+html:root [data-slot="content-card"] { border-color: transparent; border-radius: 14px; background-color: var(--raised); box-shadow: var(--shadow-card); }
+html:root [data-slot="content-card"]:hover:not(:disabled) { background-color: var(--selected); }
+html:root [data-slot="content-card"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
+html:root [data-slot="image-picker"] { border-radius: 14px; }
+html:root [data-slot="calendar-event"] { border-color: transparent; border-radius: 8px; background-color: var(--raised); }
+html:root [data-slot="calendar-event"]:hover { background-color: var(--selected); }
 /* Menu rows retain separators and their size, rather than becoming small pills. */
-html[data-look="edge"] [data-slot="menu-action"] { border-radius: 8px; }
-html[data-look="edge"] [data-slot="menu-action"]:hover:not(:disabled) { background-color: var(--edge-selected); }
+html:root [data-slot="menu-action"] { border-radius: 8px; }
+html:root [data-slot="menu-action"]:hover:not(:disabled) { background-color: var(--selected); }
 
 /* Files in a sentence are capsules. In an inverted message they inherit the
    message's ink, so the chip and its hover stay readable on either bubble. */
-html[data-look="edge"] [data-slot="attachment-chip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
-html[data-look="edge"] [data-slot="attachment-chip"]:hover { background-color: var(--edge-selected); }
-html[data-look="edge"] [data-slot="attachment-chip"][data-tone="bubble"] { color: inherit; background-color: color-mix(in oklch, currentColor 10%, transparent); }
-html[data-look="edge"] [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-color: color-mix(in oklch, currentColor 15%, transparent); }
+html:root [data-slot="attachment-chip"] { border-color: transparent; border-radius: 999px; background-color: var(--track); box-shadow: none; }
+html:root [data-slot="attachment-chip"]:hover { background-color: var(--selected); }
+html:root [data-slot="attachment-chip"][data-tone="bubble"] { color: inherit; background-color: color-mix(in oklch, currentColor 10%, transparent); }
+html:root [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-color: color-mix(in oklch, currentColor 15%, transparent); }
 
 /* A floating action stays opaque over images and the model list's edge fades. */
-html[data-look="edge"] [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--edge-shadow-thumb); }
-html[data-look="edge"] [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--edge-raised); }
-html[data-look="edge"] [data-slot="field"][aria-invalid="true"] { border-color: var(--destructive); }
+html:root [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--shadow-thumb); }
+html:root [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--raised); }
+html:root [data-slot="field"][aria-invalid="true"] { border-color: var(--destructive); }
 
 /* Only these unmeasured tracks scroll here. SegmentedTabs keeps its own measured
    scroller and edge fades. Focus sits inside the clipped option. */
-html[data-look="edge"] [data-slot="segmented"][data-scroll] { width: fit-content; max-width: 100%; overflow-x: auto; }
-html[data-look="edge"] :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root [data-slot="segmented"][data-scroll] { width: fit-content; max-width: 100%; overflow-x: auto; }
+html:root :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Calendar cells and pickers can clip at their container's edge. */
-html[data-look="edge"] :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
+html:root :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
 
 /* Warning actions keep amber at a readable shade on the quiet status fill. */
-html[data-look="edge"] [data-slot="action-button"][data-tone="warning"] { color: var(--edge-warning-ink); }
+html:root [data-slot="action-button"][data-tone="warning"] { color: var(--warning-ink); }
 
-/* A hand-built grid choice becomes one track while retaining its classic grid. */
-html[data-look="edge"] [data-slot="segmented"].grid { display: flex; }
+/* A hand-built grid choice becomes one track while its source still describes a grid. */
+html:root [data-slot="segmented"].grid { display: flex; }
 /* Fields use one focus treatment. Preserve an invalid field's error border. */
-html[data-look="edge"] [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
-html[data-look="edge"] [data-slot="field"]:focus-visible { border-color: var(--edge-line-2); box-shadow: none; }
-html[data-look="edge"] [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
+html:root [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
+html:root [data-slot="field"]:focus-visible { border-color: var(--line-2); box-shadow: none; }
+html:root [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
 /* A touch track inside a contents wrapper fills its existing padded row. */
-html[data-look="edge"] [data-slot="segmented"][data-size="touch"].contents { flex: 1; }
+html:root [data-slot="segmented"][data-size="touch"].contents { flex: 1; }
 
 
 /* ── Default look audit: state, contrast and phone layout ──────────────── */
-html[data-look="edge"] {
-  --edge-dialog-radius: 20px;
-  --edge-dialog-scrim: rgb(0 0 0 / 40%);
-  --edge-energy-light: var(--color-sky-800);
-  --edge-energy-deep: var(--color-orange-800);
-  --edge-status-consider: var(--color-amber-800);
-  --edge-status-todo: var(--color-blue-700);
-  --edge-status-progress: var(--color-violet-700);
-  --edge-status-done: var(--color-emerald-700);
-  --edge-attention: var(--color-amber-800);
-}
-html[data-look="edge"].dark,
-html[data-look="edge"] .dark {
-  --edge-energy-light: var(--color-sky-400);
-  --edge-energy-deep: var(--color-orange-400);
-  --edge-status-consider: var(--color-amber-400);
-  --edge-status-todo: var(--color-blue-400);
-  --edge-status-progress: var(--color-violet-400);
-  --edge-status-done: var(--color-emerald-400);
-  --edge-attention: var(--color-amber-400);
-}
+
+
 
 /* Small header controls use the same readable capsule in every state. */
-html[data-look="edge"] [data-slot="chip-button"] :where(span) { font-size: inherit; }
-html[data-look="edge"] [data-slot="chip-button"] :where(svg) { width: 12px; height: 12px; }
-html[data-look="edge"] [data-slot="send-button"] { border-radius: 999px; box-shadow: none; }
-html[data-look="edge"] :is([data-slot="send-button"], [data-slot="run-row"], [data-slot="meta-item"], [data-task-status]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
+html:root [data-slot="chip-button"] :where(span) { font-size: inherit; }
+html:root [data-slot="chip-button"] :where(svg) { width: 12px; height: 12px; }
+html:root [data-slot="send-button"] { border-radius: 999px; box-shadow: none; }
+html:root :is([data-slot="send-button"], [data-slot="run-row"], [data-slot="meta-item"], [data-task-status]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
 
 /* Keep the original energy/status hues, with ink that works at metadata size. */
-html[data-look="edge"] [data-slot="meta"] [data-kind="energy"][data-energy="light"] { color: var(--edge-energy-light); }
-html[data-look="edge"] [data-slot="meta"] [data-kind="energy"][data-energy="deep"] { color: var(--edge-energy-deep); }
-html[data-look="edge"] [data-task-status="consider"] { color: var(--edge-status-consider); }
-html[data-look="edge"] [data-task-status="todo"] { color: var(--edge-status-todo); }
-html[data-look="edge"] [data-task-status="in_progress"] { color: var(--edge-status-progress); }
-html[data-look="edge"] [data-task-status="done"] { color: var(--edge-status-done); }
+html:root [data-slot="meta"] [data-kind="energy"][data-energy="light"] { color: var(--energy-light); }
+html:root [data-slot="meta"] [data-kind="energy"][data-energy="deep"] { color: var(--energy-deep); }
+html:root [data-task-status="consider"] { color: var(--status-consider); }
+html:root [data-task-status="todo"] { color: var(--status-todo); }
+html:root [data-task-status="in_progress"] { color: var(--status-progress); }
+html:root [data-task-status="done"] { color: var(--status-done); }
 /* The meta wrapper normally hands color back to the component's utilities. */
-html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="in_progress"] { color: var(--edge-status-progress); }
-html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="consider"] { color: var(--edge-status-consider); }
-html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="todo"] { color: var(--edge-status-todo); }
-html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="done"] { color: var(--edge-status-done); }
+html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="in_progress"] { color: var(--status-progress); }
+html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="consider"] { color: var(--status-consider); }
+html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="todo"] { color: var(--status-todo); }
+html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="done"] { color: var(--status-done); }
 
 /* Descendant uppercase variants target cmdk headings, rather than .uppercase. */
-html[data-look="edge"] [cmdk-group-heading] { font-size: 12px; font-weight: 500; letter-spacing: normal; text-transform: none; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="search-footer"] { font-size: 12px; color: var(--edge-t3); }
-html[data-look="edge"] [data-slot="search-footer"] kbd { font-size: 11px; }
-html[data-look="edge"] [data-slot="tabs-list"][data-variant="line"] [data-slot="tabs-trigger"]::after { display: none; }
+html:root [cmdk-group-heading] { font-size: 12px; font-weight: 500; letter-spacing: normal; text-transform: none; color: var(--t3); }
+html:root [data-slot="search-footer"] { font-size: 12px; color: var(--t3); }
+html:root [data-slot="search-footer"] kbd { font-size: 11px; }
+html:root [data-slot="tabs-list"][data-variant="line"] [data-slot="tabs-trigger"]::after { display: none; }
 
 /* Centered dialogs share corners and one scrim, without blur. Full-page phone
    search is a page, so it keeps square corners and the full viewport. */
-html[data-look="edge"] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-radius: var(--edge-dialog-radius); }
+html:root :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-radius: var(--dialog-radius); }
 /* Some Radix contents position an inner painted panel. It inherits the outer
    corners and leaves the floating shadow to the outer content. */
-html[data-look="edge"] [data-slot="dialog-content"][data-kind="wrapped"] > :last-child { border-color: transparent; border-radius: inherit; box-shadow: none; }
-html[data-look="edge"] :is([data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) { background-color: var(--edge-dialog-scrim); backdrop-filter: none; }
-html[data-look="edge"] [data-slot="dialog-content"][data-kind="search"] { width: min(42rem, calc(100% - 16px)); }
-html[data-look="edge"] [data-slot="floating-tools"] { border-radius: 14px; box-shadow: var(--edge-shadow-pop); }
+html:root [data-slot="dialog-content"][data-kind="wrapped"] > :last-child { border-color: transparent; border-radius: inherit; box-shadow: none; }
+html:root :is([data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) { background-color: var(--dialog-scrim); backdrop-filter: none; }
+html:root [data-slot="dialog-content"][data-kind="search"] { width: min(42rem, calc(100% - 16px)); }
+html:root [data-slot="floating-tools"] { border-radius: 14px; box-shadow: var(--shadow-pop); }
 
-html[data-look="edge"] [data-slot="run-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--edge-shadow-card); }
+html:root [data-slot="run-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--shadow-card); }
 
 /* Pairing uses the same opaque panels and quiet fields as the rest of Ri. */
-html[data-look="edge"] [data-slot="pairing-decoration"] { display: none; }
-html[data-look="edge"] [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--edge-raised); box-shadow: none; backdrop-filter: none; }
-html[data-look="edge"] [data-slot="pairing"] [data-slot="callout"] { box-shadow: none; backdrop-filter: none; }
-html[data-look="edge"] [data-slot="pairing"] [data-slot="input-group"] { min-width: 0; border-color: var(--edge-line-2); background-color: var(--background); box-shadow: none; backdrop-filter: none; }
-html[data-look="edge"] [data-slot="pairing"] [data-slot="input-group"] input { min-width: 0; }
-html[data-look="edge"] [data-slot="pairing"] [data-slot="input-group"]:has(input:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; }
-html[data-look="edge"] [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--edge-line); }
+html:root [data-slot="pairing-decoration"] { display: none; }
+html:root [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--raised); box-shadow: none; backdrop-filter: none; }
+html:root [data-slot="pairing"] [data-slot="callout"] { box-shadow: none; backdrop-filter: none; }
+html:root [data-slot="pairing"] [data-slot="input-group"] { min-width: 0; border-color: var(--line-2); background-color: var(--background); box-shadow: none; backdrop-filter: none; }
+html:root [data-slot="pairing"] [data-slot="input-group"] input { min-width: 0; }
+html:root [data-slot="pairing"] [data-slot="input-group"]:has(input:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; }
+html:root [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--line); }
 
 @media (max-width: 767px) {
-  html[data-look="edge"] :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] { height: auto; min-height: 40px; }
-  html[data-look="edge"] :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] > button { height: 36px; min-width: 36px; padding-inline: 12px; font-size: 13px; }
-  html[data-look="edge"] [data-slot="tool-tab-bar"] { height: 44px; align-items: center; }
-  html[data-look="edge"] [data-slot="tool-tab-label"] { display: inline; }
-  html[data-look="edge"] [data-slot="run-row"] { flex-wrap: wrap; column-gap: 8px; row-gap: 6px; }
-  html[data-look="edge"] [data-slot="run-summary"] { order: -1; flex: 0 0 100%; white-space: normal; overflow-wrap: anywhere; }
-  html[data-look="edge"] [data-slot="run-row"] > :not([data-slot]) { font-size: 11px; }
-  html[data-look="edge"] [data-slot="dialog-content"][data-kind="search-page"] { border-radius: 0; }
-  html[data-look="edge"] [data-slot="calendar-toolbar"] { position: relative; flex-wrap: wrap; padding-right: 44px; }
-  html[data-look="edge"] [data-slot="calendar-toolbar"] > [data-slot="icon-button"][data-kind="close"] { position: absolute; right: 8px; top: 8px; }
-  html[data-look="edge"] [data-slot="calendar-spacer"] { display: none; }
-  html[data-look="edge"] [data-slot="calendar-date"] { order: 1; flex: 1 0 100%; white-space: normal; font-size: 12px; }
-  html[data-look="edge"] [data-slot="calendar-work-toggle"] { white-space: nowrap; }
-  html[data-look="edge"] [data-slot="work-chain"] { min-width: 0; gap: 8px; }
-  html[data-look="edge"] [data-slot="work-chain-step"] { min-width: 0; flex: 1 1 0; }
-  html[data-look="edge"] [data-slot="work-chain-arrow"] { min-width: 20px; flex: 0 0 20px; padding-top: 37px; }
-  html[data-look="edge"] [data-slot="work-chain-step"] > dt { min-height: 42px; line-height: 14px; }
+  html:root :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] { height: auto; min-height: 40px; }
+  html:root :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] > button { height: 36px; min-width: 36px; padding-inline: 12px; font-size: 13px; }
+  html:root [data-slot="tool-tab-bar"] { height: 44px; align-items: center; }
+  html:root [data-slot="tool-tab-label"] { display: inline; }
+  html:root [data-slot="run-row"] { flex-wrap: wrap; column-gap: 8px; row-gap: 6px; }
+  html:root [data-slot="run-summary"] { order: -1; flex: 0 0 100%; white-space: normal; overflow-wrap: anywhere; }
+  html:root [data-slot="run-row"] > :not([data-slot]) { font-size: 11px; }
+  html:root [data-slot="dialog-content"][data-kind="search-page"] { border-radius: 0; }
+  html:root [data-slot="calendar-toolbar"] { position: relative; flex-wrap: wrap; padding-right: 44px; }
+  html:root [data-slot="calendar-toolbar"] > [data-slot="icon-button"][data-kind="close"] { position: absolute; right: 8px; top: 8px; }
+  html:root [data-slot="calendar-spacer"] { display: none; }
+  html:root [data-slot="calendar-date"] { order: 1; flex: 1 0 100%; white-space: normal; font-size: 12px; }
+  html:root [data-slot="calendar-work-toggle"] { white-space: nowrap; }
+  html:root [data-slot="work-chain"] { min-width: 0; gap: 8px; }
+  html:root [data-slot="work-chain-step"] { min-width: 0; flex: 1 1 0; }
+  html:root [data-slot="work-chain-arrow"] { min-width: 20px; flex: 0 0 20px; padding-top: 37px; }
+  html:root [data-slot="work-chain-step"] > dt { min-height: 42px; line-height: 14px; }
 }

@@ -10,14 +10,15 @@ export function findBarPage(nonce: string, options: LocalPageStyleOptions = {}) 
   return `<!doctype html><html ${base.attributes} data-ri-local-view="find"><head><meta charset="utf-8"><title>Find</title>${base.meta}
 <style nonce="${nonce}">${base.css}
 html,body{margin:0;height:100%;overflow:hidden;background:transparent}
-body{padding:6px 8px 10px;font:13px/1.4 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
-form{display:flex;align-items:center;gap:2px;height:40px;margin:0;padding:0 5px 0 12px;background:var(--popover,Canvas);color:var(--popover-foreground,CanvasText);border:1px solid var(--border,ButtonBorder);border-radius:calc(var(--radius,.75rem) - 2px);box-shadow:0 4px 14px rgb(0 0 0/.14),0 1px 3px rgb(0 0 0/.08)}
-input{flex:1;min-width:0;height:28px;margin:0;padding:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}
+body{padding:6px 8px 10px;font:13px/1.4 var(--font-sans,system-ui,Inter,sans-serif);-webkit-font-smoothing:antialiased}
+form{display:flex;align-items:center;gap:2px;height:40px;margin:0;padding:0 5px 0 12px;background:var(--popover,Canvas);color:var(--popover-foreground,CanvasText);border:1px solid var(--border,ButtonBorder);border-radius:10px;box-shadow:0 4px 14px rgb(0 0 0/.14),0 1px 3px rgb(0 0 0/.08)}
+form:has(input:focus-visible){outline:2px solid var(--ring,Highlight);outline-offset:-2px}
+input{border-radius:10px;flex:1;min-width:0;height:28px;margin:0;padding:0;border:0;outline:0;background:transparent;color:inherit;font:inherit}
 input::placeholder{color:var(--muted-foreground,GrayText)}
 output{flex:none;padding:0 6px;font-size:12px;color:var(--muted-foreground,GrayText);font-variant-numeric:tabular-nums;white-space:nowrap;user-select:none}
 output:empty{display:none}
 .divider{flex:none;width:1px;height:18px;margin:0 3px;background:var(--border,ButtonBorder)}
-button{flex:none;display:grid;place-items:center;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:calc(var(--radius,.75rem) - 6px);background:transparent;color:var(--muted-foreground,GrayText)}
+button{flex:none;display:grid;place-items:center;width:28px;height:28px;margin:0;padding:0;border:0;border-radius:999px;background:transparent;color:var(--muted-foreground,GrayText)}
 button:hover:not(:disabled){background:var(--accent,ButtonFace);color:var(--accent-foreground,ButtonText)}
 button:disabled{opacity:.4}
 button:focus-visible{outline:2px solid var(--ring,Highlight);outline-offset:-2px}

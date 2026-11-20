@@ -67,6 +67,53 @@ html[data-ri-desktop='darwin'] [data-slot='sheet-content']:is([data-side='left']
 }
 
 @theme inline {
+  /* Product surfaces and semantic ink/fill pairs from theme.css. */
+  --color-canvas: var(--canvas);
+  --color-pane: var(--pane);
+  --color-raised: var(--raised);
+  --color-track: var(--track);
+  --color-hover: var(--hover);
+  --color-selected: var(--selected);
+  --color-thumb: var(--thumb);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-t1: var(--t1);
+  --color-t2: var(--t2);
+  --color-t3: var(--t3);
+  --color-t4: var(--t4);
+  --color-attention: var(--attention);
+  --color-attention-fill: var(--attention-fill);
+  --color-danger: var(--danger);
+  --color-danger-fill: var(--danger-fill);
+  --color-working: var(--working);
+  --color-working-fill: var(--working-fill);
+  --color-success: var(--success);
+  --color-success-fill: var(--success-fill);
+  --color-info: var(--info);
+  --color-info-fill: var(--info-fill);
+  --color-energy-light: var(--energy-light);
+  --color-energy-light-fill: var(--energy-light-fill);
+  --color-energy-deep: var(--energy-deep);
+  --color-energy-deep-fill: var(--energy-deep-fill);
+  --color-mode-auto: var(--mode-auto);
+  --color-mode-auto-fill: var(--mode-auto-fill);
+  --color-mode-edits: var(--mode-edits);
+  --color-mode-edits-fill: var(--mode-edits-fill);
+  --color-mode-ask: var(--mode-ask);
+  --color-mode-ask-fill: var(--mode-ask-fill);
+  --color-mode-plan: var(--mode-plan);
+  --color-mode-plan-fill: var(--mode-plan-fill);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-fill: var(--warning-fill);
+  --color-status-consider: var(--status-consider);
+  --color-status-todo: var(--status-todo);
+  --color-status-progress: var(--status-progress);
+  --color-status-done: var(--status-done);
+  --color-composer: var(--composer);
+  --shadow-thumb: var(--shadow-thumb);
+  --shadow-pop: var(--shadow-pop);
+  --shadow-card: var(--shadow-card);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);

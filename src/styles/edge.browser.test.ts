@@ -1,6 +1,6 @@
 /**
- * The new look (src/styles/edge.css) against the real stylesheet in Chromium.
- * The look draws its own fills and shadows over components built for classic,
+ * The product system (theme.css and edge.css) against the real stylesheet in Chromium.
+ * Compatibility rules draw fills and shadows over hand-built utility classes,
  * so what can go wrong is a cascade mistake no unit test sees: a focus ring
  * replaced by a fill, a hover that loses its contrast, a scroller that moves
  * from the element that watches it. Each case is one a review found.
@@ -153,6 +153,8 @@ beforeAll(async () => {
             </dl>
             <div data-slot="pairing"><div data-slot="pairing-mark" className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner"/><div data-slot="callout" className="rounded-2xl bg-card/60 p-3 shadow-2xl backdrop-blur-xl"><div data-slot="input-group" className="rounded-lg border bg-background/80 p-2 shadow-inner"><input data-audit-focus aria-label="Pairing token" className="min-w-0 bg-transparent outline-none"/></div></div></div>
           </section>
+          <div data-case="canvas-token" className="bg-canvas text-t1">Canvas</div>
+          <div className="dark"><div data-case="nested-pane-token" className="bg-pane text-t1">Nested dark pane</div></div>
         </div>;
       }
       createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
@@ -165,9 +167,8 @@ beforeAll(async () => {
     if (url.pathname === '/fixture.js') { res.setHeader('content-type', 'text/javascript'); res.end(bundle.outputFiles[0].text); return; }
     if (url.pathname === '/fixture.css') { res.setHeader('content-type', 'text/css'); res.end(css.css); return; }
     const theme = url.searchParams.get('theme') === 'dark' ? 'dark' : '';
-    const look = url.searchParams.get('look') === 'edge' ? ' data-look="edge"' : '';
     res.setHeader('content-type', 'text/html');
-    res.end(`<!doctype html><html class="${theme}"${look}><head><link rel="stylesheet" href="/fixture.css"></head><body class="bg-background text-foreground"><div id="root"></div><script src="/fixture.js"></script></body></html>`);
+    res.end(`<!doctype html><html class="${theme}"><head><link rel="stylesheet" href="/fixture.css"></head><body class="bg-background text-foreground"><div id="root"></div><script src="/fixture.js"></script></body></html>`);
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -181,12 +182,12 @@ afterAll(async () => {
   if (server) await new Promise<void>(resolve => server.close(() => resolve()));
 });
 
-async function open(look: 'edge' | 'classic', theme: 'light' | 'dark'): Promise<{ page: Page; errors: string[] }> {
+async function open(theme: 'light' | 'dark'): Promise<{ page: Page; errors: string[] }> {
   const page = await browser.newPage({ viewport: { width: 520, height: 360 } });
   testTimeouts(page, 5_000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto(`${base}/?look=${look}&theme=${theme}`);
+  await page.goto(`${base}/?theme=${theme}`);
   await page.locator('[data-case="solid"]').waitFor();
   return { page, errors };
 }
@@ -218,7 +219,7 @@ async function contrast(page: Page, selector: string): Promise<number> {
 
 for (const theme of ['light', 'dark'] as const) {
   it(`keeps a visible focus ring on the controls it restyles (${theme})`, async () => {
-    const { page, errors } = await open('edge', theme);
+    const { page, errors } = await open(theme);
     try {
       const seen: string[] = [];
       // Focus the page (an empty corner), then move by keyboard so :focus-visible applies.
@@ -240,19 +241,19 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   it(`keeps Accept & complete readable on hover (${theme})`, async () => {
-    for (const look of ['edge', 'classic'] as const) {
-      const { page } = await open(look, theme);
+    {
+      const { page } = await open(theme);
       try {
         await page.locator('[data-case="solid"]').hover();
         await page.waitForTimeout(250); // transition-colors
-        expect(await contrast(page, '[data-case="solid"]'), `${look} on hover`).toBeGreaterThan(3);
+        expect(await contrast(page, '[data-case="solid"]'), 'on hover').toBeGreaterThan(3);
       } finally { await page.close(); }
     }
   });
 }
 
 it('scrolls a narrow lane switch where its edge fades look', async () => {
-  const { page } = await open('edge', 'light');
+  const { page } = await open('light');
   try {
     const state = await page.evaluate(() => {
       const scroller = document.querySelector('[role="group"][aria-label="Lanes"]') as HTMLElement;
@@ -268,7 +269,7 @@ it('scrolls a narrow lane switch where its edge fades look', async () => {
 
 for (const theme of ['light', 'dark'] as const) {
   it(`shows keyboard focus on phase 3 controls, including clipped tabs (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       await page.locator('[data-case="solid"]').focus();
       const controls = await page.locator('[data-focus]').count();
@@ -289,7 +290,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   it(`keeps filled actions and status controls readable on hover (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       for (const name of ['git-action','mode','mode-auto_edits','mode-ask','mode-plan','finder','settings-action','settings-solid','choice','today']) {
         const selector = `[data-case="${name}"]`;
@@ -303,7 +304,7 @@ for (const theme of ['light', 'dark'] as const) {
 }
 
 it('keeps split controls joined, content rectangular and chat tabs on their existing scroller', async () => {
-  const { page } = await open('edge', 'light');
+  const { page } = await open('light');
   try {
     const state = await page.evaluate(() => {
       const style = (selector: string) => getComputedStyle(document.querySelector(selector)!);
@@ -338,7 +339,7 @@ it('keeps split controls joined, content rectangular and chat tabs on their exis
 });
 
 it('keeps all Calendar view labels visible when the date needs to truncate', async () => {
-  const { page } = await open('edge', 'light');
+  const { page } = await open('light');
   try {
     const state = await page.locator('[data-case="calendar-small"]').evaluate(el => {
       const track = el.querySelector('[data-slot="segmented"]')!;
@@ -352,11 +353,11 @@ it('keeps all Calendar view labels visible when the date needs to truncate', asy
 
 for (const theme of ['light', 'dark'] as const) {
   it(`keeps Settings segments fitted and their selected thumb visible, including hover (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const expected = await page.evaluate(() => {
         const probe = document.createElement('span');
-        probe.style.backgroundColor = 'var(--edge-thumb)';
+        probe.style.backgroundColor = 'var(--thumb)';
         document.body.append(probe);
         const thumb = getComputedStyle(probe).backgroundColor;
         probe.remove();
@@ -379,12 +380,12 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   it(`uses a soft fill for independent Settings toggles (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const expected = await page.evaluate(() => {
         const probe = document.createElement('span');
-        probe.style.backgroundColor = 'var(--edge-selected)';
-        probe.style.color = 'var(--edge-t1)';
+        probe.style.backgroundColor = 'var(--selected)';
+        probe.style.color = 'var(--t1)';
         document.body.append(probe);
         const style = getComputedStyle(probe);
         const result = { background: style.backgroundColor, color: style.color };
@@ -399,7 +400,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   it(`keeps the Settings search ring without a second outline (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       await page.keyboard.press('Tab');
       await page.locator('[data-case="settings-search"]').focus();
@@ -412,11 +413,11 @@ for (const theme of ['light', 'dark'] as const) {
 
 for (const theme of ['light', 'dark'] as const) {
   it(`draws the agent page's chat lenses as one segmented control (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const lenses = await page.evaluate(() => {
         const probe = document.createElement('span');
-        probe.style.backgroundColor = 'var(--edge-thumb)';
+        probe.style.backgroundColor = 'var(--thumb)';
         document.body.append(probe);
         const thumb = getComputedStyle(probe).backgroundColor;
         probe.remove();
@@ -449,7 +450,7 @@ for (const theme of ['light', 'dark'] as const) {
 
 for (const theme of ['light', 'dark'] as const) {
   it(`keeps long-tail content shapes, event stripes and keyboard focus (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       await page.locator('[data-case="tail"] button').first().focus();
       for (const control of await page.locator('[data-tail-focus]').all()) {
@@ -482,7 +483,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   it(`keeps actual file chips readable on the pane and inverted bubble (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       for (const selector of ['[data-case="file-chip"] button', '[data-case="bubble"] a', '[data-case="warning-action"]']) {
         const chip = page.locator(selector);
@@ -501,7 +502,7 @@ for (const theme of ['light', 'dark'] as const) {
   });
 
   it(`keeps floating actions opaque and a narrow filter track scrollable (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const floating = page.locator('[data-case="floating-action"]');
       for (const hover of [false, true]) {
@@ -535,7 +536,7 @@ for (const theme of ['light', 'dark'] as const) {
 
 for (const theme of ['light', 'dark'] as const) {
   it(`keeps the common Tools toggle rounded, selected and focusable (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const button = page.locator('[data-case="workbench-toggle"] button');
       await page.keyboard.press('Tab');
@@ -543,7 +544,7 @@ for (const theme of ['light', 'dark'] as const) {
       const state = await button.evaluate(el => {
         const s = getComputedStyle(el);
         const probe = document.createElement('span');
-        probe.style.backgroundColor = 'var(--edge-selected)'; el.after(probe);
+        probe.style.backgroundColor = 'var(--selected)'; el.after(probe);
         const selected = getComputedStyle(probe).backgroundColor; probe.remove();
         return { radius: parseFloat(s.borderRadius), outline: s.outlineStyle, fill: s.backgroundColor, selected };
       });
@@ -556,7 +557,7 @@ for (const theme of ['light', 'dark'] as const) {
 
 for (const theme of ['light', 'dark'] as const) {
   it(`keeps the narrow agent switch inside its existing header gutters (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const state = await page.locator('[data-case="agent-pane"]').evaluate(el => {
         const row = el.getBoundingClientRect();
@@ -572,28 +573,11 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-it('keeps the agent header contents wrapper invisible to classic layout', async () => {
-  const { page } = await open('classic', 'light');
-  try {
-    const row = page.locator('[data-case="agent-pane"]');
-    const state = await row.evaluate(el => {
-      const read = () => Array.from(el.querySelectorAll('button')).map(button => {
-        const { x, y, width, height } = button.getBoundingClientRect();
-        return { x, y, width, height };
-      });
-      const wrapped = read();
-      const track = el.firstElementChild!;
-      track.replaceWith(...Array.from(track.childNodes));
-      return { wrapped, original: read() };
-    });
-    expect(state.wrapped).toEqual(state.original);
-  } finally { await page.close(); }
-});
 
 
 for (const theme of ['light', 'dark'] as const) {
   it(`default audit keeps both Send states and header actions as readable capsules (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       for (const selector of ['[aria-label="Working: 2"]','[data-case="history"]','[data-case="send-enabled"]','[data-case="send-disabled"]']) {
         const state = await page.locator(selector).evaluate(el => { const s=getComputedStyle(el); return {radius:parseFloat(s.borderRadius),size:parseFloat(s.fontSize)}; });
@@ -607,7 +591,7 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
   it(`default audit metadata has at least 4.5 contrast at 12px (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       for (const name of ['energy-light','energy-deep','progress','status-consider','status-todo','status-done','due-today']) {
         const selector='[data-case="'+name+'"]';
@@ -619,7 +603,7 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
   it(`default audit search headings escape descendant capitals and footer stays readable (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const heading=await page.locator('[cmdk-group-heading]').evaluate(el=>{const s=getComputedStyle(el);return {size:parseFloat(s.fontSize),weight:s.fontWeight,transform:s.textTransform,spacing:s.letterSpacing};});
       expect(heading).toEqual({size:12,weight:'500',transform:'none',spacing:'normal'});
@@ -627,7 +611,7 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
   it(`default audit Plugins line tabs have a thumb without an underline (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       const tab=page.locator('[data-slot="tabs-list"][data-variant="line"] [data-state="active"]');
       expect(await tab.evaluate(el=>getComputedStyle(el,'::after').display)).toBe('none');
@@ -635,7 +619,7 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
   it(`default audit centered dialogs share corners and an unblurred scrim (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       for (let i=0;i<3;i++) expect(await page.locator('[data-case="dialog-'+i+'"]').evaluate(el=>getComputedStyle(el).borderRadius)).toBe('20px');
       expect(await page.locator('[data-case="wrapped-dialog"]').evaluate(el=>{const s=getComputedStyle(el);return [s.borderRadius,s.boxShadow];})).toEqual(['20px','none']);
@@ -643,7 +627,7 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
   it(`default audit phone filters, run summaries and calendar stay usable (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       await page.setViewportSize({width:390,height:844});
       for (const selector of ['[data-case="responsive-segments"] button','[data-case="responsive-tabs"] button']) expect(await page.locator(selector).first().evaluate(el=>el.getBoundingClientRect().height)).toBe(36);
@@ -659,7 +643,7 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
   it(`default audit pairing is quiet and every new control retains keyboard focus (${theme})`, async () => {
-    const { page } = await open('edge', theme);
+    const { page } = await open(theme);
     try {
       for (const selector of ['[data-slot="pairing-mark"]','[data-slot="pairing"] [data-slot="callout"]','[data-slot="pairing"] [data-slot="input-group"]']) expect(await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backdropFilter];})).toEqual(['none','none']);
       expect(await page.locator('[data-slot="pairing-mark"]').evaluate(el=>getComputedStyle(el).backgroundImage)).toBe('none');
@@ -670,4 +654,40 @@ for (const theme of ['light', 'dark'] as const) {
       }
     } finally { await page.close(); }
   });
+}
+
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`uses registered product tokens without a look attribute, including nested dark (${theme})`, async () => {
+    const { page } = await open(theme);
+    try {
+      expect(await page.locator('html').getAttribute('data-look')).toBeNull();
+      expect(await page.locator('[data-case="canvas-token"]').evaluate(el => getComputedStyle(el).backgroundColor)).toBe(theme === 'dark' ? 'oklch(0.145 0.0028 264)' : 'oklch(0.985 0.0012 264)');
+      expect(await page.locator('[data-case="nested-pane-token"]').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('oklch(0.183 0.0028 264)');
+      expect(await page.locator('[data-case="nested-pane-token"]').evaluate(el => getComputedStyle(el).color)).toBe('oklch(0.955 0.003 264)');
+    } finally { await page.close(); }
+  });
+  for (const nested of [false, true]) {
+    it(`semantic ink and fill pairs reach 4.5 contrast at 12px (${theme}, nested dark ${nested})`, async () => {
+      const { page } = await open(theme);
+      try {
+        const tones = ['attention','danger','success','working','info','energy-light','energy-deep','mode-auto','mode-edits','mode-ask','mode-plan','warning-ink'];
+        await page.evaluate(({ tones, nested }) => {
+          const host = document.createElement('div'); host.id = 'tone-probes'; host.className = nested ? 'dark' : ''; host.style.backgroundColor = 'var(--raised)';
+          for (const tone of tones) {
+            const probe = document.createElement('span'); probe.dataset.tone = tone;
+            const fill = tone === 'warning-ink' ? 'warning-fill' : tone + '-fill';
+            probe.style.cssText = 'display:inline-block;font-size:12px;color:var(--' + tone + ');background-color:var(--' + fill + ');'; probe.textContent = tone;
+            host.append(probe);
+          }
+          document.body.append(host);
+        }, { tones, nested });
+        for (const tone of tones) {
+          const selector = '#tone-probes [data-tone="' + tone + '"]';
+          expect(await page.locator(selector).evaluate((el, tone) => getComputedStyle(el).getPropertyValue('--' + tone).trim(), tone), tone + ' is defined').not.toBe('');
+          expect(await contrast(page, selector), tone).toBeGreaterThanOrEqual(4.5);
+        }
+      } finally { await page.close(); }
+    });
+  }
 }

@@ -127,11 +127,10 @@ for (const theme of ['light', 'dark'] as const) {
     try {
       await page.evaluate(theme => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.dataset.look = 'edge';
       }, theme);
       const expected = await page.evaluate(() => {
         const probe = document.createElement('span');
-        probe.style.backgroundColor = 'var(--edge-thumb)'; document.body.append(probe);
+        probe.style.backgroundColor = 'var(--thumb)'; document.body.append(probe);
         const thumb = getComputedStyle(probe).backgroundColor; probe.remove();
         return thumb;
       });
@@ -158,26 +157,6 @@ for (const theme of ['light', 'dark'] as const) {
   });
 }
 
-it('keeps catalog contents wrappers transparent to classic layout', async () => {
-  for (const details of [false, true]) {
-    const page = await open();
-    try {
-      if (details) await page.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
-      const row = page.locator(`[aria-label="${details ? 'Addition details' : 'Discover types'}"]`);
-      const state = await row.evaluate(el => {
-        const read = () => Array.from(el.querySelectorAll('button')).map(button => {
-          const { x, y, width, height } = button.getBoundingClientRect();
-          return { x, y, width, height };
-        });
-        const wrapped = read();
-        const track = el.querySelector('[data-slot="segmented"]')!;
-        track.replaceWith(...Array.from(track.childNodes));
-        return { wrapped, original: read() };
-      });
-      expect(state.wrapped).toEqual(state.original);
-    } finally { await page.close(); }
-  }
-});
 
 it('shows one grouped library, visible creation buttons and discovery at desktop and phone widths', async () => {
   // A filter the catalog doesn't know shows everything.
