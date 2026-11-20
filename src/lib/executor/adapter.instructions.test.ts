@@ -4,7 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import type { HarnessId } from '@/lib/harness/registry';
 
-const mock = vi.hoisted(() => ({ createSession: vi.fn(), cleanup: vi.fn(), browserMcpServer: vi.fn() }));
+const mock = vi.hoisted(() => ({
+  createSession: vi.fn(), cleanup: vi.fn(), browserMcpServer: vi.fn(), orchestratorSessionConfig: vi.fn(),
+}));
 vi.mock('@agentex/agent', () => ({
   getProvider: () => ({ createSession: mock.createSession }),
   commandInventoryFromEvent: () => null,
@@ -25,7 +27,7 @@ vi.mock('@/lib/harness/runtime', () => ({
 }));
 vi.mock('@/lib/orchestrator/harness-surface', async (original) => ({
   ...await original<typeof import('@/lib/orchestrator/harness-surface')>(),
-  installOrchestratorSurface: async () => {}, orchestratorSessionConfig: () => ({}),
+  installOrchestratorSurface: async () => {}, orchestratorSessionConfig: mock.orchestratorSessionConfig,
   integrationsMcpServer: () => null, browserMcpServer: mock.browserMcpServer,
 }));
 
@@ -54,6 +56,7 @@ describe('scoped handoff guidance and general agent instructions at the dispatch
     (await import('@/lib/work-results/capabilities')).setWorkResultCapabilities({ handoffsEnabled: false, aiReviewEnabled: false });
     mock.cleanup.mockResolvedValue({ entries: [] });
     mock.browserMcpServer.mockReturnValue(null);
+    mock.orchestratorSessionConfig.mockReturnValue({});
     mock.createSession.mockImplementation(async () => ({
       sessionId: `provider-session-${mock.createSession.mock.calls.length}`, close: vi.fn(async () => {}),
       send: vi.fn(async () => ({ result: Promise.resolve({ status: 'completed', summary: 'ok' }) })),
@@ -85,6 +88,18 @@ describe('scoped handoff guidance and general agent instructions at the dispatch
     });
     return { workspace, session };
   }
+
+  it('runs a personal OpenCode chat without Ri tool servers when the runtime lacks strict isolation', async () => {
+    mock.orchestratorSessionConfig.mockReturnValueOnce({
+      strictMcpConfig: true, mcpServers: [{ name: 'ri', type: 'http', url: 'http://127.0.0.1:1/mcp' }],
+    });
+    const { session } = seed('opencode', 'app', false);
+    await executor.dispatch(session.id, 'Review this.', { internalCall: true });
+    const call = mock.createSession.mock.calls.at(-1)![0];
+    expect(call.config.mcpServers).toBeUndefined();
+    expect(call.config.strictMcpConfig).toBeUndefined();
+    await executor.close(session.id);
+  });
 
   it.each(['claude', 'codex', 'cursor', 'opencode', 'antigravity'] as const)(
     'delivers Slack presentation and audience on fresh, resumed and cached %s turns', async harness => {
