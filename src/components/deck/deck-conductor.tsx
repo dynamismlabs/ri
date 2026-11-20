@@ -89,9 +89,10 @@ export function DeckConductor({
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 @max-[30rem]/conductor:gap-x-1.5 @max-[30rem]/conductor:px-3">
       <div className="flex items-center gap-2 @max-[30rem]/conductor:gap-1.5">
         {/* Energy toggle: Light / Deep */}
-        <div className="flex items-center gap-0.5 p-0.5 bg-card rounded-lg border border-border">
+        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-card rounded-lg border border-border">
           <button
             onClick={() => onWorkModeChange(workMode === 'light' ? null : 'light')}
+            aria-pressed={workMode === 'light'}
             className={cn(
               'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
               workMode === 'light'
@@ -103,6 +104,7 @@ export function DeckConductor({
           </button>
           <button
             onClick={() => onWorkModeChange(workMode === 'deep' ? null : 'deep')}
+            aria-pressed={workMode === 'deep'}
             className={cn(
               'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
               workMode === 'deep'
@@ -117,7 +119,7 @@ export function DeckConductor({
         {/* Area filter dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 bg-card border border-border rounded-lg cursor-pointer hover:border-muted-foreground transition-all @max-[30rem]/conductor:gap-1 @max-[30rem]/conductor:px-2">
+            <button data-slot="chip-button" className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 bg-card border border-border rounded-lg cursor-pointer hover:border-muted-foreground transition-all @max-[30rem]/conductor:gap-1 @max-[30rem]/conductor:px-2">
               <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest @max-[30rem]/conductor:tracking-wide">
                 {selectedArea ? selectedArea.name : 'All areas'}
               </span>
@@ -154,6 +156,9 @@ export function DeckConductor({
           <button
             onClick={() => dueTodayCount > 0 && onFilterDueTodayChange(!filterDueToday)}
             disabled={dueTodayCount === 0}
+            aria-pressed={filterDueToday}
+            data-slot="chip-button"
+            data-tone="attention"
             className={cn(
               'whitespace-nowrap px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase transition-all border @max-[30rem]/conductor:px-2',
               filterDueToday
@@ -175,6 +180,8 @@ export function DeckConductor({
             <Tip label="Morning auto-refresh">
               <button
                 aria-label="Morning auto-refresh"
+                data-slot="chip-button"
+                data-on={morning?.enabled || undefined}
                 className={cn(
                   'flex items-center justify-center w-7 h-7 rounded-md border transition-colors',
                   morning?.enabled
@@ -209,6 +216,8 @@ export function DeckConductor({
             <button
               onClick={onReplan}
               aria-label="Generate New Deck"
+              data-slot="chip-button"
+              data-urgency={urgency}
               className={cn(
                 'flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 text-[9px] font-bold rounded-md transition-colors @max-[30rem]/conductor:h-7 @max-[30rem]/conductor:px-2',
                 URGENCY_STYLES[urgency],

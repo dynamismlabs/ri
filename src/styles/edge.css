@@ -28,11 +28,15 @@ html[data-look="edge"] {
   --edge-t3: oklch(0.54 0.0056 264);
   --edge-t4: oklch(0.67 0.004 264);
   --edge-attention: oklch(0.63 0.16 55);
+  --edge-attention-bg: oklch(0.75 0.15 66 / 0.17);
+  --edge-danger: oklch(0.56 0.19 25);
+  --edge-working: oklch(0.55 0.15 252);
   --edge-shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
   --edge-shadow-pop: 0 0 0 1px oklch(0 0 0 / 0.07), 0 18px 44px -14px oklch(0.2 0.01 264 / 0.28);
   --edge-composer: oklch(1 0 0);
   --edge-composer-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.13), 0 1px 2px oklch(0.2 0.01 264 / 0.05), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.2);
   --edge-composer-focus: 0 0 0 1px oklch(0.2 0.01 264 / 0.18), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.22);
+  --edge-bar-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.11), 0 6px 18px -12px oklch(0.2 0.02 264 / 0.16);
 
   /* shadcn names, so every existing component follows the new look. */
   --background: var(--edge-pane);
@@ -89,11 +93,15 @@ html[data-look="edge"] .dark {
   --edge-t3: oklch(0.62 0.004 264);
   --edge-t4: oklch(0.48 0.004 264);
   --edge-attention: oklch(0.79 0.15 66);
+  --edge-attention-bg: oklch(0.79 0.15 66 / 0.15);
+  --edge-danger: oklch(0.7 0.17 24);
+  --edge-working: oklch(0.74 0.12 250);
   --edge-shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
   --edge-shadow-pop: 0 0 0 1px oklch(1 0 0 / 0.08), 0 18px 44px -14px oklch(0 0 0 / 0.75);
   --edge-composer: oklch(0.205 0.003 264);
   --edge-composer-shadow: 0 0 0 1px oklch(1 0 0 / 0.11), 0 12px 30px -14px oklch(0 0 0 / 0.75);
   --edge-composer-focus: 0 0 0 1px oklch(1 0 0 / 0.2), 0 12px 30px -14px oklch(0 0 0 / 0.8);
+  --edge-bar-shadow: 0 0 0 1px oklch(1 0 0 / 0.1);
 
   --background: var(--edge-pane);
   --foreground: var(--edge-t1);
@@ -160,3 +168,92 @@ html[data-look="edge"] :is([data-slot="dialog-content"], [data-slot="alert-dialo
 html[data-look="edge"] [data-slot="tabs-list"] { border-radius: 999px; background-color: var(--edge-track); padding: 2px; }
 html[data-look="edge"] [data-slot="tabs-trigger"] { border-radius: 999px; }
 html[data-look="edge"] [data-slot="tabs-trigger"][data-state="active"] { background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+
+/* ── Phase 2: the daily screens ─────────────────────────────────────────── */
+
+/* Things you press are capsules, whatever radius a screen gave its shadcn Button. */
+html[data-look="edge"] :not([data-slot="button-group"]) > [data-slot="button"] { border-radius: 999px; }
+
+/* Segmented control: one soft track, the chosen option a raised thumb. Any hand-built
+   switch joins it with data-slot="segmented" on the track and aria-pressed or
+   aria-selected on its options. */
+html[data-look="edge"] [data-slot="segmented"] { gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
+html[data-look="edge"] [data-slot="segmented"] > button:hover { color: var(--edge-t1); background-color: transparent; }
+html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+
+/* Toolbar buttons (list toolbars, deck filters): capsules on a quiet fill, no outline. */
+html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) { height: 28px; min-width: 28px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t2); font-size: 12px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
+html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]):hover:not(:disabled) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) > span { font-size: inherit; font-weight: inherit; letter-spacing: normal; color: inherit; }
+html[data-look="edge"] :is(.toolbar-button-active, [data-slot="chip-button"]:is([aria-pressed="true"], [data-on])) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="chip-button"][data-tone="attention"][aria-pressed="true"] { background-color: var(--edge-attention-bg); color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="chip-button"]:disabled { background-color: transparent; color: var(--edge-t4); }
+html[data-look="edge"] [data-slot="list-toolbar"] { background-color: var(--background); }
+html[data-look="edge"] [data-slot="chip-button"][data-urgency="low"] { background-color: transparent; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="chip-button"][data-urgency="critical"] { background-color: var(--primary); color: var(--primary-foreground); }
+
+/* Metadata under a title: plain words separated by dots, not a row of little boxes.
+   A direct child tagged meta-item, area-select or task-badges takes part, and so does
+   a status-select inside a meta-item wrapper. */
+html[data-look="edge"] [data-slot="meta"] { column-gap: 7px; }
+html[data-look="edge"] [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-badge"]) { padding: 0; border-color: transparent; border-radius: 4px; background-color: transparent; font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: normal; }
+html[data-look="edge"] [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button) { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="meta"] [data-slot="area-select"] { color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="meta"] :where(button[data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"]):hover { background-color: transparent; color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="meta"] > :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-badges"]) ~ :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-badges"])::before { content: '·'; margin-right: 7px; color: var(--edge-t4); font-weight: 400; }
+html[data-look="edge"] [data-slot="meta"] :is([data-slot="meta-item"], [data-slot="task-badge"]) svg { width: 12px; height: 12px; }
+/* Status, energy and blocked keep the colors they carry in classic (revert-layer hands the
+   color back to the component's own utility classes). */
+html[data-look="edge"] [data-slot="meta"] :is([data-kind="status"] > button, [data-kind="energy"], [data-kind="blocked"]) { color: revert-layer; }
+html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > button { font-weight: 500; }
+html[data-look="edge"] [data-slot="meta"] [data-kind="energy"] { text-transform: capitalize; }
+html[data-look="edge"] [data-slot="meta"] [data-urgency="late"] { color: var(--edge-danger); font-weight: 500; }
+html[data-look="edge"] [data-slot="meta"] [data-urgency="today"] { color: var(--edge-attention); font-weight: 500; }
+html[data-look="edge"] [data-slot="meta"] [data-slot="task-badge"] { font-weight: 500; }
+
+/* Deadlines: a colored date on a plain row, not a tinted card. */
+html[data-look="edge"] [data-slot="deadline-head"] h3 { font-size: 12px; font-weight: 600; letter-spacing: normal; color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="deadline-head"] > svg { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="deadline-head"] > span { font-size: 12px; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="deadline-row"] { padding: 6px 10px; border-color: transparent; border-radius: 8px; background-color: transparent; }
+html[data-look="edge"] [data-slot="deadline-row"]:hover { border-color: transparent; background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="deadline-row"] > button > span:first-child { font-size: 13.5px; }
+html[data-look="edge"] [data-slot="deadline-when"] { padding: 0; background-color: transparent; font-size: 12px; font-weight: 500; }
+html[data-look="edge"] [data-slot="deadline-when"][data-urgency="late"] { color: var(--edge-danger); }
+html[data-look="edge"] [data-slot="deadline-when"][data-urgency="today"] { color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="deadline-when"][data-urgency="soon"] { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="deadline-when"] > svg { display: none; }
+
+/* The review bar sits on the chat input like a second, smaller input. */
+html[data-look="edge"] [data-slot="review-bar"] { padding: 5px 5px 5px 14px; border-color: transparent; border-radius: 16px; background-color: var(--edge-composer); box-shadow: var(--edge-bar-shadow); }
+html[data-look="edge"] [data-slot="review-bar-title"] { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+html[data-look="edge"] [data-slot="review-bar"][data-state="unreviewed"] [data-slot="review-bar-title"]::before { content: ''; width: 7px; height: 7px; border-radius: 999px; background-color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="review-action"] { height: 28px; padding-inline: 11px; gap: 5px; border-radius: 999px; font-size: 12px; color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="review-action"]:hover { background-color: var(--edge-hover); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"] { background-color: var(--edge-track); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"]:hover { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"] { color: oklch(1 0 0); }
+html[data-look="edge"] [data-slot="review-action"][data-active] { background-color: var(--edge-selected); color: var(--edge-t1); }
+
+/* The task a chat works on: a soft capsule, a dot when it's in progress. */
+html[data-look="edge"] [data-slot="task-chip-label"] { font-size: 12px; font-weight: 500; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="task-chip"] { height: 24px; gap: 6px; padding-inline: 10px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); font-size: 12.5px; font-weight: 500; color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="task-chip"]:hover { border-color: transparent; background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--edge-working); }
+
+/* Top bar: the page tools in one capsule, Create and the view button as capsules. */
+html[data-look="edge"] [data-slot="hud-tools"] { gap: 0; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="hud-tools"] button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; padding: 0; border-color: transparent; border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="hud-tools"] button:hover { color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="hud-tools"] button[aria-pressed="true"] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
+html[data-look="edge"] .hud-create { height: 30px; padding-inline: 12px; gap: 5px; border-radius: 999px; font-size: 12.5px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
+html[data-look="edge"] [data-slot="hud-view-button"] { height: 28px; padding-inline: 10px; border-color: transparent; border-radius: 999px; }
+html[data-look="edge"] [data-slot="hud-view-button"][data-variant="close"] { background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="hud-view-button"] .hud-view-label { font-size: 12px; }
+
+/* Rail: no boxes in the footer, a quiet New agent, sentence-case group labels. */
+html[data-look="edge"] [data-slot="rail-foot"] button { border-color: transparent; }
+html[data-look="edge"] [data-slot="rail-foot"] button:hover { border-color: transparent; background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="new-agent"] { border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="new-agent"]:hover { background-color: var(--edge-selected); opacity: 1; }

@@ -104,9 +104,10 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         </div>
 
         {/* Energy toggle */}
-        <div className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-md shrink-0">
+        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-md shrink-0">
           <button
             onClick={() => setEnergyFilter(energyFilter === 'light' ? null : 'light')}
+            aria-pressed={energyFilter === 'light'}
             className={cn(
               'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
               energyFilter === 'light'
@@ -118,6 +119,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
           </button>
           <button
             onClick={() => setEnergyFilter(energyFilter === 'deep' ? null : 'deep')}
+            aria-pressed={energyFilter === 'deep'}
             className={cn(
               'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
               energyFilter === 'deep'
@@ -132,7 +134,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         {/* Area filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
+            <button data-slot="chip-button" className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
               {selectedArea ? selectedArea.name : 'All'}
               <ChevronDown size={8} className="text-muted-foreground/50" />
             </button>
@@ -157,7 +159,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         {/* Sort */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
+            <button data-slot="chip-button" className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
               {sortBy === 'default' ? 'Priority' : sortBy === 'newest' ? 'Newest' : 'Deadline'}
               <ChevronDown size={8} className="text-muted-foreground/50" />
             </button>

@@ -142,6 +142,8 @@ export function TaskRow({
     <button
       onClick={(e) => e.stopPropagation()}
       aria-label={repeat ? `Repeats ${repeat.toLowerCase()}${nextOne ? `. ${nextOne}` : ''}` : 'Repeat'}
+      data-slot="meta-item"
+      data-kind="repeat"
       className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-primary/60 uppercase tracking-wider transition-colors hover:bg-muted"
     >
       <Repeat size={8} /> {repeat ?? 'Repeat'}{resting && <> · {formatDate(task.nextRecurrenceAt)}</>}
@@ -239,9 +241,9 @@ export function TaskRow({
         </p>
 
         {/* Metadata row */}
-        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+        <div data-slot="meta" className="mt-1 flex items-center gap-1.5 flex-wrap">
           {/* Editable lifecycle status */}
-          <span onClick={(e) => e.stopPropagation()}>
+          <span data-slot="meta-item" data-kind="status" onClick={(e) => e.stopPropagation()}>
             <LifecycleStatusControl taskId={task.id} status={task.status} size="xs" />
           </span>
           <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
@@ -261,6 +263,8 @@ export function TaskRow({
           <Tip label={`Energy: ${task.energy ?? 'unset'} (click to cycle)`}>
             <button
               onClick={(e) => { e.stopPropagation(); cycleEnergy(); }}
+              data-slot="meta-item"
+              data-kind="energy"
               className={cn(
                 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
                 task.energy ? ENERGY_COLORS[task.energy] : 'text-muted-foreground/40',
@@ -276,6 +280,8 @@ export function TaskRow({
             <Tip label={`Effort: ${task.effort} (click to cycle)`}>
               <button
                 onClick={(e) => { e.stopPropagation(); cycleEffort(); }}
+                data-slot="meta-item"
+                data-kind="effort"
                 className="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground uppercase tracking-wider transition-colors hover:bg-muted"
               >
                 {EFFORT_LABELS[task.effort!] ?? task.effort}
@@ -295,6 +301,9 @@ export function TaskRow({
             >
               <button
                 onClick={(e) => e.stopPropagation()}
+                data-slot="meta-item"
+                data-kind="deadline"
+                data-urgency={isPastDate(task.hardDeadline) ? 'late' : undefined}
                 className={cn(
                   'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
                   isPastDate(task.hardDeadline)
@@ -317,6 +326,8 @@ export function TaskRow({
               <Tip label="Click to edit resurface date">
                 <button
                   onClick={(e) => e.stopPropagation()}
+                  data-slot="meta-item"
+                  data-kind="snooze"
                   className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground/60 uppercase tracking-wider transition-colors hover:bg-muted"
                 >
                   <Timer size={8} /> {boomerang}
@@ -336,14 +347,14 @@ export function TaskRow({
               {repeatTip ? <Tip label={repeatTip}>{repeatChip}</Tip> : repeatChip}
             </TaskRecurrencePicker>
           ) : (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-primary/60 uppercase tracking-wider">
+            <span data-slot="meta-item" data-kind="repeat" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-primary/60 uppercase tracking-wider">
               <Repeat size={8} /> {repeat}{resting && <> · {formatDate(task.nextRecurrenceAt)}</>}
             </span>
           ))}
 
           {/* Blocked */}
           {task.blockedOn && (
-            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-amber-500 uppercase tracking-wider">
+            <span data-slot="meta-item" data-kind="blocked" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-amber-500 uppercase tracking-wider">
               <Lock size={8} /> Blocked
             </span>
           )}
@@ -352,7 +363,7 @@ export function TaskRow({
           {task.bodyLen > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex items-center px-1 py-0.5 text-foreground/60">
+                <span data-slot="meta-item" data-kind="body" className="inline-flex items-center px-1 py-0.5 text-foreground/60">
                   <AlignLeft size={8} />
                 </span>
               </TooltipTrigger>
@@ -366,7 +377,7 @@ export function TaskRow({
           {task.subtaskCount > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 text-foreground/60 text-[8.5px] font-medium">
+                <span data-slot="meta-item" data-kind="subtasks" className="inline-flex items-center gap-0.5 px-1 py-0.5 text-foreground/60 text-[8.5px] font-medium">
                   <ListTree size={8} /> {task.subtaskCount}
                 </span>
               </TooltipTrigger>

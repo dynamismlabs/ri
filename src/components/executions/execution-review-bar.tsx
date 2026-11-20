@@ -73,6 +73,8 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
     // the chat field under it instead of spanning the whole pane.
     <div className="mx-auto max-w-3xl flex-shrink-0 px-5 pb-2">
       <div
+        data-slot="review-bar"
+        data-state={ctx.hasUnreviewedOutput ? 'unreviewed' : 'reviewed'}
         className={cn(
           'flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-lg border px-3 py-2',
           ctx.hasUnreviewedOutput
@@ -80,7 +82,7 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
             : 'border-border bg-muted/40',
         )}
       >
-        <span className="text-[11px] font-medium text-foreground">
+        <span data-slot="review-bar-title" className="text-[11px] font-medium text-foreground">
           {ctx.hasUnreviewedOutput ? 'Review the agent’s latest output' : `Reviewed: ${reviewed ? DISPOSITION_LABEL[reviewed] : ''}`}
         </span>
 
@@ -128,6 +130,8 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
               <DropdownMenuTrigger asChild>
                 <button
                   disabled={pending}
+                  data-slot="review-action"
+                  data-tone="emerald-solid"
                   className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded bg-emerald-600 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
                 >
                   <CheckCheck size={12} />
@@ -182,6 +186,9 @@ function ReviewButton({
       <button
         onClick={onClick}
         disabled={disabled}
+        data-slot="review-action"
+        data-tone={tone}
+        data-active={active || undefined}
         className={cn('inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-60', tones[tone])}
       >
         {icon}

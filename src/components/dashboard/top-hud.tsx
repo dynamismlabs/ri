@@ -63,6 +63,8 @@ export function TopHud() {
               <button
                 type="button"
                 onClick={goHome}
+                data-slot="hud-view-button"
+                data-variant="close"
                 className="flex shrink-0 items-center gap-1.5 h-7 px-1.5 rounded-lg border border-border bg-secondary text-foreground hover:bg-accent transition-colors"
                 aria-label={closeLabel}
               >
@@ -78,6 +80,7 @@ export function TopHud() {
               <button
                 type="button"
                 onClick={() => openExecution(latestExecutionId)}
+                data-slot="hud-view-button"
                 className="flex shrink-0 items-center gap-1.5 h-7 px-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 aria-label="Open latest chat"
               >
@@ -97,6 +100,8 @@ export function TopHud() {
           {!team && <><div className="hud-calendar min-w-0"><HudDayButton /></div><BudgetWarningPill /></>}
 
           <div className="flex shrink-0 items-center gap-2">
+            {/* The page tools: one capsule in the new look (docs/ui-system.md). */}
+            <div data-slot="hud-tools" className="flex items-center gap-2">
             <Tip label="Search tasks, notes and commands" shortcut={HOTKEYS.search.label}>
               <button
                 type="button"
@@ -108,6 +113,7 @@ export function TopHud() {
               </button>
             </Tip>
             {!team && <><DeckBesideButton /><ScratchpadButton /></>}
+            </div>
             <CreateMenu />
           </div>
         </div>

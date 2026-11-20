@@ -57,7 +57,9 @@ complete.
     hand-built frame (`rail`, `top-hud`, `pane-tabs`, `pane-tab-group`, `pane-tab`,
     `pane-tab-more`, `chat-composer-card`). An attribute selector under
     `html[data-look]` outranks a Tailwind utility, so these rules win without
-    `!important`.
+    `!important`. (`edge.css` is also unlayered, and Tailwind's utilities sit in a
+    layer, so the edge rules win either way. Specificity only decides between edge
+    rules, which is why the broad ones use `:where()`.)
   - **`.uppercase` is neutralized.** Copy is written in sentence case and the
     classic look adds the `uppercase` class to keep its capitals. Never write a
     label in capitals in the source: the new look can't lower it.
@@ -65,16 +67,42 @@ complete.
 Adding to it: give the element a `data-slot` that names what it is, then style that
 slot in `edge.css`. Don't branch on the look in TypeScript.
 
+### Shared slots
+
+These carry the system across screens. Use them before inventing a new one.
+
+| Slot | What it is | State it reads |
+| --- | --- | --- |
+| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes) | `aria-pressed` or `aria-selected` on each option |
+| `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"`, `data-urgency` (Generate New Deck) |
+| `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
+| `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
+| `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
+| `review-bar`, `review-bar-title`, `review-action` | The review bar above the chat input, drawn like a second, smaller input | `data-state`, `data-tone`, `data-active` |
+| `task-chip`, `task-chip-label` | The task a chat works on, in its header | `data-status` |
+| `hud-tools`, `hud-view-button` | The top bar's page tools in one capsule, and Close chat or Open latest chat | `aria-pressed`, `data-variant="close"` |
+| `rail-foot`, `new-agent` | The rail's footer rows and its New agent button | |
+
+Inside `meta`, status, energy and blocked keep the colors classic gives them:
+their rule sets `color: revert-layer`, which hands the color back to the
+component's own utility classes.
+
 ## Phases
 
 1. **Foundation (done 2026-11-19).** Tokens in both themes, the font, sentence
    case, the frame (rail, top bar), segmented pane tabs, the chat input, the user
    bubble, shadcn buttons, menus, dialogs and tabs. Behind the switch.
-2. **Daily screens.** Deadlines without tinted cards (a colored date, not a colored
-   box), the review bar, the task chip, rail details, grouped top bar icons, the
-   deck filters as one segmented control, task row metadata.
+2. **Daily screens (done 2026-11-19).** Deadlines without tinted cards (a colored
+   date, not a colored box), the review bar, the task chip, rail details (footer,
+   New agent, Agents and Recent), the top bar's tools in one capsule, the deck
+   filters and list toolbars as segmented controls and capsules, task and deck
+   metadata as plain words, every shadcn Button a capsule.
 3. **The long tail, then the switch goes.** Codemods for border opacities, radii and
    hand-built buttons onto the shared components, a lint rule that stops new ones,
-   the chat UI gallery checked in both looks. Then Edge becomes the only look, its
+   the chat UI gallery checked in both looks. Left from phase 2 on purpose: the
+   bordered cards on the Board and in Settings, the git status box in a chat's
+   header, the composer's mode chip, and copy still in Title Case in shared
+   constants ("In Progress", "Priority Order", "Schedules and Triggers"), which
+   reaches tests and the guide. Then Edge becomes the only look, its
    values move into `theme.css`, and `look.tsx`, the setting and this file's trial
    notes are removed.

@@ -42,6 +42,13 @@ function formatDeadline(deadline?: string): string | null {
   return `Due ${formatLocalDate(deadline, { month: 'short', day: 'numeric' })}`;
 }
 
+/** Late or due today, the two a deadline's color calls out. */
+function deadlineUrgency(deadline?: string): 'late' | 'today' | undefined {
+  const diffDays = calendarDaysUntil(deadline);
+  if (diffDays === null) return undefined;
+  return diffDays < 0 ? 'late' : diffDays === 0 ? 'today' : undefined;
+}
+
 function isDeadlineUrgent(deadline?: string): boolean {
   const diffDays = calendarDaysUntil(deadline);
   return diffDays !== null && diffDays <= 1;
@@ -49,17 +56,20 @@ function isDeadlineUrgent(deadline?: string): boolean {
 
 // ─── Pill components ────────────────────────────────────────────
 
-function Pill({ children }: { children: React.ReactNode }) {
+function Pill({ kind, children }: { kind: 'area' | 'effort'; children: React.ReactNode }) {
   return (
-    <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
+    <span data-slot="meta-item" data-kind={kind} className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
       {children}
     </span>
   );
 }
 
-function DeadlinePill({ children, urgent }: { children: React.ReactNode; urgent: boolean }) {
+function DeadlinePill({ children, urgent, urgency }: { children: React.ReactNode; urgent: boolean; urgency?: 'late' | 'today' }) {
   return (
     <span
+      data-slot="meta-item"
+      data-kind="deadline"
+      data-urgency={urgency}
       className={cn(
         'text-[10px] px-1.5 py-0.5 rounded-md font-medium',
         urgent
@@ -307,16 +317,16 @@ function SortableDeckItemCard({
         </button>
 
         {/* Pills */}
-        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+        <div data-slot="meta" className="flex items-center gap-1.5 mt-1.5 flex-wrap">
           {item.manuallyAdded && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium">
+            <span data-slot="meta-item" data-kind="added" className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium">
               You added
             </span>
           )}
           <TeamLabel teamId={item.sourceTeamId} sourceArea={item.sourceArea} />
-          {item.areaName && <Pill>{item.areaName}</Pill>}
-          {item.effort && <Pill>{item.effort}</Pill>}
-          {deadline && <DeadlinePill urgent={urgent}>{deadline}</DeadlinePill>}
+          {item.areaName && <Pill kind="area">{item.areaName}</Pill>}
+          {item.effort && <Pill kind="effort">{item.effort}</Pill>}
+          {deadline && <DeadlinePill urgent={urgent} urgency={deadlineUrgency(item.hardDeadline)}>{deadline}</DeadlinePill>}
         </div>
 
         {/* Reasoning — the "why this, why now" plus any "last session" note.
