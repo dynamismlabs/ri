@@ -21,4 +21,6 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 - Rounded buttons wherever you press something, and a clear outline when you move by keyboard.
 - A white message box that stands out from the page.
 
+Search, Settings and Schedules share the same quiet backdrop.
+
 On a phone, filters have more room to tap. Run summaries sit above their smaller details, and the full calendar wraps its controls so you can reach them all.

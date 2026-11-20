@@ -556,7 +556,8 @@ html[data-look="edge"] [data-slot="pairing"] [data-slot="separator"] { backgroun
   html[data-look="edge"] [data-slot="calendar-spacer"] { display: none; }
   html[data-look="edge"] [data-slot="calendar-date"] { order: 1; flex: 1 0 100%; white-space: normal; font-size: 12px; }
   html[data-look="edge"] [data-slot="calendar-work-toggle"] { white-space: nowrap; }
-  html[data-look="edge"] [data-slot="work-chain"] { min-width: 0; flex-wrap: wrap; gap: 12px; }
+  html[data-look="edge"] [data-slot="work-chain"] { min-width: 0; gap: 8px; }
   html[data-look="edge"] [data-slot="work-chain-step"] { min-width: 0; flex: 1 1 0; }
-  html[data-look="edge"] [data-slot="work-chain-arrow"] { display: none; }
+  html[data-look="edge"] [data-slot="work-chain-arrow"] { min-width: 20px; flex: 0 0 20px; padding-top: 37px; }
+  html[data-look="edge"] [data-slot="work-chain-step"] > dt { min-height: 42px; line-height: 14px; }
 }

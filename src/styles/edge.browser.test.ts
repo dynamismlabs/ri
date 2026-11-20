@@ -31,6 +31,9 @@ beforeAll(async () => {
       import {TooltipProvider} from '@/components/ui/tooltip';
       import {Button} from '@/components/ui/button';
       import {ButtonGroup} from '@/components/ui/button-group';
+      import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
+      import {StatusPill} from '@/components/dashboard/status-pill';
+      import {Command} from 'cmdk';
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
       import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
       import {ChatLenses, ChatLensBar} from '@/components/workspaces/chat-lens-bar';
@@ -112,6 +115,44 @@ beforeAll(async () => {
               {['All sources','Built into Ri','Connected apps','Installed skills'].map((label,i)=><button key={label} aria-pressed={i===0} className="rounded-full border px-3 py-1">{label}</button>)}
             </div>
           </div>
+          <section data-case="default-audit" className="flex w-full flex-col items-start gap-3">
+            <StatusPill label="Working" count={2} icon={<svg/>} accentClass="text-blue-500" countBgClass="bg-blue-500/10 text-blue-500">{()=> <span>Working chats</span>}</StatusPill>
+            <button data-slot="chip-button"><span><span data-case="usage-percent" className="font-mono text-[10px]">80%</span></span></button>
+            <button data-audit-focus data-case="history" data-slot="chip-button" className="rounded-md px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-widest">History</button>
+            {[false,true].map(disabled=><button key={String(disabled)} data-audit-focus={!disabled||undefined} data-case={disabled?'send-disabled':'send-enabled'} data-slot="send-button" aria-label={disabled?'Send disabled':'Send enabled'} disabled={disabled} className={'flex h-7 w-7 items-center justify-center rounded-md '+(disabled?'bg-muted text-muted-foreground/40':'bg-primary text-primary-foreground')}>↑</button>)}
+            <div data-slot="meta" className="flex flex-wrap gap-2">
+              <button data-audit-focus data-case="energy-light" data-slot="meta-item" data-kind="energy" data-energy="light" className="text-sky-400">Light</button>
+              <button data-audit-focus data-case="energy-deep" data-slot="meta-item" data-kind="energy" data-energy="deep" className="text-orange-500">Deep</button>
+              <span data-slot="meta-item" data-kind="status"><button data-audit-focus data-case="progress" data-task-status="in_progress" className="text-violet-500">In progress</button></span>
+              {[['consider','text-amber-500'],['todo','text-blue-500'],['done','text-emerald-500']].map(([status,cls])=><span key={status} data-slot="meta-item" data-kind="status"><button data-case={'status-'+status} data-task-status={status} className={cls}>{status}</button></span>)}
+              <span data-case="due-today" data-slot="meta-item" data-urgency="today">Today</span>
+            </div>
+            <Command><Command.Group heading="Recent" className="[&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest"><Command.Item>Recent chat</Command.Item></Command.Group></Command>
+            <div data-slot="search-footer" className="text-[9px]">↑↓ navigate <kbd className="text-[8px]">Esc</kbd></div>
+            <Tabs defaultValue="installed"><TabsList variant="line"><TabsTrigger value="installed">Installed</TabsTrigger><TabsTrigger value="discover">Discover</TabsTrigger></TabsList></Tabs>
+            {['rounded-[26px]','rounded-lg','rounded-xl'].map((radius,i)=><div key={radius} data-case={'dialog-'+i} data-slot="dialog-content" className={radius+' border bg-card p-2'}>Dialog</div>)}
+            {['bg-black/80','bg-background/80 backdrop-blur-sm'].map((fill,i)=><div key={fill} data-case={'overlay-'+i} data-slot="dialog-overlay" className={fill+' h-2 w-2'}/>)}
+            <Tabs defaultValue="all"><TabsList data-case="responsive-tabs" data-size="responsive"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="apps">Apps</TabsTrigger></TabsList></Tabs>
+            <div data-slot="dialog-content" data-kind="wrapped"><div data-case="wrapped-dialog" className="rounded-xl border bg-card p-2 shadow-2xl">New chat</div></div>
+            <div data-case="responsive-segments" data-slot="segmented" data-size="responsive" className="flex"><button aria-pressed="true">All</button><button aria-pressed="false">Active</button></div>
+            <a data-audit-focus data-slot="run-row" href="#" className="flex w-full items-center gap-3 rounded-md border bg-card p-3">
+              <span data-slot="status-badge" className="rounded border px-1.5 py-0.5 text-[10px]">Scheduled</span>
+              <span data-slot="status-badge" className="rounded border px-1.5 py-0.5 text-[10px]">Completed</span>
+              <span data-slot="run-summary" className="flex-1 truncate text-[12px]">Prepared the weekly operations review for the whole team</span><span className="whitespace-nowrap text-[10px]">Nov 20, 10:30 AM</span>
+            </a>
+            <div data-slot="calendar-toolbar" data-case="calendar-phone" className="flex w-full items-center gap-2 border p-3">
+              <span className="text-sm font-semibold">Calendar</span>
+              <div data-slot="segmented" className="flex"><button>Week</button><button>Day</button></div>
+              <div data-slot="calendar-navigation" className="flex"><button>‹</button><button>Today</button><button>›</button></div>
+              <span data-slot="calendar-date" className="truncate">November 16 to 22</span><div data-slot="calendar-spacer" className="flex-1"/>
+              <div data-slot="segmented" className="flex"><button>Calendar</button><button>List</button><button>Report</button></div>
+              <label data-slot="calendar-work-toggle">Agent work</label><button data-slot="icon-button" aria-label="Refresh">↻</button><button data-slot="icon-button" data-kind="close" aria-label="Close calendar">×</button>
+            </div>
+            <dl data-slot="work-chain" className="flex w-full min-w-[min(100%,30rem)] gap-3 rounded-lg border p-3">
+              {['Your time','Agent time','Human time for the same work'].map((label,i)=><React.Fragment key={label}>{i>0&&<div data-slot="work-chain-arrow" className="flex min-w-10 flex-1 flex-col pt-3.5"><span>{i===1?'0.5×':'1×'}</span><span>→</span></div>}<div data-slot="work-chain-step" className="shrink-0"><dt>{label}</dt><dd>1h 9m</dd></div></React.Fragment>)}
+            </dl>
+            <div data-slot="pairing"><div data-slot="pairing-mark" className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner"/><div data-slot="callout" className="rounded-2xl bg-card/60 p-3 shadow-2xl backdrop-blur-xl"><div data-slot="input-group" className="rounded-lg border bg-background/80 p-2 shadow-inner"><input data-audit-focus aria-label="Pairing token" className="min-w-0 bg-transparent outline-none"/></div></div></div>
+          </section>
         </div>;
       }
       createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
@@ -548,3 +589,85 @@ it('keeps the agent header contents wrapper invisible to classic layout', async 
     expect(state.wrapped).toEqual(state.original);
   } finally { await page.close(); }
 });
+
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`default audit keeps both Send states and header actions as readable capsules (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      for (const selector of ['[aria-label="Working: 2"]','[data-case="history"]','[data-case="send-enabled"]','[data-case="send-disabled"]']) {
+        const state = await page.locator(selector).evaluate(el => { const s=getComputedStyle(el); return {radius:parseFloat(s.borderRadius),size:parseFloat(s.fontSize)}; });
+        expect(state.radius,selector).toBeGreaterThan(100);
+        if (!selector.includes('send-')) expect(state.size,selector).toBeGreaterThanOrEqual(12);
+      }
+      expect(await page.locator('[data-case="usage-percent"]').evaluate(el=>getComputedStyle(el).fontSize)).toBe('12px');
+      await page.keyboard.press('Tab');
+      await page.locator('[aria-label="Working: 2"]').focus();
+      expect(await page.locator('[aria-label="Working: 2"]').evaluate(el=>getComputedStyle(el).outlineStyle)).toBe('solid');
+    } finally { await page.close(); }
+  });
+  it(`default audit metadata has at least 4.5 contrast at 12px (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      for (const name of ['energy-light','energy-deep','progress','status-consider','status-todo','status-done','due-today']) {
+        const selector='[data-case="'+name+'"]';
+        expect(await contrast(page,selector),name).toBeGreaterThanOrEqual(4.5);
+        await page.locator(selector).hover();
+        expect(await contrast(page,selector),name+' hovered').toBeGreaterThanOrEqual(4.5);
+        expect(await page.locator(selector).evaluate(el=>getComputedStyle(el).fontSize)).toBe('12px');
+      }
+    } finally { await page.close(); }
+  });
+  it(`default audit search headings escape descendant capitals and footer stays readable (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const heading=await page.locator('[cmdk-group-heading]').evaluate(el=>{const s=getComputedStyle(el);return {size:parseFloat(s.fontSize),weight:s.fontWeight,transform:s.textTransform,spacing:s.letterSpacing};});
+      expect(heading).toEqual({size:12,weight:'500',transform:'none',spacing:'normal'});
+      expect(await page.locator('[data-slot="search-footer"]').evaluate(el=>getComputedStyle(el).fontSize)).toBe('12px');
+    } finally { await page.close(); }
+  });
+  it(`default audit Plugins line tabs have a thumb without an underline (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const tab=page.locator('[data-slot="tabs-list"][data-variant="line"] [data-state="active"]');
+      expect(await tab.evaluate(el=>getComputedStyle(el,'::after').display)).toBe('none');
+      expect(await tab.evaluate(el=>getComputedStyle(el).boxShadow)).not.toBe('none');
+    } finally { await page.close(); }
+  });
+  it(`default audit centered dialogs share corners and an unblurred scrim (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      for (let i=0;i<3;i++) expect(await page.locator('[data-case="dialog-'+i+'"]').evaluate(el=>getComputedStyle(el).borderRadius)).toBe('20px');
+      expect(await page.locator('[data-case="wrapped-dialog"]').evaluate(el=>{const s=getComputedStyle(el);return [s.borderRadius,s.boxShadow];})).toEqual(['20px','none']);
+      for (let i=0;i<2;i++) expect(await page.locator('[data-case="overlay-'+i+'"]').evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.backdropFilter];})).toEqual(['rgba(0, 0, 0, 0.4)','none']);
+    } finally { await page.close(); }
+  });
+  it(`default audit phone filters, run summaries and calendar stay usable (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      await page.setViewportSize({width:390,height:844});
+      for (const selector of ['[data-case="responsive-segments"] button','[data-case="responsive-tabs"] button']) expect(await page.locator(selector).first().evaluate(el=>el.getBoundingClientRect().height)).toBe(36);
+      const run=await page.locator('[data-slot="run-row"]').evaluate(el=>{const summary=el.querySelector('[data-slot="run-summary"]')!;const badge=el.querySelector('[data-slot="status-badge"]')!;return {summary:summary.getBoundingClientRect().bottom,badge:badge.getBoundingClientRect().top,wrap:getComputedStyle(summary).whiteSpace};});
+      expect(run.wrap).toBe('normal');expect(run.badge).toBeGreaterThanOrEqual(run.summary);
+      expect(await page.locator('[data-slot="work-chain-arrow"]').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().width>0&&getComputedStyle(el).display!=='none'))).toBe(true);
+      for (const selector of ['[data-case="calendar-phone"]','[data-slot="work-chain"]']) {
+        const overflow=await page.locator(selector).evaluate(el=>{const bounds=el.getBoundingClientRect();return Array.from(el.children).filter(child=>getComputedStyle(child).display!=='none').map(child=>({left:child.getBoundingClientRect().left-bounds.left,right:bounds.right-child.getBoundingClientRect().right}));});
+        for (const item of overflow) {expect(item.left,selector).toBeGreaterThanOrEqual(0);expect(item.right,selector).toBeGreaterThanOrEqual(0);}
+      }
+      await page.setViewportSize({width:1024,height:844});
+      expect(await page.locator('[data-case="responsive-segments"] button').first().evaluate(el=>el.getBoundingClientRect().height)).toBe(24);
+    } finally { await page.close(); }
+  });
+  it(`default audit pairing is quiet and every new control retains keyboard focus (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      for (const selector of ['[data-slot="pairing-mark"]','[data-slot="pairing"] [data-slot="callout"]','[data-slot="pairing"] [data-slot="input-group"]']) expect(await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backdropFilter];})).toEqual(['none','none']);
+      expect(await page.locator('[data-slot="pairing-mark"]').evaluate(el=>getComputedStyle(el).backgroundImage)).toBe('none');
+      await page.keyboard.press('Tab');
+      for (const control of await page.locator('[data-audit-focus]').all()) {
+        await control.focus();
+        expect(await control.evaluate(el=>{let s=getComputedStyle(el);if(el.tagName==='INPUT')s=getComputedStyle(el.parentElement!);return [s.outlineStyle,s.outlineWidth];})).toEqual(['solid','2px']);
+      }
+    } finally { await page.close(); }
+  });
+}

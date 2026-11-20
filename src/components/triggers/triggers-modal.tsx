@@ -78,7 +78,7 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
   const toList = () => setView({ kind: 'list' });
 
   return (
-    <div
+    <div data-slot="dialog-overlay"
       className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={closeSchedulesWindow}
       role="dialog"

@@ -165,8 +165,8 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
 
   return <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-      <DialogPrimitive.Content
+      <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
+      <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
         className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 outline-none"
         onPaste={event => {
           const files = transferFiles(event.clipboardData);

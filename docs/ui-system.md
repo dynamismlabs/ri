@@ -34,7 +34,9 @@ The fix is one small system that every surface draws from, not a redesign.
 - **Your own messages stay inverted** (dark on a light page, light on a dark one), in
   the system's grays, so they stand out from the agent's replies. A quiet gray bubble
   was tried first and the inverted one won (2026-11-19).
-- **Menus, popovers and dialogs lift by shadow**, not a border.
+- **Menus, popovers and dialogs lift by shadow**, not a border. Centered dialogs
+  use 20px corners and a 40% black scrim in both themes, with no backdrop blur.
+  A full-page phone search keeps square corners.
 - **A secondary button is a quiet fill**, not an outline.
 
 ## How it is built
@@ -50,7 +52,7 @@ upkeep on every change.
 
 - The root layout always renders `data-look="edge"` on `<html>`. The attribute and
   the `html[data-look="edge"]` scoping in `edge.css` stay for now, so the switch
-  reverts cleanly. Dropping them is phase 7.
+  reverts cleanly. Dropping them is the later cleanup phase.
 - `APPEARANCE_SCRIPT` (`src/lib/client/appearance-script.ts`) runs first in the
   head, before first paint, and applies a light theme this browser chose. That
   ended the dark flash light-mode users saw on every load. `next/script`'s
@@ -85,13 +87,14 @@ These carry the system across screens. Use them before inventing a new one.
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex. `data-scroll` lets an unmeasured filter track scroll in place |
+| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex. `data-size="responsive"` uses the same 36px option height below 768px, with compact desktop options. `data-scroll` lets an unmeasured filter track scroll in place |
 | `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck), `data-mode` (the permission chip) |
-| `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
+| `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-energy` and `data-task-status` select theme-aware inks, `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
 | `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
 | `review-bar`, `review-bar-title`, `review-action` | The review bar above the chat input, drawn like a second, smaller input | `data-state`, `data-tone`, `data-active` |
 | `task-chip`, `task-chip-label` | The task a chat works on, in its header | `data-status` |
+| `send-button` | The composer's Send control, the same capsule when enabled, sending or disabled. Its component keeps each state's fill | `disabled` |
 | `hud-tools`, `hud-view-button` | The top bar's page tools in one capsule, and Close chat or Open latest chat | `aria-pressed`, `data-variant="close"` |
 | `rail-foot`, `new-agent` | The rail's footer rows and its New agent button | |
 | `entity-kind`, `entity-kind-label` | "Task · Money" or "Note · Tidewater Coffee" above a task or note title | |
@@ -106,11 +109,19 @@ These carry the system across screens. Use them before inventing a new one.
 | `split-button` | Finder and its menu, one capsule with a divider between the two buttons | |
 | `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
 | `row-actions` | Hover actions on task, note and deck rows, also revealed by keyboard focus | `:focus-within` |
-| `calendar-toolbar`, `calendar-navigation` | Calendar's existing header and Previous, Today and Next group. View tracks keep their labels while the date text truncates | |
+| `calendar-toolbar`, `calendar-navigation`, `calendar-date`, `calendar-spacer`, `calendar-work-toggle` | Calendar's header and date navigation. Below 768px the controls wrap, the date gets its own line and the close action stays at the top right | `data-kind="close"` on the close icon button |
+| `work-chain`, `work-chain-step`, `work-chain-arrow` | Calendar's leverage summary. The phone keeps three flexible columns with wrapping labels and narrower connecting arrows | |
+| `tool-tab-bar`, `tool-tab-label` | The agent tools header grows to fit touch options on a phone and shows their text labels. Compact desktop panels keep icon-only tabs | |
+| `run-row`, `run-summary` | A run and its summary. Below 768px the summary wraps above the badges and time, which wrap together | |
+| `search-footer` | Search navigation hints at 12px. All cmdk group headings use sentence case at 12px, including descendant utility variants | |
+| `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content reuses `callout` and the token field reuses `input-group`, with one focus outline around the group | |
+| `floating-tools` | The floating tools list and folded strip: 14px content corners with the shared popover shadow | |
+| `dialog-content`, `alert-dialog-content`, `dialog-overlay`, `alert-dialog-overlay` | Shared 20px centered dialog corners and an unblurred 40% black scrim. Search panels use these hooks too | `data-kind="search-page"` keeps full-page phone search square. `data-kind="wrapped"` lets an inner painted panel inherit the corners and use just the outer shadow |
 | `settings-nav`, `settings-body` | Settings' shared navigation and content boundary. Neutral bordered sections become soft panels, small bordered actions become capsules, descriptive choices stay rows, and fields stay rectangular | `aria-current="page"` on navigation |
 | `choice-row` | A descriptive option in a chooser or Settings, with a soft 8px selection fill | `aria-pressed`, `aria-selected` or `aria-checked` |
 | `field` | A hand-built text field, textarea or select outside the shared input components | |
-| `status-badge`, `schedule-row` | A schedule's state and its soft row | |
+| `status-badge` | A small capsule fact, including schedule state and Runs trigger/activity badges | |
+| `schedule-row` | A schedule's soft row | |
 | `content-card` | A reference, app or thumbnail choice containing a title and supporting content. It stays a soft 14px rectangle even when the whole card opens | `aria-pressed`, `aria-selected` or `aria-checked` |
 | `attachment-chip` | An inline file action, drawn as a capsule. Links written as prose keep their underline | `data-tone="bubble"` inherits the inverted message's ink |
 | `calendar-event` | An event holds time and meeting details. It keeps its position, colored stripe and 8px content shape | |
@@ -192,9 +203,20 @@ component's own utility classes.
    cards and switches use the same hooks, with a check against its real stylesheet.
 5. **Edge only (2026-11-20).** Every browser gets Edge Mac. The preview switch is
    gone, and one squash commit carries phases 1 to 5, so one revert undoes them.
-6. **Live with it.** Revert while it's young if it isn't right: new code adopts the
+6. **Default-look audit (done 2026-11-20).** HUD and chat header actions use
+   readable capsules, and Send keeps its shape when disabled. Task energy,
+   lifecycle status and today's deadline use theme-aware inks with at least
+   4.5:1 contrast at 12px. Search headings bypass descendant uppercase variants,
+   its hints are readable, and line tabs omit the extra underline. Centered
+   dialogs share corners and a scrim. Agent tool tabs and Apps and Runs filters
+   gain phone touch sizes. Run badges share `status-badge`, and phone runs and
+   the full Calendar keep their text and controls inside the panel. Pairing uses
+   quiet opaque panels and fields. Floating tools share 14px content corners.
+   The Effort track keeps its existing scrolling behavior. A permanent edge
+   fade would obscure the final option and its focus outline.
+7. **Live with it.** Revert while it's young if it isn't right: new code adopts the
    hooks and the lint ratchet, so a revert gets harder with time.
-7. **Clean up (later).** Move Edge's values into `theme.css` and delete the
+8. **Clean up (later).** Move Edge's values into `theme.css` and delete the
    classic tokens, drop the `data-look` attribute and the `html[data-look="edge"]`
    scoping, retire the classic-only checks (the classic halves of the browser
    tests, `uppercase` classes kept only for classic), and replace hand-built
