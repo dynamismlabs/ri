@@ -211,9 +211,8 @@ export const HARNESS_REGISTRY: Record<HarnessId, HarnessDefinition> = {
       questionRequests: true,
       planMode: true,
       modes: true,
-      // OpenCode 2 only, through agentex 0.0.53: Ri's servers ride OpenCode's
-      // inline config, and every ambient MCP server is disabled. The runtime
-      // probe turns both off on OpenCode 1.
+      // OpenCode 2.3+ through agentex 0.0.53. The runtime probe qualifies the
+      // private MCP server setup before Ri attaches scoped tools.
       mcp: true,
       strictMcpIsolation: true,
       sessionModelChange: true,
