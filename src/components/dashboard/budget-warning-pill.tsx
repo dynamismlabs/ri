@@ -39,7 +39,7 @@ export function BudgetWarningPill() {
           : message
       }
     >
-      <button data-slot="action-button" data-tone="status"
+      <button data-slot="chip-button" data-tone="status"
         type="button"
         aria-label={message}
         onClick={() => openSettings('models')}

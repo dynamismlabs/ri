@@ -114,7 +114,7 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="@container mx-auto w-full max-w-5xl space-y-6 px-5 py-5 sm:px-8 sm:py-7">
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border">
-            <nav data-slot="segmented" aria-label="Library views" className="flex gap-6">
+            <nav data-slot="segmented" data-size="responsive" aria-label="Library views" className="flex gap-6">
               {([{ value: 'yours', label: 'Your library' }, { value: 'discover', label: 'Discover' }] as const).map(tab => (
                 <button data-slot="segmented-option" aria-pressed={mode === tab.value} key={tab.value} type="button" aria-current={mode === tab.value ? 'page' : undefined} onClick={() => patch({ browse: tab.value === 'discover' ? 'discover' : undefined })}
                   className={cn('border-b-2 pb-3 text-sm font-medium transition-colors', mode === tab.value ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}>
@@ -131,7 +131,7 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
                 placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'} aria-label="Search library" className="h-10 rounded-lg pl-10 pr-10 text-sm" />
               {searchDraft && <button data-slot="action-button" data-variant="ghost" type="button" aria-label="Clear search" onClick={() => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"><X size={15} /></button>}
             </div>
-            <div data-slot="segmented" data-scroll aria-label="Filter library" className="flex flex-wrap gap-1.5">
+            <div data-slot="segmented" data-size="responsive" data-scroll aria-label="Filter library" className="flex flex-wrap gap-1.5">
               {FILTERS.map(option => <button data-slot="segmented-option" key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => patch({ filter: option.value === 'all' ? undefined : option.value })}
                 className={cn('rounded-full border px-3 py-1 text-xs transition-colors', filter === option.value ? 'border-foreground/15 bg-secondary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>
                 {option.label}

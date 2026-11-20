@@ -56,7 +56,7 @@ export function ReviewAttentionPill({ reviews, pendingSessionIds }: { reviews: N
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Tip label="AI review activity"><button aria-label={`AI reviews: ${reviews.length}${needsAttention ? ', attention needed' : ''}`} className={cn('flex h-[18px] items-center gap-1 rounded px-1.5 text-[10px]', needsAttention ? 'bg-amber-500/15 text-amber-500' : 'bg-muted text-muted-foreground')}>
+        <Tip label="AI review activity"><button data-slot="chip-button" data-tone="status" aria-label={`AI reviews: ${reviews.length}${needsAttention ? ', attention needed' : ''}`} className={cn('flex h-[18px] items-center gap-1 rounded px-1.5 text-[10px]', needsAttention ? 'bg-amber-500/15 text-amber-500' : 'bg-muted text-muted-foreground')}>
           {needsAttention ? <ShieldAlert size={10} /> : <ClipboardCheck size={10} />}<span className="font-mono font-semibold">{reviews.length}</span>
         </button></Tip>
       </PopoverTrigger>

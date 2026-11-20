@@ -110,7 +110,7 @@ function Pill({
     mute: 'bg-muted text-muted-foreground border-border',
   };
   return (
-    <span
+    <span data-slot="status-badge"
       className={cn(
         'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium border',
         cls[tone],

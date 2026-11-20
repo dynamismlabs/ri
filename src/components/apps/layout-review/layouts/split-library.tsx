@@ -56,7 +56,7 @@ export function SplitLibrary() {
         }}>
           <div className={s.libraryToolbar}>
             <SectionTitle count={Object.values(review.libraryLoading).some(Boolean) ? undefined : review.library.length}>Your library</SectionTitle>
-            <TabsList className={s.libraryFilters} aria-label="Filter your library">
+            <TabsList data-size="responsive" className={s.libraryFilters} aria-label="Filter your library">
               {LIBRARY_FILTERS.map(filter => <TabsTrigger key={filter.value} value={filter.value}>{filter.label}</TabsTrigger>)}
             </TabsList>
           </div>
@@ -153,7 +153,7 @@ function Discover() {
   const showGoals = !review.search && review.filter === 'All';
   return <>
     <div className={s.discoverHeading}><h2>Discover</h2><p>Find your next useful addition.</p></div>
-    <div className={s.typeTabs} aria-label="Discover types"><div data-slot="segmented" data-scroll className="contents">{types.map(type => <button data-slot="segmented-option" type="button" key={type} className={s.filter} aria-pressed={review.filter === type} onClick={() => review.patch({ filter: type === 'All' ? undefined : type, browse: undefined })}>{type}</button>)}</div></div>
+    <div className={s.typeTabs} aria-label="Discover types"><div data-slot="segmented" data-size="responsive" data-scroll className="contents">{types.map(type => <button data-slot="segmented-option" type="button" key={type} className={s.filter} aria-pressed={review.filter === type} onClick={() => review.patch({ filter: type === 'All' ? undefined : type, browse: undefined })}>{type}</button>)}</div></div>
     {showGoals && <section className={s.goalSection} aria-label="Goal bundles"><SectionTitle>Start with a goal</SectionTitle><CollectionTiles /></section>}
     <SectionTitle count={review.loading ? undefined : sorted.length}>{review.search ? 'Search results' : showGoals ? 'Explore the catalog' : review.filter}</SectionTitle>
     {review.loading ? <CatalogSkeleton /> : !sorted.length && !review.search ? <Empty>You have everything in this part of the catalog. Try another type or create something of your own.</Empty>

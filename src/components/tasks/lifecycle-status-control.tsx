@@ -64,6 +64,7 @@ export function LifecycleStatusControl({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
+        data-task-status={status}
         className={cn(
           'inline-flex items-center gap-1 rounded font-medium capitalize transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           size === 'xs' ? 'px-1 py-0.5 text-[11px]' : 'px-1.5 py-0.5 text-xs',

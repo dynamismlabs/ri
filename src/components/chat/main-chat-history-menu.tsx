@@ -42,7 +42,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
 
   return (
     <div className="relative" ref={menuRef}>
-      <button
+      <button data-slot="chip-button" aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className={cn(
           'flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] transition-all',
@@ -56,7 +56,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-64 max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl z-50 py-1">
+        <div data-slot="popover-content" className="absolute right-0 top-full mt-1 w-64 max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl z-50 py-1">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
               <Loader2 size={12} className="animate-spin text-muted-foreground" />

@@ -264,7 +264,7 @@ export function TaskRow({
             <button
               onClick={(e) => { e.stopPropagation(); cycleEnergy(); }}
               data-slot="meta-item"
-              data-kind="energy"
+              data-kind="energy" data-energy={task.energy ?? undefined}
               className={cn(
                 'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
                 task.energy ? ENERGY_COLORS[task.energy] : 'text-muted-foreground/40',

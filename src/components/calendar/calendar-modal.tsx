@@ -138,7 +138,7 @@ export function CalendarModal() {
     <Dialog open={open} onOpenChange={(next) => (next ? openCalendarModal() : closeCalendarModal())}>
       <DialogPortal>
         <DialogOverlay className="z-40" />
-        <DialogPrimitive.Content data-slot="dialog-content"
+        <DialogPrimitive.Content data-slot="dialog-content" data-kind="calendar"
           className={cn(
             'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl outline-none',
             'md:inset-x-4 md:top-12 md:bottom-4',
@@ -317,13 +317,13 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
               </button>
             </div>
 
-            <span className="truncate text-sm font-medium text-foreground">
+            <span data-slot="calendar-date" className="truncate text-sm font-medium text-foreground">
               {view === 'day' ? formatDayLabel(anchor) : formatWeekLabel(monday)}
             </span>
           </>
         )}
 
-        <div className="flex-1" />
+        <div data-slot="calendar-spacer" className="flex-1" />
 
         {noCalendar && workOn && (
           <button
@@ -341,7 +341,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
         {!showConnect && <Segmented label="Show" value={tab} options={tabs} onChange={setTab} />}
 
         <Tip label="What you and your agents did: the numbers, a ribbon of work beside your meetings, and the report. Also today's total in the header.">
-          <label
+          <label data-slot="calendar-work-toggle"
             className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <Switch size="sm" checked={workOn} onCheckedChange={setWorkOn} />
@@ -376,7 +376,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
 
         <Tip label="Close calendar" shortcut="Esc">
           <DialogPrimitive.Close
-            data-slot="icon-button"
+            data-slot="icon-button" data-kind="close"
             className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close calendar"
           >

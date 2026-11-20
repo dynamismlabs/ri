@@ -93,8 +93,8 @@ export function AgentTools({
 
   return (
     <div className="@container/panel flex h-full min-h-0 min-w-0 flex-col bg-background">
-      <div className="flex h-9 flex-shrink-0 items-stretch gap-0.5 border-b border-border pl-1 pr-1.5">
-        <div role="tablist" aria-label="Agent tools" data-slot="segmented" className="flex min-w-0 items-stretch gap-0.5">
+      <div data-slot="tool-tab-bar" className="flex h-9 flex-shrink-0 items-stretch gap-0.5 border-b border-border pl-1 pr-1.5">
+        <div role="tablist" aria-label="Agent tools" data-slot="segmented" data-size="responsive" data-scroll className="flex min-w-0 items-stretch gap-0.5">
           {AGENT_TOOL_TABS.map((t) => {
             const on = tab === t.id && toolActive;
             return (
@@ -110,7 +110,7 @@ export function AgentTools({
                   className={cn('flex items-center gap-1.5', panelTabClass(on))}
                 >
                   <t.Icon size={13} />
-                  <span className="@max-[560px]/panel:hidden">{t.label}</span>
+                  <span data-slot="tool-tab-label" className="@max-[560px]/panel:hidden">{t.label}</span>
                 </button>
               </Tip>
             );

@@ -471,3 +471,92 @@ html[data-look="edge"] [data-slot="field"]:focus-visible { border-color: var(--e
 html[data-look="edge"] [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
 /* A touch track inside a contents wrapper fills its existing padded row. */
 html[data-look="edge"] [data-slot="segmented"][data-size="touch"].contents { flex: 1; }
+
+
+/* ── Default look audit: state, contrast and phone layout ──────────────── */
+html[data-look="edge"] {
+  --edge-dialog-radius: 20px;
+  --edge-dialog-scrim: rgb(0 0 0 / 40%);
+  --edge-energy-light: var(--color-sky-800);
+  --edge-energy-deep: var(--color-orange-800);
+  --edge-status-consider: var(--color-amber-800);
+  --edge-status-todo: var(--color-blue-700);
+  --edge-status-progress: var(--color-violet-700);
+  --edge-status-done: var(--color-emerald-700);
+  --edge-attention: var(--color-amber-800);
+}
+html[data-look="edge"].dark,
+html[data-look="edge"] .dark {
+  --edge-energy-light: var(--color-sky-400);
+  --edge-energy-deep: var(--color-orange-400);
+  --edge-status-consider: var(--color-amber-400);
+  --edge-status-todo: var(--color-blue-400);
+  --edge-status-progress: var(--color-violet-400);
+  --edge-status-done: var(--color-emerald-400);
+  --edge-attention: var(--color-amber-400);
+}
+
+/* Small header controls use the same readable capsule in every state. */
+html[data-look="edge"] [data-slot="chip-button"] :where(span) { font-size: inherit; }
+html[data-look="edge"] [data-slot="chip-button"] :where(svg) { width: 12px; height: 12px; }
+html[data-look="edge"] [data-slot="send-button"] { border-radius: 999px; box-shadow: none; }
+html[data-look="edge"] :is([data-slot="send-button"], [data-slot="run-row"], [data-slot="meta-item"], [data-task-status]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
+
+/* Keep the original energy/status hues, with ink that works at metadata size. */
+html[data-look="edge"] [data-slot="meta"] [data-kind="energy"][data-energy="light"] { color: var(--edge-energy-light); }
+html[data-look="edge"] [data-slot="meta"] [data-kind="energy"][data-energy="deep"] { color: var(--edge-energy-deep); }
+html[data-look="edge"] [data-task-status="consider"] { color: var(--edge-status-consider); }
+html[data-look="edge"] [data-task-status="todo"] { color: var(--edge-status-todo); }
+html[data-look="edge"] [data-task-status="in_progress"] { color: var(--edge-status-progress); }
+html[data-look="edge"] [data-task-status="done"] { color: var(--edge-status-done); }
+/* The meta wrapper normally hands color back to the component's utilities. */
+html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="in_progress"] { color: var(--edge-status-progress); }
+html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="consider"] { color: var(--edge-status-consider); }
+html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="todo"] { color: var(--edge-status-todo); }
+html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > [data-task-status="done"] { color: var(--edge-status-done); }
+
+/* Descendant uppercase variants target cmdk headings, rather than .uppercase. */
+html[data-look="edge"] [cmdk-group-heading] { font-size: 12px; font-weight: 500; letter-spacing: normal; text-transform: none; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="search-footer"] { font-size: 12px; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="search-footer"] kbd { font-size: 11px; }
+html[data-look="edge"] [data-slot="tabs-list"][data-variant="line"] [data-slot="tabs-trigger"]::after { display: none; }
+
+/* Centered dialogs share corners and one scrim, without blur. Full-page phone
+   search is a page, so it keeps square corners and the full viewport. */
+html[data-look="edge"] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-radius: var(--edge-dialog-radius); }
+/* Some Radix contents position an inner painted panel. It inherits the outer
+   corners and leaves the floating shadow to the outer content. */
+html[data-look="edge"] [data-slot="dialog-content"][data-kind="wrapped"] > :last-child { border-color: transparent; border-radius: inherit; box-shadow: none; }
+html[data-look="edge"] :is([data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) { background-color: var(--edge-dialog-scrim); backdrop-filter: none; }
+html[data-look="edge"] [data-slot="dialog-content"][data-kind="search"] { width: min(42rem, calc(100% - 16px)); }
+html[data-look="edge"] [data-slot="floating-tools"] { border-radius: 14px; box-shadow: var(--edge-shadow-pop); }
+
+html[data-look="edge"] [data-slot="run-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--edge-shadow-card); }
+
+/* Pairing uses the same opaque panels and quiet fields as the rest of Ri. */
+html[data-look="edge"] [data-slot="pairing-decoration"] { display: none; }
+html[data-look="edge"] [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--edge-raised); box-shadow: none; backdrop-filter: none; }
+html[data-look="edge"] [data-slot="pairing"] [data-slot="callout"] { box-shadow: none; backdrop-filter: none; }
+html[data-look="edge"] [data-slot="pairing"] [data-slot="input-group"] { min-width: 0; border-color: var(--edge-line-2); background-color: var(--background); box-shadow: none; backdrop-filter: none; }
+html[data-look="edge"] [data-slot="pairing"] [data-slot="input-group"] input { min-width: 0; }
+html[data-look="edge"] [data-slot="pairing"] [data-slot="input-group"]:has(input:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; }
+html[data-look="edge"] [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--edge-line); }
+
+@media (max-width: 767px) {
+  html[data-look="edge"] :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] { height: auto; min-height: 40px; }
+  html[data-look="edge"] :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] > button { height: 36px; min-width: 36px; padding-inline: 12px; font-size: 13px; }
+  html[data-look="edge"] [data-slot="tool-tab-bar"] { height: 44px; align-items: center; }
+  html[data-look="edge"] [data-slot="tool-tab-label"] { display: inline; }
+  html[data-look="edge"] [data-slot="run-row"] { flex-wrap: wrap; column-gap: 8px; row-gap: 6px; }
+  html[data-look="edge"] [data-slot="run-summary"] { order: -1; flex: 0 0 100%; white-space: normal; overflow-wrap: anywhere; }
+  html[data-look="edge"] [data-slot="run-row"] > :not([data-slot]) { font-size: 11px; }
+  html[data-look="edge"] [data-slot="dialog-content"][data-kind="search-page"] { border-radius: 0; }
+  html[data-look="edge"] [data-slot="calendar-toolbar"] { position: relative; flex-wrap: wrap; padding-right: 44px; }
+  html[data-look="edge"] [data-slot="calendar-toolbar"] > [data-slot="icon-button"][data-kind="close"] { position: absolute; right: 8px; top: 8px; }
+  html[data-look="edge"] [data-slot="calendar-spacer"] { display: none; }
+  html[data-look="edge"] [data-slot="calendar-date"] { order: 1; flex: 1 0 100%; white-space: normal; font-size: 12px; }
+  html[data-look="edge"] [data-slot="calendar-work-toggle"] { white-space: nowrap; }
+  html[data-look="edge"] [data-slot="work-chain"] { min-width: 0; flex-wrap: wrap; gap: 12px; }
+  html[data-look="edge"] [data-slot="work-chain-step"] { min-width: 0; flex: 1 1 0; }
+  html[data-look="edge"] [data-slot="work-chain-arrow"] { display: none; }
+}

@@ -71,6 +71,7 @@ function ChainCard({ chain }: { chain: LeverageChain }) {
     : undefined;
   return (
     <dl
+      data-slot="work-chain"
       aria-label="Your leverage"
       className="flex min-w-[min(100%,30rem)] grow-[3] basis-[32rem] items-start gap-3 rounded-lg border border-border/70 px-3 py-2"
     >
@@ -102,7 +103,7 @@ function ChainCard({ chain }: { chain: LeverageChain }) {
 function ChainStep({ label, value, context, title, hero = false }: { label: string; value: string; context?: string; title: string; hero?: boolean }) {
   return (
     <Tip label={title}>
-      <div className="shrink-0">
+      <div data-slot="work-chain-step" className="shrink-0">
         <dt className="text-[11px] text-muted-foreground">{label}</dt>
         <dd className={cn('font-semibold leading-tight text-foreground', hero ? 'text-2xl' : 'text-xl')}>{value}</dd>
         {context && <dd className="text-[11px] leading-snug text-muted-foreground">{context}</dd>}
@@ -121,7 +122,7 @@ function hours(x: number): string {
 function ChainArrow({ times, title }: { times: number | null; title: string | undefined }) {
   return (
     <Tip label={title}>
-      <div className="flex min-w-10 flex-1 flex-col pt-3.5" aria-hidden={!times}>
+      <div data-slot="work-chain-arrow" className="flex min-w-10 flex-1 flex-col pt-3.5" aria-hidden={!times}>
         <span className="h-4 text-center text-[11px] font-medium leading-4 text-muted-foreground">{times ? formatTimes(times) : ''}</span>
         <span className="relative mt-[3px] h-px bg-muted-foreground/40" aria-hidden>
           <span className="absolute -right-px top-1/2 size-[7px] -translate-y-1/2 rotate-45 border-t border-r border-muted-foreground/60" />

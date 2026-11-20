@@ -121,11 +121,11 @@ function ChatSearchPanel() {
 
   return (
     <>
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={closeChatSearch} />
+      <div data-slot="dialog-overlay" className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={closeChatSearch} />
 
       {/* The whole screen on a phone, where the keyboard takes half of it,
           and a card over the page from the phone breakpoint up. */}
-      <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-card pt-[env(safe-area-inset-top)] md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl md:rounded-xl md:border md:border-border md:pt-0 md:shadow-2xl">
+      <div data-slot="dialog-content" data-kind="search-page" className="relative flex h-dvh w-full flex-col overflow-hidden bg-card pt-[env(safe-area-inset-top)] md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl md:rounded-xl md:border md:border-border md:pt-0 md:shadow-2xl">
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <TextSearch size={16} className="flex-shrink-0 text-muted-foreground" />
           <Command.Input
@@ -232,7 +232,7 @@ function ChatSearchPanel() {
           )}
         </Command.List>
 
-        <div className="hidden items-center gap-3 border-t border-border px-4 py-2 text-[9px] text-muted-foreground/50 md:flex">
+        <div data-slot="search-footer" className="hidden items-center gap-3 border-t border-border px-4 py-2 text-[9px] text-muted-foreground/50 md:flex">
           <span>
             <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">{'↑↓'}</kbd> navigate
           </span>

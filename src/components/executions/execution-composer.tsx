@@ -962,6 +962,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                         ? 'bg-primary text-primary-foreground hover:opacity-90 active:scale-95'
                         : 'bg-muted text-muted-foreground/40 cursor-not-allowed',
                     )}
+                    data-slot="send-button"
                     aria-label="Send message"
                   >
                     {sending ? <Loader2 size={13} className="animate-spin" /> : <ArrowUp size={13} />}
