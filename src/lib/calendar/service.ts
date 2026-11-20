@@ -98,6 +98,7 @@ interface ReadCalendar {
 interface CalendarConn {
   id: string;
   providerId: string;
+  email?: string;
   /** `unavailable`: the user shows this calendar in Ri, but it can't be read now (why). */
   managed?: { connection: ManagedConnection; via: string; unavailable?: string };
 }
@@ -138,7 +139,7 @@ async function fetchRange(start: string, days: number): Promise<CalendarRangeRes
     const all = await runtime.listConnections({ ownerId });
     connections = all
       .filter((c) => c.providerId === 'google' || c.providerId === 'microsoft')
-      .map((c) => ({ id: c.id, providerId: c.providerId }));
+      .map((c) => ({ id: c.id, providerId: c.providerId, email: c.email }));
     connections.push(...(await managedCalendarConnections(ownerId)));
   } catch (err) {
     console.warn(`[calendar] ${INTEGRATION_LABELS.plural.toLowerCase()} runtime unavailable`, err);
@@ -192,6 +193,7 @@ async function managedCalendarConnections(ownerId: string): Promise<CalendarConn
     return readable.map(({ connection, unavailable }) => ({
       id: connection.id,
       providerId: 'google',
+      email: connection.email,
       managed: {
         connection,
         via: sources.find((source) => source.id === managedConfig(connection)?.sourceId)?.label ?? 'Composio',
@@ -378,7 +380,7 @@ async function fetchCalendar(
       const { listManagedEvents } = await import('@/lib/integrations/sources/calendar-reads');
       const read = await listManagedEvents(conn.managed.connection, calendar.readId, windowStart.toISOString(), windowEnd.toISOString());
       const events = read.events
-        .map((e) => normalizeGoogleEvent(e, conn.id, calendar.source))
+        .map((e) => normalizeGoogleEvent(e, conn.id, calendar.source, conn.email))
         .filter((e): e is CalendarEvent => e != null);
       return { ok: true, events, complete: read.complete };
     }
@@ -395,7 +397,7 @@ async function fetchCalendar(
       )) as ActionOutcome<{ events: RawGoogleEvent[] }>;
       if (!outcome.ok) return { ok: false, detail: outcomeDetail(outcome) };
       const events = (outcome.result.events ?? [])
-        .map((e) => normalizeGoogleEvent(e, conn.id, calendar.source))
+        .map((e) => normalizeGoogleEvent(e, conn.id, calendar.source, conn.email))
         .filter((e): e is CalendarEvent => e != null);
       return { ok: true, events };
     }

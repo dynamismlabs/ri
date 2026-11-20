@@ -23,11 +23,11 @@ export function agentLaunchPermission(actor: WorkerCommandActor | undefined, req
 }
 
 /** Direct launch endpoints cannot bypass coordination approval by omitting a prompt. */
-export function assertAgentLaunchAuthorization(actor: WorkerCommandActor | undefined, input: { workspaceId: string; sessionId?: string | null; coordinationDeliveryId?: string }): void {
+export function assertAgentLaunchAuthorization(actor: WorkerCommandActor | undefined, input: { workspaceId: string; executionId?: string; sessionId?: string | null; coordinationDeliveryId?: string }): void {
   if (actor?.source !== 'ai') return;
   const delivery = input.coordinationDeliveryId ? q.getAgentDelivery(input.coordinationDeliveryId) : null;
   const request = delivery?.requestId ? q.getAgentRequest(delivery.requestId) : null;
-  if (!delivery || !request || request.kind !== 'delegation' || delivery.kind !== 'request' || delivery.sourceSessionId !== actor.sessionId || request.options?.workspaceId !== input.workspaceId || !['queued', 'delivered', 'accepted'].includes(delivery.status) || !q.isOpenAgentRequest(request) || input.sessionId !== requestScopedId('session', input.workspaceId, request.id)) {
+  if (!delivery || !request || request.kind !== 'delegation' || delivery.kind !== 'request' || delivery.sourceSessionId !== actor.sessionId || request.options?.workspaceId !== input.workspaceId || request.options?.executionId !== input.executionId || !['queued', 'delivered', 'accepted'].includes(delivery.status) || !q.isOpenAgentRequest(request) || input.sessionId !== requestScopedId('session', input.workspaceId, request.id)) {
     throw new ActionError('unsupported', 'Use delegate_work to reserve and authorize a new chat before creating it.');
   }
 }

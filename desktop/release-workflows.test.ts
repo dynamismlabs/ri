@@ -6,8 +6,8 @@ import { parse } from 'yaml';
 // The two workflows that publish (docs/publishing.md, docs/alpha-builds.md). They hold the
 // signing keys, so what they may run and write is pinned here.
 type Step = { name?: string, uses?: string, run?: string, if?: string, with?: Record<string, string>, env?: Record<string, string> };
-type Job = { permissions?: Record<string, string>, environment?: string, needs?: string | string[], if?: string, steps: Step[], strategy?: { matrix: { include?: Record<string, string>[] } } };
-type Workflow = { permissions: Record<string, string>, env?: Record<string, string>, jobs: Record<string, Job> };
+type Job = { permissions?: Record<string, string>, environment?: string, needs?: string | string[], if?: string, 'runs-on'?: string, steps: Step[], strategy?: { matrix: { include?: Record<string, string>[] } } };
+type Workflow = { on: { workflow_dispatch?: { inputs: Record<string, { type: string, default: unknown }> } }, permissions: Record<string, string>, env?: Record<string, string>, jobs: Record<string, Job> };
 
 const read = (name: string) => fs.readFileSync(path.resolve(__dirname, '../.github/workflows', name), 'utf8');
 const RELEASE = read('release.yml');
@@ -16,6 +16,7 @@ const release = parse(RELEASE) as Workflow;
 const alpha = parse(ALPHA) as Workflow;
 const steps = (workflow: Workflow, job: string) => workflow.jobs[job].steps;
 const runs = (workflow: Workflow, job: string) => steps(workflow, job).map(step => step.run ?? '').join('\n');
+const APPLE_SECRETS = ['APPLE_CERTIFICATE', 'APPLE_CERTIFICATE_PASSWORD', 'APPLE_TEAM_ID', 'KEYCHAIN_PASSWORD', 'APPLE_ID', 'APPLE_APP_SPECIFIC_PASSWORD', 'APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER'];
 
 describe.each([['release.yml', RELEASE], ['alpha.yml', ALPHA]])('%s', (_name, text) => {
   it('pins every action to a full commit, with its version beside it', () => {
@@ -24,13 +25,33 @@ describe.each([['release.yml', RELEASE], ['alpha.yml', ALPHA]])('%s', (_name, te
     for (const line of uses) expect(line).toMatch(/^[\w.-]+\/[\w.-]+@[0-9a-f]{40} # v\d+\.\d+\.\d+$/);
   });
 
-  it('notarizes with an App Store Connect API key, never an Apple ID', () => {
-    expect(text).not.toMatch(/APPLE_ID\b|APPLE_APP_SPECIFIC_PASSWORD/);
-    for (const name of ['CSC_LINK', 'CSC_KEY_PASSWORD', 'APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER']) expect(text).toContain(`secrets.${name} }}`);
-    for (const name of ['APPLE_TEAM_ID', 'CSC_NAME']) expect(text).toContain(`vars.${name} }}`);
-    expect(text).toContain('bash desktop/mac-signing.sh setup');
-    expect(text).toContain('bash desktop/mac-signing.sh verify release/desktop/mac*/Ri.app release/desktop/*.dmg');
-    expect(text).toContain('bash desktop/mac-signing.sh cleanup');
+  it('signs with the Apple secrets, and hands the build only the notarization setup checked', () => {
+    const workflow = parse(text) as Workflow;
+    const build = steps(workflow, 'build');
+    // Every Apple name is a repository secret, and the identity comes from the certificate.
+    expect(text).not.toMatch(/vars\.(APPLE|CSC)_|secrets\.CSC_/);
+    expect(build.find(step => step.run === 'bash desktop/mac-signing.sh setup')!.env).toEqual(Object.fromEntries(APPLE_SECRETS.map(name => [name, `\${{ secrets.${name} }}`])));
+    const packaging = build.find(step => step.env?.CSC_NAME)!;
+    expect(packaging.env).toMatchObject({
+      CSC_NAME: '${{ steps.apple.outputs.identity }}',
+      CSC_KEYCHAIN: '${{ steps.apple.outputs.keychain }}',
+      APPLE_TEAM_ID: "${{ steps.apple.outputs.identity && secrets.APPLE_TEAM_ID || '' }}",
+      APPLE_ID: "${{ steps.apple.outputs.notary == 'apple-id' && secrets.APPLE_ID || '' }}",
+      APPLE_APP_SPECIFIC_PASSWORD: "${{ steps.apple.outputs.notary == 'apple-id' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}",
+      APPLE_API_KEY: '${{ steps.apple.outputs.api_key }}',
+      APPLE_API_KEY_ID: "${{ steps.apple.outputs.notary == 'api-key' && secrets.APPLE_API_KEY_ID || '' }}",
+      APPLE_API_ISSUER: "${{ steps.apple.outputs.notary == 'api-key' && secrets.APPLE_API_ISSUER || '' }}",
+    });
+    // The certificate's password and the keychain's stay with setup.
+    for (const step of build) {
+      if (step.run === 'bash desktop/mac-signing.sh setup') continue;
+      expect(Object.values(step.env ?? {}).join('\n')).not.toMatch(/secrets\.(APPLE_CERTIFICATE|KEYCHAIN_PASSWORD)/);
+    }
+    expect(build.find(step => step.run?.startsWith('bash desktop/mac-signing.sh verify'))).toMatchObject({
+      run: 'bash desktop/mac-signing.sh verify release/desktop/mac*/Ri.app release/desktop/*.dmg',
+      env: { APPLE_TEAM_ID: '${{ secrets.APPLE_TEAM_ID }}' },
+    });
+    expect(build.find(step => step.run === 'bash desktop/mac-signing.sh cleanup')!.if).toMatch(/^always\(\) && runner.os == 'macOS'/);
   });
 
   it('rebuilds the website after publishing, and skips that when there is no hook', () => {
@@ -136,5 +157,23 @@ describe('alpha.yml', () => {
     expect(upload.with!.path.split('\n')).toContain('release/build.json');
     const checkout = steps(alpha, 'publish')[0];
     expect(checkout.with!['sparse-checkout'].trim().split('\n')).toEqual(['desktop/alpha-release.mjs', 'desktop/release-downloads.mjs', 'package.json']);
+  });
+
+  it('checks the Apple signing secrets on their own, building and publishing nothing', () => {
+    expect(alpha.on.workflow_dispatch!.inputs.signing_check).toMatchObject({ type: 'boolean', default: false });
+    const signing = alpha.jobs.signing;
+    expect(signing).toMatchObject({ if: '${{ inputs.signing_check }}', 'runs-on': 'macos-15' });
+    expect(signing.permissions).toBeUndefined();
+    expect(signing.needs).toBeUndefined();
+    // Only the script is checked out, so nothing else runs beside the secrets.
+    expect(signing.steps[0]).toMatchObject({ uses: expect.stringMatching(/^actions\/checkout@/), with: { 'sparse-checkout': 'desktop/mac-signing.sh' } });
+    expect(signing.steps.slice(1)).toEqual([
+      { name: 'Check the certificate, identity and notarization sign-in', env: Object.fromEntries(APPLE_SECRETS.map(name => [name, `\${{ secrets.${name} }}`])), run: 'bash desktop/mac-signing.sh check' },
+      { name: 'Remove the Developer ID from this runner', if: 'always()', run: 'bash desktop/mac-signing.sh cleanup' },
+    ]);
+    // The builds wait on targets, and publishing on the builds, so neither starts.
+    expect(alpha.jobs.targets.if).toBe('${{ !inputs.signing_check }}');
+    expect(alpha.jobs.build.needs).toBe('targets');
+    expect(alpha.jobs.publish.if).toContain('!inputs.signing_check');
   });
 });

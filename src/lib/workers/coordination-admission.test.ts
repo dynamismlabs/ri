@@ -99,6 +99,33 @@ async function userMessage(content: string) {
 }
 
 
+it('runs a delegated sibling on the existing connected device without preparing another execution', async () => {
+  const q = await import('@/lib/db/queries');
+  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const service = await import('@/lib/coordination/service');
+  const source = q.getChatSession(chatId)!;
+  const placement = q.getOpenPlacement(executionId)!;
+  q.setAgentCoordinationPolicy('chat', chatId, 'allow');
+  // Keep the returned result visible without starting a follow-up turn.
+  q.setAgentCoordinationHold(chatId, true);
+  const result = await runAction('delegate_work', { workspace_id: source.workspaceId, execution_id: executionId, request_id: 'remote-sibling', prompt: 'Review this shared work.', provider: 'claude', label: 'Review' }, { remote: true, actor: { source: 'ai', sessionId: chatId } });
+  expect(result).toMatchObject({ ok: true, result: { status: 'queued' } });
+  await service.drainAgentCoordination();
+  const [request] = q.listAgentRequests(chatId);
+  await until(() => ['completed', 'failed'].includes(q.getAgentRequest(request.id)?.status ?? ''), 'the sibling outcome');
+  await service.drainAgentCoordination();
+  expect(q.getAgentRequest(request.id)?.status).toBe('completed');
+  expect(request.targetSessionId).not.toBe(chatId);
+  expect(q.getChatSession(request.targetSessionId!)?.executionId).toBe(executionId);
+  expect(q.chatPlacement(request.targetSessionId!)).toMatchObject({ deviceId, worktreePath: placement.worktreePath, isHome: false });
+  expect(q.getOpenPlacement(executionId)).toEqual(placement);
+  expect(q.listChatSessions({ workspaceId: source.workspaceId!, type: 'execution' })).toHaveLength(2);
+  const commands = q.listWorkerCommands(deviceId);
+  expect(commands.some(command => command.kind === 'prepare')).toBe(false);
+  expect(commands.some(command => command.kind === 'send' && command.chatSessionId === request.targetSessionId)).toBe(true);
+  expect(q.terminalAgentDelivery(request.id)).toMatchObject({ targetSessionId: chatId, status: 'delivered' });
+}, 60_000);
+
 it('F6: an offline device receives two distinct assignment sends for one chat before either is accepted', async () => {
   const q = await import('@/lib/db/queries');
   const coordination = await import('@/lib/coordination/service');

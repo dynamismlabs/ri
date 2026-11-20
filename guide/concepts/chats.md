@@ -13,6 +13,10 @@ Click **New chat** on an agent, or on its row in the rail. Describe the work, at
 - **Worktree or Live.** In a git repo, **Worktree** gives the chat its own copy of the project on its own branch, so chats never step on each other. **Live** works in the agent's own folder. In a folder that isn't a git repo, chats work in the folder.
 - **Run on.** If you run agents on more than one computer, pick where this chat runs. See [Your phone and other devices](/docs/getting-started/devices).
 
+## Work in parallel
+
+Ask a chat to start another conversation on the same work. They share the folder, branch and device, and can run at the same time. Your current conversation stays open. Give the new conversation a brief of its own. Its result comes back to the chat that started it.
+
 ## Beside the chat
 
 Next to the conversation, a panel shows what the chat is working with:

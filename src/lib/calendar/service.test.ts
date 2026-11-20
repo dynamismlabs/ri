@@ -18,7 +18,7 @@ const DATE = '2026-07-20';
 type Outcome = { ok: true; result: unknown } | { ok: false; reason: string; code?: string; message?: string };
 
 function makeRuntime(
-  connections: Array<{ id: string; providerId: string }>,
+  connections: Array<{ id: string; providerId: string; email?: string }>,
   handlers: Record<string, (input: Record<string, unknown>) => Outcome>,
 ) {
   // A case that doesn't list calendars gets an empty list: the read is the
@@ -241,8 +241,8 @@ describe('calendars and copies', () => {
   it('reads a calendar two accounts share once, and merges a meeting on both into one event', async () => {
     const { runAction } = makeRuntime(
       [
-        { id: 'personal', providerId: 'google' },
-        { id: 'work', providerId: 'google' },
+        { id: 'personal', providerId: 'google', email: 'me@gmail.com' },
+        { id: 'work', providerId: 'google', email: 'me@work.com' },
       ],
       {},
     );
@@ -258,8 +258,8 @@ describe('calendars and copies', () => {
       const conn = (ctx as { connectionId: string }).connectionId;
       if (action === 'google_calendar.list_calendars') return { ok: true, result: { calendars: lists[conn] } };
       const events = {
-        'me@gmail.com': [ev('dinner', 'u-dinner', 18), ev('invite-personal', 'u-sync', 15, { responseStatus: 'needsAction' })],
-        'me@work.com': [ev('invite-work', 'u-sync', 15, { responseStatus: 'accepted' }), ev('planning', 'u-plan', 9)],
+        'me@gmail.com': [ev('dinner', 'u-dinner', 18), ev('invite-personal', 'u-sync', 15, { responseStatus: 'needsAction', joinUrl: 'https://meet.google.com/abc-defg-hij' })],
+        'me@work.com': [ev('invite-work', 'u-sync', 15, { responseStatus: 'accepted', joinUrl: 'https://meet.google.com/abc-defg-hij' }), ev('planning', 'u-plan', 9)],
       }[input.calendarId as string];
       return { ok: true, result: { events: events ?? [] } };
     });
@@ -274,7 +274,10 @@ describe('calendars and copies', () => {
     const events = r.days[0].events;
     expect(events.map((e) => e.id)).toEqual(['planning', 'invite-work', 'dinner']);
     // Invited at both addresses: one event, the accepted copy, naming the other calendar.
-    expect(events[1]).toMatchObject({ rsvp: 'accepted', calendar: { name: 'Work' }, alsoOn: ['Personal'] });
+    expect(events[1]).toMatchObject({
+      rsvp: 'accepted', calendar: { name: 'Work' }, alsoOn: ['Personal'],
+      joinUrl: 'https://meet.google.com/abc-defg-hij?authuser=me%40work.com',
+    });
     expect(r.providers.every((p) => p.ok)).toBe(true);
   });
 

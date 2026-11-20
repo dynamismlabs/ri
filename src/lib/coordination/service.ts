@@ -12,7 +12,7 @@ import { retryableCoordinationDispatch } from './retry';
 import { addressOf } from './address';
 import { stableCoordinationId } from './ids';
 import { requestScopedId } from './start-id';
-import { startDelegatedExecution } from './start-execution';
+import { startDelegatedExecution, validateDelegationExecution } from './start-execution';
 import { IMPORT_MIRROR_REFUSAL, isImportMirror } from '@/lib/import/mirror';
 import { AGENT_MESSAGE_INSTRUCTIONS, AGENT_REQUEST_REPLY_INSTRUCTIONS } from '@/lib/sessions/chat-message';
 import { deriveAndSetSessionLabel } from '@/lib/sessions/derive-label';
@@ -132,6 +132,7 @@ export async function submitAgentRequest(ctx: ActionContext, input: { target: st
   } else {
     const workspace = options ? q.getWorkspace(options.workspaceId) : null;
     if (!workspace || workspace.status !== 'active') throw new ActionError('not_found', 'The destination agent is unavailable.');
+    validateDelegationExecution(options!, source.userId);
   }
   if (input.relatedRequestId) {
     const related = q.getAgentRequest(input.relatedRequestId);
