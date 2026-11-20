@@ -153,18 +153,26 @@ Nothing here can be undone cheaply once the first installation exists, so do it 
    - Add its public half: `gh variable set RI_RELEASE_PUBLIC_KEY < ~/.config/ri-release/release-root-public.pem`.
    - Commit `desktop/release-keys.json`.
 3. **Add the Apple secrets.** With a Developer ID ($99 a year from Apple):
-   - In Xcode or the developer site, create a **Developer ID Application** certificate and export it with its private key as a `.p12`.
-   - In App Store Connect, under Users and Access, Integrations, create a team API key with the Developer role. Download the `.p8` (it downloads once) and note its Key ID and the Issuer ID.
+   - In Xcode or the developer site, create a **Developer ID Application** certificate (only the Account Holder can) and export it from Keychain Access with its private key as a `.p12` with a password.
+   - At account.apple.com, under Sign-In and Security, make an app-specific password for an Apple ID in the team. Notarizing signs in with it.
+   - The Team ID is under Membership details on developer.apple.com.
    ```sh
-   base64 -i DeveloperIDApplication.p12 | gh secret set CSC_LINK
-   gh secret set CSC_KEY_PASSWORD                      # the .p12's password
-   gh secret set APPLE_API_KEY < AuthKey_ABC123DEF4.p8  # the file's contents
-   gh secret set APPLE_API_KEY_ID --body ABC123DEF4
-   gh secret set APPLE_API_ISSUER --body <issuer id>
-   gh variable set APPLE_TEAM_ID --body ABCDE12345
-   gh variable set CSC_NAME --body "Example Inc. (ABCDE12345)"   # the certificate's name, without "Developer ID Application:"
+   base64 -i DeveloperIDApplication.p12 | gh secret set APPLE_CERTIFICATE
+   gh secret set APPLE_CERTIFICATE_PASSWORD             # the .p12's password
+   gh secret set APPLE_TEAM_ID --body ABCDE12345
+   gh secret set APPLE_ID --body you@example.com
+   gh secret set APPLE_APP_SPECIFIC_PASSWORD            # the app-specific password
+   gh secret set KEYCHAIN_PASSWORD --body "$(openssl rand -hex 24)"   # optional, made up when absent
    ```
-   These are repository secrets, since the build jobs of both workflows sign. With none of them, Mac builds stay ad-hoc signed. With only some, the build stops and names what's missing. To check them before a release, run **Alpha desktop builds** with `target: macos-arm64`. Its **Check the signature, notarization and Gatekeeper** step should pass.
+   An App Store Connect API key can notarize instead of the Apple ID. Under Users and Access, Integrations, create a team key with the Developer role, then set `APPLE_API_KEY` to the `.p8` file's contents, `APPLE_API_KEY_ID` to its Key ID and `APPLE_API_ISSUER` to the Issuer ID, and leave `APPLE_ID` and `APPLE_APP_SPECIFIC_PASSWORD` unset. With both, the Apple ID is used.
+
+   These are repository secrets, since the build jobs of both workflows sign. `desktop/mac-signing.sh` imports the certificate into a keychain of its own, takes the signing identity from it, checks that it's a Developer ID Application identity in `APPLE_TEAM_ID`, and signs in to Apple's notary service, all before building. With none of the secrets, Mac builds stay ad-hoc signed. With only some, the build stops and names what's missing.
+
+   To check them in a few minutes, building nothing, run **Alpha desktop builds** with `signing_check` on:
+   ```sh
+   gh workflow run alpha.yml --ref main -f signing_check=true
+   ```
+   Its summary lists the certificate it imported, the identity and its team, when it expires, and whether Apple's notary service accepted the sign-in, which only lists past submissions. A failure names the secret to fix. A full alpha run's **Check the signature, notarization and Gatekeeper** step then proves the real thing.
 4. **Create the `release` environment.** Settings, Environments, New environment, `release`. The publish and feed jobs run in it.
    - Under deployment branches and tags, allow only the `main` branch and tags matching `v*`.
    - Add the online signing key there, and nowhere else: `gh secret set RI_RELEASE_SIGNING_KEY --env release < ~/.config/ri-release/release-signing-<id>.pem`. Then delete the local file. It needs no other copy: if it's lost, rotate to a new one.
@@ -211,7 +219,7 @@ Or download the app for Mac, Windows or Linux from the newest release.
 
 `pnpm desktop:dmg` makes a dmg at `release/desktop/`. With no Developer ID it is ad-hoc signed, with no key and no account needed. Someone opening it for the first time has to allow it in System Settings under Privacy & Security, and it has no feed, so it never updates by itself. Installing a published copy of the app later, or running the install script, connects that computer to the feed, and its Ri starts updating. Build it on the same kind of Mac as the person it's for (Apple silicon or Intel).
 
-With `CSC_NAME` set and the certificate in your keychain, the same command signs it with the Developer ID and notarizes it, which also needs `APPLE_API_KEY` (the `.p8` file's path), `APPLE_API_KEY_ID` and `APPLE_API_ISSUER`. Packaging checks those before it builds anything (`macSigning` in `desktop/package-preflight.mjs`).
+With `CSC_NAME` set to the certificate's name without "Developer ID Application:" (as in `Example Inc. (ABCDE12345)`) and the certificate in your keychain, the same command signs it with the Developer ID and notarizes it. That needs `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` and `APPLE_TEAM_ID`, or an API key: `APPLE_API_KEY` (the `.p8` file's path), `APPLE_API_KEY_ID` and `APPLE_API_ISSUER`. Packaging checks those before it builds anything (`macSigning` in `desktop/package-preflight.mjs`).
 
 ## Working from a checkout
 
