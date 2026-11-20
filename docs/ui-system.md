@@ -177,11 +177,12 @@ component's own utility classes.
    status badges. Hand-built choosers and the frequently used launcher,
    scratchpad, task creation and tools controls gain the shared hooks.
    Classic retains its source layout and utilities.
-4. **Complete the control sweep (done 2026-11-20).** Chat
+4. **Complete the control sweep and stop new drift (done 2026-11-20).** Chat
    questions, approvals, account access, files and recovery actions use the same
    hooks. Both library surfaces, onboarding, agent setup, identity choices, team actions,
    expanded provider settings, pairing and consent follow them too. Content
-   keeps its shape as described below. The live Apps screen's CSS-module
+   keeps its shape as described below. The lint ratchet now catches new raw
+   bordered controls and capital source labels. The live Apps screen's CSS-module
    cards and switches use the same hooks, with a check against its real stylesheet.
 5. **After the preview review (not started).** Copy still in Title Case in shared
    constants ("In Progress", "Priority Order", "Schedules and Triggers") reaches
@@ -209,3 +210,38 @@ inverted bubble. Floating model-list and image actions stay opaque over their
 content. Warning actions keep amber in a readable shade in both themes. Focus
 outlines sit inside clipped event cells, menu rows, image pickers and segmented
 options. `SegmentedTabs` still owns its measured scroller.
+
+## Lint ratchet
+
+`eslint.config.mjs` keeps the tooltip and UI restrictions in one shared selector
+array. `no-restricted-syntax` catches:
+
+- A raw `button` or `a` outside `src/components/ui/` with both a `border` and a
+  `rounded` utility and no explicit `data-slot`. This includes string literals,
+  `cn(...)`, conditional branches and template parts. A `ring-border` class alone
+  does not count as a border. Classes supplied only through a variable cannot be
+  inspected by this syntax rule.
+- JSX text containing at least three capital letters and no lowercase letters.
+  Write labels in sentence case and keep `uppercase` for classic. Code and
+  protocol names are reviewed as exceptions, rather than rewritten as labels.
+
+The per-file `uiSystemLegacyFiles` list is deliberately small:
+
+| File | Why it remains |
+| --- | --- |
+| `src/components/settings/sections/api-transport.tsx` | HTTP is a protocol name |
+| `src/components/workspaces/worktree-scripts-section.tsx` | PORT and $RI_SOURCE_CHECKOUT_PATH are literal code |
+| `src/app/dev/execution-chat/page.tsx` | Synthetic harness diagnostics, outside normal product use |
+| `src/app/integrations-test/page.tsx` | Standalone connector diagnostics with their own drawing |
+
+A legacy override restates only the tooltip selectors, so `title` remains
+forbidden there. To shrink the list, remove a path, run lint on that file, add
+appropriate shared hooks and convert actual labels to sentence case while
+preserving classic with `uppercase`. Keep literal protocol and code names
+accurate. Do not add broad directory globs to the list.
+
+`scripts/ui-system-lint.test.ts` exercises the actual ESLint config, including
+esquery's `:has()` support, class literals inside `cn`, false positives, installed
+primitives and the tooltip rule in legacy files. `src/styles/edge.browser.test.ts`
+checks the risky drawing rules with real CSS in Chromium. The long-tail checks
+fail with the new rules removed.

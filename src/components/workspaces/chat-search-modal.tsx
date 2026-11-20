@@ -240,7 +240,7 @@ function ChatSearchPanel() {
             <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">{'⏎'}</kbd> open
           </span>
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">ESC</kbd> close
+            <kbd className="rounded bg-muted px-1 py-0.5 text-[8px] uppercase">Esc</kbd> close
           </span>
         </div>
       </div>
