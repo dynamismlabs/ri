@@ -21,7 +21,7 @@ The fix is one small system that every surface draws from, not a redesign.
   frame recedes without a heavy border.
 - **The frame meets the window.** Columns run edge to edge and meet at one hairline
   border. No floating rounded panes with gutters between them.
-- **Controls stay rounded.** Things you press are capsules or 10px rounds. Only the
+- **Controls stay rounded.** Things you press are capsules. Only the
   frame is square.
 - **Four text levels** (`--edge-t1` to `--edge-t4`): title, body, secondary, faint.
   Hierarchy comes from these and from weight, not from boxes.
@@ -79,8 +79,8 @@ These carry the system across screens. Use them before inventing a new one.
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes) | `aria-pressed` or `aria-selected` on each option |
-| `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck) |
+| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes) | `aria-pressed`, `aria-selected` or `aria-checked` on each option |
+| `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck), `data-mode` (the permission chip) |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
 | `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
@@ -95,6 +95,16 @@ These carry the system across screens. Use them before inventing a new one.
 | `callout` | A notice or summary inside a pane (Stream's triage digest): a soft raised panel, no outline | |
 | `stream-meta` | The line under a Stream capture | |
 | `search-field`, `icon-button` | The phone's search field and the bordered icon buttons beside it | |
+| `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"` or `"ghost"`, `data-tone="status"`, `aria-pressed`, `aria-selected` or `aria-checked` |
+| `status-strip` | A chat header's git summary and next action, in one quiet capsule | |
+| `split-button` | Finder and its menu, one capsule with a divider between the two buttons | |
+| `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
+| `row-actions` | Hover actions on task, note and deck rows, also revealed by keyboard focus | `:focus-within` |
+| `calendar-toolbar`, `calendar-navigation` | Calendar's existing header and Previous, Today and Next group. View tracks keep their labels while the date text truncates | |
+| `settings-nav`, `settings-body` | Settings' shared navigation and content boundary. Neutral bordered sections become soft panels, small bordered actions become capsules, descriptive choices stay rows, and fields stay rectangular | `aria-current="page"` on navigation |
+| `choice-row` | A descriptive option in a chooser or Settings, with a soft 8px selection fill | `aria-pressed`, `aria-selected` or `aria-checked` |
+| `field` | A hand-built text field, textarea or select outside the shared input components | |
+| `status-badge`, `schedule-row` | A schedule's state and its soft row | |
 | class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside, More). `panelTabClass` adds it | `panel-tab-on` |
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:
@@ -108,7 +118,7 @@ shadows too, so every control it restyles gets an explicit `:focus-visible` outl
 in `edge.css` (inset inside a segmented track, which may scroll and clip). A new
 restyled slot joins that list. `src/styles/edge.browser.test.ts` tabs through the
 shared controls in both themes, checks the solid review action's hover contrast, and
-checks a narrow lane switch still scrolls where its edge fades look.
+checks a narrow lane switch still scrolls where its edge fades look. Phase 3 adds keyboard checks for git actions, split buttons, row actions, Settings fields and choices, Calendar navigation and chat tabs, plus hover contrast and split-button geometry checks in both themes.
 
 ### Shapes
 
@@ -144,12 +154,19 @@ component's own utility classes.
    tabs as a segmented control, task chips), every tool panel's tabs, the
    Agent and Document toggle, the skill editor's toggles, the phone's search
    field, and the two broad rules above.
-3. **The long tail, then the switch goes.** Codemods for border opacities, radii and
-   hand-built buttons onto the shared components, a lint rule that stops new ones,
-   the chat UI gallery checked in both looks. Left from phase 2 on purpose:
-   Settings' boxed sections and bordered buttons, the git status box in a chat's
-   header, the composer's mode chip, and copy still in Title Case in shared
-   constants ("In Progress", "Priority Order", "Schedules and Triggers"), which
-   reaches tests and the guide. Then Edge becomes the only look, its
-   values move into `theme.css`, and `look.tsx`, the setting and this file's trial
-   notes are removed.
+3. **The visible long tail (done 2026-11-20).** The git summary, permission and
+   model chips, chat tabs and row hover actions now follow the system. Tiny
+   capital labels get a readable sentence-case size. Finder is one split
+   capsule. Calendar's view switches join the segmented control. Settings uses
+   shared patterns for navigation, soft sections, bordered actions and fields,
+   with descriptive choices as rows. Schedules has shared fields, actions and
+   status badges. Hand-built choosers and the frequently used launcher,
+   scratchpad, task creation and tools controls gain the shared hooks.
+   Classic retains its source layout and utilities. See
+   `docs/ui-system-phase3-audit.md` for the remaining raw bordered-control sweep.
+4. **After the preview review (not started).** Copy still in Title Case in shared
+   constants ("In Progress", "Priority Order", "Schedules and Triggers") reaches
+   tests and the guide. Review the remaining controls and the chat UI gallery in
+   both looks, then consider codemods and a lint rule that stops new drift.
+   Making Edge the default, removing the switch and moving values into
+   `theme.css` all need the owner's decision. Phase 3 does none of those.

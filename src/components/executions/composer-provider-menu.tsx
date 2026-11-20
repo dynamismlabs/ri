@@ -176,6 +176,7 @@ export function ComposerProviderMenu({
         <Tip label="Choose a model and adjust its settings">
           <button
             type="button"
+            data-slot="chip-button"
             aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
             disabled={disabled || switching}
             className={cn(
@@ -235,7 +236,7 @@ export function ComposerProviderMenu({
                 )}
                 Start new chat
               </button>
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={() => setPending(null)}
                 disabled={switching}

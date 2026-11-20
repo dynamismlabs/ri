@@ -29,6 +29,10 @@ html[data-look="edge"] {
   --edge-t4: oklch(0.67 0.004 264);
   --edge-attention: oklch(0.63 0.16 55);
   --edge-attention-bg: oklch(0.75 0.15 66 / 0.17);
+  --edge-mode-auto: var(--color-yellow-800);
+  --edge-mode-edits: var(--color-purple-800);
+  --edge-mode-ask: var(--color-blue-800);
+  --edge-mode-plan: var(--color-teal-800);
   --edge-danger: oklch(0.56 0.19 25);
   --edge-working: oklch(0.55 0.15 252);
   --edge-shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
@@ -96,6 +100,10 @@ html[data-look="edge"] .dark {
   --edge-t4: oklch(0.48 0.004 264);
   --edge-attention: oklch(0.79 0.15 66);
   --edge-attention-bg: oklch(0.79 0.15 66 / 0.15);
+  --edge-mode-auto: var(--color-yellow-400);
+  --edge-mode-edits: var(--color-purple-400);
+  --edge-mode-ask: var(--color-blue-400);
+  --edge-mode-plan: var(--color-teal-400);
   --edge-danger: oklch(0.7 0.17 24);
   --edge-working: oklch(0.74 0.12 250);
   --edge-shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
@@ -317,3 +325,93 @@ html[data-look="edge"] :is([data-slot="input"], [data-slot="input-group"], [data
 html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, .border.bg-card, [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Inside a track (which may scroll and clip), the ring sits just inside the option. */
 html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
+
+/* ── Phase 3: daily controls and the long tail ─────────────────────────── */
+/* These labels were sized for capitals. Sentence case needs a readable size.
+   Keep this broad rule weak so metadata and toolbar slots retain their own size. */
+html[data-look="edge"] :where(.uppercase.text-\[8\.5px\], .uppercase.text-\[9px\]) { font-size: 11px; line-height: 1.4; font-weight: 500; }
+
+/* Small actions share the capsule shape without changing their layout or size.
+   A solid action retains its component's foreground and hover fill. */
+html[data-look="edge"] [data-slot="action-button"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; }
+html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]) { background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]):hover:not(:disabled) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="action-button"][data-variant="ghost"] { background-color: transparent; }
+html[data-look="edge"] [data-slot="action-button"][data-tone="status"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
+html[data-look="edge"] [data-slot="action-button"][data-tone="status"]:hover:not(:disabled) { background-color: color-mix(in oklch, currentColor 18%, transparent); }
+
+/* The git summary is a quiet group, with its next action nested inside. */
+html[data-look="edge"] [data-slot="status-strip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="status-strip"] [data-slot="action-button"] { min-height: 24px; }
+
+/* Finder and its menu are one capsule. The second half keeps a single divider. */
+html[data-look="edge"] [data-slot="split-button"] { border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="split-button"] > button { border-color: transparent; border-radius: 999px 0 0 999px; background-color: transparent; box-shadow: none; }
+html[data-look="edge"] [data-slot="split-button"] > button + button { border-left-color: var(--edge-line-2); border-radius: 0 999px 999px 0; }
+html[data-look="edge"] [data-slot="split-button"] > button:hover:not(:disabled) { background-color: var(--edge-selected); color: var(--edge-t1); }
+
+/* Chat tabs keep their measured scroller. Each tab includes its close button. */
+html[data-look="edge"] [data-slot="chat-tabs"] { gap: 4px; }
+html[data-look="edge"] [data-slot="chat-tabs"] > button { border-radius: 999px; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="chat-tabs"] > button:hover { color: var(--edge-t1); background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="chat-tab"] { border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="chat-tab"]:hover { background-color: var(--edge-hover); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="chat-tab"][data-current="true"] { background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="chat-tab"] > button { border-radius: 999px; }
+
+/* Hover actions are capsules. Keyboard users see the same actions on focus. */
+html[data-look="edge"] [data-slot="row-actions"]:focus-within { opacity: 1; }
+html[data-look="edge"] [data-slot="row-actions"] :where(button) { border-radius: 999px; }
+
+/* Calendar's date controls stay in their existing group and position. */
+html[data-look="edge"] [data-slot="calendar-navigation"] { gap: 2px; }
+html[data-look="edge"] [data-slot="calendar-navigation"] > button { min-height: 26px; border-radius: 999px; }
+
+/* Settings repeats a few hand-built patterns across its sections. This boundary
+   lets those patterns share the system without changing classic's utilities.
+   Explicit slots (choices, switches, editor controls) keep their own rules. */
+html[data-look="edge"] [data-slot="settings-nav"] { background-color: var(--edge-canvas); }
+html[data-look="edge"] [data-slot="settings-nav"] > button { border-radius: 8px; box-shadow: none; }
+html[data-look="edge"] [data-slot="settings-nav"] > button[aria-current="page"] { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="settings-nav"] > button:not([aria-current="page"]):hover { background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:not([data-slot], .rounded-full) { border-color: transparent; border-radius: 14px; }
+html[data-look="edge"] [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:is(.border-border, :not([class*="border-"])):not([data-slot], .rounded-full, [role="alert"], [role="status"]) { background-color: var(--edge-raised); }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"]) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"]):hover:not(:disabled) { background-color: var(--edge-selected); }
+/* Some Settings actions use bg-foreground for their solid fill. Preserve its
+   matching text-background in both themes and on hover. */
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary) { background-color: revert-layer; color: revert-layer; }
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
+html[data-look="edge"] :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
+html[data-look="edge"] [data-slot="field"] { border-color: var(--edge-line-2); border-radius: 10px; background-color: var(--background); }
+html[data-look="edge"] [data-slot="segmented"][role="radiogroup"] { max-width: 100%; overflow-x: auto; }
+html[data-look="edge"] [data-slot="segmented"] > [aria-checked="true"] { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+
+/* Choosers hold a title and description. Their selection is a soft row, with
+   no outline or card shadow. This also covers hand-built dialog lists. */
+html[data-look="edge"] [data-slot="choice-row"] { border-color: transparent; border-radius: 8px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="choice-row"]:hover:not(:disabled) { border-color: transparent; background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="choice-row"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="status-badge"] { border-color: transparent; border-radius: 999px; font-size: 11px; line-height: 1.4; font-weight: 500; letter-spacing: normal; }
+html[data-look="edge"] [data-slot="schedule-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--edge-shadow-card); }
+html[data-look="edge"] [data-slot="schedule-row"] > button { border-radius: 999px; }
+
+/* Every control whose focus shadow the look replaces also gets an outline.
+   Inside scrolling groups it sits within the control so it cannot be clipped. */
+html[data-look="edge"] :is([data-slot="action-button"], [data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-nav"] input, [data-slot="settings-body"] :is(button, a, input, textarea, select), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html[data-look="edge"] :is([data-slot="split-button"] > button, [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
+/* Descriptive Settings choices are rows even when they have no shared component. */
+html[data-look="edge"] [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
+html[data-look="edge"] [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+
+/* Permission modes keep today's hue, at a readable shade on the quiet fill. */
+html[data-look="edge"] [data-mode="auto_all"] { --edge-mode-color: var(--edge-mode-auto); }
+html[data-look="edge"] [data-mode="auto_edits"] { --edge-mode-color: var(--edge-mode-edits); }
+html[data-look="edge"] [data-mode="ask"] { --edge-mode-color: var(--edge-mode-ask); }
+html[data-look="edge"] [data-mode="plan"] { --edge-mode-color: var(--edge-mode-plan); }
+html[data-look="edge"] [data-slot="chip-button"][data-mode] { color: var(--edge-mode-color); background-color: color-mix(in oklch, currentColor 10%, transparent); filter: none; }
+html[data-look="edge"] [data-slot="chip-button"][data-mode]:hover:not(:disabled) { color: var(--edge-mode-color); background-color: color-mix(in oklch, currentColor 16%, transparent); }
+
+/* Keep every Calendar view label visible. The date text already truncates to
+   make room, so the control track must not shrink and clip its last option. */
+html[data-look="edge"] [data-slot="calendar-toolbar"] > [data-slot="segmented"] { flex-shrink: 0; }

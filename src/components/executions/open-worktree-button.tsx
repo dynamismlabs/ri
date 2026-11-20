@@ -221,6 +221,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
         <button
           type="button"
           onClick={copyPath}
+          data-slot="action-button"
           disabled={busy === 'copy'}
           className={cn(
             'flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium',
@@ -261,7 +262,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
   const isBusyPrimary = busy === primaryTarget;
 
   return (
-    <div className="relative inline-flex items-stretch">
+    <div data-slot="split-button" className="relative inline-flex items-stretch">
       <Tip label={primaryLabel}>
         <button
           type="button"

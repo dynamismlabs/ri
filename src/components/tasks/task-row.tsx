@@ -401,10 +401,11 @@ export function TaskRow({
       </div>
 
       {/* Hover actions */}
-      <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
+      <div data-slot="row-actions" className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
+              aria-label="More task actions"
               className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
               onClick={(e) => e.stopPropagation()}
             >

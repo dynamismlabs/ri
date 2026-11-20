@@ -94,6 +94,7 @@ export function ModelControl({
         <Tip label="Choose a model and adjust its settings">
           <button
             type="button"
+            data-slot="chip-button"
             aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
             disabled={disabled}
             className={TRIGGER_CLASS}

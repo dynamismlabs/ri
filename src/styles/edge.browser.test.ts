@@ -29,6 +29,7 @@ beforeAll(async () => {
       import React, {useState} from 'react';
       import {createRoot} from 'react-dom/client';
       import {TooltipProvider} from '@/components/ui/tooltip';
+      import {PERMISSION_MODE_META} from '@/lib/permission-modes';
       import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
       const LANES=[{value:'progress',label:'In progress',count:9},{value:'todo',label:'Todo',count:4},{value:'waiting',label:'Waiting',count:2},{value:'done',label:'Done',count:30}];
       function Fixture(){
@@ -39,6 +40,38 @@ beforeAll(async () => {
           <button data-case="card" className="w-64 rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">A board card</button>
           {/* The review bar's solid action, with execution-review-bar.tsx's classes. */}
           <button data-case="solid" data-slot="review-action" data-tone="emerald-solid" className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-60 bg-emerald-600 text-white hover:bg-emerald-700">Accept & complete</button>
+          <span data-case="small-label" className="text-[8.5px] uppercase tracking-widest">Recent chats</span>
+          <div data-slot="status-strip" className="inline-flex items-center gap-3 rounded-lg border border-blue-500/40 bg-blue-500/10 p-1">
+            <span>2 commits ahead</span><button data-focus data-case="git-action" data-slot="action-button" data-variant="primary" className="rounded-md border bg-primary px-2 py-1 text-primary-foreground hover:bg-primary/90 focus-visible:outline-none">Push</button>
+          </div>
+          <button data-focus data-case="mode" data-slot="chip-button" data-mode="auto_all" className={["rounded-md border px-2 py-1 hover:brightness-110",...Object.values(PERMISSION_MODE_META.auto_all.classes)].join(" ")}>Auto</button>
+          <div data-slot="split-button" className="inline-flex items-stretch">
+            <button data-focus data-case="finder" className="rounded-l-md border border-r-0 bg-background px-2 py-1 text-muted-foreground hover:bg-muted/40">Finder</button>
+            <button data-focus data-case="finder-more" aria-label="More open options" className="rounded-r-md border bg-background px-2 text-muted-foreground hover:bg-muted/40">⌄</button>
+          </div>
+          <div data-slot="row-actions" className="opacity-0"><button data-focus data-case="row-action" aria-label="More task actions" className="rounded p-1 text-muted-foreground hover:bg-muted">…</button></div>
+          <div data-slot="settings-nav"><button data-focus data-case="settings-nav" aria-current="page" className="rounded-lg bg-background px-3 py-2 shadow-sm ring-1 ring-border">General</button></div>
+          <div data-slot="settings-body" className="space-y-2">
+            <section data-case="settings-section" className="rounded-lg border border-border bg-background p-3">
+              <input data-focus data-case="settings-field" aria-label="Timezone" className="rounded-md border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" defaultValue="America/Denver" />
+              <button data-focus data-case="settings-action" className="rounded border border-border bg-background px-2.5 py-1.5 text-foreground hover:bg-muted">Save</button>
+              <button data-focus data-case="settings-solid" className="rounded border border-border bg-foreground px-2.5 py-1.5 text-background hover:bg-foreground/90">Connect</button>
+            </section>
+          </div>
+          <button data-focus data-case="choice" data-slot="choice-row" aria-pressed="true" className="w-64 rounded border border-primary/60 bg-primary/5 p-3 text-left ring-1 ring-primary/20 focus:outline-none">Continue this chat</button>
+          <div data-slot="calendar-navigation" className="flex"><button data-focus data-case="previous" aria-label="Previous week" className="rounded-md p-1 text-muted-foreground hover:bg-muted/50">‹</button><button data-focus data-case="today" className="rounded-md px-1.5 py-0.5 text-muted-foreground hover:bg-muted/50">Today</button></div>
+          <div data-slot="chat-tabs" className="flex h-9 w-64 items-center gap-0.5 border-b px-1.5">
+            <button data-focus data-case="all-chats" className="h-7 shrink-0 rounded px-1.5">≡ 3</button>
+            <div data-slot="chat-tabs-scroll" className="flex min-w-0 shrink items-center gap-0.5 overflow-x-auto">
+              {['First chat','Second chat','Third chat'].map((name,i)=><div data-slot="chat-tab" data-current={i===0?'true':undefined} className="flex h-7 shrink-0 rounded bg-muted" key={name}><button data-focus data-case={'chat-'+i} className="h-full whitespace-nowrap px-2">{name}</button><button data-focus data-case={'close-'+i} aria-label={'Close '+name} className="mr-1 size-4 rounded">×</button></div>)}
+            </div>
+            <button data-focus data-case="new-chat" className="size-6 shrink-0 rounded">+</button>
+          </div>
+          <div data-slot="calendar-toolbar" data-case="calendar-small" className="flex w-72 items-center gap-2">
+            <span className="w-32 min-w-0 truncate">November 16 to 22</span>
+            <div data-slot="segmented" className="flex overflow-hidden rounded-md border"><button>Calendar</button><button>List</button><button>Report</button></div>
+          </div>
+          {['auto_edits','ask','plan'].map(mode=><button key={mode} data-case={'mode-'+mode} data-slot="chip-button" data-mode={mode} className={['rounded-md border px-2 py-1 hover:brightness-110',...Object.values(PERMISSION_MODE_META[mode].classes)].join(' ')}>{PERMISSION_MODE_META[mode].shortTitle}</button>)}
         </div>;
       }
       createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
@@ -148,5 +181,89 @@ it('scrolls a narrow lane switch where its edge fades look', async () => {
     expect(state.trackOverflow).toBe('visible');
     expect(state.overflows).toBe(true);
     expect(state.mask).toContain('gradient');
+  } finally { await page.close(); }
+});
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`shows keyboard focus on phase 3 controls, including clipped tabs (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      await page.locator('[data-case="solid"]').focus();
+      const controls = await page.locator('[data-focus]').count();
+      for (let i = 0; i < controls; i++) {
+        await page.keyboard.press('Tab');
+        const state = await page.evaluate(() => {
+          const el = document.activeElement as HTMLElement;
+          const s = getComputedStyle(el);
+          return { name: el.dataset.case, style: s.outlineStyle, width: parseFloat(s.outlineWidth), offset: parseFloat(s.outlineOffset) };
+        });
+        expect(state.name).toBeTruthy();
+        expect(state.style, state.name).toBe('solid');
+        expect(state.width, state.name).toBeGreaterThanOrEqual(2);
+        if (state.name === 'row-action') expect(await page.locator('[data-slot="row-actions"]').evaluate(el => getComputedStyle(el).opacity)).toBe('1');
+        if (state.name?.startsWith('chat-') || state.name?.startsWith('close-')) expect(state.offset).toBeLessThan(0);
+      }
+    } finally { await page.close(); }
+  });
+
+  it(`keeps filled actions and status controls readable on hover (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      for (const name of ['git-action','mode','mode-auto_edits','mode-ask','mode-plan','finder','settings-action','settings-solid','choice','today']) {
+        const selector = `[data-case="${name}"]`;
+        await page.locator(selector).hover();
+        await page.waitForTimeout(250);
+        expect(await contrast(page, selector), name).toBeGreaterThan(4.5);
+        if (name === 'choice') expect(await page.locator(selector).evaluate(el => getComputedStyle(el).borderRadius)).toBe('8px');
+      }
+    } finally { await page.close(); }
+  });
+}
+
+it('keeps split controls joined, content rectangular and chat tabs on their existing scroller', async () => {
+  const { page } = await open('edge', 'light');
+  try {
+    const state = await page.evaluate(() => {
+      const style = (selector: string) => getComputedStyle(document.querySelector(selector)!);
+      const split = document.querySelector('[data-slot="split-button"]')!.getBoundingClientRect();
+      const first = document.querySelector('[data-case="finder"]')!.getBoundingClientRect();
+      const second = document.querySelector('[data-case="finder-more"]')!.getBoundingClientRect();
+      const scroller = document.querySelector('[data-slot="chat-tabs-scroll"]')!;
+      return {
+        splitRadius: parseFloat(style('[data-slot="split-button"]').borderRadius),
+        contiguous: first.right === second.left && first.left === split.left && second.right === split.right,
+        divider: parseFloat(style('[data-case="finder-more"]').borderLeftWidth),
+        fieldRadius: style('[data-case="settings-field"]').borderRadius,
+        choiceRadius: style('[data-case="choice"]').borderRadius,
+        settingsShadow: style('[data-case="settings-nav"]').boxShadow,
+        scrolls: scroller.scrollWidth > scroller.clientWidth,
+        overflow: style('[data-slot="chat-tabs-scroll"]').overflowX,
+        tabRadius: parseFloat(style('[data-slot="chat-tab"]').borderRadius),
+        labelSize: style('[data-case="small-label"]').fontSize,
+      };
+    });
+    expect(state.splitRadius).toBeGreaterThan(100);
+    expect(state.contiguous).toBe(true);
+    expect(state.divider).toBe(1);
+    expect(state.fieldRadius).toBe('10px');
+    expect(state.choiceRadius).toBe('8px');
+    expect(state.settingsShadow).toBe('none');
+    expect(state.scrolls).toBe(true);
+    expect(state.overflow).toBe('auto');
+    expect(state.tabRadius).toBeGreaterThan(100);
+    expect(state.labelSize).toBe('11px');
+  } finally { await page.close(); }
+});
+
+it('keeps all Calendar view labels visible when the date needs to truncate', async () => {
+  const { page } = await open('edge', 'light');
+  try {
+    const state = await page.locator('[data-case="calendar-small"]').evaluate(el => {
+      const track = el.querySelector('[data-slot="segmented"]')!;
+      const bounds = track.getBoundingClientRect();
+      const last = track.lastElementChild!.getBoundingClientRect();
+      return { fits: track.scrollWidth <= track.clientWidth, lastFits: last.right <= bounds.right, toolbarFits: bounds.right <= el.getBoundingClientRect().right };
+    });
+    expect(state).toEqual({ fits: true, lastFits: true, toolbarFits: true });
   } finally { await page.close(); }
 });
