@@ -53,6 +53,8 @@ export function HeartbeatChip() {
           type="button"
           onClick={() => setOpen(true)}
           aria-label={`${signal.label}. ${detail}`}
+          data-slot="chip-button"
+          data-tone={signal.kind === 'setup' ? undefined : 'status'}
           className={cn(
             'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors',
             KIND_CLASS[signal.kind],

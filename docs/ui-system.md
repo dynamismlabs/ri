@@ -80,7 +80,7 @@ These carry the system across screens. Use them before inventing a new one.
 | Slot | What it is | State it reads |
 | --- | --- | --- |
 | `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes) | `aria-pressed` or `aria-selected` on each option |
-| `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"`, `data-urgency` (Generate New Deck) |
+| `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck) |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
 | `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
@@ -101,11 +101,20 @@ Two broad rules cover hand-built pieces until each moves onto the shared compone
 a hand-built `button` or `a` with `bg-primary` is a capsule, and a hand-built
 `.border.bg-card` card loses its outline for a soft shadow (Board cards, Schedules rows).
 
+### Focus
+
+The look draws its own fills and shadows, and the components' focus rings are box
+shadows too, so every control it restyles gets an explicit `:focus-visible` outline
+in `edge.css` (inset inside a segmented track, which may scroll and clip). A new
+restyled slot joins that list. `src/styles/edge.browser.test.ts` tabs through the
+shared controls in both themes, checks the solid review action's hover contrast, and
+checks a narrow lane switch still scrolls where its edge fades look.
+
 ### Shapes
 
 Anything you press is a capsule: buttons, chips, the options of a segmented
 control, tabs. Anything that holds content is a rounded rectangle: text fields
-(10px), the chat input (22px), cards and callouts (14px), menus and popovers (12px),
+(10px, overriding shadcn's capsule input), the chat input (22px), cards and callouts (14px), menus and popovers (12px),
 dialogs. List rows take a small 8px radius for their hover and selection. A button
 drawn as a rounded rectangle is a leftover, not a variant.
 

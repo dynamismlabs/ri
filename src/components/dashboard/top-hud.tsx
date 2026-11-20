@@ -100,8 +100,9 @@ export function TopHud() {
           {!team && <><div className="hud-calendar min-w-0"><HudDayButton /></div><BudgetWarningPill /></>}
 
           <div className="flex shrink-0 items-center gap-2">
-            {/* The page tools: one capsule in the new look (docs/ui-system.md). */}
-            <div data-slot="hud-tools" className="flex items-center gap-2">
+            {/* The page tools: no box of their own in classic (contents), one capsule
+                in the new look (docs/ui-system.md). */}
+            <div data-slot="hud-tools" className="contents">
             <Tip label="Search tasks, notes and commands" shortcut={HOTKEYS.search.label}>
               <button
                 type="button"

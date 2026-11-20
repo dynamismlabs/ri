@@ -180,7 +180,8 @@ html[data-look="edge"] :not([data-slot="button-group"]) > [data-slot="button"] {
 /* Segmented control: one soft track, the chosen option a raised thumb. Any hand-built
    switch joins it with data-slot="segmented" on the track and aria-pressed or
    aria-selected on its options. */
-html[data-look="edge"] [data-slot="segmented"] { flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="segmented"] { flex-wrap: nowrap; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="segmented"].contents { display: flex; }
 html[data-look="edge"] [data-slot="segmented"] { align-self: center; align-items: center; }
 html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
 html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
@@ -194,6 +195,8 @@ html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) > span { 
 html[data-look="edge"] :is(.toolbar-button-active, [data-slot="chip-button"]:is([aria-pressed="true"], [data-on])) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
 html[data-look="edge"] [data-slot="chip-button"][data-tone="attention"][aria-pressed="true"] { background-color: var(--edge-attention-bg); color: var(--edge-attention); }
 html[data-look="edge"] [data-slot="chip-button"]:disabled { background-color: transparent; color: var(--edge-t4); }
+/* A chip that reports a state (a paused or failing heartbeat) keeps its color, on a fill of it. */
+html[data-look="edge"] [data-slot="chip-button"][data-tone="status"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
 html[data-look="edge"] [data-slot="list-toolbar"] { background-color: var(--background); }
 html[data-look="edge"] [data-slot="chip-button"][data-urgency="low"] { background-color: transparent; color: var(--edge-t3); }
 html[data-look="edge"] [data-slot="chip-button"][data-urgency="critical"] { background-color: var(--primary); color: var(--primary-foreground); }
@@ -239,6 +242,7 @@ html[data-look="edge"] [data-slot="review-action"]:hover { background-color: var
 html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"] { background-color: var(--edge-track); color: var(--edge-t1); }
 html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"]:hover { background-color: var(--edge-selected); }
 html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"] { color: oklch(1 0 0); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"]:hover { background-color: revert-layer; color: oklch(1 0 0); }
 html[data-look="edge"] [data-slot="review-action"][data-active] { background-color: var(--edge-selected); color: var(--edge-t1); }
 
 /* The task a chat works on: a soft capsule, a dot when it's in progress. */
@@ -248,7 +252,7 @@ html[data-look="edge"] [data-slot="task-chip"]:hover { border-color: transparent
 html[data-look="edge"] [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--edge-working); }
 
 /* Top bar: the page tools in one capsule, Create and the view button as capsules. */
-html[data-look="edge"] [data-slot="hud-tools"] { gap: 0; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="hud-tools"] { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
 html[data-look="edge"] [data-slot="hud-tools"] button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; padding: 0; border-color: transparent; border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
 html[data-look="edge"] [data-slot="hud-tools"] button:hover { color: var(--edge-t1); }
 html[data-look="edge"] [data-slot="hud-tools"] button[aria-pressed="true"] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
@@ -275,6 +279,8 @@ html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:h
 html[data-look="edge"] [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
 html[data-look="edge"] [data-slot="properties"] > span { font-weight: 400; color: var(--edge-t3); }
 html[data-look="edge"] [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }
+/* Effort's five options can outrun a narrow slideout: that track scrolls. (SegmentedTabs scrolls its own wrapper.) */
+html[data-look="edge"] [data-slot="properties"] [data-slot="segmented"] { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 html[data-look="edge"] [data-slot="chip-button"][data-urgency="late"] { color: var(--edge-danger); }
 
 /* Header actions on a task or note: capsules on a quiet fill. Working with an agent keeps its violet. */
@@ -302,3 +308,12 @@ html[data-look="edge"] .border.bg-card:not(input, textarea, select, [data-slot])
 
 /* Phone: the search field and the buttons beside it. */
 html[data-look="edge"] :is([data-slot="search-field"], [data-slot="icon-button"]) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
+
+/* Text fields hold content, so they're rounded rectangles, not capsules (shadcn's default here is a capsule). */
+html[data-look="edge"] :is([data-slot="input"], [data-slot="input-group"], [data-slot="textarea"]) { border-radius: 10px; }
+
+/* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
+   replaces the components' focus rings (they're box-shadows too). */
+html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, .border.bg-card, [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* Inside a track (which may scroll and clip), the ring sits just inside the option. */
+html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
