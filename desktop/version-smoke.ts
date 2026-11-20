@@ -46,6 +46,9 @@ void acceptance('version-smoke', async fixture => {
   const OLD_CLIENT_HEADER = 'x-acceptance-old-client';
   const OLD_CLIENT_PARAM = 'acceptance-old-client';
   const UNLOADING_REFUSAL = '[acceptance] The unloading old client refused its own note save';
+  // Console messages from a document being torn down rarely reach Playwright,
+  // so the old page also counts its refusals where the new page can read them.
+  const UNLOADING_REFUSALS_KEY = 'acceptance:unloading-refusals';
   let refusedWhileUnloading = 0;
   const fromOldClient = (request: Request) => request.headers()[OLD_CLIENT_HEADER] === '1';
   const oldSocket = (url: string) => new URL(url).searchParams.get(OLD_CLIENT_PARAM) === '1';
@@ -92,7 +95,7 @@ void acceptance('version-smoke', async fixture => {
   // server, so the old page stands in for it here: once it is unloading, its note saves get the
   // same 426 without leaving the page.
   page.on('console', message => { if (message.text() === UNLOADING_REFUSAL) { refusedWhileUnloading++; mark('notes.update old client refused in the unloading page'); } });
-  await page.evaluate(({ header, param, refusal, body }) => {
+  await page.evaluate(({ header, param, refusal, body, countKey }) => {
     let unloading = false;
     window.addEventListener('pagehide', () => { unloading = true; }, { capture: true });
     const send = window.fetch.bind(window);
@@ -102,6 +105,7 @@ void acceptance('version-smoke', async fixture => {
       const url = new URL(input instanceof Request ? input.url : String(input), window.location.href);
       const method = (init?.method ?? (input instanceof Request ? input.method : 'GET')).toUpperCase();
       if ((unloading || document.visibilityState === 'hidden') && method === 'POST' && url.pathname === '/api/trpc/notes.update') {
+        try { localStorage.setItem(countKey, String(Number(localStorage.getItem(countKey) ?? 0) + 1)); } catch { /* The refusal still stands. */ }
         console.info(refusal);
         return Promise.resolve(new Response(body, { status: 426, headers: { 'content-type': 'application/json' } }));
       }
@@ -115,7 +119,7 @@ void acceptance('version-smoke', async fixture => {
         super(marked, protocols);
       }
     };
-  }, { header: OLD_CLIENT_HEADER, param: OLD_CLIENT_PARAM, refusal: UNLOADING_REFUSAL, body: JSON.stringify(issue) });
+  }, { header: OLD_CLIENT_HEADER, param: OLD_CLIENT_PARAM, refusal: UNLOADING_REFUSAL, body: JSON.stringify(issue), countKey: UNLOADING_REFUSALS_KEY });
   homeUpdated = true;
   mark('home updated');
   for (const socket of sockets) await socket.close({ code: 1012, reason: 'Ri was updated' });
@@ -212,7 +216,10 @@ void acceptance('version-smoke', async fixture => {
     fixture.report.versionReload = {
       timings,
       refusedOldSaves: rejected,
-      refusedWhileUnloading,
+      refusedWhileUnloading: {
+        seenInConsole: refusedWhileUnloading,
+        counted: await page.evaluate(key => Number(localStorage.getItem(key) ?? 0), UNLOADING_REFUSALS_KEY).catch(() => undefined),
+      },
       renderer: await page.evaluate(() => (window as unknown as { versionReloadEvents?: unknown }).versionReloadEvents).catch(() => undefined),
       native: await fixture.app!.evaluate(() => (globalThis as unknown as { versionReloadNative?: unknown }).versionReloadNative).catch(() => undefined),
     };
