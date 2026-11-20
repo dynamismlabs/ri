@@ -855,11 +855,15 @@ async function prepareCloseOnce(intent: 'quit' | 'continue'): Promise<boolean> {
 }
 
 async function quit(skipGuard = false) {
-  if (quitting || preparingClose) return;
+  // Each stage says where it got to, so a Quit that never finishes shows which.
+  if (quitting || preparingClose) { console.info(`[desktop] Quit is already ${quitting ? 'under way' : 'checking for unsaved changes'}`); return; }
+  const started = Date.now();
   preparingClose = true;
-  if (!skipGuard && !(await prepareClose('quit'))) { preparingClose = false; return; }
+  if (!skipGuard) console.info('[desktop] Quit asked. Checking for unsaved changes.');
+  if (!skipGuard && !(await prepareClose('quit'))) { preparingClose = false; console.info('[desktop] Quit cancelled with changes still saving'); return; }
   preparingClose = false;
   quitting = true;
+  console.info(skipGuard ? '[desktop] Quitting' : `[desktop] Quitting after ${Date.now() - started} ms checking for unsaved changes`);
   desktopConnection.stop();
   activity?.stop(); captureShortcut?.stop();
   tray?.destroy(); tray = undefined;
@@ -867,11 +871,18 @@ async function quit(skipGuard = false) {
   notifications?.stop(); notificationAbort.abort();
   clearStartupLimit();
   if (backend && backend.exitCode === null && backend.signalCode === null) {
-    const exited = once(backend, 'exit');
-    if (backend.connected) backend.send({ type: 'stop' });
-    const force = setTimeout(() => stopTree(backend!), process.platform === 'win32' ? 75_000 : 10_000);
-    await exited.catch(() => {});
-    clearTimeout(force);
+    const child = backend;
+    const stopping = Date.now();
+    const exited = once(child, 'exit').then(() => true, () => true);
+    if (child.connected) child.send({ type: 'stop' });
+    const limit = process.platform === 'win32' ? 75_000 : 10_000;
+    const force = setTimeout(() => { console.warn(`[desktop] The backend did not stop within ${limit / 1000} s. Killing it.`); stopTree(child); }, limit);
+    // A killed backend is gone even if its exit event never arrives, which
+    // macOS can hold back during a quit. Don't let Quit wait for it forever.
+    let giveUp: ReturnType<typeof setTimeout> | undefined;
+    const stopped = await Promise.race([exited, new Promise<false>(resolve => { giveUp = setTimeout(() => resolve(false), limit + 5_000); })]);
+    clearTimeout(force); clearTimeout(giveUp);
+    console.info(stopped ? `[desktop] The backend stopped in ${Date.now() - stopping} ms` : '[desktop] No exit event from the killed backend. Quitting anyway.');
   }
   finished = true;
   localSurface.close();
