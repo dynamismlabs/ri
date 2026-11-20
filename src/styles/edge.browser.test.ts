@@ -33,6 +33,8 @@ beforeAll(async () => {
       import {ButtonGroup} from '@/components/ui/button-group';
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
       import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
+      import {ChatLenses, ChatLensBar} from '@/components/workspaces/chat-lens-bar';
+      const LENSES=[{value:'all',label:'All'},{value:'unread',label:'Unread',count:2,tone:'attention'},{value:'working',label:'Working'}];
       const LANES=[{value:'progress',label:'In progress',count:9},{value:'todo',label:'Todo',count:4},{value:'waiting',label:'Waiting',count:2},{value:'done',label:'Done',count:30}];
       function Fixture(){
         const [lane,setLane]=useState('progress');
@@ -85,6 +87,9 @@ beforeAll(async () => {
             <ButtonGroup aria-label="Show at"><Button aria-pressed={false} variant="outline" size="xs">&gt;0%</Button><Button data-case="usage-toggle" aria-pressed size="xs">50%</Button><Button aria-pressed size="xs">80%</Button></ButtonGroup>
           </div>
           <div data-slot="settings-nav"><input data-case="settings-search" aria-label="Search settings" className="rounded-lg border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" /></div>
+          {/* The agent page's chat lenses (compact) and the phone's (touch), as they render. */}
+          <div data-case="lenses"><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Chats" options={LENSES}/></ChatLenses></div>
+          <div data-case="lenses-touch" style={{width:360}}><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Phone chats" size="touch" options={LENSES}/></ChatLenses></div>
         </div>;
       }
       createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
@@ -337,6 +342,43 @@ for (const theme of ['light', 'dark'] as const) {
       const search = await page.locator('[data-case="settings-search"]').evaluate(el => ({ outline: getComputedStyle(el).outlineStyle, shadow: getComputedStyle(el).boxShadow }));
       expect(search.outline).toBe('none');
       expect(search.shadow).not.toBe('none');
+    } finally { await page.close(); }
+  });
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`draws the agent page's chat lenses as one segmented control (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const lenses = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.backgroundColor = 'var(--edge-thumb)';
+        document.body.append(probe);
+        const thumb = getComputedStyle(probe).backgroundColor;
+        probe.remove();
+        const read = (selector: string) => {
+          const list = document.querySelector(`${selector} [role="tablist"]`) as HTMLElement;
+          const tabs = Array.from(list.querySelectorAll('[role="tab"]')) as HTMLElement[];
+          const chosen = tabs.find(t => t.getAttribute('aria-selected') === 'true')!;
+          return {
+            trackRadius: parseFloat(getComputedStyle(list).borderTopLeftRadius),
+            chosenFill: getComputedStyle(chosen).backgroundColor,
+            chosenRadius: parseFloat(getComputedStyle(chosen).borderTopLeftRadius),
+            heights: tabs.map(t => t.getBoundingClientRect().height),
+            fill: tabs.reduce((sum, t) => sum + t.getBoundingClientRect().width, 0) / list.getBoundingClientRect().width,
+          };
+        };
+        return { thumb, compact: read('[data-case="lenses"]'), touch: read('[data-case="lenses-touch"]') };
+      });
+      for (const bar of [lenses.compact, lenses.touch]) {
+        expect(bar.trackRadius).toBeGreaterThan(100);
+        expect(bar.chosenRadius).toBeGreaterThan(100);
+        expect(bar.chosenFill).toBe(lenses.thumb);
+      }
+      // The phone keeps its touch height and its full-width tabs.
+      expect(lenses.touch.heights.every(h => h >= 36)).toBe(true);
+      expect(lenses.touch.fill).toBeGreaterThan(0.9);
+      expect(lenses.compact.heights.every(h => h <= 26)).toBe(true);
     } finally { await page.close(); }
   });
 }

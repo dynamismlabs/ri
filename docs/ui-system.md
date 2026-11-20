@@ -79,7 +79,7 @@ These carry the system across screens. Use them before inventing a new one.
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes) | `aria-pressed`, `aria-selected` or `aria-checked` on each option |
+| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex |
 | `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck), `data-mode` (the permission chip) |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
@@ -136,8 +136,9 @@ drawn as a rounded rectangle is a leftover, not a variant.
 
 ### The area above a title
 
-It reads as words ("Task · Money") and shows it can be changed on hover: a soft
-capsule and a chevron. With no area it says "No area" in the faintest text.
+A soft capsule with a chevron, at rest as well as on hover ("Task · [Money ⌄]"), so it
+reads as a control without hovering. Words alone weren't clear enough (2026-11-20).
+With no area it says "No area" in quieter type.
 
 Inside `meta`, status, energy and blocked keep the colors classic gives them:
 their rule sets `color: revert-layer`, which hands the color back to the

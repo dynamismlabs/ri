@@ -67,11 +67,12 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
           <ChevronLeft size={18} />
           Chat
         </button>
-        <div className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-lg bg-muted/60 p-0.5">
+        <div data-slot="segmented" data-size="touch" className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-lg bg-muted/60 p-0.5">
           {PRIMARY_VIEWS.map((v) => (
             <button
               key={v}
               type="button"
+              aria-pressed={view === v}
               onClick={() => onShow(v)}
               className={cn(
                 'flex-shrink-0 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors',

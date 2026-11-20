@@ -124,7 +124,7 @@ export function PlaceSwitch({ place, side, onMove }: { place: PreviewPlace; side
     </Tip>
   );
   return (
-    <div role="group" aria-label="Where files open" className="flex shrink-0 items-center gap-0.5 rounded-md border border-border p-0.5">
+    <div role="group" aria-label="Where files open" data-slot="segmented" className="flex shrink-0 items-center gap-0.5 rounded-md border border-border p-0.5">
       {option('large', 'Show large', <Expand size={13} />)}
       {option('beside', 'Show beside the chat', <Beside size={13} />)}
     </div>

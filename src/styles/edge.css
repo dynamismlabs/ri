@@ -195,6 +195,10 @@ html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-spac
 html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
 html[data-look="edge"] [data-slot="segmented"] > button:hover:not([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { color: var(--edge-t1); background-color: transparent; }
 html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+/* A label shown in the track for a choice made elsewhere (the phone's More view) reads as the chosen option. */
+html[data-look="edge"] [data-slot="segmented"] > span { border-radius: 999px; color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+/* Phone-sized switches keep their touch height and their own flex (full-width lenses, scrolling tool tabs). */
+html[data-look="edge"] [data-slot="segmented"][data-size="touch"] > button { flex: revert-layer; height: 36px; padding-inline: 12px; font-size: 13px; }
 
 /* Toolbar buttons (list toolbars, deck filters): capsules on a quiet fill, no outline. */
 html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) { height: 28px; min-width: 28px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t2); font-size: 12px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
@@ -278,12 +282,13 @@ html[data-look="edge"] [data-slot="new-agent"]:hover { background-color: var(--e
 /* Task and note pages (the slideout and the full page share them). */
 html[data-look="edge"] [data-slot="entity-kind"] { gap: 7px; }
 html[data-look="edge"] [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); }
-/* The area above a title is a quiet button: it reads as words, and shows it can be changed on hover. */
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 3px; height: 22px; margin-left: -7px; padding: 0 6px 0 7px; border-radius: 999px; background-color: transparent; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t2); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t4); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0; transition: opacity 120ms; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-track); color: var(--edge-t1); }
-html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, :focus-visible, [data-state="open"])::after { opacity: 0.6; }
+/* The area above a title is a control you can see at rest: a soft capsule with its
+   chevron, like the other property buttons. "No area" says so in quieter type. */
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 10px; border-radius: 999px; background-color: var(--edge-track); font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0.55; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"])::after { opacity: 0.85; }
 html[data-look="edge"] [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
 html[data-look="edge"] [data-slot="properties"] > span { font-weight: 400; color: var(--edge-t3); }
 html[data-look="edge"] [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }

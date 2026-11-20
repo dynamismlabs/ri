@@ -174,10 +174,11 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
               </div>
             )}
             <div className="ml-auto flex items-center gap-1.5">
-              <div className="flex rounded-md border border-border p-0.5 text-[10.5px]">
+              <div data-slot="segmented" className="flex rounded-md border border-border p-0.5 text-[10.5px]">
                 {(['split', 'unified'] as const).map((m) => (
                   <button
                     key={m}
+                    aria-pressed={viewMode === m}
                     onClick={() => setViewMode(m)}
                     className={cn(
                       'rounded px-1.5 py-0.5 capitalize transition-colors',

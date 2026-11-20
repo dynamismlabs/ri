@@ -323,10 +323,11 @@ function FileViewerHeader({
         )
       )}
       {(isChanged || isMarkdown || isHtml) && (
-        <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 text-[10px] font-medium shrink-0">
+        <div data-slot="segmented" className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 text-[10px] font-medium shrink-0">
           {isConflict ? (
             <button
               type="button"
+              aria-pressed={mode === 'conflict'}
               onClick={() => onModeChange('conflict')}
               className={cn(
                 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
@@ -342,7 +343,8 @@ function FileViewerHeader({
             isChanged && (
               <button
                 type="button"
-                onClick={() => onModeChange('diff')}
+                aria-pressed={mode === 'diff'}
+              onClick={() => onModeChange('diff')}
                 className={cn(
                   'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
                   mode === 'diff'
@@ -357,7 +359,8 @@ function FileViewerHeader({
           )}
           <button
             type="button"
-            onClick={() => onModeChange('current')}
+            aria-pressed={mode === 'current'}
+              onClick={() => onModeChange('current')}
             className={cn(
               'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
               mode === 'current'
@@ -371,6 +374,7 @@ function FileViewerHeader({
           {(isMarkdown || isHtml) && (
             <button
               type="button"
+              aria-pressed={mode === 'render'}
               onClick={() => onModeChange('render')}
               className={cn(
                 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
