@@ -65,7 +65,7 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/50 px-3 py-1">
-        <div role="tablist" aria-label="Build or try" className="flex items-center gap-0.5">
+        <div role="tablist" aria-label="Build or try" data-slot="segmented" className="flex items-center gap-0.5">
           {tabs.map(({ kind, label }) => (
             <button
               key={kind}

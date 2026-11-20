@@ -95,7 +95,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
     );
   }
   return (
-    <footer className="flex flex-shrink-0 flex-col gap-1.5 px-2 py-2 border-t border-border/40">
+    <footer data-slot="rail-foot" className="flex flex-shrink-0 flex-col gap-1.5 px-2 py-2 border-t border-border/40">
       {/* My Ri and its teams, once one is connected (docs/homes-spec.md §3.2). */}
       <SpaceSelector variant="wide" />
       <RailUpdateRow collapsed={false} />

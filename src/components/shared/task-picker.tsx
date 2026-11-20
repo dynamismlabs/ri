@@ -34,6 +34,7 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
       <PopoverTrigger asChild>
         <Tip label={value ? `Linked to: ${linkedTitle ?? 'task'}` : 'Link to task'}>
           <button
+            data-slot="task-picker"
             className={cn(
               'inline-flex items-center gap-0.5 text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted px-1.5 py-0.5 rounded',
               value ? 'text-primary/60' : 'text-muted-foreground/40',

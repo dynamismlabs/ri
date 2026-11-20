@@ -80,7 +80,7 @@ export function TaskPriority({ taskId, status }: { taskId: string; status: TaskS
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition-colors">
+            <button data-slot="chip-button" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition-colors">
               {position.ranked ? 'Move' : 'Place'}
               <ChevronDown size={10} />
             </button>

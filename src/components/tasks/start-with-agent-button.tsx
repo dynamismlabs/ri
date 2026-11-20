@@ -168,6 +168,8 @@ export function StartWithAgentButton({
           onClick={onClick}
           disabled={busy}
           aria-label={label}
+          data-slot="header-action"
+          data-tone="agent"
           className={cn(
             'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-violet-500/30 bg-violet-500/5 px-2 py-1 text-[11px] font-medium text-violet-600 transition-colors hover:bg-violet-500/10 disabled:opacity-60 dark:text-violet-400',
             className,

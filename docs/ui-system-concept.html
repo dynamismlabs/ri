@@ -1,0 +1,1390 @@
+<!doctype html>
+<html lang="en" data-family="edge" data-dir="edge" data-theme="dark" data-tint="gray">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ri · UI directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&family=Inter+Tight:wght@500..800&family=Roboto+Flex:opsz,wght@8..144,400..700&family=Geist:wght@400..700&family=Figtree:wght@400..700&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   1. Tint. Gray is the default. Warm is the earlier graphite.
+   ===================================================================== */
+html[data-tint="gray"] { --h: 264; --c: 0.0028; }
+html[data-tint="warm"] { --h: 75;  --c: 0.0050; }
+
+/* =====================================================================
+   2. Theme ladders. Surfaces step by tone. Four text levels only.
+   ===================================================================== */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas:  oklch(0.145 var(--c) var(--h));
+  --pane:    oklch(0.183 var(--c) var(--h));
+  --raised:  oklch(0.228 calc(var(--c) * 1.1) var(--h));
+  --thumb:   oklch(0.305 calc(var(--c) * 1.1) var(--h));
+  --overlay: oklch(0.215 var(--c) var(--h));
+  --hover:   oklch(1 0 0 / 0.045);
+  --selected:oklch(1 0 0 / 0.08);
+  --press:   oklch(1 0 0 / 0.11);
+  --track:   oklch(1 0 0 / 0.055);
+  --line:    oklch(1 0 0 / 0.08);
+  --line-2:  oklch(1 0 0 / 0.14);
+  --t1: oklch(0.955 0.003 var(--h));
+  --t2: oklch(0.80 calc(var(--c) * 1.4) var(--h));
+  --t3: oklch(0.62 calc(var(--c) * 1.5) var(--h));
+  --t4: oklch(0.48 calc(var(--c) * 1.5) var(--h));
+  --primary-bg: oklch(0.955 0.003 var(--h));
+  --primary-fg: oklch(0.17 var(--c) var(--h));
+  --attention: oklch(0.79 0.15 66);  --attention-bg: oklch(0.79 0.15 66 / 0.15);
+  --working:   oklch(0.74 0.12 250); --working-bg:   oklch(0.74 0.12 250 / 0.15);
+  --done:      oklch(0.76 0.14 158); --done-bg:      oklch(0.76 0.14 158 / 0.14);
+  --danger:    oklch(0.70 0.17 24);  --danger-bg:    oklch(0.70 0.17 24 / 0.15);
+  --focus: oklch(0.74 0.12 250);
+  --shadow-pane: none;
+  --shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-pop: 0 0 0 1px oklch(1 0 0 / 0.08), 0 18px 44px -14px oklch(0 0 0 / 0.75);
+  --shadow-composer: 0 0 0 1px oklch(1 0 0 / 0.07), 0 10px 28px -14px oklch(0 0 0 / 0.7);
+  --a1: oklch(0.72 0.12 250); --a2: oklch(0.74 0.13 60); --a3: oklch(0.73 0.13 158);
+  --a4: oklch(0.72 0.14 350); --a5: oklch(0.72 0.12 295); --a6: oklch(0.78 0.12 95);
+  --backdrop: radial-gradient(1200px 700px at 15% 0%, oklch(0.32 0.06 260 / 0.55), transparent 60%), radial-gradient(900px 700px at 100% 100%, oklch(0.30 0.07 320 / 0.45), transparent 60%), oklch(0.13 0.01 270);
+}
+html[data-theme="light"] {
+  color-scheme: light;
+  --canvas:  oklch(0.962 calc(var(--c) * 1.1) var(--h));
+  --pane:    oklch(0.999 0 0);
+  --raised:  oklch(0.958 calc(var(--c) * 1.1) var(--h));
+  --thumb:   oklch(1 0 0);
+  --overlay: oklch(1 0 0);
+  --hover:   oklch(0.2 0.01 var(--h) / 0.045);
+  --selected:oklch(0.2 0.01 var(--h) / 0.075);
+  --press:   oklch(0.2 0.01 var(--h) / 0.1);
+  --track:   oklch(0.2 0.01 var(--h) / 0.055);
+  --line:    oklch(0.2 0.01 var(--h) / 0.085);
+  --line-2:  oklch(0.2 0.01 var(--h) / 0.15);
+  --t1: oklch(0.21 calc(var(--c) * 2) var(--h));
+  --t2: oklch(0.40 calc(var(--c) * 2) var(--h));
+  --t3: oklch(0.54 calc(var(--c) * 2) var(--h));
+  --t4: oklch(0.67 calc(var(--c) * 1.5) var(--h));
+  --primary-bg: oklch(0.21 calc(var(--c) * 2) var(--h));
+  --primary-fg: oklch(0.99 0 0);
+  --attention: oklch(0.63 0.16 55);  --attention-bg: oklch(0.75 0.15 66 / 0.17);
+  --working:   oklch(0.55 0.15 252); --working-bg:   oklch(0.6 0.14 250 / 0.12);
+  --done:      oklch(0.55 0.13 155); --done-bg:      oklch(0.65 0.13 155 / 0.14);
+  --danger:    oklch(0.56 0.19 25);  --danger-bg:    oklch(0.62 0.19 25 / 0.11);
+  --focus: oklch(0.55 0.15 252);
+  --shadow-pane: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.06), 0 1px 2px oklch(0.2 0.01 var(--h) / 0.04);
+  --shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
+  --shadow-pop: 0 0 0 1px oklch(0 0 0 / 0.07), 0 18px 44px -14px oklch(0.2 0.01 var(--h) / 0.28);
+  --shadow-composer: 0 0 0 1px oklch(0 0 0 / 0.08), 0 8px 24px -12px oklch(0.2 0.01 var(--h) / 0.22);
+  --a1: oklch(0.57 0.15 250); --a2: oklch(0.64 0.15 58); --a3: oklch(0.57 0.13 158);
+  --a4: oklch(0.6 0.17 350); --a5: oklch(0.55 0.15 295); --a6: oklch(0.66 0.13 95);
+  --backdrop: radial-gradient(1200px 700px at 10% 0%, oklch(0.88 0.06 250 / 0.9), transparent 60%), radial-gradient(1000px 800px at 100% 100%, oklch(0.9 0.05 330 / 0.8), transparent 60%), oklch(0.95 0.01 270);
+}
+
+/* =====================================================================
+   3. Directions. Same markup, different structure and shape.
+   ===================================================================== */
+html { --font: Inter, ui-sans-serif, -apple-system, system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
+html[data-dir="quiet"] { --gutter: 6px; --pane-r: 12px; --line-w: 0px; --btn-r: 999px; --chip-r: 999px; --seg-r: 999px; --tab-r: 999px; --row-r: 8px; --input-r: 10px; --pop-r: 12px; --composer-r: 18px; --chat: 15px; --chat-lh: 24px; --ui: 13px; --ctl: 28px; --row-y: 7px; --col: 720px; --rail-w: 260px; }
+html[data-dir="crisp"] { --font: Geist, Inter, ui-sans-serif, system-ui, sans-serif; --gutter: 0px; --pane-r: 0px; --line-w: 1px; --btn-r: 7px; --chip-r: 5px; --seg-r: 7px; --tab-r: 0px; --row-r: 6px; --input-r: 7px; --pop-r: 10px; --composer-r: 12px; --chat: 14px; --chat-lh: 22px; --ui: 13px; --ctl: 28px; --row-y: 6px; --col: 720px; --rail-w: 256px; }
+
+html[data-dir="dense"] { --gutter: 0px; --pane-r: 0px; --line-w: 1px; --btn-r: 5px; --chip-r: 4px; --seg-r: 5px; --tab-r: 0px; --row-r: 4px; --input-r: 5px; --pop-r: 8px; --composer-r: 8px; --chat: 13.5px; --chat-lh: 21px; --ui: 12.5px; --ctl: 24px; --row-y: 3px; --col: 760px; --rail-w: 236px; }
+
+/* Flat directions: panes take one plane, lines separate. */
+html[data-dir="crisp"][data-theme="dark"], html[data-dir="dense"][data-theme="dark"] { --canvas: oklch(0.17 var(--c) var(--h)); --pane: oklch(0.17 var(--c) var(--h)); --raised: oklch(0.215 var(--c) var(--h)); }
+html[data-dir="crisp"][data-theme="light"], html[data-dir="dense"][data-theme="light"] { --canvas: oklch(0.985 0.001 var(--h)); --pane: oklch(0.999 0 0); }
+
+/* Edge: Quiet, with the frame squared off. The panes run into the window's corners and meet at a border.
+   No rounded sheets, no gray gutters. Every control keeps Quiet's shape. */
+html[data-family="edge"] { --gutter: 0px; --pane-r: 0px; --line-w: 1px; --btn-r: 999px; --chip-r: 999px; --seg-r: 999px; --tab-r: 999px; --row-r: 8px; --input-r: 10px; --pop-r: 12px; --composer-r: 18px; --chat: 15px; --chat-lh: 24px; --ui: 13px; --ctl: 28px; --row-y: 7px; --col: 720px; --rail-w: 260px; }
+html[data-family="edge"][data-theme="dark"] { --line: oklch(1 0 0 / 0.09); }
+html[data-family="edge"][data-theme="light"] { --canvas: oklch(0.985 0.0012 var(--h)); --raised: oklch(0.964 0.002 var(--h)); --line: oklch(0.2 0.01 var(--h) / 0.1); }
+html[data-family="edge"] { --composer-r: 22px; }
+/* The composer reads as a chat input: white, a fine outline, a soft lift. Not a gray block. */
+html[data-family="edge"][data-theme="light"] .composer { background: oklch(1 0 0); box-shadow: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.13), 0 1px 2px oklch(0.2 0.01 var(--h) / 0.05), 0 10px 28px -14px oklch(0.2 0.02 var(--h) / 0.2); }
+html[data-family="edge"][data-theme="light"] .composer:focus-within { box-shadow: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.22), 0 10px 28px -14px oklch(0.2 0.02 var(--h) / 0.24); }
+html[data-family="edge"][data-theme="light"] .review-bar { background: oklch(1 0 0); box-shadow: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.11), 0 6px 18px -12px oklch(0.2 0.02 var(--h) / 0.16); }
+html[data-family="edge"][data-theme="dark"] .composer { background: oklch(0.205 var(--c) var(--h)); box-shadow: 0 0 0 1px oklch(1 0 0 / 0.11), 0 12px 30px -14px oklch(0 0 0 / 0.75); }
+html[data-family="edge"][data-theme="dark"] .review-bar { background: oklch(0.205 var(--c) var(--h)); box-shadow: 0 0 0 1px oklch(1 0 0 / 0.1); }
+html[data-family="edge"] .composer .ph { padding-top: 4px; }
+html[data-family="edge"] .body { padding: 0; gap: 0; }
+html[data-family="edge"] .hud { border-bottom: 1px solid var(--line); }
+html[data-family="edge"] .rail { border-right: 1px solid var(--line); }
+html[data-family="edge"] .pane { border-radius: 0; box-shadow: none; }
+html[data-family="edge"] .pane + .pane, html[data-family="edge"] .apanes > .pane + .pane { box-shadow: -1px 0 0 0 var(--line); }
+html[data-family="edge"] .assist { border-left: 1px solid var(--line); }
+
+/* =====================================================================
+   Edge Mac: Edge, tuned like a Mac app. The system font and its tighter rhythm,
+   pane tabs as a segmented control, top-bar icons in one capsule, flat controls.
+   ===================================================================== */
+html[data-dir="edgemac"] { --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; --ui: 13px; --chat: 14.5px; --chat-lh: 22px; --row-y: 6px; --ctl: 28px; --rail-w: 252px; }
+html[data-dir="edgemac"] .island, html[data-dir="edgemac"] .tgroup { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 999px; background: var(--track); }
+html[data-dir="edgemac"] .ptabs .tab { height: 24px; padding: 0 12px; font-size: 12.5px; }
+html[data-dir="edgemac"] .ptabs .island .tab.on { background: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); font-weight: 500; }
+html[data-dir="edgemac"] .ptabs .island .tab:hover { background: none; }
+html[data-dir="edgemac"] .tgroup .btn.icon { width: 30px; height: 26px; }
+html[data-dir="edgemac"] .rrow.on, html[data-dir="edgemac"] .agent.on { background: oklch(0.2 0.01 var(--h) / 0.08); }
+html[data-dir="edgemac"][data-theme="dark"] .rrow.on, html[data-dir="edgemac"][data-theme="dark"] .agent.on { background: oklch(1 0 0 / 0.09); }
+html[data-dir="edgemac"] .ditem .tt { font-size: 14.5px; font-weight: 600; }
+html[data-dir="edgemac"] .dtitle { font-size: 26px; line-height: 32px; font-weight: 700; letter-spacing: -0.01em; }
+html[data-dir="edgemac"] .frame { font-size: 13.5px; }
+html[data-dir="edgemac"] .agent .pv, html[data-dir="edgemac"] .pinned .pv { font-size: 11.5px; }
+
+/* =====================================================================
+   Edge Lift: Edge with Inter tightened and a slight physical lift on everything
+   you can click: tabs (a segmented control with a lifted thumb), buttons,
+   selection and chips.
+   ===================================================================== */
+html[data-dir="edgelift"] { --ui: 13px; --chat: 14.5px; --chat-lh: 22.5px; --row-y: 6px; --ctl: 28px; --rail-w: 252px; }
+html[data-dir="edgelift"][data-theme="light"] { --lift-bg: oklch(1 0 0); --lift: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.1), 0 1px 2px oklch(0.2 0.01 var(--h) / 0.07), inset 0 -1px 0 oklch(0.2 0.01 var(--h) / 0.035); --lift-primary: 0 0 0 1px oklch(0.2 0.01 var(--h)), inset 0 1px 0 oklch(1 0 0 / 0.16), 0 1px 2px oklch(0 0 0 / 0.22); --well: oklch(0.955 0.002 var(--h)); }
+html[data-dir="edgelift"][data-theme="dark"] { --lift-bg: oklch(0.25 var(--c) var(--h)); --lift: 0 0 0 1px oklch(1 0 0 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.07), 0 1px 2px oklch(0 0 0 / 0.5); --lift-primary: inset 0 1px 0 oklch(1 0 0 / 0.5), 0 1px 2px oklch(0 0 0 / 0.5); --well: oklch(1 0 0 / 0.05); }
+html[data-dir="edgelift"] .rail, html[data-dir="edgelift"] .hud, html[data-dir="edgelift"] .ptabs, html[data-dir="edgelift"] .ptool, html[data-dir="edgelift"] .psub, html[data-dir="edgelift"] .row .tt, html[data-dir="edgelift"] .meta, html[data-dir="edgelift"] .whead, html[data-dir="edgelift"] .ctabs, html[data-dir="edgelift"] .props, html[data-dir="edgelift"] .float-tools { letter-spacing: -0.008em; }
+html[data-dir="edgelift"] .island { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 10px; background: var(--well); box-shadow: inset 0 0 0 1px var(--line); }
+html[data-dir="edgelift"] .ptabs .tab { height: 24px; padding: 0 11px; font-size: 12.5px; border-radius: 8px; }
+html[data-dir="edgelift"] .ptabs .island .tab.on { background: var(--lift-bg); box-shadow: var(--lift); color: var(--t1); }
+html[data-dir="edgelift"] .ptabs .island .tab:hover { background: none; }
+html[data-dir="edgelift"] .seg { background: var(--well); box-shadow: inset 0 0 0 1px var(--line); border-radius: 10px; }
+html[data-dir="edgelift"] .seg button { border-radius: 8px; }
+html[data-dir="edgelift"] .seg button.on, html[data-dir="edgelift"] .rrow.on, html[data-dir="edgelift"] .agent.on, html[data-dir="edgelift"] .ctab.on, html[data-dir="edgelift"] .row.on, html[data-dir="edgelift"] .chatrow.on { background: var(--lift-bg); box-shadow: var(--lift); }
+html[data-dir="edgelift"] .btn.secondary, html[data-dir="edgelift"] .group, html[data-dir="edgelift"] .cnt.on, html[data-dir="edgelift"] .file, html[data-dir="edgelift"] .wrow .link, html[data-dir="edgelift"] .chip { background: var(--lift-bg); box-shadow: var(--lift); }
+html[data-dir="edgelift"] .btn.primary, html[data-dir="edgelift"] .send.on { box-shadow: var(--lift-primary); }
+html[data-dir="edgelift"] .btn.go { box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.25), 0 0 0 1px oklch(0.45 0.12 155), 0 1px 2px oklch(0 0 0 / 0.2); }
+html[data-dir="edgelift"] .addfield { background: var(--pane); box-shadow: 0 0 0 1px var(--line), inset 0 1px 2px oklch(0 0 0 / 0.04); }
+html[data-dir="edgelift"] .ditem .tt { font-size: 14.5px; font-weight: 600; letter-spacing: -0.01em; }
+html[data-dir="edgelift"] .dtitle { font-size: 26px; line-height: 32px; font-weight: 650; letter-spacing: -0.02em; }
+html[data-dir="edgelift"] .frame { font-size: 13.5px; }
+html[data-dir="edgelift"] .agent .pv, html[data-dir="edgelift"] .pinned .pv { font-size: 11.5px; }
+html[data-dir="edgelift"] .ctabs .ctab { border-radius: 8px; }
+
+/* =====================================================================
+   Answer: after Perplexity. On Edge's frame, the chat reads like an answer engine:
+   your message is a headline, Ri's reply reads like an article, tool steps are a
+   small pill, changed files are source cards.
+   ===================================================================== */
+html[data-dir="answer"] { --chat: 15.5px; --chat-lh: 26px; --col: 680px; }
+html[data-dir="answer"] .msg-user { justify-content: flex-start; margin: 30px 0 6px; padding-top: 24px; box-shadow: 0 -1px 0 0 var(--line); }
+html[data-dir="answer"] .transcript .col > .msg-user:first-child { box-shadow: none; padding-top: 6px; margin-top: 10px; }
+html[data-dir="answer"] .msg-user .bubble { background: none; box-shadow: none; padding: 0; border-radius: 0; max-width: 100%; font-size: 22px; line-height: 29px; font-weight: 600; letter-spacing: -0.018em; color: var(--t1); }
+html[data-dir="answer"] .assist .msg-user .bubble { font-size: 18px; line-height: 24px; }
+html[data-dir="answer"] .msg-actions.r { justify-content: flex-start; margin: 0 0 0 -6px; }
+html[data-dir="answer"] .tool-row { height: 28px; padding: 0 12px 0 8px; margin: 10px 0 4px; border-radius: 999px; background: var(--track); color: var(--t2); font-size: 12.5px; font-weight: 500; }
+html[data-dir="answer"] .tool-row:hover { background: var(--press); }
+html[data-dir="answer"] .msg-ai p:first-child { margin-top: 12px; }
+html[data-dir="answer"] .files { gap: 8px; margin-top: 18px; }
+html[data-dir="answer"] .files .lbl { width: 100%; font-size: 12px; font-weight: 600; color: var(--t2); margin-bottom: 2px; }
+html[data-dir="answer"] .file { height: auto; padding: 8px 12px; border-radius: 10px; flex-wrap: wrap; row-gap: 2px; max-width: 220px; background: var(--pane); box-shadow: 0 0 0 1px var(--line-2); font-size: 12.5px; }
+html[data-dir="answer"] .file:hover { background: var(--hover); }
+html[data-dir="answer"] .ditem .tt { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+
+/* =====================================================================
+   Tonal: after Google's Material 3 Expressive, in grays. Pill selection in the rail,
+   tabs with an indicator bar, outlined segmented buttons with a check on the
+   selected one, 8px chips, an elevated rounded chat input, a floating Create button,
+   Roboto Flex.
+   ===================================================================== */
+html[data-dir="tonal"] { --font: 'Roboto Flex', Roboto, ui-sans-serif, system-ui, sans-serif; --gutter: 0px; --pane-r: 0px; --line-w: 1px; --btn-r: 999px; --chip-r: 8px; --seg-r: 999px; --tab-r: 0px; --row-r: 999px; --input-r: 12px; --pop-r: 16px; --composer-r: 28px; --chat: 15px; --chat-lh: 24px; --ui: 14px; --ctl: 34px; --row-y: 9px; --col: 720px; --rail-w: 268px; }
+html[data-dir="tonal"][data-theme="light"] { --canvas: oklch(0.975 0.002 var(--h)); --pane: oklch(1 0 0); --raised: oklch(0.945 0.004 var(--h)); --tonal: oklch(0.91 0.006 var(--h)); --tonal-2: oklch(0.945 0.004 var(--h)); --outline: oklch(0.2 0.01 var(--h) / 0.22); --line: oklch(0.2 0.01 var(--h) / 0.09); --elev: 0 1px 2px oklch(0 0 0 / 0.14), 0 3px 8px 1px oklch(0 0 0 / 0.08); --elev-2: 0 2px 6px oklch(0 0 0 / 0.1), 0 10px 28px -6px oklch(0 0 0 / 0.16); }
+html[data-dir="tonal"][data-theme="dark"] { --canvas: oklch(0.17 var(--c) var(--h)); --pane: oklch(0.19 var(--c) var(--h)); --raised: oklch(0.25 var(--c) var(--h)); --tonal: oklch(0.32 0.006 var(--h)); --tonal-2: oklch(0.255 var(--c) var(--h)); --outline: oklch(1 0 0 / 0.24); --line: oklch(1 0 0 / 0.09); --elev: 0 1px 2px oklch(0 0 0 / 0.5), 0 3px 8px 1px oklch(0 0 0 / 0.35); --elev-2: 0 2px 6px oklch(0 0 0 / 0.5), 0 12px 30px -6px oklch(0 0 0 / 0.6); }
+html[data-dir="tonal"] .body { padding: 0; gap: 0; }
+html[data-dir="tonal"] .rail { padding: 6px 10px 10px 10px; }
+html[data-dir="tonal"] .pane { border-radius: 0; box-shadow: none; }
+html[data-dir="tonal"] .pane + .pane, html[data-dir="tonal"] .apanes > .pane + .pane { box-shadow: -1px 0 0 0 var(--line); }
+html[data-dir="tonal"] .rail .rrow, html[data-dir="tonal"] .rail .agent { border-radius: 999px; padding-left: 14px; }
+html[data-dir="tonal"] .rail .rrow { height: 38px; }
+html[data-dir="tonal"] .rrow.on, html[data-dir="tonal"] .agent.on { background: var(--tonal); font-weight: 600; color: var(--t1); }
+html[data-dir="tonal"] .rail .agent { padding-top: 8px; padding-bottom: 8px; border-radius: 22px; }
+html[data-dir="tonal"] .av { border-radius: 50%; }
+html[data-dir="tonal"] .ptabs, html[data-dir="tonal"] .whead, html[data-dir="tonal"] .ctabs, html[data-dir="tonal"] .ahead, html[data-dir="tonal"] .tbar { border-bottom: 1px solid var(--line); }
+html[data-dir="tonal"] .tbar { max-width: none; }
+html[data-dir="tonal"] .ptabs { height: 48px; padding: 0 6px; }
+html[data-dir="tonal"] .ptabs .tab, html[data-dir="tonal"] .ctab { height: 100%; border-radius: 0; padding: 0 14px; font-weight: 500; }
+html[data-dir="tonal"] .ptabs .tab:hover, html[data-dir="tonal"] .ctab:hover { background: var(--hover); }
+html[data-dir="tonal"] .ptabs .tab.on, html[data-dir="tonal"] .ctab.on { background: none; color: var(--t1); font-weight: 600; }
+html[data-dir="tonal"] .ptabs .tab.on::after, html[data-dir="tonal"] .ctab.on::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--t1); }
+html[data-dir="tonal"] .seg { background: none; padding: 0; gap: 0; box-shadow: inset 0 0 0 1px var(--outline); }
+html[data-dir="tonal"] .seg button { height: calc(var(--ctl) - 2px); padding: 0 14px; border-radius: 0; color: var(--t2); font-weight: 500; }
+html[data-dir="tonal"] .seg button + button { box-shadow: -1px 0 0 0 var(--outline); }
+html[data-dir="tonal"] .seg button:first-child { border-radius: 999px 0 0 999px; }
+html[data-dir="tonal"] .seg button:last-child { border-radius: 0 999px 999px 0; }
+html[data-dir="tonal"] .seg button.on { background: var(--tonal); color: var(--t1); box-shadow: none; }
+html[data-dir="tonal"] .seg button + button.on { box-shadow: -1px 0 0 0 var(--outline); }
+html[data-dir="tonal"] .seg button.on::before { content: '✓'; font-size: 12px; font-weight: 700; margin-right: -2px; }
+html[data-dir="tonal"] .btn.secondary, html[data-dir="tonal"] .group, html[data-dir="tonal"] .cnt.on { background: var(--tonal-2); }
+html[data-dir="tonal"] .btn.secondary:hover { background: var(--tonal); }
+html[data-dir="tonal"] .pills .btn, html[data-dir="tonal"] .chip, html[data-dir="tonal"] .file, html[data-dir="tonal"] .wrow .link { border-radius: 8px; background: none; box-shadow: inset 0 0 0 1px var(--outline); height: 32px; }
+html[data-dir="tonal"] .chip { height: 24px; }
+html[data-dir="tonal"] .hud .btn.primary { border-radius: 16px; height: 38px; padding: 0 18px; background: var(--tonal); color: var(--t1); box-shadow: var(--elev); font-weight: 600; }
+html[data-dir="tonal"] .btn.primary { box-shadow: var(--elev); }
+html[data-dir="tonal"] .composer { background: var(--pane); border-radius: 28px; padding: 14px 10px 10px 20px; box-shadow: var(--elev-2), 0 0 0 1px var(--line); }
+html[data-dir="tonal"][data-theme="dark"] .composer { background: var(--raised); }
+html[data-dir="tonal"] .review-bar { background: var(--tonal-2); box-shadow: none; border-radius: 20px; }
+html[data-dir="tonal"] .send { width: 40px; height: 40px; border-radius: 14px; }
+html[data-dir="tonal"] .msg-user .bubble { background: var(--tonal-2); border-radius: 22px 6px 22px 22px; padding: 11px 16px; }
+html[data-dir="tonal"] .addfield { border-radius: 28px; background: var(--tonal-2); height: 44px; padding-left: 18px; }
+html[data-dir="tonal"] .banner { border-radius: 14px; background: var(--tonal-2); }
+html[data-dir="tonal"] .float-tools { border-radius: 16px; box-shadow: var(--elev-2), 0 0 0 1px var(--line); }
+html[data-dir="tonal"] .float-tools .row { border-radius: 999px; }
+html[data-dir="tonal"] .list .row, html[data-dir="tonal"] .deck .ditem, html[data-dir="tonal"] .dl .row, html[data-dir="tonal"] .chatrow { border-radius: 16px; }
+html[data-dir="tonal"] .list .row.on { background: var(--tonal-2); }
+html[data-dir="tonal"] .dtitle { font-size: 28px; line-height: 36px; font-weight: 500; letter-spacing: 0; }
+html[data-dir="tonal"] .ditem .tt { font-size: 16px; font-weight: 500; letter-spacing: 0; }
+html[data-dir="tonal"] .doc h2 { font-weight: 500; font-size: 20px; }
+html[data-dir="tonal"] .crumbs > span:last-child, html[data-dir="tonal"] .ahead .nm { font-weight: 500; }
+html[data-dir="tonal"] .sec { font-weight: 500; font-size: 12.5px; color: var(--t2); }
+html[data-dir="tonal"] .check { width: 18px; height: 18px; box-shadow: inset 0 0 0 2px var(--t3); }
+html[data-dir="tonal"] .check.done { background: var(--t2); }
+html[data-dir="tonal"] .assist { border-left: 1px solid var(--line); }
+
+/* =====================================================================
+   Native: after macOS 26 Finder, Mail and Notes. Today's colors. The rail floats as a
+   rounded panel inside the window, panes run flush with a split divider, pane tabs are a
+   segmented control, toolbar icons sit in one capsule group, system font.
+   ===================================================================== */
+html[data-dir="native"] { --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', Inter, system-ui, sans-serif; --gutter: 0px; --pane-r: 0px; --line-w: 1px; --btn-r: 999px; --chip-r: 999px; --seg-r: 999px; --tab-r: 999px; --row-r: 8px; --input-r: 10px; --pop-r: 14px; --composer-r: 20px; --chat: 14.5px; --chat-lh: 22px; --ui: 13px; --ctl: 28px; --row-y: 6px; --col: 720px; --rail-w: 256px; }
+html[data-dir="native"][data-theme="light"] { --canvas: oklch(0.995 0.001 var(--h)); --pane: oklch(0.995 0.001 var(--h)); --sidebar: oklch(0.955 0.003 var(--h)); --raised: oklch(0.955 0.003 var(--h)); --line: oklch(0.2 0.01 var(--h) / 0.1); }
+html[data-dir="native"][data-theme="dark"] { --canvas: oklch(0.185 var(--c) var(--h)); --pane: oklch(0.185 var(--c) var(--h)); --sidebar: oklch(0.235 var(--c) var(--h)); --raised: oklch(0.255 var(--c) var(--h)); --thumb: oklch(0.37 var(--c) var(--h)); --line: oklch(1 0 0 / 0.09); }
+html[data-dir="native"] .body { padding: 0; gap: 0; }
+html[data-dir="native"] .hud { border-bottom: 1px solid var(--line); }
+html[data-dir="native"] .rail { margin: 8px 0 8px 8px; border-radius: 14px; background: var(--sidebar); box-shadow: 0 0 0 1px var(--line), 0 6px 18px -10px oklch(0 0 0 / 0.18); padding: 8px 6px 6px 8px; }
+html[data-dir="native"][data-theme="dark"] .rail { box-shadow: 0 0 0 1px oklch(1 0 0 / 0.08), 0 8px 24px -10px oklch(0 0 0 / 0.7); }
+html[data-dir="native"] .rail.mini { padding: 8px 6px; align-items: center; }
+html[data-dir="native"] .pane { border-radius: 0; box-shadow: none; }
+html[data-dir="native"] .pane + .pane, html[data-dir="native"] .apanes > .pane + .pane { box-shadow: -1px 0 0 0 var(--line); }
+html[data-dir="native"] .island, html[data-dir="native"] .tgroup { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 999px; background: var(--track); }
+html[data-dir="native"] .ptabs { height: 46px; padding: 0 10px; }
+html[data-dir="native"] .ptabs .tab { height: 24px; padding: 0 12px; font-size: 12.5px; }
+html[data-dir="native"] .ptabs .island .tab.on { background: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
+html[data-dir="native"] .ptabs .island .tab:hover { background: none; }
+html[data-dir="native"] .tgroup .btn.icon { width: 30px; height: 26px; }
+html[data-dir="native"] .rrow.on, html[data-dir="native"] .agent.on { background: oklch(0.2 0.01 var(--h) / 0.09); }
+html[data-dir="native"][data-theme="dark"] .rrow.on, html[data-dir="native"][data-theme="dark"] .agent.on { background: oklch(1 0 0 / 0.1); }
+html[data-dir="native"] .composer { background: var(--pane); box-shadow: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.14), 0 8px 22px -12px oklch(0.2 0.02 var(--h) / 0.22); }
+html[data-dir="native"][data-theme="dark"] .composer { background: var(--raised); box-shadow: 0 0 0 1px oklch(1 0 0 / 0.1), 0 10px 26px -12px oklch(0 0 0 / 0.7); }
+html[data-dir="native"] .review-bar { background: var(--raised); box-shadow: none; }
+html[data-dir="native"] .msg-user .bubble { border-radius: 18px; }
+html[data-dir="native"] .dtitle { font-weight: 700; letter-spacing: -0.01em; }
+html[data-dir="native"] .ditem .tt { font-weight: 600; }
+html[data-dir="native"] .assist { border-left: 1px solid var(--line); background: var(--pane); }
+html[data-dir="native"] .float-tools { border-radius: 14px; }
+html[data-dir="native"] .ctabs .ctab.on { background: var(--track); }
+
+/* =====================================================================
+   Tactile: after Attio, Stripe and Resend. Today's colors. Crisp hairlines, controls
+   with a slight physical lift (white, a fine border, a tiny shadow), raised tabs and
+   selection, rows separated like a well-made table.
+   ===================================================================== */
+html[data-dir="tactile"] { --gutter: 0px; --pane-r: 0px; --line-w: 1px; --btn-r: 8px; --chip-r: 6px; --seg-r: 9px; --tab-r: 7px; --row-r: 6px; --input-r: 8px; --pop-r: 10px; --composer-r: 12px; --chat: 14.5px; --chat-lh: 23px; --ui: 13px; --ctl: 28px; --row-y: 8px; --col: 720px; --rail-w: 252px; }
+html[data-dir="tactile"][data-theme="light"] { --canvas: oklch(0.982 0.0015 var(--h)); --pane: oklch(1 0 0); --raised: oklch(0.965 0.002 var(--h)); --line: oklch(0.2 0.01 var(--h) / 0.09); --lift-bg: oklch(1 0 0); --lift: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.1), 0 1px 2px oklch(0.2 0.01 var(--h) / 0.07), inset 0 -1px 0 oklch(0.2 0.01 var(--h) / 0.04); --lift-primary: 0 0 0 1px oklch(0.2 0.01 var(--h)), inset 0 1px 0 oklch(1 0 0 / 0.16), 0 1px 2px oklch(0 0 0 / 0.22); }
+html[data-dir="tactile"][data-theme="dark"] { --canvas: oklch(0.155 var(--c) var(--h)); --pane: oklch(0.175 var(--c) var(--h)); --raised: oklch(0.215 var(--c) var(--h)); --line: oklch(1 0 0 / 0.085); --lift-bg: oklch(0.235 var(--c) var(--h)); --lift: 0 0 0 1px oklch(1 0 0 / 0.08), inset 0 1px 0 oklch(1 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.5); --lift-primary: inset 0 1px 0 oklch(1 0 0 / 0.5), 0 1px 2px oklch(0 0 0 / 0.5); }
+html[data-dir="tactile"] .body { padding: 0; gap: 0; }
+html[data-dir="tactile"] .hud { border-bottom: 1px solid var(--line); }
+html[data-dir="tactile"] .rail { border-right: 1px solid var(--line); }
+html[data-dir="tactile"] .pane { border-radius: 0; box-shadow: none; }
+html[data-dir="tactile"] .pane + .pane, html[data-dir="tactile"] .apanes > .pane + .pane { box-shadow: -1px 0 0 0 var(--line); }
+html[data-dir="tactile"] .ptabs, html[data-dir="tactile"] .whead, html[data-dir="tactile"] .ctabs, html[data-dir="tactile"] .ahead, html[data-dir="tactile"] .tbar { border-bottom: 1px solid var(--line); }
+html[data-dir="tactile"] .tbar { max-width: none; }
+html[data-dir="tactile"] .ptabs { height: 44px; }
+html[data-dir="tactile"] .tab.on, html[data-dir="tactile"] .ctab.on, html[data-dir="tactile"] .seg button.on, html[data-dir="tactile"] .rrow.on, html[data-dir="tactile"] .agent.on { background: var(--lift-bg); box-shadow: var(--lift); color: var(--t1); }
+html[data-dir="tactile"] .tab:hover { background: var(--hover); }
+html[data-dir="tactile"] .btn.secondary, html[data-dir="tactile"] .group, html[data-dir="tactile"] .cnt.on { background: var(--lift-bg); box-shadow: var(--lift); }
+html[data-dir="tactile"] .btn.primary, html[data-dir="tactile"] .send.on { box-shadow: var(--lift-primary); }
+html[data-dir="tactile"] .btn.go { box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.25), 0 0 0 1px oklch(0.45 0.12 155), 0 1px 2px oklch(0 0 0 / 0.2); }
+html[data-dir="tactile"] .seg { background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); }
+html[data-dir="tactile"] .badge { border-radius: 6px; }
+html[data-dir="tactile"] .addfield, html[data-dir="tactile"] .field { background: var(--pane); box-shadow: 0 0 0 1px var(--line), inset 0 1px 2px oklch(0 0 0 / 0.04); }
+html[data-dir="tactile"] .banner { background: var(--raised); }
+html[data-dir="tactile"] .file, html[data-dir="tactile"] .wrow .link, html[data-dir="tactile"] .chip { background: var(--lift-bg); box-shadow: var(--lift); }
+html[data-dir="tactile"] .list .row + .row, html[data-dir="tactile"] .deck .ditem + .ditem, html[data-dir="tactile"] .dl .row + .row { box-shadow: 0 -1px 0 0 var(--line); }
+html[data-dir="tactile"] .list .row, html[data-dir="tactile"] .deck .ditem, html[data-dir="tactile"] .dl .row { border-radius: 0; }
+html[data-dir="tactile"] .list .row.on { background: var(--lift-bg); box-shadow: var(--lift); border-radius: 8px; }
+html[data-dir="tactile"] .list .row.on + .row { box-shadow: none; }
+html[data-dir="tactile"] .composer { background: var(--pane); border-radius: 12px; box-shadow: 0 0 0 1px oklch(0.2 0.01 var(--h) / 0.12), 0 2px 6px -2px oklch(0.2 0.01 var(--h) / 0.08), 0 10px 24px -14px oklch(0.2 0.02 var(--h) / 0.18); }
+html[data-dir="tactile"][data-theme="dark"] .composer { background: var(--raised); box-shadow: 0 0 0 1px oklch(1 0 0 / 0.1), inset 0 1px 0 oklch(1 0 0 / 0.04), 0 10px 26px -12px oklch(0 0 0 / 0.7); }
+html[data-dir="tactile"] .review-bar { background: var(--raised); box-shadow: 0 0 0 1px var(--line); border-radius: 10px; }
+html[data-dir="tactile"] .msg-user .bubble { border-radius: 12px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); }
+html[data-dir="tactile"] .av { border-radius: 7px; box-shadow: inset 0 0 0 1px var(--line); }
+html[data-dir="tactile"] .logo { border-radius: 6px; }
+html[data-dir="tactile"] .float-tools { border-radius: 12px; box-shadow: 0 0 0 1px var(--line), 0 12px 32px -12px oklch(0 0 0 / 0.25); }
+html[data-dir="tactile"] .dtitle, html[data-dir="tactile"] .ditem .tt, html[data-dir="tactile"] .crumbs > span:last-child, html[data-dir="tactile"] .ahead .nm { letter-spacing: -0.012em; }
+html[data-dir="tactile"] .dtitle { font-weight: 650; }
+html[data-dir="tactile"] .assist { border-left: 1px solid var(--line); }
+html[data-dir="tactile"] .check { box-shadow: inset 0 0 0 1.5px var(--t4), 0 1px 1px oklch(0 0 0 / 0.04); }
+
+/* =====================================================================
+   4. Base
+   ===================================================================== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: var(--font); font-optical-sizing: auto; font-size: var(--ui); line-height: 1.4; color: var(--t1); background: var(--canvas); -webkit-font-smoothing: antialiased; display: flex; flex-direction: column; overflow: hidden; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+.num, time { font-variant-numeric: tabular-nums; }
+svg.i { width: 16px; height: 16px; stroke-width: 1.75; flex: none; display: block; }
+svg.i.sm { width: 14px; height: 14px; }
+html[data-dir="dense"] svg.i { width: 15px; height: 15px; stroke-width: 1.6; }
+html[data-dir="dense"] svg.i.sm { width: 13px; height: 13px; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* Presentation bar, not part of the product. */
+.pres { flex: none; height: 44px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: #0b0b0c; color: #e8e8e8; border-bottom: 1px solid #222; font: 500 12px/1 Inter, system-ui, sans-serif; color-scheme: dark; overflow-x: auto; scrollbar-width: none; }
+.pres b { font-weight: 650; white-space: nowrap; }
+.pres .grp { display: flex; gap: 2px; background: #1c1c1e; border-radius: 8px; padding: 2px; flex: none; }
+.pres .grp button { padding: 6px 9px; border-radius: 6px; color: #9a9a9a; font-weight: 500; white-space: nowrap; }
+.pres .grp button.on { background: #36363a; color: #fff; }
+.pres .grp button .k { opacity: .45; margin-left: 3px; font-size: 10px; }
+.pres .lbl { color: #6a6a6e; white-space: nowrap; }
+.pres .note { color: #8a8a8e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 120px; flex: 1; }
+
+#stage { flex: 1; min-height: 0; position: relative; }
+.screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--canvas); }
+
+.screen[hidden] { display: none; }
+
+/* =====================================================================
+   5. HUD (your top bar, standardized)
+   ===================================================================== */
+.hud { flex: none; height: 44px; display: flex; align-items: center; gap: 2px; padding: 0 10px 0 12px; }
+html[data-dir="crisp"] .hud, html[data-dir="dense"] .hud { border-bottom: 1px solid var(--line); }
+html[data-dir="dense"] .hud { height: 38px; }
+
+.hud .sp { flex: 1; }
+.cnt { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 8px; border-radius: var(--btn-r); color: var(--t2); font-weight: 550; font-size: 12.5px; }
+.cnt:hover { background: var(--hover); }
+.cnt svg.i { width: 14px; height: 14px; }
+.cnt.zero { color: var(--t4); }
+.cnt.att { color: var(--attention); background: var(--attention-bg); }
+.cnt.on { color: var(--t1); background: var(--track); }
+.cnt .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.hud-sep { width: 1px; height: 16px; background: var(--line); margin: 0 6px; flex: none; }
+.usage { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px; border-radius: var(--btn-r); color: var(--t3); font-size: 12px; font-weight: 500; }
+.usage:hover { background: var(--hover); }
+.prov { width: 14px; height: 14px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; flex: none; }
+.prov.codex { background: oklch(0.62 0.13 265); color: #fff; font-size: 8px; font-weight: 700; }
+.prov.claude { color: #d97757; font-size: 14px; }
+.close-chat { margin-left: 8px; }
+
+/* =====================================================================
+   6. Rail
+   ===================================================================== */
+.body { flex: 1; min-height: 0; display: flex; gap: var(--gutter); padding: 0 var(--gutter) var(--gutter) 0; }
+
+.rail { flex: none; width: var(--rail-w); display: flex; flex-direction: column; min-height: 0; padding: 6px 8px 8px 10px; }
+html[data-dir="crisp"] .rail, html[data-dir="dense"] .rail { border-right: 1px solid var(--line); }
+
+.rail.mini { width: 56px; padding: 6px 8px 8px; align-items: center; gap: 2px; }
+.rail-scroll { flex: 1; min-height: 0; overflow: auto; margin: 0 -4px; padding: 0 4px; scrollbar-width: none; }
+.rrow { display: flex; align-items: center; gap: 10px; height: var(--ctl); padding: 0 8px; border-radius: var(--row-r); color: var(--t2); font-weight: 500; width: 100%; }
+
+.rrow:hover { background: var(--hover); color: var(--t1); }
+.rrow.on { background: var(--selected); color: var(--t1); }
+.rrow svg.i { color: var(--t3); }
+.rrow .end { margin-left: auto; display: flex; align-items: center; gap: 6px; color: var(--t3); }
+.rtop { display: flex; align-items: center; gap: 4px; }
+.rtop .rrow { height: 34px; font-weight: 600; color: var(--t1); }
+.logo { width: 22px; height: 22px; border-radius: 6px; background: var(--t1); color: var(--canvas); display: grid; place-items: center; flex: none; }
+
+.logo svg { width: 14px; height: 14px; }
+.logo.lg { width: 30px; height: 30px; border-radius: 8px; } .logo.lg svg { width: 18px; height: 18px; }
+.logo.sm { width: 18px; height: 18px; border-radius: 5px; } .logo.sm svg { width: 12px; height: 12px; }
+.rsep { height: 12px; flex: none; }
+html[data-dir="crisp"] .rsep, html[data-dir="dense"] .rsep { height: 1px; background: var(--line); margin: 8px 2px; }
+html[data-dir="dense"] .rsep { margin: 6px 2px; }
+.sec { display: flex; align-items: center; gap: 7px; height: 26px; padding: 0 8px; font-size: 12px; font-weight: 500; color: var(--t3); }
+
+html[data-dir="dense"] .sec { height: 22px; font-size: 11.5px; }
+.sec .n { color: var(--t4); font-variant-numeric: tabular-nums; font-weight: 500; }
+.sec .end { margin-left: auto; display: flex; align-items: center; gap: 2px; }
+.sec svg.i { width: 14px; height: 14px; color: var(--t3); }
+.agent { display: grid; grid-template-columns: 28px 1fr auto; column-gap: 10px; align-items: center; padding: 7px 8px; border-radius: var(--row-r); width: 100%; }
+html[data-dir="dense"] .agent { grid-template-columns: 22px 1fr auto; padding: 4px 8px; }
+.agent:hover { background: var(--hover); } .agent.on { background: var(--selected); }
+.av { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 16px; background: var(--track); }
+html[data-dir="dense"] .agent .av { width: 22px; height: 22px; font-size: 13px; border-radius: 6px; }
+
+.agent .nm { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agent .pv { grid-column: 2; font-size: 12px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
+html[data-dir="dense"] .agent .pv { display: none; }
+.agent .meta { grid-row: 1 / span 2; grid-column: 3; }
+.pinned { display: flex; gap: 10px; padding: 6px 8px; border-radius: var(--row-r); }
+.pinned:hover { background: var(--hover); }
+.pinned .tt { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pinned .pv, .pinned .mt { font-size: 12px; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pinned .mt { color: var(--t4); }
+.rail-foot { flex: none; display: flex; flex-direction: column; gap: 2px; padding-top: 8px; }
+.rail-foot .line { display: flex; align-items: center; gap: 2px; }
+.rail-foot .rrow { white-space: nowrap; min-width: 0; }
+.logos { display: flex; gap: 3px; margin-left: auto; }
+.logos span { width: 16px; height: 16px; border-radius: 4px; display: grid; place-items: center; font-size: 10px; font-weight: 700; color: #fff; }
+
+/* =====================================================================
+   7. Panes, tabs, toolbars
+   ===================================================================== */
+.pane { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--pane); border-radius: var(--pane-r); box-shadow: var(--shadow-pane); overflow: hidden; position: relative; }
+.pane + .pane { box-shadow: var(--shadow-pane), calc(var(--line-w) * -1) 0 0 0 var(--line); }
+
+.half { flex: 1 1 0; }
+.ptabs { flex: none; height: 44px; display: flex; align-items: center; gap: 2px; padding: 0 8px; }
+html[data-dir="crisp"] .ptabs, html[data-dir="dense"] .ptabs { border-bottom: 1px solid var(--line); }
+html[data-dir="dense"] .ptabs { height: 34px; }
+.ptabs .sp { flex: 1; }
+.island, .tgroup { display: contents; }
+.tab { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: var(--tab-r); color: var(--t3); font-weight: 500; position: relative; white-space: nowrap; }
+.tab:hover { color: var(--t1); background: var(--hover); }
+.tab.on { color: var(--t1); background: var(--selected); }
+.tab .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--attention); }
+.tab svg.i { width: 14px; height: 14px; }
+/* Underline tabs (Crisp, Dense) */
+html[data-dir="crisp"] .tab, html[data-dir="dense"] .tab { height: 100%; border-radius: 0; padding: 0 8px; }
+html[data-dir="crisp"] .tab:hover, html[data-dir="dense"] .tab:hover { background: none; }
+html[data-dir="crisp"] .tab.on, html[data-dir="dense"] .tab.on { background: none; }
+html[data-dir="crisp"] .tab.on::after, html[data-dir="dense"] .tab.on::after { content: ''; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--t1); }
+
+.psub { flex: none; display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 8px 0 14px; font-weight: 600; }
+html[data-dir="crisp"] .psub, html[data-dir="dense"] .psub { border-bottom: 1px solid var(--line); }
+html[data-dir="dense"] .psub { height: 30px; }
+.psub .sp { flex: 1; }
+.ptool { flex: none; display: flex; align-items: center; gap: 6px; padding: 4px 10px 8px 12px; }
+html[data-dir="crisp"] .ptool, html[data-dir="dense"] .ptool { padding: 6px 10px; border-bottom: 1px solid var(--line); }
+
+.ptool .sp { flex: 1; }
+.pfoot { flex: none; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 16px; color: var(--t3); font-size: 12px; font-weight: 500; }
+html[data-dir="crisp"] .pfoot, html[data-dir="dense"] .pfoot { border-top: 1px solid var(--line); }
+.pfoot .end { margin-left: auto; }
+
+/* =====================================================================
+   8. Controls
+   ===================================================================== */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: var(--ctl); padding: 0 12px; border-radius: var(--btn-r); font-weight: 500; white-space: nowrap; color: var(--t1); flex: none; transition: background-color .12s ease, color .12s ease; }
+.btn.primary { background: var(--primary-bg); color: var(--primary-fg); }
+.btn.primary:hover { filter: brightness(0.92); }
+.btn.secondary { background: var(--track); }
+.btn.secondary:hover { background: var(--press); }
+.btn.ghost { color: var(--t2); }
+.btn.ghost:hover { background: var(--hover); color: var(--t1); }
+.btn.go { background: var(--done); color: oklch(0.18 0.03 158); }
+html[data-theme="light"] .btn.go { color: #fff; }
+.btn.danger { color: var(--danger); background: var(--danger-bg); }
+.btn.sm { height: calc(var(--ctl) - 4px); padding: 0 10px; font-size: calc(var(--ui) - 0.5px); }
+.btn.icon { width: var(--ctl); padding: 0; }
+.btn.icon.sm { width: calc(var(--ctl) - 4px); }
+html[data-dir="crisp"] .btn.secondary, html[data-dir="dense"] .btn.secondary { background: var(--pane); box-shadow: inset 0 0 0 1px var(--line-2); }
+html[data-dir="crisp"] .btn.secondary:hover, html[data-dir="dense"] .btn.secondary:hover { background: var(--hover); }
+html[data-dir="crisp"] .btn.sm { border-radius: 6px; }
+.group { display: inline-flex; align-items: center; border-radius: var(--btn-r); background: var(--track); padding: 2px 2px 2px 10px; gap: 8px; font-size: 12.5px; color: var(--t2); flex: none; }
+html[data-dir="crisp"] .group, html[data-dir="dense"] .group { background: transparent; box-shadow: inset 0 0 0 1px var(--line-2); }
+.group .btn { height: calc(var(--ctl) - 4px); }
+.kbd { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: 5px; font: 500 11px/1 var(--font); color: var(--t3); background: var(--track); flex: none; }
+.btn.primary .kbd { background: oklch(from var(--primary-fg) l c h / 0.14); color: inherit; opacity: .75; }
+.seg { display: inline-flex; align-items: center; gap: 2px; padding: 2px; background: var(--track); border-radius: var(--seg-r); flex: none; }
+.seg button { height: calc(var(--ctl) - 4px); padding: 0 10px; border-radius: var(--seg-r); color: var(--t3); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; font-size: calc(var(--ui) - 0.5px); }
+.seg button:hover { color: var(--t1); }
+.seg button.on { background: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
+html[data-dir="crisp"] .seg button, html[data-dir="dense"] .seg button { border-radius: calc(var(--seg-r) - 2px); }
+.chip { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0 8px; border-radius: var(--chip-r); font-size: 12px; font-weight: 500; color: var(--t2); background: var(--track); white-space: nowrap; }
+.badge { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--t2); background: var(--track); }
+.badge.att { background: var(--attention-bg); color: var(--attention); }
+.sdot { width: 7px; height: 7px; border-radius: 50%; flex: none; display: inline-block; }
+.sdot.att { background: var(--attention); } .sdot.work { background: var(--working); } .sdot.done { background: var(--done); } .sdot.late { background: var(--danger); } .sdot.idle { box-shadow: inset 0 0 0 1.5px var(--t4); }
+.status { display: inline-flex; align-items: center; gap: 7px; font-weight: 500; }
+
+/* Meta line: area dot + name, then plain words. */
+.meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--t3); min-width: 0; flex-wrap: wrap; }
+.meta .area { display: inline-flex; align-items: center; gap: 6px; color: var(--t2); white-space: nowrap; }
+.meta .area::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--ac); }
+
+.meta .sep::before { content: '·'; color: var(--t4); }
+.meta .late { color: var(--danger); font-weight: 500; }
+.meta .today { color: var(--attention); font-weight: 500; }
+.meta .ic { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.meta .st { color: var(--working); font-weight: 500; display: inline-flex; align-items: center; gap: 3px; }
+.meta svg.i { width: 13px; height: 13px; }
+html[data-dir="dense"] .meta { font-family: var(--mono); font-size: 11px; gap: 7px; }
+html[data-dir="dense"] .meta .area { font-family: var(--font); font-size: 11.5px; }
+
+.check { width: 16px; height: 16px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--t4); flex: none; display: grid; place-items: center; }
+.check:hover { box-shadow: inset 0 0 0 1.5px var(--t2); }
+.check.done { background: var(--t3); box-shadow: none; color: var(--pane); }
+
+.check.done svg.i { width: 10px; height: 10px; stroke-width: 3; }
+.check.sq { border-radius: 4px; }
+
+/* =====================================================================
+   9. Lists and rows
+   ===================================================================== */
+.row { display: flex; gap: 10px; padding: var(--row-y) 10px; border-radius: var(--row-r); align-items: flex-start; }
+.row:hover { background: var(--hover); } .row.on { background: var(--selected); }
+.row .grow { flex: 1; min-width: 0; }
+.row .tt { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .sub { color: var(--t3); margin-top: 2px; }
+.row .trail { display: flex; align-items: center; gap: 6px; color: var(--t3); flex: none; }
+.row .check { margin-top: 1px; }
+.banner { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 6px 0 12px; margin: 0 2px 6px; border-radius: var(--row-r); color: var(--t2); background: var(--track); }
+html[data-dir="crisp"] .banner, html[data-dir="dense"] .banner { margin: 0; border-radius: 0; background: none; border-bottom: 1px solid var(--line); height: 34px; padding-left: 12px; }
+.banner svg.i { color: var(--t3); }
+.banner .sp { flex: 1; }
+.addfield { display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px 0 12px; margin: 6px 2px 4px; border-radius: var(--input-r); background: var(--track); color: var(--t4); font-size: 14px; }
+html[data-dir="crisp"] .addfield, html[data-dir="dense"] .addfield { background: var(--pane); box-shadow: inset 0 0 0 1px var(--line-2); }
+html[data-dir="dense"] .addfield { height: 30px; font-size: 12.5px; }
+.addfield .end { margin-left: auto; font-size: 12px; color: var(--t4); }
+
+/* Deck */
+.deck { flex: 1; min-height: 0; overflow: auto; padding: 4px 12px 24px; }
+html[data-dir="crisp"] .deck, html[data-dir="dense"] .deck { padding-top: 8px; }
+.dsec { margin-top: 14px; }
+.dsec .sec { padding: 0 10px; }
+.dsec .sec svg.i { color: var(--t3); }
+.dl .row { align-items: center; padding-top: 6px; padding-bottom: 6px; }
+html[data-dir="dense"] .dl .row { padding-top: 3px; padding-bottom: 3px; }
+.dl .when { font-size: 12px; font-weight: 500; flex: none; }
+.dl .more { color: var(--t3); padding-left: 36px; }
+.frame { color: var(--t2); font-size: 14px; line-height: 21px; padding: 2px 10px 10px; text-wrap: pretty; }
+html[data-dir="dense"] .frame { font-size: 12.5px; line-height: 19px; }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 10px 6px; }
+.ditem { display: flex; gap: 12px; padding: 10px 10px 12px 10px; border-radius: var(--row-r); }
+html[data-dir="dense"] .ditem { padding: 6px 10px; }
+.ditem:hover { background: var(--hover); }
+.ditem .check { margin-top: 3px; }
+.ditem .tt { font-size: 15px; line-height: 21px; font-weight: 550; letter-spacing: -0.005em; }
+
+html[data-dir="dense"] .ditem .tt { font-size: 13.5px; line-height: 19px; }
+.ditem .meta { margin-top: 5px; }
+.ditem .why { color: var(--t2); margin-top: 5px; font-size: 13px; line-height: 19px; }
+html[data-dir="dense"] .ditem .why { font-size: 12px; margin-top: 2px; }
+.fold { display: flex; align-items: center; gap: 8px; color: var(--t4); font-size: 12px; padding: 4px 10px; }
+.fold::before, .fold::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.fold svg.i { width: 13px; height: 13px; }
+
+/* Tasks list */
+.list { flex: 1; overflow: auto; padding: 4px 8px 24px; }
+.list .add { display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 10px; color: var(--t4); border-radius: var(--row-r); }
+.list .add:hover { background: var(--hover); }
+.trow .tt { font-size: calc(var(--ui) + 0.5px); }
+.trow .meta { margin-top: 4px; }
+html[data-dir="dense"] .trow { align-items: center; }
+html[data-dir="dense"] .trow .grow { display: flex; align-items: center; gap: 12px; }
+html[data-dir="dense"] .trow .tt { flex: 1; min-width: 0; }
+html[data-dir="dense"] .trow .meta { margin-top: 0; flex-wrap: nowrap; }
+
+/* =====================================================================
+   10. Chat
+   ===================================================================== */
+.transcript { flex: 1; min-height: 0; overflow: auto; padding: 4px 0 20px; }
+.col { max-width: var(--col); margin: 0 auto; padding: 0 28px; }
+.msg-user { display: flex; justify-content: flex-end; margin: 18px 0 6px; }
+.msg-user .bubble { max-width: 82%; padding: 9px 14px; border-radius: 18px; background: var(--raised); font-size: var(--chat); line-height: var(--chat-lh); }
+html[data-dir="crisp"] .msg-user .bubble { border-radius: 10px; }
+html[data-dir="dense"] .msg-user .bubble { border-radius: 6px; padding: 6px 10px; }
+
+.msg-ai { font-size: var(--chat); line-height: var(--chat-lh); }
+.msg-ai p { margin: 10px 0; }
+.msg-ai ol, .msg-ai ul { margin: 10px 0; padding-left: 24px; }
+.msg-ai li { margin: 4px 0; padding-left: 4px; }
+.msg-ai li::marker { color: var(--t3); }
+.msg-ai b { font-weight: 600; }
+.msg-ai code { background: var(--track); padding: 1px 5px; border-radius: 5px; }
+.tool-row { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px 0 4px; margin: 14px 0 0 -4px; border-radius: 8px; color: var(--t3); }
+.tool-row:hover { background: var(--hover); color: var(--t2); }
+.tool-row .num { color: var(--t4); }
+html[data-dir="dense"] .tool-row { font-family: var(--mono); font-size: 11.5px; }
+.msg-actions { display: flex; gap: 2px; margin: -4px 0 0 -6px; }
+.msg-actions.r { justify-content: flex-end; margin: 2px -6px 0 0; }
+.msg-actions .btn { color: var(--t4); }
+.files { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 16px 0 0; }
+.files .lbl { color: var(--t3); margin-right: 4px; }
+.file { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: var(--chip-r); background: var(--track); font-size: 12.5px; font-weight: 500; }
+html[data-dir="crisp"] .file, html[data-dir="dense"] .file { background: var(--pane); box-shadow: inset 0 0 0 1px var(--line-2); }
+.file .swift { color: #f05138; font-size: 12px; }
+.plus { color: var(--done); } .minus { color: var(--danger); }
+.composer-wrap { flex: none; padding: 0 20px 10px; }
+.composer-wrap .col { padding: 0; }
+.composer { border-radius: var(--composer-r); background: var(--raised); box-shadow: var(--shadow-composer); padding: 10px 8px 8px 14px; }
+html[data-dir="crisp"] .composer, html[data-dir="dense"] .composer { background: var(--pane); box-shadow: inset 0 0 0 1px var(--line-2); }
+
+.composer .ph { font-size: var(--chat); line-height: 24px; color: var(--t4); padding: 2px 0 10px; }
+
+.composer .ctrls { display: flex; align-items: center; gap: 4px; margin-left: -6px; }
+.composer .ctrls .sp { flex: 1; }
+.send { width: 30px; height: 30px; border-radius: 999px; display: grid; place-items: center; background: var(--track); color: var(--t4); flex: none; }
+html[data-dir="crisp"] .send, html[data-dir="dense"] .send { border-radius: 7px; }
+.send.on { background: var(--primary-bg); color: var(--primary-fg); }
+.engine { color: #d97757; font-size: 15px; line-height: 1; }
+.hint { display: flex; gap: 6px; align-items: center; color: var(--t4); font-size: 11.5px; padding: 6px 4px 0; }
+.review-bar { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 14px; margin-bottom: 8px; border-radius: calc(var(--composer-r) - 2px); background: var(--raised); box-shadow: var(--shadow-composer); }
+html[data-dir="crisp"] .review-bar, html[data-dir="dense"] .review-bar { background: var(--pane); box-shadow: inset 0 0 0 1px var(--line-2); }
+.review-bar .q { display: flex; align-items: center; gap: 8px; font-weight: 550; white-space: nowrap; }
+.review-bar .sp { flex: 1; }
+
+/* =====================================================================
+   11. Chat workbench
+   ===================================================================== */
+.whead { flex: none; height: 48px; display: flex; align-items: center; gap: 6px; padding: 0 10px 0 16px; }
+html[data-dir="crisp"] .whead, html[data-dir="dense"] .whead { border-bottom: 1px solid var(--line); }
+html[data-dir="dense"] .whead { height: 40px; }
+.whead .sp { flex: 1; }
+.crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 600; }
+.crumbs .ag { color: var(--t3); font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
+.crumbs .av { width: 20px; height: 20px; border-radius: 6px; font-size: 12px; }
+.crumbs .slash { color: var(--t4); }
+.wrow { flex: none; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 16px; color: var(--t3); font-size: 12px; }
+.wrow .link { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; border-radius: var(--chip-r); color: var(--t1); font-weight: 500; background: var(--track); font-size: 12.5px; }
+.ctabs { flex: none; display: flex; align-items: center; gap: 4px; height: 40px; padding: 0 10px 0 12px; }
+html[data-dir="crisp"] .ctabs, html[data-dir="dense"] .ctabs { border-bottom: 1px solid var(--line); }
+.ctab { display: inline-flex; align-items: center; gap: 8px; height: 28px; padding: 0 12px; border-radius: var(--tab-r); max-width: 240px; color: var(--t3); font-weight: 500; position: relative; }
+.ctab.on { color: var(--t1); background: var(--selected); }
+html[data-dir="crisp"] .ctab, html[data-dir="dense"] .ctab { height: 100%; border-radius: 0; }
+html[data-dir="crisp"] .ctab.on, html[data-dir="dense"] .ctab.on { background: none; }
+html[data-dir="crisp"] .ctab.on::after, html[data-dir="dense"] .ctab.on::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--t1); }
+.ctab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.with-float .transcript, .with-float .composer-wrap { padding-right: 330px; }
+.float-tools { position: absolute; right: 14px; top: 132px; width: 300px; background: var(--overlay); border-radius: var(--pop-r); box-shadow: var(--shadow-pop); padding: 6px; z-index: 3; }
+
+.float-tools .branch { display: flex; align-items: center; gap: 8px; padding: 6px 8px 8px; color: var(--t3); font-size: 12px; }
+.float-tools .branch .mono { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.float-tools .row { align-items: center; padding-top: 7px; padding-bottom: 7px; border-radius: calc(var(--pop-r) - 6px); }
+.float-tools .row svg.i { color: var(--t3); }
+.float-tools .gap { height: 1px; background: var(--line); margin: 4px 8px; }
+.float-tools .chev { color: var(--t4); }
+
+/* Task page */
+.tpage { flex: 1; min-height: 0; display: flex; }
+.tmain { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--pane); }
+
+.tbar { flex: none; height: 48px; display: flex; align-items: center; gap: 6px; padding: 0 16px; max-width: 920px; width: 100%; margin: 0 auto; }
+html[data-dir="crisp"] .tbar, html[data-dir="dense"] .tbar { border-bottom: 1px solid var(--line); max-width: none; }
+.tbar .sp { flex: 1; }
+.tscroll { flex: 1; overflow: auto; }
+.tcol { max-width: 760px; margin: 0 auto; padding: 18px 40px 60px; }
+.kind { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--t3); margin-bottom: 8px; }
+.kind .meta { display: inline-flex; }
+.dtitle { font-size: 28px; line-height: 34px; font-weight: 650; letter-spacing: -0.02em; }
+
+html[data-dir="dense"] .dtitle { font-size: 22px; line-height: 28px; }
+.stamp { font-size: 12px; color: var(--t4); margin-top: 6px; }
+.props { display: grid; grid-template-columns: 120px 1fr; row-gap: 2px; margin: 20px 0 8px; align-items: center; }
+.props .k { color: var(--t3); height: 32px; display: flex; align-items: center; }
+.props .v { min-height: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.props .help { grid-column: 2; font-size: 12px; color: var(--t4); margin: -2px 0 4px; }
+.pbtn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; margin-left: -10px; border-radius: var(--btn-r); color: var(--t2); font-weight: 500; }
+.pbtn:hover { background: var(--hover); color: var(--t1); }
+.pbtn.empty { color: var(--t4); }
+.pbtn svg.i { color: var(--t3); }
+.doc h2 { font-size: 18px; line-height: 26px; font-weight: 650; letter-spacing: -0.01em; margin: 26px 0 6px; }
+.doc p { font-size: 15px; line-height: 24px; margin: 6px 0; text-wrap: pretty; }
+.todo { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; font-size: 15px; line-height: 22px; }
+.todo .check { margin-top: 3px; }
+.todo.done > span:last-child { color: var(--t3); text-decoration: line-through; text-decoration-color: var(--t4); }
+.subs .row { align-items: center; padding-top: 6px; padding-bottom: 6px; }
+.subs .row .tt { font-weight: 400; }
+.subs .row.done .tt { color: var(--t3); text-decoration: line-through; text-decoration-color: var(--t4); }
+.assist { flex: 0 0 420px; display: flex; flex-direction: column; background: var(--canvas); border-left: 1px solid var(--line); }
+html[data-dir="quiet"] .assist { border-left: 0; }
+
+.assist .ahd { flex: none; height: 48px; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 16px; font-weight: 600; }
+.assist .ahd .sp { flex: 1; }
+.assist .col { padding: 0 20px; }
+
+/* Agent page */
+.ahead { flex: none; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 12px 0 16px; }
+html[data-dir="crisp"] .ahead, html[data-dir="dense"] .ahead { border-bottom: 1px solid var(--line); }
+.ahead .av { width: 36px; height: 36px; font-size: 20px; border-radius: 10px; }
+.ahead .nm { font-size: 16px; font-weight: 650; }
+.ahead .path { font-size: 12px; color: var(--t3); display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.ahead .sp { flex: 1; }
+.apanes { flex: 1; min-height: 0; display: flex; gap: 0; }
+.apanes > .pane { box-shadow: none; border-radius: 0; background: transparent; }
+.apanes > .pane + .pane { box-shadow: -1px 0 0 0 var(--line); }
+.chatrow { display: flex; gap: 10px; padding: 9px 10px; border-radius: var(--row-r); }
+.chatrow:hover { background: var(--hover); }
+.chatrow .sdot { margin-top: 6px; }
+.chatrow .tt { font-weight: 600; }
+.chatrow .ln { color: var(--t2); margin-top: 2px; }
+.chatrow .grow { flex: 1; min-width: 0; }
+.chatrow .side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; color: var(--t3); font-size: 12px; flex: none; }
+
+/* =====================================================================
+   12. System sheet
+   ===================================================================== */
+.sheet { flex: 1; overflow: auto; }
+.sheet-in { max-width: 1140px; margin: 0 auto; padding: 32px 40px 80px; }
+.sheet h1 { font-size: 28px; line-height: 34px; font-weight: 650; letter-spacing: -0.02em; }
+.sheet .lede { color: var(--t2); font-size: 15px; line-height: 23px; margin-top: 8px; max-width: 780px; text-wrap: pretty; }
+.sheet h2 { font-size: 17px; line-height: 24px; font-weight: 650; margin: 40px 0 4px; }
+.sheet .h2sub { color: var(--t3); margin-bottom: 16px; max-width: 760px; line-height: 20px; }
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: 1fr 1fr; } .g3 { grid-template-columns: repeat(3, 1fr); } .g4 { grid-template-columns: repeat(4, 1fr); }
+.spec { background: var(--pane); border-radius: max(var(--pane-r), 10px); padding: 16px; box-shadow: var(--shadow-pane); }
+html[data-dir="crisp"] .spec, html[data-dir="dense"] .spec { box-shadow: inset 0 0 0 1px var(--line); }
+
+.spec .lab { font-size: 12px; font-weight: 500; color: var(--t3); margin-bottom: 12px; }
+.spec .rule { font-size: 12px; color: var(--t3); margin-top: 12px; line-height: 17px; }
+.spec h3 { font-size: 15px; font-weight: 650; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.spec p { color: var(--t2); line-height: 20px; }
+.spec .from { font-size: 12px; color: var(--t3); margin-top: 8px; line-height: 17px; }
+.swatch { display: flex; align-items: center; gap: 10px; padding: 4px 0; }
+.swatch .sw { width: 28px; height: 28px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); flex: none; }
+.swatch .nm { font-weight: 500; } .swatch .use { font-size: 12px; color: var(--t3); }
+.demo-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0; }
+.rules { counter-reset: r; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 32px; }
+.rules li { list-style: none; counter-increment: r; display: flex; gap: 12px; line-height: 20px; color: var(--t2); }
+.rules li::before { content: counter(r); font-weight: 600; color: var(--t4); width: 18px; flex: none; text-align: right; font-variant-numeric: tabular-nums; }
+.rules li b { color: var(--t1); font-weight: 600; }
+.menu { background: var(--overlay); border-radius: var(--pop-r); box-shadow: var(--shadow-pop); padding: 4px; width: 240px; }
+.menu .mi { display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 8px; border-radius: calc(var(--pop-r) - 4px); }
+.menu .mi svg.i { color: var(--t3); } .menu .mi.on { background: var(--selected); } .menu .mi .kbd { margin-left: auto; }
+.menu .ms { height: 1px; background: var(--line); margin: 4px 8px; }
+.toast { display: inline-flex; align-items: center; gap: 12px; height: 40px; padding: 0 6px 0 14px; border-radius: max(var(--btn-r), 8px); background: var(--primary-bg); color: var(--primary-fg); font-weight: 500; box-shadow: var(--shadow-pop); }
+.toast .btn { color: inherit; } .toast .btn:hover { background: oklch(from var(--primary-fg) l c h / 0.12); }
+.field { display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 10px; border-radius: var(--input-r); background: var(--track); color: var(--t4); width: 100%; }
+html[data-dir="crisp"] .field, html[data-dir="dense"] .field { background: var(--pane); box-shadow: inset 0 0 0 1px var(--line-2); }
+.field.focus { box-shadow: 0 0 0 2px var(--focus); background: transparent; color: var(--t1); }
+.field.err { box-shadow: 0 0 0 1.5px var(--danger); }
+.tsample { display: grid; grid-template-columns: 70px 1fr 190px; gap: 14px; align-items: baseline; padding: 9px 0; }
+.tsample + .tsample { box-shadow: 0 -1px 0 var(--line); }
+.tsample .tok, .tsample .use { color: var(--t3); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="pres">
+  <b>Ri · UI directions</b>
+  <div class="grp" id="screens">
+    <button data-s="home" class="on">Home</button>
+    <button data-s="review">Chat review</button>
+    <button data-s="tasks">Tasks</button>
+    <button data-s="task">Task page</button>
+    <button data-s="agent">Agent</button>
+    <button data-s="system">System</button>
+  </div>
+  <div class="grp" id="dirs">
+    <button data-d="edge" class="on">Edge</button>
+    <button data-d="edgemac">Edge Mac</button>
+    <button data-d="edgelift">Edge Lift</button>
+    <button data-d="answer">Answer</button>
+    <button data-d="tonal">Tonal</button>
+    <button data-d="native">Native</button>
+    <button data-d="tactile">Tactile</button>
+    <button data-d="crisp">Crisp</button>
+    <button data-d="dense">Dense</button>
+    <button data-d="quiet">Quiet</button>
+  </div>
+  <div class="grp" id="themes"><button data-t="dark" class="on">Dark</button><button data-t="light">Light</button></div>
+  <div class="grp" id="tints"><button data-n="gray" class="on">Gray</button><button data-n="warm">Warm</button></div>
+  <span class="note" id="note"></span>
+</div>
+
+<main id="stage">
+
+<!-- ================================================================ HOME -->
+<section class="screen" data-screen="home">
+  <header class="hud">
+  <button class="cnt zero" aria-label="Needs approval"><i data-i="circle-alert"></i><span class="num">0</span></button>
+  <button class="cnt att" aria-label="Unread"><span class="dot"></span><span class="num">4</span></button>
+  <button class="cnt zero" aria-label="Working"><i data-i="zap"></i><span class="num">0</span></button>
+  <button class="cnt on" aria-label="Waiting response"><i data-i="clock"></i><span class="num">3</span></button>
+  <button class="cnt zero" aria-label="Team"><i data-i="users"></i><span class="num">0</span></button>
+  <span class="hud-sep"></span>
+  <button class="usage" aria-label="Usage"><i data-i="gauge" class="sm"></i><span class="prov codex">◐</span><span class="num">71%</span><span class="prov claude">✳</span><span class="num">68%</span></button>
+  
+  <span class="sp"></span>
+  <button class="btn ghost sm"><i data-i="calendar" class="sm"></i>Connect your calendar</button>
+  <span class="tgroup"><button class="btn icon ghost" aria-label="Search"><i data-i="search"></i></button><button class="btn icon ghost" aria-label="Deck"><i data-i="layers"></i></button><button class="btn icon ghost" aria-label="Scratchpad"><i data-i="notebook-pen"></i></button></span>
+  <button class="btn primary sm" style="margin-left:4px"><i data-i="plus" class="sm"></i>Create</button>
+</header>
+  <div class="body">
+    <aside class="rail">
+  <div class="rtop"><button class="rrow on"><span class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="235.000 284.187 790.496 717.966" fill="currentColor" aria-hidden="true"> <path d="M 903.105 285.488 C 880.476 290.604, 862.305 300.672, 846.026 317.112 C 832.286 330.989, 821.668 351.046, 817.525 370.948 C 808.846 412.642, 826.005 454.785, 861.062 477.880 C 876.226 487.870, 890.953 493.166, 909.237 495.202 C 958.089 500.643, 1007.745 466.898, 1021.373 418.996 C 1028.794 392.913, 1026.199 367.149, 1013.567 341.500 C 1000.630 315.232, 976.628 295.168, 948.850 287.400 C 937.082 284.110, 913.551 283.126, 903.105 285.488 M 248.660 286.938 C 240.547 287.454, 239.622 287.731, 237.410 290.306 L 235 293.112 235 368 L 235 442.888 237.413 445.694 L 239.827 448.500 415.663 449 L 591.500 449.500 598.500 451.850 C 612.163 456.436, 620.787 461.711, 630.630 471.500 C 638.676 479.503, 640.357 481.821, 644.800 491.040 C 654.829 511.850, 656.331 532.855, 649.337 554.500 C 641.999 577.211, 624.196 596.780, 602.064 606.463 C 587.479 612.845, 598.315 612.378, 450.500 612.988 C 376.250 613.295, 315.405 613.648, 315.289 613.773 C 315.173 613.898, 314.160 614.985, 313.039 616.189 C 309.246 620.260, 310.291 623.897, 318.250 634.319 C 364.234 694.533, 409.817 753.926, 425.550 774.126 C 432.673 783.270, 443.067 796.770, 448.650 804.126 C 454.232 811.482, 465.052 825.600, 472.695 835.500 C 480.337 845.400, 497.343 867.450, 510.485 884.500 C 523.628 901.550, 535.982 917.569, 537.940 920.099 C 539.898 922.628, 548.025 933.193, 556 943.578 C 563.975 953.962, 573.902 965.870, 578.060 970.039 C 589.545 981.556, 606.604 992.134, 622.035 997.309 C 635.875 1001.951, 636.986 1002, 727.803 1002 C 809.739 1002, 813.766 1001.916, 815.345 1000.171 C 818.911 996.231, 817.725 994.170, 795.334 965.369 C 783.418 950.041, 769.320 931.875, 764.005 925 C 758.690 918.125, 748.752 905.353, 741.920 896.619 C 735.089 887.884, 727.730 878.434, 725.566 875.619 C 723.402 872.803, 706.735 851.375, 688.526 828 C 627.957 750.245, 624.223 745.335, 625.115 744.635 C 625.327 744.468, 631.800 743.578, 639.500 742.656 C 698.777 735.562, 751.256 700.978, 783.842 647.534 C 846.481 544.802, 815.063 403.702, 713.276 330.619 C 676.289 304.063, 638.127 290.416, 591.500 287.073 C 576.839 286.021, 265.010 285.899, 248.660 286.938 M 994.500 517.711 C 992.300 517.918, 983.220 519.206, 974.322 520.575 C 928.638 527.602, 893.450 544.265, 867.377 571.218 C 849.795 589.393, 838.497 610.297, 832.364 636 C 830.686 643.033, 830.555 654.512, 830.266 820.274 L 829.957 997.048 832.510 999.601 L 835.062 1002.153 876.781 1001.762 C 922.151 1001.336, 924.016 1001.145, 943.813 994.903 C 975.993 984.758, 1001.660 962.592, 1012.577 935.518 C 1019.979 917.160, 1019.400 934.660, 1019.735 719.234 C 1020.065 506.523, 1020.501 521.862, 1014.033 518.517 C 1011.217 517.061, 1004.420 516.781, 994.500 517.711" stroke="none" fill="currentColor" fill-rule="evenodd"/> </svg> </span>Ri</button><button class="btn icon sm ghost" aria-label="Collapse"><i data-i="panel-left" class="sm"></i></button></div>
+  <div class="rail-scroll">
+    <button class="rrow" style="margin-top:4px"><i data-i="plus"></i>New chat</button>
+    <button class="rrow"><i data-i="search"></i>Search chats</button>
+    <div class="rsep"></div>
+    <button class="rrow"><i data-i="layout-grid"></i>Apps<span class="end"><i data-i="chevron-right" class="sm"></i></span></button>
+    <button class="rrow"><i data-i="square-kanban"></i>Board</button>
+    <button class="rrow"><i data-i="calendar"></i>Calendar</button>
+    <button class="rrow"><i data-i="clock"></i>Schedules and triggers</button>
+    <div class="rsep"></div>
+    <div class="sec" style="padding:0 2px 0 0;height:32px"><div class="seg"><button class="on">Agents</button><button>Recent</button></div><span class="end"><button class="btn icon sm ghost" aria-label="Archive"><i data-i="archive" class="sm"></i></button><button class="btn icon sm secondary" aria-label="New agent"><i data-i="plus" class="sm"></i></button></span></div>
+    <div class="sec" style="margin-top:6px"><i data-i="pin"></i>Pinned <span class="n">1</span></div>
+    <div class="pinned"><i data-i="git-branch" class="sm" style="color:var(--t4);margin-top:3px"></i><div style="min-width:0"><div class="tt">Chart roast curves from Artisan logs</div><div class="pv">Rate of rise and roast markers added. Devel…</div><div class="mt">2d · Roast lab</div></div></div>
+    <div class="rsep"></div>
+    <button class="rrow"><i data-i="inbox"></i>Unread<span class="end"><span class="badge att">4</span><i data-i="chevron-right" class="sm"></i></span></button>
+    <div class="rsep"></div>
+    <button class="agent "><span class="av">🐦</span><span class="nm">Fieldnote iOS</span><span class="meta"><span class="badge att">2</span></span><span class="pv">Four things block submission, in order</span></button>
+    <button class="agent"><span class="av">🌐</span><span class="nm">Fieldnote site</span><span class="meta"></span><span class="pv">fieldnote.app: the landing page, waitlist</span></button>
+    <button class="agent"><span class="av">☕</span><span class="nm">Tidewater shop</span><span class="meta"><span class="badge att">1</span></span><span class="pv">Wholesale order form and subscriptions</span></button>
+    <button class="agent"><span class="av">🔥</span><span class="nm">Roast lab</span><span class="meta"></span><span class="pv">Analysis scripts for roast logs exported</span></button>
+    <button class="agent"><span class="av">📦</span><span class="nm">Household</span><span class="meta"><span class="badge att">1</span></span><span class="pv">Household paperwork: taxes, insurance</span></button>
+  </div>
+  <div class="rail-foot">
+    <button class="rrow"><i data-i="message-square-plus"></i>Feedback and bugs</button>
+    <div class="line"><button class="btn icon ghost" aria-label="Settings"><i data-i="settings"></i></button><button class="rrow"><i data-i="plug"></i>Connect accounts<span class="logos"><span style="background:#4a6cf7">S</span><span style="background:#222">N</span><span style="background:#ea4335">M</span></span></button></div>
+  </div>
+</aside>
+    <section class="pane half focus">
+      <div class="ptabs"><div class="island"><button class="tab on">Chat</button><button class="tab">Deck</button><button class="tab">Stream<span class="dot"></span></button><button class="tab">Tasks</button><button class="tab">Notes</button></div><span class="sp"></span><button class="tab">More<i data-i="chevron-down" class="sm"></i></button></div>
+      <div class="psub"><span class="logo sm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="235.000 284.187 790.496 717.966" fill="currentColor" aria-hidden="true"> <path d="M 903.105 285.488 C 880.476 290.604, 862.305 300.672, 846.026 317.112 C 832.286 330.989, 821.668 351.046, 817.525 370.948 C 808.846 412.642, 826.005 454.785, 861.062 477.880 C 876.226 487.870, 890.953 493.166, 909.237 495.202 C 958.089 500.643, 1007.745 466.898, 1021.373 418.996 C 1028.794 392.913, 1026.199 367.149, 1013.567 341.500 C 1000.630 315.232, 976.628 295.168, 948.850 287.400 C 937.082 284.110, 913.551 283.126, 903.105 285.488 M 248.660 286.938 C 240.547 287.454, 239.622 287.731, 237.410 290.306 L 235 293.112 235 368 L 235 442.888 237.413 445.694 L 239.827 448.500 415.663 449 L 591.500 449.500 598.500 451.850 C 612.163 456.436, 620.787 461.711, 630.630 471.500 C 638.676 479.503, 640.357 481.821, 644.800 491.040 C 654.829 511.850, 656.331 532.855, 649.337 554.500 C 641.999 577.211, 624.196 596.780, 602.064 606.463 C 587.479 612.845, 598.315 612.378, 450.500 612.988 C 376.250 613.295, 315.405 613.648, 315.289 613.773 C 315.173 613.898, 314.160 614.985, 313.039 616.189 C 309.246 620.260, 310.291 623.897, 318.250 634.319 C 364.234 694.533, 409.817 753.926, 425.550 774.126 C 432.673 783.270, 443.067 796.770, 448.650 804.126 C 454.232 811.482, 465.052 825.600, 472.695 835.500 C 480.337 845.400, 497.343 867.450, 510.485 884.500 C 523.628 901.550, 535.982 917.569, 537.940 920.099 C 539.898 922.628, 548.025 933.193, 556 943.578 C 563.975 953.962, 573.902 965.870, 578.060 970.039 C 589.545 981.556, 606.604 992.134, 622.035 997.309 C 635.875 1001.951, 636.986 1002, 727.803 1002 C 809.739 1002, 813.766 1001.916, 815.345 1000.171 C 818.911 996.231, 817.725 994.170, 795.334 965.369 C 783.418 950.041, 769.320 931.875, 764.005 925 C 758.690 918.125, 748.752 905.353, 741.920 896.619 C 735.089 887.884, 727.730 878.434, 725.566 875.619 C 723.402 872.803, 706.735 851.375, 688.526 828 C 627.957 750.245, 624.223 745.335, 625.115 744.635 C 625.327 744.468, 631.800 743.578, 639.500 742.656 C 698.777 735.562, 751.256 700.978, 783.842 647.534 C 846.481 544.802, 815.063 403.702, 713.276 330.619 C 676.289 304.063, 638.127 290.416, 591.500 287.073 C 576.839 286.021, 265.010 285.899, 248.660 286.938 M 994.500 517.711 C 992.300 517.918, 983.220 519.206, 974.322 520.575 C 928.638 527.602, 893.450 544.265, 867.377 571.218 C 849.795 589.393, 838.497 610.297, 832.364 636 C 830.686 643.033, 830.555 654.512, 830.266 820.274 L 829.957 997.048 832.510 999.601 L 835.062 1002.153 876.781 1001.762 C 922.151 1001.336, 924.016 1001.145, 943.813 994.903 C 975.993 984.758, 1001.660 962.592, 1012.577 935.518 C 1019.979 917.160, 1019.400 934.660, 1019.735 719.234 C 1020.065 506.523, 1020.501 521.862, 1014.033 518.517 C 1011.217 517.061, 1004.420 516.781, 994.500 517.711" stroke="none" fill="currentColor" fill-rule="evenodd"/> </svg> </span>Ri<span class="sp"></span><button class="btn icon sm ghost" aria-label="Recent"><i data-i="clock" class="sm"></i></button><button class="btn icon sm ghost" aria-label="More"><i data-i="ellipsis" class="sm"></i></button><button class="btn sm ghost"><i data-i="history" class="sm"></i>History</button><button class="btn sm ghost"><i data-i="plus" class="sm"></i>New</button></div>
+      <div class="transcript"><div class="col">
+        <div class="msg-user"><div class="bubble">What is on my plate today?</div></div>
+        <div class="msg-actions r"><button class="btn icon sm ghost" aria-label="Forward"><i data-i="corner-up-right" class="sm"></i></button></div>
+        <button class="tool-row"><i data-i="chevron-right" class="sm"></i>2 tool calls <span class="num">6.0s</span></button>
+        <div class="msg-ai">
+          <p>Seven things, two of them can't slide:</p>
+          <ol>
+            <li><b>Long run: 18 miles</b> is today. Go early, it hits 84°F by 2.</li>
+            <li><b>Book physio for calf strain</b> was due yesterday. Two minutes, and it matters for the long run.</li>
+            <li><b>Ruby's field trip permission slip</b> is due tomorrow.</li>
+            <li><b>Call Dana about the panel upgrade</b> before Thursday, her quote expires.</li>
+            <li><b>Order green coffee for winter</b> is due in 3 days. Luis wants to settle the Guji amount first.</li>
+            <li>The offline sync fix is done and waiting for your review.</li>
+            <li>Phone screens for the production roaster.</li>
+          </ol>
+          <p>The voice notes agent is waiting on you to pick where its species hints come from (a bundled list or eBird data). That's a two-minute decision when you have a second.</p>
+          <div class="msg-actions"><button class="btn icon sm ghost" aria-label="Copy"><i data-i="copy" class="sm"></i></button><button class="btn icon sm ghost" aria-label="Forward"><i data-i="corner-up-right" class="sm"></i></button></div>
+        </div>
+        <div class="msg-user"><div class="bubble">Push the backsplash decision to next week. Theo wants to see the samples in person.</div></div>
+        <button class="tool-row"><i data-i="chevron-right" class="sm"></i>1 tool call</button>
+        <div class="msg-ai"><p>Done. <b>Pick the kitchen backsplash tile</b> is snoozed until next week, so it won't show up until then.</p>
+          <div class="msg-actions"><button class="btn icon sm ghost" aria-label="Copy"><i data-i="copy" class="sm"></i></button><button class="btn icon sm ghost" aria-label="Forward"><i data-i="corner-up-right" class="sm"></i></button></div></div>
+      </div></div>
+      <div class="composer-wrap"><div class="col"><div class="composer"><div class="ph">Ask for anything. @ to mention, / for skills</div><div class="ctrls"><button class="btn icon ghost" aria-label="Add"><i data-i="plus"></i></button><button class="btn secondary sm"><i data-i="chevrons-right" class="sm"></i>Auto</button><span class="sp"></span><button class="btn ghost sm"><span class="engine">✳</span>Opus <span style="color:var(--t3)">Medium</span><i data-i="chevron-down" class="sm"></i></button><span class="send"><i data-i="arrow-up"></i></span></div></div>
+<div class="hint"><span class="kbd">⇧⇥</span>to cycle modes</div></div></div>
+    </section>
+    <section class="pane half">
+  <div class="ptabs"><div class="island"><button class="tab">Chat</button><button class="tab on">Deck</button><button class="tab">Stream<span class="dot"></span></button><button class="tab">Tasks</button><button class="tab">Notes</button></div><span class="sp"></span><button class="tab">More<i data-i="chevron-down" class="sm"></i></button></div>
+  <div class="ptool">
+    <div class="seg"><button>Light</button><button>Deep</button></div>
+    <button class="btn ghost sm">All areas<i data-i="chevron-down" class="sm"></i></button>
+    <button class="btn ghost sm">Due today</button>
+    <span class="sp"></span>
+    <button class="btn icon sm ghost" aria-label="Recent decks"><i data-i="clock" class="sm"></i></button>
+    <button class="btn ghost sm"><i data-i="refresh-cw" class="sm"></i>Generate new deck</button>
+  </div>
+  <div class="deck">
+    <div class="banner"><i data-i="calendar-plus" class="sm"></i>Connect your calendar to see your day here<span class="sp"></span><button class="btn ghost sm">Connect</button><button class="btn icon sm ghost" aria-label="Dismiss"><i data-i="x" class="sm"></i></button></div>
+    <div class="addfield"><i data-i="plus"></i>Add a task, or find an existing one<span class="end">Enter to add</span></div>
+    <div class="dsec dl">
+      <div class="sec"><i data-i="calendar-clock"></i>Deadlines <span class="n"><span style="color:var(--danger)">1 late</span> · 7 upcoming</span></div>
+      <div class="row"><span class="check"></span><div class="grow"><div class="tt">Book physio for calf strain</div></div><span class="when" style="color:var(--danger)">1 day late · Nov 18</span></div>
+      <div class="row"><span class="check"></span><div class="grow"><div class="tt">Get the holiday blend sample to Grain &amp; Gather</div></div><span class="when" style="color:var(--attention)">Due today</span></div>
+      <div class="row"><span class="check"></span><div class="grow"><div class="tt">Long run: 18 miles</div></div><span class="when" style="color:var(--attention)">Due today</span></div>
+      <button class="row more" style="width:100%">5 more due soon</button>
+    </div>
+    <div class="dsec">
+      <div class="sec">Today <span class="n">1 moved off</span><span class="end"><button class="btn ghost sm"><i data-i="history" class="sm"></i>Versions</button></span></div>
+      <div class="frame">Three hours of desk time: the calls and the review. The roaster screens move to tomorrow.</div>
+      <div class="pills"><button class="btn secondary sm"><i data-i="activity" class="sm"></i><span class="num">9</span> in progress</button><button class="btn secondary sm"><i data-i="inbox" class="sm"></i>3 to triage</button><button class="btn ghost sm"><i data-i="heart-pulse" class="sm"></i>Set up heartbeat</button></div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Long run: 18 miles</div><div class="meta"><span class="area" style="--ac:var(--a3)">Health</span><span class="sep"></span><span>M</span><span class="sep"></span><span class="today">Due today</span></div><div class="why">Done this morning or still to do, it stays first.</div></div></div>
+      <div class="fold"><i data-i="eye-off"></i>Hide items below</div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Book physio for calf strain</div><div class="meta"><span class="area" style="--ac:var(--a3)">Health</span><span class="sep"></span><span>XS</span><span class="sep"></span><span class="late">Overdue</span></div><div class="why">Two minutes and it was due yesterday.</div></div></div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Call Dana about the panel upgrade</div><div class="meta"><span class="area" style="--ac:var(--a5)">The Bungalow</span><span class="sep"></span><span>XS</span><span class="sep"></span><span>Due Sat</span></div><div class="why">Quote expires Thursday.</div></div></div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Order green coffee for winter</div><div class="meta"><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="sep"></span><span>M</span><span class="sep"></span><span>Due Sun</span></div><div class="why">Luis wants to settle the Guji amount first.</div></div></div>
+    </div>
+  </div>
+  <div class="pfoot">More options <span class="badge">1</span><span class="end"><i data-i="chevron-up" class="sm"></i></span></div>
+</section>
+  </div>
+</section>
+
+<!-- ================================================================ CHAT REVIEW -->
+<section class="screen" data-screen="review" hidden>
+  <header class="hud">
+  <button class="cnt zero" aria-label="Needs approval"><i data-i="circle-alert"></i><span class="num">0</span></button>
+  <button class="cnt att" aria-label="Unread"><span class="dot"></span><span class="num">4</span></button>
+  <button class="cnt zero" aria-label="Working"><i data-i="zap"></i><span class="num">0</span></button>
+  <button class="cnt on" aria-label="Waiting response"><i data-i="clock"></i><span class="num">3</span></button>
+  <button class="cnt zero" aria-label="Team"><i data-i="users"></i><span class="num">0</span></button>
+  <span class="hud-sep"></span>
+  <button class="usage" aria-label="Usage"><i data-i="gauge" class="sm"></i><span class="prov codex">◐</span><span class="num">71%</span><span class="prov claude">✳</span><span class="num">68%</span></button>
+  <button class="btn secondary sm close-chat"><i data-i="x" class="sm"></i>Close chat<span class="kbd">⌘E</span></button>
+  <span class="sp"></span>
+  <button class="btn ghost sm"><i data-i="calendar" class="sm"></i>Connect your calendar</button>
+  <span class="tgroup"><button class="btn icon ghost" aria-label="Search"><i data-i="search"></i></button><button class="btn icon ghost" aria-label="Deck"><i data-i="layers"></i></button><button class="btn icon ghost" aria-label="Scratchpad"><i data-i="notebook-pen"></i></button></span>
+  <button class="btn primary sm" style="margin-left:4px"><i data-i="plus" class="sm"></i>Create</button>
+</header>
+  <div class="body">
+    <aside class="rail mini">
+  <span class="logo lg" style="margin:2px 0 10px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="235.000 284.187 790.496 717.966" fill="currentColor" aria-hidden="true"> <path d="M 903.105 285.488 C 880.476 290.604, 862.305 300.672, 846.026 317.112 C 832.286 330.989, 821.668 351.046, 817.525 370.948 C 808.846 412.642, 826.005 454.785, 861.062 477.880 C 876.226 487.870, 890.953 493.166, 909.237 495.202 C 958.089 500.643, 1007.745 466.898, 1021.373 418.996 C 1028.794 392.913, 1026.199 367.149, 1013.567 341.500 C 1000.630 315.232, 976.628 295.168, 948.850 287.400 C 937.082 284.110, 913.551 283.126, 903.105 285.488 M 248.660 286.938 C 240.547 287.454, 239.622 287.731, 237.410 290.306 L 235 293.112 235 368 L 235 442.888 237.413 445.694 L 239.827 448.500 415.663 449 L 591.500 449.500 598.500 451.850 C 612.163 456.436, 620.787 461.711, 630.630 471.500 C 638.676 479.503, 640.357 481.821, 644.800 491.040 C 654.829 511.850, 656.331 532.855, 649.337 554.500 C 641.999 577.211, 624.196 596.780, 602.064 606.463 C 587.479 612.845, 598.315 612.378, 450.500 612.988 C 376.250 613.295, 315.405 613.648, 315.289 613.773 C 315.173 613.898, 314.160 614.985, 313.039 616.189 C 309.246 620.260, 310.291 623.897, 318.250 634.319 C 364.234 694.533, 409.817 753.926, 425.550 774.126 C 432.673 783.270, 443.067 796.770, 448.650 804.126 C 454.232 811.482, 465.052 825.600, 472.695 835.500 C 480.337 845.400, 497.343 867.450, 510.485 884.500 C 523.628 901.550, 535.982 917.569, 537.940 920.099 C 539.898 922.628, 548.025 933.193, 556 943.578 C 563.975 953.962, 573.902 965.870, 578.060 970.039 C 589.545 981.556, 606.604 992.134, 622.035 997.309 C 635.875 1001.951, 636.986 1002, 727.803 1002 C 809.739 1002, 813.766 1001.916, 815.345 1000.171 C 818.911 996.231, 817.725 994.170, 795.334 965.369 C 783.418 950.041, 769.320 931.875, 764.005 925 C 758.690 918.125, 748.752 905.353, 741.920 896.619 C 735.089 887.884, 727.730 878.434, 725.566 875.619 C 723.402 872.803, 706.735 851.375, 688.526 828 C 627.957 750.245, 624.223 745.335, 625.115 744.635 C 625.327 744.468, 631.800 743.578, 639.500 742.656 C 698.777 735.562, 751.256 700.978, 783.842 647.534 C 846.481 544.802, 815.063 403.702, 713.276 330.619 C 676.289 304.063, 638.127 290.416, 591.500 287.073 C 576.839 286.021, 265.010 285.899, 248.660 286.938 M 994.500 517.711 C 992.300 517.918, 983.220 519.206, 974.322 520.575 C 928.638 527.602, 893.450 544.265, 867.377 571.218 C 849.795 589.393, 838.497 610.297, 832.364 636 C 830.686 643.033, 830.555 654.512, 830.266 820.274 L 829.957 997.048 832.510 999.601 L 835.062 1002.153 876.781 1001.762 C 922.151 1001.336, 924.016 1001.145, 943.813 994.903 C 975.993 984.758, 1001.660 962.592, 1012.577 935.518 C 1019.979 917.160, 1019.400 934.660, 1019.735 719.234 C 1020.065 506.523, 1020.501 521.862, 1014.033 518.517 C 1011.217 517.061, 1004.420 516.781, 994.500 517.711" stroke="none" fill="currentColor" fill-rule="evenodd"/> </svg> </span>
+  <button class="btn icon ghost" aria-label="Expand"><i data-i="panel-left"></i></button>
+  <div class="rsep" style="width:24px"></div>
+  <button class="btn icon ghost" aria-label="New chat"><i data-i="plus"></i></button>
+  <button class="btn icon ghost" aria-label="Search"><i data-i="search"></i></button>
+  <div class="rsep" style="width:24px"></div>
+  <button class="btn icon ghost" aria-label="Apps"><i data-i="layout-grid"></i></button>
+  <button class="btn icon ghost" aria-label="Board"><i data-i="square-kanban"></i></button>
+  <button class="btn icon ghost" aria-label="Calendar"><i data-i="calendar"></i></button>
+  <button class="btn icon ghost" aria-label="Schedules"><i data-i="clock"></i></button>
+  <div class="rsep" style="width:24px"></div>
+  <span style="position:relative"><button class="btn icon secondary" aria-label="Agents"><i data-i="bot"></i></button><span class="badge att" style="position:absolute;top:-5px;right:-7px;min-width:16px;height:16px;font-size:10px">4</span></span>
+  <span style="flex:1"></span>
+  <button class="btn icon ghost" aria-label="Feedback"><i data-i="message-square-plus"></i></button>
+  <button class="btn icon ghost" aria-label="Settings"><i data-i="settings"></i></button>
+</aside>
+    <section class="pane with-float focus">
+      <div class="whead">
+        <div class="crumbs"><span class="ag"><span class="av">🐦</span>Fieldnote iOS</span><i data-i="chevron-right" class="sm" style="color:var(--t4)"></i><span>Fix offline sync dropping sightings</span></div>
+        <span class="status" style="color:var(--t3);margin-left:8px;font-size:12px;font-weight:500"><span class="sdot done"></span>Finished 4h ago</span>
+        <button class="btn icon sm ghost" aria-label="More"><i data-i="ellipsis" class="sm"></i></button>
+        <span class="sp"></span>
+        <button class="btn icon ghost" aria-label="History"><i data-i="history"></i></button>
+        <button class="btn ghost sm"><i data-i="square-terminal" class="sm"></i>Terminal<span class="kbd">⌃`</span></button>
+        <button class="btn secondary sm"><i data-i="panel-right" class="sm"></i>Tools<span class="kbd">⌃.</span></button>
+        <span class="hud-sep"></span>
+        <span class="group"><span class="num">2 commits ahead</span><button class="btn primary sm"><i data-i="arrow-up-from-line" class="sm"></i>Push</button></span>
+      </div>
+      <div class="wrow"><i data-i="list-checks" class="sm"></i>Task<span class="link"><i data-i="circle-dot" class="sm" style="color:var(--working)"></i>Fix offline sync dropping sightings</span></div>
+      <div class="ctabs"><button class="btn sm ghost"><i data-i="list" class="sm"></i><span class="num">1</span></button><button class="ctab on"><span>Fix offline sync dropping sightings</span></button><button class="btn icon sm ghost" aria-label="New tab"><i data-i="plus" class="sm"></i></button></div>
+      <div class="transcript"><div class="col" style="max-width:800px">
+        <button class="tool-row"><i data-i="chevron-right" class="sm"></i>3 tool calls <span class="num">36s</span></button>
+        <div class="msg-ai">
+          <p>Found it, and it's two bugs stacked:</p>
+          <ol><li><code>flush()</code> empties the queue and saves the empty queue <b>before</b> any upload runs. If iOS suspends the app mid-flush, the rest of the batch only exists in memory and is gone.</li>
+          <li><code>loadPending</code> and <code>savePending</code> in <code>SightingStore</code> are stubs. The queue was never written to disk at all.</li></ol>
+        </div>
+        <button class="tool-row"><i data-i="chevron-right" class="sm"></i>7 tool calls <span class="num">4m 18s</span></button>
+        <div class="msg-ai">
+          <p>Fixed, on two commits:</p>
+          <ul><li><b>Persist the pending queue to disk.</b> <code>SightingStore</code> now reads and writes <code>pending.json</code>.</li>
+          <li><b>Only drop a sighting after its upload succeeds.</b> A failed upload stays queued for the next flush.</li></ul>
+          <p>Tests: 6 passed, including two new ones that simulate the app being killed mid-flush and a failing upload.</p>
+          <p>Want me to push the branch and open a PR, or bump the build number for TestFlight first?</p>
+          <div class="msg-actions"><button class="btn icon sm ghost" aria-label="Copy"><i data-i="copy" class="sm"></i></button><button class="btn icon sm ghost" aria-label="Forward"><i data-i="corner-up-right" class="sm"></i></button></div>
+          <div class="files"><span class="lbl">3 files changed</span>
+            <button class="file"><span class="swift">◆</span>SightingStore.swift <span class="num plus">+2</span><span class="num minus">−2</span></button>
+            <button class="file"><span class="swift">◆</span>SyncQueue.swift <span class="num plus">+4</span><span class="num minus">−4</span></button>
+            <button class="file"><span class="swift">◆</span>SyncQueueTests.swift <span class="num plus">+4</span></button>
+          </div>
+        </div>
+      </div></div>
+      <div class="composer-wrap"><div class="col" style="max-width:800px">
+        <div class="review-bar"><div class="q"><span class="sdot att"></span>Review the agent's latest output</div><span class="sp"></span>
+          <button class="btn ghost sm"><i data-i="message-square-dashed" class="sm"></i>Request changes</button>
+          <button class="btn ghost sm"><i data-i="eye-off" class="sm"></i>Dismiss</button>
+          <button class="btn secondary sm"><i data-i="check" class="sm"></i>Accept</button>
+          <button class="btn go sm"><i data-i="check-check" class="sm"></i>Accept and complete</button></div>
+        <div class="composer"><div class="ph">Ask for anything. @ to mention, / for skills</div><div class="ctrls"><button class="btn icon ghost" aria-label="Add"><i data-i="plus"></i></button><button class="btn secondary sm"><i data-i="chevrons-right" class="sm"></i>Auto</button><span class="sp"></span><button class="btn ghost sm"><span class="engine">✳</span>Opus <span style="color:var(--t3)">Medium</span><i data-i="chevron-down" class="sm"></i></button><span class="send"><i data-i="arrow-up"></i></span></div></div>
+<div class="hint"><span class="kbd">⇧⇥</span>to cycle modes</div>
+      </div></div>
+      <div class="float-tools">
+        <div class="branch"><i data-i="git-branch" class="sm"></i><span class="mono">fieldnote-ios/fix-offline-sync-dropping-sightings</span></div>
+        <div class="row"><span class="sdot idle" style="margin:0 4px"></span><div class="grow"><div class="tt">Run · <span style="color:var(--t3);font-weight:400">Not set up</span></div><div class="sub" style="font-size:12px">No start command yet</div></div><button class="btn secondary sm">Set up</button></div>
+        <div class="row"><i data-i="app-window"></i><div class="grow"><div class="tt">Preview</div></div><span class="trail" style="font-size:12px">Needs a start command</span><i data-i="chevron-right" class="sm chev"></i></div>
+        <div class="gap"></div>
+        <div class="row"><i data-i="files"></i><div class="grow"><div class="tt">Artifacts</div></div><i data-i="chevron-right" class="sm chev"></i></div>
+        <div class="row"><i data-i="git-compare"></i><div class="grow"><div class="tt">Changes</div></div><span class="trail num" style="font-size:12px">3 files <span class="plus">+40</span> <span class="minus">−12</span></span><i data-i="chevron-right" class="sm chev"></i></div>
+        <div class="row"><i data-i="file-text"></i><div class="grow"><div class="tt">Files</div></div><span class="kbd">⌘P</span><i data-i="chevron-right" class="sm chev"></i></div>
+        <div class="row"><i data-i="square-terminal"></i><div class="grow"><div class="tt">Terminal</div></div><span class="kbd">⌃`</span><i data-i="chevron-right" class="sm chev"></i></div>
+        <div class="gap"></div>
+        <div class="row"><i data-i="list-checks"></i><div class="grow"><div class="tt">Notes and tasks</div></div><i data-i="chevron-right" class="sm chev"></i></div>
+        <div class="row"><i data-i="notebook-pen"></i><div class="grow"><div class="tt">Scratchpad</div></div><i data-i="chevron-right" class="sm chev"></i></div>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ================================================================ TASKS -->
+<section class="screen" data-screen="tasks" hidden>
+  <header class="hud">
+  <button class="cnt zero" aria-label="Needs approval"><i data-i="circle-alert"></i><span class="num">0</span></button>
+  <button class="cnt att" aria-label="Unread"><span class="dot"></span><span class="num">4</span></button>
+  <button class="cnt zero" aria-label="Working"><i data-i="zap"></i><span class="num">0</span></button>
+  <button class="cnt on" aria-label="Waiting response"><i data-i="clock"></i><span class="num">3</span></button>
+  <button class="cnt zero" aria-label="Team"><i data-i="users"></i><span class="num">0</span></button>
+  <span class="hud-sep"></span>
+  <button class="usage" aria-label="Usage"><i data-i="gauge" class="sm"></i><span class="prov codex">◐</span><span class="num">71%</span><span class="prov claude">✳</span><span class="num">68%</span></button>
+  
+  <span class="sp"></span>
+  <button class="btn ghost sm"><i data-i="calendar" class="sm"></i>Connect your calendar</button>
+  <span class="tgroup"><button class="btn icon ghost" aria-label="Search"><i data-i="search"></i></button><button class="btn icon ghost" aria-label="Deck"><i data-i="layers"></i></button><button class="btn icon ghost" aria-label="Scratchpad"><i data-i="notebook-pen"></i></button></span>
+  <button class="btn primary sm" style="margin-left:4px"><i data-i="plus" class="sm"></i>Create</button>
+</header>
+  <div class="body">
+    <aside class="rail">
+  <div class="rtop"><button class="rrow on"><span class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="235.000 284.187 790.496 717.966" fill="currentColor" aria-hidden="true"> <path d="M 903.105 285.488 C 880.476 290.604, 862.305 300.672, 846.026 317.112 C 832.286 330.989, 821.668 351.046, 817.525 370.948 C 808.846 412.642, 826.005 454.785, 861.062 477.880 C 876.226 487.870, 890.953 493.166, 909.237 495.202 C 958.089 500.643, 1007.745 466.898, 1021.373 418.996 C 1028.794 392.913, 1026.199 367.149, 1013.567 341.500 C 1000.630 315.232, 976.628 295.168, 948.850 287.400 C 937.082 284.110, 913.551 283.126, 903.105 285.488 M 248.660 286.938 C 240.547 287.454, 239.622 287.731, 237.410 290.306 L 235 293.112 235 368 L 235 442.888 237.413 445.694 L 239.827 448.500 415.663 449 L 591.500 449.500 598.500 451.850 C 612.163 456.436, 620.787 461.711, 630.630 471.500 C 638.676 479.503, 640.357 481.821, 644.800 491.040 C 654.829 511.850, 656.331 532.855, 649.337 554.500 C 641.999 577.211, 624.196 596.780, 602.064 606.463 C 587.479 612.845, 598.315 612.378, 450.500 612.988 C 376.250 613.295, 315.405 613.648, 315.289 613.773 C 315.173 613.898, 314.160 614.985, 313.039 616.189 C 309.246 620.260, 310.291 623.897, 318.250 634.319 C 364.234 694.533, 409.817 753.926, 425.550 774.126 C 432.673 783.270, 443.067 796.770, 448.650 804.126 C 454.232 811.482, 465.052 825.600, 472.695 835.500 C 480.337 845.400, 497.343 867.450, 510.485 884.500 C 523.628 901.550, 535.982 917.569, 537.940 920.099 C 539.898 922.628, 548.025 933.193, 556 943.578 C 563.975 953.962, 573.902 965.870, 578.060 970.039 C 589.545 981.556, 606.604 992.134, 622.035 997.309 C 635.875 1001.951, 636.986 1002, 727.803 1002 C 809.739 1002, 813.766 1001.916, 815.345 1000.171 C 818.911 996.231, 817.725 994.170, 795.334 965.369 C 783.418 950.041, 769.320 931.875, 764.005 925 C 758.690 918.125, 748.752 905.353, 741.920 896.619 C 735.089 887.884, 727.730 878.434, 725.566 875.619 C 723.402 872.803, 706.735 851.375, 688.526 828 C 627.957 750.245, 624.223 745.335, 625.115 744.635 C 625.327 744.468, 631.800 743.578, 639.500 742.656 C 698.777 735.562, 751.256 700.978, 783.842 647.534 C 846.481 544.802, 815.063 403.702, 713.276 330.619 C 676.289 304.063, 638.127 290.416, 591.500 287.073 C 576.839 286.021, 265.010 285.899, 248.660 286.938 M 994.500 517.711 C 992.300 517.918, 983.220 519.206, 974.322 520.575 C 928.638 527.602, 893.450 544.265, 867.377 571.218 C 849.795 589.393, 838.497 610.297, 832.364 636 C 830.686 643.033, 830.555 654.512, 830.266 820.274 L 829.957 997.048 832.510 999.601 L 835.062 1002.153 876.781 1001.762 C 922.151 1001.336, 924.016 1001.145, 943.813 994.903 C 975.993 984.758, 1001.660 962.592, 1012.577 935.518 C 1019.979 917.160, 1019.400 934.660, 1019.735 719.234 C 1020.065 506.523, 1020.501 521.862, 1014.033 518.517 C 1011.217 517.061, 1004.420 516.781, 994.500 517.711" stroke="none" fill="currentColor" fill-rule="evenodd"/> </svg> </span>Ri</button><button class="btn icon sm ghost" aria-label="Collapse"><i data-i="panel-left" class="sm"></i></button></div>
+  <div class="rail-scroll">
+    <button class="rrow" style="margin-top:4px"><i data-i="plus"></i>New chat</button>
+    <button class="rrow"><i data-i="search"></i>Search chats</button>
+    <div class="rsep"></div>
+    <button class="rrow"><i data-i="layout-grid"></i>Apps<span class="end"><i data-i="chevron-right" class="sm"></i></span></button>
+    <button class="rrow"><i data-i="square-kanban"></i>Board</button>
+    <button class="rrow"><i data-i="calendar"></i>Calendar</button>
+    <button class="rrow"><i data-i="clock"></i>Schedules and triggers</button>
+    <div class="rsep"></div>
+    <div class="sec" style="padding:0 2px 0 0;height:32px"><div class="seg"><button class="on">Agents</button><button>Recent</button></div><span class="end"><button class="btn icon sm ghost" aria-label="Archive"><i data-i="archive" class="sm"></i></button><button class="btn icon sm secondary" aria-label="New agent"><i data-i="plus" class="sm"></i></button></span></div>
+    <div class="sec" style="margin-top:6px"><i data-i="pin"></i>Pinned <span class="n">1</span></div>
+    <div class="pinned"><i data-i="git-branch" class="sm" style="color:var(--t4);margin-top:3px"></i><div style="min-width:0"><div class="tt">Chart roast curves from Artisan logs</div><div class="pv">Rate of rise and roast markers added. Devel…</div><div class="mt">2d · Roast lab</div></div></div>
+    <div class="rsep"></div>
+    <button class="rrow"><i data-i="inbox"></i>Unread<span class="end"><span class="badge att">4</span><i data-i="chevron-right" class="sm"></i></span></button>
+    <div class="rsep"></div>
+    <button class="agent "><span class="av">🐦</span><span class="nm">Fieldnote iOS</span><span class="meta"><span class="badge att">2</span></span><span class="pv">Four things block submission, in order</span></button>
+    <button class="agent"><span class="av">🌐</span><span class="nm">Fieldnote site</span><span class="meta"></span><span class="pv">fieldnote.app: the landing page, waitlist</span></button>
+    <button class="agent"><span class="av">☕</span><span class="nm">Tidewater shop</span><span class="meta"><span class="badge att">1</span></span><span class="pv">Wholesale order form and subscriptions</span></button>
+    <button class="agent"><span class="av">🔥</span><span class="nm">Roast lab</span><span class="meta"></span><span class="pv">Analysis scripts for roast logs exported</span></button>
+    <button class="agent"><span class="av">📦</span><span class="nm">Household</span><span class="meta"><span class="badge att">1</span></span><span class="pv">Household paperwork: taxes, insurance</span></button>
+  </div>
+  <div class="rail-foot">
+    <button class="rrow"><i data-i="message-square-plus"></i>Feedback and bugs</button>
+    <div class="line"><button class="btn icon ghost" aria-label="Settings"><i data-i="settings"></i></button><button class="rrow"><i data-i="plug"></i>Connect accounts<span class="logos"><span style="background:#4a6cf7">S</span><span style="background:#222">N</span><span style="background:#ea4335">M</span></span></button></div>
+  </div>
+</aside>
+    <section class="pane half focus">
+      <div class="ptabs"><div class="island"><button class="tab">Chat</button><button class="tab">Deck</button><button class="tab">Stream<span class="dot"></span></button><button class="tab on">Tasks</button><button class="tab">Notes</button></div><span class="sp"></span><button class="tab">More<i data-i="chevron-down" class="sm"></i></button></div>
+      <div class="ptool">
+        <button class="btn secondary sm"><i data-i="columns-3" class="sm"></i>Open board</button>
+        <button class="btn ghost sm">In progress <span class="num" style="color:var(--t3)">9</span><i data-i="chevron-down" class="sm"></i></button>
+        <span class="sp"></span>
+        <button class="btn ghost sm"><i data-i="list-filter" class="sm"></i>Filter</button>
+        <button class="btn ghost sm"><i data-i="arrow-down-up" class="sm"></i>Priority order</button>
+        <button class="btn icon sm ghost" aria-label="Search"><i data-i="search" class="sm"></i></button>
+      </div>
+      <div class="list">
+        <div class="add"><i data-i="plus" class="sm"></i>Start a task</div>
+        <div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Fix offline sync dropping sightings</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a1)">Fieldnote</span><span class="ic"><i data-i="flame"></i>Deep</span><span>M</span><span class="ic"><i data-i="text-align-start"></i></span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Chart roast curves from Artisan logs</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="ic"><i data-i="flame"></i>Deep</span><span>M</span><span class="ic"><i data-i="text-align-start"></i></span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Launch landing page with waitlist</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a1)">Fieldnote</span><span class="ic"><i data-i="zap"></i>Light</span><span>M</span><span class="ic"><i data-i="text-align-start"></i></span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Organize 2026 tax documents</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a6)">Money</span><span class="ic"><i data-i="zap"></i>Light</span><span>M</span><span class="ic"><i data-i="text-align-start"></i></span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Voice notes: transcribe on device</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a1)">Fieldnote</span><span class="ic"><i data-i="flame"></i>Deep</span><span>L</span><span class="ic"><i data-i="text-align-start"></i></span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Phone screens with roaster applicants</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="ic"><i data-i="zap"></i>Light</span><span>M</span><span class="ic"><i data-i="text-align-start"></i></span></div></div></div>
+<div class="row trow on"><span class="check"></span><div class="grow"><div class="tt">Hire a part-time production roaster</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="ic"><i data-i="flame"></i>Deep</span><span>L</span><span class="ic"><i data-i="text-align-start"></i></span><span class="ic"><i data-i="list-checks"></i>4</span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Packaging redesign</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="ic"><i data-i="flame"></i>Deep</span><span>L</span><span class="ic"><i data-i="text-align-start"></i></span><span class="ic"><i data-i="list-checks"></i>4</span></div></div></div>
+<div class="row trow"><span class="check"></span><div class="grow"><div class="tt">Fieldnote 1.0 launch</div><div class="meta"><span class="st">In progress<i data-i="chevron-down"></i></span><span class="area" style="--ac:var(--a1)">Fieldnote</span><span class="ic"><i data-i="flame"></i>Deep</span><span>XL</span><span class="ic"><i data-i="text-align-start"></i></span><span class="ic"><i data-i="list-checks"></i>9</span></div></div></div>
+      </div>
+    </section>
+    <section class="pane half">
+  <div class="ptabs"><div class="island"><button class="tab">Chat</button><button class="tab on">Deck</button><button class="tab">Stream<span class="dot"></span></button><button class="tab">Tasks</button><button class="tab">Notes</button></div><span class="sp"></span><button class="tab">More<i data-i="chevron-down" class="sm"></i></button></div>
+  <div class="ptool">
+    <div class="seg"><button>Light</button><button>Deep</button></div>
+    <button class="btn ghost sm">All areas<i data-i="chevron-down" class="sm"></i></button>
+    <button class="btn ghost sm">Due today</button>
+    <span class="sp"></span>
+    <button class="btn icon sm ghost" aria-label="Recent decks"><i data-i="clock" class="sm"></i></button>
+    <button class="btn ghost sm"><i data-i="refresh-cw" class="sm"></i>Generate new deck</button>
+  </div>
+  <div class="deck">
+    <div class="banner"><i data-i="calendar-plus" class="sm"></i>Connect your calendar to see your day here<span class="sp"></span><button class="btn ghost sm">Connect</button><button class="btn icon sm ghost" aria-label="Dismiss"><i data-i="x" class="sm"></i></button></div>
+    <div class="addfield"><i data-i="plus"></i>Add a task, or find an existing one<span class="end">Enter to add</span></div>
+    <div class="dsec dl">
+      <div class="sec"><i data-i="calendar-clock"></i>Deadlines <span class="n"><span style="color:var(--danger)">1 late</span> · 7 upcoming</span></div>
+      <div class="row"><span class="check"></span><div class="grow"><div class="tt">Book physio for calf strain</div></div><span class="when" style="color:var(--danger)">1 day late · Nov 18</span></div>
+      <div class="row"><span class="check"></span><div class="grow"><div class="tt">Get the holiday blend sample to Grain &amp; Gather</div></div><span class="when" style="color:var(--attention)">Due today</span></div>
+      <div class="row"><span class="check"></span><div class="grow"><div class="tt">Long run: 18 miles</div></div><span class="when" style="color:var(--attention)">Due today</span></div>
+      <button class="row more" style="width:100%">5 more due soon</button>
+    </div>
+    <div class="dsec">
+      <div class="sec">Today <span class="n">1 moved off</span><span class="end"><button class="btn ghost sm"><i data-i="history" class="sm"></i>Versions</button></span></div>
+      <div class="frame">Three hours of desk time: the calls and the review. The roaster screens move to tomorrow.</div>
+      <div class="pills"><button class="btn secondary sm"><i data-i="activity" class="sm"></i><span class="num">9</span> in progress</button><button class="btn secondary sm"><i data-i="inbox" class="sm"></i>3 to triage</button><button class="btn ghost sm"><i data-i="heart-pulse" class="sm"></i>Set up heartbeat</button></div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Long run: 18 miles</div><div class="meta"><span class="area" style="--ac:var(--a3)">Health</span><span class="sep"></span><span>M</span><span class="sep"></span><span class="today">Due today</span></div><div class="why">Done this morning or still to do, it stays first.</div></div></div>
+      <div class="fold"><i data-i="eye-off"></i>Hide items below</div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Book physio for calf strain</div><div class="meta"><span class="area" style="--ac:var(--a3)">Health</span><span class="sep"></span><span>XS</span><span class="sep"></span><span class="late">Overdue</span></div><div class="why">Two minutes and it was due yesterday.</div></div></div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Call Dana about the panel upgrade</div><div class="meta"><span class="area" style="--ac:var(--a5)">The Bungalow</span><span class="sep"></span><span>XS</span><span class="sep"></span><span>Due Sat</span></div><div class="why">Quote expires Thursday.</div></div></div>
+      <div class="ditem"><span class="check"></span><div class="grow"><div class="tt">Order green coffee for winter</div><div class="meta"><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="sep"></span><span>M</span><span class="sep"></span><span>Due Sun</span></div><div class="why">Luis wants to settle the Guji amount first.</div></div></div>
+    </div>
+  </div>
+  <div class="pfoot">More options <span class="badge">1</span><span class="end"><i data-i="chevron-up" class="sm"></i></span></div>
+</section>
+  </div>
+</section>
+
+<!-- ================================================================ TASK PAGE -->
+<section class="screen" data-screen="task" hidden>
+  <div class="tpage">
+    <div class="tmain focus">
+      <div class="tbar">
+        <button class="btn ghost sm"><i data-i="chevron-left" class="sm"></i>Back</button>
+        <span class="sp"></span>
+        <button class="btn primary sm"><i data-i="bot" class="sm"></i>Continue with agent</button>
+        <button class="btn secondary sm"><i data-i="check" class="sm"></i>Complete</button>
+        <button class="btn icon sm ghost" aria-label="More"><i data-i="ellipsis" class="sm"></i></button>
+      </div>
+      <div class="tscroll"><div class="tcol">
+        <div class="kind"><span>Task</span><span style="color:var(--t4)">·</span><span class="meta"><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span></span></div>
+        <div class="dtitle">Hire a part-time production roaster</div>
+        <div class="stamp">Created Oct 20, 2026 · Edited today</div>
+        <div class="props">
+          <div class="k">Status</div><div class="v"><button class="pbtn" style="color:var(--t1)"><span class="sdot work"></span>In progress<i data-i="chevron-down" class="sm"></i></button></div>
+          <div class="k">Deadline</div><div class="v"><button class="pbtn empty"><i data-i="calendar" class="sm"></i>Set date</button></div>
+          <div class="k">Energy</div><div class="v"><div class="seg"><button class="on"><i data-i="flame" class="sm"></i>Deep</button><button><i data-i="zap" class="sm"></i>Light</button></div></div>
+          <div class="k">Effort</div><div class="v"><div class="seg"><button>XS: Trivial</button><button>S: Small</button><button>M: Medium</button><button class="on">L: Large</button><button>XL: Epic</button></div></div>
+          <div class="k">Priority</div><div class="v"><span style="font-weight:500">Not yet ranked</span><button class="btn ghost sm">Place<i data-i="chevron-down" class="sm"></i></button></div>
+          <div class="help">Click the rank to set an exact spot, or drop it into a rough bucket. Either gives AI a starting point it can refine.</div>
+          <div class="k">Snooze until</div><div class="v"><button class="pbtn empty"><i data-i="calendar" class="sm"></i>Set date</button></div>
+          <div class="k">Repeat</div><div class="v"><button class="pbtn empty"><i data-i="repeat" class="sm"></i>Never</button></div>
+        </div>
+        <div class="sec" style="padding:0;margin-top:22px">Subtasks <span class="n">2/4</span><span class="end"><button class="btn ghost sm"><i data-i="plus" class="sm"></i>New</button></span></div>
+        <div class="subs" style="margin:2px -10px 0">
+          <div class="row"><span class="check"></span><div class="grow"><div class="tt">Run trial roast shifts with the top two</div></div></div>
+          <div class="row"><span class="check"></span><div class="grow"><div class="tt">Phone screens with roaster applicants</div></div></div>
+          <div class="row done"><span class="check done"><i data-i="check"></i></span><div class="grow"><div class="tt">Post the job on Indeed and local boards</div></div></div>
+          <div class="row done"><span class="check done"><i data-i="check"></i></span><div class="grow"><div class="tt">Write the roaster job post</div></div></div>
+        </div>
+        <div class="doc">
+          <h2>Outcome</h2><p>Someone reliable roasting Tuesdays and Thursdays, so I stop roasting at 5am before long runs and Fieldnote nights.</p>
+          <h2>Why now</h2><p>Holiday wholesale volume roughly doubles from November. Last year I roasted six days a week through December and was a wreck by New Year.</p>
+          <h2>Plan</h2>
+          <div class="todo done"><span class="check done"><i data-i="check"></i></span><span>Write the job post ($22 to $25/hr, 16 to 20 hrs/week)</span></div>
+          <div class="todo done"><span class="check done"><i data-i="check"></i></span><span>Post on Indeed and the local boards</span></div>
+          <div class="todo"><span class="check"></span><span>Phone screens (7 of 23 applicants worth a call)</span></div>
+          <div class="todo"><span class="check"></span><span>Two paid trial shifts with the top two</span></div>
+        </div>
+      </div></div>
+    </div>
+    <aside class="assist">
+      <div class="ahd"><i data-i="message-square" class="sm" style="color:var(--t3)"></i>AI Assistant<span class="sp"></span><button class="btn icon sm ghost" aria-label="New chat"><i data-i="square-pen" class="sm"></i></button></div>
+      <div class="transcript"><div class="col">
+        <div class="msg-user" style="margin-top:6px"><div class="bubble">Give me four phone screen questions that tell me fast if someone can run the roaster alone on a Tuesday.</div></div>
+        <div class="msg-ai"><ol>
+          <li><b>Walk me through your last roast day, start to finish.</b> Listen for warm-up, batch logging and cleaning without prompting.</li>
+          <li><b>The bean temp stalls a minute before first crack. What do you do?</b> You want gas or airflow adjustments, not "call someone".</li>
+          <li><b>How do you check a batch is right before it's bagged?</b> Color, weight loss, cupping.</li>
+          <li><b>What would you need from us to be alone on a Tuesday by week three?</b></li></ol>
+          <p>I added them to the task as a checklist.</p></div>
+      </div></div>
+      <div class="composer-wrap" style="padding:0 14px 12px"><div class="composer"><div class="ph">Ask for anything. @ to mention, / for skills</div><div class="ctrls"><button class="btn icon ghost" aria-label="Add"><i data-i="plus"></i></button><button class="btn icon ghost" aria-label="More"><i data-i="ellipsis"></i></button><button class="btn secondary sm"><i data-i="chevrons-right" class="sm"></i>Auto</button><span class="sp"></span><button class="btn ghost sm"><span class="engine">✳</span>Sonnet <span style="color:var(--t3)">Medium</span><i data-i="chevron-down" class="sm"></i></button><span class="send"><i data-i="arrow-up"></i></span></div></div></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ================================================================ AGENT -->
+<section class="screen" data-screen="agent" hidden>
+  <header class="hud">
+  <button class="cnt zero" aria-label="Needs approval"><i data-i="circle-alert"></i><span class="num">0</span></button>
+  <button class="cnt att" aria-label="Unread"><span class="dot"></span><span class="num">4</span></button>
+  <button class="cnt zero" aria-label="Working"><i data-i="zap"></i><span class="num">0</span></button>
+  <button class="cnt on" aria-label="Waiting response"><i data-i="clock"></i><span class="num">3</span></button>
+  <button class="cnt zero" aria-label="Team"><i data-i="users"></i><span class="num">0</span></button>
+  <span class="hud-sep"></span>
+  <button class="usage" aria-label="Usage"><i data-i="gauge" class="sm"></i><span class="prov codex">◐</span><span class="num">71%</span><span class="prov claude">✳</span><span class="num">68%</span></button>
+  <button class="btn secondary sm close-chat"><i data-i="x" class="sm"></i>Close agent<span class="kbd">⌘E</span></button>
+  <span class="sp"></span>
+  <button class="btn ghost sm"><i data-i="calendar" class="sm"></i>Connect your calendar</button>
+  <span class="tgroup"><button class="btn icon ghost" aria-label="Search"><i data-i="search"></i></button><button class="btn icon ghost" aria-label="Deck"><i data-i="layers"></i></button><button class="btn icon ghost" aria-label="Scratchpad"><i data-i="notebook-pen"></i></button></span>
+  <button class="btn primary sm" style="margin-left:4px"><i data-i="plus" class="sm"></i>Create</button>
+</header>
+  <div class="body">
+    <aside class="rail">
+  <div class="rtop"><button class="rrow "><span class="logo"><svg xmlns="http://www.w3.org/2000/svg" viewBox="235.000 284.187 790.496 717.966" fill="currentColor" aria-hidden="true"> <path d="M 903.105 285.488 C 880.476 290.604, 862.305 300.672, 846.026 317.112 C 832.286 330.989, 821.668 351.046, 817.525 370.948 C 808.846 412.642, 826.005 454.785, 861.062 477.880 C 876.226 487.870, 890.953 493.166, 909.237 495.202 C 958.089 500.643, 1007.745 466.898, 1021.373 418.996 C 1028.794 392.913, 1026.199 367.149, 1013.567 341.500 C 1000.630 315.232, 976.628 295.168, 948.850 287.400 C 937.082 284.110, 913.551 283.126, 903.105 285.488 M 248.660 286.938 C 240.547 287.454, 239.622 287.731, 237.410 290.306 L 235 293.112 235 368 L 235 442.888 237.413 445.694 L 239.827 448.500 415.663 449 L 591.500 449.500 598.500 451.850 C 612.163 456.436, 620.787 461.711, 630.630 471.500 C 638.676 479.503, 640.357 481.821, 644.800 491.040 C 654.829 511.850, 656.331 532.855, 649.337 554.500 C 641.999 577.211, 624.196 596.780, 602.064 606.463 C 587.479 612.845, 598.315 612.378, 450.500 612.988 C 376.250 613.295, 315.405 613.648, 315.289 613.773 C 315.173 613.898, 314.160 614.985, 313.039 616.189 C 309.246 620.260, 310.291 623.897, 318.250 634.319 C 364.234 694.533, 409.817 753.926, 425.550 774.126 C 432.673 783.270, 443.067 796.770, 448.650 804.126 C 454.232 811.482, 465.052 825.600, 472.695 835.500 C 480.337 845.400, 497.343 867.450, 510.485 884.500 C 523.628 901.550, 535.982 917.569, 537.940 920.099 C 539.898 922.628, 548.025 933.193, 556 943.578 C 563.975 953.962, 573.902 965.870, 578.060 970.039 C 589.545 981.556, 606.604 992.134, 622.035 997.309 C 635.875 1001.951, 636.986 1002, 727.803 1002 C 809.739 1002, 813.766 1001.916, 815.345 1000.171 C 818.911 996.231, 817.725 994.170, 795.334 965.369 C 783.418 950.041, 769.320 931.875, 764.005 925 C 758.690 918.125, 748.752 905.353, 741.920 896.619 C 735.089 887.884, 727.730 878.434, 725.566 875.619 C 723.402 872.803, 706.735 851.375, 688.526 828 C 627.957 750.245, 624.223 745.335, 625.115 744.635 C 625.327 744.468, 631.800 743.578, 639.500 742.656 C 698.777 735.562, 751.256 700.978, 783.842 647.534 C 846.481 544.802, 815.063 403.702, 713.276 330.619 C 676.289 304.063, 638.127 290.416, 591.500 287.073 C 576.839 286.021, 265.010 285.899, 248.660 286.938 M 994.500 517.711 C 992.300 517.918, 983.220 519.206, 974.322 520.575 C 928.638 527.602, 893.450 544.265, 867.377 571.218 C 849.795 589.393, 838.497 610.297, 832.364 636 C 830.686 643.033, 830.555 654.512, 830.266 820.274 L 829.957 997.048 832.510 999.601 L 835.062 1002.153 876.781 1001.762 C 922.151 1001.336, 924.016 1001.145, 943.813 994.903 C 975.993 984.758, 1001.660 962.592, 1012.577 935.518 C 1019.979 917.160, 1019.400 934.660, 1019.735 719.234 C 1020.065 506.523, 1020.501 521.862, 1014.033 518.517 C 1011.217 517.061, 1004.420 516.781, 994.500 517.711" stroke="none" fill="currentColor" fill-rule="evenodd"/> </svg> </span>Ri</button><button class="btn icon sm ghost" aria-label="Collapse"><i data-i="panel-left" class="sm"></i></button></div>
+  <div class="rail-scroll">
+    <button class="rrow" style="margin-top:4px"><i data-i="plus"></i>New chat</button>
+    <button class="rrow"><i data-i="search"></i>Search chats</button>
+    <div class="rsep"></div>
+    <button class="rrow"><i data-i="layout-grid"></i>Apps<span class="end"><i data-i="chevron-right" class="sm"></i></span></button>
+    <button class="rrow"><i data-i="square-kanban"></i>Board</button>
+    <button class="rrow"><i data-i="calendar"></i>Calendar</button>
+    <button class="rrow"><i data-i="clock"></i>Schedules and triggers</button>
+    <div class="rsep"></div>
+    <div class="sec" style="padding:0 2px 0 0;height:32px"><div class="seg"><button class="on">Agents</button><button>Recent</button></div><span class="end"><button class="btn icon sm ghost" aria-label="Archive"><i data-i="archive" class="sm"></i></button><button class="btn icon sm secondary" aria-label="New agent"><i data-i="plus" class="sm"></i></button></span></div>
+    <div class="sec" style="margin-top:6px"><i data-i="pin"></i>Pinned <span class="n">1</span></div>
+    <div class="pinned"><i data-i="git-branch" class="sm" style="color:var(--t4);margin-top:3px"></i><div style="min-width:0"><div class="tt">Chart roast curves from Artisan logs</div><div class="pv">Rate of rise and roast markers added. Devel…</div><div class="mt">2d · Roast lab</div></div></div>
+    <div class="rsep"></div>
+    <button class="rrow"><i data-i="inbox"></i>Unread<span class="end"><span class="badge att">4</span><i data-i="chevron-right" class="sm"></i></span></button>
+    <div class="rsep"></div>
+    <button class="agent on"><span class="av">🐦</span><span class="nm">Fieldnote iOS</span><span class="meta"><span class="badge att">2</span></span><span class="pv">Four things block submission, in order</span></button>
+    <button class="agent"><span class="av">🌐</span><span class="nm">Fieldnote site</span><span class="meta"></span><span class="pv">fieldnote.app: the landing page, waitlist</span></button>
+    <button class="agent"><span class="av">☕</span><span class="nm">Tidewater shop</span><span class="meta"><span class="badge att">1</span></span><span class="pv">Wholesale order form and subscriptions</span></button>
+    <button class="agent"><span class="av">🔥</span><span class="nm">Roast lab</span><span class="meta"></span><span class="pv">Analysis scripts for roast logs exported</span></button>
+    <button class="agent"><span class="av">📦</span><span class="nm">Household</span><span class="meta"><span class="badge att">1</span></span><span class="pv">Household paperwork: taxes, insurance</span></button>
+  </div>
+  <div class="rail-foot">
+    <button class="rrow"><i data-i="message-square-plus"></i>Feedback and bugs</button>
+    <div class="line"><button class="btn icon ghost" aria-label="Settings"><i data-i="settings"></i></button><button class="rrow"><i data-i="plug"></i>Connect accounts<span class="logos"><span style="background:#4a6cf7">S</span><span style="background:#222">N</span><span style="background:#ea4335">M</span></span></button></div>
+  </div>
+</aside>
+    <section class="pane agent-outer">
+      <div class="ahead">
+        <span class="av">🐦</span>
+        <div><div class="nm">Fieldnote iOS</div><div class="path"><i data-i="git-branch" class="sm"></i><span class="mono">~/ri-dev/.work/seed-projects/fieldnote-ios</span></div></div>
+        <button class="btn secondary sm" style="margin-left:8px"><i data-i="plus" class="sm"></i>New chat</button>
+        <span class="sp"></span>
+        <span class="cnt att"><span class="dot"></span>2 need you</span>
+        <button class="btn ghost sm"><i data-i="square-terminal" class="sm"></i>Terminal<span class="kbd">⌃`</span></button>
+        <button class="btn secondary sm"><i data-i="panel-right" class="sm"></i>Tools<span class="kbd">⌃.</span></button>
+      </div>
+      <div class="apanes">
+        <section class="pane half focus">
+          <div class="psub"><span style="font-size:12.5px">Main chat</span><span class="sp"></span><button class="btn icon sm ghost" aria-label="Hide"><i data-i="eye-off" class="sm"></i></button><button class="btn icon sm ghost" aria-label="Recent"><i data-i="clock" class="sm"></i></button><button class="btn icon sm ghost" aria-label="More"><i data-i="ellipsis" class="sm"></i></button><button class="btn sm ghost"><i data-i="history" class="sm"></i>History</button><button class="btn sm ghost"><i data-i="plus" class="sm"></i>New</button></div>
+          <div class="transcript"><div class="col" style="padding:0 24px">
+            <div class="msg-user"><div class="bubble">What is left before we can submit to the App Store?</div></div>
+            <button class="tool-row"><i data-i="chevron-right" class="sm"></i>1 tool call</button>
+            <div class="msg-ai"><p>Four things block submission, in order:</p><ol>
+              <li><b>Fix offline sync dropping sightings.</b> This is the one testers notice. It blocks the submission task.</li>
+              <li><b>Write the privacy policy.</b> App Store Connect won't take the build without a URL.</li>
+              <li><b>Voice notes: transcribe on device.</b> Not strictly required, but it's the headline feature in the screenshots.</li>
+              <li><b>Screenshots and the App Store description.</b> Not started.</li></ol>
+              <p>The submission deadline is in about a week. Sync and the privacy policy are the critical path.</p></div>
+          </div></div>
+          <div class="composer-wrap"><div class="composer"><div class="ph">Tell Fieldnote iOS what to build, or ask about its work</div><div class="ctrls"><button class="btn icon ghost" aria-label="Add"><i data-i="plus"></i></button><button class="btn secondary sm"><i data-i="chevrons-right" class="sm"></i>Auto</button><span class="sp"></span><button class="btn ghost sm"><span class="engine">✳</span>Opus <span style="color:var(--t3)">Medium</span><i data-i="chevron-down" class="sm"></i></button><span class="send"><i data-i="arrow-up"></i></span></div></div><div class="hint"><span class="kbd">⇧⇥</span>to cycle modes</div></div>
+        </section>
+        <section class="pane half">
+          <div class="ptabs"><div class="island"><button class="tab on"><i data-i="messages-square"></i>Chats</button><button class="tab"><i data-i="folder-tree"></i>Files</button><button class="tab"><i data-i="app-window"></i>Preview</button><button class="tab"><i data-i="sliders-horizontal"></i>Setup</button></div><span class="sp"></span><button class="btn icon sm ghost" aria-label="Expand"><i data-i="maximize-2" class="sm"></i></button><button class="btn icon sm ghost" aria-label="Close"><i data-i="x" class="sm"></i></button></div>
+          <div class="ptool"><div class="seg"><button class="on">All</button><button>Unread <span class="badge att" style="height:16px;min-width:16px;font-size:10px">2</span></button><button>Working</button></div></div>
+          <div class="list" style="padding-top:0">
+            <div class="chatrow"><span class="sdot att"></span><div class="grow"><div class="tt">Fix offline sync dropping sightings</div><div class="ln">Choose: open a PR now, or bump the TestFlight build first</div><div class="meta" style="margin-top:4px"><span>Claude Code</span><span class="sep"></span><span class="num plus">+40</span><span class="num minus">−12</span></div></div><div class="side"><span class="num">29m</span><span class="chip">Quick for you</span></div></div>
+            <div class="chatrow"><span class="sdot att"></span><div class="grow"><div class="tt">Voice notes: transcribe on device</div><div class="ln">Pick where species hints come from: a bundled list (A) or eBird data (B)</div><div class="meta" style="margin-top:4px"><span>Claude Code</span><span class="sep"></span><span class="num plus">+29</span><span class="num minus">−0</span></div></div><div class="side"><span class="num">30m</span><span class="chip">Quick for you</span></div></div>
+            <div class="sec" style="margin-top:14px"><i data-i="list-checks"></i>Tasks <span class="n">2</span></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;padding:2px 10px"><span class="chip" style="height:26px;padding:0 10px"><span class="sdot work"></span>Fix offline sync dropping sightings</span><span class="chip" style="height:26px;padding:0 10px"><span class="sdot work"></span>Voice notes: transcribe on device</span></div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ================================================================ SYSTEM -->
+<section class="screen" data-screen="system" hidden>
+  <div class="sheet"><div class="sheet-in">
+    <h1>Ten looks, one system</h1>
+    <p class="lede">Every screen keeps your layout element for element. What changes is the system underneath: one set of tokens, one button, one tab bar, one segmented control, one chip, one row. Each direction below is that same system with different structure, shape and type. Edge Mac and Edge Lift re-imagine Edge with what you liked from Native and Tactile. Quiet is kept for comparison. Gray or warm neutrals, light or dark, apply to all six.</p>
+
+    <h2>The directions and where they come from</h2>
+    <div class="grid g3">
+      <div class="spec"><h3>Quiet</h3><p>Every pane is a sheet one step lighter than the canvas, no dividers, capsule controls and pill tabs.</p><div class="from">Kept for comparison. Calm, but it reads as Linear's 2026 inset pane.</div></div>
+      <div class="spec"><h3>Edge</h3><p>Quiet, with the frame squared off. The rail and panes run into the window's corners and meet at a single border, instead of sitting as rounded sheets with gray gutters around them. Every control keeps Quiet's rounded shape.</p><div class="from">From your note: roundness in the controls, not in the window frame.</div></div>
+      <div class="spec"><h3>Edge Mac</h3><p>Edge, tuned like a Mac app: the system font and its tighter rhythm, pane tabs as a segmented control, the top-bar icons in one capsule, flat controls.</p><div class="from">Native's tabs and density on Edge's frame.</div></div>
+      <div class="spec"><h3>Edge Lift</h3><p>Edge with Inter tightened and a slight physical lift on everything clickable: tabs as a segmented control with a lifted thumb, buttons, selection and chips.</p><div class="from">Native's tabs and density, Tactile's lift, Edge's frame.</div></div>
+      <div class="spec"><h3>Answer</h3><p>After Perplexity, on Edge's frame. The chat reads like an answer engine: your message is a headline, Ri's reply reads like an article under it, tool steps collapse into a small pill, changed files show as source cards.</p><div class="from">A different idea of what a chat with Ri is: questions and answers, not a thread of bubbles.</div></div>
+      <div class="spec"><h3>Tonal</h3><p>After Google's Material 3 Expressive, in grays. Pill-shaped selection in the rail, tabs with an indicator bar, outlined segmented buttons with a check on the selected one, 8px chips, an elevated rounded chat input, a floating Create button, Roboto Flex.</p><div class="from">Google's design culture next to Edge Mac's Apple one.</div></div>
+      <div class="spec"><h3>Native</h3><p>After macOS 26 Finder, Mail and Notes, in today's colors. The rail floats as a rounded panel inside the window, panes run flush with a split divider, pane tabs are a segmented control, toolbar icons sit in one capsule group, system font.</p><div class="from">Ri as a Mac app that belongs on a Mac.</div></div>
+      <div class="spec"><h3>Tactile</h3><p>After Attio, Stripe and Resend, in today's colors. Crisp hairlines, controls with a slight physical lift, raised tabs and selection, rows separated like a well-made table.</p><div class="from">The polish of the best SaaS tools: everything clickable looks clickable.</div></div>
+      
+      
+      
+      <div class="spec"><h3>Crisp</h3><p>One flat plane cut by low-contrast hairlines. Radius set by height, underline tabs, Geist type.</p><div class="from">From Conductor and Vercel.</div></div>
+      <div class="spec"><h3>Dense</h3><p>Compact rows, one-line tasks, mono for counts and times, 24px controls.</p><div class="from">From Cursor 3's agents window, Zed and Raycast.</div></div>
+    </div>
+
+    <h2>Color</h2>
+    <p class="h2sub">Surfaces step by tone. Text has four levels. Color is reserved for meaning, one color per meaning. The neutral tint (gray or warm) is one variable.</p>
+    <div class="grid g4">
+      <div class="spec"><div class="lab">Surfaces</div>
+        <div class="swatch"><span class="sw" style="background:var(--canvas)"></span><div><div class="nm">canvas</div><div class="use">Window, rail, top bar</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--pane)"></span><div><div class="nm">pane</div><div class="use">Where the work is</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--raised)"></span><div><div class="nm">raised</div><div class="use">Composer, your messages</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--overlay);box-shadow:var(--shadow-pop)"></span><div><div class="nm">overlay</div><div class="use">Menus, Tools panel, dialogs</div></div></div></div>
+      <div class="spec"><div class="lab">Text</div>
+        <div class="swatch"><span class="sw" style="background:var(--t1)"></span><div><div class="nm">text-1</div><div class="use">Titles, body, values</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--t2)"></span><div><div class="nm">text-2</div><div class="use">Reasons, secondary values</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--t3)"></span><div><div class="nm">text-3</div><div class="use">Labels, meta, icons</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--t4)"></span><div><div class="nm">text-4</div><div class="use">Placeholders, zero counts</div></div></div></div>
+      <div class="spec"><div class="lab">Meaning</div>
+        <div class="swatch"><span class="sw" style="background:var(--attention)"></span><div><div class="nm">attention</div><div class="use">Needs you, unread, due today</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--working)"></span><div><div class="nm">working</div><div class="use">In progress, agent running</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--done)"></span><div><div class="nm">done</div><div class="use">Accept, merged, added lines</div></div></div>
+        <div class="swatch"><span class="sw" style="background:var(--danger)"></span><div><div class="nm">danger</div><div class="use">Late, failed, removed lines</div></div></div></div>
+      <div class="spec"><div class="lab">Areas</div>
+        <div class="swatch"><span class="sw" style="background:var(--a1)"></span><div class="nm">Fieldnote</div></div>
+        <div class="swatch"><span class="sw" style="background:var(--a2)"></span><div class="nm">Tidewater Coffee</div></div>
+        <div class="swatch"><span class="sw" style="background:var(--a3)"></span><div class="nm">Health</div></div>
+        <div class="swatch"><span class="sw" style="background:var(--a5)"></span><div class="nm">The Bungalow</div></div></div>
+    </div>
+
+    <h2>Type</h2>
+    <p class="h2sub">Six sizes, two weights in the UI, tabular numbers for every count and time, sentence case everywhere.</p>
+    <div class="spec">
+      <div class="tsample"><span class="tok">28 / 650</span><span style="font-size:28px;line-height:34px;font-weight:650;letter-spacing:-0.02em">Hire a part-time roaster</span><span class="use">Page titles</span></div>
+      <div class="tsample"><span class="tok">17 / 650</span><span style="font-size:17px;font-weight:650">Why now</span><span class="use">Headings in a body, dialogs</span></div>
+      <div class="tsample"><span class="tok">15 / 400</span><span style="font-size:15px;line-height:24px">The offline sync fix is done and waiting for your review.</span><span class="use">Chat, bodies, deck items</span></div>
+      <div class="tsample"><span class="tok">13 / 500</span><span style="font-size:13px;font-weight:500">Fix offline sync dropping sightings</span><span class="use">Rows, controls, menus, tabs</span></div>
+      <div class="tsample"><span class="tok">12 / 500</span><span style="font-size:12px;font-weight:500;color:var(--t3)">Pinned <span style="color:var(--t4)">1</span></span><span class="use">Section labels, meta, chips</span></div>
+      <div class="tsample"><span class="tok">11 / 500</span><span style="font-size:11px;font-weight:500;color:var(--t3)">⌘K · 32m</span><span class="use">Keys, badges, timestamps</span></div>
+    </div>
+
+    <h2>Controls</h2>
+    <div class="grid g3">
+      <div class="spec"><div class="lab">Buttons: four variants, one primary per view</div>
+        <div class="demo-row"><button class="btn primary"><i data-i="plus" class="sm"></i>Create</button><button class="btn secondary">Accept</button><button class="btn ghost">Dismiss</button><button class="btn danger">Delete</button></div>
+        <div class="demo-row"><button class="btn go sm"><i data-i="check-check" class="sm"></i>Accept and complete</button><button class="btn icon ghost" aria-label="Search"><i data-i="search"></i></button><span class="send on"><i data-i="arrow-up"></i></span></div>
+        <div class="rule">The ship moment (Accept and complete, Merge) may use the done color, as Conductor's Merge does. Nothing else gets a colored fill.</div></div>
+      <div class="spec"><div class="lab">Tabs move between content. Segmented picks a value.</div>
+        <div class="demo-row"><div class="tabs" style="display:flex;gap:2px;height:32px;align-items:center"><button class="tab on">Chat</button><button class="tab">Deck</button><button class="tab">Stream<span class="dot"></span></button></div></div>
+        <div class="demo-row"><div class="seg"><button class="on">Light</button><button>Deep</button></div><div class="seg"><button>XS</button><button>S</button><button class="on">M</button><button>L</button></div></div>
+        <div class="rule">One of each, everywhere: pane tabs, chat tabs and agent tabs share the tab. Light and Deep, Agents and Recent, All and Unread share the segmented control.</div></div>
+      <div class="spec"><div class="lab">Menu</div>
+        <div class="menu"><div class="mi on"><i data-i="zap"></i>Quick capture<span class="kbd">⌘⇧K</span></div><div class="mi"><i data-i="circle-check"></i>Task</div><div class="mi"><i data-i="file-text"></i>Note</div><div class="mi"><i data-i="layers"></i>Area</div><div class="ms"></div><div class="mi"><i data-i="plug"></i>Connect a service</div><div class="mi"><i data-i="server"></i>Add MCP server</div></div></div>
+    </div>
+    <div class="grid g3" style="margin-top:14px">
+      <div class="spec"><div class="lab">Meta line and chips</div>
+        <div class="meta"><span class="area" style="--ac:var(--a2)">Tidewater Coffee</span><span class="sep"></span><span class="ic"><i data-i="flame"></i>Deep</span><span class="sep"></span><span>L</span><span class="sep"></span><span class="late">1 day late</span></div>
+        <div class="demo-row" style="margin-top:8px"><span class="chip">Quick for you</span><span class="badge att">4</span><span class="badge">12</span><span class="kbd">⌘K</span></div></div>
+      <div class="spec"><div class="lab">Status is a dot and words</div>
+        <div style="display:grid;gap:8px"><span class="status"><span class="sdot att"></span>Needs you</span><span class="status"><span class="sdot work"></span>In progress</span><span class="status"><span class="sdot done"></span>Finished 4h ago</span><span class="status"><span class="sdot late"></span>1 day late</span></div></div>
+      <div class="spec"><div class="lab">Fields</div>
+        <div style="display:grid;gap:8px"><div class="field"><i data-i="search" class="sm"></i>Search tasks</div><div class="field focus">Maya Okafor</div><div class="field err">https://</div></div>
+        <div style="margin-top:12px"><span class="toast">Snoozed until next week<button class="btn sm">Undo</button></span></div></div>
+    </div>
+
+    <h2>Rules for agents building screens</h2>
+    <div class="spec"><ol class="rules">
+      <li><span><b>Use the primitives.</b> No raw <code>&lt;button&gt;</code>, tab bar or segmented control outside <code>components/ui</code>.</span></li>
+      <li><span><b>Sentence case everywhere.</b> No <code>uppercase</code>, no letter spacing on labels.</span></li>
+      <li><span><b>Six type sizes.</b> No arbitrary <code>text-[Npx]</code>.</span></li>
+      <li><span><b>Four text colors.</b> No opacity on text.</span></li>
+      <li><span><b>Color means something.</b> Semantic tokens only, no palette classes.</span></li>
+      <li><span><b>Borders need a reason.</b> Inputs, scroll edges, and the hairlines a direction defines. Never around a list row.</span></li>
+      <li><span><b>One primary per view.</b> Only the ship moment may use the done color.</span></li>
+      <li><span><b>Status is a dot and words.</b> Never a tinted card or a colored border.</span></li>
+      <li><span><b>Circle completes, square selects.</b></span></li>
+      <li><span><b>Concentric corners.</b> Inner radius is outer radius minus padding.</span></li>
+    </ol></div>
+  </div></div>
+</section>
+
+</main>
+
+<script>
+window.RI_ICONS = {"circle-alert":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><line x1=\"12\" x2=\"12\" y1=\"8\" y2=\"12\"/><line x1=\"12\" x2=\"12.01\" y1=\"16\" y2=\"16\"/>","zap":"<path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"/>","clock":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/>","users":"<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"/><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"/><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/>","gauge":"<path d=\"m12 14 4-4\"/><path d=\"M3.34 19a10 10 0 1 1 17.32 0\"/>","calendar":"<path d=\"M8 2v4\"/><path d=\"M16 2v4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"/><path d=\"M3 10h18\"/>","search":"<path d=\"m21 21-4.34-4.34\"/><circle cx=\"11\" cy=\"11\" r=\"8\"/>","layers":"<path d=\"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z\"/><path d=\"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12\"/><path d=\"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17\"/>","notebook-pen":"<path d=\"M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4\"/><path d=\"M2 6h4\"/><path d=\"M2 10h4\"/><path d=\"M2 14h4\"/><path d=\"M2 18h4\"/><path d=\"M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z\"/>","plus":"<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>","panel-left":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>","layout-grid":"<rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"/><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"/>","chevron-right":"<path d=\"m9 18 6-6-6-6\"/>","square-kanban":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M8 7v7\"/><path d=\"M12 7v4\"/><path d=\"M16 7v9\"/>","archive":"<rect width=\"20\" height=\"5\" x=\"2\" y=\"3\" rx=\"1\"/><path d=\"M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8\"/><path d=\"M10 12h4\"/>","pin":"<path d=\"M12 17v5\"/><path d=\"M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z\"/>","git-branch":"<path d=\"M15 6a9 9 0 0 0-9 9V3\"/><circle cx=\"18\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/>","inbox":"<polyline points=\"22 12 16 12 14 15 10 15 8 12 2 12\"/><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"/>","message-square-plus":"<path d=\"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z\"/><path d=\"M12 8v6\"/><path d=\"M9 11h6\"/>","settings":"<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>","plug":"<path d=\"M12 22v-5\"/><path d=\"M15 8V2\"/><path d=\"M17 8a1 1 0 0 1 1 1v4a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z\"/><path d=\"M9 8V2\"/>","chevron-down":"<path d=\"m6 9 6 6 6-6\"/>","ellipsis":"<circle cx=\"12\" cy=\"12\" r=\"1\"/><circle cx=\"19\" cy=\"12\" r=\"1\"/><circle cx=\"5\" cy=\"12\" r=\"1\"/>","history":"<path d=\"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8\"/><path d=\"M3 3v5h5\"/><path d=\"M12 7v5l4 2\"/>","corner-up-right":"<path d=\"m15 14 5-5-5-5\"/><path d=\"M4 20v-7a4 4 0 0 1 4-4h12\"/>","copy":"<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>","chevrons-right":"<path d=\"m6 17 5-5-5-5\"/><path d=\"m13 17 5-5-5-5\"/>","arrow-up":"<path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/>","refresh-cw":"<path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\"/><path d=\"M8 16H3v5\"/>","calendar-plus":"<path d=\"M16 19h6\"/><path d=\"M16 2v4\"/><path d=\"M19 16v6\"/><path d=\"M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5\"/><path d=\"M3 10h18\"/><path d=\"M8 2v4\"/>","x":"<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>","calendar-clock":"<path d=\"M16 14v2.2l1.6 1\"/><path d=\"M16 2v4\"/><path d=\"M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5\"/><path d=\"M3 10h5\"/><path d=\"M8 2v4\"/><circle cx=\"16\" cy=\"16\" r=\"6\"/>","activity":"<path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"/>","heart-pulse":"<path d=\"M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5\"/><path d=\"M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>","eye-off":"<path d=\"M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49\"/><path d=\"M14.084 14.158a3 3 0 0 1-4.242-4.242\"/><path d=\"M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143\"/><path d=\"m2 2 20 20\"/>","chevron-up":"<path d=\"m18 15-6-6-6 6\"/>","bot":"<path d=\"M12 8V4H8\"/><rect width=\"16\" height=\"12\" x=\"4\" y=\"8\" rx=\"2\"/><path d=\"M2 14h2\"/><path d=\"M20 14h2\"/><path d=\"M15 13v2\"/><path d=\"M9 13v2\"/>","square-terminal":"<path d=\"m7 11 2-2-2-2\"/><path d=\"M11 13h4\"/><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"/>","panel-right":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M15 3v18\"/>","arrow-up-from-line":"<path d=\"m18 9-6-6-6 6\"/><path d=\"M12 3v14\"/><path d=\"M5 21h14\"/>","list-checks":"<path d=\"M13 5h8\"/><path d=\"M13 12h8\"/><path d=\"M13 19h8\"/><path d=\"m3 17 2 2 4-4\"/><path d=\"m3 7 2 2 4-4\"/>","circle-dot":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"1\"/>","list":"<path d=\"M3 5h.01\"/><path d=\"M3 12h.01\"/><path d=\"M3 19h.01\"/><path d=\"M8 5h13\"/><path d=\"M8 12h13\"/><path d=\"M8 19h13\"/>","message-square-dashed":"<path d=\"M14 3h2\"/><path d=\"M16 19h-2\"/><path d=\"M2 12v-2\"/><path d=\"M2 16v5.286a.71.71 0 0 0 1.212.502l1.149-1.149\"/><path d=\"M20 19a2 2 0 0 0 2-2v-1\"/><path d=\"M22 10v2\"/><path d=\"M22 6V5a2 2 0 0 0-2-2\"/><path d=\"M4 3a2 2 0 0 0-2 2v1\"/><path d=\"M8 19h2\"/><path d=\"M8 3h2\"/>","check":"<path d=\"M20 6 9 17l-5-5\"/>","check-check":"<path d=\"M18 6 7 17l-5-5\"/><path d=\"m22 10-7.5 7.5L13 16\"/>","app-window":"<rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><path d=\"M10 4v4\"/><path d=\"M2 8h20\"/><path d=\"M6 4v4\"/>","files":"<path d=\"M15 2h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8\"/><path d=\"M16.706 2.706A2.4 2.4 0 0 0 15 2v5a1 1 0 0 0 1 1h5a2.4 2.4 0 0 0-.706-1.706z\"/><path d=\"M5 7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 1.732-1\"/>","git-compare":"<circle cx=\"18\" cy=\"18\" r=\"3\"/><circle cx=\"6\" cy=\"6\" r=\"3\"/><path d=\"M13 6h3a2 2 0 0 1 2 2v7\"/><path d=\"M11 18H8a2 2 0 0 1-2-2V9\"/>","file-text":"<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/><path d=\"M10 9H8\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/>","columns-3":"<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/><path d=\"M15 3v18\"/>","list-filter":"<path d=\"M2 5h20\"/><path d=\"M6 12h12\"/><path d=\"M9 19h6\"/>","arrow-down-up":"<path d=\"m3 16 4 4 4-4\"/><path d=\"M7 20V4\"/><path d=\"m21 8-4-4-4 4\"/><path d=\"M17 4v16\"/>","flame":"<path d=\"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4\"/>","text-align-start":"<path d=\"M21 5H3\"/><path d=\"M15 12H3\"/><path d=\"M17 19H3\"/>","chevron-left":"<path d=\"m15 18-6-6 6-6\"/>","repeat":"<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>","message-square":"<path d=\"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z\"/>","square-pen":"<path d=\"M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7\"/><path d=\"M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z\"/>","messages-square":"<path d=\"M16 10a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 14.286V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z\"/><path d=\"M20 9a2 2 0 0 1 2 2v10.286a.71.71 0 0 1-1.212.502l-2.202-2.202A2 2 0 0 0 17.172 19H10a2 2 0 0 1-2-2v-1\"/>","folder-tree":"<path d=\"M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z\"/><path d=\"M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z\"/><path d=\"M3 5a2 2 0 0 0 2 2h3\"/><path d=\"M3 3v13a2 2 0 0 0 2 2h3\"/>","sliders-horizontal":"<path d=\"M10 5H3\"/><path d=\"M12 19H3\"/><path d=\"M14 3v4\"/><path d=\"M16 17v4\"/><path d=\"M21 12h-9\"/><path d=\"M21 19h-5\"/><path d=\"M21 5h-7\"/><path d=\"M8 10v4\"/><path d=\"M8 12H3\"/>","maximize-2":"<path d=\"M15 3h6v6\"/><path d=\"m21 3-7 7\"/><path d=\"m3 21 7-7\"/><path d=\"M9 21H3v-6\"/>","circle-check":"<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m9 12 2 2 4-4\"/>","server":"<rect width=\"20\" height=\"8\" x=\"2\" y=\"2\" rx=\"2\" ry=\"2\"/><rect width=\"20\" height=\"8\" x=\"2\" y=\"14\" rx=\"2\" ry=\"2\"/><line x1=\"6\" x2=\"6.01\" y1=\"6\" y2=\"6\"/><line x1=\"6\" x2=\"6.01\" y1=\"18\" y2=\"18\"/>"};
+(function () {
+  const root = document.documentElement;
+  const notes = {
+    quiet: 'Quiet, as before: every pane a sheet on a darker canvas. The one that felt like Linear.',
+    edge: 'Edge: Quiet with the frame squared off. Panes run into the window corners and meet at a border.',
+    edgemac: 'Edge Mac: Edge with the system font, tighter rhythm, segmented tabs and grouped toolbar icons.',
+    edgelift: 'Edge Lift: Edge with tightened Inter, segmented tabs and a slight lift on everything clickable.',
+    answer: 'Answer: after Perplexity. Your message is a headline, the reply reads like an article, steps are a pill.',
+    tonal: 'Tonal: after Material 3 Expressive, in grays. Pill selection, indicator tabs, checked segments, Roboto Flex.',
+    native: 'Native: after macOS 26 Finder, Mail and Notes. Floating rail panel, segmented tabs, system font.',
+    tactile: 'Tactile: after Attio, Stripe and Resend. Hairlines, slightly lifted controls, table-like rows.',
+    crisp: 'Crisp: one flat plane, hairlines, radius by height, Geist. From Conductor and Vercel.',
+    dense: 'Dense: compact one-line rows, mono meta, 24px controls. From Cursor 3, Zed and Raycast.'
+  };
+  function hydrate() {
+    document.querySelectorAll('i[data-i]').forEach(el => {
+      const body = window.RI_ICONS[el.getAttribute('data-i')];
+      if (!body) { console.warn('missing icon', el.getAttribute('data-i')); return; }
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none'); svg.setAttribute('stroke', 'currentColor');
+      svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round'); svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('class', 'i ' + (el.getAttribute('class') || ''));
+      if (el.getAttribute('style')) svg.setAttribute('style', el.getAttribute('style'));
+      svg.innerHTML = body; el.replaceWith(svg);
+    });
+  }
+  const keys = { s: 'screen', d: 'dir', t: 'theme', n: 'tint' };
+  function set(kind, val) {
+    if (kind === 's') document.querySelectorAll('.screen').forEach(s => s.hidden = s.dataset.screen !== val);
+    if (kind === 'd') { root.dataset.dir = val; root.dataset.family = (val.startsWith('edge') || val === 'answer') ? 'edge' : ''; document.getElementById('note').textContent = notes[val]; }
+    if (kind === 't') root.dataset.theme = val;
+    if (kind === 'n') root.dataset.tint = val;
+    const grp = { s: 'screens', d: 'dirs', t: 'themes', n: 'tints' }[kind];
+    document.querySelectorAll('#' + grp + ' button').forEach(b => b.classList.toggle('on', b.dataset[kind] === val));
+    const p = new URLSearchParams(location.search); p.set(keys[kind], val);
+    history.replaceState(null, '', '?' + p.toString());
+  }
+  for (const [grp, kind] of [['screens', 's'], ['dirs', 'd'], ['themes', 't'], ['tints', 'n']])
+    document.querySelectorAll('#' + grp + ' button').forEach(b => b.onclick = () => set(kind, b.dataset[kind]));
+  document.addEventListener('keydown', e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const screens = ['home', 'review', 'tasks', 'task', 'agent', 'system'], dirs = ['edge', 'edgemac', 'edgelift', 'answer', 'tonal', 'native', 'tactile', 'crisp', 'dense', 'quiet'];
+    if (e.key >= '1' && e.key <= '6') set('s', screens[+e.key - 1]);
+    if (e.key === 'd') set('d', dirs[(dirs.indexOf(root.dataset.dir) + 1) % dirs.length]);
+    if (e.key === 'D') set('d', dirs[(dirs.indexOf(root.dataset.dir) + dirs.length - 1) % dirs.length]);
+    if (e.key === 't') set('t', root.dataset.theme === 'dark' ? 'light' : 'dark');
+    if (e.key === 'g') set('n', root.dataset.tint === 'gray' ? 'warm' : 'gray');
+  });
+  hydrate();
+  const q = new URLSearchParams(location.search);
+  set('d', q.get('dir') || 'edge'); set('t', q.get('theme') || 'dark'); set('n', q.get('tint') || 'gray'); set('s', q.get('screen') || 'home');
+})();
+</script>
+</body>
+</html>

@@ -251,6 +251,8 @@ function StatusChip({
     <button
       type="button"
       {...rest}
+      data-slot="chip-button"
+      data-on={active || undefined}
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors',
         active

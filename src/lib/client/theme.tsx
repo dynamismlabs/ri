@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import type { Theme } from '@/types/dashboard';
+import { useClientLook } from './look';
 
 export const CLIENT_THEME_KEY = 'ri.client.theme';
 const CHANGE_EVENT = 'ri:client-theme';
@@ -34,4 +35,4 @@ export function useClientTheme() {
   return { theme, setTheme, toggleTheme };
 }
 
-export function ClientAppearance() { useClientTheme(); return null; }
+export function ClientAppearance() { useClientTheme(); useClientLook(); return null; }

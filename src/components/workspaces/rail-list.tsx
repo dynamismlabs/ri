@@ -146,6 +146,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
                 <button
                   type="button"
                   onClick={openWorkspaceCreate}
+                  data-slot="new-agent"
                   className="rounded bg-primary p-1 text-primary-foreground transition-opacity hover:opacity-90"
                   aria-label="New agent"
                 >
@@ -170,7 +171,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
  */
 function ListSwitch({ tab, onSelect }: { tab: RailTab; onSelect: (next: RailTab) => void }) {
   return (
-    <div role="tablist" aria-label="Rail list" className="inline-flex items-center rounded-md bg-muted p-0.5 dark:bg-muted/50">
+    <div role="tablist" aria-label="Rail list" data-slot="segmented" className="inline-flex items-center rounded-md bg-muted p-0.5 dark:bg-muted/50">
       <SwitchTab active={tab === 'workspace'} onClick={() => onSelect('workspace')}>
         Agents
       </SwitchTab>

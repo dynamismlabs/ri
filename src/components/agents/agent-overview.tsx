@@ -318,6 +318,8 @@ function AgentTasksSection({ workspaceId }: { workspaceId: string }) {
           <Tip key={t.id} label={t.title || 'Untitled'} onlyWhenTextHidden>
             <button
               onClick={() => openTask(t.id)}
+              data-slot="task-chip"
+              data-status={t.status}
               className={cn(
                 'inline-flex max-w-[16rem] items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors',
                 t.status === 'in_progress'

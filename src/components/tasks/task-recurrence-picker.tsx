@@ -157,6 +157,7 @@ export function TaskRecurrenceField({ value, onChange }: {
     <button
       type="button"
       aria-label={`Repeat: ${label ?? 'Never'}`}
+      data-slot="chip-button"
       className={cn(
         'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
         !label && 'text-muted-foreground',

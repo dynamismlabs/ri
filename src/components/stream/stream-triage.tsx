@@ -161,7 +161,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
   }, [correct, decision, titleDraft]);
 
   return (
-    <div className="rounded-lg border border-border bg-card/50 px-3 py-2.5 space-y-1.5">
+    <div data-slot="callout" className="rounded-lg border border-border bg-card/50 px-3 py-2.5 space-y-1.5">
       <div className="flex items-start gap-2">
         <Icon size={12} className="text-primary mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">

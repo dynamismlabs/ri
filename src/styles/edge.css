@@ -1,0 +1,319 @@
+/*
+ * Edge Mac, the new look on trial (docs/ui-system.md).
+ *
+ * Everything here is scoped to html[data-look="edge"], which the Settings
+ * switch "New look (preview)" sets (src/lib/client/look.tsx). Classic never
+ * reads this file's values, so switching back is exact.
+ *
+ * The system in one paragraph: gray neutrals, a canvas (rail and top bar) one
+ * step off the panes, columns that meet at a single border, four text levels,
+ * the platform's own font in a tighter rhythm, sentence case, rounded controls
+ * (capsules for things you press), a white chat input that lifts off the page,
+ * and your own messages in an inverted bubble that stands out from the agent's.
+ */
+
+/* ── Tokens: light ─────────────────────────────────────────────────────── */
+html[data-look="edge"] {
+  --edge-canvas: oklch(0.985 0.0012 264);
+  --edge-pane: oklch(0.999 0 0);
+  --edge-raised: oklch(0.962 0.002 264);
+  --edge-thumb: oklch(1 0 0);
+  --edge-track: oklch(0.2 0.01 264 / 0.055);
+  --edge-hover: oklch(0.2 0.01 264 / 0.045);
+  --edge-selected: oklch(0.2 0.01 264 / 0.075);
+  --edge-line: oklch(0.2 0.01 264 / 0.1);
+  --edge-line-2: oklch(0.2 0.01 264 / 0.15);
+  --edge-t1: oklch(0.21 0.0056 264);
+  --edge-t2: oklch(0.4 0.0056 264);
+  --edge-t3: oklch(0.54 0.0056 264);
+  --edge-t4: oklch(0.67 0.004 264);
+  --edge-attention: oklch(0.63 0.16 55);
+  --edge-attention-bg: oklch(0.75 0.15 66 / 0.17);
+  --edge-danger: oklch(0.56 0.19 25);
+  --edge-working: oklch(0.55 0.15 252);
+  --edge-shadow-thumb: 0 0 0 0.5px oklch(0 0 0 / 0.08), 0 1px 3px oklch(0 0 0 / 0.12);
+  --edge-shadow-pop: 0 0 0 1px oklch(0 0 0 / 0.07), 0 18px 44px -14px oklch(0.2 0.01 264 / 0.28);
+  --edge-composer: oklch(1 0 0);
+  --edge-composer-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.13), 0 1px 2px oklch(0.2 0.01 264 / 0.05), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.2);
+  --edge-composer-focus: 0 0 0 1px oklch(0.2 0.01 264 / 0.18), 0 10px 28px -14px oklch(0.2 0.02 264 / 0.22);
+  --edge-bar-shadow: 0 0 0 1px oklch(0.2 0.01 264 / 0.11), 0 6px 18px -12px oklch(0.2 0.02 264 / 0.16);
+  --edge-shadow-card: 0 0 0 0.5px oklch(0.2 0.01 264 / 0.09), 0 1px 3px oklch(0.2 0.01 264 / 0.07);
+
+  /* shadcn names, so every existing component follows the new look. */
+  --background: var(--edge-pane);
+  --foreground: var(--edge-t1);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--edge-t1);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--edge-t1);
+  --primary: var(--edge-t1);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: var(--edge-raised);
+  --secondary-foreground: var(--edge-t1);
+  --muted: oklch(0.962 0.002 264);
+  --muted-foreground: oklch(0.52 0.0056 264);
+  --accent: oklch(0.955 0.003 264);
+  --accent-foreground: var(--edge-t1);
+  --destructive: oklch(0.56 0.19 25);
+  --border: var(--edge-line);
+  --input: var(--edge-line-2);
+  --ring: oklch(0.6 0.012 264);
+  --radius: 0.625rem;
+  --sidebar: var(--edge-canvas);
+  --sidebar-foreground: var(--edge-t1);
+  --sidebar-accent: var(--edge-selected);
+  --sidebar-accent-foreground: var(--edge-t1);
+  --sidebar-border: var(--edge-line);
+  --surface: var(--edge-pane);
+  --surface-elevated: var(--edge-raised);
+  --text-muted: var(--edge-t3);
+  --surface-hud: var(--edge-canvas);
+  /* Your own messages stay inverted, as in classic, so they stand out from the agent's. */
+  --user-bubble: oklch(0.255 0.004 264);
+  --user-bubble-foreground: oklch(0.985 0 0);
+
+  /* The platform's own font: SF on a Mac, Segoe on Windows. Tighter than Inter at the same size. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Tokens: dark ──────────────────────────────────────────────────────── */
+/* Also on a nested .dark element: some surfaces scope the theme themselves,
+   and theme.css redeclares its classic dark values there. */
+html[data-look="edge"].dark,
+html[data-look="edge"] .dark {
+  --edge-canvas: oklch(0.145 0.0028 264);
+  --edge-pane: oklch(0.183 0.0028 264);
+  --edge-raised: oklch(0.228 0.003 264);
+  --edge-thumb: oklch(0.305 0.003 264);
+  --edge-track: oklch(1 0 0 / 0.055);
+  --edge-hover: oklch(1 0 0 / 0.045);
+  --edge-selected: oklch(1 0 0 / 0.08);
+  --edge-line: oklch(1 0 0 / 0.09);
+  --edge-line-2: oklch(1 0 0 / 0.14);
+  --edge-t1: oklch(0.955 0.003 264);
+  --edge-t2: oklch(0.8 0.004 264);
+  --edge-t3: oklch(0.62 0.004 264);
+  --edge-t4: oklch(0.48 0.004 264);
+  --edge-attention: oklch(0.79 0.15 66);
+  --edge-attention-bg: oklch(0.79 0.15 66 / 0.15);
+  --edge-danger: oklch(0.7 0.17 24);
+  --edge-working: oklch(0.74 0.12 250);
+  --edge-shadow-thumb: 0 1px 2px oklch(0 0 0 / 0.4);
+  --edge-shadow-pop: 0 0 0 1px oklch(1 0 0 / 0.08), 0 18px 44px -14px oklch(0 0 0 / 0.75);
+  --edge-composer: oklch(0.205 0.003 264);
+  --edge-composer-shadow: 0 0 0 1px oklch(1 0 0 / 0.11), 0 12px 30px -14px oklch(0 0 0 / 0.75);
+  --edge-composer-focus: 0 0 0 1px oklch(1 0 0 / 0.2), 0 12px 30px -14px oklch(0 0 0 / 0.8);
+  --edge-bar-shadow: 0 0 0 1px oklch(1 0 0 / 0.1);
+  --edge-shadow-card: 0 0 0 1px oklch(1 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.35);
+
+  --background: var(--edge-pane);
+  --foreground: var(--edge-t1);
+  --card: oklch(0.205 0.003 264);
+  --card-foreground: var(--edge-t1);
+  --popover: oklch(0.215 0.003 264);
+  --popover-foreground: var(--edge-t1);
+  --primary: var(--edge-t1);
+  --primary-foreground: oklch(0.17 0.003 264);
+  --secondary: oklch(0.255 0.003 264);
+  --secondary-foreground: var(--edge-t1);
+  --muted: oklch(0.24 0.003 264);
+  --muted-foreground: oklch(0.68 0.004 264);
+  --accent: oklch(0.25 0.003 264);
+  --accent-foreground: var(--edge-t1);
+  --destructive: oklch(0.7 0.17 24);
+  --border: var(--edge-line);
+  --input: var(--edge-line-2);
+  --ring: oklch(0.55 0.01 264);
+  --sidebar: var(--edge-canvas);
+  --sidebar-foreground: var(--edge-t1);
+  --sidebar-accent: var(--edge-selected);
+  --sidebar-accent-foreground: var(--edge-t1);
+  --sidebar-border: var(--edge-line);
+  --surface: var(--edge-pane);
+  --surface-elevated: var(--edge-raised);
+  --text-muted: var(--edge-t3);
+  --surface-hud: var(--edge-canvas);
+  --user-bubble: oklch(0.94 0.003 264);
+  --user-bubble-foreground: oklch(0.17 0.003 264);
+}
+
+/* ── Type: sentence case ───────────────────────────────────────────────── */
+/* Classic draws many labels in small tracked capitals. The new look shows them as written. */
+html[data-look="edge"] .uppercase { text-transform: none; letter-spacing: normal; }
+
+/* ── Frame: rail and top bar on the canvas, panes on white, one border between columns ── */
+html[data-look="edge"] [data-slot="rail"],
+html[data-look="edge"] [data-slot="top-hud"] { background-color: var(--edge-canvas); }
+
+/* ── Pane tabs: one segmented control ──────────────────────────────────── */
+html[data-look="edge"] [data-slot="pane-tabs"] { background-color: var(--background); min-height: 44px; padding-inline: 8px; gap: 4px; }
+html[data-look="edge"] [data-slot="pane-tab-group"] { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="pane-tab"] { display: inline-flex; align-items: center; height: 24px; padding-inline: 12px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="pane-tab"]:hover { color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="pane-tab"][data-active] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
+html[data-look="edge"] [data-slot="pane-tab"] [aria-label="Something needs your call"] { background-color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="pane-tab-more"] { height: 26px; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="pane-tab-more"]:hover,
+html[data-look="edge"] [data-slot="pane-tab-more"][data-active] { background-color: var(--edge-hover); color: var(--edge-t1); }
+
+/* ── Chat input: white, a fine outline, a soft lift ────────────────────── */
+html[data-look="edge"] [data-slot="chat-composer-card"] { border-color: transparent; border-radius: 22px; background-color: var(--edge-composer); box-shadow: var(--edge-composer-shadow); }
+html[data-look="edge"] [data-slot="chat-composer-card"]:focus-within { border-color: transparent; box-shadow: var(--edge-composer-focus); }
+
+/* ── Shared controls (shadcn) ──────────────────────────────────────────── */
+/* A secondary button is a quiet fill, not an outline. */
+html[data-look="edge"] [data-slot="button"][data-variant="outline"] { border-color: transparent; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="button"][data-variant="outline"]:hover { background-color: var(--edge-selected); }
+/* Menus and popovers lift off the page by shadow, not a heavy border. */
+html[data-look="edge"] :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="popover-content"], [data-slot="select-content"], [data-slot="combobox-content"]) { border-color: transparent; border-radius: 12px; box-shadow: var(--edge-shadow-pop); }
+html[data-look="edge"] :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-color: transparent; box-shadow: var(--edge-shadow-pop); }
+/* Tabs (shadcn) share the pane tabs' segmented shape. */
+html[data-look="edge"] [data-slot="tabs-list"] { border-radius: 999px; background-color: var(--edge-track); padding: 2px; }
+html[data-look="edge"] [data-slot="tabs-trigger"] { border-radius: 999px; }
+html[data-look="edge"] [data-slot="tabs-trigger"][data-state="active"] { background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+
+/* ── Phase 2: the daily screens ─────────────────────────────────────────── */
+
+/* Things you press are capsules, whatever radius a screen gave its shadcn Button. */
+html[data-look="edge"] :not([data-slot="button-group"]) > [data-slot="button"] { border-radius: 999px; }
+
+/* Segmented control: one soft track, the chosen option a raised thumb. Any hand-built
+   switch joins it with data-slot="segmented" on the track and aria-pressed or
+   aria-selected on its options. */
+html[data-look="edge"] [data-slot="segmented"] { flex-wrap: nowrap; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="segmented"].contents { display: flex; }
+html[data-look="edge"] [data-slot="segmented"] { align-self: center; align-items: center; }
+html[data-look="edge"] [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
+html[data-look="edge"] [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); background-color: transparent; box-shadow: none; }
+html[data-look="edge"] [data-slot="segmented"] > button:hover { color: var(--edge-t1); background-color: transparent; }
+html[data-look="edge"] [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--edge-t1); background-color: var(--edge-thumb); box-shadow: var(--edge-shadow-thumb); }
+
+/* Toolbar buttons (list toolbars, deck filters): capsules on a quiet fill, no outline. */
+html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) { height: 28px; min-width: 28px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t2); font-size: 12px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
+html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]):hover:not(:disabled) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] :is(.toolbar-button, [data-slot="chip-button"]) > span { font-size: inherit; font-weight: inherit; letter-spacing: normal; color: inherit; }
+html[data-look="edge"] :is(.toolbar-button-active, [data-slot="chip-button"]:is([aria-pressed="true"], [data-on])) { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="chip-button"][data-tone="attention"][aria-pressed="true"] { background-color: var(--edge-attention-bg); color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="chip-button"]:disabled { background-color: transparent; color: var(--edge-t4); }
+/* A chip that reports a state (a paused or failing heartbeat) keeps its color, on a fill of it. */
+html[data-look="edge"] [data-slot="chip-button"][data-tone="status"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
+html[data-look="edge"] [data-slot="list-toolbar"] { background-color: var(--background); }
+html[data-look="edge"] [data-slot="chip-button"][data-urgency="low"] { background-color: transparent; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="chip-button"][data-urgency="critical"] { background-color: var(--primary); color: var(--primary-foreground); }
+
+/* Metadata under a title: plain words separated by dots, not a row of little boxes.
+   A direct child tagged meta-item, area-select or task-badges takes part, and so does
+   a status-select inside a meta-item wrapper. */
+html[data-look="edge"] [data-slot="meta"] { column-gap: 7px; }
+html[data-look="edge"] [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badge"]) { padding: 0; border-color: transparent; border-radius: 4px; background-color: transparent; font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: normal; }
+html[data-look="edge"] [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="task-picker"]) { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="meta"] [data-slot="area-select"] { color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="meta"] :where(button[data-slot="meta-item"], a[data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"]):hover { background-color: transparent; color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="meta"] > :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"]) ~ :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"])::before { content: '·'; margin-right: 7px; color: var(--edge-t4); font-weight: 400; }
+html[data-look="edge"] [data-slot="meta"] :is([data-slot="meta-item"], [data-slot="task-badge"]) svg { width: 12px; height: 12px; }
+/* Status, energy and blocked keep the colors they carry in classic (revert-layer hands the
+   color back to the component's own utility classes). */
+html[data-look="edge"] [data-slot="meta"] :is([data-kind="status"] > button, [data-kind="energy"], [data-kind="blocked"]) { color: revert-layer; }
+html[data-look="edge"] [data-slot="meta"] [data-kind="status"] > button { font-weight: 500; }
+html[data-look="edge"] [data-slot="meta"] [data-kind="energy"] { text-transform: capitalize; }
+html[data-look="edge"] [data-slot="meta"] [data-urgency="late"] { color: var(--edge-danger); font-weight: 500; }
+html[data-look="edge"] [data-slot="meta"] [data-urgency="today"] { color: var(--edge-attention); font-weight: 500; }
+html[data-look="edge"] [data-slot="meta"] [data-slot="task-badge"] { font-weight: 500; }
+
+/* Deadlines: a colored date on a plain row, not a tinted card. */
+html[data-look="edge"] [data-slot="deadline-head"] h3 { font-size: 12px; font-weight: 600; letter-spacing: normal; color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="deadline-head"] > svg { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="deadline-head"] > span { font-size: 12px; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="deadline-row"] { padding: 6px 10px; border-color: transparent; border-radius: 8px; background-color: transparent; }
+html[data-look="edge"] [data-slot="deadline-row"]:hover { border-color: transparent; background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="deadline-row"] > button > span:first-child { font-size: 13.5px; }
+html[data-look="edge"] [data-slot="deadline-when"] { padding: 0; background-color: transparent; font-size: 12px; font-weight: 500; }
+html[data-look="edge"] [data-slot="deadline-when"][data-urgency="late"] { color: var(--edge-danger); }
+html[data-look="edge"] [data-slot="deadline-when"][data-urgency="today"] { color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="deadline-when"][data-urgency="soon"] { color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="deadline-when"] > svg { display: none; }
+
+/* The review bar sits on the chat input like a second, smaller input. */
+html[data-look="edge"] [data-slot="review-bar"] { padding: 5px 5px 5px 14px; border-color: transparent; border-radius: 16px; background-color: var(--edge-composer); box-shadow: var(--edge-bar-shadow); }
+html[data-look="edge"] [data-slot="review-bar-title"] { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+html[data-look="edge"] [data-slot="review-bar"][data-state="unreviewed"] [data-slot="review-bar-title"]::before { content: ''; width: 7px; height: 7px; border-radius: 999px; background-color: var(--edge-attention); }
+html[data-look="edge"] [data-slot="review-action"] { height: 28px; padding-inline: 11px; gap: 5px; border-radius: 999px; font-size: 12px; color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="review-action"]:hover { background-color: var(--edge-hover); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"] { background-color: var(--edge-track); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald"]:hover { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"] { color: oklch(1 0 0); }
+html[data-look="edge"] [data-slot="review-action"][data-tone="emerald-solid"]:hover { background-color: revert-layer; color: oklch(1 0 0); }
+html[data-look="edge"] [data-slot="review-action"][data-active] { background-color: var(--edge-selected); color: var(--edge-t1); }
+
+/* The task a chat works on: a soft capsule, a dot when it's in progress. */
+html[data-look="edge"] [data-slot="task-chip-label"] { font-size: 12px; font-weight: 500; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="task-chip"] { height: 24px; gap: 6px; padding-inline: 10px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); font-size: 12.5px; font-weight: 500; color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="task-chip"]:hover { border-color: transparent; background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--edge-working); }
+
+/* Top bar: the page tools in one capsule, Create and the view button as capsules. */
+html[data-look="edge"] [data-slot="hud-tools"] { display: inline-flex; align-items: center; gap: 0; padding: 2px; border-radius: 999px; background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="hud-tools"] button { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 26px; padding: 0; border-color: transparent; border-radius: 999px; background-color: transparent; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="hud-tools"] button:hover { color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="hud-tools"] button[aria-pressed="true"] { background-color: var(--edge-thumb); color: var(--edge-t1); box-shadow: var(--edge-shadow-thumb); }
+html[data-look="edge"] .hud-create { height: 30px; padding-inline: 12px; gap: 5px; border-radius: 999px; font-size: 12.5px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
+html[data-look="edge"] [data-slot="hud-view-button"] { height: 28px; padding-inline: 10px; border-color: transparent; border-radius: 999px; }
+html[data-look="edge"] [data-slot="hud-view-button"][data-variant="close"] { background-color: var(--edge-track); }
+html[data-look="edge"] [data-slot="hud-view-button"] .hud-view-label { font-size: 12px; }
+
+/* Rail: no boxes in the footer, a quiet New agent, sentence-case group labels. */
+html[data-look="edge"] [data-slot="rail-foot"] button { border-color: transparent; }
+html[data-look="edge"] [data-slot="rail-foot"] button:hover { border-color: transparent; background-color: var(--edge-hover); }
+html[data-look="edge"] [data-slot="new-agent"] { border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="new-agent"]:hover { background-color: var(--edge-selected); opacity: 1; }
+
+/* Task and note pages (the slideout and the full page share them). */
+html[data-look="edge"] [data-slot="entity-kind"] { gap: 7px; }
+html[data-look="edge"] [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t3); }
+/* The area above a title is a quiet button: it reads as words, and shows it can be changed on hover. */
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 3px; height: 22px; margin-left: -7px; padding: 0 6px 0 7px; border-radius: 999px; background-color: transparent; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--edge-t2); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--edge-t4); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0; transition: opacity 120ms; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--edge-track); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, :focus-visible, [data-state="open"])::after { opacity: 0.6; }
+html[data-look="edge"] [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
+html[data-look="edge"] [data-slot="properties"] > span { font-weight: 400; color: var(--edge-t3); }
+html[data-look="edge"] [data-slot="properties"] [data-slot="chip-button"] { width: fit-content; padding-inline: 11px; gap: 6px; }
+/* Effort's five options can outrun a narrow slideout: that track scrolls. (SegmentedTabs scrolls its own wrapper.) */
+html[data-look="edge"] [data-slot="properties"] [data-slot="segmented"] { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+html[data-look="edge"] [data-slot="chip-button"][data-urgency="late"] { color: var(--edge-danger); }
+
+/* Header actions on a task or note: capsules on a quiet fill. Working with an agent keeps its violet. */
+html[data-look="edge"] [data-slot="header-action"] { height: 30px; padding-inline: 12px; gap: 6px; border-color: transparent; border-radius: 999px; background-color: var(--edge-track); color: var(--edge-t1); font-size: 12.5px; font-weight: 500; }
+html[data-look="edge"] [data-slot="header-action"]:hover { border-color: transparent; background-color: var(--edge-selected); color: var(--edge-t1); }
+html[data-look="edge"] [data-slot="header-action"][data-tone="agent"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 11%, transparent); }
+html[data-look="edge"] [data-slot="header-action"][data-tone="agent"]:hover { color: revert-layer; background-color: color-mix(in oklch, currentColor 17%, transparent); }
+html[data-look="edge"] [data-slot="header-action"][data-state="done"] { background-color: var(--primary); color: var(--primary-foreground); }
+
+/* Tool panel tabs outside a segmented control (a file or chat opened beside, More): capsules. */
+html[data-look="edge"] .panel-tab:not([data-slot="segmented"] > *) { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--edge-t3); }
+html[data-look="edge"] .panel-tab:not([data-slot="segmented"] > *):hover { color: var(--edge-t1); }
+html[data-look="edge"] .panel-tab.panel-tab-on:not([data-slot="segmented"] > *) { background-color: var(--edge-selected); color: var(--edge-t1); }
+
+/* Stream: the line under a capture in plain type, and its notices as soft panels. */
+html[data-look="edge"] [data-slot="stream-meta"] > :is(p, span, button, a) { font-family: inherit; font-size: 12px; letter-spacing: normal; text-transform: none; }
+html[data-look="edge"] [data-slot="stream-meta"] > svg { width: 12px; height: 12px; }
+
+/* A notice or summary inside a pane: a soft raised panel, no outline. */
+html[data-look="edge"] [data-slot="callout"] { border-color: transparent; border-radius: 14px; background-color: var(--edge-raised); }
+
+/* Hand-built buttons and cards across the app, until each one moves onto the shared components. */
+html[data-look="edge"] :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-radius: 999px; }
+html[data-look="edge"] .border.bg-card:not(input, textarea, select, [data-slot]) { border-color: transparent; box-shadow: var(--edge-shadow-card); }
+
+/* Phone: the search field and the buttons beside it. */
+html[data-look="edge"] :is([data-slot="search-field"], [data-slot="icon-button"]) { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
+
+/* Text fields hold content, so they're rounded rectangles, not capsules (shadcn's default here is a capsule). */
+html[data-look="edge"] :is([data-slot="input"], [data-slot="input-group"], [data-slot="textarea"]) { border-radius: 10px; }
+
+/* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
+   replaces the components' focus rings (they're box-shadows too). */
+html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, .border.bg-card, [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* Inside a track (which may scroll and clip), the ring sits just inside the option. */
+html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }

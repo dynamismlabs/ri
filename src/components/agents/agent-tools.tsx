@@ -94,7 +94,7 @@ export function AgentTools({
   return (
     <div className="@container/panel flex h-full min-h-0 min-w-0 flex-col bg-background">
       <div className="flex h-9 flex-shrink-0 items-stretch gap-0.5 border-b border-border pl-1 pr-1.5">
-        <div role="tablist" aria-label="Agent tools" className="flex min-w-0 items-stretch gap-0.5">
+        <div role="tablist" aria-label="Agent tools" data-slot="segmented" className="flex min-w-0 items-stretch gap-0.5">
           {AGENT_TOOL_TABS.map((t) => {
             const on = tab === t.id && toolActive;
             return (

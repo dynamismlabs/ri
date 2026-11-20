@@ -35,10 +35,11 @@ export function TaskBadges({
   const active = BADGES.filter((b) => signals[b.key]);
   if (active.length === 0) return null;
   return (
-    <span className={cn('inline-flex flex-wrap items-center gap-1', className)}>
+    <span data-slot="task-badges" className={cn('inline-flex flex-wrap items-center gap-1', className)}>
       {active.map((b) => (
         <Tip key={b.key} label={b.title}>
           <span
+            data-slot="task-badge"
             className={cn(
               'inline-flex items-center gap-0.5 rounded px-1 py-0.5 font-semibold uppercase tracking-wide',
               size === 'xs' ? 'text-[8.5px]' : 'text-[9.5px]',

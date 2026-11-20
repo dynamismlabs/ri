@@ -284,6 +284,7 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
       type="button"
       aria-label="Scratchpad"
       aria-pressed={open}
+      data-slot={variant === 'phone' ? 'icon-button' : undefined}
       onClick={() => (open ? closeScratchpad(wide) : openScratchpad(wide))}
       className={cn(
         'flex items-center justify-center border border-border text-muted-foreground transition-colors hover:text-foreground',

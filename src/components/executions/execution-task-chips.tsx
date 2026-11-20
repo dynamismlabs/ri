@@ -27,7 +27,7 @@ export function ExecutionTaskChips({ executionId }: { executionId: string }) {
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1.5 px-2 pb-1.5 pt-0.5">
-      <span className="inline-flex flex-shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+      <span data-slot="task-chip-label" className="inline-flex flex-shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
         <ListTodo size={11} aria-hidden />
         {active.length > 1 ? 'Working on' : 'Task'}
       </span>
@@ -35,6 +35,8 @@ export function ExecutionTaskChips({ executionId }: { executionId: string }) {
         <Tip key={t.id} label={t.title || 'Untitled'} onlyWhenTextHidden>
           <button
             onClick={() => openTask(t.id)}
+            data-slot="task-chip"
+            data-status={t.status}
             className={cn(
               'inline-flex max-w-[16rem] items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors',
               t.status === 'in_progress'
