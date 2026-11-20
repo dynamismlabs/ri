@@ -238,7 +238,7 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               {/* Effort */}
               <div className="relative">
-                <button
+                <button data-slot="action-button"
                   onClick={() => {
                     setShowEffortPicker(!showEffortPicker);
                     setShowEnergyPicker(false);
@@ -281,7 +281,7 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               {/* Energy */}
               <div className="relative">
-                <button
+                <button data-slot="action-button"
                   onClick={() => {
                     setShowEnergyPicker(!showEnergyPicker);
                     setShowEffortPicker(false);
@@ -324,7 +324,7 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               {/* Attachments placeholder */}
               <Tip label="Attachments (coming soon)">
-                <button
+                <button data-slot="action-button"
                   className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 >
                   <Paperclip size={13} />

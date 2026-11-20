@@ -78,14 +78,14 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
                 </Link>
               )}
               {trigger.enabled && (
-                <button
+                <button data-slot="action-button"
                   onClick={() => update.mutate({ id, enabled: false })}
                   className="px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
                 >
                   Pause it
                 </button>
               )}
-              <button
+              <button data-slot="action-button"
                 onClick={() => resetFailures.mutate(id)}
                 className="flex items-center gap-1 px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
               >
@@ -98,7 +98,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
+        <button data-slot="action-button" data-variant="primary"
           onClick={() => runTrigger.mutate(id)}
           disabled={runTrigger.isPending}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:opacity-90 disabled:opacity-50"
@@ -106,7 +106,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
           <Play size={14} />
           {runTrigger.isPending ? 'Starting…' : 'Run now'}
         </button>
-        <button
+        <button data-slot="action-button"
           onClick={() => update.mutate({ id, enabled: !trigger.enabled })}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-sm hover:bg-muted"
         >
@@ -114,7 +114,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
           {trigger.enabled ? 'Pause' : 'Resume'}
         </button>
         {!managed && (
-          <button
+          <button data-slot="action-button" data-tone="status"
             onClick={() => setConfirmingDelete(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-destructive/30 text-destructive text-sm hover:bg-destructive/10 ml-auto"
           >
@@ -168,7 +168,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
 
       {confirmingDelete && (
         <div className="fixed inset-0 bg-background/80 z-[60] flex items-center justify-center p-6">
-          <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full space-y-4">
+          <div data-slot="dialog-content" className="bg-card border border-border rounded-lg p-6 max-w-md w-full space-y-4">
             <h3 className="text-base font-semibold">Delete this schedule?</h3>
             <p className="text-sm text-muted-foreground">
               Its past runs stay. Only the schedule and its future runs are removed.

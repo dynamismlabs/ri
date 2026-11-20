@@ -312,7 +312,7 @@ export function DeckBesideButton() {
   const open = columnOpen && view === 'deck';
   return (
     <Tip label="Deck beside this screen">
-      <button
+      <button data-slot="action-button"
         type="button"
         aria-label="Deck"
         aria-pressed={open}

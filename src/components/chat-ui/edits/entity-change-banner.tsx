@@ -66,7 +66,7 @@ export function EntityChangeBanner({
               <Eye size={12} /> Review changes
             </button>
             {latest.before && (
-              <button
+              <button data-slot="action-button"
                 onClick={() => revert.mutate(latest.before!.id)}
                 disabled={revert.isPending}
                 className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-background/60 px-2.5 py-1 text-[11.5px] font-medium text-foreground hover:bg-muted/60 disabled:opacity-50"

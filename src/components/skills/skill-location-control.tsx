@@ -72,7 +72,7 @@ export function SkillLocationControl({ skill }: { skill: SkillView }) {
     </Tip>
   ) : (
     <Tip label={`Installed in ${locationLabel(here)}: ${displayPath(skill.dir)}`}>
-      <button
+      <button data-slot="action-button"
         className="flex h-7 max-w-48 flex-shrink-0 items-center gap-1 rounded-lg border border-border px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
         aria-label={`Installed in ${locationLabel(here)}`}
       >

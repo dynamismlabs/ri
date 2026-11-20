@@ -72,7 +72,7 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
     <fieldset disabled={disabled} className="space-y-3">
       <label className="block space-y-1 text-[12px] font-medium">
         <span>Frequency</span>
-        <select value={value.kind} onChange={(e) => patch({ kind: e.target.value as FrequencyKind })} className={inputCls}>
+        <select data-slot="field" value={value.kind} onChange={(e) => patch({ kind: e.target.value as FrequencyKind })} className={inputCls}>
           {FREQUENCIES.filter((option) => !kinds || kinds.includes(option.kind)).map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
@@ -83,7 +83,7 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
         {value.kind === 'once' && (
           <label className="min-w-0 flex-1 space-y-1 text-[12px] font-medium">
             <span>Date</span>
-            <input type="date" value={value.date ?? ''} onChange={(e) => patch({ date: e.target.value })} required className={inputCls} />
+            <input data-slot="field" type="date" value={value.date ?? ''} onChange={(e) => patch({ date: e.target.value })} required className={inputCls} />
           </label>
         )}
         {value.kind === 'weekly' && (
@@ -95,13 +95,13 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
         {value.kind === 'monthly' && (
           <label className="space-y-1 text-[12px] font-medium">
             <span>Day of month</span>
-            <input type="number" min={1} max={28} value={value.dayOfMonth ?? 1} onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })} required className={`${inputCls} max-w-24`} />
+            <input data-slot="field" type="number" min={1} max={28} value={value.dayOfMonth ?? 1} onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })} required className={`${inputCls} max-w-24`} />
           </label>
         )}
         {needsTime && (
           <label className="space-y-1 text-[12px] font-medium">
             <span>Time</span>
-            <input type="time" value={value.time ?? '09:00'} onChange={(e) => patch({ time: e.target.value })} required className={inputCls} />
+            <input data-slot="field" type="time" value={value.time ?? '09:00'} onChange={(e) => patch({ time: e.target.value })} required className={inputCls} />
           </label>
         )}
       </div>
@@ -112,14 +112,14 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
       {value.kind === 'custom' && (
         <label className="block space-y-1 text-[12px] font-medium">
           <span>Cron expression</span>
-          <input type="text" value={value.cronExpression ?? '0 9 * * *'} onChange={(e) => patch({ cronExpression: e.target.value })} placeholder="0 9 * * 1-5" required className={`${inputCls} font-mono`} />
+          <input data-slot="field" type="text" value={value.cronExpression ?? '0 9 * * *'} onChange={(e) => patch({ cronExpression: e.target.value })} placeholder="0 9 * * 1-5" required className={`${inputCls} font-mono`} />
           <span className="block text-[11px] font-normal text-muted-foreground">Minute, hour, day of month, month, day of week</span>
         </label>
       )}
       {scheduled && (
         <label className="block space-y-1 text-[12px] font-medium">
           <span>Timezone</span>
-          <input type="text" value={value.timezone} onChange={(e) => patch({ timezone: e.target.value })} placeholder="America/Denver" required className={inputCls} />
+          <input data-slot="field" type="text" value={value.timezone} onChange={(e) => patch({ timezone: e.target.value })} placeholder="America/Denver" required className={inputCls} />
         </label>
       )}
       {value.kind === 'manual' && <p className="text-[11px] text-muted-foreground">Use Run now whenever you need it.</p>}
@@ -153,7 +153,7 @@ function DaysField({ days, onChange }: { days: Weekday[]; onChange: (days: Weekd
         {([1, 2, 3, 4, 5, 6, 0] as Weekday[]).map((day) => {
           const on = days.includes(day);
           return (
-            <button
+            <button data-slot="action-button"
               key={day}
               type="button"
               aria-pressed={on}
@@ -185,7 +185,7 @@ function IntervalField({ seconds, onChange }: { seconds: number; onChange: (seco
     <div className="flex items-end gap-2">
       <label className="min-w-0 flex-1 space-y-1 text-[12px] font-medium">
         <span>Every</span>
-        <input
+        <input data-slot="field"
           type="number"
           min={1}
           step={1}
@@ -197,7 +197,7 @@ function IntervalField({ seconds, onChange }: { seconds: number; onChange: (seco
       </label>
       <label className="space-y-1 text-[12px] font-medium">
         <span className="sr-only">Unit</span>
-        <select
+        <select data-slot="field"
           aria-label="Unit"
           value={unit}
           onChange={(e) => {

@@ -193,7 +193,7 @@ export function MergeButton({
                       ? 'Auto-merge is on. GitHub merges when checks pass.'
                       : 'Or let GitHub merge automatically once checks pass.'}
                   </span>
-                  <button
+                  <button data-slot="action-button"
                     type="button"
                     onClick={handleAutoMerge}
                     disabled={autoMerge.isPending}
