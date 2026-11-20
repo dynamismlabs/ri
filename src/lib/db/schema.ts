@@ -2897,7 +2897,7 @@ export interface AgentCoordinationPayload {
   contextOnly?: boolean;
   /** A heartbeat check-in's note for the main agent: it gets its own turn, and the reply is pushed. */
   checkIn?: { runId: string; at: string };
-  launch?: { workspaceId: string; provider?: HarnessId; model?: string; modelVariant?: string | null; effort?: typeof chatSessions.$inferSelect.effort; serviceTier?: string | null; permissionMode?: (typeof PERMISSION_MODES)[number]; taskId?: string; deviceId?: string; label?: string };
+  launch?: { workspaceId: string; executionId?: string; provider?: HarnessId; model?: string; modelVariant?: string | null; effort?: typeof chatSessions.$inferSelect.effort; serviceTier?: string | null; permissionMode?: (typeof PERMISSION_MODES)[number]; taskId?: string; deviceId?: string; label?: string };
 }
 
 /** Questions and assignments whose outcomes are owed. */

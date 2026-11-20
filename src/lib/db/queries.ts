@@ -10206,6 +10206,8 @@ export function createExecutionSession(args: {
  * effect here. Returns null if the execution is gone.
  */
 export function createExecutionChat(args: {
+  /** Reserved by a durable delegation so a retried launch reuses its chat. */
+  id?: string;
   executionId: string;
   createdByMemberId?: string | null;
   surfaceKind?: string | null;
@@ -10222,6 +10224,7 @@ export function createExecutionChat(args: {
   const execution = getExecution(args.executionId);
   if (!execution) return null;
   return createChatSession({
+    id: args.id,
     type: 'execution',
     executionId: args.executionId,
     workspaceId: execution.workspaceId,

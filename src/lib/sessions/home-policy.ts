@@ -28,7 +28,7 @@ export async function siblingChatPolicy(key: RequestKey | null, chatId: string, 
   return executionStartPolicy(authority.workspace!, { ...input, actor });
 }
 
-export function verifyLaunchReplay(workspaceId: string, existing: ChatSessionWithExecution, actor?: WorkerCommandActor, input?: { workspaceId: string; sessionId?: string | null; coordinationDeliveryId?: string; permissionMode?: PermissionMode }) {
+export function verifyLaunchReplay(workspaceId: string, existing: ChatSessionWithExecution, actor?: WorkerCommandActor, input?: { workspaceId: string; executionId?: string; sessionId?: string | null; coordinationDeliveryId?: string; permissionMode?: PermissionMode }) {
   if (existing.workspaceId !== workspaceId) throw new q.TeamError('conflict', 'That launch id already belongs to different work.');
   if (q.getHome()?.kind !== 'team') {
     agentLaunchPermission(actor, input?.permissionMode, existing.harness, existing);
@@ -49,6 +49,7 @@ export function verifyLaunchReplay(workspaceId: string, existing: ChatSessionWit
 
 export async function executionStartPolicy(workspace: WorkspaceRecord, input: {
   actor?: WorkerCommandActor;
+  executionId?: string;
   sessionId?: string | null;
   coordinationDeliveryId?: string;
   deviceId?: string | null;

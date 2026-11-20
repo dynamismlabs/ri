@@ -580,7 +580,7 @@ ri agent create_workspace [--param value]
 
 ## delegate_work
 
-Assign work to a new chat in an agent. Use message_agent to contact an existing chat. Records the requesting chat and returns a durable request. Completion, failure, and blocked-state updates return to your chat automatically. Returns an acceptance receipt, not completed work. Finish your turn if waiting. Code work stays visible in a chat and uses the existing worktree/device/model rules. Use a stable request_id on retry.
+Assign work to a new chat in an agent. Pass execution_id to share an existing execution and its worktree, branch and device. Omit it to start a new execution. Use message_agent to contact an existing chat. Records the requesting chat and returns a durable request. Completion, failure, and blocked-state updates return to your chat automatically. Returns an acceptance receipt, not completed work. Finish your turn if waiting. Code work stays visible in a chat and uses the existing worktree/device/model rules. Use a stable request_id on retry.
 
 Changes data. A tool in every chat.
 
@@ -588,6 +588,7 @@ Changes data. A tool in every chat.
 | --- | --- | --- | --- |
 | `request_id` | string | yes | Caller retry key for unchanged intent, not a server request ID. Reuse this key on retry. |
 | `workspace_id` | string | yes |   |
+| `execution_id` | string | no | Existing execution in this agent for the new chat to share. Use get_session_context session.executionId for your current execution. Cannot be combined with task_id or device_id, since the execution already owns those. |
 | `prompt` | string | yes |   |
 | `provider` | "codex" or "claude" or "cursor" or "opencode" or "antigravity" | no |   |
 | `model` | string | no |   |
