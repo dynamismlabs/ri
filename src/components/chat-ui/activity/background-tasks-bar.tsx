@@ -102,7 +102,7 @@ export function BackgroundTasksBar({
           width, inset like a tab, no borders. Render it directly before
           the composer so the two touch. */}
       <div className="mx-auto max-w-3xl px-5">
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={() => setOpen(true)}
           className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-t-lg bg-muted/60 px-3 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground/85"
@@ -370,7 +370,7 @@ function StopButton({
   if (!canStop || providerType === 'codex') return null;
   return (
     <Tip label={couldntStop ? 'Could not stop (already ended or unsupported)' : undefined}>
-      <button
+      <button data-slot="action-button" data-tone="status"
         type="button"
         disabled={stop.isPending}
         onClick={(e) => {

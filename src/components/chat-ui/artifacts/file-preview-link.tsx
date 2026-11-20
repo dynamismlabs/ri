@@ -24,7 +24,7 @@ export function FilePreviewLink({ source, name, children, appearance = 'link', t
   const Icon = kind === 'video' ? FileVideo : kind === 'audio' ? FileAudio : kind === 'table' ? Sheet : kind === 'archive' ? FileArchive : File;
   const destination = source.kind === 'session' ? source.path : name;
   return <FileSourceTip source={destination} onlyWhenTextHidden={(children || name) === destination}>
-    <button ref={ref} type="button" data-artifact-card="" aria-label={`Open file: ${name}`} onClick={event => { event.stopPropagation(); open(preview, event.currentTarget); }}
+    <button data-slot={appearance === "chip" ? "attachment-chip" : undefined} data-tone={tone} ref={ref} type="button" data-artifact-card="" aria-label={`Open file: ${name}`} onClick={event => { event.stopPropagation(); open(preview, event.currentTarget); }}
       className={cn('inline-flex max-w-full items-baseline gap-1 text-left font-medium', appearance === 'chip'
         ? ['align-baseline rounded-md border px-1.5 py-0.5 mx-0.5 text-xs transition-colors', tone === 'bubble'
           ? 'border-current/20 bg-current/10 text-inherit hover:border-current/35 hover:bg-current/15'

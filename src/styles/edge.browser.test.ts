@@ -34,6 +34,8 @@ beforeAll(async () => {
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
       import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
       import {ChatLenses, ChatLensBar} from '@/components/workspaces/chat-lens-bar';
+      import {FileChip} from '@/components/chat-ui/artifacts/file-chip';
+      import {MessageFileChip} from '@/components/chat-ui/artifacts/message-file-chip';
       const LENSES=[{value:'all',label:'All'},{value:'unread',label:'Unread',count:2,tone:'attention'},{value:'working',label:'Working'}];
       const LANES=[{value:'progress',label:'In progress',count:9},{value:'todo',label:'Todo',count:4},{value:'waiting',label:'Waiting',count:2},{value:'done',label:'Done',count:30}];
       function Fixture(){
@@ -90,6 +92,23 @@ beforeAll(async () => {
           {/* The agent page's chat lenses (compact) and the phone's (touch), as they render. */}
           <div data-case="lenses"><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Chats" options={LENSES}/></ChatLenses></div>
           <div data-case="lenses-touch" style={{width:360}}><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Phone chats" size="touch" options={LENSES}/></ChatLenses></div>
+          <div data-case="tail" className="flex w-72 flex-col items-start gap-3">
+            <button data-tail-focus data-slot="content-card" className="w-full rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2">A saved reference<br/>With a description</button>
+            <button data-tail-focus data-slot="image-picker" aria-label="Choose image" className="size-16 rounded-xl border-2 border-dashed border-border">Image</button>
+            <button data-tail-focus data-slot="calendar-event" className="w-full rounded-md border bg-muted p-2 text-left" style={{boxShadow:'inset 3px 0 0 rgb(30, 120, 200)'}}>Design review</button>
+            <button data-tail-focus data-slot="menu-action" className="w-full rounded-md border-t border-border px-2 py-1.5 text-left hover:bg-muted">Do not repeat</button>
+            <button data-tail-focus data-slot="completion-control" aria-label="Complete task" className="size-4 rounded-full border border-border" />
+            <input data-tail-focus data-case="invalid-field" data-slot="field" aria-invalid="true" aria-label="Invalid value" className="rounded-md border border-destructive bg-background p-2 focus:outline-none focus:ring-1" />
+            <button data-tail-focus data-case="warning-action" data-slot="action-button" data-tone="warning" className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-600 dark:text-amber-400">Reconnect</button>
+            <div data-case="file-chip"><FileChip path="/work/review.md" /></div>
+            <div data-case="bubble" className="rounded-xl p-3" style={{background:'var(--user-bubble)',color:'var(--user-bubble-foreground)'}}>
+              <MessageFileChip tone="bubble" attachment={{fileName:'example.bin',originalName:'Design archive.zip',mimeType:'application/octet-stream',size:2048,uploadedAt:'2026-11-20'}} />
+            </div>
+            <button data-tail-focus data-case="floating-action" data-slot="action-button" data-variant="floating" className="rounded-full border bg-background px-3 py-1 text-muted-foreground shadow-sm">More models below</button>
+            <div data-case="filter-scroll" data-slot="segmented" data-scroll className="flex flex-wrap gap-1.5">
+              {['All sources','Built into Ri','Connected apps','Installed skills'].map((label,i)=><button key={label} aria-pressed={i===0} className="rounded-full border px-3 py-1">{label}</button>)}
+            </div>
+          </div>
         </div>;
       }
       createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
@@ -135,7 +154,8 @@ async function contrast(page: Page, selector: string): Promise<number> {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = 1;
     const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
-    const page = getComputedStyle(document.body).backgroundColor;
+    const backgrounds: string[] = [];
+    for (let parent: Element | null = el; parent; parent = parent.parentElement) backgrounds.unshift(getComputedStyle(parent).backgroundColor);
     const rgb = (...layers: string[]) => {
       ctx.clearRect(0, 0, 1, 1);
       for (const color of layers) { ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1); }
@@ -145,7 +165,7 @@ async function contrast(page: Page, selector: string): Promise<number> {
       const [r, g, b] = c.map((v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4; });
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     };
-    const fill = rgb(page, style.backgroundColor);
+    const fill = rgb(...backgrounds);
     const text = rgb(`rgb(${fill.join(' ')})`, style.color);
     const [a, b] = [luminance(text), luminance(fill)].sort((x, y) => y - x);
     return (a + 0.05) / (b + 0.05);
@@ -379,6 +399,91 @@ for (const theme of ['light', 'dark'] as const) {
       expect(lenses.touch.heights.every(h => h >= 36)).toBe(true);
       expect(lenses.touch.fill).toBeGreaterThan(0.9);
       expect(lenses.compact.heights.every(h => h <= 26)).toBe(true);
+    } finally { await page.close(); }
+  });
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`keeps long-tail content shapes, event stripes and keyboard focus (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      await page.locator('[data-case="tail"] button').first().focus();
+      for (const control of await page.locator('[data-tail-focus]').all()) {
+        await control.focus();
+        const state = await control.evaluate(el => {
+          const s = getComputedStyle(el);
+          return { slot: el.getAttribute('data-slot'), radius: s.borderRadius, outline: s.outlineStyle, width: s.outlineWidth, shadow: s.boxShadow };
+        });
+        expect(state.outline, state.slot!).toBe('solid');
+        expect(state.width, state.slot!).toBe('2px');
+        if (state.slot === 'content-card' || state.slot === 'image-picker') expect(state.radius).toBe('14px');
+        if (state.slot === 'calendar-event') {
+          expect(state.radius).toBe('8px');
+          expect(state.shadow).toContain('inset');
+          expect(state.shadow).toContain('30, 120, 200');
+        }
+        if (state.slot === 'completion-control') expect(parseFloat(state.radius)).toBeGreaterThan(100);
+      }
+      const invalid = await page.locator('[data-case="invalid-field"]').evaluate(el => {
+        const probe = document.createElement('span');
+        probe.style.color = 'var(--destructive)';
+        el.after(probe);
+        const expected = getComputedStyle(probe).color;
+        probe.remove();
+        return { border: getComputedStyle(el).borderColor, expected };
+      });
+      expect(invalid.border).toBe(invalid.expected);
+    } finally { await page.close(); }
+  });
+
+  it(`keeps actual file chips readable on the pane and inverted bubble (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      for (const selector of ['[data-case="file-chip"] button', '[data-case="bubble"] a', '[data-case="warning-action"]']) {
+        const chip = page.locator(selector);
+        // A capsule even where the source classes still say rounded-md.
+        expect(parseFloat(await chip.evaluate(el => getComputedStyle(el).borderRadius))).toBeGreaterThan(100);
+        await chip.hover();
+        await page.waitForTimeout(250);
+        expect(await contrast(page, selector)).toBeGreaterThan(4.5);
+        await page.keyboard.press('Tab');
+        await chip.focus();
+        expect(await chip.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('solid');
+      }
+      const bubbleInk = await page.locator('[data-case="bubble"]').evaluate(el => getComputedStyle(el).color);
+      expect(await page.locator('[data-case="bubble"] a').evaluate(el => getComputedStyle(el).color)).toBe(bubbleInk);
+    } finally { await page.close(); }
+  });
+
+  it(`keeps floating actions opaque and a narrow filter track scrollable (${theme})`, async () => {
+    const { page } = await open('edge', theme);
+    try {
+      const floating = page.locator('[data-case="floating-action"]');
+      for (const hover of [false, true]) {
+        if (hover) await floating.hover();
+        await page.waitForTimeout(250);
+        const state = await floating.evaluate(el => {
+          const style = getComputedStyle(el);
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d')!;
+          ctx.fillStyle = style.backgroundColor;
+          ctx.fillRect(0, 0, 1, 1);
+          return { alpha: ctx.getImageData(0, 0, 1, 1).data[3], shadow: style.boxShadow };
+        });
+        expect(state.alpha).toBe(255);
+        expect(state.shadow).not.toBe('none');
+        expect(await contrast(page, '[data-case="floating-action"]')).toBeGreaterThan(4.5);
+      }
+      const track = page.locator('[data-case="filter-scroll"]');
+      expect(await track.evaluate(el => ({ overflow: getComputedStyle(el).overflowX, overflows: el.scrollWidth > el.clientWidth, fits: el.getBoundingClientRect().width <= el.parentElement!.clientWidth }))).toEqual({ overflow: 'auto', overflows: true, fits: true });
+      const last = track.locator('button').last();
+      await last.focus();
+      const state = await last.evaluate(el => {
+        const r = el.getBoundingClientRect();
+        const parent = el.parentElement!.getBoundingClientRect();
+        return { visible: r.left >= parent.left && r.right <= parent.right, outline: getComputedStyle(el).outlineStyle, inset: parseFloat(getComputedStyle(el).outlineOffset) < 0 };
+      });
+      expect(state).toEqual({ visible: true, outline: 'solid', inset: true });
     } finally { await page.close(); }
   });
 }

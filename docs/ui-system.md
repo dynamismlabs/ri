@@ -79,7 +79,7 @@ These carry the system across screens. Use them before inventing a new one.
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex |
+| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex. `data-scroll` lets an unmeasured filter track scroll in place |
 | `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck), `data-mode` (the permission chip) |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
@@ -95,7 +95,7 @@ These carry the system across screens. Use them before inventing a new one.
 | `callout` | A notice or summary inside a pane (Stream's triage digest): a soft raised panel, no outline | |
 | `stream-meta` | The line under a Stream capture | |
 | `search-field`, `icon-button` | The phone's search field and the bordered icon buttons beside it | |
-| `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"` or `"ghost"`, `data-tone="status"`, `aria-pressed`, `aria-selected` or `aria-checked` |
+| `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"`, `"ghost"` or `"floating"`, `data-tone="status"` or `"warning"`, `aria-pressed`, `aria-selected` or `aria-checked` |
 | `status-strip` | A chat header's git summary and next action, in one quiet capsule | |
 | `split-button` | Finder and its menu, one capsule with a divider between the two buttons | |
 | `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
@@ -105,6 +105,13 @@ These carry the system across screens. Use them before inventing a new one.
 | `choice-row` | A descriptive option in a chooser or Settings, with a soft 8px selection fill | `aria-pressed`, `aria-selected` or `aria-checked` |
 | `field` | A hand-built text field, textarea or select outside the shared input components | |
 | `status-badge`, `schedule-row` | A schedule's state and its soft row | |
+| `content-card` | A reference, app or thumbnail choice containing a title and supporting content. It stays a soft 14px rectangle even when the whole card opens | `aria-pressed`, `aria-selected` or `aria-checked` |
+| `attachment-chip` | An inline file action, drawn as a capsule. Links written as prose keep their underline | `data-tone="bubble"` inherits the inverted message's ink |
+| `calendar-event` | An event holds time and meeting details. It keeps its position, colored stripe and 8px content shape | |
+| `image-picker` | An image or emoji preview tile, with its placeholder and upload affordance. It keeps a 14px content shape | |
+| `completion-control` | A task's completion mark or a routine's checkbox. These retain their circle or checkbox shape and state, with a visible focus outline | |
+| `menu-action` | A descriptive menu or list row, with an 8px hover shape. Separators stay on the row | |
+| `segmented-option`, `split-button-action`, `settings-nav-item` | Explicit hooks for controls whose parent slot owns their drawing. Use only inside the matching parent | The parent's state contract |
 | class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside, More). `panelTabClass` adds it | `panel-tab-on` |
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:

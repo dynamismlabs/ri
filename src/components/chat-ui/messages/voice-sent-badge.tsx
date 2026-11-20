@@ -37,7 +37,7 @@ export function VoiceSentBadge() {
 
   return (
     <div className="flex justify-end relative" ref={popoverRef}>
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/40 rounded-full px-2 py-0.5 transition-all"
@@ -51,7 +51,7 @@ export function VoiceSentBadge() {
         <div className="absolute top-full right-0 mt-1 w-56 rounded-lg border border-border bg-card shadow-xl z-50 p-3 space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-medium text-foreground">Auto-send voice</span>
-            <button
+            <button data-slot="switch"
               type="button"
               role="switch"
               aria-checked={voiceAutoSend}
