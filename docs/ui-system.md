@@ -43,13 +43,18 @@ The concepts it came from are kept in `docs/ui-system-concept.html` (open it in 
 browser and pick Edge Mac at the top), so the build can be checked
 against them.
 
-The look is a trial behind a switch, so classic stays exact until the new one is
-complete.
+Edge is the default (2026-11-20). Classic stays behind a switch while people settle
+in, and stays exact.
 
-- `src/lib/client/look.tsx` keeps the choice (`classic | edge`) in the browser
-  (`ri.client.look`) and marks the document with `data-look="edge"`. It follows
-  the same pattern as the theme preference and mounts through `ClientAppearance`.
-- Settings, General has **New look (preview)** beside Dark mode.
+- The root layout renders `data-look="edge"` on `<html>`, so the default paints
+  without a flash. `APPEARANCE_SCRIPT` (`src/lib/client/appearance-script.ts`) runs
+  in the head before first paint and applies this browser's choices instead: the
+  light theme, and Classic. That also ended the dark flash light-mode users saw.
+- `src/lib/client/look.tsx` keeps the choice (`classic | edge`) in the browser and
+  keeps the attribute in step after that. Only a choice of Classic is stored
+  (`ri.client.lookChoice`). The preview's old key (`ri.client.look`) is ignored,
+  since turning a trial off wasn't choosing the previous design.
+- Settings, General has **Classic look** beside Dark mode, off by default.
 - `src/styles/edge.css` holds everything, scoped to `html[data-look="edge"]`:
   - **Tokens.** The `--edge-*` values, mapped onto the shadcn names (`--background`,
     `--card`, `--muted`, `--border`, `--user-bubble`, `--font-sans` and the rest), so
@@ -171,9 +176,12 @@ component's own utility classes.
    scratchpad, task creation and tools controls gain the shared hooks.
    Classic retains its source layout and utilities. See
    `docs/ui-system-phase3-audit.md` for the remaining raw bordered-control sweep.
-4. **After the preview review (not started).** Copy still in Title Case in shared
-   constants ("In Progress", "Priority Order", "Schedules and Triggers") reaches
-   tests and the guide. Review the remaining controls and the chat UI gallery in
-   both looks, then consider codemods and a lint rule that stops new drift.
-   Making Edge the default, removing the switch and moving values into
-   `theme.css` all need the owner's decision. Phase 3 does none of those.
+4. **Edge by default (2026-11-20).** New browsers get Edge Mac, painted by the
+   server. Classic stays one switch away (Settings, General, Classic look), and
+   the guide's Appearance page says how to go back.
+5. **Classic goes (the owner's call, later).** Once nobody reaches for the
+   switch: remove it and `look.tsx`, move Edge's values into `theme.css`, drop the
+   `html[data-look="edge"]` scoping from `edge.css`, and retire the classic-only
+   checks. Copy still in Title Case in shared constants ("In Progress", "Priority
+   Order", "Schedules and Triggers") reaches tests and the guide, so it moves then
+   too.

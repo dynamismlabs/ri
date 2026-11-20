@@ -30,11 +30,11 @@ export function ThemeSettings() {
           <Paintbrush size={16} className="text-primary" />
         </div>
         <div>
-          <p className="text-sm font-medium text-foreground">New look (preview)</p>
-          <p className="text-[11px] text-muted-foreground/60">Try Ri&apos;s new design in this browser. Switch back any time.</p>
+          <p className="text-sm font-medium text-foreground">Classic look</p>
+          <p className="text-[11px] text-muted-foreground/60">Use Ri&apos;s previous design in this browser, for now.</p>
         </div>
       </div>
-      <Switch checked={look === 'edge'} onCheckedChange={toggleLook} aria-label="New look" />
+      <Switch checked={look === 'classic'} onCheckedChange={toggleLook} aria-label="Classic look" />
     </label>
   </section>;
 }

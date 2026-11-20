@@ -1,24 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
+import { CLIENT_LOOK_KEY } from './appearance-script';
 
 /**
  * The design the app is drawn in, a browser preference like the theme.
- * `classic` is today's look. `edge` is the Edge Mac design on trial: its tokens
- * and component styles live in `src/styles/edge.css`, scoped to
- * `html[data-look="edge"]`, so switching back is one click and nothing else in
- * the app changes shape (docs/ui-system.md).
+ * `edge` (Edge Mac, docs/ui-system.md) is the default. `classic` is the previous
+ * design, kept behind Settings > General > Classic look while people settle in.
+ * Edge's tokens and component styles live in `src/styles/edge.css`, scoped to
+ * `html[data-look="edge"]`. The server renders the attribute, so the default
+ * paints without a flash, and `APPEARANCE_SCRIPT` removes it before first paint
+ * for someone who chose Classic (only that choice is stored, see
+ * `CLIENT_LOOK_KEY`).
  */
 export type ClientLook = 'classic' | 'edge';
 
-export const CLIENT_LOOK_KEY = 'ri.client.look';
+export { CLIENT_LOOK_KEY };
 const CHANGE_EVENT = 'ri:client-look';
-let fallback: ClientLook = 'classic';
+let fallback: ClientLook = 'edge';
 
 function read(): ClientLook {
   try {
-    const value = window.localStorage.getItem(CLIENT_LOOK_KEY);
-    return value === 'edge' || value === 'classic' ? value : fallback;
+    return window.localStorage.getItem(CLIENT_LOOK_KEY) === 'classic' ? 'classic' : 'edge';
   } catch { return fallback; }
 }
 function subscribe(listener: () => void) {
@@ -29,10 +32,13 @@ function subscribe(listener: () => void) {
 }
 function setLook(look: ClientLook) {
   fallback = look;
-  try { window.localStorage.setItem(CLIENT_LOOK_KEY, look); } catch { /* The look still changes for this page without storage. */ }
+  try {
+    if (look === 'classic') window.localStorage.setItem(CLIENT_LOOK_KEY, 'classic');
+    else window.localStorage.removeItem(CLIENT_LOOK_KEY);
+  } catch { /* The look still changes for this page without storage. */ }
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
-const serverLook = (): ClientLook => 'classic';
+const serverLook = (): ClientLook => 'edge';
 
 /** A browser preference shared by every surface in this document, never a Home setting. */
 export function useClientLook() {
