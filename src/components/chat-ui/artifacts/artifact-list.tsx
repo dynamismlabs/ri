@@ -50,7 +50,7 @@ function ArtifactRow({ item }: { item: ArtifactListItem }) {
   const open = useArtifactPreview();
   const path = item.source.kind === 'session' ? item.source.path : 'Message attachment';
   return <Tip label={path} onlyWhenTextHidden>
-    <button type="button" ref={ref} data-artifact-card="" aria-label={`Open artifact: ${item.name}`} onClick={event => open(preview, event.currentTarget)}
+    <button data-slot="menu-action" type="button" ref={ref} data-artifact-card="" aria-label={`Open artifact: ${item.name}`} onClick={event => open(preview, event.currentTarget)}
       className="flex w-full min-w-0 items-start gap-3 rounded-md px-3 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
       <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground"><PreviewIcon preview={preview} size={16} /></span>
       <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium text-foreground">{item.name}</span>

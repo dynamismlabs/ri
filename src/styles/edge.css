@@ -1,9 +1,10 @@
 /*
- * Edge Mac, the new look on trial (docs/ui-system.md).
+ * Edge Mac, Ri's design (docs/ui-system.md).
  *
- * Everything here is scoped to html[data-look="edge"], which the Settings
- * switch "New look (preview)" sets (src/lib/client/look.tsx). Classic never
- * reads this file's values, so switching back is exact.
+ * Everything here is scoped to html[data-look="edge"]. The server renders it by
+ * default, and Settings > General > Classic look removes it for that browser
+ * (src/lib/client/look.tsx). Classic never reads this file's values, so going
+ * back is exact.
  *
  * The system in one paragraph: gray neutrals, a canvas (rail and top bar) one
  * step off the panes, columns that meet at a single border, four text levels,
@@ -30,6 +31,7 @@ html[data-look="edge"] {
   --edge-attention: oklch(0.63 0.16 55);
   --edge-attention-bg: oklch(0.75 0.15 66 / 0.17);
   --edge-mode-auto: var(--color-yellow-800);
+  --edge-warning-ink: var(--color-amber-800);
   --edge-mode-edits: var(--color-purple-800);
   --edge-mode-ask: var(--color-blue-800);
   --edge-mode-plan: var(--color-teal-800);
@@ -101,6 +103,7 @@ html[data-look="edge"] .dark {
   --edge-attention: oklch(0.79 0.15 66);
   --edge-attention-bg: oklch(0.79 0.15 66 / 0.15);
   --edge-mode-auto: var(--color-yellow-400);
+  --edge-warning-ink: var(--color-amber-400);
   --edge-mode-edits: var(--color-purple-400);
   --edge-mode-ask: var(--color-blue-400);
   --edge-mode-plan: var(--color-teal-400);
@@ -327,7 +330,7 @@ html[data-look="edge"] :is([data-slot="input"], [data-slot="input-group"], [data
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
-html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, .border.bg-card, [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], .toolbar-button, [data-slot="chip-button"], [data-slot="header-action"], [data-slot="review-action"], [data-slot="task-chip"], [data-slot="hud-tools"] button, [data-slot="new-agent"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"], [data-slot="icon-button"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Inside a track (which may scroll and clip), the ring sits just inside the option. */
 html[data-look="edge"] :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
 
@@ -342,8 +345,8 @@ html[data-look="edge"] [data-slot="action-button"] { border-color: transparent; 
 html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]) { background-color: var(--edge-track); }
 html[data-look="edge"] [data-slot="action-button"]:not([data-variant="primary"]):hover:not(:disabled) { background-color: var(--edge-selected); }
 html[data-look="edge"] [data-slot="action-button"][data-variant="ghost"] { background-color: transparent; }
-html[data-look="edge"] [data-slot="action-button"][data-tone="status"] { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
-html[data-look="edge"] [data-slot="action-button"][data-tone="status"]:hover:not(:disabled) { background-color: color-mix(in oklch, currentColor 18%, transparent); }
+html[data-look="edge"] [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]) { color: revert-layer; background-color: color-mix(in oklch, currentColor 12%, transparent); }
+html[data-look="edge"] [data-slot="action-button"]:is([data-tone="status"], [data-tone="warning"]):hover:not(:disabled) { background-color: color-mix(in oklch, currentColor 18%, transparent); }
 
 /* The git summary is a quiet group, with its next action nested inside. */
 html[data-look="edge"] [data-slot="status-strip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); }
@@ -424,3 +427,47 @@ html[data-look="edge"] [data-slot="chip-button"][data-mode]:hover:not(:disabled)
 /* Keep every Calendar view label visible. The date text already truncates to
    make room, so the control track must not shrink and clip its last option. */
 html[data-look="edge"] [data-slot="calendar-toolbar"] > [data-slot="segmented"] { flex-shrink: 0; }
+
+
+/* Content remains rectangular even when the whole card opens something. Image
+   pickers and calendar events keep their content geometry and color marks. */
+html[data-look="edge"] [data-slot="content-card"] { border-color: transparent; border-radius: 14px; background-color: var(--edge-raised); box-shadow: var(--edge-shadow-card); }
+html[data-look="edge"] [data-slot="content-card"]:hover:not(:disabled) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="content-card"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="image-picker"] { border-radius: 14px; }
+html[data-look="edge"] [data-slot="calendar-event"] { border-color: transparent; border-radius: 8px; background-color: var(--edge-raised); }
+html[data-look="edge"] [data-slot="calendar-event"]:hover { background-color: var(--edge-selected); }
+/* Menu rows retain separators and their size, rather than becoming small pills. */
+html[data-look="edge"] [data-slot="menu-action"] { border-radius: 8px; }
+html[data-look="edge"] [data-slot="menu-action"]:hover:not(:disabled) { background-color: var(--edge-selected); }
+
+/* Files in a sentence are capsules. In an inverted message they inherit the
+   message's ink, so the chip and its hover stay readable on either bubble. */
+html[data-look="edge"] [data-slot="attachment-chip"] { border-color: transparent; border-radius: 999px; background-color: var(--edge-track); box-shadow: none; }
+html[data-look="edge"] [data-slot="attachment-chip"]:hover { background-color: var(--edge-selected); }
+html[data-look="edge"] [data-slot="attachment-chip"][data-tone="bubble"] { color: inherit; background-color: color-mix(in oklch, currentColor 10%, transparent); }
+html[data-look="edge"] [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-color: color-mix(in oklch, currentColor 15%, transparent); }
+
+/* A floating action stays opaque over images and the model list's edge fades. */
+html[data-look="edge"] [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--edge-shadow-thumb); }
+html[data-look="edge"] [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--edge-raised); }
+html[data-look="edge"] [data-slot="field"][aria-invalid="true"] { border-color: var(--destructive); }
+
+/* Only these unmeasured tracks scroll here. SegmentedTabs keeps its own measured
+   scroller and edge fades. Focus sits inside the clipped option. */
+html[data-look="edge"] [data-slot="segmented"][data-scroll] { width: fit-content; max-width: 100%; overflow-x: auto; }
+html[data-look="edge"] :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+/* Calendar cells and pickers can clip at their container's edge. */
+html[data-look="edge"] :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
+
+/* Warning actions keep amber at a readable shade on the quiet status fill. */
+html[data-look="edge"] [data-slot="action-button"][data-tone="warning"] { color: var(--edge-warning-ink); }
+
+/* A hand-built grid choice becomes one track while retaining its classic grid. */
+html[data-look="edge"] [data-slot="segmented"].grid { display: flex; }
+/* Fields use one focus treatment. Preserve an invalid field's error border. */
+html[data-look="edge"] [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
+html[data-look="edge"] [data-slot="field"]:focus-visible { border-color: var(--edge-line-2); box-shadow: none; }
+html[data-look="edge"] [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
+/* A touch track inside a contents wrapper fills its existing padded row. */
+html[data-look="edge"] [data-slot="segmented"][data-size="touch"].contents { flex: 1; }

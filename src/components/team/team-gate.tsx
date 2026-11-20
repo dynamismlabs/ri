@@ -31,7 +31,7 @@ export function GateField({
       <label htmlFor={id} className="block text-xs font-medium text-foreground">
         {label}
       </label>
-      <input
+      <input data-slot="field"
         id={id}
         {...input}
         className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus-visible:border-primary/60 focus-visible:ring-[3px] focus-visible:ring-ring/40"
@@ -43,7 +43,7 @@ export function GateField({
 
 export function GateButton({ busy, children, ...button }: React.ComponentProps<'button'> & { busy?: boolean }) {
   return (
-    <button
+    <button data-slot="action-button" data-variant="primary"
       {...button}
       disabled={button.disabled || busy}
       className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"

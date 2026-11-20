@@ -84,7 +84,7 @@ These carry the system across screens. Use them before inventing a new one.
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex |
+| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex. `data-scroll` lets an unmeasured filter track scroll in place |
 | `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck), `data-mode` (the permission chip) |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
@@ -100,7 +100,7 @@ These carry the system across screens. Use them before inventing a new one.
 | `callout` | A notice or summary inside a pane (Stream's triage digest): a soft raised panel, no outline | |
 | `stream-meta` | The line under a Stream capture | |
 | `search-field`, `icon-button` | The phone's search field and the bordered icon buttons beside it | |
-| `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"` or `"ghost"`, `data-tone="status"`, `aria-pressed`, `aria-selected` or `aria-checked` |
+| `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"`, `"ghost"` or `"floating"`, `data-tone="status"` or `"warning"`, `aria-pressed`, `aria-selected` or `aria-checked` |
 | `status-strip` | A chat header's git summary and next action, in one quiet capsule | |
 | `split-button` | Finder and its menu, one capsule with a divider between the two buttons | |
 | `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
@@ -110,6 +110,13 @@ These carry the system across screens. Use them before inventing a new one.
 | `choice-row` | A descriptive option in a chooser or Settings, with a soft 8px selection fill | `aria-pressed`, `aria-selected` or `aria-checked` |
 | `field` | A hand-built text field, textarea or select outside the shared input components | |
 | `status-badge`, `schedule-row` | A schedule's state and its soft row | |
+| `content-card` | A reference, app or thumbnail choice containing a title and supporting content. It stays a soft 14px rectangle even when the whole card opens | `aria-pressed`, `aria-selected` or `aria-checked` |
+| `attachment-chip` | An inline file action, drawn as a capsule. Links written as prose keep their underline | `data-tone="bubble"` inherits the inverted message's ink |
+| `calendar-event` | An event holds time and meeting details. It keeps its position, colored stripe and 8px content shape | |
+| `image-picker` | An image or emoji preview tile, with its placeholder and upload affordance. It keeps a 14px content shape | |
+| `completion-control` | A task's completion mark or a routine's checkbox. These retain their circle or checkbox shape and state, with a visible focus outline | |
+| `menu-action` | A descriptive menu or list row, with an 8px hover shape. Separators stay on the row | |
+| `segmented-option`, `split-button-action`, `settings-nav-item` | Explicit hooks for controls whose parent slot owns their drawing. Use only inside the matching parent | The parent's state contract |
 | class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside, More). `panelTabClass` adds it | `panel-tab-on` |
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:
@@ -129,7 +136,7 @@ Settings' generic bordered-action rules exclude the direct options of a
 segmented control. Those tracks fit their options, and the active thumb keeps its
 fill on hover. Independent pressed toggles in Settings' button groups use the
 soft selected fill. Settings search keeps its own field ring without a second
-outline.
+outline. Other text fields clear their inherited ring when the shared outline is drawn, so focus stays a single treatment.
 
 ### Shapes
 
@@ -174,14 +181,77 @@ component's own utility classes.
    with descriptive choices as rows. Schedules has shared fields, actions and
    status badges. Hand-built choosers and the frequently used launcher,
    scratchpad, task creation and tools controls gain the shared hooks.
-   Classic retains its source layout and utilities. See
-   `docs/ui-system-phase3-audit.md` for the remaining raw bordered-control sweep.
-4. **Edge by default (2026-11-20).** New browsers get Edge Mac, painted by the
+   Classic retains its source layout and utilities.
+4. **Complete the control sweep and stop new drift (done 2026-11-20).** Chat
+   questions, approvals, account access, files and recovery actions use the same
+   hooks. Both library surfaces, onboarding, agent setup, identity choices, team actions,
+   expanded provider settings, pairing and consent follow them too. Content
+   keeps its shape as described below. The lint ratchet now catches new raw
+   bordered controls and capital source labels. The live Apps screen's CSS-module
+   cards and switches use the same hooks, with a check against its real stylesheet.
+5. **Edge by default (2026-11-20).** New browsers get Edge Mac, painted by the
    server. Classic stays one switch away (Settings, General, Classic look), and
    the guide's Appearance page says how to go back.
-5. **Classic goes (the owner's call, later).** Once nobody reaches for the
+6. **Classic goes (the owner's call, later).** Once nobody reaches for the
    switch: remove it and `look.tsx`, move Edge's values into `theme.css`, drop the
    `html[data-look="edge"]` scoping from `edge.css`, and retire the classic-only
    checks. Copy still in Title Case in shared constants ("In Progress", "Priority
    Order", "Schedules and Triggers") reaches tests and the guide, so it moves then
    too.
+
+## Completed raw-control audit
+
+The separate phase 3 inventory is folded into this spec. Every entry is now
+covered by an explicit shared hook, including the uncommon chooser, retry,
+provider setup and team states. A button containing an image, a document summary
+or an event is content as well as a press target:
+
+| Intentionally retained shape | Where and why |
+| --- | --- |
+| Content cards, 14px | Entity references, Board activity, onboarding apps and service-form thumbnail options contain a title, image or supporting text. They use `content-card` |
+| Descriptive rows, 8px | Questions, workstream and model choices, provider choices and source pickers contain descriptions or belong to a list. They use `choice-row` or `menu-action` |
+| Calendar events, 8px | Day, Week and List event blocks represent time and meeting details. `calendar-event` preserves their placement and colored stripe. Join and warning actions are capsules |
+| Image and emoji previews, 14px | Agent and area setup show the current image inside the picker. `image-picker` keeps the preview and dashed empty-state affordance |
+| Completion circles and checkboxes | Task, subtask, area and routine completion marks use `completion-control`. Their state remains recognizable at 14 to 16px |
+| Native switch track and thumb | The sent-voice Auto-send switch uses `switch`. Its existing state and track remain intact |
+
+Small actions around those pieces are capsules. File chips inherit the ink of an
+inverted bubble. Floating model-list and image actions stay opaque over their
+content. Warning actions keep amber in a readable shade in both themes. Focus
+outlines sit inside clipped event cells, menu rows, image pickers and segmented
+options. `SegmentedTabs` still owns its measured scroller.
+
+## Lint ratchet
+
+`eslint.config.mjs` keeps the tooltip and UI restrictions in one shared selector
+array. `no-restricted-syntax` catches:
+
+- A raw `button` or `a` outside `src/components/ui/` with both a `border` and a
+  `rounded` utility and no explicit `data-slot`. This includes string literals,
+  `cn(...)`, conditional branches and template parts. A `ring-border` class alone
+  does not count as a border. Classes supplied only through a variable cannot be
+  inspected by this syntax rule.
+- JSX text containing at least three capital letters and no lowercase letters.
+  Write labels in sentence case and keep `uppercase` for classic. Code and
+  protocol names are reviewed as exceptions, rather than rewritten as labels.
+
+The per-file `uiSystemLegacyFiles` list is deliberately small:
+
+| File | Why it remains |
+| --- | --- |
+| `src/components/settings/sections/api-transport.tsx` | HTTP is a protocol name |
+| `src/components/workspaces/worktree-scripts-section.tsx` | PORT and $RI_SOURCE_CHECKOUT_PATH are literal code |
+| `src/app/dev/execution-chat/page.tsx` | Synthetic harness diagnostics, outside normal product use |
+| `src/app/integrations-test/page.tsx` | Standalone connector diagnostics with their own drawing |
+
+A legacy override restates only the tooltip selectors, so `title` remains
+forbidden there. To shrink the list, remove a path, run lint on that file, add
+appropriate shared hooks and convert actual labels to sentence case while
+preserving classic with `uppercase`. Keep literal protocol and code names
+accurate. Do not add broad directory globs to the list.
+
+`scripts/ui-system-lint.test.ts` exercises the actual ESLint config, including
+esquery's `:has()` support, class literals inside `cn`, false positives, installed
+primitives and the tooltip rule in legacy files. `src/styles/edge.browser.test.ts`
+checks the risky drawing rules with real CSS in Chromium. The long-tail checks
+fail with the new rules removed.

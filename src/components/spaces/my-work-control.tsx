@@ -32,7 +32,7 @@ export function MyWorkControl({ taskId }: { taskId: string }) {
 
   if (!inMyWork) {
     return (
-      <button
+      <button data-slot="action-button"
         type="button"
         disabled={busy}
         onClick={async () => {
@@ -52,7 +52,7 @@ export function MyWorkControl({ taskId }: { taskId: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Tip label={assigned ? "It's assigned to you, so it's in My Ri." : 'You added it to your work in My Ri.'}>
-          <button type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/15">
+          <button data-slot="action-button" data-variant="ghost" type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/15">
             <Check size={13} aria-hidden /> In my work <ChevronDown size={11} aria-hidden />
           </button>
         </Tip>
@@ -100,7 +100,7 @@ export function SaveNoteControl({ noteId }: { noteId: string }) {
 
   if (!state.data.saved) {
     return (
-      <button
+      <button data-slot="action-button"
         type="button"
         disabled={busy}
         onClick={async () => {
@@ -121,7 +121,7 @@ export function SaveNoteControl({ noteId }: { noteId: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Tip label="You saved it beside your notes in My Ri.">
-          <button type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/15">
+          <button data-slot="action-button" data-variant="ghost" type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/15">
             <Check size={13} aria-hidden /> In my notes <ChevronDown size={11} aria-hidden />
           </button>
         </Tip>

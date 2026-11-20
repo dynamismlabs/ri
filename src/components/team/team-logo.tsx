@@ -51,10 +51,10 @@ export function TeamLogo() {
           const file = event.target.files?.[0]; event.target.value = '';
           if (file) void upload(file);
         }} />
-        <button type="button" onClick={() => input.current?.click()} disabled={busy} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50">
+        <button data-slot="action-button" type="button" onClick={() => input.current?.click()} disabled={busy} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50">
           {busy ? <Loader2 size={13} className="animate-spin" /> : <ImagePlus size={13} />}{image ? 'Change logo' : 'Upload logo'}
         </button>
-        {image && <button type="button" disabled={busy} className="rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 disabled:opacity-50" onClick={() => {
+        {image && <button data-slot="action-button" data-variant="ghost" type="button" disabled={busy} className="rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 disabled:opacity-50" onClick={() => {
           void save.mutateAsync(null).catch(error => toast.error('Could not remove the team logo', { description: apiErrorText(error) }));
         }}>Remove logo</button>}
       </div>}

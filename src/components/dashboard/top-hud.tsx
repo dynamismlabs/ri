@@ -104,7 +104,7 @@ export function TopHud() {
                 in the new look (docs/ui-system.md). */}
             <div data-slot="hud-tools" className="contents">
             <Tip label="Search tasks, notes and commands" shortcut={HOTKEYS.search.label}>
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={() => document.dispatchEvent(new CustomEvent('open-search'))}
                 className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"

@@ -235,7 +235,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
 
       {(p.method === 'oauth2' || registered) && p.configured && canConnect && (
         <section className="rounded-xl border border-border/70">
-          <button
+          <button data-slot="menu-action"
             type="button"
             aria-expanded={props.advancedOpen}
             onClick={props.onToggleAdvanced}

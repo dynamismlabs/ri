@@ -117,7 +117,7 @@ export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { vari
   const trigger =
     variant === 'collapsed' ? (
       <Tip label={`Space: ${label}`}>
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           aria-label={`Space: ${label}. Switch space`}
           className="rounded-md p-1 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -126,7 +126,7 @@ export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { vari
         </button>
       </Tip>
     ) : (
-      <button
+      <button data-slot="action-button"
         type="button"
         aria-label={`Space: ${label}. Switch space`}
         className={cn(

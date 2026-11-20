@@ -69,7 +69,7 @@ export function PreviewSource({ preview }: { preview: ArtifactPreview }) {
   const source = previewCopySource(preview);
   if (!source) return <span className="text-xs text-muted-foreground">Embedded image</span>;
   return <FileSourceTip source={source.value} onlyWhenTextHidden>
-    <button type="button" aria-label={source.label} aria-describedby={descriptionId}
+    <button data-slot="choice-row" type="button" aria-label={source.label} aria-describedby={descriptionId}
       className="flex w-full min-w-0 items-center gap-3 rounded-md border border-border bg-muted/30 px-2.5 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       onClick={() => {
         let value = source.value;
@@ -109,7 +109,7 @@ export function PlaceSwitch({ place, side, onMove }: { place: PreviewPlace; side
   const Beside = side === 'left' ? PanelLeft : PanelRight;
   const option = (value: PreviewPlace, label: string, icon: React.ReactNode) => (
     <Tip label={label}>
-      <button
+      <button data-slot="segmented-option"
         type="button"
         aria-label={label}
         aria-pressed={place === value}

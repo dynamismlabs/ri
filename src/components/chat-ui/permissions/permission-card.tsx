@@ -80,7 +80,7 @@ export function PermissionCard({
               ? denyReason.trim() ? 'Send deny' : 'Deny'
               : 'Deny'}
         </button>
-        <button
+        <button data-slot="action-button" data-variant="primary"
           type="button"
           disabled={resolve.isPending}
           onClick={allow}

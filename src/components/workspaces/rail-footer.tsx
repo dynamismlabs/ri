@@ -82,7 +82,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
         <RailUpdateRow collapsed />
         <FeedbackRailButton collapsed />
         <Tip label="Settings">
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             type="button"
             onClick={() => openSettings()}
             aria-label="Settings"
@@ -102,7 +102,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
       <FeedbackRailButton collapsed={false} />
       <div className="flex items-stretch gap-1.5">
       <Tip label="Settings">
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={() => openSettings()}
           aria-label="Settings"
@@ -112,7 +112,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
         </button>
       </Tip>
       <Tip label={reconnect}>
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={connectAccounts}
           aria-label={reconnect ? `Connect accounts, ${needingYou.length} waiting on you` : 'Connect accounts'}

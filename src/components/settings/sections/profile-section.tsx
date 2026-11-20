@@ -128,14 +128,14 @@ export function ProfileSection() {
           <IdentityEditor draft={identity} onChange={setAssistantDraft} onSubmit={() => void commitIdentity()} />
           {identityDirty && (
             <div className="mt-3 flex items-center justify-end gap-1.5">
-              <button
+              <button data-slot="action-button" data-variant="ghost"
                 type="button"
                 onClick={() => setAssistantDraft(null)}
                 className="rounded-md px-2.5 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
               >
                 Reset
               </button>
-              <button
+              <button data-slot="action-button" data-variant="primary"
                 type="button"
                 onClick={() => void commitIdentity()}
                 disabled={savingIdentity}

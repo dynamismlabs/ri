@@ -304,7 +304,7 @@ function ModelChoice({
         {options.map((opt) => {
           const active = selected === opt.id;
           return (
-            <button
+            <button data-slot="choice-row" aria-pressed={active}
               key={opt.id}
               type="button"
               onClick={() => onSelect(opt.id)}

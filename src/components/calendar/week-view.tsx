@@ -106,7 +106,7 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
             {/* Deadline markers — obligations landing on this day */}
             {deadlines.map((d) => (
               <Tip key={d.taskId} label={`Due: ${d.title}`}>
-                <button
+                <button data-slot="action-button" data-tone="warning"
                   type="button"
                   onClick={() => onOpenTask(d.taskId)}
                   className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[10px] font-medium text-amber-600 dark:text-amber-400 text-left shrink-0"
@@ -121,7 +121,7 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
             {rows.map(({ event, startMinute }) => (
               <Popover key={`${event.id}-${startMinute}`}>
                 <PopoverTrigger asChild>
-                  <button
+                  <button data-slot="calendar-event"
                     type="button"
                     className={cn(
                       'flex flex-col rounded-md border border-border bg-muted py-1 pr-1.5 text-left shrink-0',

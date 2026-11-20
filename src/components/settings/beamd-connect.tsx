@@ -134,7 +134,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
           {bin && <BinLine bin={bin} />}
           <div className="flex items-center gap-2 pt-0.5">
             <Tip label="Authenticate against the edge (beamd check)">
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={runTest}
                 disabled={test.isPending}
@@ -144,7 +144,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                 Test connection
               </button>
             </Tip>
-            <button
+            <button data-slot="action-button"
               type="button"
               onClick={disconnect}
               disabled={update.isPending}
@@ -167,7 +167,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
             </p>
           )}
           <div className="flex items-center gap-2">
-            <a
+            <a data-slot="action-button" data-variant="primary"
               href={device.pending?.verificationUriComplete || device.pending?.verificationUri || '#'}
               target="_blank"
               rel="noreferrer"
@@ -176,7 +176,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
               <ExternalLink size={12} />
               Approve in browser
             </a>
-            <button
+            <button data-slot="action-button"
               type="button"
               onClick={device.cancel}
               className="rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -197,7 +197,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
           </p>
 
           {/* Primary path: browser approval against hosted beamd — no inputs. */}
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             onClick={startApprove}
             disabled={device.status === 'starting'}
@@ -238,7 +238,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                   API key.
                 </p>
                 <Field label="Edge address">
-                  <input
+                  <input data-slot="field"
                     value={server}
                     onChange={(e) => setServer(e.target.value)}
                     placeholder="your-beamd-edge.com  ·  blank = hosted beamd"
@@ -247,7 +247,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                   />
                 </Field>
                 <Field label="API key">
-                  <input
+                  <input data-slot="field"
                     type="password"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
@@ -269,7 +269,7 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                     <span className="block text-muted-foreground/70">Only for a self-hosted edge with a self-signed cert.</span>
                   </span>
                 </label>
-                <button
+                <button data-slot="action-button"
                   type="button"
                   onClick={connect}
                   disabled={update.isPending || !server.trim() || !token.trim()}

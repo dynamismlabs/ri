@@ -20,7 +20,7 @@ export function EntityEditChip({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         onClick={() => setOpen(true)}
         className="inline-flex min-w-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-px text-[10.5px] font-medium text-primary hover:bg-primary/20 transition-colors"
       >

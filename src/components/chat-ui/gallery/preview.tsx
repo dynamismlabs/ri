@@ -155,12 +155,12 @@ function SharedConversation() {
         <ChatInputEditor ref={editor} ariaLabel="Example shared message" placeholder="Write an example message" disabled={off} attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
         <div className="flex items-center gap-2 px-1.5 pb-1.5">
           <Popover open={modelMenuOpen} onOpenChange={setModelMenuOpen}>
-            <PopoverTrigger asChild><Tip label="Choose an example model"><button type="button" disabled={off} aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs disabled:opacity-50"><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></button></Tip></PopoverTrigger>
+            <PopoverTrigger asChild><Tip label="Choose an example model"><button data-slot="action-button" type="button" disabled={off} aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs disabled:opacity-50"><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></button></Tip></PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="start"><ModelMenuContent disabled={off}>
               <ModelMenuProvider harness="claude" models={models} additionalModels={[]} selectedModel={model} disabled={off} onSelect={option => { setModel(option.id); setModelMenuOpen(false); }} />
             </ModelMenuContent></PopoverContent>
           </Popover>
-          <button type="button" className="ml-auto rounded bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50" onClick={send} disabled={off || !hasContent}>Send example</button>
+          <button data-slot="action-button" data-variant="primary" type="button" className="ml-auto rounded bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50" onClick={send} disabled={off || !hasContent}>Send example</button>
         </div>
       </ChatComposer>
     </div>
@@ -259,7 +259,7 @@ function ArtifactCollection() {
     sessionId: CHAT_ID, eventId: `artifact-${index}`, createdAt: NOW, chatLabel: index ? 'Prepare the handoff' : 'Research the options',
   }));
   return <div className="rounded-lg border border-border p-2">
-    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<input aria-label="Filter artifacts" placeholder="Filter by filename, path or chat" value={query} onChange={event => setQuery(event.target.value)} className="mt-2 block w-full rounded-md border border-border bg-background p-2 text-sm" /></label>
+    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<input data-slot="field" aria-label="Filter artifacts" placeholder="Filter by filename, path or chat" value={query} onChange={event => setQuery(event.target.value)} className="mt-2 block w-full rounded-md border border-border bg-background p-2 text-sm" /></label>
     <ArtifactList items={items} query={query} />
   </div>;
 }
@@ -277,7 +277,7 @@ function CoordinationComposer() {
   return <ChatComposer hint="⇧⇥ to cycle modes">
     <CoordinationControls sessionId={CHAT_ID} />
     <ChatInputEditor ref={editor} ariaLabel="Example message" placeholder="Message your agent" attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
-    <div className="flex justify-end px-2 pb-2"><button type="button" onClick={send} disabled={!hasContent} className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50">Send example</button></div>
+    <div className="flex justify-end px-2 pb-2"><button data-slot="action-button" data-variant="primary" type="button" onClick={send} disabled={!hasContent} className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50">Send example</button></div>
   </ChatComposer>;
 }
 

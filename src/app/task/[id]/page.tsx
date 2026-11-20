@@ -148,7 +148,7 @@ function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
                 the status control, so no button mislabels a no-op or a
                 restore as "Complete". */}
             {task && task.status !== 'consider' && task.status !== 'archived' && (
-              <button
+              <button data-slot="header-action" data-state={isDone ? "done" : undefined}
                 onClick={handleComplete}
                 aria-label={isDone ? 'Completed' : 'Complete'}
                 className={cn(

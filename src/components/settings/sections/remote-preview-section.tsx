@@ -34,7 +34,7 @@ export function RemotePreviewSection() {
 
 function LinkPill({ href, icon, children }: { href: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <a
+    <a data-slot="action-button"
       href={href}
       target="_blank"
       rel="noopener noreferrer"

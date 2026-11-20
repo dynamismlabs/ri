@@ -226,7 +226,7 @@ function ApprovalItem({
         {onDecide && state === 'pending' && (
           <span className="flex shrink-0 items-center gap-0.5">
             <Tip label="Approve this one">
-              <button
+              <button data-slot="action-button" data-tone="status"
                 type="button"
                 disabled={disabled}
                 onClick={() => onDecide('approve')}
@@ -237,7 +237,7 @@ function ApprovalItem({
               </button>
             </Tip>
             <Tip label="Deny this one">
-              <button
+              <button data-slot="action-button" data-tone="status"
                 type="button"
                 disabled={disabled}
                 onClick={() => onDecide('deny')}
@@ -285,7 +285,7 @@ function FooterButton({
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <Tip label={title}>
-      <button
+      <button data-slot="action-button" data-variant={tone === "primary" ? "primary" : undefined} data-tone={tone === "deny" ? "status" : undefined}
         type="button"
         {...props}
         className={cn(
@@ -365,7 +365,7 @@ function CardStatus({
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">{text}</span>
       {canRetry && (
-        <button
+        <button data-slot="action-button"
           type="button"
           disabled={retry.isPending || retry.isSuccess}
           onClick={() => retry.mutate()}

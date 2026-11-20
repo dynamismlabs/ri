@@ -187,7 +187,7 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
         />
       </label>
 
-      <button
+      <button data-slot="choice-row" aria-expanded={modelPickerOpen}
         onClick={() => setModelPickerOpen((v) => !v)}
         className="w-full rounded-lg border border-border bg-background p-3 text-left transition-all hover:border-muted-foreground/30"
       >
@@ -211,7 +211,7 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
         <div className="space-y-3">
           <div data-slot="segmented" className="flex gap-1">
             {(serverSpeech ? PROVIDER_TABS : ['web'] as const).map((tab) => (
-              <button
+              <button data-slot="segmented-option"
                 key={tab}
                 aria-pressed={!serverSpeech || activeTab === tab}
                 onClick={() => setActiveTab(tab)}

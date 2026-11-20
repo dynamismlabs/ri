@@ -106,7 +106,7 @@ function TextExpandChip({ url, display, variant, tone, size }: {
   return (
     <span className={cn(variant === 'block' && 'block my-1')}>
       <Tip label={`${display} · ${formatSize(size)}`} onlyWhenTextHidden>
-        <button
+        <button data-slot="attachment-chip" data-tone={tone} aria-expanded={open}
           type="button"
           onClick={handleToggle}
           className={cn(
@@ -154,7 +154,7 @@ function DownloadChip({ url, display, variant, tone, size }: {
   return (
     <span className={cn(variant === 'block' && 'block my-1')}>
       <Tip label={`${display} · ${formatSize(size)}`} onlyWhenTextHidden>
-        <a
+        <a data-slot="attachment-chip" data-tone={tone}
           href={url}
           download={display}
           target="_blank"

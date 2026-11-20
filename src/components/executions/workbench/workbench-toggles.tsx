@@ -76,7 +76,7 @@ function ToggleButton({
 }) {
   return (
     <Tip label={title} shortcut={shortcut}>
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         onClick={onClick}
         aria-label={label}

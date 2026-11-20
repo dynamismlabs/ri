@@ -76,7 +76,7 @@ export function ModelList({
         />
       ))}
       {onManageModels && (
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={onManageModels}
           className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground"
@@ -221,7 +221,7 @@ function ProviderGroup({
         {/* Always available, even with nothing hidden: this drawer is also
             where a model id gets typed in, and that has to stay reachable
             when the allowlist already shows everything the catalog knows. */}
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={() => setShowMore((open) => !open)}
           className="mt-0.5 flex w-full items-center gap-1 rounded-md px-2 py-1 text-[10.5px] text-muted-foreground/70 transition-colors hover:bg-muted/40 hover:text-muted-foreground"
@@ -304,7 +304,7 @@ function ModelRow({
       )}
     >
       <Tip label={title ?? (model.custom ? `Pinned: ${model.id}` : undefined)}>
-        <button
+        <button data-slot="menu-action"
           type="button"
           disabled={disabled}
           onClick={onSelect}
@@ -348,7 +348,7 @@ function ModelRow({
       </Tip>
       {onRemove && (
         <Tip label={`Unpin ${model.id}`}>
-          <button
+          <button data-slot="action-button" data-variant="ghost"
             type="button"
             disabled={removePending}
             onClick={onRemove}

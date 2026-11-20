@@ -216,7 +216,7 @@ export function TaskRow({
         </Tip>
       ) : (
         <Tip label={isDone ? 'Reopen' : 'Complete'}>
-          <button
+          <button data-slot="completion-control"
             onClick={(e) => { e.stopPropagation(); onComplete(task.id); }}
             aria-label={isDone ? 'Reopen task' : 'Complete task'}
             className={cn(
@@ -404,7 +404,7 @@ export function TaskRow({
       <div data-slot="row-actions" className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               aria-label="More task actions"
               className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
               onClick={(e) => e.stopPropagation()}
@@ -519,7 +519,7 @@ export function TaskRow({
               }
               setBlockPopoverOpen(false);
             }}>
-              <input
+              <input data-slot="field"
                 ref={blockInputRef}
                 type="text"
                 autoFocus
@@ -528,9 +528,9 @@ export function TaskRow({
               />
               <div className="flex justify-end gap-1 mt-1.5">
                 <PopoverClose asChild>
-                  <button type="button" className="text-[10px] px-2 py-0.5 rounded text-muted-foreground hover:bg-muted">Cancel</button>
+                  <button data-slot="action-button" data-variant="ghost" type="button" className="text-[10px] px-2 py-0.5 rounded text-muted-foreground hover:bg-muted">Cancel</button>
                 </PopoverClose>
-                <button type="submit" className="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90">Block</button>
+                <button data-slot="action-button" data-variant="primary" type="submit" className="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90">Block</button>
               </div>
             </form>
           </PopoverContent>

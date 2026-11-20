@@ -28,7 +28,7 @@ export function WorkspacePicker({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <button
+        <button data-slot="action-button"
           type="button"
           className={cn(
             'inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[12px] font-semibold transition-colors',

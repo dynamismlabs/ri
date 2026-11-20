@@ -30,7 +30,7 @@ export function TeamHome() {
         <TeamGate title="This team no longer accepts this Ri">
           <p>{apiErrorText(me.error)} Your private planning for its work is kept in My Ri.</p>
           {/* A whole page: My Ri is its own document (src/lib/spaces/document.ts). */}
-          <button type="button" onClick={() => window.location.assign('/?settings=teams')} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+          <button data-slot="action-button" data-variant="primary" type="button" onClick={() => window.location.assign('/?settings=teams')} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
             Open Settings, Teams
           </button>
         </TeamGate>
@@ -54,5 +54,5 @@ export function TeamHome() {
 /** This link must remain available even when the team's API never responds. */
 function BackToMyRi() {
   // eslint-disable-next-line @next/next/no-html-link-for-pages -- A space change needs a new root layout and API client, not client-side routing.
-  return <a href="/" className="inline-flex h-9 w-full items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground hover:bg-muted/50">Back to My Ri</a>;
+  return <a href="/" data-slot="action-button" className="inline-flex h-9 w-full items-center justify-center rounded-md border border-border px-4 text-sm font-medium text-foreground hover:bg-muted/50">Back to My Ri</a>;
 }

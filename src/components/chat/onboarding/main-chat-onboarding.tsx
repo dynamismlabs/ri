@@ -363,7 +363,7 @@ export function MainChatOnboarding() {
         {/* Nothing works without a harness, so skipping waits until there is one. */}
         {!finished && !harnessPending && (
           <div className="flex justify-end">
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               type="button"
               onClick={skip}
               className="rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
@@ -440,7 +440,7 @@ function NewStepOffer({ step, onDecline, children }: { step: OnboardingStepName;
             Set up
           </button>
         )}
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={onDecline}
           className="flex-shrink-0 rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:text-foreground"
@@ -604,7 +604,7 @@ function YouStep({ initial, onDone }: { initial: string; onDone: (name: string) 
   };
   return (
     <Card className="flex items-center gap-2">
-      <input
+      <input data-slot="field"
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -663,7 +663,7 @@ function Starters() {
     <div className="flex flex-wrap gap-1.5">
       {starters.map((s) => (
         <Tip key={s.label} label={s.draft ? 'Start this in the composer' : 'Send this'}>
-          <button
+          <button data-slot="action-button"
             type="button"
             disabled={actions.disabled}
             onClick={() => (s.draft ? actions.draft(s.prompt) : actions.send(s.prompt))}

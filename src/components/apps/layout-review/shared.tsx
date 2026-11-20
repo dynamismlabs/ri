@@ -29,7 +29,7 @@ export function CollectionTiles() {
   const icons = { business: BriefcaseBusiness, life: House, ideas: PencilRuler };
   return <div className={s.collectionGrid}>{COLLECTIONS.map(collection => {
     const Icon = icons[collection.id];
-    return <button type="button" className={s.collectionTile} key={collection.id} aria-pressed={review.query.collection === collection.id} onClick={() => review.patch({ collection: collection.id, item: undefined })}>
+    return <button data-slot="content-card" type="button" className={s.collectionTile} key={collection.id} aria-pressed={review.query.collection === collection.id} onClick={() => review.patch({ collection: collection.id, item: undefined })}>
       <Icon size={21} /><h3>{collection.name}</h3><p>{collection.description}</p><div className={s.collectionMarks}>{review.loading ? [0, 1, 2].map(index => <Skeleton key={index} className="size-6 rounded-md" aria-hidden="true" />) : collectionItems(review.items, collection.id).slice(0, 4).map(item => <ItemMark key={item.key} item={item} small />)}</div>
     </button>;
   })}</div>;
