@@ -28,7 +28,12 @@ export async function downloadRelease(release: Release, progress: (bytes: number
         hash.update(chunk); progress(size); yield chunk;
       }
     }
-    await pipeline(Readable.fromWeb(response.body as never), bounded, fs.createWriteStream(archive, { mode: 0o600 }));
+    const output = fs.createWriteStream(archive, { mode: 0o600 });
+    // A download that stops early (too large, or a dropped connection) rejects
+    // before this stream has opened its file, which it then creates after the
+    // cleanup below. Wait for it to close so the cleanup removes the file.
+    try { await pipeline(Readable.fromWeb(response.body as never), bounded, output); }
+    finally { if (!output.closed) await new Promise<void>(resolve => { output.once('close', resolve); output.once('error', () => {}); }); }
     if (size !== release.runtime.size || hash.digest('hex') !== release.runtime.sha256) throw new Error('Release download checksum or size mismatch');
     fs.mkdirSync(extracted, { mode: 0o700 });
     await validateRuntimeArchive(archive, release.runtime.unpackedSize);
