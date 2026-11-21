@@ -9,6 +9,10 @@ const fixtures = vi.hoisted(() => ({
   area: { id: 'review-area', name: 'Original name', description: 'Original description', status: 'active', attachments: [] },
   write: vi.fn(async () => {}),
 }));
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/hooks/use-areas', () => ({
   useArea: () => ({ data: fixtures.area }),
   useUpdateArea: () => ({ mutate: vi.fn(), mutateAsync: fixtures.write }),

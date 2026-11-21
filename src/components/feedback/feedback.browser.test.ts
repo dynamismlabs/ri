@@ -213,14 +213,16 @@ it('preserves one draft across rail, collapsed rail, dialog and page reload', as
     await page.close();
   }
 });
-it('supports native radio arrows and returns dialog focus to its trigger', async () => {
+it('supports radio arrows and returns dialog focus to its trigger', async () => {
   const page = await open();
   try {
     await page.locator('[data-dialog]').click();
     const radio = page.getByRole('radio', { name: 'Feedback', exact: true });
     await radio.focus();
-    await page.keyboard.press('ArrowRight');
-    expect(await page.getByRole('radio', { name: 'Bug', exact: true }).isChecked()).toBe(true);
+    // Radix moves radio focus on a queued task. Observe selection before releasing the key.
+    await page.keyboard.down('ArrowRight');
+    await expect.poll(() => page.getByRole('radio', { name: 'Bug', exact: true }).isChecked()).toBe(true);
+    await page.keyboard.up('ArrowRight');
     await page.keyboard.press('Escape');
     await details(page).waitFor({ state: 'detached' });
     await expect

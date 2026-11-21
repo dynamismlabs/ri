@@ -1217,17 +1217,6 @@ html[data-ri-desktop='darwin'] [data-slot='sheet-content']:is([data-side='left']
   padding: 4px;
 }
 
-/* Note title textarea */
-.note-title {
-  font-family: inherit;
-  field-sizing: content;
-}
-
-.note-title::placeholder {
-  color: var(--muted-foreground);
-  opacity: 0.4;
-}
-
 /* CodeMirror 6 file viewer + merge view — height + overflow plumbing. */
 .cm-editor {
   height: 100%;

@@ -13,6 +13,10 @@ const fixtures = vi.hoisted(() => ({
   write: vi.fn<(input: { workResultGuidance: string | null }) => Promise<void>>(async () => {}),
 }));
 
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/hooks/use-user-state', () => ({
   useUserState: () => ({ data: fixtures.data, isError: fixtures.loadError, refetch: fixtures.refetch }),
   useUpdateUserState: () => ({ mutateAsync: fixtures.write }),

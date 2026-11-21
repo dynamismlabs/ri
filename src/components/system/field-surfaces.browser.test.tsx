@@ -11,10 +11,12 @@ beforeAll(async () => {
     import{TreeSearchBar}from'@/components/executions/file-tree/tree-search-bar';
     import{DeckAddBar}from'@/components/deck/deck-add-bar';
     import{ReferenceFolderDialog}from'@/components/workspaces/reference-folder-dialog';
+    import{SettingsNavigation}from'@/components/settings/settings-nav';import{Search}from'lucide-react';
     import{FeedbackPanel}from'@/components/feedback/feedback-panel';import PairPage from'@/app/pair/page';
     const params=new URLSearchParams(location.search);document.documentElement.classList.toggle('dark',params.get('theme')==='dark');
     window.events=[];window.drafts=[];window.submitted=[];
     function App(){const[query,setQuery]=useState(''),[open,setOpen]=useState(true);const surface=params.get('surface');
+      if(surface==='nav')return <SettingsNavigation active="general" label="Test settings" onSelect={id=>window.events.push(id)} sections={['general','plugins','models'].map(id=>({id,label:id[0].toUpperCase()+id.slice(1),title:id,icon:Search}))}/>;
       if(surface==='pair')return <PairPage/>;
       if(surface==='feedback')return <form onSubmit={e=>{e.preventDefault();window.submitted=[...new FormData(e.currentTarget)];}}><FeedbackPanel onClose={()=>{}}/><button type="submit">Inspect form</button></form>;
       if(surface==='reference')return <ReferenceFolderDialog open={open} onOpenChange={setOpen} workspaceId="current" workspaceName="Current agent" device={{id:'device',name:'My computer'}} existing={[]} saving={false} error={null} onSubmit={draft=>window.drafts.push(draft)}/>;
@@ -34,7 +36,7 @@ beforeAll(async () => {
             "./folder-picker-dialog": `export const FolderPickerDialog=()=>null;`,
             "@/components/auth/qr-scanner-modal": `export const QrScannerModal=({open,onDecoded})=>open?<button onClick={()=>onDecoded('not a code')}>Read invalid code</button>:null;`,
             "next/navigation": `export const useRouter=()=>({replace:()=>{}});`,
-            "@/contexts/dashboard-context": `export const useOptionalDashboard=()=>null;`,
+            "@/contexts/dashboard-context": `export const useOptionalDashboard=()=>null;export const useDashboard=()=>({});`,
             "@/components/home/home-context": `export const useOptionalHomeContext=()=>null;export const useHomeDocumentScope=()=>undefined;`,
             "@tanstack/react-query": `export const useMutation=()=>({mutateAsync:async()=>({}),isPending:false});`,
             "@/lib/trpc/client": `export const trpc={feedback:{preparePublicIssue:{mutationOptions:()=>({})}}};export const createAppTRPCClient=()=>({userState:{list:{query:async()=>{const e=new Error('Synthetic failure');e.status=new URLSearchParams(location.search).has('connection')?503:401;throw e;}}}});`,
@@ -68,6 +70,37 @@ afterAll(async () => {
 });
 
 for (const theme of ["light", "dark"]) {
+  it(`keeps Settings search desktop-only without changing the phone nav height (${theme})`, async () => {
+    const page = await fixture.browser.newPage({
+      viewport: { width: 390, height: 844 },
+    });
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}&surface=nav`);
+      const search = page.locator('input[aria-label="Search test settings"]');
+      await search.waitFor({ state: "attached" });
+      expect(await search.isVisible()).toBe(false);
+      expect(
+        (await page
+          .getByRole("navigation", { name: "Test settings" })
+          .boundingBox())!.height,
+      ).toBeLessThan(56);
+      await page.setViewportSize({ width: 900, height: 1000 });
+      await search.waitFor({ state: "visible" });
+      await expect
+        .poll(async () => (await search.locator("..").boundingBox())!.height)
+        .toBe(28);
+      await search.fill("Plugins");
+      expect(
+        await page
+          .getByRole("navigation")
+          .getByRole("button")
+          .allTextContents(),
+      ).toEqual(["Plugins"]);
+    } finally {
+      await page.close();
+    }
+  });
+
   for (const width of [340, 360, 390, 900]) {
     it(`keeps compound search rows usable at ${width}px (${theme})`, async () => {
       const page = await fixture.browser.newPage({

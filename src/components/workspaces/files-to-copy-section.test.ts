@@ -9,6 +9,10 @@ const fixtures = vi.hoisted(() => ({
   calls: [] as { cwd: string; globs: string[]; resolve: (files: string[]) => void; reject: (error: Error) => void }[],
 }));
 
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/lib/api/workspaces', () => ({
   workspacesApi: {
     previewFilesToCopy: (cwd: string, globs: string[]) =>
@@ -76,6 +80,15 @@ afterEach(() => {
 });
 
 describe('FilesToCopySection text', () => {
+  it('links its owned label and instructions to the textarea', () => {
+    render(['.env']);
+    const id = textarea().getAttribute('id');
+    expect([...container.querySelectorAll('label')].find(label=>label.getAttribute('for')===id)?.textContent).toBe('Files to copy');
+    const help = textarea().getAttribute('aria-describedby');
+    expect(help).toBeTruthy();
+    expect(document.getElementById(help!)?.textContent).toContain('One glob per line');
+  });
+
   it('fills the textarea from the value, and follows a new value from the caller', () => {
     render(['.env']);
     expect(shownText()).toBe('.env');

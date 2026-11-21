@@ -32,7 +32,7 @@
 .ri-field-control[aria-invalid='true'], .ri-field-shell[aria-invalid='true'] { border-color: var(--danger); }
 .ri-field-control:focus-visible, .ri-field-shell:has(.ri-field-control:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; box-shadow: none; }
 .ri-field-control[aria-invalid='true']:focus-visible, .ri-field-shell[aria-invalid='true']:has(.ri-field-control:focus-visible) { outline-color: var(--danger); }
-.ri-field-shell { display: flex; align-items: center; gap: 0; padding: 0; }
+.ri-field-shell { align-items: center; gap: 0; padding: 0; }
 .ri-field-shell .ri-field-control { flex: 1; align-self: stretch; height: auto; border: 0; border-radius: 10px; background: transparent; box-shadow: none; }
 .ri-field-shell .ri-field-control:focus-visible { outline: 0 solid transparent; }
 .ri-field-shell .ri-field-control:disabled { opacity: 1; }
@@ -50,9 +50,13 @@
 .ri-field--embedded:hover:not(:disabled, :read-only) { border-color: transparent; }
 .ri-field--embedded:focus-visible { outline-offset: -2px; }
 .ri-field--title { height: auto; min-height: 0; border: 0; background: transparent; padding: 0; font-size: max(1em, var(--field-font)); font-weight: 600; line-height: 1.25; }
+.ri-field-title--inline { font: inherit; }
+.ri-field-textarea.ri-field--title { display: inline-block; }
 .ri-field-title--form { font-size: 18px; }
 .ri-field-title--entity { font-size: 24px; font-weight: 700; }
 .ri-field-title--document { font-size: 40px; font-weight: 700; }
+/* Keep the existing phone title size instead of enlarging a document heading. */
+.ri-field--touch.ri-field--title { font-size: var(--field-font); }
 .ri-field--center { text-align: center; }
 .ri-field--completed { color: var(--t3); text-decoration: line-through; }
 .ri-field-textarea { height: auto; min-height: 0; max-height: none; resize: none; field-sizing: fixed; }
@@ -90,3 +94,9 @@
 
 .ri-field-shell:has(.ri-field-control:disabled) { opacity: .5; cursor: not-allowed; }
 .ri-field-shell:has(.ri-field-control:disabled) .ri-button:disabled { opacity: 1; }
+
+/* Server markup precedes the viewport hook. Keep phone focus safe in that first frame. */
+@media (max-width: 767px) {
+  .ri-field-control { --field-font: 16px; }
+  .ri-field-control.ri-field--title { font-size: 16px; }
+}

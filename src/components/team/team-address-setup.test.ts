@@ -5,6 +5,9 @@ import { parseHTML } from 'linkedom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({ get: vi.fn(), status: vi.fn(), open: vi.fn(), set: vi.fn(), prefix: vi.fn(), done: vi.fn(), saved: vi.fn() }));
+// Desktop business behavior uses a synthetic DOM. Real field sizing is checked in Chromium.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/lib/trpc/client', () => ({
   trpc: { team: { address: {
     get: { queryOptions: () => ({ queryKey: ['test-team-address'], queryFn: mocks.get }) },

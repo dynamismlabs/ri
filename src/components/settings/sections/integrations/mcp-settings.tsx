@@ -120,28 +120,29 @@ function SettingsRow({ serverId, item, value, saving, error, onSave, onToolDone 
   return <div className="flex flex-col gap-2 px-3 py-2.5 @md:flex-row @md:items-start @md:justify-between @md:gap-4">
     <div className="min-w-0 space-y-0.5">
       <label htmlFor={id} className="block text-xs font-medium break-words">{field.title}</label>
-      {field.description && <p className="text-[11px] leading-normal text-muted-foreground">{field.description}</p>}
+      {field.description && <p id={`${id}-description`} className="text-[11px] leading-normal text-muted-foreground">{field.description}</p>}
     </div>
     <div className="flex min-w-0 flex-col gap-1 @md:w-64 @md:shrink-0 @md:items-end">
       <div className="flex w-full items-center gap-2 @md:justify-end">
         {saving && <Loader2 size={12} className="shrink-0 animate-spin text-muted-foreground" aria-label="Saving" />}
-        <SettingControl id={id} field={field} value={value} invalid={!!error} onSave={next => onSave(field.key, next)} />
+        <SettingControl id={id} field={field} value={value} invalid={!!error} describedBy={[field.description ? `${id}-description` : null, error ? `${id}-error` : null].filter(Boolean).join(' ') || undefined} onSave={next => onSave(field.key, next)} />
       </div>
-      {error && <p role="alert" className="text-[11px] leading-normal text-destructive @md:text-right">{error}</p>}
+      {error && <p id={`${id}-error`} role="alert" className="text-[11px] leading-normal text-destructive @md:text-right">{error}</p>}
     </div>
   </div>;
 }
 
-function SettingControl({ id, field, value, invalid, onSave }: { id: string; field: SettingField; value: SettingValue | undefined; invalid: boolean; onSave: (value: SettingValue) => void }) {
+function SettingControl({ id, field, value, invalid, describedBy, onSave }: { id: string; field: SettingField; value: SettingValue | undefined; invalid: boolean; describedBy?: string; onSave: (value: SettingValue) => void }) {
   switch (field.type) {
     case 'unsupported':
       return <p id={id} className="text-[11px] leading-normal text-muted-foreground @md:text-right">{field.reason}</p>;
     case 'boolean':
-      return <Switch id={id} checked={value === true} aria-invalid={invalid || undefined} onCheckedChange={onSave} />;
+      return <Switch id={id} aria-describedby={describedBy} checked={value === true} aria-invalid={invalid || undefined} onCheckedChange={onSave} />;
     case 'string':
       if (field.enum) return <Select value={typeof value === 'string' ? value : undefined} onValueChange={onSave}>
         <SelectField
           id={id}
+          aria-describedby={describedBy}
           aria-invalid={invalid || undefined}
           className="w-full min-w-0 @md:w-auto @md:min-w-36"
         >
@@ -149,10 +150,10 @@ function SettingControl({ id, field, value, invalid, onSave }: { id: string; fie
         </SelectField>
         <SelectContent position="popper" align="end">{field.enum.map(option => <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>)}</SelectContent>
       </Select>;
-      return <DraftInput id={id} value={typeof value === 'string' ? value : ''} invalid={invalid} onCommit={draft => onSave(draft)} />;
+      return <DraftInput id={id} describedBy={describedBy} value={typeof value === 'string' ? value : ''} invalid={invalid} onCommit={draft => onSave(draft)} />;
     case 'number':
     case 'integer':
-      return <DraftInput id={id} type="number" value={typeof value === 'number' ? String(value) : ''} invalid={invalid}
+      return <DraftInput id={id} describedBy={describedBy} type="number" value={typeof value === 'number' ? String(value) : ''} invalid={invalid}
         inputMode={field.type === 'integer' ? 'numeric' : 'decimal'} step={field.type === 'integer' ? 1 : 'any'}
         // An empty field holds no number to send, so the saved value comes back.
         onCommit={draft => draft.trim() === '' ? false : onSave(Number(draft))} />;
@@ -160,8 +161,8 @@ function SettingControl({ id, field, value, invalid, onSave }: { id: string; fie
 }
 
 /** Text the person is typing, saved on blur or Enter, and put back on Escape or when `onCommit` has nothing to save. */
-function DraftInput({ id, type, value, invalid, inputMode, step, onCommit }: {
-  id: string; type?: 'number'; value: string; invalid: boolean; inputMode?: 'numeric' | 'decimal'; step?: number | 'any'; onCommit: (draft: string) => false | void;
+function DraftInput({ id, type, value, invalid, inputMode, step, describedBy, onCommit }: {
+  id: string; type?: 'number'; value: string; invalid: boolean; inputMode?: 'numeric' | 'decimal'; step?: number | 'any'; describedBy?: string; onCommit: (draft: string) => false | void;
 }) {
   const [draft, setDraft] = useState(value);
   const [editing, setEditing] = useState(false);
@@ -175,6 +176,7 @@ function DraftInput({ id, type, value, invalid, inputMode, step, onCommit }: {
   };
   return <Field
     id={id}
+    aria-describedby={describedBy}
     type={type}
     value={draft}
     inputMode={inputMode}

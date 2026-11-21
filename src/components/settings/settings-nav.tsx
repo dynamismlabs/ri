@@ -55,7 +55,7 @@ export function SettingsNavigation<Id extends string>({
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search"
         aria-label={`Search ${label.toLowerCase()}`}
-        className={cn('w-full', 'relative mb-1')}
+        className="relative mb-1 hidden w-full sm:flex"
         leading={<Search />}
         size={compactFieldSize}
       />

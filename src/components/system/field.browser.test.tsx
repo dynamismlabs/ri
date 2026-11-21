@@ -6,7 +6,7 @@ let fixture: Awaited<ReturnType<typeof browserFixture>>;
 beforeAll(async () => {
   fixture = await browserFixture(
     `
-    import React,{useState,useRef}from'react';import{createRoot}from'react-dom/client';
+    import React,{useState,useRef}from'react';import{createRoot}from'react-dom/client';import{renderToStaticMarkup}from'react-dom/server';
     import{Field}from'@/components/system/field';import{TextArea}from'@/components/system/text-area';import{NativeSelect}from'@/components/system/native-select';
     import{SelectField}from'@/components/system/select-field';import{Select,SelectValue,SelectContent,SelectItem}from'@/components/ui/select';
     import{Button}from'@/components/system/button';import{Command,CommandInput,CommandList,CommandItem}from'@/components/ui/command';
@@ -32,7 +32,7 @@ beforeAll(async () => {
         <Field label="Narrow control" className="w-64" controlClassName="w-24"/>
         <Field label="Inline" orientation="horizontal" labelClassName="w-12" controlClassName="flex-1" className="w-64" size="sm"/><TextArea label="Message" labelAction={<Button size="xs" onClick={()=>setClears(n=>n+1)}>Copy</Button>} rows={2}/><Field label="Phone field" size="touch"/><Field type="time" label="Start time" defaultValue="09:00"/><Field type="date" label="Start date"/>
         <Field aria-label="Code" purpose="code" defaultValue="pnpm dev"/>
-        <TextArea aria-label="Task title" purpose="title" titleSize="entity" autoSize rows={1} defaultValue="A title"/>
+        <TextArea aria-label="Form title" purpose="title" titleSize="form" rows={1} defaultValue="Agent name"/><TextArea aria-label="Document title" purpose="title" titleSize="document" autoSize rows={1} defaultValue="A note"/><TextArea aria-label="Task title" purpose="title" titleSize="entity" autoSize rows={1} defaultValue="A title"/>
         <button id="focus-ref" onClick={()=>ref.current.focus()}>Focus name</button>
         <Field aria-label="Live validation" value={live} error={liveError} onChange={e=>{setLive(e.target.value);setLiveError(e.target.value.length<2?'Use two letters':undefined)}}/>
         <Field aria-label="Live parser" inlineMessage value={parserValue} error={parserError} onChange={e=>{setParserValue(e.target.value);setParserError(e.target.value.length<2?'Type a date':undefined)}}/>
@@ -43,7 +43,7 @@ beforeAll(async () => {
         <Command label="Search models"><Field asChild purpose="embedded" description="Pick a model" error="Choose a model"><CommandInput aria-label="Search models" value={search} onValueChange={setSearch}/></Field><CommandList><CommandItem>Alpha</CommandItem><CommandItem>Beta</CommandItem></CommandList></Command>
         <output id="search">{search}</output>
       </main>;
-    }createRoot(document.getElementById('root')).render(<App/>);
+    }if(new URLSearchParams(location.search).has('ssr'))document.getElementById('root').innerHTML=renderToStaticMarkup(<><Field aria-label="Server field" autoFocus/><TextArea purpose="title" titleSize="document" aria-label="Server title" rows={1}/></>);else createRoot(document.getElementById('root')).render(<App/>);
   `,
     [],
     { css: true },
@@ -434,6 +434,35 @@ for (const theme of ['light', 'dark']) {
       expect(await page.locator('#search').innerText()).toBe('Alpha');
       expect(await input.getAttribute('id')).toBe(engineId);
       expect(await page.getByRole('option', { name: 'Beta', exact: true }).count()).toBe(0);
+    } finally {
+      await page.close();
+    }
+  });
+  it(`keeps server-built phone fields at the no-zoom type size before hydration (${theme})`, async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 390, height: 844 } });
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}&ssr`);
+      for (const label of ['Server field', 'Server title']) {
+        const control = page.getByRole('textbox', { name: label, exact: true });
+        expect(await control.evaluate((el) => getComputedStyle(el).fontSize)).toBe('16px');
+      }
+    } finally {
+      await page.close();
+    }
+  });
+  it(`preserves phone title type while keeping desktop hierarchy (${theme})`, async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 390, height: 844 } });
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const note = page.getByRole('textbox', { name: 'Document title', exact: true });
+      const task = page.getByRole('textbox', { name: 'Task title', exact: true });
+      const form = page.getByRole('textbox', { name: 'Form title', exact: true });
+      for (const input of [note, task, form])
+        expect(await input.evaluate((el) => getComputedStyle(el).fontSize)).toBe('16px');
+      await page.setViewportSize({ width: 900, height: 1000 });
+      await expect.poll(() => note.evaluate((el) => getComputedStyle(el).fontSize)).toBe('40px');
+      expect(await task.evaluate((el) => getComputedStyle(el).fontSize)).toBe('24px');
+      expect(await form.evaluate((el) => getComputedStyle(el).fontSize)).toBe('18px');
     } finally {
       await page.close();
     }

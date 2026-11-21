@@ -1,3 +1,7 @@
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/components/home/home-context', () => ({ useHomeContext: () => ({ capabilities: { administerMembers: mocks.role === 'owner', configureAgents: mocks.role === 'owner' } }) }));
 import { act, createElement, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';

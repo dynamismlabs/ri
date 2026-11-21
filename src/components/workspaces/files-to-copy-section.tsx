@@ -100,25 +100,27 @@ export function FilesToCopySection({
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      {heading && <>
-        <label className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Files to copy
-        </label>
-        <p className="text-[10.5px] text-muted-foreground/70 leading-snug">
-          Each new session&apos;s worktree gets a fresh copy of these files
-          from the source folder. One glob per line. Bare patterns like{' '}
-          <code className="font-mono">.env*</code> match at any depth. Files
-          git tracks are skipped, since the worktree already has them.
-        </p>
-      </>}
       <TextArea
+        label={heading ? 'Files to copy' : undefined}
+        description={
+          heading ? (
+            <>
+              Each new session&apos;s worktree gets a fresh copy of these files from the source
+              folder. One glob per line. Bare patterns like <code>.env*</code> match at any depth.
+              Files git tracks are skipped, since the worktree already has them.
+            </>
+          ) : undefined
+        }
+        messagePosition="before-control"
         aria-label="Files to copy"
         value={text}
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder=".env*"
         rows={3}
         spellCheck={false}
-        className="w-full" purpose="code" resize="vertical"
+        className="w-full"
+        purpose="code"
+        resize="vertical"
       />
 
       {!canConfigureAgents ? <p className="text-[10px] text-muted-foreground/70">The owner configures files copied into new worktrees.</p> : trimmedCwd.length === 0 ? (

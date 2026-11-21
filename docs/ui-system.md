@@ -141,9 +141,9 @@ outside React. Native value, selection, form and event behavior stays intact.
 
 The three purposes are:
 
-- `title`: editing a title in place. Inline titles follow their heading context
-  with a readable minimum. Form titles use 18px, entity titles 24px and document
-  titles 40px. Title text areas can grow with the title.
+- `title`: editing a title in place. Inline titles keep their heading’s type and line height. Form titles use 18px, entity titles 24px and document
+  titles 40px on a computer. Touch titles keep the existing 16px phone type.
+  Title text areas can grow with the title.
 - `code`: commands, paths, model ids and tokens use the platform's monospace font.
 - `embedded`: entry within an existing search or composer, including cmdk, with a
   transparent fill and inset focus. The installed engine keeps its own roles,
@@ -180,7 +180,11 @@ label or help spans a wider frame, `controlClassName` sets only the control
 layout, such as its width. All three class props follow the same layout-only rule. Field owns shape, type,
 padding, fill,
 border, shadow and states. Width and placement utilities remain available to
-callers. Checkbox, radio and switch controls keep their separate semantics.
+callers. Responsive visibility remains a layout class, including the desktop-only
+Settings search. Shell display stays in the primitive’s utility layer, so hidden
+and responsive flex classes work. The component also keeps 16px phone type in
+server markup before the viewport hook runs. Checkbox, radio and switch controls
+keep their separate semantics.
 Hidden and file transport inputs remain unchanged during this stage.
 
 Plain browser checkboxes and the chat-target radios use the installed Checkbox
@@ -188,6 +192,10 @@ and RadioGroup. Descriptive selection rows stay with stage 4. Feedback’s plain
 category labels use SegmentedControl with radio semantics. The server-built OAuth
 hub consent form keeps native checkboxes, so its labels, values and submission
 work before hydration. Its `consent-checkbox` hook owns token accent and focus.
+Mixed MCP settings rows retain their existing outside label/help/error ids
+because the same row can hold a field, switch or unsupported value. All controls
+reference those ids, including a refused value. The row layout moves with the
+content stage.
 The scheduled prompt and model toolbar’s one `input-group` is a content frame,
 not a text field, and stays for the content stage. No text-control caller imports
 Input, Textarea or InputGroup directly outside ui/system.
