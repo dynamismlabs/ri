@@ -117,7 +117,7 @@ export function ExecutionHeader({
   };
 
   const labelElement = rename.editing ? (
-    <ChatTitleInput rename={rename} className="flex-1 px-1.5 py-0.5 text-[13px] lg:text-[12.5px]" />
+    <ChatTitleInput rename={rename} className="flex-1" />
   ) : null;
 
   const archiveMenuItem = !isArchived && (

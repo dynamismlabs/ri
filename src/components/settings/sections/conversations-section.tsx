@@ -8,8 +8,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { Button } from '@/components/system/button';
 
-import { Label } from '@/components/ui/label';
-
 import { apiErrorText } from '@/lib/api/client';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { openSettings } from '@/components/settings/settings-store';
@@ -24,21 +22,48 @@ function SetupStep({ number, label, children }: { number: number; label: string;
 function SlackTokenField({ kind, id, label, value, onChange }: {
   kind: 'bot' | 'app'; id: string; label: string; value: string; onChange: (value: string) => void;
 }) {
-  return <div className="space-y-2">
-    <div id={`${id}-help`} className="space-y-2 text-sm text-muted-foreground">
-      {kind === 'bot' ? <>
-        <p>In your Slack app settings, open <strong>OAuth &amp; Permissions</strong>. If the app is not installed yet, click <strong>Install to Workspace</strong> and approve the installation.</p>
-        <p>Copy the <strong>Bot User OAuth Token</strong> beginning with <code>xoxb-</code>, then paste it below. Already installed? Use the token on that same page.</p>
-      </> : <>
-        <p>Open <strong>Basic Information → App-Level Tokens → Generate Token and Scopes</strong>.</p>
-        <p>Name the token, for example <strong>Ri Socket Mode</strong>. Add the <code>connections:write</code> scope, click <strong>Generate</strong>, and copy the token beginning with <code>xapp-</code>.</p>
-        <p>In <strong>Socket Mode</strong>, confirm <strong>Enable Socket Mode</strong> is on. The manifest enables it for you.</p>
-      </>}
-    </div>
-    <Label htmlFor={id}>{label}</Label>
-    <Field id={id} type="password" autoComplete="off" value={value} onChange={event => onChange(event.target.value)}
-      placeholder={kind === 'bot' ? 'xoxb-…' : 'xapp-…'} aria-describedby={`${id}-help`} required />
-  </div>;
+  return <Field
+    id={id}
+    type="password"
+    autoComplete="off"
+    value={value}
+    onChange={(event) => onChange(event.target.value)}
+    placeholder={kind === 'bot' ? 'xoxb-…' : 'xapp-…'}
+    label={label}
+    descriptionPosition="before"
+    descriptionId={`${id}-help`}
+    description={
+      kind === 'bot' ? (
+        <>
+          <p>
+            In your Slack app settings, open <strong>OAuth &amp; Permissions</strong>. If the app is
+            not installed yet, click <strong>Install to Workspace</strong> and approve the
+            installation.
+          </p>
+          <p>
+            Copy the <strong>Bot User OAuth Token</strong> beginning with <code>xoxb-</code>, then
+            paste it below. Already installed? Use the token on that same page.
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            Open <strong>Basic Information → App-Level Tokens → Generate Token and Scopes</strong>.
+          </p>
+          <p>
+            Name the token, for example <strong>Ri Socket Mode</strong>. Add the{' '}
+            <code>connections:write</code> scope, click <strong>Generate</strong>, and copy the
+            token beginning with <code>xapp-</code>.
+          </p>
+          <p>
+            In <strong>Socket Mode</strong>, confirm <strong>Enable Socket Mode</strong> is on. The
+            manifest enables it for you.
+          </p>
+        </>
+      )
+    }
+    required
+  />;
 }
 
 export function ConversationsSection() {
@@ -87,15 +112,44 @@ export function ConversationsSection() {
   }, [newConnectionId, savedConnectionId]);
   const disabled = create.isPending || mutate.isPending || reconnect.isPending;
   const destinationFields = <>
-    <div className="space-y-2"><Label htmlFor="conversation-name">Name</Label><Field id="conversation-name" value={name} onChange={event => setName(event.target.value)} required maxLength={provider === 'slack' ? 35 : 60} /><p className="text-xs text-muted-foreground">Use a name such as Ri Personal or Ri Team. Distinct Slack mentions require distinct Slack apps.</p></div>
-    <div className="space-y-2"><Label htmlFor="conversation-target">Ri destination</Label><NativeSelect id="conversation-target" className="w-full" value={workspaceId} onChange={event => setWorkspaceId(event.target.value)} required={query.data?.team}>
-      <option value="">{query.data?.team ? 'Select a team agent' : 'Personal orchestrator'}</option>{query.data?.agents.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect></div>
+    <Field
+      id="conversation-name"
+      value={name}
+      onChange={(event) => setName(event.target.value)}
+      required
+      maxLength={provider === 'slack' ? 35 : 60}
+      label="Name"
+      description="Use a name such as Ri Personal or Ri Team. Distinct Slack mentions require distinct Slack apps."
+    />
+    <NativeSelect
+      id="conversation-target"
+      controlClassName="w-full"
+      value={workspaceId}
+      onChange={(event) => setWorkspaceId(event.target.value)}
+      required={query.data?.team}
+      label="Ri destination"
+    >
+      <option value="">{query.data?.team ? 'Select a team agent' : 'Personal orchestrator'}</option>
+      {query.data?.agents.map((agent) => (
+        <option key={agent.id} value={agent.id}>
+          {agent.name}
+        </option>
+      ))}
+    </NativeSelect>
   </>;
-  const channelField = <div className="space-y-2">
-    <Label htmlFor="conversation-channels">Connected channel IDs</Label>
-    <Field id="conversation-channels" value={channels} onChange={event => setChannels(event.target.value)} placeholder={provider === 'slack' ? 'C0123456789, C0987654321' : 'Buzz channel UUID'} required={query.data?.team || provider === 'buzz'} />
-    <p className="text-xs text-muted-foreground">{query.data?.team ? 'Choose channels intended for the whole Ri team. Invite the Slack app to each channel.' : 'Separate IDs with commas. Leave empty for personal Slack DMs only.'}</p>
-  </div>;
+  const channelField = <Field
+    id="conversation-channels"
+    value={channels}
+    onChange={(event) => setChannels(event.target.value)}
+    placeholder={provider === 'slack' ? 'C0123456789, C0987654321' : 'Buzz channel UUID'}
+    required={query.data?.team || provider === 'buzz'}
+    label="Connected channel IDs"
+    description={
+      query.data?.team
+        ? 'Choose channels intended for the whole Ri team. Invite the Slack app to each channel.'
+        : 'Separate IDs with commas. Leave empty for personal Slack DMs only.'
+    }
+  />;
   return <div className="space-y-6">
     <div className="space-y-2 text-sm">
       <p>Talk to your Ri agent from Slack or Buzz. Each connection has its own name and a fixed Ri destination. Conversations are saved in Ri and replies return to their originating thread.</p>
@@ -223,7 +277,16 @@ export function ConversationsSection() {
     >Add another connection</Button>}
     {query.data?.canManage && !newConnectionId && <form aria-label="Add a conversation connection" className="space-y-4 rounded-lg border p-4" onSubmit={event => { event.preventDefault(); setNotice(''); create.mutate(); }}>
       <h3 className="font-medium">Add a conversation connection</h3>
-      <div className="space-y-2"><Label htmlFor="conversation-provider">Service</Label><NativeSelect id="conversation-provider" className="w-full" value={provider} onChange={event => setProvider(event.target.value as 'slack' | 'buzz')}><option value="slack">Slack</option><option value="buzz">Buzz by Block</option></NativeSelect></div>
+      <NativeSelect
+        id="conversation-provider"
+        controlClassName="w-full"
+        value={provider}
+        onChange={(event) => setProvider(event.target.value as 'slack' | 'buzz')}
+        label="Service"
+      >
+        <option value="slack">Slack</option>
+        <option value="buzz">Buzz by Block</option>
+      </NativeSelect>
       {provider === 'slack' ? <ol className="space-y-5">
         <SetupStep number={1} label="Choose your Ri destination">{destinationFields}</SetupStep>
         <SetupStep number={2} label="Create or open your Slack app">
@@ -266,7 +329,13 @@ export function ConversationsSection() {
       </ol> : <>
         {destinationFields}
         {channelField}
-        <div className="space-y-2"><Label htmlFor="conversation-relay">Buzz relay URL</Label><Field id="conversation-relay" value={relay} onChange={event => setRelay(event.target.value)} required /></div>
+        <Field
+          id="conversation-relay"
+          value={relay}
+          onChange={(event) => setRelay(event.target.value)}
+          required
+          label="Buzz relay URL"
+        />
         <p className="text-sm">Ri uses Buzz’s ACP harness. Configure this named Buzz identity with the owner-only author gate. This bridge acts as your current Ri sign-in. Other people need their own authorized bridge.</p>
         <Button
           type="submit"

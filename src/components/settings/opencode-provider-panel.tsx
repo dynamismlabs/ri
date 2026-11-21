@@ -64,10 +64,13 @@ export function OpenCodeProviderPanel() {
           OpenCode provider management is unavailable. Check the installed OpenCode version.
         </p>
       )}
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-        <Field value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search providers"  />
-      </div>
+      <Field
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder="Search providers"
+        leading={<Search />}
+        className="relative"
+      />
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (
           <div key={provider.id} className="rounded-md border border-border/70">
@@ -198,7 +201,13 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
           />
           <div className="flex gap-2">
-            <Field type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`}  />
+            <Field
+              type="password"
+              autoComplete="off"
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder={`${provider.name} API key`}
+            />
             <Button
               disabled={!apiKey.trim() || setKey.isPending}
               onClick={() => setKey.mutate()}
@@ -217,7 +226,11 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
               Open authorization page <ExternalLink size={10} />
             </a>
           )}
-          {flow.completion === 'code' && <Field value={code} onChange={(event) => setCode(event.target.value)} placeholder="Authorization code"  />}
+          {flow.completion === 'code' && <Field
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder="Authorization code"
+          />}
           <Button
             disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending}
             onClick={() => completeOAuth.mutate()}
@@ -261,22 +274,30 @@ function PromptFields({
   return (
     <>
       {prompts.map((prompt) => prompt.type === 'select' ? (
-        <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
-          {prompt.label}
-          <NativeSelect
-            value={inputs[prompt.id] ?? ''}
-            onChange={(event) => onChange(prompt.id, event.target.value)}
-            className="mt-1 w-full"
-          >
-            <option value="">Select</option>
-            {prompt.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </NativeSelect>
-        </label>
+        <NativeSelect
+          value={inputs[prompt.id] ?? ''}
+          onChange={(event) => onChange(prompt.id, event.target.value)}
+          controlClassName="mt-1 w-full"
+          label={prompt.label}
+          key={prompt.id}
+          className="block"
+        >
+          <option value="">Select</option>
+          {prompt.options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </NativeSelect>
       ) : (
-        <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
-          {prompt.label}
-          <Field value={inputs[prompt.id] ?? ''} onChange={(event) => onChange(prompt.id, event.target.value)} className="mt-1" />
-        </label>
+        <Field
+          value={inputs[prompt.id] ?? ''}
+          onChange={(event) => onChange(prompt.id, event.target.value)}
+          controlClassName="mt-1"
+          label={prompt.label}
+          key={prompt.id}
+          className="block"
+        />
       ))}
     </>
   );

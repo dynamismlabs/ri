@@ -1,5 +1,6 @@
 'use client';
 import { Field } from '@/components/system/field';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Button } from '@/components/system/button';
 import { createAppTRPCClient } from '@/lib/trpc/client';
@@ -7,7 +8,7 @@ import { createAppTRPCClient } from '@/lib/trpc/client';
 import { QrScannerModal } from '@/components/auth/qr-scanner-modal';
 import { APP_NAME, APP_SHORT_ID, PAIRING_TOKEN_FRAGMENT_KEY } from '@/constants/app';
 import { ApiClient, apiErrorStatus, setAuthToken } from '@/lib/api/client';
-import { AlertCircle, Check, ChevronRight, KeyRound, Loader2, MonitorSmartphone, QrCode, Terminal } from 'lucide-react';
+import { Check, ChevronRight, KeyRound, Loader2, MonitorSmartphone, QrCode, Terminal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -55,6 +56,7 @@ function extractTokenFromQr(raw: string): string | null {
  */
 export default function PairPage() {
   const router = useRouter();
+  const phone = useViewportTier() === 'phone';
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [token, setToken] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -155,38 +157,22 @@ export default function PairPage() {
         <div data-slot="callout" className="rounded-2xl border border-border/50 bg-card/60 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
           <div className="space-y-6">
             <div className="space-y-3">
-              <label htmlFor="pairing-token" className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                <KeyRound size={14} />
-                Pairing token
-              </label>
-
-              <div className="group relative">
-                <div data-slot="pairing-decoration" className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 blur transition duration-500 group-focus-within:opacity-100" />
-                <div data-slot="input-group" className="relative flex items-center gap-2 rounded-lg bg-background/80 p-1.5 border border-border/50 shadow-inner backdrop-blur-xl transition-all hover:bg-background/90 group-focus-within:bg-background">
-                  <Field
-                    id="pairing-token" aria-label="Pairing token"
-                    ref={inputRef}
-                    type="text"
-                    autoComplete="off"
-                    spellCheck={false}
-                    value={token}
-                    onChange={(e) => {
-                      setToken(e.target.value);
-                      if (status.kind !== 'idle') setStatus({ kind: 'idle' });
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') submit();
-                    }}
-                    placeholder={`${APP_SHORT_ID}_live_…`}
-                    disabled={validating}
-                    className="w-full flex-1" purpose="code"
-                  />
+              <Field
+                id="pairing-token"
+                label={
+                  <>
+                    <KeyRound />
+                    Pairing token
+                  </>
+                }
+                error={status.kind === 'error' ? status.message : undefined}
+                trailing={
                   <Button
                     type="button"
                     onClick={submit}
                     disabled={!token.trim() || validating}
                     variant="primary"
-                    size="md"
+                    size={phone ? 'touch' : 'sm'}
                     className="inline-flex shrink-0 items-center gap-2"
                   >
                     {validating ? (
@@ -197,15 +183,25 @@ export default function PairPage() {
                       'Connect'
                     )}
                   </Button>
-                </div>
-              </div>
-
-              {status.kind === 'error' && (
-                <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive animate-in fade-in duration-300">
-                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                  <p>{status.message}</p>
-                </div>
-              )}
+                }
+                size={phone ? 'touch' : 'md'}
+                ref={inputRef}
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={token}
+                onChange={(e) => {
+                  setToken(e.target.value);
+                  if (status.kind !== 'idle') setStatus({ kind: 'idle' });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') submit();
+                }}
+                placeholder={`${APP_SHORT_ID}_live_…`}
+                disabled={validating}
+                className="w-full"
+                purpose="code"
+              />
 
               <Button
                 type="button"
@@ -215,7 +211,7 @@ export default function PairPage() {
                 }}
                 disabled={validating}
                 variant="secondary"
-                size="sm"
+                size={phone ? 'touch' : 'md'}
                 className="w-full inline-flex items-center justify-center gap-2"
               >
                 <QrCode size={16} />

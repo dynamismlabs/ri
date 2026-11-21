@@ -179,15 +179,13 @@ function HarnessPane({
             Refresh
           </Button>
         </div>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Field
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search models"
-
-          />
-        </div>
+        <Field
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search models"
+          leading={<Search />}
+          className="relative"
+        />
         {/* Pinning saves on its own (the id has to exist before anything can
             validate against it), so the pending local edits mirror it rather
             than overwrite it on the next Save. */}
@@ -321,7 +319,9 @@ function LabeledSelect({
     <label className="space-y-1 text-[10.5px] text-muted-foreground">
       {label}
       <Select value={value} onValueChange={onValue}>
-        <SelectField className="mt-1 w-full"><SelectValue /></SelectField>
+        <SelectField className="mt-1 w-full">
+          <SelectValue />
+        </SelectField>
         <SelectContent>
           {options.map((option) => <SelectItem key={option.id} value={option.id} disabled={option.disabled}>{option.label}</SelectItem>)}
         </SelectContent>

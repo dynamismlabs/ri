@@ -74,21 +74,31 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
 
   return (
     <fieldset disabled={disabled} className="space-y-3">
-      <label className="block space-y-1 text-[12px] font-medium">
-        <span>Frequency</span>
-        <NativeSelect value={value.kind} onChange={(e) => patch({ kind: e.target.value as FrequencyKind })} className="block w-full">
-          {FREQUENCIES.filter((option) => !kinds || kinds.includes(option.kind)).map((option) => (
-            <option key={option.value} value={option.value}>{option.label}</option>
-          ))}
-        </NativeSelect>
-      </label>
+      <NativeSelect
+        value={value.kind}
+        onChange={(e) => patch({ kind: e.target.value as FrequencyKind })}
+        controlClassName="block w-full"
+        label="Frequency"
+        className="block"
+      >
+        {FREQUENCIES.filter((option) => !kinds || kinds.includes(option.kind)).map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </NativeSelect>
 
       <div className="flex flex-wrap items-end gap-3">
         {value.kind === 'once' && (
-          <label className="min-w-0 flex-1 space-y-1 text-[12px] font-medium">
-            <span>Date</span>
-            <Field type="date" value={value.date ?? ''} onChange={(e) => patch({ date: e.target.value })} required className="block w-full" />
-          </label>
+          <Field
+            type="date"
+            value={value.date ?? ''}
+            onChange={(e) => patch({ date: e.target.value })}
+            required
+            controlClassName="block w-full"
+            label="Date"
+            className="min-w-0 flex-1"
+          />
         )}
         {value.kind === 'weekly' && (
           <DaysField
@@ -97,16 +107,28 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
           />
         )}
         {value.kind === 'monthly' && (
-          <label className="space-y-1 text-[12px] font-medium">
-            <span>Day of month</span>
-            <Field type="number" min={1} max={28} value={value.dayOfMonth ?? 1} onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })} required className={cn("block w-full", "max-w-24")} />
-          </label>
+          <Field
+            type="number"
+            min={1}
+            max={28}
+            value={value.dayOfMonth ?? 1}
+            onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })}
+            required
+            controlClassName={cn('block w-full', 'max-w-24')}
+            label="Day of month"
+            className="w-auto"
+          />
         )}
         {needsTime && (
-          <label className="space-y-1 text-[12px] font-medium">
-            <span>Time</span>
-            <Field type="time" value={value.time ?? '09:00'} onChange={(e) => patch({ time: e.target.value })} required className="block w-full" />
-          </label>
+          <Field
+            type="time"
+            value={value.time ?? '09:00'}
+            onChange={(e) => patch({ time: e.target.value })}
+            required
+            controlClassName="block w-full"
+            label="Time"
+            className="w-auto"
+          />
         )}
       </div>
       {value.kind === 'monthly' && <p className="text-[11px] text-muted-foreground">Days 1 to 28 run every month, including February.</p>}
@@ -114,17 +136,30 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
         <IntervalField seconds={value.intervalSeconds ?? 3600} onChange={(intervalSeconds) => patch({ intervalSeconds })} />
       )}
       {value.kind === 'custom' && (
-        <label className="block space-y-1 text-[12px] font-medium">
-          <span>Cron expression</span>
-          <Field type="text" value={value.cronExpression ?? '0 9 * * *'} onChange={(e) => patch({ cronExpression: e.target.value })} placeholder="0 9 * * 1-5" required className="block w-full" purpose="code" />
-          <span className="block text-[11px] font-normal text-muted-foreground">Minute, hour, day of month, month, day of week</span>
-        </label>
+        <Field
+          type="text"
+          value={value.cronExpression ?? '0 9 * * *'}
+          onChange={(e) => patch({ cronExpression: e.target.value })}
+          placeholder="0 9 * * 1-5"
+          required
+          controlClassName="block w-full"
+          purpose="code"
+          label="Cron expression"
+          description="Minute, hour, day of month, month, day of week"
+          className="block"
+        />
       )}
       {scheduled && (
-        <label className="block space-y-1 text-[12px] font-medium">
-          <span>Timezone</span>
-          <Field type="text" value={value.timezone} onChange={(e) => patch({ timezone: e.target.value })} placeholder="America/Denver" required className="block w-full" />
-        </label>
+        <Field
+          type="text"
+          value={value.timezone}
+          onChange={(e) => patch({ timezone: e.target.value })}
+          placeholder="America/Denver"
+          required
+          controlClassName="block w-full"
+          label="Timezone"
+          className="block"
+        />
       )}
       {value.kind === 'manual' && <p className="text-[11px] text-muted-foreground">Use Run now whenever you need it.</p>}
       {value.kind === 'webhook' && <p className="text-[11px] text-muted-foreground">A public ID and signing secret are generated on save. The secret is shown once.</p>}
@@ -187,33 +222,34 @@ function IntervalField({ seconds, onChange }: { seconds: number; onChange: (seco
   const units = unit === INTERVAL_SECONDS_UNIT.seconds ? [INTERVAL_SECONDS_UNIT, ...INTERVAL_UNITS] : INTERVAL_UNITS;
   return (
     <div className="flex items-end gap-2">
-      <label className="min-w-0 flex-1 space-y-1 text-[12px] font-medium">
-        <span>Every</span>
-        <Field
-          type="number"
-          min={1}
-          step={1}
-          value={Number.isFinite(seconds / unit) ? seconds / unit : ''}
-          onChange={(e) => onChange(Math.round(Number(e.target.value) * unit))}
-          required
-          className="block w-full"
-        />
-      </label>
-      <label className="space-y-1 text-[12px] font-medium">
-        <span className="sr-only">Unit</span>
-        <NativeSelect
-          aria-label="Unit"
-          value={unit}
-          onChange={(e) => {
-            const next = Number(e.target.value);
-            setUnit(next);
-            onChange(Math.max(1, Math.round(seconds / unit)) * next);
-          }}
-          className="block w-full"
-        >
-          {units.map((u) => <option key={u.label} value={u.seconds}>{u.label}</option>)}
-        </NativeSelect>
-      </label>
+      <Field
+        type="number"
+        min={1}
+        step={1}
+        value={Number.isFinite(seconds / unit) ? seconds / unit : ''}
+        onChange={(e) => onChange(Math.round(Number(e.target.value) * unit))}
+        required
+        controlClassName="block w-full"
+        label="Every"
+        className="min-w-0 flex-1"
+      />
+      <NativeSelect
+        aria-label="Unit"
+        value={unit}
+        onChange={(e) => {
+          const next = Number(e.target.value);
+          setUnit(next);
+          onChange(Math.max(1, Math.round(seconds / unit)) * next);
+        }}
+        controlClassName="block w-full"
+        className="w-auto"
+      >
+        {units.map((u) => (
+          <option key={u.label} value={u.seconds}>
+            {u.label}
+          </option>
+        ))}
+      </NativeSelect>
     </div>
   );
 }

@@ -159,37 +159,37 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
             </p>
           </div>
           <div className="space-y-3">
-            <div className="relative">
-              <Search
-                size={16}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Field
-                value={searchDraft}
-                onChange={(event) => setSearchDraft(event.target.value)}
-                onBlur={() => {
-                  if (searchDraft !== search) patch({});
-                }}
-                placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'}
-                aria-label="Search library"
-
-              />
-              {searchDraft && (
-                <IconButton
-                  type="button"
-                  onClick={() => {
-                    setSearchDraft('');
-                    navigate(libraryRoute(query, { q: undefined }));
-                  }}
-                  label="Clear search"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                >
-                  <X size={15} />
-                </IconButton>
-              )}
-            </div>
+            <Field
+              value={searchDraft}
+              onChange={(event) => setSearchDraft(event.target.value)}
+              onBlur={() => {
+                if (searchDraft !== search) patch({});
+              }}
+              placeholder={
+                mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'
+              }
+              aria-label="Search library"
+              leading={<Search />}
+              trailing={
+                <>
+                  {searchDraft && (
+                    <IconButton
+                      type="button"
+                      onClick={() => {
+                        setSearchDraft('');
+                        navigate(libraryRoute(query, { q: undefined }));
+                      }}
+                      label="Clear search"
+                      variant="ghost"
+                      size="sm"
+                    >
+                      <X size={15} />
+                    </IconButton>
+                  )}
+                </>
+              }
+              className="relative"
+            />
             <SegmentedControl
               mode="choice"
               ariaLabel="Filter library"

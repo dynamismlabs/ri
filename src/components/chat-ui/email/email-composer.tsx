@@ -62,12 +62,28 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
   const editable = draft.status === 'draft' && !send.isPending && !discard.isPending;
   const problem = emailSendProblem(draft) ?? (accounts.data && !accounts.data.some(account => account.id === draft.connectionId) ? 'Choose an available sending account' : null);
   const field = (name: 'to' | 'cc' | 'bcc' | 'subject', label: string, placeholder: string) => (
-    <label className="flex items-start gap-3 border-b border-border/60 px-4 py-2.5 text-sm">
-      <span className="w-12 shrink-0 pt-0.5 text-xs text-muted-foreground">{label}</span>
-      <Field aria-label={label} name={name} value={draft[name]} disabled={!editable} placeholder={placeholder} autoComplete="off" inputMode={name === 'subject' ? 'text' : 'email'} autoCapitalize={name === 'subject' ? 'sentences' : 'none'} spellCheck={name === 'subject'} maxLength={2000}
-        className="min-w-0 flex-1"
-        onChange={event => { setMessage(null); editor.change({ [name]: event.target.value }); }} purpose="embedded" />
-    </label>
+    <div className="border-b border-border/60 px-4 py-2.5"><Field
+      aria-label={label}
+      name={name}
+      value={draft[name]}
+      disabled={!editable}
+      placeholder={placeholder}
+      autoComplete="off"
+      inputMode={name === 'subject' ? 'text' : 'email'}
+      autoCapitalize={name === 'subject' ? 'sentences' : 'none'}
+      spellCheck={name === 'subject'}
+      maxLength={2000}
+      className="min-w-0 flex-1"
+      label={label}
+      orientation="horizontal"
+      labelClassName="w-12 shrink-0"
+      controlClassName="min-w-0 flex-1"
+      onChange={(event) => {
+        setMessage(null);
+        editor.change({ [name]: event.target.value });
+      }}
+      purpose="embedded"
+    /></div>
   );
 
   if (draft.status === 'discarded' && !hasEdits) return <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground"><Mail size={14} />Email draft discarded</div>;
@@ -80,12 +96,29 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
         <span aria-live="polite" className="text-[11px] text-muted-foreground">{save.isPending ? 'Saving…' : hasEdits ? 'Unsaved edits' : draft.status === 'draft' ? 'Saved' : ''}</span>
       </div>
       <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 text-[13px]">
-        <label htmlFor={`${labelId}-from`} className="w-12 shrink-0 text-xs text-muted-foreground">From</label>
-        {editable ? <NativeSelect id={`${labelId}-from`} value={draft.connectionId ?? ''} disabled={accounts.isPending || accounts.isError} className="min-w-0 flex-1" onChange={event => editor.change({ connectionId: event.target.value || null })} purpose="embedded">
+        {editable ? <NativeSelect
+          label="From"
+          orientation="horizontal"
+          labelClassName="w-12 shrink-0"
+          controlClassName="min-w-0 flex-1"
+          id={`${labelId}-from`}
+          value={draft.connectionId ?? ''}
+          disabled={accounts.isPending || accounts.isError}
+          className="min-w-0 flex-1"
+          onChange={(event) => editor.change({ connectionId: event.target.value || null })}
+          purpose="embedded"
+        >
           <option value="">{accounts.isPending ? 'Loading accounts…' : 'Choose an account'}</option>
-          {draft.connectionId && !accounts.data?.some(account => account.id === draft.connectionId) && <option value={draft.connectionId}>Account unavailable</option>}
-          {accounts.data?.map(account => <option key={account.id} value={account.id}>{account.label} ({account.provider === 'google' ? 'Gmail' : 'Outlook'})</option>)}
-        </NativeSelect> : <span>{draft.fromLabel ?? accounts.data?.find(account => account.id === draft.connectionId)?.label ?? 'Selected account'}</span>}
+          {draft.connectionId &&
+            !accounts.data?.some((account) => account.id === draft.connectionId) && (
+              <option value={draft.connectionId}>Account unavailable</option>
+            )}
+          {accounts.data?.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.label} ({account.provider === 'google' ? 'Gmail' : 'Outlook'})
+            </option>
+          ))}
+        </NativeSelect> : <><span className="w-12 shrink-0 text-xs">From</span><span>{draft.fromLabel ?? accounts.data?.find(account => account.id === draft.connectionId)?.label ?? 'Selected account'}</span></>}
         {editable && <div className="flex gap-2 text-xs text-muted-foreground">
           {!showCc && !draft.cc && <Button
             type="button"
@@ -117,30 +150,50 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
       {(showCc || draft.cc) && field('cc', 'Cc', 'Copy recipients')}
       {(showBcc || draft.bcc) && field('bcc', 'Bcc', 'Hidden recipients')}
       {field('subject', 'Subject', 'Subject')}
-      <div className="flex items-center justify-between gap-3 px-4 pt-2.5">
-        <label htmlFor={`${labelId}-body`} className="text-xs text-muted-foreground">Message</label>
-        <Button
-          type="button"
-          aria-label="Copy email body"
-          disabled={!draft.body}
-          onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(draft.body);
-            setCopyStatus('copied');
-          } catch {
-            setCopyStatus('error');
-          }
+      <TextArea
+        label="Message"
+        labelId={`${labelId}-body-label`}
+        labelAction={
+          <Button
+            type="button"
+            aria-label="Copy email body"
+            disabled={!draft.body}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(draft.body);
+                setCopyStatus('copied');
+              } catch {
+                setCopyStatus('error');
+              }
+            }}
+            variant="ghost"
+            size={touch ? 'touch' : 'xs'}
+          >
+            {copyStatus === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
+            <span role="status">
+              {copyStatus === 'copied'
+                ? 'Copied'
+                : copyStatus === 'error'
+                  ? 'Copy failed'
+                  : 'Copy body'}
+            </span>
+          </Button>
+        }
+        id={`${labelId}-body`}
+        name="body"
+        value={draft.body}
+        disabled={!editable}
+        placeholder="Write your message…"
+        rows={9}
+        maxLength={200_000}
+        className="mx-4 my-2 block w-[calc(100%_-_2rem)]"
+        onChange={(event) => {
+          setMessage(null);
+          editor.change({ body: event.target.value });
         }}
-          variant="ghost"
-          size={touch ? 'touch' : 'xs'}
-        >
-          {copyStatus === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
-          <span role="status">{copyStatus === 'copied' ? 'Copied' : copyStatus === 'error' ? 'Copy failed' : 'Copy body'}</span>
-        </Button>
-      </div>
-      <TextArea id={`${labelId}-body`} name="body" value={draft.body} disabled={!editable} placeholder="Write your message…" rows={9} maxLength={200_000}
-        className="block w-full"
-        onChange={event => { setMessage(null); editor.change({ body: event.target.value }); }} purpose="embedded" resize="vertical" />
+        purpose="embedded"
+        resize="vertical"
+      />
       {(conflict || save.isError || hasEdits && !save.isPending) && editable && <div role="alert" className="space-y-2 border-t border-border bg-muted/30 px-4 py-3 text-xs">
         <p>{conflict ? 'This draft changed while you were editing. Your edits are kept here.' : save.error?.message ?? 'Your recovered edits are ready to save.'}</p>
         {conflict && <details><summary className="cursor-pointer">Review saved changes</summary><dl className="mt-2 space-y-2">{(Object.keys(edits) as (keyof EmailDraftFields)[]).map(key => <div key={key}><dt className="font-medium">{key === 'connectionId' ? 'Sending account' : key}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-muted-foreground">{key === 'connectionId' ? accounts.data?.find(account => account.id === conflict.connectionId)?.label ?? 'No available account' : conflict[key] || '(empty)'}</dd></div>)}</dl></details>}

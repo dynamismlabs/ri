@@ -724,27 +724,26 @@ export function IntegrationsSection({ active = true, navigation }: {
 
       {onCatalog ? (
         <>
-          <div className="relative">
-            <Search
-              size={14}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Field
-              ref={searchRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
-              aria-label={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
-
-            />
-            {busy && (
-              <Loader2
-                size={14}
-                aria-label="Working"
-                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
-              />
-            )}
-          </div>
+          <Field
+            ref={searchRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
+            aria-label={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
+            leading={<Search />}
+            trailing={
+              <>
+                {busy && (
+                  <Loader2
+                    size={14}
+                    aria-label="Working"
+                    className="animate-spin text-muted-foreground"
+                  />
+                )}
+              </>
+            }
+            className="relative"
+          />
 
           {q && catalog.total === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/10 p-8 text-center">

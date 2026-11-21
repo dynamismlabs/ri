@@ -420,23 +420,17 @@ function ConnectPanelContent(props: ProviderDetailProps) {
       )}
       <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
         {fields.map((f) => (
-          <div key={f} className="space-y-1">
-            <label
-              htmlFor={`cred-${p.id}-${f}`}
-              className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              {fieldLabel(f)}
-            </label>
-            <Field
-              id={`cred-${p.id}-${f}`}
-              type={SECRETY.test(f) ? 'password' : 'text'}
-              autoComplete="off"
-              value={props.creds[f] ?? ''}
-              onChange={(e) => props.onCredChange(f, e.target.value)}
-              placeholder={fieldLabel(f)}
-               purpose="code"
-            />
-          </div>
+          <Field
+            id={`cred-${p.id}-${f}`}
+            type={SECRETY.test(f) ? 'password' : 'text'}
+            autoComplete="off"
+            value={props.creds[f] ?? ''}
+            onChange={(e) => props.onCredChange(f, e.target.value)}
+            placeholder={fieldLabel(f)}
+            purpose="code"
+            label={fieldLabel(f)}
+            key={f}
+          />
         ))}
       </div>
       <p className="text-[11px] leading-normal text-muted-foreground">
@@ -588,19 +582,14 @@ export function ToolList({
         count={total}
         action={
           total > TOOL_FILTER_THRESHOLD && (
-            <div className="relative">
-              <Search
-                size={11}
-                className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Field
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter tools"
-                aria-label="Filter tools"
-                className="w-44"
-              />
-            </div>
+            <Field
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter tools"
+              aria-label="Filter tools"
+              className={cn('w-44', 'relative')}
+              leading={<Search />}
+            />
           )
         }
       >

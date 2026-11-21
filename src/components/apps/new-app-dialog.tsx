@@ -77,30 +77,56 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
               A small app of your own, with its own data, that works in {APP_NAME} and with any assistant. An agent builds it in its own folder. You install it when it&apos;s ready.
             </DialogDescription>
           </DialogHeader>
-          <label className="block space-y-1 text-xs font-medium">
-            <span>Name</span>
-            <Field value={name} onChange={(e) => setName(e.target.value)} placeholder="Baby tracker" required maxLength={60} autoFocus />
-          </label>
-          <label className="block space-y-1 text-xs font-medium">
-            <span>What should it do?</span>
-            <TextArea value={ask} onChange={(e) => setAsk(e.target.value)} rows={4} placeholder="Track feeds, sleep and diapers, with a daily summary." autoSize />
-          </label>
+          <Field
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Baby tracker"
+            required
+            maxLength={60}
+            autoFocus
+            label="Name"
+            className="block"
+          />
+          <TextArea
+            value={ask}
+            onChange={(e) => setAsk(e.target.value)}
+            rows={4}
+            placeholder="Track feeds, sleep and diapers, with a daily summary."
+            autoSize
+            label="What should it do?"
+            className="block"
+          />
           {showSettings ? (
             <div className="space-y-3 rounded-md border border-border p-3">
-              <label className="block space-y-1 text-xs font-medium">
-                <span>Apps folder</span>
-                <Field value={appsDir} onChange={(e) => setAppsDir(e.target.value)} />
-                <span className="block font-normal text-muted-foreground">Each app gets its own folder and git repository here.</span>
-              </label>
-              <label className="block space-y-1 text-xs font-medium">
-                <span>{tools?.kit ? 'Kit checkout (for developers)' : 'App kit command'}</span>
-                <Field value={kit} onChange={(e) => setKit(e.target.value)} placeholder="pnpm --dir /path/to/app-kit create:app"  purpose="code" />
-                <span className="block font-normal text-muted-foreground">
-                  {tools?.kit
-                    ? <>{APP_NAME} makes apps with the app kit {tools.kit.version} it carries. To use a kit checkout instead, give the command that runs its create. {APP_NAME} adds the new app&apos;s folder at the end.</>
-                    : <>The command that runs the app kit&apos;s create. {APP_NAME} adds the new app&apos;s folder at the end.</>}
-                </span>
-              </label>
+              <Field
+                value={appsDir}
+                onChange={(e) => setAppsDir(e.target.value)}
+                label="Apps folder"
+                description="Each app gets its own folder and git repository here."
+                className="block"
+              />
+              <Field
+                value={kit}
+                onChange={(e) => setKit(e.target.value)}
+                placeholder="pnpm --dir /path/to/app-kit create:app"
+                purpose="code"
+                label={tools?.kit ? 'Kit checkout (for developers)' : 'App kit command'}
+                description={
+                  tools?.kit ? (
+                    <>
+                      {APP_NAME} makes apps with the app kit {tools.kit.version} it carries. To use
+                      a kit checkout instead, give the command that runs its create. {APP_NAME} adds
+                      the new app&apos;s folder at the end.
+                    </>
+                  ) : (
+                    <>
+                      The command that runs the app kit&apos;s create. {APP_NAME} adds the new
+                      app&apos;s folder at the end.
+                    </>
+                  )
+                }
+                className="block"
+              />
             </div>
           ) : (
             <Button

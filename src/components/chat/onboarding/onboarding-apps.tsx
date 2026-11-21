@@ -96,16 +96,14 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
             ))}
           </div>
 
-          <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background px-2.5">
-            <Search size={12} className="flex-shrink-0 text-muted-foreground/60" />
-            <Field
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
-              aria-label="Search apps"
-              className="min-w-0 flex-1" purpose="embedded"
-            />
-          </div>
+          <Field
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
+            aria-label="Search apps"
+            className={'min-w-0 flex-1'}
+            leading={<Search />}
+          />
 
           {q && (
             <div className="mt-1.5 flex flex-col">

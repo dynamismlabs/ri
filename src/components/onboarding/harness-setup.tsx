@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { HarnessToolSetup } from '@/components/desktop/harness-tool-setup';
 import { CursorCredentialPanel } from '@/components/settings/cursor-credential-panel';
@@ -458,11 +459,10 @@ function ReadyState({
         </div>
         <VerifyLine verify={auth.verify} harnessName={harness.name} />
         <label className="mt-3 flex items-start gap-2 text-sm">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={auth.acceptsApiKeyBilling}
-            onChange={(e) => onAccept(e.target.checked)}
-            className="mt-0.5 size-4"
+            onCheckedChange={(checked) => onAccept((checked === true))}
+            className="mt-0.5"
           />
           <span>Continue with API key billing (I don&apos;t have a subscription)</span>
         </label>

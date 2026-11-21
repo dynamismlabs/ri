@@ -99,30 +99,33 @@ function ScriptField({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-        {label}
-      </label>
       {multiline ? (
         <TextArea
+          label={label}
+          description={hint}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
           rows={2}
-          className="w-full" purpose="code" resize="vertical"
+          className="w-full"
+          purpose="code"
+          resize="vertical"
         />
       ) : (
         <Field
+          label={label}
+          description={hint}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
-          className="w-full" purpose="code"
+          className="w-full"
+          purpose="code"
         />
       )}
-      <p className="mt-1 text-[10px] text-muted-foreground/70 leading-snug">{hint}</p>
     </div>
   );
 }

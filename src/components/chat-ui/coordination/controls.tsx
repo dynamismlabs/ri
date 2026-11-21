@@ -93,7 +93,40 @@ function AvailableCoordinationSettings({ sessionId }: { sessionId: string }) {
       if (level.source === 'global') return null;
       const id = data.scopes[level.source];
       if (!id) return null;
-      return <label key={level.source} className="flex min-w-0 items-center justify-between gap-3"><span>{level.source === 'chat' ? 'This chat' : level.source === 'execution' ? 'All chats in this workstream' : 'This agent'}</span><NativeSelect aria-label={`Coordination for this ${COORDINATION_SCOPE_NOUNS[level.source] ?? level.source}`} className={cn("min-w-0 max-w-40", 'w-auto')} value={level.value ?? ''} disabled={policy.isPending} onChange={event => policy.mutate({ scope: level.source, id, policy: event.target.value === 'ask' ? 'ask' : event.target.value === 'allow' ? 'allow' : null })}><option value="">Inherit</option><option value="ask">Ask first</option><option value="allow">Allow automatically</option></NativeSelect></label>;
+      return <NativeSelect
+        aria-label={`Coordination for this ${COORDINATION_SCOPE_NOUNS[level.source] ?? level.source}`}
+        controlClassName={cn('min-w-0 max-w-40', 'w-auto')}
+        value={level.value ?? ''}
+        disabled={policy.isPending}
+        onChange={(event) =>
+          policy.mutate({
+            scope: level.source,
+            id,
+            policy:
+              event.target.value === 'ask'
+                ? 'ask'
+                : event.target.value === 'allow'
+                  ? 'allow'
+                  : null,
+          })
+        }
+        label={
+          <>
+            {level.source === 'chat'
+              ? 'This chat'
+              : level.source === 'execution'
+                ? 'All chats in this workstream'
+                : 'This agent'}
+          </>
+        }
+        orientation="horizontal"
+        className="min-w-0 w-auto"
+        key={level.source}
+      >
+        <option value="">Inherit</option>
+        <option value="ask">Ask first</option>
+        <option value="allow">Allow automatically</option>
+      </NativeSelect>;
     })}
     <p className="text-muted-foreground">Applies to new sends. Approved messages keep their authorization.</p>
     </>}
@@ -105,7 +138,25 @@ function AvailableCoordinationSettings({ sessionId }: { sessionId: string }) {
 export function DefaultCoordinationSetting() {
   const { data } = useQuery({ queryKey: ['coordination', 'defaults'], queryFn: () => trpcClient.coordination.defaults.query() });
   const mutation = useCoordinationPolicy();
-  return <div className="space-y-2"><label className="flex items-center justify-between gap-3 text-sm"><span>Default coordination</span><NativeSelect aria-label="Default coordination" className="w-auto" value={data?.global ?? 'ask'} disabled={mutation.isPending} onChange={event => mutation.mutate({ scope: 'global', id: '1', policy: event.target.value === 'allow' ? 'allow' : 'ask' })}><option value="ask">Ask first</option><option value="allow">Allow automatically</option></NativeSelect></label><p className="text-xs text-muted-foreground">Agent, workstream and chat overrides take precedence. Agent main chats and Ri&apos;s main chat are unrestricted. Already approved sends keep their authorization.</p></div>;
+  return <div className="space-y-2"><NativeSelect
+    aria-label="Default coordination"
+    controlClassName="w-auto"
+    value={data?.global ?? 'ask'}
+    disabled={mutation.isPending}
+    onChange={(event) =>
+      mutation.mutate({
+        scope: 'global',
+        id: '1',
+        policy: event.target.value === 'allow' ? 'allow' : 'ask',
+      })
+    }
+    label={<>Default coordination</>}
+    orientation="horizontal"
+    className="w-auto"
+  >
+    <option value="ask">Ask first</option>
+    <option value="allow">Allow automatically</option>
+  </NativeSelect><p className="text-xs text-muted-foreground">Agent, workstream and chat overrides take precedence. Agent main chats and Ri&apos;s main chat are unrestricted. Already approved sends keep their authorization.</p></div>;
 }
 
 export function IncomingDeliveryStatus({sessionId,deliveryId}:{sessionId:string;deliveryId:string}) {

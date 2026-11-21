@@ -28,18 +28,28 @@ export function useFieldSize(size: FieldDrawing['size']) {
 }
 export interface FieldInfo {
   label?: ReactNode;
+  labelAction?: ReactNode;
+  orientation?: 'vertical' | 'horizontal';
+  labelClassName?: string;
   description?: ReactNode;
   error?: ReactNode;
   labelId?: string;
   descriptionId?: string;
   errorId?: string;
   invalid?: boolean;
+  counter?: { value: number; max: number; id?: string; unit?: string };
   descriptionPosition?: 'before' | 'after';
 }
 // Metadata props stay present while their values change, keeping the control
 // mounted when validation messages appear or clear. Bare controls keep their DOM.
 export function hasFieldInfo(props: FieldInfo) {
-  return 'label' in props || 'description' in props || 'error' in props;
+  return (
+    'label' in props ||
+    'description' in props ||
+    'error' in props ||
+    'counter' in props ||
+    'labelAction' in props
+  );
 }
 export function useFieldInfo(
   props: FieldInfo & {
@@ -55,6 +65,7 @@ export function useFieldInfo(
   const labelId = props.labelId ?? `${id}-label`;
   const descriptionId = props.descriptionId ?? `${id}-description`;
   const errorId = props.errorId ?? `${id}-error`;
+  const counterId = props.counter?.id ?? `${id}-count`;
   return {
     id,
     labelId,
@@ -62,16 +73,31 @@ export function useFieldInfo(
       props['aria-labelledby'] ?? (!props['aria-label'] && props.label ? labelId : undefined),
     descriptionId,
     errorId,
+    counterId,
     'aria-invalid': props.error ? true : (props.invalid ?? props['aria-invalid']),
     'aria-describedby':
-      [props['aria-describedby'], props.description ? descriptionId : null, props.error ? errorId : null]
+      [
+        ...new Set([
+          ...(props['aria-describedby']?.split(/\s+/) ?? []),
+          props.description ? descriptionId : null,
+          props.error ? errorId : null,
+          props.counter ? counterId : null,
+        ]),
+      ]
         .filter(Boolean)
         .join(' ') || undefined,
   };
 }
+const fieldFrameVariants = cva('ri-field-frame min-w-0', {
+  variants: { orientation: { vertical: '', horizontal: 'ri-field-frame--horizontal' } },
+});
 export function FieldFrame({
   info,
   label,
+  labelAction,
+  orientation = 'vertical',
+  labelClassName,
+  counter,
   description,
   error,
   children,
@@ -95,13 +121,36 @@ export function FieldFrame({
       orientation={null}
       data-slot="system-field"
       data-invalid={info['aria-invalid'] || undefined}
-      className={cn('ri-field-frame min-w-0', className)}
+      className={cn(fieldFrameVariants({ orientation }), className)}
     >
       {descriptionPosition === 'before' && help}
-      {label && (
-        <FieldLabel id={info.labelId} htmlFor={info.id} className="ri-field-label">
-          {label}
-        </FieldLabel>
+      {(label || counter || labelAction) && (
+        <div
+          className={cn(
+            'ri-field-label-row',
+            orientation === 'horizontal' ? 'w-auto' : 'w-full',
+            labelClassName,
+          )}
+        >
+          {label && (
+            <FieldLabel id={info.labelId} htmlFor={info.id} className="ri-field-label">
+              {label}
+            </FieldLabel>
+          )}
+          <div className="ri-field-label-actions">
+            {counter && (
+              <span
+                id={info.counterId}
+                className="ri-field-counter"
+                data-over={counter.value > counter.max || undefined}
+              >
+                {counter.value.toLocaleString()} / {counter.max.toLocaleString()}
+                {counter.unit && ` ${counter.unit}`}
+              </span>
+            )}
+            {labelAction}
+          </div>
+        </div>
       )}
       {children}
       {descriptionPosition === 'after' && help}

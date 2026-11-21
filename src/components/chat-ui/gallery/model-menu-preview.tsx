@@ -1,3 +1,4 @@
+import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';
 import { ModelMenuProvider } from '@/components/chat-ui/model-menu/model-menu-provider';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
@@ -130,12 +131,11 @@ export function ModelMenuPreview({ state }: { state: string }) {
                 key={row.model.id}
                 className="flex items-center gap-2 text-sm"
               >
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={visible.includes(row.model.id)}
-                  onChange={(event) =>
+                  onCheckedChange={(checked) =>
                     setVisible((current) =>
-                      event.target.checked
+                      (checked === true)
                         ? [...current, row.model.id]
                         : current.filter((id) => id !== row.model.id),
                     )

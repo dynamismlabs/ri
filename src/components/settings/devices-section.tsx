@@ -121,20 +121,19 @@ export function DevicesSection() {
 
       {formOpen && (
         <div className="rounded-lg border border-border bg-background p-3 space-y-2">
-          <label className="block">
-            <span className="text-[11px] text-muted-foreground/70">Name</span>
-            <Field
-              autoFocus
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="iPhone 15"
-              className="mt-1 w-full"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handlePair();
-              }}
-            />
-          </label>
+          <Field
+            autoFocus
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="iPhone 15"
+            controlClassName="mt-1 w-full"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handlePair();
+            }}
+            label="Name"
+            className="block"
+          />
           <KindSelect value={kind} onChange={setKind} />
           <div className="flex items-center gap-2 pt-1">
             <Button
@@ -188,20 +187,19 @@ export function DevicesSection() {
 
 function KindSelect({ value, onChange }: { value: DeviceKind; onChange: (kind: DeviceKind) => void }) {
   return (
-    <label className="block">
-      <span className="text-[11px] text-muted-foreground/70">Type</span>
-      <NativeSelect
-        value={value}
-        onChange={(e) => onChange(e.target.value as DeviceKind)}
-        className="mt-1 w-full"
-      >
-        {DEVICE_KINDS.map((k) => (
-          <option key={k.value} value={k.value}>
-            {k.label}
-          </option>
-        ))}
-      </NativeSelect>
-    </label>
+    <NativeSelect
+      value={value}
+      onChange={(e) => onChange(e.target.value as DeviceKind)}
+      controlClassName="mt-1 w-full"
+      label="Type"
+      className="block"
+    >
+      {DEVICE_KINDS.map((k) => (
+        <option key={k.value} value={k.value}>
+          {k.label}
+        </option>
+      ))}
+    </NativeSelect>
   );
 }
 
@@ -300,7 +298,8 @@ function PairingPanel({
                   readOnly
                   value={t.url}
                   className="w-full"
-                  onFocus={(e) => e.currentTarget.select()} purpose="code"
+                  onFocus={(e) => e.currentTarget.select()}
+                  purpose="code"
                 />
                 <Button onClick={() => handleCopy(t.id, t.url)} variant="secondary" size="sm">
                   {copiedLabel === t.id ? <Check size={12} /> : <Copy size={12} />}
@@ -324,7 +323,8 @@ function PairingPanel({
             readOnly
             value={pairing.plaintext}
             className="flex-1 min-w-0"
-            onFocus={(e) => e.currentTarget.select()} purpose="code"
+            onFocus={(e) => e.currentTarget.select()}
+            purpose="code"
           />
           <Button onClick={() => handleCopy('token', pairing.plaintext)} variant="secondary" size="sm">
             {copiedLabel === 'token' ? <Check size={12} /> : <Copy size={12} />}
@@ -460,20 +460,19 @@ function DeviceCard({
     <div className="rounded-lg border border-border bg-background p-3 space-y-2.5">
       {editing ? (
         <div className="space-y-2">
-          <label className="block">
-            <span className="text-[11px] text-muted-foreground/70">Name</span>
-            <Field
-              autoFocus
-              type="text"
-              value={draftName}
-              onChange={(e) => setDraftName(e.target.value)}
-              className="mt-1 w-full"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitEdit();
-                if (e.key === 'Escape') setEditing(false);
-              }}
-            />
-          </label>
+          <Field
+            autoFocus
+            type="text"
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            controlClassName="mt-1 w-full"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitEdit();
+              if (e.key === 'Escape') setEditing(false);
+            }}
+            label="Name"
+            className="block"
+          />
           <KindSelect value={draftKind} onChange={setDraftKind} />
           <div className="flex items-center gap-2 pt-1">
             <Button

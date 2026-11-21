@@ -300,19 +300,15 @@ export function BaseControl({
           </div>
         ) : (
           <>
-            <div className="relative border-b border-border/70">
-              <Search
-                size={11}
-                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-              />
-              <Field
-                autoFocus
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter branches…"
-                className="w-full" purpose="embedded"
-              />
-            </div>
+            <div className="relative border-b border-border/70"><Field
+              autoFocus
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter branches…"
+              className={'w-full'}
+              purpose="embedded"
+              leading={<Search />}
+            /></div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (
                 <button data-slot="menu-action"

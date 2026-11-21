@@ -66,21 +66,29 @@ export function SignInToContinue({ client }: { client: string | null }) {
           {client ? `${client} wants to connect to your Ri.` : 'An app wants to connect to your Ri.'} This browser isn’t one of your Ri devices yet.
         </p>
       </div>
-      <label className="block space-y-1.5">
-        <span className="text-xs text-muted-foreground">
-          On a device where you use Ri, open Settings → Devices, choose Add device and create its pairing link. Copy the token it shows and paste it here. This browser then stays signed in to Ri.
-        </span>
-        <Field
-          ref={inputRef}
-          value={pasted}
-          onChange={event => { setPasted(event.target.value); if (state === 'refused') setState('idle'); }}
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="ri_live_…"
-          aria-invalid={state === 'refused'}
-          className="w-full" purpose="code"
-        />
-      </label>
+      <Field
+        ref={inputRef}
+        description={
+          <>
+            {' '}
+            On a device where you use Ri, open Settings → Devices, choose Add device and create its
+            pairing link. Copy the token it shows and paste it here. This browser then stays signed
+            in to Ri.{' '}
+          </>
+        }
+        descriptionPosition="before"
+        value={pasted}
+        onChange={(event) => {
+          setPasted(event.target.value);
+          if (state === 'refused') setState('idle');
+        }}
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="ri_live_…"
+        aria-invalid={state === 'refused'}
+        className="w-full"
+        purpose="code"
+      />
       {state === 'refused' && <p role="alert" className="text-xs text-destructive">That token didn’t work. Make a new one with Add device.</p>}
       <Button
         type="submit"

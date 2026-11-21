@@ -236,8 +236,32 @@ function HostedAccountForm(props: ProviderDetailProps & { account?: HostedMcpAcc
         size="xs"
       >Use API key</Button>
     </div>}
-    {chooseApp && props.provider.configured && <div className="space-y-1"><label htmlFor={appSelectId} className="text-xs font-medium">Slack app</label><NativeSelect id={appSelectId} value={authConfigId} onChange={event => setAuthConfigId(event.target.value)} disabled={props.busy} className="w-full"><option value="">Choose a Slack app</option>{props.byoConfigs.filter(config => config.status === 'active').map(config => <option key={config.id} value={config.id}>{config.label ?? config.id}</option>)}</NativeSelect></div>}
-    {showLabel && <div className="space-y-1"><label htmlFor="hosted-account-label" className="text-xs font-medium">Account label</label><Field id="hosted-account-label" value={label} onChange={event => setLabel(event.target.value)} placeholder="Work or Personal" disabled={props.busy} required /></div>}
+    {chooseApp && props.provider.configured && <NativeSelect
+      id={appSelectId}
+      value={authConfigId}
+      onChange={(event) => setAuthConfigId(event.target.value)}
+      disabled={props.busy}
+      controlClassName="w-full"
+      label="Slack app"
+    >
+      <option value="">Choose a Slack app</option>
+      {props.byoConfigs
+        .filter((config) => config.status === 'active')
+        .map((config) => (
+          <option key={config.id} value={config.id}>
+            {config.label ?? config.id}
+          </option>
+        ))}
+    </NativeSelect>}
+    {showLabel && <Field
+      id="hosted-account-label"
+      value={label}
+      onChange={(event) => setLabel(event.target.value)}
+      placeholder="Work or Personal"
+      disabled={props.busy}
+      required
+      label="Account label"
+    />}
     {provider.mcp?.endpointConfig && <HostedEndpointFields setup={provider.mcp.endpointConfig} value={endpoint} onChange={selection => { setEndpoint(selection); setMethod('oauth'); setCreds({}); }} disabled={props.busy} />}
     <ConnectPanel {...formProps} />
     {isRegisteredMcp(provider) && provider.configured && !slack && <div className="space-y-2">

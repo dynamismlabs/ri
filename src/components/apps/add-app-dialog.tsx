@@ -57,14 +57,25 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <label className="block space-y-1 text-xs font-medium text-foreground">
-              <span>Name</span>
-              <Field value={name} onChange={(e) => setName(e.target.value)} placeholder="Reading Log" autoFocus required maxLength={60} />
-            </label>
-            <label className="block space-y-1 text-xs font-medium text-foreground">
-              <span>MCP address</span>
-              <Field value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://127.0.0.1:4310/mcp" required inputMode="url" />
-            </label>
+            <Field
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Reading Log"
+              autoFocus
+              required
+              maxLength={60}
+              label="Name"
+              className="block"
+            />
+            <Field
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="http://127.0.0.1:4310/mcp"
+              required
+              inputMode="url"
+              label="MCP address"
+              className="block"
+            />
             <p className="text-[11px] text-muted-foreground">The app asks next what Ri may see and whether it may make changes. Each agent you allow later gets its own connection and its own choice.</p>
           </div>
           {error && (

@@ -153,17 +153,24 @@ Otherwise Field generates them. Existing described-by references are retained.
 An error sets aria-invalid and joins the description. Keep message props in JSX
 with conditional values, so their control stays mounted as validation changes.
 `descriptionPosition="before"` retains instructions that precede a field.
+`orientation="horizontal"` keeps inline labels and allows the row to wrap.
+`labelClassName` accepts layout only, such as the email form's shared label width.
+`labelAction` keeps a labeled action, such as Copy body, alongside the label.
+A `counter` supplies `value` and `max`, with optional existing `id` and `unit`.
+It is linked as help and stays out of the control's accessible name.
 
 `leading` and `trailing` make one input group with one focus outline. The date
 and repeat parsers use `inlineMessage`, keeping their reading or error inside
-the group and linked to the control. Each trailing action keeps its own Button
+the group and linked to the control. Parser feedback keeps its polite live
+announcement as text becomes valid or invalid. Each trailing action keeps its own Button
 behavior. Disabled controls retain native behavior. Read-only values can still
 be focused and copied. Field invalid focus uses the danger ink. Other focus uses
 the ring token, with no second shadow or border ring.
 
 Call sites pass layout classes only. `className` places the whole field. When a
 label or help spans a wider frame, `controlClassName` sets only the control
-layout, such as its width. Both props follow the same layout-only rule. Field owns shape, type, padding, fill,
+layout, such as its width. All three class props follow the same layout-only rule. Field owns shape, type,
+padding, fill,
 border, shadow and states. Width and placement utilities remain available to
 callers. Checkbox, radio and switch controls keep their separate semantics.
 Hidden and file transport inputs remain unchanged during this stage.

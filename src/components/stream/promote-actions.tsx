@@ -91,17 +91,16 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
 
         {mode === 'search' && (
           <div>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <Field
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tasks..."
-                className="flex-1" purpose="embedded"
-              />
-            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border"><Field
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tasks..."
+              className={'flex-1'}
+              purpose="embedded"
+              leading={<Search />}
+            /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No tasks found</p>
@@ -193,17 +192,16 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
 
         {mode === 'search' && (
           <div>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <Field
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search notes..."
-                className="flex-1" purpose="embedded"
-              />
-            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border"><Field
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search notes..."
+              className={'flex-1'}
+              purpose="embedded"
+              leading={<Search />}
+            /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No notes found</p>

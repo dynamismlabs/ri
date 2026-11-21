@@ -1,6 +1,7 @@
 'use client';
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { TextArea } from '@/components/system/text-area';
 import { cn } from '@/lib/utils';
 
@@ -67,12 +68,49 @@ function SendToChatDialog({ eventId, sessionId, size, onClose, onSendingChange }
   // so in-tree model popovers can escape the dialog scroll container.
   return <DialogContent className="min-w-0 max-h-[calc(100dvh-2rem)] grid-cols-[minmax(0,1fr)] overflow-x-hidden overflow-y-auto sm:max-w-lg" style={{ inset: '0', margin: 'auto', height: 'fit-content', translate: 'none', transform: 'none', animation: 'none' }}><DialogHeader><DialogTitle>Send to chat</DialogTitle><DialogDescription>Share the full message and its attachments. Add directions if useful. No automatic answer is sent back.</DialogDescription></DialogHeader>
     <div className="min-w-0 space-y-3">
-      <label className="flex items-center gap-2 rounded-md border px-2 py-1.5"><Search size={14} className="text-muted-foreground" /><Field autoFocus aria-label="Search chats" placeholder="Search chats" value={search} onChange={event => setSearch(event.target.value)} className="min-w-0 flex-1" purpose="embedded" /></label>
-      <label className="flex items-center justify-between gap-2 text-xs">Agent<NativeSelect aria-label="Filter by agent" className={cn("min-w-0 max-w-[min(16rem,75%)]", 'w-auto')} value={workspaceId} onChange={event => { setWorkspaceId(event.target.value); setTarget(''); }}><option value="">All agents</option>{agents.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect></label>
-      <div className="flex gap-3 text-xs"><label><input type="radio" checked={!newChat} onChange={() => setNewChat(false)} /> Existing chat</label><label><input type="radio" checked={newChat} onChange={() => setNewChat(true)} /> New chat</label></div>
+      <Field
+        autoFocus
+        aria-label="Search chats"
+        placeholder="Search chats"
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        className={'min-w-0 flex-1'}
+        leading={<Search />}
+      />
+      <NativeSelect
+        aria-label="Filter by agent"
+        controlClassName={cn('min-w-0 max-w-[min(16rem,75%)]', 'w-auto')}
+        value={workspaceId}
+        onChange={(event) => {
+          setWorkspaceId(event.target.value);
+          setTarget('');
+        }}
+        label="Agent"
+        orientation="horizontal"
+        className="w-auto"
+      >
+        <option value="">All agents</option>
+        {agents.map((agent) => (
+          <option key={agent.id} value={agent.id}>
+            {agent.name}
+          </option>
+        ))}
+      </NativeSelect>
+      <RadioGroup orientation="horizontal" aria-label="Chat target" value={newChat ? 'new' : 'existing'} onValueChange={value => setNewChat(value === 'new')} className="flex gap-3">
+        <label className="flex items-center gap-2 text-xs"><RadioGroupItem value="existing" />Existing chat</label>
+        <label className="flex items-center gap-2 text-xs"><RadioGroupItem value="new" />New chat</label>
+      </RadioGroup>
       {newChat ? <div className="space-y-2 rounded-lg border p-3"><p className="text-xs text-muted-foreground">{workspaceId ? 'Start a new chat in the selected agent.' : 'Choose an agent above for the new chat.'}</p><div className="flex flex-wrap gap-2"><ModelControl size={size === 'touch' ? 'touch' : 'compact'} selection={{ harness, model }} label={selectedModel?.label ?? (model || 'Default model')} variant={variant} effort={effort} serviceTier={serviceTier} onChange={setSelection} onEffortChange={next => setSelection({ harness, model, variant, effort: next, serviceTier })} /></div></div>
         : <div className="min-w-0 max-h-56 overflow-x-hidden overflow-y-auto rounded-lg border" aria-label="Chats by recent activity">{isLoading ? <p className="p-3 text-xs text-muted-foreground">Loading chats…</p> : chats.length === 0 ? <p className="p-3 text-xs text-muted-foreground">No matching chats.</p> : chats.map(chat => <button key={chat.id} type="button" aria-pressed={target === chat.id} onClick={() => setTarget(chat.id)} className={`block w-full border-b px-3 py-2 text-left last:border-0 ${target === chat.id ? 'bg-primary/10' : 'hover:bg-muted/50'}`}><span className="block truncate text-sm font-medium">{chat.label ?? (chat.type === 'orchestration' ? chat.workspaceId ? 'Agent main chat' : 'Orchestrator' : 'Untitled chat')}</span><span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{chat.agentName ?? 'Orchestrator'} · {new Date(chat.lastActivityAt ?? chat.updatedAt).toLocaleString()}</span></button>)}</div>}
-      <label className="block space-y-1 text-xs"><span>Your directions, optional</span><TextArea value={directions} onChange={event => setDirections(event.target.value)} rows={3} className="w-full" placeholder="For example, review this feedback against your current changes." /></label>
+      <TextArea
+        value={directions}
+        onChange={(event) => setDirections(event.target.value)}
+        rows={3}
+        controlClassName="w-full"
+        placeholder="For example, review this feedback against your current changes."
+        label="Your directions, optional"
+        className="block"
+      />
       <div className="flex justify-end gap-2"><Button
         type="button"
         disabled={send.isPending}

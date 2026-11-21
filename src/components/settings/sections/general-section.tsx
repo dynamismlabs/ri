@@ -401,7 +401,8 @@ export function GeneralSection() {
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
-              className="w-full" purpose="code"
+              className="w-full"
+              purpose="code"
             />
           )}
           <p className="text-[11px] text-muted-foreground/85">
@@ -417,15 +418,14 @@ export function GeneralSection() {
 
 function TimeField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">{label}</span>
-      <Field
-        type="time"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-auto"
-      />
-    </label>
+    <Field
+      type="time"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      controlClassName="w-auto"
+      label={label}
+      className="flex-col w-auto"
+    />
   );
 }
 
@@ -460,7 +460,8 @@ function InactiveExecutionsSetting() {
           >
             {options.map((days) => (
               <option key={days} value={String(days)}>
-                {formatInactiveAfter(days)} with no activity{days === DEFAULT_INACTIVE_AFTER_DAYS ? ' (default)' : ''}
+                {formatInactiveAfter(days)} with no activity
+                {days === DEFAULT_INACTIVE_AFTER_DAYS ? ' (default)' : ''}
               </option>
             ))}
             <option value="0">Never</option>

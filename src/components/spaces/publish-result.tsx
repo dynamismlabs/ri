@@ -148,28 +148,30 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
           </p>
         </div>
 
-        <label className="block space-y-1.5">
-          <span className="text-xs font-medium">Summary</span>
-          <TextArea
-            value={summaryValue}
-            onChange={(e) => setSummary(e.target.value)}
-            rows={6}
-            placeholder="What changed, and anything the team should know."
-            className="w-full" resize="vertical"
-          />
-          {draft && summary === null && <span className="text-[11px] text-muted-foreground">From your latest saved result. Edit it before it&apos;s shared.</span>}
-        </label>
+        <TextArea
+          value={summaryValue}
+          onChange={(e) => setSummary(e.target.value)}
+          rows={6}
+          placeholder="What changed, and anything the team should know."
+          controlClassName="w-full"
+          resize="vertical"
+          label="Summary"
+          description={
+            draft &&
+            summary === null && <>From your latest saved result. Edit it before it&apos;s shared.</>
+          }
+          className="block"
+        />
 
-        <label className="block space-y-1.5">
-          <span className="text-xs font-medium">Pull request or link</span>
-          <Field
-            type="url"
-            value={urlValue}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://"
-            className="w-full"
-          />
-        </label>
+        <Field
+          type="url"
+          value={urlValue}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://"
+          controlClassName="w-full"
+          label="Pull request or link"
+          className="block"
+        />
 
         <div className="space-y-1.5">
           <span className="block text-xs font-medium">Files</span>

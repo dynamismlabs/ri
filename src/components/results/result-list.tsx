@@ -27,10 +27,14 @@ export function ResultList({ taskId, executionId, compact = false, initialHistor
   const rows = uniqueResultPages(results.data?.pages ?? []);
   return <div className="space-y-4">
     <div className="flex flex-wrap items-center gap-2">
-      <label className="relative min-w-0 flex-1 basis-48">
-        <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Field value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filter titles and content" aria-label="Filter saved results"  />
-      </label>
+      <Field
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder="Filter titles and content"
+        aria-label="Filter saved results"
+        leading={<Search />}
+        className="relative min-w-0 flex-1 basis-48"
+      />
       <Button
         aria-pressed={history}
         onClick={() => setHistory(!history)}

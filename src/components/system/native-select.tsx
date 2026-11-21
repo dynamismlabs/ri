@@ -18,6 +18,9 @@ export type NativeSelectProps = Omit<ComponentProps<'select'>, 'size'> &
 export function NativeSelect(fieldProps: NativeSelectProps) {
   const {
     label,
+    labelAction,
+    orientation,
+    labelClassName,
     description,
     error,
     labelId,
@@ -25,6 +28,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
     errorId,
     invalid,
     descriptionPosition,
+    counter,
     size: requestedSize,
     purpose,
     titleSize,
@@ -45,13 +49,18 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
     descriptionId,
     errorId,
     invalid,
+    counter,
   });
   const framed = hasFieldInfo(fieldProps);
   return (
     <FieldFrame
       info={info}
       framed={framed}
+      counter={counter}
       label={label}
+      labelAction={labelAction}
+      orientation={orientation}
+      labelClassName={labelClassName}
       description={description}
       error={error}
       descriptionPosition={descriptionPosition}

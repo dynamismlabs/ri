@@ -57,22 +57,33 @@ function ActivationSettings({ update, disabled, onAction }: {
       <div className="space-y-2">
         <Label htmlFor={`${id}-hour`}>Start time</Label>
         <Select value={hour} onValueChange={setHour} disabled={disabled}>
-          <SelectField id={`${id}-hour`} className="w-fit"><SelectValue /></SelectField>
+          <SelectField id={`${id}-hour`} className="w-fit">
+            <SelectValue />
+          </SelectField>
           <SelectContent>{Array.from({ length: 24 }, (_, value) => <SelectItem key={value} value={String(value)}>{String(value).padStart(2, '0')}:00</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-duration`}>Window length</Label>
         <Select value={duration} onValueChange={setDuration} disabled={disabled}>
-          <SelectField id={`${id}-duration`} className="w-fit"><SelectValue /></SelectField>
+          <SelectField id={`${id}-duration`} className="w-fit">
+            <SelectValue />
+          </SelectField>
           <SelectContent>{Array.from({ length: 12 }, (_, index) => index + 1).map(value => <SelectItem key={value} value={String(value)}>{value} {value === 1 ? 'hour' : 'hours'}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor={`${id}-zone`}>Time zone</Label>
-        <Field id={`${id}-zone`} value={timeZone} onChange={event => setTimeZone(event.target.value)} disabled={disabled} placeholder="America/Denver" autoComplete="off" spellCheck={false} />
-        <p className="text-xs text-muted-foreground">The selected time zone stays the same when you travel. If this computer is asleep or busy, Ri waits for another eligible window.</p>
-      </div>
+      <Field
+        id={`${id}-zone`}
+        value={timeZone}
+        onChange={(event) => setTimeZone(event.target.value)}
+        disabled={disabled}
+        placeholder="America/Denver"
+        autoComplete="off"
+        spellCheck={false}
+        label="Time zone"
+        description="The selected time zone stays the same when you travel. If this computer is asleep or busy, Ri waits for another eligible window."
+        className="sm:col-span-2"
+      />
     </div>}
     {update.approved && !update.now && update.window && <p className="text-muted-foreground">Scheduled {maintenanceWindowText(update.window)}.</p>}
     <div className="flex flex-wrap gap-2">
@@ -246,7 +257,9 @@ export function UpdatesSection() {
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1"><Label htmlFor={`${id}-channel`}>Release channel</Label><p className="text-xs text-muted-foreground">Latest gets every release as it ships.</p></div>
             <Select value={update.policy.channel} disabled={disabled} onValueChange={channel => void savePreferences({ channel: channel as 'stable' | 'latest' })}>
-              <SelectField id={`${id}-channel`} className="w-32"><SelectValue /></SelectField>
+              <SelectField id={`${id}-channel`} className="w-32">
+                <SelectValue />
+              </SelectField>
               <SelectContent><SelectItem value="stable">Stable</SelectItem><SelectItem value="latest">Latest</SelectItem></SelectContent>
             </Select>
           </div>

@@ -46,7 +46,23 @@ function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'vi
   return <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 overflow-auto p-4">
     {kind === 'video' ? <video {...props} ref={element => { ref.current = element; }} playsInline className="max-h-[calc(100%-5rem)] w-full min-h-0 object-contain" aria-label="Video player" />
       : <audio {...props} ref={element => { ref.current = element; }} className="w-full max-w-xl" aria-label="Audio player" />}
-    <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">Playback speed<NativeSelect aria-label="Playback speed" defaultValue="1" className="w-auto" onChange={event => { if (ref.current) ref.current.playbackRate = Number(event.target.value); }}>{[0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => <option key={rate} value={rate}>{rate}×</option>)}</NativeSelect></label>
+    <NativeSelect
+      aria-label="Playback speed"
+      defaultValue="1"
+      controlClassName="w-auto"
+      onChange={(event) => {
+        if (ref.current) ref.current.playbackRate = Number(event.target.value);
+      }}
+      label="Playback speed"
+      orientation="horizontal"
+      className="shrink-0 w-auto"
+    >
+      {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+        <option key={rate} value={rate}>
+          {rate}×
+        </option>
+      ))}
+    </NativeSelect>
     {failed && <p role="status" className="max-w-md shrink-0 text-center text-sm text-muted-foreground">This browser cannot play this file or the file is unavailable. Download it to open it in another player.</p>}
   </div>;
 }
@@ -58,7 +74,21 @@ function TableView({ data }: { data: Extract<FilePreviewData, { kind: 'table' }>
   const columns = current?.rows.reduce((max, row) => Math.max(max, row.length), 0) ?? 0;
   return <div className="flex h-full min-h-0 flex-col">
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2 text-xs">
-      {data.sheets.length > 1 && <label className="flex min-w-0 items-center gap-2">Sheet<NativeSelect aria-label="Sheet" value={sheet} onChange={event => setSheet(Number(event.target.value))} className={cn("min-w-0 max-w-48", 'w-auto')}>{data.sheets.map((item, index) => <option key={index} value={index}>{item.name}</option>)}</NativeSelect></label>}
+      {data.sheets.length > 1 && <NativeSelect
+        aria-label="Sheet"
+        value={sheet}
+        onChange={(event) => setSheet(Number(event.target.value))}
+        controlClassName={cn('min-w-0 max-w-48', 'w-auto')}
+        label="Sheet"
+        orientation="horizontal"
+        className="min-w-0 w-auto"
+      >
+        {data.sheets.map((item, index) => (
+          <option key={index} value={index}>
+            {item.name}
+          </option>
+        ))}
+      </NativeSelect>}
       {data.source !== undefined && <div role="group" aria-label="Table view" className="flex gap-1"><Button
         aria-pressed={!source}
         onClick={() => setSource(false)}

@@ -360,7 +360,9 @@ function ManagedConnect({ applicationId, eventId, view, busy, notice, onDecline,
         )}
         {managedOptions.length > 1 && (
           <Select value={chosen.source.id} onValueChange={setSourceId}>
-            <SelectField aria-label="Source" className="w-fit"><SelectValue /></SelectField>
+            <SelectField aria-label="Source" className="w-fit">
+              <SelectValue />
+            </SelectField>
             <SelectContent>
               {managedOptions.map(o => <SelectItem key={o.source.id} value={o.source.id} className="text-xs">{o.source.label}</SelectItem>)}
             </SelectContent>
@@ -450,17 +452,17 @@ function Footer({ busy, onDecline, notice, children }: { busy: boolean; onDeclin
 
 function Field({ label, value, onChange, secret }: { label: string; value: string; onChange: (v: string) => void; secret?: boolean }) {
   return (
-    <label className="flex flex-col gap-0.5">
-      <span className="text-[10px] text-muted-foreground">{label}</span>
-      <SystemField
-        type={secret ? 'password' : 'text'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        autoComplete="off"
-        spellCheck={false}
-        className="w-full" purpose="code"
-      />
-    </label>
+    <SystemField
+      type={secret ? 'password' : 'text'}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      autoComplete="off"
+      spellCheck={false}
+      controlClassName="w-full"
+      purpose="code"
+      label={label}
+      className="flex-col w-auto"
+    />
   );
 }
 
@@ -495,7 +497,13 @@ function KeyForm({
     >
       <div className="space-y-1.5 border-t border-border/60 px-3 py-2">
         {names.map((n) => (
-          <Field key={n} label={fieldLabel(n)} value={fields[n] ?? ''} onChange={(v) => setFields((f) => ({ ...f, [n]: v }))} secret={!/subdomain|email|phone_number_id|client_id/.test(n)} />
+          <Field
+            key={n}
+            label={fieldLabel(n)}
+            value={fields[n] ?? ''}
+            onChange={(v) => setFields((f) => ({ ...f, [n]: v }))}
+            secret={!/subdomain|email|phone_number_id|client_id/.test(n)}
+          />
         ))}
         <p className="flex items-center gap-1 text-[10px] text-muted-foreground/80">
           <KeyRound size={10} /> Saved encrypted on this computer. The agent never sees it.

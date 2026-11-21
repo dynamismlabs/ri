@@ -163,28 +163,27 @@ export function ReferencesPane({
 
       {/* ─── Search ───────────────────────────────── */}
       <div className="flex-shrink-0 px-3 py-2 border-b border-border">
-        <div className="relative">
-          <Search
-            size={12}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-          />
-          <Field
-            ref={searchRef}
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search all tasks &amp; notes…"
-            aria-label="Search all tasks and notes"
-            className="w-full"
-          />
-          {searching && data && (
-            <Loader2
-              size={12}
-              aria-label="Searching"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground/60"
-            />
-          )}
-        </div>
+        <Field
+          ref={searchRef}
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search all tasks &amp; notes…"
+          aria-label="Search all tasks and notes"
+          className={cn('w-full', 'relative')}
+          leading={<Search />}
+          trailing={
+            <>
+              {searching && data && (
+                <Loader2
+                  size={12}
+                  aria-label="Searching"
+                  className="animate-spin text-muted-foreground/60"
+                />
+              )}
+            </>
+          }
+        />
       </div>
 
       {/* ─── Body ─────────────────────────────────── */}

@@ -91,23 +91,59 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
       {effortUnavailable && <p role="alert" className="text-destructive">Saved effort {effort} is unavailable for this reviewer. Choose a compatible effort.</p>}
       {variantUnavailable && <p role="alert" className="text-destructive">Saved variant {variant} is unavailable for this reviewer. Choose a compatible variant.</p>}
       {effortOptions.length > 0 && (
-        <label className="inline-flex items-center gap-2 text-muted-foreground">
-          Reasoning effort
-          <NativeSelect aria-label="Reviewer reasoning effort" disabled={!modelId} value={effort ?? ''} onChange={(event) => onChange({ ...value, harness, model: modelId, effort: event.target.value as EffortLevel })} className="w-auto">
-            {effort && !effortOptions.some((option) => option.id === effort) && <option value={effort} disabled>{effort} (unavailable)</option>}
-            {effortOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
-          </NativeSelect>
-        </label>
+        <NativeSelect
+          aria-label="Reviewer reasoning effort"
+          disabled={!modelId}
+          value={effort ?? ''}
+          onChange={(event) =>
+            onChange({
+              ...value,
+              harness,
+              model: modelId,
+              effort: event.target.value as EffortLevel,
+            })
+          }
+          controlClassName="w-auto"
+          label="Reasoning effort"
+          orientation="horizontal"
+          className="w-auto"
+        >
+          {effort && !effortOptions.some((option) => option.id === effort) && (
+            <option value={effort} disabled>
+              {effort} (unavailable)
+            </option>
+          )}
+          {effortOptions.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.label}
+            </option>
+          ))}
+        </NativeSelect>
       )}
       {variants.length > 0 && (
-        <label className="ml-3 inline-flex items-center gap-2 text-muted-foreground">
-          Variant
-          <NativeSelect aria-label="Reviewer model variant" value={variant ?? ''} onChange={(event) => onChange({ ...value, harness, model: modelId, variant: event.target.value || null })} className="w-auto">
-            <option value="">Default</option>
-            {variant && !variants.some((option) => option.id === variant) && <option value={variant} disabled>{variant} (unavailable)</option>}
-            {variants.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
-          </NativeSelect>
-        </label>
+        <NativeSelect
+          aria-label="Reviewer model variant"
+          value={variant ?? ''}
+          onChange={(event) =>
+            onChange({ ...value, harness, model: modelId, variant: event.target.value || null })
+          }
+          controlClassName="w-auto"
+          label="Variant"
+          orientation="horizontal"
+          className="ml-3 w-auto"
+        >
+          <option value="">Default</option>
+          {variant && !variants.some((option) => option.id === variant) && (
+            <option value={variant} disabled>
+              {variant} (unavailable)
+            </option>
+          )}
+          {variants.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.name}
+            </option>
+          ))}
+        </NativeSelect>
       )}
       {associatedWorkspace && <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
         <span>{Object.keys(value).length ? 'This review uses your current choice.' : associatedWorkspace.reviewDefaults ? `Inherited from ${associatedWorkspace.name}.` : 'Inherited from your normal reviewer settings.'}</span>

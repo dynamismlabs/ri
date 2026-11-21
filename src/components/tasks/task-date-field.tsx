@@ -5,12 +5,12 @@ import { ChipButton } from '@/components/system/chip-button';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
+import { Field } from '@/components/system/field';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { parseTypedDate } from '@/lib/date-input';
 import { describeLocalDate, formatLocalDate, isPastDate, parseLocalDate, toDateOnly } from '@/lib/dates';
 import { todayLocalDate } from '@/lib/deck/date';
-import { cn } from '@/lib/utils';
 
 const FULL_DATE: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
 
@@ -43,6 +43,7 @@ export function TaskDatePicker({ label, value, onChange, children, open, onOpenC
 function DatePanel({ label, value, onChange, onClose }: {
   label: string; value: string | null | undefined; onChange: (date: string | null) => void; onClose: () => void;
 }) {
+  const phone = useViewportTier() === 'phone';
   const saved = toDateOnly(value);
   const initial = formatLocalDate(saved, FULL_DATE) ?? '';
   const [text, setText] = useState(initial);
@@ -83,35 +84,29 @@ function DatePanel({ label, value, onChange, onClose }: {
       }}
     >
       <div onClick={keepFromRow} onTouchStart={keepFromRow} className="flex flex-col gap-2">
-        <InputGroup className="h-8 rounded-md">
-          <InputGroupInput
-            ref={input}
-            aria-label={label}
-            aria-invalid={unreadable}
-            autoComplete="off"
-            placeholder="Type a date, like fri"
-            value={text}
-            className="h-8 px-2 md:text-xs"
-            onChange={(event) => {
-              setText(event.target.value);
-              const next = parseTypedDate(event.target.value);
-              if (next) setMonth(parseLocalDate(next)!);
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return;
-              event.preventDefault();
-              if (empty) finish(null);
-              else if (picked) finish(picked);
-            }}
-          />
-          {edited && !empty && (
-            <InputGroupAddon align="inline-end" className="py-0 pr-2">
-              <InputGroupText aria-live="polite" className={cn('whitespace-nowrap text-xs', unreadable && 'text-destructive')}>
-                {unreadable ? 'Not a date' : describeLocalDate(picked!)}
-              </InputGroupText>
-            </InputGroupAddon>
-          )}
-        </InputGroup>
+        <Field
+          inlineMessage
+          size={phone ? 'touch' : 'sm'}
+          error={unreadable ? 'Not a date' : undefined}
+          description={edited && !empty && !unreadable ? describeLocalDate(picked!) : undefined}
+          ref={input}
+          aria-label={label}
+          aria-invalid={unreadable}
+          autoComplete="off"
+          placeholder="Type a date, like fri"
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+            const next = parseTypedDate(event.target.value);
+            if (next) setMonth(parseLocalDate(next)!);
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            if (empty) finish(null);
+            else if (picked) finish(picked);
+          }}
+        />
         <Calendar
           mode="single"
           required

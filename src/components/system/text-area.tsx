@@ -32,6 +32,9 @@ export type TextAreaProps = Omit<ComponentProps<typeof Textarea>, 'size'> &
 export function TextArea(fieldProps: TextAreaProps) {
   const {
     label,
+    labelAction,
+    orientation,
+    labelClassName,
     description,
     error,
     labelId,
@@ -39,6 +42,7 @@ export function TextArea(fieldProps: TextAreaProps) {
     errorId,
     invalid,
     descriptionPosition,
+    counter,
     size: requestedSize,
     purpose,
     titleSize,
@@ -63,13 +67,18 @@ export function TextArea(fieldProps: TextAreaProps) {
     descriptionId,
     errorId,
     invalid,
+    counter,
   });
   const framed = hasFieldInfo(fieldProps);
   return (
     <FieldFrame
       info={info}
       framed={framed}
+      counter={counter}
       label={label}
+      labelAction={labelAction}
+      orientation={orientation}
+      labelClassName={labelClassName}
       description={description}
       error={error}
       descriptionPosition={descriptionPosition}

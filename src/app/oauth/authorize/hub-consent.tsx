@@ -55,7 +55,7 @@ export async function HubConsent({ request, params, issuer }: { request: Authori
                 {account.tools.map((tool) => (
                   <li key={tool.name}>
                     <label className="flex items-start gap-2 text-xs">
-                      <input type="checkbox" name={`tool:${account.connectionId}`} value={tool.name} defaultChecked={tool.requested} className="mt-0.5" />
+                      <input type="checkbox" data-slot="consent-checkbox" name={`tool:${account.connectionId}`} value={tool.name} defaultChecked={tool.requested} className="mt-0.5" />
                       <span><span className="font-mono text-[11px] text-foreground">{tool.name}</span>{tool.asks && <span className="text-muted-foreground"> · changes things, so it asks you each time</span>}
                         <span className="block text-muted-foreground">{tool.description}</span></span>
                     </label>
@@ -71,7 +71,7 @@ export async function HubConsent({ request, params, issuer }: { request: Authori
         <legend className="text-sm font-medium text-foreground">{APP_NAME}&apos;s own services</legend>
         {options.services.map((service) => (
           <label key={service.name} className="flex items-start gap-2 text-xs">
-            <input type="checkbox" name="service" value={service.name} defaultChecked={service.requested} className="mt-0.5" />
+            <input type="checkbox" data-slot="consent-checkbox" name="service" value={service.name} defaultChecked={service.requested} className="mt-0.5" />
             <span className="text-foreground">{service.description}</span>
           </label>
         ))}

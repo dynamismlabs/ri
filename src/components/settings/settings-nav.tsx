@@ -46,19 +46,14 @@ export function SettingsNavigation<Id extends string>({
         'sm:mr-0 sm:w-56 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:border-b-0 sm:border-r sm:p-3',
       )}
     >
-      <div className="relative mb-1 hidden sm:block">
-        <Search
-          size={13}
-          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <Field
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search"
-          aria-label={`Search ${label.toLowerCase()}`}
-          className="w-full"
-        />
-      </div>
+      <Field
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search"
+        aria-label={`Search ${label.toLowerCase()}`}
+        className={cn('w-full', 'relative mb-1')}
+        leading={<Search />}
+      />
 
       {matches.map((section) => {
         const Icon = section.icon;

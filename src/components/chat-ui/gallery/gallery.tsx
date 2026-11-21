@@ -108,35 +108,31 @@ export function ChatUiGallery() {
 
         <div className="grid items-start gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
           <aside className="min-w-0 lg:sticky lg:top-6" aria-label="Gallery examples">
-            <div className="relative">
-              <Search size={14} className="pointer-events-none absolute left-3 top-3 text-muted-foreground" />
-              <Field
-                aria-label="Search chat interfaces"
-                placeholder="Find an interface"
-                value={search}
-                onChange={(event) => filter(event.target.value, origin)}
-
-              />
-            </div>
+            <Field
+              aria-label="Search chat interfaces"
+              placeholder="Find an interface"
+              value={search}
+              onChange={(event) => filter(event.target.value, origin)}
+              leading={<Search />}
+              className="relative"
+            />
             <p className="mt-2 text-[11px] text-muted-foreground" aria-live="polite">
               {matches.length} {matches.length === 1 ? 'example' : 'examples'}
             </p>
             {matches.length > 0 && (
-              <label className="mt-3 block lg:hidden">
-                <span className="sr-only">Select an example</span>
-                <NativeSelect
-
-                  value={selected}
-                  onChange={(event) => choose(galleryExample(event.target.value))}
-                  className="w-full"
-                >
-                  {matches.map((item) => (
-                    <option value={item.id} key={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-                </NativeSelect>
-              </label>
+              <NativeSelect
+                value={selected}
+                onChange={(event) => choose(galleryExample(event.target.value))}
+                controlClassName="w-full"
+                aria-label="Select an example"
+                className="mt-3 block"
+              >
+                {matches.map((item) => (
+                  <option value={item.id} key={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </NativeSelect>
             )}
             <nav className="mt-4 hidden space-y-1 lg:block" aria-label="Chat UI examples">
               {matches.map((item) => (
@@ -186,22 +182,21 @@ export function ChatUiGallery() {
                 aria-label="Interactive preview"
               >
                 <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/25 px-3 py-2.5">
-                  <label className="flex items-center gap-2 text-xs">
-                    <span className="text-muted-foreground">State</span>
-                    <NativeSelect
-
-                      aria-label="Example state"
-                      value={state}
-                      onChange={(event) => choose(example, event.target.value)}
-                      className={cn("max-w-48", 'w-auto')}
-                    >
-                      {example.states.map((state) => (
-                        <option key={state.id} value={state.id}>
-                          {state.label}
-                        </option>
-                      ))}
-                    </NativeSelect>
-                  </label>
+                  <NativeSelect
+                    aria-label="Example state"
+                    value={state}
+                    onChange={(event) => choose(example, event.target.value)}
+                    controlClassName={cn('max-w-48', 'w-auto')}
+                    label={<>State</>}
+                    orientation="horizontal"
+                    className="w-auto"
+                  >
+                    {example.states.map((state) => (
+                      <option key={state.id} value={state.id}>
+                        {state.label}
+                      </option>
+                    ))}
+                  </NativeSelect>
                   <div className="flex items-center gap-1 sm:ml-auto" aria-label="Preview size">
                     <IconButton
                       aria-pressed={!phone}

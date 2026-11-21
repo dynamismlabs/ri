@@ -38,6 +38,9 @@ export type FieldProps = FieldBaseProps &
 export function Field(fieldProps: FieldProps) {
   const {
     label,
+    labelAction,
+    orientation,
+    labelClassName,
     description,
     error,
     labelId,
@@ -45,6 +48,7 @@ export function Field(fieldProps: FieldProps) {
     errorId,
     invalid,
     descriptionPosition,
+    counter,
     inlineMessage,
     size: requestedSize,
     purpose,
@@ -72,6 +76,7 @@ export function Field(fieldProps: FieldProps) {
     descriptionId,
     errorId,
     invalid,
+    counter,
   });
   const framed = 'label' in fieldProps || (!inlineMessage && hasFieldInfo(fieldProps));
   const grouped = !!inlineMessage || 'leading' in fieldProps || 'trailing' in fieldProps;
@@ -105,7 +110,11 @@ export function Field(fieldProps: FieldProps) {
     <FieldFrame
       info={info}
       framed={framed}
+      counter={counter}
       label={label}
+      labelAction={labelAction}
+      orientation={orientation}
+      labelClassName={labelClassName}
       description={!inlineMessage && description}
       error={!inlineMessage && error}
       descriptionPosition={descriptionPosition}
@@ -116,7 +125,13 @@ export function Field(fieldProps: FieldProps) {
           data-slot="field-shell"
           aria-invalid={info['aria-invalid']}
           data-disabled={props.disabled || undefined}
-          className={cn('ri-field-shell', `ri-field--${size}`, !framed && className, controlClassName)}
+          className={cn(
+            'ri-field-shell',
+            `ri-field--${size}`,
+            purpose && `ri-field--${purpose}`,
+            !framed && className,
+            controlClassName,
+          )}
         >
           {leading && (
             <InputGroupAddon className="ri-field-addon" align="inline-start">
@@ -127,14 +142,9 @@ export function Field(fieldProps: FieldProps) {
           {(trailing || (inlineMessage && (description || error))) && (
             <InputGroupAddon className="ri-field-addon" align="inline-end">
               {trailing}
-              {inlineMessage && description && (
-                <span id={info.descriptionId} aria-live="polite">
-                  {description}
-                </span>
-              )}
-              {inlineMessage && error && (
-                <span id={info.errorId} role="alert">
-                  {error}
+              {inlineMessage && (description || error) && (
+                <span id={error ? info.errorId : info.descriptionId} aria-live="polite">
+                  {error || description}
                 </span>
               )}
             </InputGroupAddon>

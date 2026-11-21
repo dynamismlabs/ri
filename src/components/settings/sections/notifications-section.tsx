@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SelectField } from '@/components/system/select-field';
 import { Field } from '@/components/system/field';
 
@@ -578,7 +579,7 @@ export function NotificationsSection() {
                             value={newChatId}
                             onChange={(e) => setNewChatId(e.target.value)}
                             placeholder="e.g. -100123456789 or 987654321"
-                             purpose="code"
+                            purpose="code"
                           />
                           {discoveredChats.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -601,17 +602,16 @@ export function NotificationsSection() {
                           )}
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Label <span className="opacity-60">(optional)</span>
-                          </label>
-                          <Field
-                            value={newLabel}
-                            onChange={(e) => setNewLabel(e.target.value)}
-                            placeholder="e.g. My phone"
-
-                          />
-                        </div>
+                        <Field
+                          value={newLabel}
+                          onChange={(e) => setNewLabel(e.target.value)}
+                          placeholder="e.g. My phone"
+                          label={
+                            <>
+                              Label <span className="opacity-60">(optional)</span>
+                            </>
+                          }
+                        />
 
                         <Button
                           onClick={addTelegram}
@@ -781,13 +781,13 @@ export function NotificationsSection() {
                     </td>
                     {channels.map((c) => (
                       <td key={c.id} className={cn('p-2 text-center align-middle', !c.enabled && 'opacity-50')}>
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={(c.events ?? []).includes(e.type)}
                           disabled={busy}
-                          onChange={() => toggleEvent(c, e.type)}
+                          onCheckedChange={() => toggleEvent(c, e.type)}
                           aria-label={`${e.label} to ${channelLabel(c)}`}
-                          className="size-4 cursor-pointer rounded border-border accent-primary"
+                          className="mx-auto"
+
                         />
                       </td>
                     ))}
@@ -839,12 +839,11 @@ export function NotificationsSection() {
                               isChecked ? 'border-primary/20 bg-primary/[0.01]' : '',
                             )}
                           >
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               disabled={busy}
                               checked={isChecked}
-                              onChange={(e) => setDigestChannels(d.id, c.id, e.target.checked)}
-                              className="size-3.5 cursor-pointer rounded border-border accent-primary"
+                              onCheckedChange={(checked) => setDigestChannels(d.id, c.id, (checked === true))}
+
                             />
                             <span className="truncate font-medium text-foreground/90">{channelLabel(c)}</span>
                           </label>

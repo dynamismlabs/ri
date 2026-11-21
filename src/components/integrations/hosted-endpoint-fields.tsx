@@ -30,30 +30,48 @@ export function HostedEndpointFields({ setup, value = {}, onChange, disabled = f
   if (setup.kind === 'deployment') {
     const selfHosted = (value.endpointId ?? 'hosted') === 'selfhosted';
     return <div className="space-y-3">
-      <div className="space-y-2">
-        <label htmlFor={id} className="text-xs font-medium">{setup.label}</label>
-        <NativeSelect id={id} value={value.endpointId ?? 'hosted'} disabled={disabled}
-          onChange={event => onChange?.({ endpointId: event.target.value, ...(event.target.value === 'selfhosted' ? { authMethod: 'oauth' } : {}) })}
-          className="flex w-full">
-          <option value="hosted">Hosted</option><option value="selfhosted">Self-hosted</option>
-        </NativeSelect>
-      </div>
+      <NativeSelect
+        id={id}
+        value={value.endpointId ?? 'hosted'}
+        disabled={disabled}
+        onChange={(event) =>
+          onChange?.({
+            endpointId: event.target.value,
+            ...(event.target.value === 'selfhosted' ? { authMethod: 'oauth' } : {}),
+          })
+        }
+        controlClassName="flex w-full"
+        label={setup.label}
+      >
+        <option value="hosted">Hosted</option>
+        <option value="selfhosted">Self-hosted</option>
+      </NativeSelect>
       {selfHosted && <>
-        <div className="space-y-2">
-          <label htmlFor={`${id}-url`} className="text-xs font-medium">Instance URL</label>
-          <Field id={`${id}-url`} type="url" value={value.instanceUrl ?? ''} placeholder={setup.placeholder} autoComplete="url" required disabled={disabled}
-            onChange={event => onChange?.({ ...value, instanceUrl: event.target.value })} />
-          <p className="text-xs text-muted-foreground">Enter the address of your OpenSEO server. Local Docker addresses such as http://localhost:3000 are supported. Ri adds /mcp automatically.</p>
-        </div>
-        <div className="space-y-2">
-          <label htmlFor={`${id}-auth`} className="text-xs font-medium">Authentication</label>
-          <NativeSelect id={`${id}-auth`} value={value.authMethod ?? 'oauth'} disabled={disabled}
-            onChange={event => onChange?.({ ...value, authMethod: event.target.value as 'oauth' | 'none' })}
-            className="flex w-full">
-            <option value="oauth">Browser sign-in (Cloudflare Access)</option>
-            <option value="none">No authentication (Docker)</option>
-          </NativeSelect>
-        </div>
+        <Field
+          id={`${id}-url`}
+          type="url"
+          value={value.instanceUrl ?? ''}
+          placeholder={setup.placeholder}
+          autoComplete="url"
+          required
+          disabled={disabled}
+          onChange={(event) => onChange?.({ ...value, instanceUrl: event.target.value })}
+          label="Instance URL"
+          description="Enter the address of your OpenSEO server. Local Docker addresses such as http://localhost:3000 are supported. Ri adds /mcp automatically."
+        />
+        <NativeSelect
+          id={`${id}-auth`}
+          value={value.authMethod ?? 'oauth'}
+          disabled={disabled}
+          onChange={(event) =>
+            onChange?.({ ...value, authMethod: event.target.value as 'oauth' | 'none' })
+          }
+          controlClassName="flex w-full"
+          label="Authentication"
+        >
+          <option value="oauth">Browser sign-in (Cloudflare Access)</option>
+          <option value="none">No authentication (Docker)</option>
+        </NativeSelect>
       </>}
     </div>;
   }
@@ -62,18 +80,24 @@ export function HostedEndpointFields({ setup, value = {}, onChange, disabled = f
     {setup.kind === 'region' ? <NativeSelect
       id={id}
       value={value.endpointId ?? ''}
-      onChange={event => onChange?.({ endpointId: event.target.value })}
+      onChange={(event) => onChange?.({ endpointId: event.target.value })}
       disabled={disabled}
       required
       className="flex w-full"
     >
-      <option value="" disabled>Select {setup.label.toLowerCase()}</option>
-      {setup.options.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+      <option value="" disabled>
+        Select {setup.label.toLowerCase()}
+      </option>
+      {setup.options.map((option) => (
+        <option key={option.id} value={option.id}>
+          {option.label}
+        </option>
+      ))}
     </NativeSelect> : <Field
       id={id}
       type="url"
       value={value.instanceUrl ?? ''}
-      onChange={event => onChange?.({ instanceUrl: event.target.value })}
+      onChange={(event) => onChange?.({ instanceUrl: event.target.value })}
       placeholder={setup.placeholder}
       autoComplete="url"
       disabled={disabled}

@@ -96,17 +96,15 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
         {/* Search */}
-        <div className="flex items-center gap-1.5 flex-1 bg-muted/50 rounded-md px-2 py-1">
-          <Search className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-          <Field
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search tasks..."
-            className="w-full"
-            autoFocus purpose="embedded"
-          />
-        </div>
+        <Field
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search tasks..."
+          className={cn('w-full', 'flex-1')}
+          autoFocus
+          leading={<Search />}
+        />
 
         {/* Energy toggle */}
         <SegmentedControl mode="choice" allowEmpty ariaLabel="Energy" value={energyFilter} onChange={setEnergyFilter} options={[{value:'light',label:'Light'},{value:'deep',label:'Deep'}]} />

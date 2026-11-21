@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Loader2, Play, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+import { Field } from '@/components/system/field';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -140,7 +140,13 @@ function SettingControl({ id, field, value, invalid, onSave }: { id: string; fie
       return <Switch id={id} checked={value === true} aria-invalid={invalid || undefined} onCheckedChange={onSave} />;
     case 'string':
       if (field.enum) return <Select value={typeof value === 'string' ? value : undefined} onValueChange={onSave}>
-        <SelectField id={id} aria-invalid={invalid || undefined} className="w-full min-w-0 @md:w-auto @md:min-w-36"><SelectValue /></SelectField>
+        <SelectField
+          id={id}
+          aria-invalid={invalid || undefined}
+          className="w-full min-w-0 @md:w-auto @md:min-w-36"
+        >
+          <SelectValue />
+        </SelectField>
         <SelectContent position="popper" align="end">{field.enum.map(option => <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>)}</SelectContent>
       </Select>;
       return <DraftInput id={id} value={typeof value === 'string' ? value : ''} invalid={invalid} onCommit={draft => onSave(draft)} />;
@@ -167,8 +173,22 @@ function DraftInput({ id, type, value, invalid, inputMode, step, onCommit }: {
     if (event.key === 'Enter') { event.preventDefault(); commit(); }
     if (event.key === 'Escape') { setEditing(false); setDraft(value); }
   };
-  return <Input id={id} type={type} value={draft} inputMode={inputMode} step={step} aria-invalid={invalid || undefined} className="h-8 w-full text-xs @md:w-56"
-    onFocus={() => setEditing(true)} onChange={event => { setEditing(true); setDraft(event.target.value); }} onBlur={commit} onKeyDown={onKeyDown} />;
+  return <Field
+    id={id}
+    type={type}
+    value={draft}
+    inputMode={inputMode}
+    step={step}
+    aria-invalid={invalid || undefined}
+    className="w-full @md:w-56"
+    onFocus={() => setEditing(true)}
+    onChange={(event) => {
+      setEditing(true);
+      setDraft(event.target.value);
+    }}
+    onBlur={commit}
+    onKeyDown={onKeyDown}
+  />;
 }
 
 /**

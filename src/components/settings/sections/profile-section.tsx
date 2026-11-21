@@ -107,22 +107,18 @@ export function ProfileSection() {
       </div>
 
       {/* Name */}
-      <section className="space-y-2">
-        <label htmlFor="profile-name" className="block text-[12px] font-medium text-foreground">
-          What should your assistant call you?
-        </label>
-        <Field
-          id="profile-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={commitName}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-          }}
-          placeholder="e.g. Trey"
-          className="w-full max-w-sm"
-        />
-      </section>
+      <Field
+        id="profile-name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={commitName}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+        placeholder="e.g. Trey"
+        controlClassName="w-full max-w-sm"
+        label="What should your assistant call you?"
+      />
 
       {/* The assistant (the orchestrator): its name and look */}
       <section className="space-y-2">
@@ -157,21 +153,22 @@ export function ProfileSection() {
       </section>
 
       {/* About you */}
-      <section className="space-y-2">
-        <label htmlFor="profile-about" className="block text-[12px] font-medium text-foreground">
-          About you
-        </label>
-        <TextArea
-          id="profile-about"
-          value={description}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
-          placeholder="e.g. I'm a founder building a B2B SaaS product. I do my best deep work before noon. I tend to procrastinate on financial tasks..."
-          className="w-full" resize="vertical"
-        />
-        <p className="text-[11px] text-muted-foreground/60">
-          {updateUserState.isPending ? 'Saving…' : lastSavedAt ? `Last saved ${timeAgo(lastSavedAt)}` : 'Auto-saved'}
-        </p>
-      </section>
+      <TextArea
+        id="profile-about"
+        value={description}
+        onChange={(e) => handleDescriptionChange(e.target.value)}
+        placeholder="e.g. I'm a founder building a B2B SaaS product. I do my best deep work before noon. I tend to procrastinate on financial tasks..."
+        controlClassName="w-full"
+        resize="vertical"
+        label="About you"
+        description={
+          updateUserState.isPending
+            ? 'Saving…'
+            : lastSavedAt
+              ? `Last saved ${timeAgo(lastSavedAt)}`
+              : 'Auto-saved'
+        }
+      />
 
       {/* Deck sources (DECK.md) — which connected services the deck consults. */}
       <DeckSourcesField />

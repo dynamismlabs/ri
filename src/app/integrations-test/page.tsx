@@ -546,33 +546,31 @@ export default function IntegrationsTestPage() {
       <section className="space-y-3">
         <h2 className="font-medium">Run an action</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="space-y-1">
-            <span className="text-xs text-neutral-500">Action</span>
-            <NativeSelect
-              value={actionId}
-              onChange={(e) => setActionId(e.target.value)}
-              className="w-full"
-            >
-              {toolkits.map((t) => (
-                <optgroup key={t.id} label={t.displayName}>
-                  {t.actions.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.id} {a.mutating ? `(${a.risk})` : ''}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </NativeSelect>
-          </label>
-          <label className="space-y-1">
-            <span className="text-xs text-neutral-500">Account (email/label, optional)</span>
-            <Field
-              value={account}
-              onChange={(e) => setAccount(e.target.value)}
-              placeholder="omit if only one connected"
-              className="w-full"
-            />
-          </label>
+          <NativeSelect
+            value={actionId}
+            onChange={(e) => setActionId(e.target.value)}
+            controlClassName="w-full"
+            label="Action"
+            className="w-auto"
+          >
+            {toolkits.map((t) => (
+              <optgroup key={t.id} label={t.displayName}>
+                {t.actions.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.id} {a.mutating ? `(${a.risk})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </NativeSelect>
+          <Field
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+            placeholder="omit if only one connected"
+            controlClassName="w-full"
+            label="Account (email/label, optional)"
+            className="w-auto"
+          />
         </div>
         {selectedAction && (
           <p className="text-xs text-neutral-500">
@@ -580,15 +578,15 @@ export default function IntegrationsTestPage() {
             {selectedAction.scopes.length > 0 && <> · scopes: {selectedAction.scopes.join(', ')}</>}
           </p>
         )}
-        <label className="space-y-1">
-          <span className="text-xs text-neutral-500">Input (JSON)</span>
-          <TextArea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            rows={5}
-            className="w-full" purpose="code"
-          />
-        </label>
+        <TextArea
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          rows={5}
+          controlClassName="w-full"
+          purpose="code"
+          label="Input (JSON)"
+          className="w-auto"
+        />
         <button
           disabled={running || !actionId}
           onClick={run}

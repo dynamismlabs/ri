@@ -59,7 +59,6 @@ export default function PlaygroundPage() {
     if (!text) return
     sendMessage({ text })
     setInput('')
-    if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }, [input, sendMessage])
 
   const hasMessages = messages.length > 0
@@ -77,13 +76,11 @@ export default function PlaygroundPage() {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground">Model</label>
-          <NativeSelect
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="w-auto"
-          >
+          <NativeSelect value={model} onChange={(e) => setModel(e.target.value)} className="w-auto">
             {MODEL_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.id}>{opt.label}</option>
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
             ))}
           </NativeSelect>
         </div>
@@ -175,22 +172,21 @@ export default function PlaygroundPage() {
           <div className="rounded-lg border border-border bg-card focus-within:border-primary/50 transition-colors">
             <TextArea
               ref={textareaRef}
+              aria-label="Message"
+              autoSize
+              maxRows={7}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about your tasks, plan your day, add a note…"
               rows={1}
               className="w-full"
-              onInput={(e) => {
-                const target = e.currentTarget
-                target.style.height = 'auto'
-                target.style.height = Math.min(target.scrollHeight, 160) + 'px'
-              }}
               onKeyDown={(e) => {
-                if (!matchesSendKey(e.nativeEvent, touchFirst)) return
-                e.preventDefault()
-                if (isStreaming) stop()
-                else handleSubmit()
-              }} purpose="embedded"
+                if (!matchesSendKey(e.nativeEvent, touchFirst)) return;
+                e.preventDefault();
+                if (isStreaming) stop();
+                else handleSubmit();
+              }}
+              purpose="embedded"
             />
             <div className="flex items-center justify-end gap-1 px-2 pb-1.5">
               <IconButton

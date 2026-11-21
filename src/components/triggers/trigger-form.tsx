@@ -28,7 +28,6 @@ import type { UpdateTriggerPayload } from '@/lib/api/triggers';
 import { DEFAULT_HARNESS } from '@/lib/harness/registry';
 import { frequencyToTrigger, triggerToFrequency } from '@/lib/scheduler/frequency';
 import { lockedFieldsFor, RESERVED_TRIGGER_IDS } from '@/lib/triggers/reserved';
-import { cn } from '@/lib/utils';
 import { RunsOnPicker, type RunsOnValue } from './runs-on-picker';
 import { EDITABLE_KINDS, TriggerScheduleFields, scheduleChoiceResult, type ScheduleChoice } from './trigger-schedule-fields';
 import { TriggerTargetChat } from './trigger-target-chat';
@@ -280,28 +279,31 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <Field label="Name" required>
-        <SystemField
-          type="text"
-          value={values.name}
-          onChange={(e) => set({ name: e.target.value })}
-          placeholder="Morning briefing"
-          required
-          disabled={locked.has('name')}
-          className="w-full"
-        />
-      </Field>
+      <SystemField
+        type="text"
+        value={values.name}
+        onChange={(e) => set({ name: e.target.value })}
+        placeholder="Morning briefing"
+        required
+        disabled={locked.has('name')}
+        className="w-full"
+        label={
+          <>
+            {'Name'}
+            <span aria-hidden>*</span>
+          </>
+        }
+      />
 
-      <Field label="Description">
-        <SystemField
-          type="text"
-          value={values.description}
-          onChange={(e) => set({ description: e.target.value })}
-          placeholder="Optional. What it's for, in a line"
-          disabled={locked.has('description')}
-          className="w-full"
-        />
-      </Field>
+      <SystemField
+        type="text"
+        value={values.description}
+        onChange={(e) => set({ description: e.target.value })}
+        placeholder="Optional. What it's for, in a line"
+        disabled={locked.has('description')}
+        className="w-full"
+        label="Description"
+      />
 
       <div className="space-y-1">
         <span className="block text-[12px] font-medium text-foreground">
@@ -320,7 +322,9 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
             required
             rows={6}
             disabled={locked.has('prompt')}
-            className="w-full" purpose="embedded" resize="vertical"
+            className="w-full"
+            purpose="embedded"
+            resize="vertical"
           />
           {target !== 'session' && (
             <div className="flex flex-wrap items-center gap-2 px-2 py-2 border-t border-border/60">
@@ -455,55 +459,55 @@ function Advanced({
       {open && (
         <div className="space-y-4 border-l-2 border-border pl-4">
           {target !== 'session' && (
-            <Field label="Time limit in seconds (optional)">
-              <SystemField
-                type="number"
-                min={60}
-                step={60}
-                value={values.timeoutSeconds ?? ''}
-                placeholder="No limit"
-                disabled={locked.has('timeoutSeconds')}
-                onChange={(e) => set({ timeoutSeconds: e.target.value === '' ? null : Number(e.target.value) })}
-                className="w-full"
-              />
-              <p className="text-[10px] text-muted-foreground mt-1">
-                Leave blank to let a run take as long as it needs. A run past the limit is stopped.
-              </p>
-            </Field>
-          )}
-          <Field label="If the last run is still going">
-            <NativeSelect
-              value={values.concurrencyPolicy}
-              disabled={locked.has('concurrencyPolicy')}
-              onChange={(e) => set({ concurrencyPolicy: e.target.value as TriggerConcurrencyPolicy })}
+            <SystemField
+              type="number"
+              min={60}
+              step={60}
+              value={values.timeoutSeconds ?? ''}
+              placeholder="No limit"
+              disabled={locked.has('timeoutSeconds')}
+              onChange={(e) =>
+                set({ timeoutSeconds: e.target.value === '' ? null : Number(e.target.value) })
+              }
               className="w-full"
-            >
-              <option value="skip_if_running">
-                {target === 'session' && values.schedule.kind === 'once' ? 'Wait until the chat is free' : 'Skip this run'}
-              </option>
-              <option value="coalesce_if_active">
-                {target === 'session' ? 'Add it to the turn under way' : 'Add it to the running chat'}
-              </option>
-              {target === 'orchestrator' && <option value="allow_concurrent">Run alongside it</option>}
-            </NativeSelect>
-          </Field>
+              label="Time limit in seconds (optional)"
+              description="Leave blank to let a run take as long as it needs. A run past the limit is stopped."
+            />
+          )}
+          <NativeSelect
+            value={values.concurrencyPolicy}
+            disabled={locked.has('concurrencyPolicy')}
+            onChange={(e) => set({ concurrencyPolicy: e.target.value as TriggerConcurrencyPolicy })}
+            className="w-full"
+            label="If the last run is still going"
+          >
+            <option value="skip_if_running">
+              {target === 'session' && values.schedule.kind === 'once'
+                ? 'Wait until the chat is free'
+                : 'Skip this run'}
+            </option>
+            <option value="coalesce_if_active">
+              {target === 'session' ? 'Add it to the turn under way' : 'Add it to the running chat'}
+            </option>
+            {target === 'orchestrator' && (
+              <option value="allow_concurrent">Run alongside it</option>
+            )}
+          </NativeSelect>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Active hours start">
-              <SystemField
-                type="time"
-                value={values.activeHoursStart}
-                onChange={(e) => set({ activeHoursStart: e.target.value })}
-                className="w-full"
-              />
-            </Field>
-            <Field label="Active hours end">
-              <SystemField
-                type="time"
-                value={values.activeHoursEnd}
-                onChange={(e) => set({ activeHoursEnd: e.target.value })}
-                className="w-full"
-              />
-            </Field>
+            <SystemField
+              type="time"
+              value={values.activeHoursStart}
+              onChange={(e) => set({ activeHoursStart: e.target.value })}
+              className="w-full"
+              label="Active hours start"
+            />
+            <SystemField
+              type="time"
+              value={values.activeHoursEnd}
+              onChange={(e) => set({ activeHoursEnd: e.target.value })}
+              className="w-full"
+              label="Active hours end"
+            />
           </div>
         </div>
       )}
@@ -558,17 +562,5 @@ function WorkspacePill({
         </div>
       )}
     </div>
-  );
-}
-
-function Field({ label, children, required = false }: { label: string; children: React.ReactNode; required?: boolean }) {
-  return (
-    <label className="block space-y-1">
-      <span className="text-[12px] font-medium text-foreground">
-        {label}
-        {required && <span className="text-destructive ml-0.5">*</span>}
-      </span>
-      {children}
-    </label>
   );
 }

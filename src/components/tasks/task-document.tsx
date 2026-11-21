@@ -50,15 +50,29 @@ export function TaskDocument({ task, onTitleChange, onAreaChange, onDeadlineChan
         {breadcrumb}
       </div>
       <div className="px-4 pt-1 md:px-12">
-        <TextArea ref={attachTitle} data-entity-title aria-label="Task title" placeholder="Task title" defaultValue={empty ? '' : task.title} rows={1} disabled={bodyEditor?.editable === false}
+        <TextArea
+          ref={attachTitle}
+          data-entity-title
+          aria-label="Task title"
+          placeholder="Task title"
+          defaultValue={empty ? '' : task.title}
+          rows={1}
+          disabled={bodyEditor?.editable === false}
           className="w-full"
-          onInput={(event) => { resize(); onTitleChange(event.currentTarget.value.trim() || ' '); }}
+          onInput={(event) => {
+            resize();
+            onTitleChange(event.currentTarget.value.trim() || ' ');
+          }}
           onKeyDown={(event) => {
             if (event.key !== 'Enter') return;
             event.preventDefault();
             if (event.metaKey || event.ctrlKey) return;
             root.current?.querySelector<HTMLElement>('.rich-editor-body')?.focus();
-          }} purpose="title" titleSize="entity" autoSize
+          }}
+          purpose="title"
+          titleSize="entity"
+          completed={task.status === 'done'}
+          autoSize
         />
         <p className="mt-1 text-[10px] text-muted-foreground/50">Created {new Date(task.createdAt).toLocaleDateString()}{task.updatedAt !== task.createdAt && <> · Edited {new Date(task.updatedAt).toLocaleDateString()}</>}{task.completedAt && <> · Completed {new Date(task.completedAt).toLocaleDateString()}</>}</p>
       </div>

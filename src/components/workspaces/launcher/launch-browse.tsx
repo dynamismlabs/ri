@@ -304,28 +304,23 @@ export function LaunchBrowse({
       // search field over no results.
       className={cn('flex flex-1 flex-col rounded-lg border border-border bg-background/60', touch ? 'min-h-[50vh]' : 'min-h-0')}
     >
-      <div className="relative flex-shrink-0 border-b border-border/70">
-        <Search
-          size={12}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-        />
-        <Field
-          // On touch, focusing would raise the keyboard over the list it's
-          // meant to show. A tap on the field searches.
-          autoFocus={!touch}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Search everything…"
-          className="w-full" purpose="embedded"
-        />
-        {anyLoading && (
-          <Loader2
-            size={12}
-            className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground/60"
-          />
-        )}
-      </div>
+      <div className="relative flex-shrink-0 border-b border-border/70"><Field
+        // On touch, focusing would raise the keyboard over the list it's
+        // meant to show. A tap on the field searches.
+        autoFocus={!touch}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Search everything…"
+        className={'w-full'}
+        purpose="embedded"
+        leading={<Search />}
+        trailing={
+          <>
+            {anyLoading && <Loader2 size={12} className="animate-spin text-muted-foreground/60" />}
+          </>
+        }
+      /></div>
 
       <div className="flex flex-shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border/70 px-1.5 py-1">
         {tabs.map((t) => (

@@ -5,6 +5,7 @@
   --field-line: 20px;
   --field-padding: 10px;
   --field-block: calc((var(--field-size) - var(--field-line) - 2px) / 2);
+  color-scheme: light;
   box-sizing: border-box;
   height: var(--field-size);
   padding: var(--field-block) var(--field-padding);
@@ -68,3 +69,21 @@
 .ri-field-select-trigger > svg { width: 14px; height: 14px; flex-shrink: 0; }
 
 .ri-field-select-trigger:hover:not(:disabled) { border-color: var(--t4); }
+
+.dark .ri-field-control { color-scheme: dark; }
+
+.ri-field-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ri-field-counter { margin-left: auto; color: var(--t3); font: 400 12px/18px var(--font-sans); font-variant-numeric: tabular-nums; }
+.ri-field-counter[data-over] { color: var(--danger); }
+
+/* Consent remains a native HTML form that works before hydration. */
+[data-slot="consent-checkbox"] { accent-color: var(--primary); }
+[data-slot="consent-checkbox"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* Inline labels retain wrapping when a value grows or the panel narrows. */
+.ri-field-frame--horizontal { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 8px; }
+.ri-field-frame--horizontal > .ri-field-label-row { flex-shrink: 0; }
+
+.ri-field-shell.ri-field--embedded:hover:not([data-disabled]) { border-color: transparent; }
+
+.ri-field-label-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }

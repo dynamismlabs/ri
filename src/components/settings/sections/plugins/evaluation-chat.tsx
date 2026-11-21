@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -197,7 +198,7 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
             variant="secondary"
             size="sm"
           ><Tag className="size-3" />{latest && contexts[latest] && 'kind' in contexts[latest] ? 'Attach result' : 'Attach scenario'}</Button>}
-          {context && !allowsEvaluationChanges(context) ? <p className="text-xs text-muted-foreground">Read only. The agent can discuss this result, but cannot change this app or its records.</p> : context && <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={chat.allowChanges} onChange={event => patch(selected, value => ({ ...value, allowChanges: event.target.checked }))} />{'kind' in context ? context.app === 'Excalidraw' ? 'Allow updates to this diagram' : context.app === 'Flint charts' ? 'Allow updates to this chart' : context.app === 'tldraw' ? 'Allow updates to this canvas' : context.kind === 'account' ? 'Allow calls on this account' : 'Allow changes to this building view' : 'Allow updates to the sample scenario'}</label>}
+          {context && !allowsEvaluationChanges(context) ? <p className="text-xs text-muted-foreground">Read only. The agent can discuss this result, but cannot change this app or its records.</p> : context && <label className="flex items-center gap-2 text-xs text-muted-foreground"><Checkbox checked={chat.allowChanges} onCheckedChange={checked => patch(selected, value => ({ ...value, allowChanges: (checked === true) }))} />{'kind' in context ? context.app === 'Excalidraw' ? 'Allow updates to this diagram' : context.app === 'Flint charts' ? 'Allow updates to this chart' : context.app === 'tldraw' ? 'Allow updates to this canvas' : context.kind === 'account' ? 'Allow calls on this account' : 'Allow changes to this building view' : 'Allow updates to the sample scenario'}</label>}
         </div>
         <div ref={log} role="log" aria-label={`Demo chat ${selected + 1} messages`} className="min-h-20 flex-1 space-y-3 overflow-y-auto px-4 pb-3">
           {!chat.messages.length && <p className="text-xs text-muted-foreground">{context ? 'inputs' in context ? 'Ask about the current sliders. Try “What growth rate do you see?”' : allowsEvaluationChanges(context) ? context.app === 'Excalidraw' ? 'Enable updates, then try “Add a green Done step after Execute.”' : context.app === 'Flint charts' ? 'Enable updates, then try “Change this to a line chart.”' : context.app === 'tldraw' ? 'Enable updates, then try “Add a green Done box.”' : context.app === 'Building explorer' ? 'Enable view changes, then try “Show Gustav Mahlerlaan 10 in a table.”' : 'Enable account calls, then ask the agent to revise this workflow. Account approvals still apply.' : 'Ask about the displayed data or the latest information shared by this app.' : 'Open an example and attach its context here.'}</p>}
@@ -221,7 +222,17 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
           {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
         </div>
         <form className="flex items-end gap-2 border-t border-border p-3" onSubmit={event => { event.preventDefault(); void submit(); }}>
-          <TextArea aria-label="Message the demo agent" rows={2} maxLength={2000} value={chat.draft} onChange={event => patch(selected, value => ({ ...value, draft: event.target.value }))} placeholder="Ask about this result…" className="min-w-0 flex-1" />
+          <TextArea
+            aria-label="Message the demo agent"
+            rows={2}
+            maxLength={2000}
+            value={chat.draft}
+            onChange={(event) =>
+              patch(selected, (value) => ({ ...value, draft: event.target.value }))
+            }
+            placeholder="Ask about this result…"
+            className="min-w-0 flex-1"
+          />
           <IconButton
             type="submit"
             disabled={busy || !context || !chat.draft.trim()}

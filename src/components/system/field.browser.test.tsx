@@ -11,7 +11,7 @@ beforeAll(async () => {
     import{SelectField}from'@/components/system/select-field';import{Select,SelectValue,SelectContent,SelectItem}from'@/components/ui/select';
     import{Button}from'@/components/system/button';import{Command,CommandInput,CommandList,CommandItem}from'@/components/ui/command';
     document.documentElement.classList.toggle('dark',new URLSearchParams(location.search).get('theme')==='dark');
-    function App(){const[name,setName]=useState('Maya'),[frequency,setFrequency]=useState('daily'),[search,setSearch]=useState(''),[clears,setClears]=useState(0),[live,setLive]=useState(''),[liveError,setLiveError]=useState(),[parserValue,setParserValue]=useState(''),[parserError,setParserError]=useState(),[rich,setRich]=useState('daily');const ref=useRef(null);
+    function App(){const[name,setName]=useState('Maya'),[frequency,setFrequency]=useState('daily'),[search,setSearch]=useState(''),[clears,setClears]=useState(0),[live,setLive]=useState(''),[liveError,setLiveError]=useState(),[parserValue,setParserValue]=useState(''),[parserError,setParserError]=useState(),[rich,setRich]=useState('daily'),[purpose,setPurpose]=useState('ab');const ref=useRef(null);
       return <main data-slot="settings-body" style={{padding:16,display:'grid',gap:16,background:'var(--pane)',color:'var(--t1)'}}>
         <form id="form" onSubmit={e=>e.preventDefault()}>
           <p id="existing-help">Existing help</p>
@@ -30,7 +30,7 @@ beforeAll(async () => {
         <Field label="Grouped" defaultValue="A value" className="w-64" trailing={<Button size="xs" onClick={()=>setClears(n=>n+1)}>Clear</Button>}/>
         <Field aria-label="Parser" inlineMessage error="Not a date" value="bad date" onChange={()=>{}} size="sm"/>
         <Field label="Narrow control" className="w-64" controlClassName="w-24"/>
-        <Field label="Phone field" size="touch"/>
+        <Field label="Inline" orientation="horizontal" labelClassName="w-12" controlClassName="flex-1" className="w-64" size="sm"/><TextArea label="Message" labelAction={<Button size="xs" onClick={()=>setClears(n=>n+1)}>Copy</Button>} rows={2}/><Field label="Phone field" size="touch"/><Field type="time" label="Start time" defaultValue="09:00"/><Field type="date" label="Start date"/>
         <Field aria-label="Code" purpose="code" defaultValue="pnpm dev"/>
         <TextArea aria-label="Task title" purpose="title" titleSize="entity" autoSize rows={1} defaultValue="A title"/>
         <button id="focus-ref" onClick={()=>ref.current.focus()}>Focus name</button>
@@ -39,7 +39,7 @@ beforeAll(async () => {
         <Select value={rich} onValueChange={setRich}><SelectField label="Rich select" description="Keep the installed picker"><SelectValue/></SelectField><SelectContent><SelectItem value="daily">Daily</SelectItem><SelectItem value="weekly">Weekly</SelectItem></SelectContent></Select>
         <Select defaultValue="daily"><SelectField label="Invalid rich select" error="Choose a period"><SelectValue/></SelectField><SelectContent><SelectItem value="daily">Daily</SelectItem></SelectContent></Select>
         <Select defaultValue="daily" disabled><SelectField label="Disabled rich select"><SelectValue/></SelectField><SelectContent><SelectItem value="daily">Daily</SelectItem></SelectContent></Select>
-        <output id="clears">{clears}</output>
+        <TextArea label="Purpose" value={purpose} onChange={e=>setPurpose(e.target.value)} counter={{value:purpose.length,max:3,id:'purpose-count',unit:'characters'}} aria-invalid={purpose.length>3} description="What the agent does"/><output id="clears">{clears}</output>
         <Command label="Search models"><Field asChild purpose="embedded" description="Pick a model" error="Choose a model"><CommandInput aria-label="Search models" value={search} onValueChange={setSearch}/></Field><CommandList><CommandItem>Alpha</CommandItem><CommandItem>Beta</CommandItem></CommandList></Command>
         <output id="search">{search}</output>
       </main>;
@@ -223,6 +223,68 @@ for (const theme of ['light', 'dark']) {
       await page.close();
     }
   });
+  it(`owns inline labels and label actions without changing the accessible name (${theme})`, async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1000, height: 1100 } });
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const input = page.getByRole('textbox', { name: 'Inline', exact: true });
+      expect((await input.boundingBox())!.height).toBe(28);
+      expect((await input.boundingBox())!.width).toBe(200);
+      expect(
+        await input
+          .locator('..')
+          .locator('.ri-field-label-row')
+          .evaluate((el) => el.getBoundingClientRect().width),
+      ).toBe(48);
+    } finally {
+      await page.close();
+    }
+  });
+  it(`keeps a label action separate from the field name (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const message = page.getByRole('textbox', { name: 'Message', exact: true });
+      expect(await message.count()).toBe(1);
+      const copy = message.locator('..').getByRole('button', { name: 'Copy', exact: true });
+      expect(await copy.count()).toBe(1);
+      await copy.click();
+      expect(await page.locator('#clears').innerText()).toBe('1');
+    } finally {
+      await page.close();
+    }
+  });
+  it(`keeps the character count out of the name and links it as help (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const input = page.getByRole('textbox', { name: 'Purpose', exact: true });
+      const ids = (await input.getAttribute('aria-describedby'))!.split(' ');
+      expect(await page.locator('[id="' + ids[1] + '"]').count()).toBe(1);
+      expect(await page.locator('[id="' + ids[1] + '"]').innerText()).toBe('2 / 3 characters');
+      await input.fill('abcd');
+      expect(await input.evaluate((el) => el === document.activeElement)).toBe(true);
+      expect(await input.getAttribute('aria-invalid')).toBe('true');
+      const count = page.locator('[id="' + ids[1] + '"]');
+      expect(await count.innerText()).toBe('4 / 3 characters');
+      expect(await count.evaluate((el) => el.hasAttribute('data-over'))).toBe(true);
+      expect(await contrast(count)).toBeGreaterThanOrEqual(4.5);
+    } finally {
+      await page.close();
+    }
+  });
+  it(`matches native date and time controls to the app theme (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      for (const name of ['Start date', 'Start time']) {
+        const input = page.getByLabel(name, { exact: true });
+        expect(await input.evaluate((el) => getComputedStyle(el).colorScheme)).toBe(theme);
+      }
+    } finally {
+      await page.close();
+    }
+  });
   it(`owns one group focus outline and linked inline parser feedback (${theme})`, async () => {
     const page = await fixture.browser.newPage({ viewport: { width: 1000, height: 1100 } });
     try {
@@ -240,7 +302,7 @@ for (const theme of ['light', 'dark']) {
       await parser.focus();
       expect(await parser.getAttribute('aria-invalid')).toBe('true');
       expect(await parser.getAttribute('aria-describedby')).toBe(
-        await page.getByRole('alert').filter({ hasText: 'Not a date' }).getAttribute('id'),
+        await page.locator('[aria-live="polite"]').filter({ hasText: 'Not a date' }).getAttribute('id'),
       );
       expect(await parser.locator('..').evaluate((el) => getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally {
@@ -256,7 +318,7 @@ for (const theme of ['light', 'dark']) {
       expect((await field.boundingBox())!.height).toBe(28);
       expect((await button.boundingBox())!.height).toBe(28);
       expect((await field.boundingBox())!.width).toBe(192);
-      expect((await page.getByLabel('Narrow control',{exact:true}).boundingBox())!.width).toBe(96);
+      expect((await page.getByLabel('Narrow control', { exact: true }).boundingBox())!.width).toBe(96);
     } finally {
       await page.close();
     }
@@ -308,7 +370,9 @@ for (const theme of ['light', 'dark']) {
       const embedded = page.getByRole('combobox', { name: 'Search models', exact: true });
       expect(await embedded.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
       await embedded.hover();
-      await expect.poll(() => embedded.evaluate((el) => getComputedStyle(el).borderColor)).toBe('rgba(0, 0, 0, 0)');
+      await expect
+        .poll(() => embedded.evaluate((el) => getComputedStyle(el).borderColor))
+        .toBe('rgba(0, 0, 0, 0)');
       await embedded.focus();
       expect(await embedded.evaluate((el) => getComputedStyle(el).outlineOffset)).toBe('-2px');
     } finally {

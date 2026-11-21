@@ -1,4 +1,5 @@
 'use client';
+import { useAutosizeTextarea } from '@/hooks/use-autosize-textarea';
 import { TextArea } from '@/components/system/text-area';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
@@ -206,17 +207,10 @@ function EntityTitle({
   title: string;
   disabled: boolean;
 }) {
-  const ref = useRef<HTMLTextAreaElement>(null);
+  const { element: ref, ref: attachTitle, resize } = useAutosizeTextarea();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updateTask = useUpdateTask();
   const updateNote = useUpdateNote();
-
-  const resize = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, []);
 
   // Seed and sync from the record when it changes elsewhere (agent rename).
   useEffect(() => {
@@ -224,7 +218,7 @@ function EntityTitle({
     if (!el || document.activeElement === el) return;
     if (el.value.trim() !== title.trim()) el.value = title.trim() ? title : '';
     resize();
-  }, [title, entityId, resize]);
+  }, [title, entityId, resize, ref]);
 
   // A brand-new entity: the title owns the caret.
   useEffect(() => {
@@ -246,7 +240,8 @@ function EntityTitle({
 
   return (
     <TextArea
-      ref={ref}
+      ref={attachTitle}
+      aria-label={entityType === 'task' ? 'Task title' : 'Note title'}
       rows={1}
       defaultValue={title.trim() ? title : ''}
       disabled={disabled}
@@ -262,13 +257,20 @@ function EntityTitle({
         e.preventDefault();
         if (e.metaKey || e.ctrlKey) return;
         // Hand the caret to the composer; the app's own ⌘I listener owns it.
-        const composer = document.querySelector<HTMLElement>('[data-chat-composer] [contenteditable="true"]');
-        (composer ?? document.querySelector<HTMLElement>('.ProseMirror[contenteditable="true"]'))?.focus();
+        const composer = document.querySelector<HTMLElement>(
+          '[data-chat-composer] [contenteditable="true"]',
+        );
+        (
+          composer ?? document.querySelector<HTMLElement>('.ProseMirror[contenteditable="true"]')
+        )?.focus();
       }}
       className="mt-1 w-full"
       data-gramm="false"
       data-gramm_editor="false"
-      data-enable-grammarly="false" purpose="title" titleSize="entity" autoSize
+      data-enable-grammarly="false"
+      purpose="title"
+      titleSize="entity"
+      autoSize
     />
   );
 }

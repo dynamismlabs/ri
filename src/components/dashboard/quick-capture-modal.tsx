@@ -90,12 +90,6 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
     }
   }, [voice, text, edit]);
 
-  useEffect(() => {
-    const element = textareaRef.current;
-    if (!element) return;
-    element.style.height = 'auto'; element.style.height = `${Math.min(element.scrollHeight, 320)}px`;
-  }, [text, open]);
-
   useEffect(() => { if (!open) { setDragging(false); dragDepth.current = 0; } }, [open]);
   useEffect(() => {
     if (!open) return;
@@ -235,9 +229,22 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
               {!!images.length && <div className="flex gap-3 overflow-x-auto px-3 pt-4 pb-2">
                 {draft.previews.map(({ id, file }, index) => <ImagePreview key={id} file={file} disabled={busy || savedRemotely} remove={() => draft.edit({ files: images.filter((_, position) => position !== index) })} />)}
               </div>}
-              <TextArea ref={textareaRef} value={text} onChange={event => draft.edit({ text: event.target.value })} onKeyDown={handleKeyDown}
-                placeholder={placeholder} maxLength={CAPTURE_MAX_TEXT_LENGTH} disabled={busy || savedRemotely} autoFocus rows={pristine ? 2 : 3}
-                className="w-full" purpose="embedded" />
+              <div className="px-4 py-3"><TextArea
+                ref={textareaRef}
+                aria-label="Quick capture"
+                autoSize
+                maxRows={13}
+                value={text}
+                onChange={(event) => draft.edit({ text: event.target.value })}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                maxLength={CAPTURE_MAX_TEXT_LENGTH}
+                disabled={busy || savedRemotely}
+                autoFocus
+                rows={pristine ? 2 : 3}
+                className="w-full"
+                purpose="embedded"
+              /></div>
               <div className="space-y-1 px-4 pb-3 text-xs">
                 {draft.save.phase === 'loading' && <p role="status" className="text-muted-foreground">Preparing capture…</p>}
                 {(hasInput || draft.save.phase === 'error') && <p role={draft.save.phase === 'error' ? 'alert' : 'status'} className={draft.save.phase === 'error' ? 'text-amber-600 dark:text-amber-500' : 'text-muted-foreground'}>
@@ -259,7 +266,12 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 >Keep recovered content</Button></div>}
                 {transcriptOverflow && <div role="alert" className="space-y-2 text-amber-600 dark:text-amber-500">
                   <p>This transcript does not fit. Shorten the capture to add it, or copy the transcript before discarding it. It has not been saved on this device.</p>
-                  <TextArea aria-label="Unadded voice transcript" readOnly value={voice.transcript} className="w-full" />
+                  <TextArea
+                    aria-label="Unadded voice transcript"
+                    readOnly
+                    value={voice.transcript}
+                    className="w-full"
+                  />
                   <Button
                     type="button"
                     onClick={voice.clearTranscript}

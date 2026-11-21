@@ -162,16 +162,14 @@ export function SkillsTab() {
     <div className="@container space-y-5">
       {showSetupHelp && <PluginSetupHelpButton target={{ kind: 'plugins', tab: 'skills' }} />}
       {all > 8 && (
-        <div className="relative">
-          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Field
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search skills"
-            aria-label="Search skills"
-
-          />
-        </div>
+        <Field
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search skills"
+          aria-label="Search skills"
+          leading={<Search />}
+          className="relative"
+        />
       )}
       {isLoading ? (
         <div className="flex items-center gap-2 py-4 text-xs text-muted-foreground">

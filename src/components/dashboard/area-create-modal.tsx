@@ -94,8 +94,6 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
     (e: FormEvent<HTMLTextAreaElement>) => {
       const target = e.currentTarget;
       setName(target.value);
-      target.style.height = "auto";
-      target.style.height = target.scrollHeight + "px";
     },
     []
   );
@@ -242,10 +240,15 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                   value={name}
                   onInput={handleNameInput}
                   onKeyDown={handleNameKeyDown}
+                  aria-label="Area name"
                   placeholder="Area name"
                   className="w-full"
                   autoFocus
-                  rows={1} purpose="title" titleSize="form" autoSize align="center"
+                  rows={1}
+                  purpose="title"
+                  titleSize="form"
+                  autoSize
+                  align="center"
                 />
               </div>
 
@@ -255,8 +258,12 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   onKeyDown={handleDescriptionKeyDown}
+                  aria-label="Area description"
                   placeholder="Description (optional)"
-                  className="w-full" purpose="embedded"
+                  className="w-full"
+                  purpose="embedded"
+                  autoSize
+                  rows={2}
                 />
               </div>
             </div>

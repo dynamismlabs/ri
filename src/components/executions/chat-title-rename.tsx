@@ -105,7 +105,9 @@ export function ChatTitleInput({ rename, className }: { rename: ChatRename; clas
       placeholder="Untitled"
       maxLength={120}
       spellCheck={false}
-      className={cn(cn("min-w-0", className), 'w-auto')} purpose="title" titleSize="inline"
+      className={cn('min-w-0 w-auto', className)}
+      purpose="title"
+      titleSize="inline"
     />
   );
 }

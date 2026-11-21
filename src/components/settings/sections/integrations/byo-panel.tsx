@@ -6,7 +6,6 @@ import { Check, Copy, ExternalLink, Plus } from 'lucide-react';
 import { useId } from 'react';
 import { Button } from '@/components/system/button';
 
-import { Label } from '@/components/ui/label';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { APP_NAME } from '@/constants/app';
 import { isRegisteredMcp, oauthAppRedirectUri, type AuthConfigSummary, type ByoForm, type ProviderStatus } from './types';
@@ -132,36 +131,33 @@ export function ByoPanel({
       )}
   </>;
   const credentials = <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
-      <div className="space-y-1">
-        <Label className="text-xs" htmlFor={`${formId}-label`}>App label in Ri</Label>
-        <Field id={`${formId}-label`}
-          value={form.label}
-          onChange={(e) => onField('label', e.target.value)}
-          placeholder="Label (e.g. Work)"
-
-        />
-      </div>
-      <div className="space-y-1">
-        <Label className="text-xs" htmlFor={`${formId}-client-id`}>Client ID</Label>
-        <Field id={`${formId}-client-id`}
-          value={form.clientId}
-          onChange={(e) => onField('clientId', e.target.value)}
-          placeholder="Client ID"
-           purpose="code"
-        />
-      </div>
-      <div className="space-y-1 @lg:col-span-2">
-        <Label className="text-xs" htmlFor={`${formId}-client-secret`}>{registered ? 'Client secret' : 'Client secret (if required)'}</Label>
-        <Field id={`${formId}-client-secret`}
-          type="password"
-          autoComplete="off"
-          value={form.clientSecret}
-          onChange={(e) => onField('clientSecret', e.target.value)}
-          placeholder={registered ? 'Client secret' : 'Client secret (if required)'}
-          required={registered}
-           purpose="code"
-        />
-      </div>
+      <Field
+        id={`${formId}-label`}
+        value={form.label}
+        onChange={(e) => onField('label', e.target.value)}
+        placeholder="Label (e.g. Work)"
+        label="App label in Ri"
+      />
+      <Field
+        id={`${formId}-client-id`}
+        value={form.clientId}
+        onChange={(e) => onField('clientId', e.target.value)}
+        placeholder="Client ID"
+        purpose="code"
+        label="Client ID"
+      />
+      <Field
+        id={`${formId}-client-secret`}
+        type="password"
+        autoComplete="off"
+        value={form.clientSecret}
+        onChange={(e) => onField('clientSecret', e.target.value)}
+        placeholder={registered ? 'Client secret' : 'Client secret (if required)'}
+        required={registered}
+        purpose="code"
+        label={registered ? 'Client secret' : 'Client secret (if required)'}
+        className="@lg:col-span-2"
+      />
     </div>;
   const saveAction = <Button
     onClick={onAdd}

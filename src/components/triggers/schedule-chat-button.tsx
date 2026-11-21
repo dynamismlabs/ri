@@ -236,17 +236,19 @@ function NewChatSchedule({
     <form onSubmit={save} className="space-y-3 p-3">
       <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Schedule this chat</p>
       <TriggerScheduleFields value={schedule} onChange={setSchedule} kinds={CHAT_KINDS} disabled={create.isPending} />
-      <label className="block space-y-1 text-[12px] font-medium">
-        <span>Message</span>
-        <TextArea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          rows={3}
-          required
-          placeholder={freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'}
-          className="block w-full" resize="vertical"
-        />
-      </label>
+      <TextArea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        rows={3}
+        required
+        placeholder={
+          freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'
+        }
+        controlClassName="block w-full"
+        resize="vertical"
+        label="Message"
+        className="block"
+      />
       <div className="flex items-start gap-2">
         <Switch
           id={`fresh-chat-${chat.id}`}

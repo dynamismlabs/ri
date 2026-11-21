@@ -79,15 +79,15 @@ export function PreviewSettingsPanel() {
         {/* Manual template */}
         {active === 'manual' && (
           <div className="rounded-md border border-border bg-card/40 p-3 space-y-2.5">
-            <Field label="Default URL template">
-              <SystemField
-                value={manualTemplate}
-                onChange={(e) => setManualTemplate(e.target.value)}
-                placeholder="https://{name}.mytunnel.com"
-                spellCheck={false}
-                className="w-full" purpose="code"
-              />
-            </Field>
+            <SystemField
+              value={manualTemplate}
+              onChange={(e) => setManualTemplate(e.target.value)}
+              placeholder="https://{name}.mytunnel.com"
+              spellCheck={false}
+              className="w-full"
+              purpose="code"
+              label="Default URL template"
+            />
             <p className="text-[11px] text-muted-foreground">
               Used when no explicit URL is pasted on an execution. <code className="rounded bg-muted px-1">{'{name}'}</code> is the preview name.
             </p>
@@ -155,15 +155,6 @@ function ProviderRow({
         <span className="text-[11px] text-muted-foreground">{description}</span>
       </span>
     </button>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
-      {children}
-    </label>
   );
 }
 

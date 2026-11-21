@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Field as SystemField } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -245,31 +246,30 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                   browser with <span className="font-medium text-foreground">Connect with Beamd</span> above, or paste an
                   API key.
                 </p>
-                <Field label="Edge address">
-                  <SystemField
-                    value={server}
-                    onChange={(e) => setServer(e.target.value)}
-                    placeholder="your-beamd-edge.com  ·  blank = hosted beamd"
-                    spellCheck={false}
-                    className="w-full" purpose="code"
-                  />
-                </Field>
-                <Field label="API key">
-                  <SystemField
-                    type="password"
-                    value={token}
-                    onChange={(e) => setToken(e.target.value)}
-                    placeholder="your edge token, or a dashboard API key"
-                    spellCheck={false}
-                    autoComplete="off"
-                    className="w-full" purpose="code"
-                  />
-                </Field>
+                <SystemField
+                  value={server}
+                  onChange={(e) => setServer(e.target.value)}
+                  placeholder="your-beamd-edge.com  ·  blank = hosted beamd"
+                  spellCheck={false}
+                  className="w-full"
+                  purpose="code"
+                  label="Edge address"
+                />
+                <SystemField
+                  type="password"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="your edge token, or a dashboard API key"
+                  spellCheck={false}
+                  autoComplete="off"
+                  className="w-full"
+                  purpose="code"
+                  label="API key"
+                />
                 <label className="flex items-start gap-2 text-[11px] text-muted-foreground">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={insecure}
-                    onChange={(e) => setInsecure(e.target.checked)}
+                    onCheckedChange={(checked) => setInsecure((checked === true))}
                     className="mt-0.5"
                   />
                   <span>
@@ -324,14 +324,5 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
         </div>
       )}
     </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
-      {children}
-    </label>
   );
 }

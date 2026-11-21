@@ -191,31 +191,34 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
           if (shown?.usable && (!joining || name.trim())) connect.mutate();
         }}
       >
-        <label className="block space-y-1">
-          <span className="text-xs font-medium">Team link</span>
-          <Field
-            value={link}
-            onChange={(e) => {
-              setLink(e.target.value);
-              setProblem(null);
-              if (!e.target.value.trim()) setSummary(null);
-            }}
-            placeholder="https://…/join#invite=…"
-            spellCheck={false}
-            autoComplete="off"
-          />
-        </label>
+        <Field
+          value={link}
+          onChange={(e) => {
+            setLink(e.target.value);
+            setProblem(null);
+            if (!e.target.value.trim()) setSummary(null);
+          }}
+          placeholder="https://…/join#invite=…"
+          spellCheck={false}
+          autoComplete="off"
+          label="Team link"
+          className="block"
+        />
         {shown && (
           <p role="status" className={cn('border-l-2 pl-3 text-sm', shown.usable ? 'border-primary font-medium' : 'border-amber-500 text-muted-foreground')}>
             {shown.text}
           </p>
         )}
         {joining && shown?.usable && (
-          <label className="block space-y-1">
-            <span className="text-xs font-medium">Your name</span>
-            <Field value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" />
-            <span className="block text-xs text-muted-foreground">What the team sees on your work.</span>
-          </label>
+          <Field
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={80}
+            autoComplete="name"
+            label="Your name"
+            description="What the team sees on your work."
+            className="block"
+          />
         )}
         {shown?.usable && <p className="text-xs text-muted-foreground">Your assigned tasks will appear in My Ri. Your personal work stays private.</p>}
         {problem && <p role="alert" className="text-xs text-destructive">{problem}</p>}

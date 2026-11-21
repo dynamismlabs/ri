@@ -6,7 +6,6 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
-import { Label } from '@/components/ui/label';
 import type { ChatAppPrompt } from '@/lib/integrations/app-prompts';
 import { promptArgumentLabel } from '@/lib/integrations/prompt-argument-label';
 
@@ -55,16 +54,27 @@ function PromptForm({ prompt, onCancel, onFill }: { prompt: ChatAppPrompt; onCan
         {prompt.arguments.map((arg, index) => {
           const id = `app-prompt-${index}`;
           return (
-            <div key={arg.name} className="space-y-1.5">
-              <Label htmlFor={id} className="text-xs">
-                {promptArgumentLabel(arg)}
-                {!arg.required && <span className="font-normal text-muted-foreground"> (optional)</span>}
-              </Label>
-              <Field id={id} value={values[arg.name] ?? ''} required={arg.required} autoFocus={index === 0} disabled={pending}
-                aria-describedby={arg.description ? `${id}-help` : undefined}
-                onChange={(event) => setValues((current) => ({ ...current, [arg.name]: event.target.value }))} />
-              {arg.description && <p id={`${id}-help`} className="text-[11px] text-muted-foreground">{arg.description}</p>}
-            </div>
+            <Field
+              id={id}
+              value={values[arg.name] ?? ''}
+              required={arg.required}
+              autoFocus={index === 0}
+              disabled={pending}
+              aria-describedby={arg.description ? `${id}-help` : undefined}
+              onChange={(event) =>
+                setValues((current) => ({ ...current, [arg.name]: event.target.value }))
+              }
+              label={
+                <>
+                  {promptArgumentLabel(arg)}
+                  {!arg.required && (
+                    <span className="font-normal text-muted-foreground"> (optional)</span>
+                  )}
+                </>
+              }
+              key={arg.name}
+              description={arg.description && arg.description}
+            />
           );
         })}
       </div>
