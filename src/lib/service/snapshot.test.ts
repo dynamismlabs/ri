@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import Database from 'better-sqlite3';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { serviceIdentity } from './paths';
@@ -67,6 +67,27 @@ it('saves the config folder without the agent browser profile or live locks', as
   fs.writeFileSync(path.join(root, 'home/.config/config.json.lock.sqlite'), 'lock');
   const manifest = readSnapshot(await createSnapshot({ from: FROM, to: TO }));
   expect(manifest.config).toEqual(['config.json', 'integrations/store.json']);
+});
+
+it.skipIf(process.platform !== 'darwin')('uses instant copies when this snapshot volume can clone', async () => {
+  const directory = snapshotRoot();
+  fs.mkdirSync(directory, { recursive: true });
+  const probe = path.join(directory, '.clone-test');
+  const copy = `${probe}-copy`;
+  fs.writeFileSync(probe, 'clone probe');
+  let canClone = false;
+  try {
+    execFileSync('/bin/cp', ['-c', probe, copy], { stdio: 'ignore' });
+    // cp -c can silently copy on other filesystems. APFS on this same volume
+    // plus a successful clone command answers independently of clonesOnMac.
+    canClone = fs.statfsSync(directory).type === 26;
+  } catch { /* This volume needs the SQLite backup path. */ }
+  finally { for (const file of [probe, copy]) fs.rmSync(file, { force: true }); }
+  const snapshot = await createSnapshot({ from: FROM, to: TO });
+  expect(readSnapshot(snapshot).cloned).toBe(canClone);
+  write('after the snapshot');
+  await restoreSnapshot(snapshot);
+  expect(rows()).toEqual(['first']);
 });
 
 it('backs up and restores the database when the filesystem cannot clone', async () => {
