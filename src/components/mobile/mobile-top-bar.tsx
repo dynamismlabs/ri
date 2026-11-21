@@ -30,7 +30,7 @@ export function MobileTopBar({ onSearch = () => document.dispatchEvent(new Custo
       <Button variant="secondary" size="touch"
         onClick={onSearch}
 
-        className="min-w-0 flex-1 flex items-center gap-2.5"
+        className="min-w-0 flex-1 flex items-center justify-start gap-2.5"
         aria-label={searchLabel.replace(/…$/, '')}
       >
         <Search size={15} className="flex-shrink-0" />

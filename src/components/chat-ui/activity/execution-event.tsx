@@ -1,5 +1,5 @@
 'use client';
-import { MenuAction } from '@/components/system/menu-action';
+
 import { InlineAction } from '@/components/system/inline-action';
 
 import { Card } from '@/components/system/card';
@@ -290,7 +290,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       // transcript also filters these, this is a belt-and-suspenders guard.
       if (!content) return null;
       return (
-        <MenuAction density="none"
+        <InlineAction purpose="caption"
           onClick={() => setExpanded((v) => !v)}
           className="group/row w-full text-left italic"
         >
@@ -305,7 +305,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {content}
             </div>
           )}
-        </MenuAction>
+        </InlineAction>
       );
     }
 
@@ -449,7 +449,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const isError = event.toolIsError === true;
       const text = event.content ?? '';
       return (
-        <MenuAction density="none"
+        <InlineAction purpose="caption"
           onClick={() => setExpanded((v) => !v)}
           className="w-full text-left"
         >
@@ -465,7 +465,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {text}
             </pre>
           )}
-        </MenuAction>
+        </InlineAction>
       );
     }
 
@@ -496,7 +496,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
           : 'text-emerald-500';
 
       return (
-        <MenuAction density="none"
+        <InlineAction purpose="caption"
           type="button"
           onClick={() => setExpanded((value) => !value)}
           className="group/row w-full text-left"
@@ -518,7 +518,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {summary}
             </div>
           )}
-        </MenuAction>
+        </InlineAction>
       );
     }
 
@@ -528,7 +528,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const info = (event.raw ?? {}) as { from?: string; checkpoint?: { sha?: string }; handoff?: string };
       return (
         <div className="my-2 text-[11px] text-muted-foreground">
-          <MenuAction density="none" type="button" onClick={() => setExpanded((v) => !v)} className="flex w-full items-center gap-2">
+          <InlineAction purpose="caption" type="button" onClick={() => setExpanded((v) => !v)} className="flex w-full items-center gap-2">
             <div className="h-px flex-1 bg-border/60" />
             <span className="inline-flex items-center gap-1.5 font-medium text-foreground/80">
               <ArrowRightLeft size={11} />
@@ -537,7 +537,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
             {info.from && <span className="text-muted-foreground/70">from {info.from}</span>}
             {info.checkpoint?.sha && <span className="font-mono text-muted-foreground/60">{info.checkpoint.sha.slice(0, 7)}</span>}
             <div className="h-px flex-1 bg-border/60" />
-          </MenuAction>
+          </InlineAction>
           {expanded && info.handoff && (
             <div className="mx-auto mt-1.5 max-w-2xl whitespace-pre-wrap break-words rounded-md border border-border/60 px-3 py-2 text-[11.5px] text-muted-foreground/90">
               {info.handoff}

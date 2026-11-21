@@ -32,7 +32,6 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
   // Removing a destination removes its history. Do not retain a vanished filter.
   const selectedChannel = channels.some(channel => channel.id === channelId) ? channelId : 'all';
   const visible = deliveries.filter(item => (status === 'all' || item.status === status) && (selectedChannel === 'all' || item.channel.id === selectedChannel));
-  const filterClass = 'rounded-md border border-border bg-background px-2 py-1.5 text-xs';
 
   return (
     <section className="space-y-3" aria-labelledby={`${id}-heading`}>

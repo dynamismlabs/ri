@@ -200,13 +200,13 @@ export function MoveActions({
   const flow = useMoveFlow(session, workspace);
   if (moves.length === 0) return null;
   const item =
-    'w-full flex flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-left text-[12px] text-foreground hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-60';
+    'w-full flex flex-col items-start gap-0.5 text-left';
   return (
     <>
       {moves.map((move) => {
         const note = hint(move, workspace?.name ?? 'The agent');
         return (
-          <MenuAction density="none" key={move.key} type="button" disabled={!!move.problem} onClick={() => flow.start(move)} className={item}>
+          <MenuAction density="compact" key={move.key} type="button" disabled={!!move.problem} onClick={() => flow.start(move)} className={item}>
             <span className="inline-flex items-center gap-2">
               <ArrowRightLeft size={12} />
               {move.label}

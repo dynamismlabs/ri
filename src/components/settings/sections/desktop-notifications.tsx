@@ -119,7 +119,7 @@ function UnsignedBuild({ telegramReady, onUseTelegram }: { telegramReady: boolea
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold">Desktop notifications</h3>
-            <Badge appearance="plain" role="status" className="rounded-full text-[10px]">Not in this build</Badge>
+            <Badge appearance="plain" role="status" >Not in this build</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
             macOS shows notifications only from apps signed with an Apple Developer ID. This build of Ri isn’t signed yet, so macOS

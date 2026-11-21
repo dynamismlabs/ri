@@ -13,16 +13,17 @@ beforeAll(async () => {
     import{DropdownMenu,DropdownMenuTrigger,DropdownMenuContent}from'./src/components/ui/dropdown-menu';
     import{Button}from'./src/components/system/button';import{TipProvider}from'./src/components/ui/tip';
     const theme=new URLSearchParams(location.search).get('theme');document.documentElement.classList.toggle('dark',theme==='dark');
-    function Fixture(){const[value,setValue]=useState('read'),[clicks,setClicks]=useState(0),ref=useRef(null);useEffect(()=>{window.rowRef=ref.current},[]);return <main className="bg-pane text-t1 p-4 space-y-3">
+    function Fixture(){const[value,setValue]=useState('read'),[clicks,setClicks]=useState(0),[checked,setChecked]=useState(false),ref=useRef(null);useEffect(()=>{window.rowRef=ref.current},[]);return <main className="bg-pane text-t1 p-4 space-y-3">
       <div style={{fontSize:15,lineHeight:'24px'}}><InlineAction id="inline-summary" className="w-full text-left"><span className="block">A summary title</span><span className="block">The second line stays below</span></InlineAction></div>
       <div style={{fontSize:15}}><InlineAction id="caption" purpose="caption">Supporting reasoning</InlineAction><InlineAction id="heading" purpose="heading">A content title</InlineAction></div>
       <ChoiceRow asChild><div id="nested-content" className="flex items-center"><button aria-label="Drag within content"><svg width="12" height="12"/></button><span>Content with its own controls</span></div></ChoiceRow>
+      <ChoiceRow id="checkbox-choice" indicator="checkbox" aria-pressed={checked} onClick={()=>setChecked(v=>!v)}>Include this project</ChoiceRow><MenuAction id="compact-menu" density="compact">Compact menu action</MenuAction><MenuAction id="touch-menu" size="touch">Phone menu action</MenuAction>
       <Card id="content">A content panel</Card><Card as="button" id="card-action" onClick={()=>setClicks(c=>c+1)}>Open a summary</Card><Card as="button" disabled id="card-disabled" onClick={()=>setClicks(c=>c+1)}>Unavailable summary</Card>
       <div className="flex gap-2"><ChoiceRow ref={ref} id="row-action" title="Use this agent" description="Continue its existing work" onClick={()=>setClicks(c=>c+1)}/><ChoiceRow id="row-selected" aria-pressed={true}>Chosen agent</ChoiceRow><ChoiceRow id="row-disabled" disabled onClick={()=>setClicks(c=>c+1)}>Unavailable agent</ChoiceRow></div>
       <ChoiceRow id="row-invalid" title="Invalid choice" aria-invalid="true"/><ChoiceRow id="row-touch" size="touch" title="Phone option" description="Supporting text wraps without clipping"/>
       <form id="access-form"><ChoiceGroup aria-label="Access" name="app-access" value={value} onValueChange={setValue}><ChoiceRow selection="radio" value="read" title="Read" description="Read the selected account"/><ChoiceRow selection="radio" value="write" title="Read and write" description="Make changes to the selected account"/></ChoiceGroup><Button type="submit">Inspect form</Button></form>
-      <DropdownMenu><DropdownMenuTrigger asChild><Button id="menu-trigger">Actions</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu" onSelect={()=>setClicks(c=>c+1)}>Open item</MenuAction><MenuAction kind="menu" disabled>Unavailable item</MenuAction><MenuAction kind="menu" tone="error" onSelect={()=>setClicks(c=>c+1)}>Delete item</MenuAction></DropdownMenuContent></DropdownMenu>
-      <Meta className="max-w-52" id="metadata"><MetaItem>Added today</MetaItem><MetaItem as="button" id="energy-light" kind="energy" energy="light" onClick={()=>setClicks(c=>c+1)}>Light</MetaItem><MetaItem id="energy-deep" kind="energy" energy="deep">Deep</MetaItem><MetaItem as="button" id="due" urgency="today">Due today</MetaItem></Meta>
+      <DropdownMenu><DropdownMenuTrigger asChild><Button id="menu-trigger">Actions</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu" onSelect={()=>setClicks(c=>c+1)}>Open item</MenuAction><MenuAction kind="menu" asChild><a href="#details">Open details</a></MenuAction><MenuAction kind="menu" disabled>Unavailable item</MenuAction><MenuAction kind="menu" tone="error" onSelect={()=>setClicks(c=>c+1)}>Delete item</MenuAction></DropdownMenuContent></DropdownMenu>
+      <Meta className="max-w-52" id="metadata"><StatusBadge id="metadata-fact">Shared</StatusBadge><MetaItem>Added today</MetaItem><MetaItem as="button" id="energy-light" kind="energy" energy="light" onClick={()=>setClicks(c=>c+1)}>Light</MetaItem><MetaItem id="energy-deep" kind="energy" energy="deep">Deep</MetaItem><MetaItem as="button" id="due" urgency="today">Due today</MetaItem></Meta>
       <output id="clicks">{clicks}</output><div id="tones" className="space-y-2">{${JSON.stringify(tones)}.map(tone=><div key={tone}><StatusBadge id={'badge-'+tone} tone={tone}>{tone}</StatusBadge><Callout id={'callout-'+tone} tone={tone}>A readable notice</Callout></div>)}</div>
     </main>};createRoot(document.getElementById('root')).render(<TipProvider><Fixture/></TipProvider>);
     document.addEventListener('submit',e=>{e.preventDefault();window.submitted=Object.fromEntries(new FormData(e.target));});
@@ -93,6 +94,21 @@ for (const theme of ['light', 'dark']) {
       expect(await page.locator('#caption').evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally { await page.close(); }
   });
+  it(`owns a choice indicator and phone menu target without adding another control (${theme})`, async () => {
+    const page = await open(theme, 360);
+    try {
+      const choice = page.getByRole('button', { name: 'Include this project', exact: true });
+      expect(await choice.locator(':scope > span[aria-hidden="true"]').count()).toBe(1);
+      expect(await choice.locator('button, input').count()).toBe(0);
+      await page.keyboard.press('Tab'); await choice.focus(); await page.keyboard.press('Space');
+      expect(await choice.getAttribute('aria-pressed')).toBe('true');
+      expect(await choice.locator('svg').isVisible()).toBe(true);
+      expect(await choice.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
+      await page.keyboard.press('Space'); expect(await choice.getAttribute('aria-pressed')).toBe('false');
+      expect(await page.locator('#compact-menu').evaluate(el => el.getBoundingClientRect().height)).toBe(24);
+      expect(await page.locator('#touch-menu').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(40);
+    } finally { await page.close(); }
+  });
   it(`associates choice title/help and preserves radio form values, arrows and focus (${theme})`, async () => {
     const page = await open(theme);
     try {
@@ -126,6 +142,19 @@ for (const theme of ['light', 'dark']) {
       await expect.poll(() => page.locator('#menu-trigger').evaluate(el => el === document.activeElement)).toBe(true);
     } finally { await page.close(); }
   });
+  it(`preserves a menu link's native element, keyboard focus and dismissal (${theme})`, async () => {
+    const page = await open(theme);
+    try {
+      await page.locator('#menu-trigger').click();
+      const link = page.locator('a[href="#details"]'); await link.waitFor();
+      expect(await link.getAttribute('role')).toBe('menuitem');
+      await page.keyboard.press('ArrowDown'); await link.focus();
+      expect(await link.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
+      await page.keyboard.press('Enter');
+      await expect.poll(() => page.getByRole('menu').count()).toBe(0);
+      expect(new URL(page.url()).hash).toBe('#details');
+    } finally { await page.close(); }
+  });
   it(`keeps semantic facts and callouts readable for every tone (${theme})`, async () => {
     const page = await open(theme);
     try {
@@ -141,6 +170,7 @@ for (const theme of ['light', 'dark']) {
     try {
       expect((await page.locator('#row-touch').boundingBox())!.height).toBeGreaterThanOrEqual(40);
       expect(await page.locator('#metadata').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      expect(await page.locator('#metadata-fact').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
       expect(await page.locator('#energy-light').evaluate(el => getComputedStyle(el, '::before').content)).toBe('"·"');
       for (const id of ['energy-light', 'energy-deep', 'due']) expect(await contrast(page, '#' + id)).toBeGreaterThanOrEqual(4.5);
       await page.keyboard.press('Tab'); await page.locator('#energy-light').focus();

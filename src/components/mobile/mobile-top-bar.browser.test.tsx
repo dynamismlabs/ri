@@ -30,7 +30,7 @@ for (const theme of ['light', 'dark']) for (const width of [360, 390]) for (cons
     page.setDefaultTimeout(3000);
     try {
       await page.goto(`${fixture.url}/?theme=${theme}&team=${team}`);
-      const field = page.locator('[data-slot="search-field"]');
+      const field = page.getByRole('button', { name: 'Search tasks, notes, areas', exact: true });
       const action = page.getByRole('button', { name: team ? 'Settings' : 'Scratchpad', exact: true });
       await action.waitFor();
       const fill = await field.evaluate(el => getComputedStyle(el).backgroundColor);

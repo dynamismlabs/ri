@@ -41,7 +41,7 @@ export function RailRow({
   ...props
 }: Omit<ComponentProps<'button'>, 'children'> & { place: RailPlace; pressed?: boolean }) {
   return (
-    <MenuAction selected={active || pressed} density="compact"
+    <MenuAction selected={active || pressed} density="compact" inset={depth === 1}
       type="button"
       onClick={onClick}
       onPointerEnter={onIntent}

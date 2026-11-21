@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { useViewportTier } from '@/hooks/use-viewport-tier';
@@ -195,9 +196,9 @@ function LibraryEntry({ item }: { item: ReviewItem }) {
   const open = () => item.draft || item.kind === 'skills' || !item.view ? review.manage(item) : review.primary(item);
   const selected = review.selected?.key === item.key || review.query.provider === (item.target.kind === 'provider' ? item.target.id : null) || review.query.mcp === (item.target.kind === 'mcp' ? item.target.id : null);
   return <div className={s.libraryEntry} data-item={item.key} data-selected={selected || undefined}>
-    <Tip label={item.name} onlyWhenTextHidden><MenuAction density="none"  type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
+    <Tip label={item.name} onlyWhenTextHidden><InlineAction   type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
       <ItemMark item={item} small /><span><strong>{item.name}</strong><small className={item.attention ? s.attention : undefined}>{item.enabled === false ? 'Off' : item.attention ? 'Needs attention' : item.target.kind === 'mcp' ? 'Custom MCP' : item.status}</small></span>
-    </MenuAction></Tip>
+    </InlineAction></Tip>
     <ManageButton item={item} />
   </div>;
 }
@@ -262,7 +263,7 @@ function GoalBundle() {
     <div className={s.goalHeading}><h2>{collection.name}</h2><p>{collection.description}</p><span>{added} of {items.length} in your library</span></div>
     <p className={`${s.muted} mb-4`}>Choose the pieces that help. Each has its own setup and access.</p>
     {items.map(item => <div className={s.bundleItem} key={item.key}>
-      <MenuAction density="none"  className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></MenuAction>
+      <InlineAction   className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></InlineAction>
       <div className={s.bundleItemActions}>{item.added && !item.draft ? <ItemStatus item={item} /> : <span className={s.muted}>Not added</span>}<PrimaryButton item={item} /></div>
     </div>)}
     {!items.length && <Empty>No additions in this bundle are available yet.</Empty>}

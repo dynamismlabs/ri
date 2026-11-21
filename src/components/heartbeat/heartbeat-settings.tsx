@@ -112,7 +112,7 @@ function HeartbeatSettingsBody({
     <div className="space-y-5">
       {/* On/off + status */}
       <section className="space-y-2">
-        <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
+        <Card as="label" padding="md" className="flex cursor-pointer items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">Heartbeat</p>
             <p className="text-[11px] text-muted-foreground/85">{status.detail}</p>
@@ -123,7 +123,7 @@ function HeartbeatSettingsBody({
             onCheckedChange={(enabled) => save({ enabled })}
             aria-label="Heartbeat"
           />
-        </label>
+        </Card>
 
         <div className="flex flex-wrap items-center gap-2">
           <Button

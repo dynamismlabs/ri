@@ -342,7 +342,7 @@ export function ExecutionHeader({
                 <InlineAction purpose="heading"
                   type="button"
                   onClick={rename.begin}
-                  className={cn("truncate text-left -mx-1", "cursor-text", displayLabel
+                  className={cn("truncate text-left", "cursor-text", displayLabel
     ? "" : "italic")}
                 >
                   {displayLabel ?? 'Untitled'}
@@ -401,7 +401,7 @@ export function ExecutionHeader({
               <InlineAction purpose="label"
                 type="button"
                 onClick={rename.begin}
-                className={cn("truncate text-left -mx-0.5 min-w-0", "cursor-text", displayLabel ? "" : "italic")}
+                className={cn("truncate text-left min-w-0", "cursor-text", displayLabel ? "" : "italic")}
               >
                 {displayLabel ?? 'Untitled'}
               </InlineAction>

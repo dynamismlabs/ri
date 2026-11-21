@@ -1,4 +1,6 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { MenuAction } from '@/components/system/menu-action';
 
 import { useViewportTier } from '@/hooks/use-viewport-tier';
@@ -172,9 +174,9 @@ export function ChatUiGallery() {
           ) : (
             <article className="min-w-0 space-y-5" aria-labelledby="example-name">
               <div>
-                <span className="inline-flex rounded border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <StatusBadge className="inline-flex">
                   {GALLERY_ORIGINS[example.origin].label}
-                </span>
+                </StatusBadge>
                 <h2 id="example-name" className="mt-2 text-xl font-semibold">
                   {example.name}
                 </h2>

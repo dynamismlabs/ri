@@ -1,5 +1,6 @@
 "use client";
 
+import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
 /**
  * The TopHud next-boundary button — the calendar's ambient layer, present on
@@ -16,7 +17,7 @@ import { Button } from '@/components/system/button';
 
 import { useEffect, useState } from 'react';
 import { Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { openSettings } from '@/components/settings/settings-store';
 import { useDayShape, usePrefetchDayShape } from '@/hooks/use-day-shape';
 import { hudLabel } from '@/lib/calendar/hud';
@@ -135,15 +136,10 @@ export function HudDayButton() {
             label={stale || degraded ? `${fullLabel}\nAs of ${formatAsOf(data.asOf)}` : fullLabel}
             onlyWhenTextHidden={!stale && !degraded}
           >
-            <button data-slot="action-button" data-tone="status"
+            <ChipButton tone="status" status={tone === "warning" ? "warning" : "neutral"} pressed={open}
               type="button"
               aria-label={`Day shape: ${fullLabel}`}
-              className={cn(
-                'relative flex min-w-0 max-w-full items-center gap-1.5 h-7 px-2 whitespace-nowrap rounded-lg border text-[11px] font-medium transition-colors',
-                tone === 'warning'
-                  ? 'text-amber-600 border-amber-500/40 bg-amber-500/10 dark:text-amber-400'
-                  : 'border-border text-muted-foreground hover:text-foreground',
-              )}
+              className="relative flex min-w-0 max-w-full items-center gap-1.5 whitespace-nowrap"
             >
               <Calendar size={12} className="shrink-0" />
               {event ? (
@@ -156,7 +152,7 @@ export function HudDayButton() {
               {(stale || degraded) && (
                 <span className="w-1.5 h-1.5 shrink-0 rounded-full bg-amber-500/80" aria-hidden />
               )}
-            </button>
+            </ChipButton>
           </Tip>
         </PopoverTrigger>
         <PopoverContent align="start" sideOffset={6} className="w-[21rem] p-0">

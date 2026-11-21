@@ -1,4 +1,7 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Card } from '@/components/system/card';
+
 import { ChoiceRow } from '@/components/system/choice-row';
 
 import { Field } from '@/components/system/field';
@@ -92,7 +95,7 @@ export function QuestionCard({
   };
 
   return (
-    <div className="rounded-xl border border-foreground/20 bg-card overflow-hidden animate-in fade-in slide-in-from-bottom-1 duration-200">
+    <Card padding="none" className="overflow-hidden animate-in fade-in slide-in-from-bottom-1 duration-200">
       <div className="flex items-center gap-2.5 px-3.5 py-2 bg-foreground/5 border-b border-foreground/15">
         <HelpCircle size={12} className="text-foreground/80 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -106,9 +109,9 @@ export function QuestionCard({
           </span>
         )}
         {isMulti && (
-          <span className="text-[9px] uppercase tracking-wider text-foreground/70 font-semibold px-1.5 py-0.5 rounded bg-foreground/10 border border-foreground/20">
+          <StatusBadge >
             multi
-          </span>
+          </StatusBadge>
         )}
       </div>
 
@@ -125,22 +128,13 @@ export function QuestionCard({
         {q.options.map((opt) => {
           const isSelected = selected.includes(opt.label);
           return (
-            <ChoiceRow
+            <ChoiceRow indicator={isMulti ? "checkbox" : "radio"}
               key={opt.label}
               type="button"
               aria-pressed={isSelected}
               onClick={() => toggleOption(opt.label)}
               className="flex items-start gap-2.5 text-left"
             >
-              <div
-                className={cn(
-                  'mt-0.5 w-4 h-4 flex items-center justify-center shrink-0 transition-colors border-2',
-                  isMulti ? 'rounded' : 'rounded-full',
-                  isSelected ? 'border-primary bg-primary' : 'border-border',
-                )}
-              >
-                {isSelected && <Check size={10} className="text-primary-foreground" strokeWidth={3} />}
-              </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[12.5px] font-medium leading-snug">{opt.label}</div>
                 {opt.description && (
@@ -159,21 +153,12 @@ export function QuestionCard({
             automatically"). Replaces the dismiss-X that used to live
             in the header — the Stop button on the composer is the
             mechanism for actually cancelling the agent. */}
-        <ChoiceRow
+        <ChoiceRow indicator={isMulti ? "checkbox" : "radio"}
           type="button"
           aria-pressed={otherActive}
           onClick={() => toggleOption(OTHER_VALUE)}
           className="flex items-start gap-2.5 text-left"
         >
-          <div
-            className={cn(
-              'mt-0.5 w-4 h-4 flex items-center justify-center shrink-0 transition-colors border-2',
-              isMulti ? 'rounded' : 'rounded-full',
-              otherActive ? 'border-primary bg-primary' : 'border-border',
-            )}
-          >
-            {otherActive && <Check size={10} className="text-primary-foreground" strokeWidth={3} />}
-          </div>
           <div className="flex-1 min-w-0">
             <div className="text-[12.5px] font-medium leading-snug">Other</div>
             <div className="text-[11px] text-muted-foreground/80 mt-0.5 leading-snug">
@@ -243,6 +228,6 @@ export function QuestionCard({
           )}
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }

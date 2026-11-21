@@ -245,7 +245,7 @@ function BesideHeader({
                 <InlineAction
                   type="button"
                   onClick={rename.begin}
-                  className={cn("-mx-0.5 min-w-0 cursor-text truncate text-left", !rename.label && "italic")}
+                  className={cn("min-w-0 cursor-text truncate text-left", !rename.label && "italic")}
                 >
                   {title}
                 </InlineAction>

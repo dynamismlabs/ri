@@ -634,7 +634,7 @@ export function NotificationsSection() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Channels</h2>
-            <Badge appearance="soft" className="rounded-full text-[10px]">
+            <Badge appearance="soft" >
               {channels.length} total
             </Badge>
           </div>
@@ -817,7 +817,7 @@ export function NotificationsSection() {
               <Card padding="md" key={d.id} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">{d.name}</span>
-                  <Badge tone={d.enabled ? 'success' : 'neutral'} className="rounded-full text-[10px]">
+                  <Badge tone={d.enabled ? 'success' : 'neutral'} >
                     {d.enabled ? 'Active' : 'Disabled'}
                   </Badge>
                 </div>

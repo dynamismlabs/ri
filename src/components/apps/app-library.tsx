@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 import { Card } from '@/components/system/card';
 import { MenuAction } from '@/components/system/menu-action';
 
@@ -328,10 +329,10 @@ function MenuCopy({ label, detail }: { label: string; detail: string }) { return
 
 function LibraryCard({ item, open, chat }: { item: LibraryItem; open: () => void; chat: () => void }) {
   return <Card as="article" padding="lg" shadow className="group flex min-w-0 flex-col">
-    <MenuAction density="none"  type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 text-left">
+    <InlineAction   type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 text-left">
       {item.providerId ? <IntegrationLogo providerId={item.providerId} name={item.name} size={36} /> : item.kind === 'skills' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BookOpen size={18} /></span> : item.target.kind === 'mcp' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Server size={18} /></span> : <AppMark name={item.name} size="lg" />}
       <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-semibold">{item.name}</h3><p className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">{item.description}</p></div>
-    </MenuAction>
+    </InlineAction>
     <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
       {item.chat && !item.draft && <span className="inline-flex items-center gap-1"><MessageCircle size={11} />{item.kind === 'skills' ? 'Agent workflow' : 'Works in chat'}</span>}
       {item.view && <span className="inline-flex items-center gap-1"><LayoutGrid size={11} />Opens in Ri</span>}

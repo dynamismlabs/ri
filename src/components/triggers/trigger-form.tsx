@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Field as SystemField } from '@/components/system/field';
@@ -315,7 +317,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
         {isHeartbeat && (
           <p className="text-[11px] text-muted-foreground">Sent after the app&apos;s ground rules, which it always follows.</p>
         )}
-        <div data-slot="input-group" className="rounded-lg border border-border bg-card">
+        <Card padding="none"  >
           <TextArea
             aria-label={isHeartbeat ? 'Instructions' : 'Message'}
             value={values.prompt}
@@ -353,7 +355,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
               />
             </div>
           )}
-        </div>
+        </Card>
         <p className="text-[11px] text-muted-foreground">
           {target === 'session'
             ? 'This job runs in its chat, under that chat’s own permission to message other chats and start new ones.'

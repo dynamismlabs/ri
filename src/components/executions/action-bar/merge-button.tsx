@@ -115,7 +115,7 @@ export function MergeButton({
               <DialogPrimitive.Title>Merge PR #{prNumber}</DialogPrimitive.Title>
               <DialogPrimitive.Description>Confirm merge of pull request</DialogPrimitive.Description>
             </VisuallyHidden.Root>
-            <Card padding="none" shadow className="overflow-hidden">
+            <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
               <div className="px-5 py-3 border-b border-border">
                 <div className="flex items-center gap-2">
                   <GitMerge size={14} className="text-primary" />
@@ -208,7 +208,7 @@ export function MergeButton({
                   {merge.isPending ? 'Merging…' : 'Merge'}
                 </Button>
               </div>
-            </Card>
+            </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>

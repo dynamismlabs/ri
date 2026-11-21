@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
@@ -89,7 +91,7 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
   if (draft.status === 'discarded' && !hasEdits) return <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground"><Mail size={14} />Email draft discarded</div>;
 
   return (
-    <section aria-labelledby={labelId} className="my-2 w-full overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+    <Card as="section" padding="none" surface="pane" aria-labelledby={labelId} className="my-2 w-full overflow-hidden">
       <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-4 py-3">
         {draft.status === 'sent' ? <Check size={15} className="text-green-600" /> : <Mail size={15} className="text-muted-foreground" />}
         <h3 id={labelId} className="flex-1 text-sm font-medium">{draft.status === 'sent' ? 'Email sent' : draft.status === 'uncertain' ? 'Delivery unconfirmed' : draft.status === 'sending' ? 'Sending email' : draft.status === 'discarded' ? 'Email draft discarded' : 'Email draft'}</h3>
@@ -248,6 +250,6 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
           size={touch ? 'touch' : 'md'}
         ><Trash2 size={14} /></IconButton>
       </div>}
-    </section>
+    </Card>
   );
 }

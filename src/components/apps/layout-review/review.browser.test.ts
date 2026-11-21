@@ -144,7 +144,7 @@ for (const theme of ['light', 'dark'] as const) {
       await all.focus();
       expect(await all.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('solid');
       expect(await all.evaluate(el => parseFloat(getComputedStyle(el).outlineOffset))).toBeLessThan(0);
-      const card = page.locator('button[data-slot="content-card"]').first();
+      const card = page.locator('button.ri-card').first();
       await card.hover();
       expect(await card.evaluate(el => getComputedStyle(el).borderRadius)).toBe('14px');
       expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe('rgba(0, 0, 0, 0)');

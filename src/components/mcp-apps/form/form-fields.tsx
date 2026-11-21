@@ -2,7 +2,7 @@
 import { InlineAction } from '@/components/system/inline-action';
 
 import { Card } from '@/components/system/card';
-import { ChoiceRow } from '@/components/system/choice-row';
+import { ChoiceRow, ChoiceIndicator } from '@/components/system/choice-row';
 
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
@@ -155,9 +155,8 @@ function Options({options, thumbnails, multiple, chosen, onToggle, disabled, lab
     </Card>)}
   </div>;
   return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="space-y-1">
-    {options.map(option => <ChoiceRow density="compact"  key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+    {options.map(option => <ChoiceRow density="compact" indicator={multiple ? "checkbox" : "radio"}  key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
       className="flex w-full items-start gap-2 text-left">
-      <span aria-hidden className={cn('mt-0.5 size-3 shrink-0 border', multiple ? 'rounded-sm' : 'rounded-full', chosen(option) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />
       <span className="min-w-0"><span className="block text-xs">{option.title}</span>
         {option.description && <span className="block text-[11px] leading-snug text-muted-foreground">{option.description}</span>}</span>
     </ChoiceRow>)}
@@ -228,7 +227,7 @@ function ResourceControl(props: FormFieldsProps & {field: Extract<FormField, {ki
         {/* Implicit selection keeps whatever remains, so its rows are removed rather than ticked. */}
         <InlineAction  type="button" disabled={disabled || implicit} onClick={() => toggle(option.uri)} className="flex min-w-0 flex-1 items-center gap-2 text-left"
           {...(implicit ? {} : {role: field.multiple ? 'checkbox' : 'radio', 'aria-checked': chosen.includes(option.uri)})}>
-          {!implicit && <span aria-hidden className={cn('size-3 shrink-0 border', field.multiple ? 'rounded-sm' : 'rounded-full', chosen.includes(option.uri) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />}
+          {!implicit && <ChoiceIndicator kind={field.multiple ? "checkbox" : "radio"} checked={chosen.includes(option.uri)} />}
           <Thumbnail icon={option.thumbnail} className="size-9 shrink-0" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs">{option.title ?? option.name}</span>

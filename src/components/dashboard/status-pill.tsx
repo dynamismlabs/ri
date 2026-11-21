@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusBadge } from '@/components/system/status-badge';
 import { useState, type ReactNode } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tip } from '@/components/ui/tip';
@@ -13,7 +14,6 @@ interface StatusPillProps {
   tone?: Exclude<ButtonTone, `mode-${string}`>;
   icon: ReactNode;
   accentClass: string;
-  countBgClass: string;
   headerBgClass?: string;
   action?: (close: () => void) => ReactNode;
   footer?: ReactNode;
@@ -35,7 +35,7 @@ export function StatusPill(props: StatusPillProps) {
   return <ActiveStatusPill {...props} />;
 }
 
-function ActiveStatusPill({ label, count, icon, tone = 'neutral', accentClass, countBgClass, headerBgClass, action, footer, children }: StatusPillProps) {
+function ActiveStatusPill({ label, count, icon, tone = 'neutral', accentClass, headerBgClass, action, footer, children }: StatusPillProps) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
@@ -57,7 +57,7 @@ function ActiveStatusPill({ label, count, icon, tone = 'neutral', accentClass, c
         <div className={cn('flex items-center gap-1.5 px-3 py-2 border-b border-border/40', headerBgClass)}>
           <span className="flex items-center justify-center">{icon}</span>
           <span className={cn('flex-1 text-[10.5px] font-bold uppercase tracking-[0.12em]', accentClass)}>{label}</span>
-          <span className={cn('inline-flex items-center justify-center min-w-[18px] h-[16px] px-1.5 rounded-full text-[9.5px] font-bold font-mono tabular-nums', countBgClass)}>{count}</span>
+          <StatusBadge size="count" tone={tone} code>{count}</StatusBadge>
           {action?.(close)}
         </div>
         <div className="max-h-[min(28rem,60dvh)] overflow-y-auto py-1">{children(close)}</div>

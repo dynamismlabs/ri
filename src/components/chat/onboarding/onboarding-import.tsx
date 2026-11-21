@@ -196,21 +196,13 @@ export function ImportStep({
           const on = selected.has(project.cwd);
           return (
             <Tip key={project.cwd} label={project.cwd}>
-              <ChoiceRow surface="plain" density="compact"
+              <ChoiceRow indicator="checkbox" surface="plain" density="compact"
                 type="button"
                 role="checkbox"
                 aria-checked={on}
                 onClick={() => toggle(project.cwd)}
                 className="flex items-center gap-2.5 text-left"
               >
-                <span
-                  className={cn(
-                    'flex size-4 flex-shrink-0 items-center justify-center rounded border',
-                    on ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40',
-                  )}
-                >
-                  {on && <Check size={11} />}
-                </span>
                 <Folder size={13} className="flex-shrink-0 text-muted-foreground/70" />
                 <span className="flex min-w-0 flex-1 flex-col leading-tight">
                   <span className="truncate text-[12px] font-medium text-foreground">{project.name}</span>

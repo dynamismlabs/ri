@@ -1,5 +1,5 @@
 "use client";
-import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -296,7 +296,7 @@ function AgentGroup({
         )}
         {group.quietChats.map((chat) => (
           <li key={chat.sessionId}>
-            <MenuAction density="none"
+            <InlineAction purpose="caption"
               type="button"
               onClick={() => chat.executionId && onOpenChat(chat.sessionId)}
               className="flex items-start gap-1.5 text-left"
@@ -305,7 +305,7 @@ function AgentGroup({
               <span className="min-w-0">
                 {chat.label} <span className="text-[10px]">· {formatDuration(chat.agentMinutes)}</span>
               </span>
-            </MenuAction>
+            </InlineAction>
           </li>
         ))}
       </ul>

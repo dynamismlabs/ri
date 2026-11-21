@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -172,7 +173,6 @@ export function OpenOnDevice({
                     {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
                   </IconButton>
 
-
                   <IconButton asChild label="Open in a new tab" tooltip="Open in a new tab" variant="ghost" size="sm" className="flex items-center justify-center"><a href={url}
                     target="_blank"
                     rel="noopener noreferrer">
@@ -198,12 +198,12 @@ export function OpenOnDevice({
 
           {!resolving && needsSwitch && (
             <div className="space-y-2.5">
-              <div className="flex items-start gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-2.5 text-[11px] text-emerald-700 dark:text-emerald-300">
+              <Callout tone="success" padding="sm" className="flex items-start gap-1.5">
                 <Check size={13} className="mt-0.5 shrink-0" />
                 <span>
                   beamd is already set up on this machine. Turn it on for remote previews, nothing else to configure.
                 </span>
-              </div>
+              </Callout>
               <Button
                 type="button"
                 onClick={useBeamdAndResolve}

@@ -17,7 +17,7 @@ describe('this computer’s notification setup', () => {
     const document = render();
     expect(document.querySelector('[role="status"]')?.textContent).toBe('Off');
     expect(document.querySelector('button')?.textContent).toBe('Enable desktop notifications');
-    expect(document.querySelector('section')?.className).toContain('border-amber');
+    expect(document.querySelector('section')?.className).toContain('ri-tone--warning');
   });
 
   it('shows confirmed consent with management for a connected viewer', () => {

@@ -50,7 +50,7 @@ export function TreeViewToggle({
           Changes<span className="hidden @[11rem]/tree-filter:inline"> only</span>
         </span>
         <Tip label={changedCount > 99 ? `${changedCount.toLocaleString()} changed files` : undefined}>
-          <StatusBadge className="ml-auto min-w-8 shrink-0 text-center tabular-nums">
+          <StatusBadge className="ml-auto w-9 shrink-0 text-center tabular-nums">
             {formatChangedCount(changedCount)}
           </StatusBadge>
         </Tip>

@@ -1,5 +1,5 @@
 'use client';
-import { MenuAction } from '@/components/system/menu-action';
+
 import { InlineAction } from '@/components/system/inline-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -77,12 +77,12 @@ export function DeadlineBand() {
 
         {hiddenUrgent > 0 && (
           <li>
-            <MenuAction density="compact"
+            <InlineAction purpose="caption"
               onClick={() => setUrgentExpanded(true)}
               className="w-full text-left"
             >
               +{hiddenUrgent} more overdue or due today
-            </MenuAction>
+            </InlineAction>
           </li>
         )}
 
@@ -90,12 +90,12 @@ export function DeadlineBand() {
           ? soon.map((d) => <DeadlineRow key={d.id} d={d} onOpen={openTask} />)
           : soon.length > 0 && (
               <li>
-                <MenuAction density="compact"
+                <InlineAction purpose="caption"
                   onClick={() => setSoonExpanded(true)}
                   className="w-full text-left"
                 >
                   {soon.length} more due soon
-                </MenuAction>
+                </InlineAction>
               </li>
             )}
       </ul>

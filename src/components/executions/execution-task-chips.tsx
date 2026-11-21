@@ -1,4 +1,5 @@
 'use client';
+import { MetaItem } from '@/components/system/meta';
 import { Button } from '@/components/system/button';
 
 import { useWorkNavigation } from '@/contexts/work-context';
@@ -28,10 +29,10 @@ export function ExecutionTaskChips({ executionId }: { executionId: string }) {
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-1.5 px-2 pb-1.5 pt-0.5">
-      <span data-slot="task-chip-label" className="inline-flex flex-shrink-0 items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+      <MetaItem kind="context" className="inline-flex flex-shrink-0 items-center gap-1">
         <ListTodo size={11} aria-hidden />
         {active.length > 1 ? 'Working on' : 'Task'}
-      </span>
+      </MetaItem>
       {active.map((t) => (
         <Tip key={t.id} label={t.title || 'Untitled'} onlyWhenTextHidden>
           <Button variant="secondary" size="xs"

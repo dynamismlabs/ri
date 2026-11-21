@@ -54,10 +54,6 @@ html:root [data-slot="review-bar-title"] { display: inline-flex; align-items: ce
 html:root [data-slot="review-bar"][data-state="unreviewed"] [data-slot="review-bar-title"]::before { content: ''; width: 7px; height: 7px; border-radius: 999px; background-color: var(--attention); }
 
 /* The task a chat works on: a soft capsule, a dot when it's in progress. */
-html:root [data-slot="task-chip-label"] { font-size: 12px; font-weight: 500; color: var(--t3); }
-html:root [data-slot="task-chip"] { height: 24px; gap: 6px; padding-inline: 10px; border-color: transparent; border-radius: 999px; background-color: var(--track); font-size: 12.5px; font-weight: 500; color: var(--t1); }
-html:root [data-slot="task-chip"]:hover { border-color: transparent; background-color: var(--selected); }
-html:root [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--working); }
 
 /* Rail: no boxes in the footer, a quiet New agent, sentence-case group labels. */
 html:root [data-slot="rail-foot"] button { border-color: transparent; }
@@ -87,14 +83,12 @@ html:root :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="
 html:root .border.bg-card:not(input, textarea, select, [data-slot]) { border-color: transparent; box-shadow: var(--shadow-card); }
 
 /* Phone: the search field and the buttons beside it. */
-html:root :is([data-slot="search-field"]) { border-color: transparent; border-radius: 999px; background-color: var(--track); }
 
 /* The scheduled prompt and model toolbar are one content frame, pending stage 4. */
-html:root [data-slot="input-group"] { border-radius: 10px; }
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
-html:root :is([data-slot="task-chip"], .panel-tab, :where(.border.bg-card), [data-slot="search-field"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is(.panel-tab, :where(.border.bg-card)):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
 /* ── Phase 3: daily controls and the long tail ─────────────────────────── */
 /* These labels were sized for capitals. Sentence case needs a readable size.
@@ -166,16 +160,12 @@ html:root [data-slot="calendar-event"]:hover { background-color: var(--selected)
 
 /* Files in a sentence are capsules. In an inverted message they inherit the
    message's ink, so the chip and its hover stay readable on either bubble. */
-html:root [data-slot="attachment-chip"] { border-color: transparent; border-radius: 999px; background-color: var(--track); box-shadow: none; }
-html:root [data-slot="attachment-chip"]:hover { background-color: var(--selected); }
-html:root [data-slot="attachment-chip"][data-tone="bubble"] { color: inherit; background-color: color-mix(in oklch, currentColor 10%, transparent); }
-html:root [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-color: color-mix(in oklch, currentColor 15%, transparent); }
 
 /* A floating action stays opaque over images and the model list's edge fades. */
 html:root [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--shadow-thumb); }
 html:root [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--raised); }
 
-html:root :is([data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Calendar cells and pickers can clip at their container's edge. */
 html:root :is([data-slot="calendar-event"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
 

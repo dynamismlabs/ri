@@ -1,5 +1,5 @@
 'use client';
-import { InlineAction } from '@/components/system/inline-action';
+import { MenuAction } from '@/components/system/menu-action';
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -35,7 +35,7 @@ export function FoldRow({
 }) {
   return (
     <div className={cn('group/fold flex items-center gap-0.5', className)}>
-      <InlineAction
+      <MenuAction density="compact" size={touch ? "touch" : "compact"}
         type="button"
         onClick={onToggle}
         onPointerDown={(e) => e.stopPropagation()}
@@ -48,7 +48,7 @@ export function FoldRow({
         <span className="flex-shrink-0 font-medium text-muted-foreground/80 transition-colors group-hover/fold:text-foreground">
           {shown ? 'Hide' : 'Show'}
         </span>
-      </InlineAction>
+      </MenuAction>
       {accessory}
     </div>
   );

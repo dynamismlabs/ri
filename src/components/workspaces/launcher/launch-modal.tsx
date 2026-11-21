@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -870,15 +872,15 @@ function LaunchModalInner({
 
               {!continuation && runtimeProblem && <p role="status" className="px-4 py-2 text-[12px] text-muted-foreground">{runtimeProblem}</p>}
               {!continuation && runOnProblem && (
-                <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+                <Callout tone="warning" padding="md">
                   {runOnProblem}
-                </div>
+                </Callout>
               )}
 
               {error && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
+                <Callout tone="error" padding="md" >
                   {error}
-                </div>
+                </Callout>
               )}
             </div>
 
@@ -893,10 +895,10 @@ function LaunchModalInner({
                 className="-ml-1"
               />
               {continuation ? (
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2 py-1 text-[11px] text-foreground">
+                <StatusBadge tone="info" className="inline-flex items-center gap-1.5">
                   <MessageSquare size={11} className="text-primary/70" />
                   Continuing an existing chat
-                </span>
+                </StatusBadge>
               ) : (
                 <>
                   <ModelControl

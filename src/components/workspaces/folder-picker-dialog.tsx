@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -355,9 +357,9 @@ export function FolderPickerDialog({
                 </div>
               )}
               {error && !loading && (
-                <div className="m-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+                <Callout tone="error" padding="md" className="m-3">
                   {error}
-                </div>
+                </Callout>
               )}
               {!loading && !error && browse?.entries.length === 0 && (
                 <div className="flex items-center justify-center h-40 text-muted-foreground/60 text-[11px] italic">

@@ -1,5 +1,5 @@
 'use client';
-import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
 
 import type { ChatEventRecord } from '@/lib/api/dto/records';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,7 @@ export function ActivityGroup({
 
   return (
     <div className="flex flex-col">
-      <MenuAction density="none"
+      <InlineAction purpose="caption"
         type="button"
         onClick={() => setExpanded((v) => !v)}
         className="group/grp flex w-full items-center gap-1.5 text-left"
@@ -45,7 +45,7 @@ export function ActivityGroup({
         />
         <span className="truncate font-medium">{summary}</span>
         {span && <span className="flex-shrink-0 text-muted-foreground/45 tabular-nums">{span}</span>}
-      </MenuAction>
+      </InlineAction>
 
       {expanded && (
         <div className="mt-2 flex flex-col gap-2">

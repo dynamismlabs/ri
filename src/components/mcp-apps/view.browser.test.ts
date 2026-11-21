@@ -63,7 +63,10 @@ rpc('ui/initialize',{protocolVersion:'2026-01-26',appInfo:{name:'Independent cal
     const page=await browser.newPage({viewport:{width:1200,height:900}}), errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
     await page.goto(`http://127.0.0.1:${(server.address() as {port:number}).port}`);
     await expect.poll(()=>probes.length).toBe(1);
-    const frame=await page.locator('iframe').boundingBox();await page.mouse.click(frame!.x+probes[0].x,frame!.y+probes[0].y);
+    const frame=await page.locator('iframe').boundingBox();
+    // The initial app RPC can beat nested iframe hit testing. A native button
+    // locator waits for the guest to be actionable before the physical click.
+    await page.frameLocator('iframe').frameLocator('iframe').getByRole('button',{name:'Recalculate',exact:true}).click();
     await page.getByText('Allow this app operation?',{exact:true}).waitFor();expect(effects).toBe(0);
     // The approval lies over the view without moving it, so the app cannot slide Allow once under the
     // pointer, and a click that lands on it at once (one meant for the app) does nothing.

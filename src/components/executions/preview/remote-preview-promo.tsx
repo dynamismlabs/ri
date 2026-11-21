@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { Smartphone, Globe } from 'lucide-react';
@@ -34,7 +35,7 @@ export function RemotePreviewPromo({ prominent }: { prominent: boolean }) {
   }
 
   return (
-    <div className="w-full space-y-2 rounded-md border border-border bg-card/40 p-3">
+    <Card padding="md" className="w-full space-y-2">
       <h4 className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
         <Smartphone size={13} className="text-primary" />
         Preview on any device
@@ -53,6 +54,6 @@ export function RemotePreviewPromo({ prominent }: { prominent: boolean }) {
         <Globe size={13} />
         Set up Beamd
       </Button>
-    </div>
+    </Card>
   );
 }

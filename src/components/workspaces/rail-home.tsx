@@ -1,5 +1,5 @@
 'use client';
-import { InlineAction } from '@/components/system/inline-action';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
 
@@ -65,7 +65,7 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
 
   return (
     <div className="flex items-center gap-1 px-2 pt-2 pb-1">
-      <InlineAction
+      <MenuAction density="compact" selected={isHome}
         type="button"
         onClick={home}
         aria-label={homeLabel}
@@ -76,7 +76,7 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
         <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">{name}</span>
         {unread && <span aria-hidden className="ml-auto size-2 shrink-0 rounded-full bg-amber-500" />}
         {team && <StatusBadge appearance="solid"  className="ml-auto inline-flex shrink-0 items-center gap-1"><Users size={11} aria-hidden />Team</StatusBadge>}
-      </InlineAction>
+      </MenuAction>
       {action}
     </div>
   );

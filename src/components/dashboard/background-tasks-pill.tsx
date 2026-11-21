@@ -21,7 +21,6 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
       count={count}
       icon={<Boxes aria-hidden size={13} className="text-sky-500" />}
       accentClass="text-sky-600 dark:text-sky-400"
-      countBgClass="bg-sky-500/15 text-sky-600 dark:text-sky-400"
       headerBgClass="bg-sky-500/[0.06]"
       footer={(
         <p className="flex items-start gap-1.5 border-t border-border/40 px-3 py-2 text-[10px] leading-relaxed text-muted-foreground">

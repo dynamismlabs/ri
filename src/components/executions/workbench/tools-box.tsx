@@ -276,7 +276,7 @@ export function ToolsRow({
 }) {
   return (
     <Tip label={title}>
-      <MenuAction
+      <MenuAction size={touch ? "touch" : "compact"}
         type="button"
         onClick={onClick}
         className="group flex w-full items-center gap-2.5 text-left"
@@ -298,7 +298,7 @@ export function ToolsRow({
 export function TerminalToolsRow({ open, onToggle, touch = false }: { open: boolean; onToggle: () => void; touch?: boolean }) {
   return (
     <Tip label={open ? 'Hide the terminal. Shells keep running.' : undefined}>
-      <MenuAction selected={!!((open))}
+      <MenuAction selected={open} size={touch ? "touch" : "compact"}
         type="button"
         onClick={onToggle}
         className="group flex w-full items-center gap-2.5 text-left"

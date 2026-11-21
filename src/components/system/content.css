@@ -1,6 +1,7 @@
 @layer components {
   .ri-choice-row, .ri-menu-action { display: inline-flex; align-items: center; flex-shrink: 0; }
-  .ri-inline-action { display: inline-block; }
+  .ri-inline-action { display: inline-block; white-space: inherit; }
+  .ri-status-badge { width: fit-content; }
 }
 /* Shared content drawing. Layout stays in the call site, never in compatibility selectors. */
 .ri-card {
@@ -44,7 +45,6 @@
 .ri-callout[class*='ri-tone--'] { color: var(--control-ink); background-color: var(--control-fill); }
 .ri-status-badge {
   display: inline-flex;
-  width: fit-content;
   height: auto;
   min-height: 18px;
   flex-shrink: 0;
@@ -93,9 +93,11 @@
   white-space: normal;
 }
 .ri-choice-row--compact, .ri-menu-action--compact { padding: 6px 10px; font-size: 12px; }
+.ri-menu-action--compact { min-height: 24px; padding-block: 4px; line-height: 16px; }
 .ri-choice-row--comfortable, .ri-menu-action--comfortable { padding: 10px 12px; }
 .ri-choice-row--plain, .ri-menu-action { background-color: transparent; }
-.ri-menu-action--flush { padding: 0; }
+.ri-menu-action--flush { padding: 0; min-height: 0; }
+.ri-menu-action--touch { min-height: 40px; font-size: 15px; }
 .ri-menu-action--separator { border-top: 1px solid var(--line); }
 .ri-menu-action[class*='ri-tone--'] { color: var(--control-ink); background-color: transparent; }
 .ri-choice-row:where(:hover, [aria-pressed='true'], [aria-checked='true'], [aria-selected='true'], [aria-expanded='true'], [data-state='checked'], .ri-content--selected):not(:disabled, [aria-disabled='true']),
@@ -132,7 +134,7 @@
   outline-offset: 2px;
 }
 .ri-meta-item:not([class*='ri-tone--']) { --control-ink: var(--t3); }
-.ri-meta > .ri-meta-item ~ .ri-meta-item::before { content: '\00b7'; margin-right: 7px; color: var(--t4); font-weight: 400; }
+.ri-meta > :is(.ri-meta-item, .ri-status-badge) ~ :is(.ri-meta-item, .ri-status-badge)::before { content: '\00b7'; margin-right: 7px; color: var(--t4); font-weight: 400; }
 .ri-meta-item > svg { width: 12px; height: 12px; flex-shrink: 0; }
 .ri-meta-item:is(button, a):hover:not(:disabled, [aria-disabled='true'], [data-energy], [data-urgency], [class*='ri-tone--']) { background: transparent; color: var(--t1); }
 .ri-meta-item:focus-visible { outline: 2px solid var(--ring); }
@@ -153,10 +155,16 @@
 .ri-choice-row--spacious { padding: 12px; }
 .ri-choice-indicator { width: 14px; height: 14px; flex-shrink: 0; margin-top: 3px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--pane); }
 .ri-choice-row[data-state='checked'] .ri-choice-indicator { border: 4px solid var(--primary); }
+.ri-choice-indicator { display: inline-flex; align-items: center; justify-content: center; }
+.ri-choice-indicator[data-checked] { border: 4px solid var(--primary); }
+.ri-choice-indicator--checkbox { border-radius: 4px; }
+.ri-choice-indicator--checkbox[data-checked] { border-width: 1px; background: var(--primary); color: var(--primary-foreground); }
+.ri-choice-indicator > svg { width: 10px; height: 10px; }
 
 .ri-menu-action[data-inset] { padding-inline-start: 32px; }
+.ri-menu-action--compact[data-inset] { padding-inline-start: 24px; }
 
-.ri-inline-action { height: auto; min-height: 0; padding: 0; gap: 4px; border: 0 solid transparent; border-radius: 999px; background: transparent; color: inherit; font: inherit; line-height: inherit; letter-spacing: normal; text-transform: none; text-decoration: none; white-space: inherit; }
+.ri-inline-action { height: auto; min-height: 0; padding: 0; gap: 4px; border: 0 solid transparent; border-radius: 999px; background: transparent; color: inherit; font: inherit; line-height: inherit; letter-spacing: normal; text-transform: none; text-decoration: none; }
 .ri-inline-action:not(.ri-inline-action--chip):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background: transparent; color: inherit; }
 .ri-inline-action--link { text-decoration: underline; text-underline-offset: 3px; }
 .ri-inline-action--chip { padding: 1px 6px; background-color: var(--track); color: var(--t2); }
@@ -178,3 +186,5 @@
 .ri-inline-action--label { color: var(--t1); font-size: 13px; font-weight: 500; line-height: 1.5; }
 .ri-inline-action--heading { color: var(--t1); font-size: 14px; font-weight: 500; line-height: 1.375; }
 .ri-inline-action.ri-content--code { color: var(--t3); font-size: 11px; }
+
+.ri-meta > .ri-status-badge { padding: 0; background-color: transparent; }

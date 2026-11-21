@@ -417,7 +417,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
 
       {hasThreads && !expanded && !agentsOnly && (
         <Tip label="Show chats">
-          <MenuAction density="none"
+          <InlineAction purpose="caption"
             onPointerDown={stop}
             onClick={toggleThreads}
             className="mb-1.5 flex w-full items-center gap-1.5 text-left"
@@ -432,7 +432,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                 </span>
               ))}
             </span>
-          </MenuAction>
+          </InlineAction>
         </Tip>
       )}
     </div>

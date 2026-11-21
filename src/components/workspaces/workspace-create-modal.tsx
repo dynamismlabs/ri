@@ -1,4 +1,7 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { InlineAction } from '@/components/system/inline-action';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Card } from '@/components/system/card';
@@ -230,7 +233,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
         <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
           className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
-          <Card padding="none" shadow className="flex max-h-[88vh] flex-col overflow-hidden">
+          <div className="flex max-h-[88vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
             <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3">
               <DialogPrimitive.Title className="text-lg font-semibold text-foreground">New agent</DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>
@@ -420,7 +423,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
 
               {primary && (
                 <section>
-                  <MenuAction density="none"
+                  <InlineAction
                     type="button"
                     onClick={() => setScriptsOpen((v) => !v)}
                     aria-expanded={scriptsOpen}
@@ -435,7 +438,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                       </span>
                     </span>
                     {scriptsOpen ? <ChevronDown size={15} className="shrink-0 text-muted-foreground" /> : <ChevronRight size={15} className="shrink-0 text-muted-foreground" />}
-                  </MenuAction>
+                  </InlineAction>
                   {scriptsOpen && (
                     <div className="mt-3">
                       <WorktreeScriptsSection
@@ -497,7 +500,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 Create agent
               </Button>
             </div>
-          </Card>
+          </div>
           <FolderPickerDialog
             open={picking}
             onOpenChange={setPicking}
@@ -533,7 +536,7 @@ function FolderRow({
         </span>
       </Tip>
       {primary ? (
-        <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-[11.5px] text-muted-foreground">Primary</span>
+        <StatusBadge className="shrink-0">Primary</StatusBadge>
       ) : (
         <Button
           type="button"

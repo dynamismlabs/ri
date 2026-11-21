@@ -224,10 +224,10 @@ function PassDigest({ passId }: { passId: string }) {
   const unseen = !pass.digestSeenAt;
 
   return (
-    <Callout padding="md" density="comfortable" shadow
+    <Callout padding="md" density="comfortable"
 
     >
-      <MenuAction density="none"
+      <InlineAction
         className="w-full flex items-center gap-2 text-left"
         onClick={() => setExpanded((e) => !e)}
       >
@@ -240,7 +240,7 @@ function PassDigest({ passId }: { passId: string }) {
           Triage {timeAgo(pass.completedAt ?? pass.createdAt)}
         </span>
         {unseen && <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />}
-      </MenuAction>
+      </InlineAction>
 
       {expanded && (
         <div className="mt-2 space-y-2">
