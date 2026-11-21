@@ -99,7 +99,8 @@ it.skipIf(!enabled)('renders compact stacked marks in both themes, with keyboard
     });
     // Browser color-space conversion can round an OKLCH channel by one.
     for (const [index, value] of [122, 157, 255].entries()) expect(Math.abs(channels[index] - value)).toBeLessThanOrEqual(1);
-    expect(await button.locator('.font-mono').first().evaluate(node => getComputedStyle(node).fontSize)).toBe('10px');
+    // The compact ChipButton owns the readable label size, including stacked counts.
+    expect(await button.locator('.font-mono').first().evaluate(node => getComputedStyle(node).fontSize)).toBe('12px');
     await page.screenshot({ path: path.join(output, `usage-implemented-${dark ? 'dark' : 'light'}.png`) });
     await button.focus();
     await page.keyboard.press('Enter');

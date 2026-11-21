@@ -482,8 +482,8 @@ entries for the file-specific stage 6 lint allowlist:
 | `question-progress-visualization` | `src/components/chat-ui/questions/question-card.tsx` | Visualization marks that also navigate between questions |
 | `draggable-chat-navigation` | `src/components/executions/execution-chat-tabs.tsx`, chat label only | Browser-style chat navigation preserves drag, rename and measured scrolling |
 
-Identity choices and connection-method rows contain descriptions, so they stay
-with ChoiceRow in stage 4. They are not tracks.
+Identity choices and connection-method rows contain descriptions. They use
+ChoiceRow in stage 4, rather than tracks.
 
 These names must be carried into the strict stage 6 allowlist. They do not grant
 blanket exceptions to the files, and they do not use bare lint disables.
@@ -499,7 +499,7 @@ Use the implemented system components first. These hooks carry families that hav
 | `rail-foot` | The rail's footer rows | |
 | `entity-kind` | "Task · Money" or "Note · Tidewater Coffee" above a task or note title | |
 | `properties` | The label and value grid on a task (Status, Deadline, Energy, Effort...) | |
-| `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"`, `"ghost"` or `"floating"`, `data-tone="status"` or `"warning"`, `aria-pressed`, `aria-selected` or `aria-checked` |
+| `action-button` | Remaining question-progress, identity-color and positioned calendar overflow controls. These retain their named domain drawing | `data-variant="primary"`, `"ghost"` or `"floating"`, `data-tone="status"` or `"warning"`, `aria-pressed`, `aria-selected` or `aria-checked` |
 | `status-strip` | A chat header's git summary and next action, in one quiet capsule | |
 | `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
 | `row-actions` | Hover actions on task, note and deck rows, also revealed by keyboard focus | `:focus-within` |
@@ -519,7 +519,7 @@ Use the implemented system components first. These hooks carry families that hav
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:
 a hand-built `button` or `a` with `bg-primary` is a capsule, and a hand-built
-`.border.bg-card` card loses its outline for a soft shadow (Board cards, Schedules rows).
+`.border.bg-card` card loses its outline for a soft shadow (remaining floating frames and domain renderers).
 
 ### Focus
 
@@ -723,3 +723,7 @@ esquery's `:has()` support, class literals inside `cn`, false positives, install
 primitives and the tooltip rule in legacy files. `src/styles/edge.browser.test.ts`
 checks the risky drawing rules with real CSS in Chromium. The long-tail checks
 fail with the new rules removed.
+
+The existing tooltip restriction also covers the content adapters and Button
+family, since they forward a DOM `title`. ChoiceRow's `title` is content, not a
+tooltip, and remains allowed. A scratch fixture verifies both boundaries.
