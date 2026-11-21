@@ -169,6 +169,12 @@ menu triggers render ChipButton with Radix `asChild`, preserving one button.
 Floating actions own their pointer interaction over a non-interactive edge shield.
 Callers keep their existing flex alignment, including `justify-start` where an
 action stretches across a row or grid cell.
+Domain helpers forward named size props rather than height or type classes.
+Plugins uses touch actions on its existing phone tier, keeping all three full
+labels. At 360px its existing wrapping moves New skill beside Add MCP server.
+It still uses two 40px rows, with no horizontal overflow. The document chat
+bubble also uses its existing phone state for a 40px target. The scroll-to-latest
+helper owns its floating surface, shadow and pointer interaction.
 
 The composer keeps its controls on one row. At touch size, the model chip shows
 only the model name. Its accessible name and popup retain effort, variant and

@@ -91,6 +91,7 @@ export const ConversationScrollButton = ({
         label={props["aria-label"] ?? "Scroll to latest"}
         variant="secondary"
         size="sm"
+        floating
         className={cn("absolute bottom-4 right-4", className)}
       >
         <ArrowDownIcon className="size-4" />

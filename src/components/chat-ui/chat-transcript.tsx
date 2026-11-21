@@ -246,7 +246,7 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
           so this mirrors the scroller's padding to stay over the messages
           instead of drifting to the far right under the tools box. */}
       <div className={cn('pointer-events-none absolute inset-x-0 bottom-4 flex justify-center', scrollClassName)}>
-        <ConversationScrollButton className="pointer-events-auto static shadow-md" />
+        <ConversationScrollButton className="static" />
       </div>
     </Conversation>
   );

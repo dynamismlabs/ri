@@ -11,6 +11,7 @@ import { NewSkillButton, SkillsTab } from './plugins/skills-catalog';
 import { InteractiveExamples } from './plugins/interactive-examples';
 import { McpServersSection } from './plugins/mcp-servers-section';
 import { PLUGIN_CREATE_ANCHORS, pluginsTabFor, type PluginsTab } from './plugins/navigation';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 /** Tab labels in one place, so renaming a kind is one line. */
 const TABS: ReadonlyArray<{ value: PluginsTab; label: string }> = [
@@ -21,6 +22,7 @@ const TABS: ReadonlyArray<{ value: PluginsTab; label: string }> = [
 
 /** Creation stays available while the tabs organize what is already installed. */
 export function PluginsSection() {
+  const actionSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
   const { anchor } = useSettingsStore();
   const tab = pluginsTabFor(anchor);
   const [visited, setVisited] = useState<PluginsTab[]>([tab]);
@@ -38,15 +40,15 @@ export function PluginsSection() {
           <Button
             onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService })}
             variant="secondary"
-            size="xs"
+            size={actionSize}
           >
             <Plus size={12} /> Connect a service
           </Button>
-          <NewSkillButton className="h-10 text-xs sm:h-8" />
+          <NewSkillButton size={actionSize} />
           <Button
             onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.mcpServer })}
             variant="secondary"
-            size="xs"
+            size={actionSize}
           >
             <Plus size={12} /> Add MCP server
           </Button>

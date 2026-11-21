@@ -13,7 +13,7 @@ import type { SkillSummary } from '@/lib/api/skills';
 import { useSkills } from '@/hooks/use-skills';
 import { useStartSkill } from '@/hooks/use-start-skill';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import { Button } from '@/components/system/button';
+import { Button, type ButtonSize } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { LOCATION_GROUPS, displayPath } from '@/components/skills/location-copy';
 import { apiErrorText } from '@/lib/api/client';
@@ -34,14 +34,14 @@ function SkillLogo() {
  * there. Clicking again before writing anything opens the same blank draft
  * rather than piling up empty ones.
  */
-export function NewSkillButton({ className }: { className?: string }) {
+export function NewSkillButton({ className, size = 'xs' }: { className?: string; size?: ButtonSize }) {
   const create = useStartSkill();
   return (
     <Button
       disabled={create.isPending}
       onClick={create.start}
       variant="secondary"
-      size="xs"
+      size={size}
       className={className}
     >
       {create.isPending ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}

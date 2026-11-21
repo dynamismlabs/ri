@@ -145,7 +145,7 @@ export function SlideoutChat({
   if (showPanel) {
     return <ChatPanel contextLabel={contextLabel} chat={chat} disabled={disabled} />
   }
-  return <ChatBubble contextLabel={contextLabel} chat={chat} disabled={disabled} />
+  return <ChatBubble contextLabel={contextLabel} chat={chat} disabled={disabled} touch={isMobile} />
 }
 
 // ─── Bubble mode ─────────────────────────────────────────────
@@ -154,10 +154,12 @@ function ChatBubble({
   contextLabel,
   chat,
   disabled,
+  touch,
 }: {
   contextLabel: string
   chat: DocumentChatHandle
   disabled: boolean
+  touch: boolean
 }) {
   const [bubbleOpen, setBubbleOpen] = useState(false)
   const active = chat.status === 'streaming'
@@ -182,7 +184,7 @@ function ChatBubble({
         variant="secondary"
           tone={active ? "working" : "neutral"}
           floating
-        size="md"
+        size={touch ? 'touch' : 'md'}
         className="absolute bottom-4 right-4 z-40 flex items-center justify-center"
       >
         {bubbleOpen ? <X size={18} /> : <MessageSquare size={18} />}
