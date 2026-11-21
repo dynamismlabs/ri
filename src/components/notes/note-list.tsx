@@ -1,5 +1,7 @@
 "use client";
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { ChipButton } from '@/components/system/chip-button';
 import { useState, useCallback, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -19,7 +21,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   ListToolbar,
-  SegmentedTabs,
   ToolbarActiveDot,
   ToolbarSearchButton,
   } from '@/components/shared/list-toolbar';
@@ -101,7 +102,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
       {/* Toolbar */}
       <ListToolbar>
         {/* Status — primary segmented filter */}
-        <SegmentedTabs<NoteStatus | 'all'>
+        <SegmentedControl<NoteStatus | 'all'> mode="choice"
           ariaLabel="Note status"
           value={statusFilter}
           onChange={setStatusFilter}

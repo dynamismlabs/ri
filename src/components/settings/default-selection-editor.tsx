@@ -1,10 +1,12 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { useState } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
-import { Tip } from '@/components/ui/tip';
+
 import { ModelList } from '@/components/settings/model-list';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import { apiErrorText } from '@/lib/api/client';
@@ -18,7 +20,7 @@ import {
   type ProviderId,
 } from '@/lib/harness/options';
 import { DEFAULT_HARNESS } from '@/lib/harness/registry';
-import { cn } from '@/lib/utils';
+
 import type { EffortLevel } from '@/db/types';
 import { serviceTierForModel, serviceTierOptions } from '@/lib/harness/service-tiers';
 
@@ -95,45 +97,13 @@ export function DefaultSelectionEditor({
       {efforts.length > 0 && (
         <div className="mt-3 border-t border-border pt-3">
           <div className="mb-1.5 px-1 text-[11px] font-medium text-muted-foreground">Effort</div>
-          <div className="flex flex-wrap gap-1.5" data-slot="segmented" role="radiogroup" aria-label="Effort">
-            {efforts.map((o) => {
-              const on = draft.effort === o.id;
-              return (
-                <Tip key={o.id} label={o.hint}>
-                  <button data-slot="segmented-option"
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    onClick={() => setDraft((d) => ({ ...d, effort: o.id }))}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11.5px] transition-colors',
-                      on ? 'border-primary/60 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-muted/50',
-                    )}
-                  >
-                    {o.label}
-                    {on && <Check size={10} className="text-primary" />}
-                  </button>
-                </Tip>
-              );
-            })}
-          </div>
+          <SegmentedControl mode="choice" selection="radio" ariaLabel="Effort" value={draft.effort} onChange={effort => setDraft(d => ({...d,effort}))} options={efforts.map(o => ({value:o.id,label:o.label,hint:o.hint}))} />
         </div>
       )}
       {speeds.some(speed => speed.id !== 'default') && (
         <div className="mt-3 border-t border-border pt-3">
           <div className="mb-1.5 px-1 text-[11px] font-medium text-muted-foreground">Speed</div>
-          <div className="flex flex-wrap gap-1.5" data-slot="segmented" role="radiogroup" aria-label="Speed">
-            {speeds.map(speed => (
-              <Tip key={speed.id} label={speed.hint}>
-                <button data-slot="segmented-option" type="button" role="radio" aria-checked={(draft.serviceTier ?? 'default') === speed.id}
-                  disabled={speed.disabled} onClick={() => setDraft(d => ({ ...d, serviceTier: speed.id }))}
-                  className={cn('rounded-full border px-2.5 py-1 text-[11.5px] disabled:opacity-50',
-                    (draft.serviceTier ?? 'default') === speed.id ? 'border-primary/60 bg-primary/10' : 'border-border text-muted-foreground')}>
-                  {speed.label}
-                </button>
-              </Tip>
-            ))}
-          </div>
+          <SegmentedControl mode="choice" selection="radio" ariaLabel="Speed" value={draft.serviceTier ?? 'default'} onChange={serviceTier => setDraft(d => ({...d,serviceTier}))} options={speeds.map(speed => ({value:speed.id,label:speed.label,hint:speed.hint,disabled:speed.disabled}))} />
         </div>
       )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">

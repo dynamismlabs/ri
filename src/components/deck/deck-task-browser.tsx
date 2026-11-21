@@ -1,5 +1,7 @@
 "use client";
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { ChipButton } from '@/components/system/chip-button';
 import { IconButton } from '@/components/system/icon-button';
 import { TeamLabel } from '@/components/spaces/team-label';
@@ -106,32 +108,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         </div>
 
         {/* Energy toggle */}
-        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-md shrink-0">
-          <button
-            onClick={() => setEnergyFilter(energyFilter === 'light' ? null : 'light')}
-            aria-pressed={energyFilter === 'light'}
-            className={cn(
-              'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
-              energyFilter === 'light'
-                ? 'bg-sky-400/15 text-sky-400 shadow-sm'
-                : 'text-muted-foreground/50 hover:text-muted-foreground'
-            )}
-          >
-            Light
-          </button>
-          <button
-            onClick={() => setEnergyFilter(energyFilter === 'deep' ? null : 'deep')}
-            aria-pressed={energyFilter === 'deep'}
-            className={cn(
-              'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
-              energyFilter === 'deep'
-                ? 'bg-orange-500/15 text-orange-500 shadow-sm'
-                : 'text-muted-foreground/50 hover:text-muted-foreground'
-            )}
-          >
-            Deep
-          </button>
-        </div>
+        <SegmentedControl mode="choice" allowEmpty ariaLabel="Energy" value={energyFilter} onChange={setEnergyFilter} options={[{value:'light',label:'Light'},{value:'deep',label:'Deep'}]} />
 
         {/* Area filter */}
         <DropdownMenu>

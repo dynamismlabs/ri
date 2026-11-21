@@ -1,5 +1,7 @@
 "use client";
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { ChipButton } from '@/components/system/chip-button';
 import { IconButton } from '@/components/system/icon-button';
 import { useState, useEffect, useCallback } from 'react';
@@ -30,8 +32,6 @@ function getUrgency(generatedAt: string | undefined, now: number): Urgency {
   if (hoursAgo >= 2) return 'medium';
   return 'low';
 }
-
-
 
 // ─── Component ──────────────────────────────────────────────────
 
@@ -86,32 +86,7 @@ export function DeckConductor({
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 @max-[30rem]/conductor:gap-x-1.5 @max-[30rem]/conductor:px-3">
       <div className="flex items-center gap-2 @max-[30rem]/conductor:gap-1.5">
         {/* Energy toggle: Light / Deep */}
-        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-card rounded-lg border border-border">
-          <button
-            onClick={() => onWorkModeChange(workMode === 'light' ? null : 'light')}
-            aria-pressed={workMode === 'light'}
-            className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
-              workMode === 'light'
-                ? 'bg-sky-400/15 text-sky-400 shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Light
-          </button>
-          <button
-            onClick={() => onWorkModeChange(workMode === 'deep' ? null : 'deep')}
-            aria-pressed={workMode === 'deep'}
-            className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
-              workMode === 'deep'
-                ? 'bg-orange-500/15 text-orange-500 shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Deep
-          </button>
-        </div>
+        <SegmentedControl mode="choice" allowEmpty ariaLabel="Energy" value={workMode} onChange={onWorkModeChange} options={[{value:'light',label:'Light'},{value:'deep',label:'Deep'}]} />
 
         {/* Area filter dropdown */}
         <DropdownMenu>

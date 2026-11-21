@@ -1,0 +1,39 @@
+@layer components {
+.ri-segmented { --segment-size: 28px; --segment-font: 12px; --segment-icon: 12px; display: inline-flex; min-width: 0; max-width: 100%; width: fit-content; align-self: center; flex-shrink: 1; }
+.ri-segmented--touch { --segment-size: 40px; --segment-font: 13px; --segment-icon: 16px; }
+.ri-segmented--grow { flex: 1; }
+.ri-segmented--stretch { width: 100%; }
+.ri-segment-scroller { max-width: 100%; overflow-x: auto; scrollbar-width: none; border-radius: 999px; }
+.ri-segment-scroller::-webkit-scrollbar { display: none; }
+.ri-segmented[data-edge-left] .ri-segment-scroller { mask-image: linear-gradient(to right, transparent, #000 24px); }
+.ri-segmented[data-edge-right] .ri-segment-scroller { mask-image: linear-gradient(to left, transparent, #000 24px); }
+.ri-segmented[data-edge-left][data-edge-right] .ri-segment-scroller { mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+.ri-segment-track { display: inline-flex; align-items: center; width: max-content; height: var(--segment-size); gap: 0; padding: 2px; border: 0; border-radius: 999px; background: var(--track); vertical-align: top; }
+.ri-segmented--stretch .ri-segment-track { min-width: 100%; }
+.ri-segmented--stretch .ri-segment-option { flex: 1; }
+.ri-segment-option { display: inline-flex; position: relative; flex-shrink: 0; align-items: center; justify-content: center; gap: 6px; height: calc(var(--segment-size) - 4px); min-width: calc(var(--segment-size) - 4px); margin: 0; padding: 0 11px; border: 0; border-radius: 999px; background: transparent; color: var(--t3); box-shadow: none; font-family: var(--font-sans); font-size: var(--segment-font); font-weight: 500; line-height: 1; letter-spacing: normal; text-transform: none; white-space: nowrap; cursor: pointer; outline: 0 solid transparent; transition: background-color 120ms, color 120ms; }
+.ri-segment-option svg { width: var(--segment-icon); height: var(--segment-icon); flex-shrink: 0; pointer-events: none; }
+.ri-segment-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ri-segmented--icons .ri-segment-label { display: none; }
+.ri-segment-option:hover:not(:disabled) { color: var(--t1); }
+.ri-segment-option:is([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']) { background: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
+.ri-segment-option[data-selected-tone='warning']:is([aria-pressed='true'],[aria-checked='true']) { background: var(--warning-fill); color: var(--warning-ink); }
+.ri-segment-option:disabled { opacity: .5; cursor: not-allowed; }
+.ri-segment-option:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+.ri-segment-count { display: inline-flex; align-items: center; justify-content: center; min-width: 15px; height: 15px; padding: 0 5px; border-radius: 999px; background: var(--track); color: var(--t3); font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ri-segmented--touch .ri-segment-count { min-width: 18px; height: 18px; font-size: 11px; }
+.ri-segment-count--attention { color: var(--attention); background: var(--attention-fill); }
+.ri-segment-count--working { color: var(--working); background: var(--working-fill); }
+.ri-segment-dot { flex-shrink: 0; width: 6px; height: 6px; border-radius: 999px; background: var(--t4); }
+.ri-segment-dot--attention { background: var(--attention); }
+.ri-segment-dot--working { background: var(--success); }
+.ri-segment-dot--info { background: var(--working); }
+.ri-segment-dot--unavailable { background: transparent; border: 1px solid var(--t4); }
+.ri-segment-dot--danger { background: var(--danger); }
+.ri-segment-pulse { animation: pulse 2s cubic-bezier(.4, 0, .6, 1) infinite; }
+.ri-segmented-panel { outline: none; }
+.ri-segmented-panel[data-inactive][data-preserve-layout] { opacity: 0; pointer-events: none; }
+}
+
+/* Inactive panels stay hidden even when their layout uses flex or grid. */
+.ri-segmented-panel[hidden] { display: none; }

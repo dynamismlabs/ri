@@ -88,7 +88,7 @@ screen matrix must remain visually unchanged during the token move.
 ## Components
 
 Product components live in `src/components/system/`, built on installed shadcn
-and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens. Stage 1 implements the Button family.
+and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens. Stage 1 implements the Button family. Stage 2 implements SegmentedControl.
 The other APIs below are the remaining migration contracts. Missing installed primitives are added through the shadcn
 CLI, with its files and dependency changes checked afterward.
 
@@ -106,7 +106,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `IconButton` | Required string `label`, tone, pressed state, size. Optional fuller `tooltip`, `shortcut`, `tipSide`, `tipAlign`, `disclosure` | Square Button with an accessible name and `Tip`. `disclosure` adds an owned chevron with enough width for both icons. Uses the label for both by default. Focus outline included | 1, implemented |
 | `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
-| `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
+| `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch. Choice supports radio selection and explicit `allowEmpty` | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
 | `Field`, `TextArea`, `NativeSelect` | Label, value, help text, invalid and disabled state | Input adapters with 10px corners, consistent type and one focus treatment | 3 |
 | `Card` | Content and layout | Raised 14px content panel | 4 |
 | `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
@@ -115,6 +115,35 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4 |
 | `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
 | `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
+
+### Segmented controls
+
+`SegmentedControl` takes `mode`, `value`, `onChange`, `options` and a required
+`ariaLabel`. Each option supplies its value and sentence case label, with optional
+icon, count, semantic count tone, status dot, pulse, hint or disabled state.
+Compact tracks are 28px with 24px options. Touch tracks are 40px with 36px options.
+Call sites pass layout classes and their existing phone or container state.
+`grow` takes available space. `stretch` also distributes options across the track.
+`iconOnly` folds labels while preserving names and tooltips.
+
+Use `mode="tabs"` for distinct panels. `SegmentedRoot`, `SegmentedList` and
+`SegmentedPanel` let a header and its content keep their existing layout.
+Radix owns tab associations, automatic arrow activation, Home and End, and
+roving focus. Panels unmount by default. `keepMounted` hides an inactive panel
+while retaining its state. `preserveLayout` instead keeps its measured box,
+transparent and inert, for previews and file trees.
+
+Use `mode="choice"` for filtering, sorting or setting a value on the same content.
+Pressed choices use a group and `aria-pressed`. Arrows move focus, and Space or
+Enter chooses. `selection="radio"` preserves radio semantics and arrow selection
+where a form already uses them. `allowEmpty` explicitly supports a second press
+clearing Energy or Effort. An initially unset radio value may be null without
+allowing a selected value to clear on a second press.
+
+The component measures its own scrolling element and track. Fades update when
+labels, counts or the available width change. Focus and selection reveal an
+option by scrolling this track alone, with an inset focus outline. Parent page
+and panel scroll containers stay where they were.
 
 ### Button size and role
 

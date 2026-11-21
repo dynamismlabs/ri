@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { apiErrorStatus } from '@/lib/api/client';
@@ -184,18 +186,7 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
   return (
     <div className="space-y-2 border-t border-border/70 p-2.5">
       {(methods.data?.methods.length ?? 0) > 1 && (
-        <div data-slot="segmented" data-scroll className="flex flex-wrap gap-1">
-          {methods.data!.methods.map((entry) => (
-            <button data-slot="segmented-option" aria-pressed={entry.id === method.id}
-              key={entry.id}
-              type="button"
-              onClick={() => { setMethodId(entry.id); setInputs({}); setFlow(null); }}
-              className={cn('rounded px-2 py-1 text-[10.5px]', entry.id === method.id ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground')}
-            >
-              {entry.name}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl mode="choice" ariaLabel="Sign-in method" value={method.id} onChange={id => {setMethodId(id);setInputs({});setFlow(null);}} options={methods.data!.methods.map(entry => ({value:entry.id,label:entry.name}))} />
       )}
       {method.type === 'api_key' ? (
         <div className="space-y-2">

@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Blocks } from 'lucide-react';
 import { useState } from 'react';
@@ -7,7 +9,6 @@ import { AddMenuRow } from '@/components/chat-ui/add-menu/composer-add-menu';
 import { usePersonalServices } from '@/components/home/use-personal-services';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
-import { cn } from '@/lib/utils';
 
 type Mode = 'on' | 'auto' | 'off';
 const MODES: { value: Mode; label: string }[] = [
@@ -62,16 +63,7 @@ export function ChatAppToolsDialog({ chatId, open, onOpenChange }: { chatId: str
                   {app.mode === 'off' ? 'Not in this chat' : app.loaded ? 'Tools loaded' : 'One line until needed'}
                 </span>
               </span>
-              <div role="radiogroup" aria-label={`${app.name} in this chat`} data-slot="segmented" className="flex shrink-0 rounded-md border border-border p-0.5">
-                {MODES.map((mode) => (
-                  <button key={mode.value} type="button" role="radio" aria-checked={app.mode === mode.value} disabled={set.isPending}
-                    onClick={() => app.mode !== mode.value && set.mutate({ toolkitId: app.toolkitId, mode: mode.value })}
-                    className={cn('rounded px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground',
-                      app.mode === mode.value && 'bg-primary text-primary-foreground hover:text-primary-foreground')}>
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl mode="choice" selection="radio" ariaLabel={app.name+' in this chat'} value={app.mode} onChange={mode => {if(mode !== app.mode)set.mutate({toolkitId:app.toolkitId,mode});}} disabled={set.isPending} options={MODES} />
             </li>
           ))}
         </ul>

@@ -1,4 +1,7 @@
 'use client';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { usePersonalServices } from '@/components/home/use-personal-services';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -209,22 +212,7 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
 
       {modelPickerOpen && (
         <div className="space-y-3">
-          <div data-slot="segmented" className="flex gap-1">
-            {(serverSpeech ? PROVIDER_TABS : ['web'] as const).map((tab) => (
-              <button data-slot="segmented-option"
-                key={tab}
-                aria-pressed={!serverSpeech || activeTab === tab}
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-all ${
-                  (!serverSpeech || activeTab === tab)
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-border text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab === 'all' ? 'All' : tab === 'cloud' ? 'Cloud' : tab === 'local' ? 'Local' : 'Browser'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl mode="choice" ariaLabel="Voice provider" value={serverSpeech ? activeTab : 'web'} onChange={setActiveTab} options={(serverSpeech ? PROVIDER_TABS : ['web'] as const).map(tab => ({value:tab,label:tab === 'all' ? 'All' : tab === 'cloud' ? 'Cloud' : tab === 'local' ? 'Local' : 'Browser'}))} />
           <div className="space-y-2">
             {filteredModels.map((model) => (
               <ModelCard

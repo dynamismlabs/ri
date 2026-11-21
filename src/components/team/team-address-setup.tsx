@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { CircleAlert, CircleCheck, LoaderCircle } from 'lucide-react';
@@ -152,10 +154,7 @@ export function TeamAddressSetup({ onSaved, onDone }: { onSaved?: () => void; on
         {beamd.error && !showMethods && <GateNotice tone="error">{apiErrorText(beamd.error)}</GateNotice>}
       </div>}
       {showMethods && <>
-      <div data-slot="segmented" data-scroll className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Team address method">
-        <button data-slot="segmented-option" type="button" aria-pressed={method === 'custom'} disabled={busy} className="rounded-md border border-border px-3 py-2 text-sm aria-pressed:bg-muted" onClick={() => setMethod('custom')}>Use an HTTPS address</button>
-        <button data-slot="segmented-option" type="button" aria-pressed={method === 'beamd'} disabled={busy} className="rounded-md border border-border px-3 py-2 text-sm aria-pressed:bg-muted" onClick={() => setMethod('beamd')}>Use Beamd</button>
-      </div>
+      <SegmentedControl mode="choice" ariaLabel="Team address method" value={method} onChange={setMethod} disabled={busy} options={[{value:'custom',label:'Use an HTTPS address'},{value:'beamd',label:'Use Beamd'}]} />
       {method === 'custom' && (
         <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); if (!busy && customUrl.trim()) custom.mutate(); }}>
           <p className="text-xs text-muted-foreground">Point your domain, tunnel or private network HTTPS address at this team, then enter it here. Ri checks that it reaches this team before saving.</p>
