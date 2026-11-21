@@ -133,7 +133,7 @@ jobs:
           RI_RELEASE_COMMIT: ${{ github.sha }}
           RI_RELEASE_PUBLIC_KEY_FILE: ${{ runner.temp }}/release-public.pem
           # Empty without a Developer ID, which builds an ad-hoc signed Mac app. Only the way
-          # setup checked reaches electron-builder, which prefers an Apple ID.
+          # setup checked reaches packaging (desktop/notarize.mjs), which prefers an Apple ID.
           CSC_NAME: ${{ steps.apple.outputs.identity }}
           CSC_KEYCHAIN: ${{ steps.apple.outputs.keychain }}
           APPLE_TEAM_ID: ${{ steps.apple.outputs.identity && secrets.APPLE_TEAM_ID || '' }}

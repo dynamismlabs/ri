@@ -192,7 +192,7 @@ write_api_key() {
   return 1
 }
 
-# Signs in to Apple's notary service as electron-builder will, and lists past submissions.
+# Signs in to Apple's notary service as packaging will (desktop/notarize.mjs), and lists past submissions.
 # Nothing is submitted. NOTARIZED says how many there were.
 check_notary() {
   local output why count
