@@ -38,7 +38,7 @@ export interface FieldInfo {
   errorId?: string;
   invalid?: boolean;
   counter?: { value: number; max: number; id?: string; unit?: string };
-  descriptionPosition?: 'before' | 'after';
+  messagePosition?: 'before-label' | 'before-control' | 'after-control';
 }
 // Metadata props stay present while their values change, keeping the control
 // mounted when validation messages appear or clear. Bare controls keep their DOM.
@@ -88,7 +88,7 @@ export function useFieldInfo(
         .join(' ') || undefined,
   };
 }
-const fieldFrameVariants = cva('ri-field-frame min-w-0', {
+const fieldFrameVariants = cva('ri-field-frame min-w-0 flex', {
   variants: { orientation: { vertical: '', horizontal: 'ri-field-frame--horizontal' } },
 });
 export function FieldFrame({
@@ -102,7 +102,7 @@ export function FieldFrame({
   error,
   children,
   className,
-  descriptionPosition = 'after',
+  messagePosition = 'after-control',
   framed,
 }: FieldInfo & {
   framed: boolean;
@@ -116,6 +116,16 @@ export function FieldFrame({
       {description}
     </div>
   );
+  const messages = (
+    <>
+      {help}
+      {error && (
+        <FieldError id={info.errorId} className="ri-field-error">
+          {error}
+        </FieldError>
+      )}
+    </>
+  );
   return (
     <PrimitiveField
       orientation={null}
@@ -123,7 +133,7 @@ export function FieldFrame({
       data-invalid={info['aria-invalid'] || undefined}
       className={cn(fieldFrameVariants({ orientation }), className)}
     >
-      {descriptionPosition === 'before' && help}
+      {messagePosition === 'before-label' && messages}
       {(label || counter || labelAction) && (
         <div
           className={cn(
@@ -152,13 +162,9 @@ export function FieldFrame({
           </div>
         </div>
       )}
+      {messagePosition === 'before-control' && messages}
       {children}
-      {descriptionPosition === 'after' && help}
-      {error && (
-        <FieldError id={info.errorId} className="ri-field-error">
-          {error}
-        </FieldError>
-      )}
+      {messagePosition === 'after-control' && messages}
     </PrimitiveField>
   );
 }

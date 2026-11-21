@@ -176,9 +176,13 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
               onBlur={handleSaveTitle}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSaveTitle();
-                if (e.key === 'Escape') { setTitleDraft(decision.draft?.title ?? ''); setEditingTitle(false); }
+                if (e.key === 'Escape') {
+                  setTitleDraft(decision.draft?.title ?? '');
+                  setEditingTitle(false);
+                }
               }}
               className="w-full"
+              aria-label={'Task title'}
             />
           ) : (
             <p className="text-[11.5px] font-medium text-foreground leading-snug">

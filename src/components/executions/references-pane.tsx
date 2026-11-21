@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -97,6 +99,8 @@ export function ReferencesPane({
   autoFocus = false,
   onInsertChip,
 }: ReferencesPaneProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -183,6 +187,7 @@ export function ReferencesPane({
               )}
             </>
           }
+          size={compactFieldSize}
         />
       </div>
 
@@ -561,6 +566,7 @@ function CreateRow({
         }}
         placeholder={placeholder}
         className="flex-1 min-w-0"
+        aria-label={mode === 'task' ? 'Task title' : 'Note title'}
       />
       <Button
         type="button"

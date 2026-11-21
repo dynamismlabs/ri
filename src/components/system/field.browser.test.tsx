@@ -18,9 +18,9 @@ beforeAll(async () => {
           <Field id="person-name" label="Name" name="name" description="Shown to your team" descriptionId="name-help" aria-describedby="existing-help" value={name} onChange={e=>setName(e.target.value)} ref={ref}/>
           <TextArea label="Instructions" name="instructions" defaultValue="Do the work" rows={3}/>
           <NativeSelect label="Frequency" name="frequency" value={frequency} onChange={e=>setFrequency(e.target.value)}><option value="daily">Daily</option><option value="weekly">Weekly</option></NativeSelect>
-          <Field label="Disabled input" disabled name="disabled" defaultValue="Unavailable"/>
+          <Field label="Disabled group" disabled trailing={<Button onClick={()=>setClears(n=>n+1)}>Clear disabled</Button>}/><fieldset disabled className="min-w-0"><Field label="Inherited disabled group" trailing={<Button onClick={()=>setClears(n=>n+1)}>Clear inherited</Button>}/></fieldset><Field label="Disabled input" disabled name="disabled" defaultValue="Unavailable"/>
         </form>
-        <Field label="Invalid input" description="A short account name" error="Enter an account name" defaultValue=""/>
+        <Field label="Before label" description="Setup first" messagePosition="before-label"/><Field label="Before control" description="Existing note" error="Name refused" messagePosition="before-control"/><Field label="Invalid input" description="A short account name" error="Enter an account name" defaultValue=""/>
         <TextArea label="Invalid area" error="Enter instructions" rows={2}/>
         <NativeSelect label="Invalid select" error="Choose a period"><option value="">Pick one</option><option value="weekly">Weekly</option></NativeSelect>
         <TextArea label="Disabled area" disabled value="Unavailable" readOnly/>
@@ -240,6 +240,65 @@ for (const theme of ['light', 'dark']) {
       await page.close();
     }
   });
+  it(`preserves message order and associations around the control (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      for (const [name, expected] of [
+        ['Before label', ['description', 'label', 'control']],
+        ['Before control', ['label', 'description', 'error', 'control']],
+      ] as const) {
+        const input = page.getByRole('textbox', { name, exact: true });
+        const order = await input
+          .locator('..')
+          .evaluate((el) =>
+            [...el.children].map((child) =>
+              child.matches('.ri-field-description')
+                ? 'description'
+                : child.matches('.ri-field-label-row')
+                  ? 'label'
+                  : child.matches('.ri-field-error')
+                    ? 'error'
+                    : child.matches('.ri-field-control')
+                      ? 'control'
+                      : 'other',
+            ),
+          );
+        expect(order).toEqual(expected);
+        expect(
+          await input.evaluate((el) =>
+            (el.getAttribute('aria-describedby') || '')
+              .split(' ')
+              .every((id) => !!document.getElementById(id)),
+          ),
+        ).toBe(true);
+      }
+    } finally {
+      await page.close();
+    }
+  });
+  it(`disables a compound field including its actions and inherited state (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      for (const name of ['Disabled group', 'Inherited disabled group']) {
+        const input = page.getByLabel(name, { exact: true });
+        const shell = input.locator('..');
+        const action = shell.getByRole('button');
+        expect(await input.isDisabled()).toBe(true);
+        expect(await action.isDisabled()).toBe(true);
+        expect(await action.locator('..').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+        expect(await shell.evaluate((el) => getComputedStyle(el).opacity)).toBe('0.5');
+        const border = await shell.evaluate((el) => getComputedStyle(el).borderColor);
+        await shell.hover();
+        expect(await shell.evaluate((el) => getComputedStyle(el).borderColor)).toBe(border);
+        await action.evaluate((el) => (el as HTMLButtonElement).click());
+        expect(await page.locator('#clears').innerText()).toBe('0');
+      }
+    } finally {
+      await page.close();
+    }
+  });
   it(`keeps a label action separate from the field name (${theme})`, async () => {
     const page = await fixture.browser.newPage();
     try {
@@ -349,6 +408,28 @@ for (const theme of ['light', 'dark']) {
       expect(await page.locator('#search').innerText()).toBe('Alpha');
       expect(await input.getAttribute('id')).toBe(engineId);
       expect(await page.getByRole('option', { name: 'Beta', exact: true }).count()).toBe(0);
+    } finally {
+      await page.close();
+    }
+  });
+  it(`keeps textarea autosizing when native field sizing is unavailable (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.addInitScript(() => {
+        const supports = CSS.supports.bind(CSS);
+        CSS.supports = ((...args: string[]) =>
+          args[0] === 'field-sizing'
+            ? false
+            : supports(...(args as [string, string]))) as typeof CSS.supports;
+      });
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      // Disable Chromium's native sizing so the fallback is what grows it.
+      await page.addStyleTag({ content: '.ri-field-textarea--auto { field-sizing: fixed !important; }' });
+      const title = page.getByRole('textbox', { name: 'Task title', exact: true });
+      const height = (await title.boundingBox())!.height;
+      await title.fill('First line\nSecond line\nThird line');
+      await expect.poll(async () => (await title.boundingBox())!.height).toBeGreaterThan(height);
+      expect(await title.evaluate((el) => el === document.activeElement)).toBe(true);
     } finally {
       await page.close();
     }

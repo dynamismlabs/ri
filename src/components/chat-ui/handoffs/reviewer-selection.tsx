@@ -106,7 +106,7 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
           controlClassName="w-auto"
           label="Reasoning effort"
           orientation="horizontal"
-          className="w-auto"
+          className="inline-flex w-auto"
         >
           {effort && !effortOptions.some((option) => option.id === effort) && (
             <option value={effort} disabled>
@@ -130,7 +130,7 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
           controlClassName="w-auto"
           label="Variant"
           orientation="horizontal"
-          className="ml-3 w-auto"
+          className="ml-3 inline-flex w-auto"
         >
           <option value="">Default</option>
           {variant && !variants.some((option) => option.id === variant) && (

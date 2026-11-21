@@ -1,4 +1,6 @@
 "use client";
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -25,6 +27,8 @@ interface TaskActionsProps {
 }
 
 export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'menu' | 'search'>('menu');
   const [query, setQuery] = useState('');
@@ -100,6 +104,8 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
               className={'flex-1'}
               purpose="embedded"
               leading={<Search />}
+              aria-label={'Search tasks'}
+              size={compactFieldSize}
             /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
@@ -133,6 +139,8 @@ interface NoteActionsProps {
 }
 
 export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'menu' | 'search'>('menu');
   const [query, setQuery] = useState('');
@@ -201,6 +209,8 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
               className={'flex-1'}
               purpose="embedded"
               leading={<Search />}
+              aria-label={'Search notes'}
+              size={compactFieldSize}
             /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (

@@ -68,7 +68,9 @@ export function PinModelInput({
           placeholder="Exact model ID"
           spellCheck={false}
           autoComplete="off"
-          className="min-w-0 flex-1" purpose="code"
+          className="min-w-0 flex-1"
+          purpose="code"
+          aria-label={'Exact model ID'}
         />
         <Tip label="Pin this model ID and use it">
           <Button

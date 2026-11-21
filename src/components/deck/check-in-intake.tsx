@@ -85,6 +85,7 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
         placeholder="Energy level, trigger changes, what's top of mind..."
         rows={2}
         className="w-full"
+        aria-label={'Before planning your day'}
       />
 
       {/* Quick-tap chips */}

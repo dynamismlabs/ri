@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { useDeferredValue, useState } from 'react';
@@ -20,6 +22,8 @@ export function ResultList({ taskId, executionId, compact = false, initialHistor
   compact?: boolean;
   initialHistory?: boolean;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [search, setSearch] = useState('');
   const query = useDeferredValue(search.trim());
   const [history, setHistory] = useState(initialHistory);
@@ -34,6 +38,7 @@ export function ResultList({ taskId, executionId, compact = false, initialHistor
         aria-label="Filter saved results"
         leading={<Search />}
         className="relative min-w-0 flex-1 basis-48"
+        size={compactFieldSize}
       />
       <Button
         aria-pressed={history}

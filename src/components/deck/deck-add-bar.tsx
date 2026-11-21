@@ -1,4 +1,6 @@
 "use client";
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -31,6 +33,8 @@ const MAX_MATCHES = 6;
  * tasks +]"). It never starts work; new tasks are created as Todo.
  */
 export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExisting }: DeckAddBarProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const [highlight, setHighlight] = useState(0);
@@ -119,40 +123,36 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
     // Sized by its own width: the hint gives way to the placeholder in the
     // narrow column beside other screens (docs/scratchpad.md).
     <div className="@container/addbar relative">
-      <div
-        className={cn(
-          // A quiet fill (not a bare outline) so it reads as the deck's one input
-          // at a glance; it lifts to the panel color while you type.
-          'group flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 transition-colors',
-          'border-border hover:border-muted-foreground/40 focus-within:border-ring focus-within:bg-background focus-within:ring-1 focus-within:ring-ring',
-        )}
-      >
-        <Plus className="h-4 w-4 shrink-0 text-primary" />
-        <Field
-          ref={inputRef}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setHighlight(0);
-          }}
-          onKeyDown={onKeyDown}
-          onFocus={() => setFocused(true)}
-          // Delay so a mousedown on an option is handled before we close.
-          onBlur={() => setTimeout(() => setFocused(false), 120)}
-          placeholder="Add a task, or find an existing one"
-          aria-label="Add a task, or find an existing one"
-          // Typed text clears on Escape before a slideout around the deck closes.
-          data-cancel-on-escape={q ? '' : undefined}
-          className="min-w-0 flex-1" purpose="embedded"
-        />
-        {createTask.isPending ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-        ) : (
-          <span className="shrink-0 text-[10px] text-muted-foreground/50 @max-sm/addbar:hidden">
-            {q ? '↑↓ to choose · ↵ to add' : 'Enter to add'}
-          </span>
-        )}
-      </div>
+      <Field
+        ref={inputRef}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setHighlight(0);
+        }}
+        onKeyDown={onKeyDown}
+        onFocus={() => setFocused(true)}
+        // Delay so a mousedown on an option is handled before we close.
+        onBlur={() => setTimeout(() => setFocused(false), 120)}
+        placeholder="Add a task, or find an existing one"
+        aria-label="Add a task, or find an existing one"
+        // Typed text clears on Escape before a slideout around the deck closes.
+        data-cancel-on-escape={q ? '' : undefined}
+        className="min-w-0 flex-1"
+        size={compactFieldSize}
+        leading={<Plus className="h-4 w-4 shrink-0 text-primary" />}
+        trailing={
+          <>
+            {createTask.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+            ) : (
+              <span className="shrink-0 @max-sm/addbar:hidden">
+                {q ? '↑↓ to choose · ↵ to add' : 'Enter to add'}
+              </span>
+            )}
+          </>
+        }
+      />
 
       {open && (
         <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-popover shadow-md">

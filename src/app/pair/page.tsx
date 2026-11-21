@@ -8,7 +8,7 @@ import { createAppTRPCClient } from '@/lib/trpc/client';
 import { QrScannerModal } from '@/components/auth/qr-scanner-modal';
 import { APP_NAME, APP_SHORT_ID, PAIRING_TOKEN_FRAGMENT_KEY } from '@/constants/app';
 import { ApiClient, apiErrorStatus, setAuthToken } from '@/lib/api/client';
-import { Check, ChevronRight, KeyRound, Loader2, MonitorSmartphone, QrCode, Terminal } from 'lucide-react';
+import { AlertCircle, Check, ChevronRight, KeyRound, Loader2, MonitorSmartphone, QrCode, Terminal } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -64,7 +64,7 @@ export default function PairPage() {
     | { kind: 'idle' }
     | { kind: 'validating' }
     | { kind: 'ok' }
-    | { kind: 'error'; message: string }
+    | { kind: 'error'; source: 'token' | 'connection' | 'scan'; message: string }
   >({ kind: 'idle' });
 
   useEffect(() => {
@@ -97,6 +97,7 @@ export default function PairPage() {
         const rejected = [401, 403].includes(apiErrorStatus(error) ?? 0);
         setStatus({
           kind: 'error',
+          source: rejected ? 'token' : 'connection',
           message: rejected ? 'That token was rejected. It may have been revoked or mistyped.' : `Couldn't reach the server. Check your connection and try again.`,
         });
       }
@@ -117,6 +118,7 @@ export default function PairPage() {
         setScannerOpen(false);
         setStatus({
           kind: 'error',
+          source: 'scan',
           message: `That QR code doesn't look like a ${APP_NAME} pairing code.`,
         });
         return;
@@ -165,7 +167,9 @@ export default function PairPage() {
                     Pairing token
                   </>
                 }
-                error={status.kind === 'error' ? status.message : undefined}
+                error={
+                  status.kind === 'error' && status.source === 'token' ? status.message : undefined
+                }
                 trailing={
                   <Button
                     type="button"
@@ -202,6 +206,13 @@ export default function PairPage() {
                 className="w-full"
                 purpose="code"
               />
+
+              {status.kind === 'error' && status.source !== 'token' && (
+                <div role="alert" className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive animate-in fade-in duration-300">
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <p>{status.message}</p>
+                </div>
+              )}
 
               <Button
                 type="button"

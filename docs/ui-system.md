@@ -152,7 +152,9 @@ correct ids can be supplied as `id`, `labelId`, `descriptionId` and `errorId`.
 Otherwise Field generates them. Existing described-by references are retained.
 An error sets aria-invalid and joins the description. Keep message props in JSX
 with conditional values, so their control stays mounted as validation changes.
-`descriptionPosition="before"` retains instructions that precede a field.
+`messagePosition` keeps help and errors before the label, before the control,
+or after the control. The default is `after-control`. Slack instructions use
+`before-label`. Name validation and form instructions use `before-control`.
 `orientation="horizontal"` keeps inline labels and allows the row to wrap.
 `labelClassName` accepts layout only, such as the email form's shared label width.
 `labelAction` keeps a labeled action, such as Copy body, alongside the label.

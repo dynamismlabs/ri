@@ -58,6 +58,7 @@ export function HostedEndpointFields({ setup, value = {}, onChange, disabled = f
           onChange={(event) => onChange?.({ ...value, instanceUrl: event.target.value })}
           label="Instance URL"
           description="Enter the address of your OpenSEO server. Local Docker addresses such as http://localhost:3000 are supported. Ri adds /mcp automatically."
+          purpose="code"
         />
         <NativeSelect
           id={`${id}-auth`}
@@ -102,6 +103,7 @@ export function HostedEndpointFields({ setup, value = {}, onChange, disabled = f
       autoComplete="url"
       disabled={disabled}
       required
+      purpose="code"
     />}
     <p className="text-xs text-muted-foreground">{setup.kind === 'region'
       ? 'This selection is saved with your connection.'

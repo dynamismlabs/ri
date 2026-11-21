@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -120,6 +122,8 @@ export function LaunchBrowse({
   onPick: (item: LaunchSourceItem) => void;
   onClose: () => void;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const connectSettings = useSettingsLink('plugins');
   const qc = useQueryClient();
   const now = useMemo(() => new Date(), []);
@@ -320,6 +324,8 @@ export function LaunchBrowse({
             {anyLoading && <Loader2 size={12} className="animate-spin text-muted-foreground/60" />}
           </>
         }
+        aria-label={'Search everything'}
+        size={compactFieldSize}
       /></div>
 
       <div className="flex flex-shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border/70 px-1.5 py-1">

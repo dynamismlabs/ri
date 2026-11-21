@@ -202,7 +202,6 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
           spellCheck={false}
           autoComplete="off"
           label="Team link"
-          className="block"
         />
         {shown && (
           <p role="status" className={cn('border-l-2 pl-3 text-sm', shown.usable ? 'border-primary font-medium' : 'border-amber-500 text-muted-foreground')}>
@@ -217,7 +216,6 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
             autoComplete="name"
             label="Your name"
             description="What the team sees on your work."
-            className="block"
           />
         )}
         {shown?.usable && <p className="text-xs text-muted-foreground">Your assigned tasks will appear in My Ri. Your personal work stays private.</p>}

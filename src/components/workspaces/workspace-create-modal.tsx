@@ -249,7 +249,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 handleSubmit();
               }}
             >
-              <div className="flex items-center rounded-xl border border-border bg-background focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-foreground/20">
+              <div className="flex items-center rounded-xl border border-border bg-background">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
                 <EmojiPicker
                   onSelect={(picked) => {
@@ -308,7 +308,9 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                   placeholder="Agent name"
                   aria-label="Agent name"
                   autoFocus
-                  className="min-w-0 flex-1" purpose="embedded"
+                  className="min-w-0 flex-1"
+                  purpose="title"
+                  titleSize="form"
                 />
               </div>
 
@@ -446,22 +448,19 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
               )}
 
               <Section title="Area" hint="Where its tasks and notes belong. Optional.">
-                <div className="relative">
-                  <NativeSelect
-                    value={areaId}
-                    onChange={(e) => setAreaId(e.target.value)}
-                    aria-label="Area"
-                    className="w-full"
-                  >
-                    <option value="">None</option>
-                    {areas?.map((area) => (
-                      <option key={area.id} value={area.id}>
-                        {area.emoji ? `${area.emoji} ${area.name}` : area.name}
-                      </option>
-                    ))}
-                  </NativeSelect>
-                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                </div>
+                <NativeSelect
+                  value={areaId}
+                  onChange={(e) => setAreaId(e.target.value)}
+                  aria-label="Area"
+                  className="w-full"
+                >
+                  <option value="">None</option>
+                  {areas?.map((area) => (
+                    <option key={area.id} value={area.id}>
+                      {area.emoji ? `${area.emoji} ${area.name}` : area.name}
+                    </option>
+                  ))}
+                </NativeSelect>
               </Section>
 
               {error && (

@@ -160,7 +160,6 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
             draft &&
             summary === null && <>From your latest saved result. Edit it before it&apos;s shared.</>
           }
-          className="block"
         />
 
         <Field
@@ -170,7 +169,7 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
           placeholder="https://"
           controlClassName="w-full"
           label="Pull request or link"
-          className="block"
+          purpose="code"
         />
 
         <div className="space-y-1.5">

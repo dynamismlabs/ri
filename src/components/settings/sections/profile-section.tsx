@@ -154,6 +154,7 @@ export function ProfileSection() {
 
       {/* About you */}
       <TextArea
+        rows={9}
         id="profile-about"
         value={description}
         onChange={(e) => handleDescriptionChange(e.target.value)}

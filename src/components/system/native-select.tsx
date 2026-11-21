@@ -27,7 +27,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
     descriptionId,
     errorId,
     invalid,
-    descriptionPosition,
+    messagePosition,
     counter,
     size: requestedSize,
     purpose,
@@ -63,7 +63,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
       labelClassName={labelClassName}
       description={description}
       error={error}
-      descriptionPosition={descriptionPosition}
+      messagePosition={messagePosition}
       className={className}
     >
       <select

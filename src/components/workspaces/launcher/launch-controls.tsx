@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
@@ -247,6 +249,8 @@ export function BaseControl({
   onClear: () => void;
   disabled?: boolean;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const { data: branches, isLoading } = useWorkspaceBranches(open ? workspaceId : null);
@@ -308,6 +312,8 @@ export function BaseControl({
               className={'w-full'}
               purpose="embedded"
               leading={<Search />}
+              aria-label={'Filter branches'}
+              size={compactFieldSize}
             /></div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (

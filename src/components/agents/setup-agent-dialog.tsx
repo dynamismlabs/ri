@@ -153,6 +153,7 @@ function SetupAgentBody({
                     onChange={(e) => setCopyTo(e.target.value)}
                     placeholder={data.defaultFolder}
                     className="mt-1.5"
+                    aria-label={'Destination folder'}
                   />
                 ) : (
                   <Button

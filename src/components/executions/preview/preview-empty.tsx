@@ -316,7 +316,9 @@ export function CommandEditor({
         spellCheck={false}
         autoCorrect="off"
         autoCapitalize="off"
-        className="flex-1" purpose="code"
+        className="flex-1"
+        purpose="code"
+        aria-label={'Start command'}
       />
 
         <IconButton

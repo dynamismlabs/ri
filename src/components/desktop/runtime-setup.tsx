@@ -56,7 +56,6 @@ export function RuntimeSetup() {
             </>
           }
           key={name}
-          className="block"
         />;
       })}
       <p className="text-muted-foreground">Install optional local speech in Voice settings, or configure an external Parakeet service here. The embeddings key enables semantic search. Keyword search works without it.</p>

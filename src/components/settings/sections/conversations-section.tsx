@@ -30,7 +30,7 @@ function SlackTokenField({ kind, id, label, value, onChange }: {
     onChange={(event) => onChange(event.target.value)}
     placeholder={kind === 'bot' ? 'xoxb-…' : 'xapp-…'}
     label={label}
-    descriptionPosition="before"
+    messagePosition="before-label"
     descriptionId={`${id}-help`}
     description={
       kind === 'bot' ? (
@@ -63,6 +63,7 @@ function SlackTokenField({ kind, id, label, value, onChange }: {
       )
     }
     required
+    purpose="code"
   />;
 }
 

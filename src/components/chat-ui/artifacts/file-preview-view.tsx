@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +40,8 @@ export function FilePreviewView({ source, name }: { source: FilePreviewSource; n
 }
 
 function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'video' | 'audio'; url?: string }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const cookieReady = useSessionCookieReady();
   const ref = useRef<HTMLMediaElement | null>(null);
   const [failed, setFailed] = useState(false);
@@ -56,6 +60,7 @@ function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'vi
       label="Playback speed"
       orientation="horizontal"
       className="shrink-0 w-auto"
+      size={compactFieldSize}
     >
       {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
         <option key={rate} value={rate}>
@@ -68,6 +73,8 @@ function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'vi
 }
 
 function TableView({ data }: { data: Extract<FilePreviewData, { kind: 'table' }> }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [sheet, setSheet] = useState(0);
   const [source, setSource] = useState(false);
   const current = data.sheets[sheet] ?? data.sheets[0];
@@ -82,6 +89,7 @@ function TableView({ data }: { data: Extract<FilePreviewData, { kind: 'table' }>
         label="Sheet"
         orientation="horizontal"
         className="min-w-0 w-auto"
+        size={compactFieldSize}
       >
         {data.sheets.map((item, index) => (
           <option key={index} value={index}>

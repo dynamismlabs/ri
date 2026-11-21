@@ -506,11 +506,8 @@ export function NotificationsSection() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Bot connection
-                  </label>
                   <Select value={newConnId} onValueChange={setNewConnId}>
-                    <SelectField className="w-full">
+                    <SelectField className="w-full" aria-label={'Label'}>
                       <SelectValue placeholder="Select a connected bot..." />
                     </SelectField>
                     <SelectContent className="rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl">
@@ -580,6 +577,7 @@ export function NotificationsSection() {
                             onChange={(e) => setNewChatId(e.target.value)}
                             placeholder="e.g. -100123456789 or 987654321"
                             purpose="code"
+                            aria-label={'Chat ID'}
                           />
                           {discoveredChats.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -728,6 +726,7 @@ export function NotificationsSection() {
                         if (v !== (c.label ?? '')) renameChannel(c.id, v);
                       }}
                       className="max-w-[220px]"
+                      aria-label={'Label'}
                     />
                   </div>
                 </div>

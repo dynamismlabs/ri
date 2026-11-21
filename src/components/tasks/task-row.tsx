@@ -530,6 +530,7 @@ export function TaskRow({
                 autoFocus
                 placeholder="e.g. waiting on design review"
                 className="w-full"
+                aria-label={'Block reason'}
               />
               <div className="flex justify-end gap-1 mt-1.5">
                 <PopoverClose asChild>

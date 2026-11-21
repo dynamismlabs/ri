@@ -1,4 +1,5 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -30,6 +31,7 @@ export function PreviewManualUrl({
   label = 'Manual preview URL',
   description = 'Running your own tunnel? Paste its URL and Ri will use it for the preview.',
 }: PreviewManualUrlProps) {
+  const phone = useViewportTier() === 'phone';
   const current = urls.find((u) => (u.service ?? null) === null)?.url ?? '';
   const [draft, setDraft] = useState(current);
   const [pending, setPending] = useState(false);
@@ -64,29 +66,17 @@ export function PreviewManualUrl({
   const dirty = draft.trim() !== current;
 
   return (
-    <div className="flex w-full flex-col gap-1.5">
-      <label className="flex items-center gap-1.5 text-[12px] font-medium text-foreground">
-        <LinkIcon size={12} className="text-muted-foreground" />
-        {label}
-      </label>
-      <p className="text-[12px] leading-relaxed text-muted-foreground">
-        {description}
-      </p>
-      <div className="flex w-full items-stretch gap-1.5">
-        <Field
-          type="url"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') { e.preventDefault(); save(draft); }
-          }}
-          placeholder="https://abc.ngrok.app"
-          spellCheck={false}
-          autoCorrect="off"
-          autoCapitalize="off"
-          className="flex-1" purpose="code"
-        />
-
+    <Field
+      label={
+        <>
+          <LinkIcon />
+          {label}
+        </>
+      }
+      description={description}
+      messagePosition="before-control"
+      trailing={
+        <>
           <IconButton
             type="button"
             onClick={() => save(draft)}
@@ -94,27 +84,46 @@ export function PreviewManualUrl({
             label="Save URL"
             tooltip="Save URL"
             variant="ghost"
-            size="md"
+            size={phone ? 'touch' : 'sm'}
             className="inline-flex items-center justify-center"
           >
             {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
           </IconButton>
 
-        {current && (
+          {current && (
             <IconButton
               type="button"
-              onClick={() => { setDraft(''); save(''); }}
+              onClick={() => {
+                setDraft('');
+                save('');
+              }}
               disabled={isSaving}
               label="Clear URL"
               tooltip="Clear URL"
               variant="ghost"
-              size="sm"
+              size={phone ? 'touch' : 'sm'}
               className="inline-flex items-center justify-center"
             >
               <X size={13} />
             </IconButton>
-        )}
-      </div>
-    </div>
+          )}
+        </>
+      }
+      type="url"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          save(draft);
+        }
+      }}
+      placeholder="https://abc.ngrok.app"
+      spellCheck={false}
+      autoCorrect="off"
+      autoCapitalize="off"
+      className="flex-1"
+      purpose="code"
+    />
   );
 }

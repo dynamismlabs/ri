@@ -262,8 +262,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                   placeholder="Description (optional)"
                   className="w-full"
                   purpose="embedded"
-                  autoSize
-                  rows={2}
+                  rows={3}
                 />
               </div>
             </div>

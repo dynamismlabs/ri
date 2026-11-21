@@ -105,6 +105,7 @@ function PrivateNotes({ task, onSave }: { task: TaskRecord; onSave: (value: stri
   return (
     <TextArea
       aria-label="Private notes"
+      rows={2}
       value={draft}
       placeholder="Private notes, like what to try first."
       onFocus={() => setEditing(true)}
@@ -113,7 +114,9 @@ function PrivateNotes({ task, onSave }: { task: TaskRecord; onSave: (value: stri
         onSave(e.target.value.trim() ? e.target.value : null);
       }}
       onBlur={() => setEditing(false)}
-      className="w-full" autoSize resize="vertical"
+      className="w-full"
+      autoSize
+      resize="vertical"
     />
   );
 }

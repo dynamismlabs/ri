@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -29,6 +31,8 @@ export function McpServersSection({ active, navigation }: {
   /** Reuse the same setup/actions in Apps, leaving Settings navigation alone. */
   navigation?: { serverId: string | null; returnTo?: string; onSelect: (id: string) => void; onBack: () => void };
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { anchor, requestId } = useSettingsStore();
   const [view, setView] = useState<View>(() => navigation
     ? navigation.serverId ? { kind: 'server', id: navigation.serverId } : { kind: 'new' }
@@ -209,6 +213,7 @@ export function McpServersSection({ active, navigation }: {
           onChange={(event) => setQuery(event.target.value)}
           leading={<Search />}
           className="relative"
+          size={compactFieldSize}
         />}
         {visible.length ? <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">{visible.map(server => { const status = mcpTone(server); return <CatalogTile key={server.id} logo={<McpLogo size={36} dim={!server.enabled} />} name={server.displayName}
           subtitle={server.url} tone={status.tone} toneLabel={status.label} onOpen={() => navigate({ kind: 'server', id: server.id })} />; })}</div>

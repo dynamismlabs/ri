@@ -436,7 +436,9 @@ export function FolderPickerDialog({
                     autoCapitalize="off"
                     autoCorrect="off"
                     disabled={submittingNew}
-                    className="flex-1" purpose="code"
+                    className="flex-1"
+                    purpose="code"
+                    aria-label={'New folder name'}
                   />
                   <Button
                     type="button"

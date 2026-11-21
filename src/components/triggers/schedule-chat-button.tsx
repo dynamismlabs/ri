@@ -247,7 +247,6 @@ function NewChatSchedule({
         controlClassName="block w-full"
         resize="vertical"
         label="Message"
-        className="block"
       />
       <div className="flex items-start gap-2">
         <Switch

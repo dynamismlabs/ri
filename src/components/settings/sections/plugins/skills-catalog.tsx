@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 /**
@@ -152,6 +154,8 @@ export function SkillsGroup({ skills, searching }: { skills: SkillSummary[]; sea
  * NewSkillButton, above the tabs and in the main Create menu.
  */
 export function SkillsTab() {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { showSetupHelp, canManage } = useSkillNavigation();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
@@ -169,6 +173,7 @@ export function SkillsTab() {
           aria-label="Search skills"
           leading={<Search />}
           className="relative"
+          size={compactFieldSize}
         />
       )}
       {isLoading ? (

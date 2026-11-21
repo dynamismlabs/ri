@@ -493,7 +493,11 @@ export function NoteEditor({
         disabled={disabled}
         data-gramm="false"
         data-gramm_editor="false"
-        data-enable-grammarly="false" purpose="title" titleSize="document" autoSize
+        data-enable-grammarly="false"
+        purpose="title"
+        titleSize="document"
+        autoSize
+        aria-label={'Note title'}
       />
 
       {metadata}

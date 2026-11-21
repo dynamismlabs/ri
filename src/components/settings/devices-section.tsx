@@ -132,7 +132,6 @@ export function DevicesSection() {
               if (e.key === 'Enter') handlePair();
             }}
             label="Name"
-            className="block"
           />
           <KindSelect value={kind} onChange={setKind} />
           <div className="flex items-center gap-2 pt-1">
@@ -192,7 +191,6 @@ function KindSelect({ value, onChange }: { value: DeviceKind; onChange: (kind: D
       onChange={(e) => onChange(e.target.value as DeviceKind)}
       controlClassName="mt-1 w-full"
       label="Type"
-      className="block"
     >
       {DEVICE_KINDS.map((k) => (
         <option key={k.value} value={k.value}>
@@ -300,6 +298,7 @@ function PairingPanel({
                   className="w-full"
                   onFocus={(e) => e.currentTarget.select()}
                   purpose="code"
+                  aria-label={'Pairing link'}
                 />
                 <Button onClick={() => handleCopy(t.id, t.url)} variant="secondary" size="sm">
                   {copiedLabel === t.id ? <Check size={12} /> : <Copy size={12} />}
@@ -325,6 +324,7 @@ function PairingPanel({
             className="flex-1 min-w-0"
             onFocus={(e) => e.currentTarget.select()}
             purpose="code"
+            aria-label={'Pairing token'}
           />
           <Button onClick={() => handleCopy('token', pairing.plaintext)} variant="secondary" size="sm">
             {copiedLabel === 'token' ? <Check size={12} /> : <Copy size={12} />}
@@ -471,7 +471,6 @@ function DeviceCard({
               if (e.key === 'Escape') setEditing(false);
             }}
             label="Name"
-            className="block"
           />
           <KindSelect value={draftKind} onChange={setDraftKind} />
           <div className="flex items-center gap-2 pt-1">

@@ -106,6 +106,7 @@ export function WorkResultGuidanceField() {
   return (
     <section className="space-y-2" aria-labelledby="work-result-guidance-label">
       <TextArea
+        rows={9}
         id="work-result-guidance"
         label="Handoff and review preferences"
         labelId="work-result-guidance-label"
@@ -117,14 +118,13 @@ export function WorkResultGuidanceField() {
           </>
         }
         descriptionId="work-result-guidance-description"
-        descriptionPosition="before"
+        messagePosition="before-control"
         counter={{
           value: state.draft.length,
           max: WORK_RESULT_GUIDANCE_MAX,
           id: 'work-result-guidance-limit',
           unit: 'characters',
         }}
-        rows={6}
         aria-describedby="work-result-guidance-description work-result-guidance-status work-result-guidance-limit"
         aria-invalid={tooLong || undefined}
         value={state.draft}

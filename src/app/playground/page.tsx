@@ -76,7 +76,12 @@ export default function PlaygroundPage() {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground">Model</label>
-          <NativeSelect value={model} onChange={(e) => setModel(e.target.value)} className="w-auto">
+          <NativeSelect
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="w-auto"
+            aria-label={'Model'}
+          >
             {MODEL_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>
                 {opt.label}

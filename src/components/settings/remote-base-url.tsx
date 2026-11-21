@@ -365,6 +365,8 @@ export function RemoteBaseUrlSection() {
               saveMutation.mutate(draft.trim());
             }
           }}
+          aria-label={'Remote URL'}
+          purpose="code"
         />
         <Button
           onClick={() => saveMutation.mutate(draft.trim() || null)}
@@ -506,7 +508,9 @@ export function RemoteBaseUrlSection() {
                   if (e.key === 'Enter' && nameDirty && nameValid) {
                     nameMutation.mutate(nameNormalized || null);
                   }
-                }} purpose="code"
+                }}
+                purpose="code"
+                aria-label={'Tunnel name'}
               />
               <Button
                 onClick={() => nameMutation.mutate(nameNormalized || null)}

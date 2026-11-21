@@ -1,9 +1,11 @@
 'use client';
-import { Field as SystemField } from '@/components/system/field';
+import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
+import { SegmentedControl } from '@/components/system/segmented-control';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 /**
  * Add or edit one linked folder (docs/reference-folders-spec.md §9,
  * docs/homes-spec.md §4.2).
@@ -90,7 +92,7 @@ function aliasFromPath(p: string): string {
 export function ReferenceFolderDialog(props: ReferenceFolderDialogProps) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
         {/* Mounted each time it opens, so a previous add doesn't bleed into the next one. */}
         {props.open && <ReferenceFolderForm {...props} />}
       </DialogContent>
@@ -111,6 +113,7 @@ function ReferenceFolderForm({
   browsable = true,
   onRemove,
 }: ReferenceFolderDialogProps) {
+  const phone = useViewportTier() === 'phone';
   const { data: workspaces } = useWorkspaces({ status: 'active' });
   const [mode, setMode] = useState<Mode>(editing?.targetWorkspaceId ? 'workspace' : 'folder');
   const [path, setPath] = useState('');
@@ -183,105 +186,112 @@ function ReferenceFolderForm({
 
       <div className="space-y-4">
         {!editing && (
-          <div className="flex gap-1 rounded-lg bg-muted/50 p-1">
-            <ModeTab active={mode === 'folder'} onClick={() => setMode('folder')}>
-              A folder
-            </ModeTab>
-            <ModeTab active={mode === 'workspace'} onClick={() => setMode('workspace')}>
-              Another agent
-            </ModeTab>
-          </div>
+          <SegmentedControl mode="choice" ariaLabel="Linked folder source" value={mode} onChange={setMode} size={phone ? 'touch' : 'compact'} stretch options={[{value:'folder',label:'A folder'},{value:'workspace',label:'Another agent'}]} />
         )}
 
         {mode === 'folder' ? (
           editing ? null : (
-            <Field label={device ? `Where it is on ${device.name}` : 'Folder'}>
-              <div className="flex gap-2">
-                <SystemField
-                  value={path}
-                  onChange={(e) => setPath(e.target.value)}
-                  placeholder="/Users/you/code/api"
-                  spellCheck={false}
-                  className="min-w-0 flex-1" purpose="code"
-                />
-                <Tip label={browsable ? undefined : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`}>
+            <Field
+              value={path}
+              onChange={(e) => setPath(e.target.value)}
+              placeholder="/Users/you/code/api"
+              spellCheck={false}
+              className="min-w-0 flex-1"
+              purpose="code"
+              label={device ? `Where it is on ${device.name}` : 'Folder'}
+              description={
+                <>
+                  Anything with a path works: a sibling repo, a docs folder, even an installed
+                  dependency under <code className="font-mono">node_modules</code>.
+                  {device && ' Your other devices each choose their own place for it.'}
+                </>
+              }
+              trailing={
+                <Tip
+                  label={
+                    browsable
+                      ? undefined
+                      : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`
+                  }
+                >
                   <Button
                     type="button"
                     onClick={() => setPickerOpen(true)}
                     disabled={!browsable}
                     variant="secondary"
-                    size="sm"
+                    size={phone ? 'touch' : 'sm'}
                     className="flex shrink-0 items-center gap-1.5"
                   >
                     <FolderOpen size={13} />
                     Browse
                   </Button>
                 </Tip>
-              </div>
-              <FieldHint>
-                Anything with a path works: a sibling repo, a docs folder, even an installed
-                dependency under <code className="font-mono">node_modules</code>.
-                {device && ' Your other devices each choose their own place for it.'}
-              </FieldHint>
-            </Field>
+              }
+            />
           )
         ) : (
-          <Field label="Agent">
-            <NativeSelect
-              value={targetWorkspaceId}
-              onChange={(e) => setTargetWorkspaceId(e.target.value)}
-              className="w-full"
-            >
-              <option value="">Choose an agent…</option>
-              {selectableWorkspaces.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.emoji ? `${w.emoji} ${w.name}` : w.name}
-                </option>
-              ))}
-            </NativeSelect>
-            <FieldHint>
-              Its own folder on each device, so it follows that agent wherever it&apos;s set
-              up. This agent reads whatever is checked out there, not any in-progress worktree.
-            </FieldHint>
-          </Field>
+          <NativeSelect
+            value={targetWorkspaceId}
+            onChange={(e) => setTargetWorkspaceId(e.target.value)}
+            className="w-full"
+            label="Agent"
+            description={
+              <>
+                Its own folder on each device, so it follows that agent wherever it&apos;s set up.
+                This agent reads whatever is checked out there, not any in-progress worktree.
+              </>
+            }
+          >
+            <option value="">Choose an agent…</option>
+            {selectableWorkspaces.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.emoji ? `${w.emoji} ${w.name}` : w.name}
+              </option>
+            ))}
+          </NativeSelect>
         )}
 
-        <Field label="Alias">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-muted-foreground">@</span>
-            <SystemField
-              value={alias}
-              onChange={(e) => setTypedAlias(e.target.value)}
-              placeholder="backend"
-              spellCheck={false}
-              autoCorrect="off"
-              autoCapitalize="off"
-              className="min-w-0 flex-1" purpose="code"
-            />
-          </div>
-          {normalizedAlias && !aliasValid ? (
-            <FieldHint tone="error">
-              Lowercase letters, digits, dot, dash or underscore. Must start with a letter or
-              digit.
-            </FieldHint>
-          ) : (
-            <FieldHint>What you type after @ in chat to point the agent here.</FieldHint>
-          )}
-        </Field>
+        <Field
+          value={alias}
+          onChange={(e) => setTypedAlias(e.target.value)}
+          placeholder="backend"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
+          className="min-w-0 flex-1"
+          purpose="code"
+          label="Alias"
+          leading={<span aria-hidden>@</span>}
+          error={
+            normalizedAlias && !aliasValid ? (
+              <>
+                Lowercase letters, digits, dot, dash or underscore. Must start with a letter or
+                digit.
+              </>
+            ) : undefined
+          }
+          description={
+            !(normalizedAlias && !aliasValid) ? (
+              <>What you type after @ in chat to point the agent here.</>
+            ) : undefined
+          }
+        />
 
-        <Field label="Why you'd look there">
-          <TextArea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            placeholder="Go API server this app calls. HTTP routes live in internal/http/."
-            className="w-full" resize="vertical"
-          />
-          <FieldHint>
-            Optional. Worth a line when the name alone doesn&apos;t say why the agent would
-            open it.
-          </FieldHint>
-        </Field>
+        <TextArea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          placeholder="Go API server this app calls. HTTP routes live in internal/http/."
+          className="w-full"
+          resize="vertical"
+          label="Why you'd look there"
+          description={
+            <>
+              Optional. Worth a line when the name alone doesn&apos;t say why the agent would open
+              it.
+            </>
+          }
+        />
 
         <label className="flex cursor-pointer items-start justify-between gap-3">
           <span className="text-[11px] leading-relaxed text-muted-foreground/85">
@@ -381,59 +391,6 @@ function ReferenceFolderForm({
         }}
       />
     </>
-  );
-}
-
-function ModeTab({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      type="button"
-      onClick={onClick}
-      variant="secondary"
-      size="sm"
-      pressed={active}
-      className="flex-1"
-    >
-      {children}
-    </Button>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function FieldHint({
-  children,
-  tone = 'muted',
-}: {
-  children: React.ReactNode;
-  tone?: 'muted' | 'error';
-}) {
-  return (
-    <p
-      className={cn(
-        'mt-1 text-[10px] leading-snug',
-        tone === 'error' ? 'text-destructive' : 'text-muted-foreground/70',
-      )}
-    >
-      {children}
-    </p>
   );
 }
 

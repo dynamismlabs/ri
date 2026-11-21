@@ -25,7 +25,6 @@ export function ResultCompletionAction({ resultId, options }: { resultId: string
       disabled={complete.isPending}
       controlClassName="block w-full max-w-full"
       label="Choose the task to complete"
-      className="block"
     >
       <option value="">Select a linked task</option>
       {choices.map((choice) => (

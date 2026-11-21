@@ -397,6 +397,8 @@ export default function IntegrationsTestPage() {
                         value={creds[p.id]?.[f] ?? ''}
                         onChange={(e) => setField(p.id, f, e.target.value)}
                         className="w-32"
+                        aria-label={f}
+                        purpose="code"
                       />
                     ))}
                     <button
@@ -444,12 +446,14 @@ export default function IntegrationsTestPage() {
                       value={byoForm[p.id]?.label ?? ''}
                       onChange={(e) => setByoField(p.id, 'label', e.target.value)}
                       className="w-auto"
+                      aria-label={'Label (e.g. Work)'}
                     />
                     <Field
                       placeholder="Client ID"
                       value={byoForm[p.id]?.clientId ?? ''}
                       onChange={(e) => setByoField(p.id, 'clientId', e.target.value)}
                       className="w-auto"
+                      aria-label={'Client ID'}
                     />
                     <Field
                       type="password"
@@ -457,12 +461,15 @@ export default function IntegrationsTestPage() {
                       value={byoForm[p.id]?.clientSecret ?? ''}
                       onChange={(e) => setByoField(p.id, 'clientSecret', e.target.value)}
                       className="w-auto"
+                      aria-label={'Client secret (blank for PKCE)'}
+                      purpose="code"
                     />
                     <Field
                       placeholder="Redirect URI"
                       value={byoForm[p.id]?.redirectUri ?? redirectUri}
                       onChange={(e) => setByoField(p.id, 'redirectUri', e.target.value)}
                       className="w-auto"
+                      aria-label={'Redirect URI'}
                     />
                   </div>
                   <button

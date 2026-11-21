@@ -65,6 +65,7 @@ export function PermissionCard({
             rows={2}
             className="w-full"
             autoFocus
+            aria-label={'Reason for declining'}
           />
         </div>
       )}

@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -682,6 +684,8 @@ interface LinkPrSectionProps {
  * the explicit link when set; clearing it falls back to branch match.
  */
 function LinkPrSection({ session }: LinkPrSectionProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const sessionId = session.id;
   const linkedNumber = session.prNumber ?? null;
   const openablePr = useOpenablePr(session);
@@ -759,6 +763,8 @@ function LinkPrSection({ session }: LinkPrSectionProps) {
             }}
             placeholder="PR number or URL"
             className="flex-1 min-w-0"
+            aria-label={'PR number or URL'}
+            size={compactFieldSize}
           />
           <Button
             type="button"

@@ -85,7 +85,6 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
             maxLength={60}
             autoFocus
             label="Name"
-            className="block"
           />
           <TextArea
             value={ask}
@@ -94,7 +93,6 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
             placeholder="Track feeds, sleep and diapers, with a daily summary."
             autoSize
             label="What should it do?"
-            className="block"
           />
           {showSettings ? (
             <div className="space-y-3 rounded-md border border-border p-3">
@@ -103,7 +101,6 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
                 onChange={(e) => setAppsDir(e.target.value)}
                 label="Apps folder"
                 description="Each app gets its own folder and git repository here."
-                className="block"
               />
               <Field
                 value={kit}
@@ -125,7 +122,6 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
                     </>
                   )
                 }
-                className="block"
               />
             </div>
           ) : (

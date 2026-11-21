@@ -1,4 +1,6 @@
 
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
@@ -303,13 +305,22 @@ function RichFiles() {
 }
 
 function ArtifactCollection() {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [query, setQuery] = useState('');
   const items: ArtifactListItem[] = config.state === 'empty' ? [] : ['budget.xlsx', 'review.docx', 'files.zip'].map((name, index) => ({
     key: name, name, source: { kind: 'session', sessionId: CHAT_ID, path: name }, mimeType: null,
     sessionId: CHAT_ID, eventId: `artifact-${index}`, createdAt: NOW, chatLabel: index ? 'Prepare the handoff' : 'Research the options',
   }));
   return <div className="rounded-lg border border-border p-2">
-    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<Field aria-label="Filter artifacts" placeholder="Filter by filename, path or chat" value={query} onChange={event => setQuery(event.target.value)} className="mt-2 block w-full" /></label>
+    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<Field
+      aria-label="Filter artifacts"
+      placeholder="Filter by filename, path or chat"
+      value={query}
+      onChange={(event) => setQuery(event.target.value)}
+      className="mt-2 block w-full"
+      size={compactFieldSize}
+    /></label>
     <ArtifactList items={items} query={query} />
   </div>;
 }

@@ -46,6 +46,7 @@ export function DeckSourcesField() {
   return (
     <section className="space-y-2">
       <TextArea
+        rows={9}
         id="deck-sources"
         label="Deck sources"
         description={
@@ -55,8 +56,7 @@ export function DeckSourcesField() {
             deck reads this on every refresh.
           </>
         }
-        descriptionPosition="before"
-        rows={8}
+        messagePosition="before-control"
         value={content}
         onChange={(e) => onChange(e.target.value)}
         disabled={!loaded}

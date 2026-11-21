@@ -42,7 +42,9 @@ export function FolderField({
           spellCheck={false}
           autoCapitalize="off"
           autoCorrect="off"
-          className="min-w-0 flex-1" purpose="code"
+          className="min-w-0 flex-1"
+          purpose="code"
+          aria-label={'Folder'}
         />
         <Tip label={browsable ? undefined : `${device.name} isn't running Ri right now. Type the path instead.`}>
           <Button

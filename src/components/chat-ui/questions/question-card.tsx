@@ -195,9 +195,7 @@ export function QuestionCard({
             ref={otherInputRef}
             type="text"
             value={otherTyped}
-            onChange={(e) =>
-              setOtherText((prev) => ({ ...prev, [currentIdx]: e.target.value }))
-            }
+            onChange={(e) => setOtherText((prev) => ({ ...prev, [currentIdx]: e.target.value }))}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && currentAnswered && !resolve.isPending) {
                 e.preventDefault();
@@ -207,6 +205,7 @@ export function QuestionCard({
             placeholder="Your answer…"
             disabled={resolve.isPending}
             className="w-full"
+            aria-label={'Your answer'}
           />
         )}
       </div>

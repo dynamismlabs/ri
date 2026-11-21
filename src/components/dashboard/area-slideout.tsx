@@ -325,7 +325,9 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                         value={nameValue}
                         onChange={(e) => saveName(e.target.value)}
                         className="flex-1"
-                        placeholder="Area name" purpose="embedded"
+                        placeholder="Area name"
+                        purpose="embedded"
+                        aria-label={'Area name'}
                       />
                     </div>
 
@@ -334,7 +336,9 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       onChange={(e) => saveDescription(e.target.value)}
                       placeholder="What does this area cover?"
                       className="w-full"
-                      rows={2} purpose="embedded"
+                      rows={2}
+                      purpose="embedded"
+                      aria-label={'Area description'}
                     />
                   </div>
 
@@ -402,12 +406,20 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                             value={newTaskTitle}
                             onChange={(e) => setNewTaskTitle(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddTask()
-                              if (e.key === 'Escape') { setAddingTask(false); setNewTaskTitle('') }
+                              if (e.key === 'Enter') handleAddTask();
+                              if (e.key === 'Escape') {
+                                setAddingTask(false);
+                                setNewTaskTitle('');
+                              }
                             }}
-                            onBlur={() => { setAddingTask(false); setNewTaskTitle('') }}
+                            onBlur={() => {
+                              setAddingTask(false);
+                              setNewTaskTitle('');
+                            }}
                             placeholder="Task title..."
-                            className="flex-1" purpose="embedded"
+                            className="flex-1"
+                            purpose="embedded"
+                            aria-label={'Task title'}
                           />
                         </div>
                       ) : (
@@ -497,12 +509,20 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                             value={newNoteTitle}
                             onChange={(e) => setNewNoteTitle(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddNote()
-                              if (e.key === 'Escape') { setAddingNote(false); setNewNoteTitle('') }
+                              if (e.key === 'Enter') handleAddNote();
+                              if (e.key === 'Escape') {
+                                setAddingNote(false);
+                                setNewNoteTitle('');
+                              }
                             }}
-                            onBlur={() => { setAddingNote(false); setNewNoteTitle('') }}
+                            onBlur={() => {
+                              setAddingNote(false);
+                              setNewNoteTitle('');
+                            }}
                             placeholder="Note title..."
-                            className="flex-1" purpose="embedded"
+                            className="flex-1"
+                            purpose="embedded"
+                            aria-label={'Note title'}
                           />
                         </div>
                       ) : (

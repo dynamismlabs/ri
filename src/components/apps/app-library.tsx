@@ -64,6 +64,8 @@ export function AppLibrary({ query, navigate }: {
 }
 
 function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const tier = useViewportTier();
   const sources = useLibrary();
   const connected = useQuery(connectedAppsQuery());
@@ -189,6 +191,7 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
                 </>
               }
               className="relative"
+              size={compactFieldSize}
             />
             <SegmentedControl
               mode="choice"

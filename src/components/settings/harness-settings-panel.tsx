@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 import { SelectField } from '@/components/system/select-field';
 
@@ -100,6 +102,8 @@ function HarnessPane({
   /** The global default model, when it's on this harness. It stays visible. */
   globalDefaultModel: string | null;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const catalog = useHarnessModels(harness.id, { catalog: true });
   const save = useSaveHarnessModels();
   const removeCustom = useRemoveCustomModel();
@@ -185,6 +189,8 @@ function HarnessPane({
           placeholder="Search models"
           leading={<Search />}
           className="relative"
+          aria-label={'Search models'}
+          size={compactFieldSize}
         />
         {/* Pinning saves on its own (the id has to exist before anything can
             validate against it), so the pending local edits mirror it rather
@@ -316,17 +322,14 @@ function LabeledSelect({
   onValue: (value: string) => void;
 }) {
   return (
-    <label className="space-y-1 text-[10.5px] text-muted-foreground">
-      {label}
-      <Select value={value} onValueChange={onValue}>
-        <SelectField className="mt-1 w-full">
+    <Select value={value} onValueChange={onValue}>
+        <SelectField className="w-full" label={label}>
           <SelectValue />
         </SelectField>
         <SelectContent>
           {options.map((option) => <SelectItem key={option.id} value={option.id} disabled={option.disabled}>{option.label}</SelectItem>)}
         </SelectContent>
       </Select>
-    </label>
   );
 }
 

@@ -102,6 +102,7 @@ export function ConnectionRequest(props: ConnectionRequestProps) {
           disabled={busy}
           required
           label={props.credentialLabel ?? 'Connection token'}
+          purpose="code"
         />
       </>}
       <Button

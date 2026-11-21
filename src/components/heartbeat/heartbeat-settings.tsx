@@ -358,9 +358,16 @@ function IntervalInput({ seconds, onCommit }: { seconds: number; onCommit: (seco
           aria-invalid={tooShort && left}
           className="w-16"
         />
-        <NativeSelect value={unit} onChange={(e) => pickUnit(Number(e.target.value))} aria-label="Unit" className="w-auto">
+        <NativeSelect
+          value={unit}
+          onChange={(e) => pickUnit(Number(e.target.value))}
+          aria-label="Unit"
+          className="w-auto"
+        >
           {units.map((u) => (
-            <option key={u.label} value={u.seconds}>{typed === 1 ? u.label.slice(0, -1) : u.label}</option>
+            <option key={u.label} value={u.seconds}>
+              {typed === 1 ? u.label.slice(0, -1) : u.label}
+            </option>
           ))}
         </NativeSelect>
       </div>
@@ -476,8 +483,9 @@ function InstructionsEditor({
         onFocus={() => setEditing(true)}
         onBlur={commit}
         rows={compact ? 6 : 9}
-
-        aria-label="Heartbeat instructions" autoSize
+        aria-label="Heartbeat instructions"
+        maxRows={compact ? 12 : 18}
+        autoSize
       />
       <Button
         type="button"

@@ -164,41 +164,27 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                     onRename={(name) => saver.rename(name)}
                   />
 
-                  <section className="space-y-1.5">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <label
-                        htmlFor="skill-description"
-                        className="text-[12px] font-semibold text-foreground"
-                      >
-                        When to use it
-                      </label>
-                      <span
-                        className={cn(
-                          'text-[10.5px] tabular-nums',
-                          descriptionLength > DESCRIPTION_MAX
-                            ? 'text-destructive'
-                            : 'text-muted-foreground/70',
-                        )}
-                      >
-                        {descriptionLength.toLocaleString('en-US')} /{' '}
-                        {DESCRIPTION_MAX.toLocaleString('en-US')}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      Agents see only this until they decide to use the skill. Say what it does and when, in
-                      the words you&apos;d use to ask for it.
-                    </p>
-                    <TextArea
-                      id="skill-description"
-                      value={draft.description}
-                      onChange={(e) => saver.edit({ description: e.target.value })}
-                      onBlur={saveNow}
-                      readOnly={readOnly || !!recovery}
-                      rows={3}
-                      placeholder="Reviews pull requests the way I do. Use when I ask for a review, a second look at a diff, or whether a PR is ready to merge."
-                      className="w-full" autoSize
-                    />
-                  </section>
+                  <TextArea
+                    id="skill-description"
+                    label="When to use it"
+                    description={
+                      <>
+                        Agents see only this until they decide to use the skill. Say what it does
+                        and when, in the words you&apos;d use to ask for it.
+                      </>
+                    }
+                    messagePosition="before-control"
+                    counter={{ value: descriptionLength, max: DESCRIPTION_MAX }}
+                    invalid={descriptionLength > DESCRIPTION_MAX}
+                    value={draft.description}
+                    onChange={(e) => saver.edit({ description: e.target.value })}
+                    onBlur={saveNow}
+                    readOnly={readOnly || !!recovery}
+                    rows={3}
+                    placeholder="Reviews pull requests the way I do. Use when I ask for a review, a second look at a diff, or whether a PR is ready to merge."
+                    className="w-full"
+                    autoSize
+                  />
 
                   <section className="flex flex-col gap-1.5">
                     <span className="text-[12px] font-semibold text-foreground">Instructions</span>
@@ -308,38 +294,35 @@ function NameField({ name, readOnly, onRename }: { name: string; readOnly: boole
   const note = problem ?? refusal;
 
   return (
-    <section className="space-y-1.5">
-      <label htmlFor="skill-name" className="text-[12px] font-semibold text-foreground">
-        Name
-      </label>
-      <p className={cn('text-[11px]', note ? 'text-destructive' : 'text-muted-foreground')}>
-        {note ?? 'Also its slash command. Lowercase letters, numbers and single hyphens.'}
-      </p>
-      <div className="relative">
-        <Field
-          id="skill-name"
-          value={value}
-          onChange={(e) => {
-            setRefusal(null);
-            setValue(e.target.value.toLowerCase().replace(/\s+/g, '-'));
-          }}
-          onBlur={() => void commit()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-            if (e.key === 'Escape') {
-              setValue(name);
-              setRefusal(null);
-            }
-          }}
-          readOnly={readOnly || renaming}
-          maxLength={NAME_MAX}
-          spellCheck={false}
-          autoComplete="off"
-          aria-invalid={note ? true : undefined}
-          className="w-full" purpose="code"
-        />
-        {renaming && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />}
-      </div>
-    </section>
+    <Field
+      id="skill-name"
+      label="Name"
+      messagePosition="before-control"
+      error={note ?? undefined}
+      description={
+        !note ? 'Also its slash command. Lowercase letters, numbers and single hyphens.' : undefined
+      }
+      trailing={renaming ? <Loader2 className="animate-spin" /> : undefined}
+      value={value}
+      onChange={(e) => {
+        setRefusal(null);
+        setValue(e.target.value.toLowerCase().replace(/\s+/g, '-'));
+      }}
+      onBlur={() => void commit()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+        if (e.key === 'Escape') {
+          setValue(name);
+          setRefusal(null);
+        }
+      }}
+      readOnly={readOnly || renaming}
+      maxLength={NAME_MAX}
+      spellCheck={false}
+      autoComplete="off"
+      aria-invalid={note ? true : undefined}
+      className="w-full"
+      purpose="code"
+    />
   );
 }

@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 
@@ -14,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { CHAT_UI_EXAMPLES, filterGalleryExamples, galleryExample, galleryPreviewUrl, GALLERY_ORIGINS, type ChatUiExample } from './catalog';
 
 export function ChatUiGallery() {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [selected, setSelected] = useState('email');
   const [state, setState] = useState('draft');
   const [search, setSearch] = useState('');
@@ -115,6 +119,7 @@ export function ChatUiGallery() {
               onChange={(event) => filter(event.target.value, origin)}
               leading={<Search />}
               className="relative"
+              size={compactFieldSize}
             />
             <p className="mt-2 text-[11px] text-muted-foreground" aria-live="polite">
               {matches.length} {matches.length === 1 ? 'example' : 'examples'}
@@ -126,6 +131,7 @@ export function ChatUiGallery() {
                 controlClassName="w-full"
                 aria-label="Select an example"
                 className="mt-3 block"
+                size={compactFieldSize}
               >
                 {matches.map((item) => (
                   <option value={item.id} key={item.id}>
@@ -190,6 +196,7 @@ export function ChatUiGallery() {
                     label={<>State</>}
                     orientation="horizontal"
                     className="w-auto"
+                    size={compactFieldSize}
                   >
                     {example.states.map((state) => (
                       <option key={state.id} value={state.id}>

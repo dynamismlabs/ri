@@ -1,4 +1,6 @@
 "use client";
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
@@ -39,6 +41,8 @@ interface DeckTaskBrowserProps {
 }
 
 export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, onClose }: DeckTaskBrowserProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [query, setQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
   const [energyFilter, setEnergyFilter] = useState<'deep' | 'light' | null>(null);
@@ -104,6 +108,8 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
           className={cn('w-full', 'flex-1')}
           autoFocus
           leading={<Search />}
+          aria-label={'Search tasks'}
+          size={compactFieldSize}
         />
 
         {/* Energy toggle */}

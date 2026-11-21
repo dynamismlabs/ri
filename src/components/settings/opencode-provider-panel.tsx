@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 
@@ -16,6 +18,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function OpenCodeProviderPanel() {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const queryClient = useQueryClient();
   const providers = useQuery({
     queryKey: ['opencode-providers'],
@@ -70,6 +74,8 @@ export function OpenCodeProviderPanel() {
         placeholder="Search providers"
         leading={<Search />}
         className="relative"
+        aria-label={'Search providers'}
+        size={compactFieldSize}
       />
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (
@@ -207,6 +213,8 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
               placeholder={`${provider.name} API key`}
+              aria-label={`${provider.name} API key`}
+              purpose="code"
             />
             <Button
               disabled={!apiKey.trim() || setKey.isPending}
@@ -230,6 +238,7 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             value={code}
             onChange={(event) => setCode(event.target.value)}
             placeholder="Authorization code"
+            aria-label={'Authorization code'}
           />}
           <Button
             disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending}
@@ -280,7 +289,6 @@ function PromptFields({
           controlClassName="mt-1 w-full"
           label={prompt.label}
           key={prompt.id}
-          className="block"
         >
           <option value="">Select</option>
           {prompt.options?.map((option) => (
@@ -296,7 +304,6 @@ function PromptFields({
           controlClassName="mt-1"
           label={prompt.label}
           key={prompt.id}
-          className="block"
         />
       ))}
     </>

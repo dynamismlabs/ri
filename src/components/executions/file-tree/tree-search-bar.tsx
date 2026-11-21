@@ -1,10 +1,13 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Search, X } from 'lucide-react';
 
+import { Kbd } from '@/components/ui/kbd';
 import { Tip } from '@/components/ui/tip';
 
 interface TreeSearchBarProps {
@@ -35,6 +38,8 @@ export function TreeSearchBar({
   totalCount,
   shortcut,
 }: TreeSearchBarProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   // When the parent clears the query externally (e.g., session change)
@@ -64,65 +69,66 @@ export function TreeSearchBar({
     !!query && typeof matchCount === 'number' && typeof totalCount === 'number';
 
   return (
-    <div className="flex h-7 items-center gap-1.5 rounded-md bg-muted/50 px-2 min-w-0 focus-within:bg-muted/70 focus-within:ring-1 focus-within:ring-ring/40">
-      <IconButton
-        type="button"
-        onClick={() => inputRef.current?.focus()}
-        tabIndex={-1}
-        label="Focus search"
-        variant="ghost"
-        size="sm"
-        focus="inside"
-        className="shrink-0 inline-flex items-center justify-center"
-      >
-        <Search size={12} />
-      </IconButton>
-      <Field
-        ref={inputRef}
-        // Go to file (⌘P) focuses this from the execution workbench.
-        data-tree-search=""
-        type="text"
-        value={query}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        spellCheck={false}
-        autoComplete="off"
-        placeholder="Search files"
-        aria-label="Search files"
-        className="flex-1 min-w-0" purpose="embedded"
-      />
-      {shortcut && !query && (
-        <kbd className="shrink-0 rounded bg-background/70 px-1 py-0.5 font-mono text-[9.5px] leading-none text-muted-foreground/80">
-          {shortcut}
-        </kbd>
-      )}
-      {showingCount && (
-        <Tip label={`${matchCount} match${matchCount === 1 ? '' : 'es'} of ${totalCount} files`}>
-          <span
-            className="shrink-0 text-[10px] tabular-nums text-muted-foreground/70"
-          >
-            {matchCount}/{totalCount}
-          </span>
-        </Tip>
-      )}
-      {query && (
-          <IconButton
-            type="button"
-            onClick={() => {
-              onChange('');
-              inputRef.current?.focus();
-            }}
-            label="Clear search"
-            tooltip="Clear search"
-            shortcut="Esc"
-            variant="ghost"
-            size="sm"
-            focus="inside"
-            className="shrink-0 inline-flex items-center justify-center"
-          >
-            <X size={11} />
-          </IconButton>
-      )}
-    </div>
+    <Field
+      ref={inputRef}
+      // Go to file (⌘P) focuses this from the execution workbench.
+      data-tree-search=""
+      type="text"
+      value={query}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={handleKeyDown}
+      spellCheck={false}
+      autoComplete="off"
+      placeholder="Search files"
+      aria-label="Search files"
+      className="flex-1 min-w-0"
+      size={compactFieldSize}
+      leading={
+        <IconButton
+          type="button"
+          onClick={() => inputRef.current?.focus()}
+          tabIndex={-1}
+          label="Focus search"
+          variant="ghost"
+          size={compactFieldSize}
+          focus="inside"
+          className="shrink-0 inline-flex items-center justify-center"
+        >
+          <Search size={12} />
+        </IconButton>
+      }
+      trailing={
+        <>
+          {shortcut && !query && <Kbd>{shortcut}</Kbd>}
+          {showingCount && (
+            <Tip
+              label={`${matchCount} match${matchCount === 1 ? '' : 'es'} of ${totalCount} files`}
+            >
+              <span className="shrink-0 tabular-nums">
+                {matchCount}/{totalCount}
+              </span>
+            </Tip>
+          )}
+          {query && (
+            <IconButton
+              type="button"
+              onClick={() => {
+                onChange('');
+                inputRef.current?.focus();
+              }}
+              label="Clear search"
+              tooltip="Clear search"
+              shortcut="Esc"
+              variant="ghost"
+              size={compactFieldSize}
+              focus="inside"
+              className="shrink-0 inline-flex items-center justify-center"
+            >
+              <X size={11} />
+            </IconButton>
+          )}
+        </>
+      }
+    />
   );
 }

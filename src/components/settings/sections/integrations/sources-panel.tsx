@@ -167,7 +167,13 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
               className="flex items-center gap-2"
               onSubmit={e => { e.preventDefault(); void run(async () => { await m.rename.mutateAsync({ sourceId: source.id, label: name }); setRenaming(false); }); }}
             >
-              <Field value={name} onChange={e => setName(e.target.value)} maxLength={60} aria-label="Source name"  autoFocus />
+              <Field
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={60}
+                aria-label="Source name"
+                autoFocus
+              />
               <Button
                 type="submit"
                 disabled={busy || !name.trim()}
@@ -251,8 +257,15 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
           onSubmit={e => { e.preventDefault(); void run(async () => { await m.rotateKey.mutateAsync({ sourceId: source.id, apiKey: key }); setKey(''); setKeyOpen(false); }); }}
         >
           <Field
-            type="password" autoComplete="off" spellCheck={false} value={key} onChange={e => setKey(e.target.value)}
-            placeholder="New project API key" aria-label={`New project API key for ${source.label}`} className="min-w-0 flex-1 basis-56"
+            type="password"
+            autoComplete="off"
+            spellCheck={false}
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder="New project API key"
+            aria-label={`New project API key for ${source.label}`}
+            className="min-w-0 flex-1 basis-56"
+            purpose="code"
           />
           <Button
             type="submit"
@@ -321,12 +334,25 @@ function ComposioSetup({ first, onDone, onCancel }: { first: boolean; onDone: ()
         </div>
         <form className="space-y-2" onSubmit={e => { e.preventDefault(); void save(); }}>
           {!first && (
-            <Field value={label} onChange={e => setLabel(e.target.value)} maxLength={60} placeholder="Name, like Composio Work" aria-label="Source name"  />
+            <Field
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              maxLength={60}
+              placeholder="Name, like Composio Work"
+              aria-label="Source name"
+            />
           )}
           <div className="flex flex-wrap items-center gap-2">
             <Field
-              type="password" autoComplete="off" spellCheck={false} value={key} onChange={e => setKey(e.target.value)}
-              placeholder="Project API key" aria-label="Composio project API key" className="min-w-0 flex-1 basis-56"
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="Project API key"
+              aria-label="Composio project API key"
+              className="min-w-0 flex-1 basis-56"
+              purpose="code"
             />
             <Button
               type="submit"

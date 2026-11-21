@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { useEffect, useRef, useState } from 'react';
@@ -27,6 +29,8 @@ export function SettingsNavigation<Id extends string>({
   sections: readonly SettingsNavItem<Id>[];
   label?: string;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [query, setQuery] = useState('');
   const activeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -53,6 +57,7 @@ export function SettingsNavigation<Id extends string>({
         aria-label={`Search ${label.toLowerCase()}`}
         className={cn('w-full', 'relative mb-1')}
         leading={<Search />}
+        size={compactFieldSize}
       />
 
       {matches.map((section) => {

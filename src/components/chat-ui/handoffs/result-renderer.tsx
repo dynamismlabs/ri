@@ -112,7 +112,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
               placeholder="Any concern the reviewer should investigate?"
               controlClassName="w-full"
               label="Optional focus"
-              className="mt-2 block"
+              className="mt-2"
             /></details>
             {!!reviewRequest.error && <p className="text-xs text-destructive" role="alert">{apiErrorText(reviewRequest.error)}</p>}
             <Button

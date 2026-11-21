@@ -54,7 +54,8 @@ export function CursorCredentialPanel() {
           value={key}
           onChange={(event) => setKey(event.target.value)}
           placeholder={status.data?.configured ? 'Replace configured key' : 'Paste API key'}
-
+          aria-label={'API key'}
+          purpose="code"
         />
         <Button
           disabled={!key.trim() || save.isPending}

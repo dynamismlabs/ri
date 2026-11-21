@@ -1,5 +1,5 @@
 'use client';
-import { Field as SystemField } from '@/components/system/field';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -314,50 +314,46 @@ export function McpServerForm({
 
       <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card/20 p-4">
         <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
-          <Field label="Name" htmlFor="mcp-name">
-            <SystemField
-              id="mcp-name"
-              value={form.name}
-              onChange={(e) => onChange({ name: e.target.value })}
-              placeholder="Sentry"
-
-              autoFocus
-            />
-          </Field>
-          <Field label="Server URL" htmlFor="mcp-url">
-            <SystemField
-              id="mcp-url"
-              value={form.url}
-              onChange={(e) => onChange({ url: e.target.value })}
-              placeholder="https://mcp.example.com"
-               purpose="code"
-            />
-          </Field>
+          <Field
+            id="mcp-name"
+            value={form.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            placeholder="Sentry"
+            autoFocus
+            label="Name"
+          />
+          <Field
+            id="mcp-url"
+            value={form.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+            placeholder="https://mcp.example.com"
+            purpose="code"
+            label="Server URL"
+          />
           <div className="pt-1 @lg:col-span-2">
             <McpAuthChoice detection={detection} url={url} selected={selected} busy={busy} onChoose={choose} fields={usesSecret && (
               <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
                 {selected === 'header' && (
-                  <Field label="Header name" htmlFor="mcp-header">
-                    <SystemField
-                      id="mcp-header"
-                      value={form.header}
-                      onChange={(e) => onChange({ header: e.target.value })}
-                      placeholder={headerHint ?? 'X-API-Key'}
-                       purpose="code"
-                    />
-                  </Field>
-                )}
-                <Field label="Secret" htmlFor="mcp-secret" wide={selected !== 'header'}>
-                  <SystemField
-                    id="mcp-secret"
-                    type="password"
-                    autoComplete="off"
-                    value={form.secret}
-                    onChange={(e) => onChange({ secret: e.target.value })}
-                    placeholder="Token or key"
-                     purpose="code"
+                  <Field
+                    id="mcp-header"
+                    value={form.header}
+                    onChange={(e) => onChange({ header: e.target.value })}
+                    placeholder={headerHint ?? 'X-API-Key'}
+                    purpose="code"
+                    label="Header name"
                   />
-                </Field>
+                )}
+                <Field
+                  id="mcp-secret"
+                  type="password"
+                  autoComplete="off"
+                  value={form.secret}
+                  onChange={(e) => onChange({ secret: e.target.value })}
+                  placeholder="Token or key"
+                  purpose="code"
+                  label="Secret"
+                  className={selected !== 'header' ? '@lg:col-span-2' : undefined}
+                />
                 <p className="text-[11px] leading-normal text-muted-foreground @lg:col-span-2">The secret is sealed in your Ri and never shown to the model.</p>
               </div>
             )} />
@@ -458,27 +454,6 @@ function McpAuthChoice({ detection, url, selected, busy, onChoose, fields }: {
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  wide,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  wide?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div className={wide ? 'space-y-1 @lg:col-span-2' : 'space-y-1'}>
-      <label htmlFor={htmlFor} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </label>
-      {children}
     </div>
   );
 }

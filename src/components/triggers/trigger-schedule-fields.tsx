@@ -79,7 +79,6 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
         onChange={(e) => patch({ kind: e.target.value as FrequencyKind })}
         controlClassName="block w-full"
         label="Frequency"
-        className="block"
       >
         {FREQUENCIES.filter((option) => !kinds || kinds.includes(option.kind)).map((option) => (
           <option key={option.value} value={option.value}>
@@ -146,7 +145,6 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
           purpose="code"
           label="Cron expression"
           description="Minute, hour, day of month, month, day of week"
-          className="block"
         />
       )}
       {scheduled && (
@@ -158,7 +156,6 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
           required
           controlClassName="block w-full"
           label="Timezone"
-          className="block"
         />
       )}
       {value.kind === 'manual' && <p className="text-[11px] text-muted-foreground">Use Run now whenever you need it.</p>}

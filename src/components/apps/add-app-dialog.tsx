@@ -65,7 +65,6 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               required
               maxLength={60}
               label="Name"
-              className="block"
             />
             <Field
               value={url}
@@ -74,7 +73,6 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               required
               inputMode="url"
               label="MCP address"
-              className="block"
             />
             <p className="text-[11px] text-muted-foreground">The app asks next what Ri may see and whether it may make changes. Each agent you allow later gets its own connection and its own choice.</p>
           </div>

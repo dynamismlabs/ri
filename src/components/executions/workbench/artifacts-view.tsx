@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -12,6 +14,8 @@ import type { ArtifactListItem } from '@/components/chat-ui/artifacts/artifact-l
 import { PREVIEW_HOST_ATTRIBUTE } from '@/components/chat-ui/artifacts/artifact-preview-store';
 
 export function ArtifactsView({ sessionId, executionId, active, previewHost }: { sessionId: string; executionId: string | null; active: boolean; previewHost: string }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [query, setQuery] = useState('');
   const artifacts = useExecutionArtifacts(sessionId, executionId, active);
   const unique = new Map<string, ArtifactListItem>();
@@ -36,6 +40,7 @@ export function ArtifactsView({ sessionId, executionId, active, previewHost }: {
         placeholder="Filter by filename, path or chat"
         className={'min-w-0 w-full'}
         leading={<Search aria-hidden />}
+        size={compactFieldSize}
       />
     </div>
     <div className="min-h-0 flex-1 overflow-y-auto p-1.5">

@@ -76,7 +76,7 @@ export function SignInToContinue({ client }: { client: string | null }) {
             in to Ri.{' '}
           </>
         }
-        descriptionPosition="before"
+        messagePosition="before-control"
         value={pasted}
         onChange={(event) => {
           setPasted(event.target.value);

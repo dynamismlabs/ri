@@ -182,7 +182,9 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
                 onBlur={handleAdd}
                 placeholder="Subtask title..."
                 className="flex-1"
-                autoFocus purpose="embedded"
+                autoFocus
+                purpose="embedded"
+                aria-label={'Subtask title'}
               />
             </div>
           )}

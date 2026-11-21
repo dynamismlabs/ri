@@ -1,6 +1,7 @@
 'use client';
 
-import type { ComponentProps, CSSProperties } from 'react';
+import { useCallback, type ComponentProps, type CSSProperties } from 'react';
+import { useAutosizeTextarea } from '@/hooks/use-autosize-textarea';
 import { Textarea } from '@/components/ui/textarea';
 import { cva } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
@@ -14,7 +15,7 @@ import {
   type FieldInfo,
 } from './field-base';
 
-const areaVariants = cva('ri-field-textarea', {
+const areaVariants = cva('ri-field-textarea block', {
   variants: {
     autoSize: { true: 'ri-field-textarea--auto' },
     resize: { none: '', vertical: 'ri-field-textarea--resize' },
@@ -41,7 +42,7 @@ export function TextArea(fieldProps: TextAreaProps) {
     descriptionId,
     errorId,
     invalid,
-    descriptionPosition,
+    messagePosition,
     counter,
     size: requestedSize,
     purpose,
@@ -55,8 +56,31 @@ export function TextArea(fieldProps: TextAreaProps) {
     className,
     controlClassName,
     style,
+    ref,
+    onInput,
     ...props
   } = fieldProps;
+  const { ref: autosizeRef, resize: resizeArea } = useAutosizeTextarea(props.value?.toString());
+  const attach = useCallback(
+    (element: HTMLTextAreaElement | null) => {
+      const previousSizing = element?.style.getPropertyValue('field-sizing') ?? '';
+      const previousHeight = element?.style.height ?? '';
+      const cleanup = autoSize ? autosizeRef(element) : undefined;
+      const cleanupRef = typeof ref === 'function' ? ref(element) : undefined;
+      if (ref && typeof ref !== 'function') ref.current = element;
+      return () => {
+        cleanup?.();
+        if (element && autoSize) {
+          element.style.setProperty('field-sizing', previousSizing);
+          element.style.height = previousHeight;
+        }
+        if (typeof cleanupRef === 'function') cleanupRef();
+        else if (typeof ref === 'function') ref(null);
+        else if (ref) ref.current = null;
+      };
+    },
+    [autoSize, autosizeRef, ref],
+  );
   const size = useFieldSize(requestedSize);
   const info = useFieldInfo({
     ...props,
@@ -81,11 +105,16 @@ export function TextArea(fieldProps: TextAreaProps) {
       labelClassName={labelClassName}
       description={description}
       error={error}
-      descriptionPosition={descriptionPosition}
+      messagePosition={messagePosition}
       className={className}
     >
       <Textarea
         {...props}
+        ref={attach}
+        onInput={(event) => {
+          onInput?.(event);
+          if (autoSize) resizeArea();
+        }}
         id={info.id}
         aria-invalid={info['aria-invalid']}
         aria-describedby={info['aria-describedby']}

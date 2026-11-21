@@ -236,7 +236,7 @@ function BesideHeader({
             )}
             {rename.editing ? (
               // Sized and placed so the text stays where the title's was.
-              <ChatTitleInput rename={rename} className="flex-1" />
+              <ChatTitleInput rename={rename} className="-mx-[5px] -my-px flex-1" />
             ) : (
               <Tip label={title} onlyWhenTextHidden>
                 <button

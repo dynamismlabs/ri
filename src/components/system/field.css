@@ -27,7 +27,7 @@
 .ri-field--sm { --field-size: 28px; --field-padding: 8px; }
 .ri-field--touch { --field-size: 40px; --field-font: 16px; --field-line: 24px; --field-padding: 12px; }
 .ri-field-control::placeholder { color: var(--t3); opacity: 1; }
-.ri-field-control:hover:not(:disabled, :read-only), .ri-field-shell:hover:not([data-disabled]) { border-color: var(--t4); }
+.ri-field-control:hover:not(:disabled, :read-only), .ri-field-shell:hover:not([data-disabled]):not(:has(.ri-field-control:disabled)) { border-color: var(--t4); }
 .ri-field-control:disabled, .ri-field-shell[data-disabled] { opacity: .5; cursor: not-allowed; }
 .ri-field-control[aria-invalid='true'], .ri-field-shell[aria-invalid='true'] { border-color: var(--danger); }
 .ri-field-control:focus-visible, .ri-field-shell:has(.ri-field-control:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; box-shadow: none; }
@@ -36,12 +36,12 @@
 .ri-field-shell .ri-field-control { flex: 1; align-self: stretch; height: auto; border: 0; border-radius: 10px; background: transparent; box-shadow: none; }
 .ri-field-shell .ri-field-control:focus-visible { outline: 0 solid transparent; }
 .ri-field-shell .ri-field-control:disabled { opacity: 1; }
-.ri-field-addon { display: flex; flex-shrink: 0; align-items: center; gap: 6px; height: auto; padding: 0 var(--field-padding); color: var(--t3); font-size: 12px; line-height: var(--field-line); font-weight: 400; }
+.ri-field-addon { opacity: 1; display: flex; flex-shrink: 0; align-items: center; gap: 6px; height: auto; padding: 0 var(--field-padding); color: var(--t3); font-size: 12px; line-height: var(--field-line); font-weight: 400; }
 .ri-field-addon[data-align='inline-start'] { padding-right: 0; }
 .ri-field-addon[data-align='inline-end'] { padding-left: 0; }
 .ri-field-addon > svg { width: 14px; height: 14px; flex-shrink: 0; }
 .ri-field-shell[aria-invalid='true'] .ri-field-addon { color: var(--danger); }
-.ri-field-frame { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.ri-field-frame { flex-direction: column; align-items: flex-start; gap: 6px; }
 .ri-field-label { display: flex; align-items: center; width: fit-content; gap: 6px; margin: 0; color: var(--t1); font: 500 12.5px/18px var(--font-sans); }
 .ri-field-description, .ri-field-error { width: 100%; margin: 0; color: var(--t3); font: 400 12px/18px var(--font-sans); }
 .ri-field-error { color: var(--danger); }
@@ -55,7 +55,7 @@
 .ri-field-title--document { font-size: 40px; font-weight: 700; }
 .ri-field--center { text-align: center; }
 .ri-field--completed { color: var(--t3); text-decoration: line-through; }
-.ri-field-textarea { display: block; height: auto; min-height: 0; max-height: none; resize: none; field-sizing: fixed; }
+.ri-field-textarea { height: auto; min-height: 0; max-height: none; resize: none; field-sizing: fixed; }
 .ri-field-textarea--auto { field-sizing: content; min-height: calc(var(--field-rows) * var(--field-line) + 2 * var(--field-block) + 2px); max-height: calc(var(--field-max-rows) * var(--field-line) + 2 * var(--field-block) + 2px); overflow-y: auto; }
 .ri-field-textarea--auto.ri-field--title { min-height: 1.25em; max-height: none; }
 .ri-field-textarea--resize { resize: vertical; }
@@ -87,3 +87,6 @@
 .ri-field-shell.ri-field--embedded:hover:not([data-disabled]) { border-color: transparent; }
 
 .ri-field-label-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
+
+.ri-field-shell:has(.ri-field-control:disabled) { opacity: .5; cursor: not-allowed; }
+.ri-field-shell:has(.ri-field-control:disabled) .ri-button:disabled { opacity: 1; }

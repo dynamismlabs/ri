@@ -30,7 +30,7 @@ export function SelectField(fieldProps: SelectFieldProps) {
     descriptionId,
     errorId,
     invalid,
-    descriptionPosition,
+    messagePosition,
     counter,
     size: requestedSize,
     purpose,
@@ -65,7 +65,7 @@ export function SelectField(fieldProps: SelectFieldProps) {
       labelClassName={labelClassName}
       description={description}
       error={error}
-      descriptionPosition={descriptionPosition}
+      messagePosition={messagePosition}
       className={className}
     >
       <SelectTrigger

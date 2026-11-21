@@ -47,7 +47,7 @@ export function Field(fieldProps: FieldProps) {
     descriptionId,
     errorId,
     invalid,
-    descriptionPosition,
+    messagePosition,
     counter,
     inlineMessage,
     size: requestedSize,
@@ -117,39 +117,41 @@ export function Field(fieldProps: FieldProps) {
       labelClassName={labelClassName}
       description={!inlineMessage && description}
       error={!inlineMessage && error}
-      descriptionPosition={descriptionPosition}
+      messagePosition={messagePosition}
       className={className}
     >
       {grouped ? (
-        <InputGroup
-          data-slot="field-shell"
-          aria-invalid={info['aria-invalid']}
-          data-disabled={props.disabled || undefined}
-          className={cn(
-            'ri-field-shell',
-            `ri-field--${size}`,
-            purpose && `ri-field--${purpose}`,
-            !framed && className,
-            controlClassName,
-          )}
-        >
-          {leading && (
-            <InputGroupAddon className="ri-field-addon" align="inline-start">
-              {leading}
-            </InputGroupAddon>
-          )}
-          {control}
-          {(trailing || (inlineMessage && (description || error))) && (
-            <InputGroupAddon className="ri-field-addon" align="inline-end">
-              {trailing}
-              {inlineMessage && (description || error) && (
-                <span id={error ? info.errorId : info.descriptionId} aria-live="polite">
-                  {error || description}
-                </span>
-              )}
-            </InputGroupAddon>
-          )}
-        </InputGroup>
+        <fieldset className="contents" disabled={props.disabled} role="presentation">
+          <InputGroup
+            data-slot="field-shell"
+            aria-invalid={info['aria-invalid']}
+            data-disabled={props.disabled || undefined}
+            className={cn(
+              'ri-field-shell',
+              `ri-field--${size}`,
+              purpose && `ri-field--${purpose}`,
+              !framed && className,
+              controlClassName,
+            )}
+          >
+            {leading && (
+              <InputGroupAddon className="ri-field-addon" align="inline-start">
+                {leading}
+              </InputGroupAddon>
+            )}
+            {control}
+            {(trailing || (inlineMessage && (description || error))) && (
+              <InputGroupAddon className="ri-field-addon" align="inline-end">
+                {trailing}
+                {inlineMessage && (description || error) && (
+                  <span id={error ? info.errorId : info.descriptionId} aria-live="polite">
+                    {error || description}
+                  </span>
+                )}
+              </InputGroupAddon>
+            )}
+          </InputGroup>
+        </fieldset>
       ) : (
         control
       )}

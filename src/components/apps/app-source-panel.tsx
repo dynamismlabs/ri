@@ -78,9 +78,26 @@ export function AppSourcePanel({ appId, appName, onOpenBuild }: { appId: string;
         </div>
       ) : editing ? (
         <form className="space-y-2" onSubmit={(event) => { event.preventDefault(); record.mutate(); }}>
-          <Field value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Its folder, like /Users/you/apps/bloom" />
-          <Field value={gitUrl} onChange={(e) => setGitUrl(e.target.value)} placeholder="Or its git URL" />
-          <TextArea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="How it's built and deployed" autoSize />
+          <Field
+            value={folder}
+            onChange={(e) => setFolder(e.target.value)}
+            placeholder="Its folder, like /Users/you/apps/bloom"
+            aria-label={'App folder'}
+          />
+          <Field
+            value={gitUrl}
+            onChange={(e) => setGitUrl(e.target.value)}
+            placeholder="Or its git URL"
+            aria-label={'Git URL'}
+          />
+          <TextArea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="How it's built and deployed"
+            autoSize
+            aria-label={'Build and deploy notes'}
+          />
           <div className="flex gap-2">
             <Button
               type="submit"

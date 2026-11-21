@@ -70,6 +70,7 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
             if (parsed !== value) onSave(parsed);
           }}
           className="w-32"
+          aria-label={'Monthly budget'}
         />
         <span className="text-[11px] text-muted-foreground/60">/ month</span>
       </div>

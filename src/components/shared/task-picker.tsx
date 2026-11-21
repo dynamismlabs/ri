@@ -1,4 +1,6 @@
 "use client";
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
@@ -15,6 +17,8 @@ interface TaskPickerProps {
 }
 
 export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -59,6 +63,8 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
             className={'flex-1'}
             onClick={(e) => e.stopPropagation()}
             leading={<Search />}
+            aria-label={'Search tasks'}
+            size={compactFieldSize}
           />
         </div>
         <div className="max-h-48 overflow-y-auto p-1">

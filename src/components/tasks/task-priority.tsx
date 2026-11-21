@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -129,6 +131,8 @@ function RankInput({
   total: number;
   onDone: (rank: number | null, fromKeyboard: boolean) => void;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   // Enter and Escape unmount the field, and a removed field can still fire
   // blur. Finish once.
   const finished = useRef(false);
@@ -162,8 +166,10 @@ function RankInput({
           finish(null, true);
         }
       }}
-      style={{ width: `${String(total).length + 2}ch` }}
-      className="w-auto" align="center"
+      style={{ width: `calc(${String(total).length + 2}ch + 2 * var(--field-padding))` }}
+      className="w-auto"
+      align="center"
+      size={compactFieldSize}
     />
   );
 }

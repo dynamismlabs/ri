@@ -186,7 +186,7 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
         placeholder="Write your message…"
         rows={9}
         maxLength={200_000}
-        className="mx-4 my-2 block w-[calc(100%_-_2rem)]"
+        className="mx-4 my-2 w-[calc(100%_-_2rem)]"
         onChange={(event) => {
           setMessage(null);
           editor.change({ body: event.target.value });

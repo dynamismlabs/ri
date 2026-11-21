@@ -615,7 +615,10 @@ function ChatTab({
             }
           }}
           placeholder="Untitled chat"
-          className="mx-1 w-36" purpose="title" titleSize="inline"
+          className="mx-1 w-36"
+          purpose="title"
+          titleSize="inline"
+          aria-label={'Chat title'}
         />
       ) : (
         <Tip label={tooltip}>

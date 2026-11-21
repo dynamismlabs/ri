@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -36,6 +38,8 @@ interface Catalog {
  * returning from a sign-in page) refreshes what's connected.
  */
 export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['integrations', 'onboarding-catalog'],
     queryFn: async (): Promise<Catalog> => {
@@ -103,6 +107,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
             aria-label="Search apps"
             className={'min-w-0 flex-1'}
             leading={<Search />}
+            size={compactFieldSize}
           />
 
           {q && (

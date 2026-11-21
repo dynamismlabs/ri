@@ -152,6 +152,7 @@ export function GeneralSection() {
             value={effectiveTz}
             onChange={(e) => update.mutate({ timezone: e.target.value })}
             className="min-w-0 flex-1"
+            aria-label={'Timezone'}
           >
             {zoneOptions.map((tz) => (
               <option key={tz} value={tz}>
@@ -223,6 +224,7 @@ export function GeneralSection() {
               value={deviceLabelMode}
               onChange={(e) => setDeviceLabelMode(e.target.value as DeviceLabelMode)}
               className="w-auto"
+              aria-label={'Show which device runs a chat'}
             >
               <option value="away">Only when it runs elsewhere (trial)</option>
               <option value="always">Always</option>
@@ -276,6 +278,7 @@ export function GeneralSection() {
               value={density}
               onChange={(e) => setDensity(e.target.value as TranscriptDensity)}
               className="w-auto"
+              aria-label={'Transcript'}
             >
               <option value="condensed">Condensed</option>
               <option value="full">Full feed</option>
@@ -299,6 +302,7 @@ export function GeneralSection() {
               value={entityViewMode}
               onChange={(e) => setEntityViewMode(e.target.value as EntityViewMode)}
               className="w-auto"
+              aria-label={'Open notes and tasks with'}
             >
               <option value="editor">Editor</option>
               <option value="agent">Agent (trial)</option>
@@ -322,6 +326,7 @@ export function GeneralSection() {
               value={agentViewMode}
               onChange={(e) => setAgentViewMode(e.target.value as AgentViewMode)}
               className="w-auto"
+              aria-label={'Agent view'}
             >
               <option value="view">Opens the agent view (trial)</option>
               <option value="fold">Folds its list</option>
@@ -338,6 +343,7 @@ export function GeneralSection() {
               value={agentChatPlace}
               onChange={(e) => setAgentChatPlace(e.target.value as AgentChatPlace)}
               className="w-auto"
+              aria-label={'Open chats'}
             >
               <option value="beside">Beside its main chat (trial)</option>
               <option value="full">Full view</option>
@@ -354,6 +360,7 @@ export function GeneralSection() {
               value={railStyle}
               onChange={(e) => setRailStyle(e.target.value as RailStyle)}
               className="w-auto"
+              aria-label={'Sidebar style'}
             >
               <option value="agentsOnly">Agents only (trial)</option>
               <option value="agents">Agents first (trial)</option>
@@ -384,6 +391,7 @@ export function GeneralSection() {
               value={choice}
               onChange={(e) => setChoice(e.target.value as EditorChoice)}
               className="w-auto"
+              aria-label={'Open files in'}
             >
               {EDITOR_CHOICES.map((key) => (
                 <option key={key} value={key}>
@@ -403,6 +411,7 @@ export function GeneralSection() {
               autoCorrect="off"
               className="w-full"
               purpose="code"
+              aria-label={'Custom editor command'}
             />
           )}
           <p className="text-[11px] text-muted-foreground/85">
@@ -457,6 +466,7 @@ function InactiveExecutionsSetting() {
             disabled={stored === undefined}
             onChange={(e) => choose(e.target.value)}
             className="w-auto"
+            aria-label={'Go inactive after'}
           >
             {options.map((days) => (
               <option key={days} value={String(days)}>

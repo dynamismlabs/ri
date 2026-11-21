@@ -1,4 +1,6 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -14,9 +16,19 @@ export function SectionTitle({ children, count, action }: { children: React.Reac
   return <div className={s.sectionTitle}><h2>{children}{count !== undefined && <span>{count}</span>}</h2>{action}</div>;
 }
 export function SearchBox({ placeholder = 'Search a name or something you want to do' }: { placeholder?: string }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const review = useReview();
   return <form role="search" className={s.search} onSubmit={event => { event.preventDefault(); review.commitSearch(); }}><Search size={15} />
-    <Field type="search" aria-label="Search additions" value={review.search} onChange={event => review.setSearch(event.target.value)} onBlur={review.commitSearch} placeholder={placeholder} />
+    <Field
+      type="search"
+      aria-label="Search additions"
+      value={review.search}
+      onChange={(event) => review.setSearch(event.target.value)}
+      onBlur={review.commitSearch}
+      placeholder={placeholder}
+      size={compactFieldSize}
+    />
     {review.search && <IconButton
       type="button"
       onClick={review.clearSearch}

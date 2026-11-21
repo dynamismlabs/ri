@@ -233,7 +233,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 ref={textareaRef}
                 aria-label="Quick capture"
                 autoSize
-                maxRows={13}
+                maxRows={14}
                 value={text}
                 onChange={(event) => draft.edit({ text: event.target.value })}
                 onKeyDown={handleKeyDown}
@@ -241,7 +241,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 maxLength={CAPTURE_MAX_TEXT_LENGTH}
                 disabled={busy || savedRemotely}
                 autoFocus
-                rows={pristine ? 2 : 3}
+                rows={3}
                 className="w-full"
                 purpose="embedded"
               /></div>
@@ -268,6 +268,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                   <p>This transcript does not fit. Shorten the capture to add it, or copy the transcript before discarding it. It has not been saved on this device.</p>
                   <TextArea
                     aria-label="Unadded voice transcript"
+                    rows={2}
                     readOnly
                     value={voice.transcript}
                     className="w-full"
