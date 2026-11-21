@@ -206,6 +206,13 @@ rich selects and native form values are reviewed explicitly. Unused TaskCreateMo
 CommandInput and TagEditor have been removed after checking imports and entry points.
 The gallery preview stays because the gallery bundles it by filesystem entry.
 
+Tree search measures its field width with a named container. Its magnifier is
+decorative and the shared addon focuses the input on click. Below 200px the
+shortcut gives way, followed by the visible count below 180px. The full match
+summary stays in the input’s accessible description. Clear keeps its compact or
+touch target. At 150px the query still has at least 60px, without changing the
+phone tree/viewer layout.
+
 ### Native inputs retained through stage 3
 
 These are explicit boundaries for the stage 6 allowlist, not new raw-field patterns.

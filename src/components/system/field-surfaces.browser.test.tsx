@@ -16,6 +16,7 @@ beforeAll(async () => {
     const params=new URLSearchParams(location.search);document.documentElement.classList.toggle('dark',params.get('theme')==='dark');
     window.events=[];window.drafts=[];window.submitted=[];
     function App(){const[query,setQuery]=useState(''),[open,setOpen]=useState(true);const surface=params.get('surface');
+      if(surface==='tree-column')return <main style={{width:166,padding:8,background:'var(--pane)'}}><TreeSearchBar query={query} onChange={setQuery} matchCount={2} totalCount={20} shortcut="⌘P"/></main>;
       if(surface==='nav')return <SettingsNavigation active="general" label="Test settings" onSelect={id=>window.events.push(id)} sections={['general','plugins','models'].map(id=>({id,label:id[0].toUpperCase()+id.slice(1),title:id,icon:Search}))}/>;
       if(surface==='pair')return <PairPage/>;
       if(surface==='feedback')return <form onSubmit={e=>{e.preventDefault();window.submitted=[...new FormData(e.currentTarget)];}}><FeedbackPanel onClose={()=>{}}/><button type="submit">Inspect form</button></form>;
@@ -70,6 +71,27 @@ afterAll(async () => {
 });
 
 for (const theme of ["light", "dark"]) {
+  for (const width of [390, 900]) it(`keeps query and Clear usable in a 150px tree column at ${width}px (${theme})`, async () => {
+    const page = await fixture.browser.newPage({viewport:{width,height:844}});
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}&surface=tree-column`);
+      const input = page.getByRole('textbox', {name:'Search files',exact:true});
+      await input.fill('readme');
+      expect((await input.boundingBox())!.width).toBeGreaterThanOrEqual(60);
+      expect(await input.locator('..').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+      const clear = page.getByRole('button', {name:'Clear search',exact:true});
+      expect((await clear.boundingBox())!.height).toBe(width===390?40:28);
+      expect(await page.getByText('2/20',{exact:true}).isVisible()).toBe(false);
+      const summary = await input.getAttribute('aria-describedby');
+      expect(await page.locator('[id="'+summary+'"]').textContent()).toBe('2 matches of 20 files');
+      await clear.click();expect(await input.inputValue()).toBe('');
+      expect(await page.getByText('⌘P',{exact:true}).isVisible()).toBe(false);
+      await input.evaluate(el=>(el as HTMLInputElement).blur());
+      await page.locator('[data-align="inline-start"] svg').click();
+      expect(await input.evaluate(el=>el===document.activeElement)).toBe(true);
+    } finally {await page.close();}
+  });
+
   it(`keeps Settings search desktop-only without changing the phone nav height (${theme})`, async () => {
     const page = await fixture.browser.newPage({
       viewport: { width: 390, height: 844 },
