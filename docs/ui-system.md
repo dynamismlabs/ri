@@ -109,12 +109,12 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
 | `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch. Choice supports radio selection and explicit `allowEmpty` | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2, implemented |
 | `Field`, `TextArea`, `NativeSelect`, `SelectField` | Label, value, description, error, invalid and disabled state. sm, md or touch, with title, code and embedded purposes | Input adapters with 10px corners, owned ids and ARIA, consistent type and one focus treatment. SelectField retains the installed Radix picker | 3, implemented |
-| `Card` | Content and layout | Raised 14px content panel | 4 |
-| `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
-| `MenuAction` | Label, action, tone and disabled state | Menu row type, hover and keyboard focus | 4 |
-| `Callout`, `StatusBadge` | info, warning, error, success, plus neutral for badges | Semantic ink/fill pairs. 14px content callouts and capsule facts | 4 |
-| `InlineAction` | plain, prose link or inline chip, optional bubble and code purpose | Text-sized actions inherit their surrounding type and line height, with an owned capsule fill for references and an inset focus outline | 4 |
-| `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4 |
+| `Card` | Element, padding, density, surface, selected state and optional existing shadow | Raised 14px content panel, including whole-card press targets | 4, implemented |
+| `ChoiceRow`, `ChoiceGroup`, `ChoiceIndicator` | Title, description, rich children, selection, density and touch minimum | Descriptive 8px row, associations, Radix radio keyboard and form inputs, decorative selection mark | 4, implemented |
+| `MenuAction` | Label, action, tone, density, touch minimum, selected and disabled state | List actions and installed Radix menu items, hover, focus and dismissal | 4, implemented |
+| `Callout`, `StatusBadge` | info, warning, error, success, plus neutral for badges | Semantic ink/fill pairs. 14px content callouts and capsule facts | 4, implemented |
+| `InlineAction` | plain, prose link or inline chip, optional bubble and code purpose | Text-sized actions inherit their surrounding type and line height, with an owned capsule fill for references and an inset focus outline | 4, implemented |
+| `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4, implemented |
 | `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
 | `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
 
@@ -134,10 +134,18 @@ padding, fill, border, shadow and interaction drawing belong to the component.
   Rich children can keep existing hierarchy. Pressed/checked/selected/expanded
   state has a soft fill. `ChoiceGroup` plus `selection="radio"` and `value`
   uses Radix's radio keyboard and native form inputs. `size="touch"` sets a
-  minimum 40px target without fixing the content's height.
+  minimum 40px target without fixing the content's height. A coarse pointer
+  uses the same minimum unless the caller requests compact. `asChild` keeps
+  a rich row's existing container and nested controls. `ChoiceIndicator`
+  supplies its decorative checkbox or radio mark without adding another input.
 - `MenuAction` keeps list actions as buttons. `kind="menu"` uses the installed
   Radix menu item, preserving keyboard focus, disabled items and dismissal.
   `density`, `selected`, `separator` and semantic `tone` own its drawing.
+  Compact inline row actions use the 24px role, with a 16px line and 4px
+  vertical padding. Rich content can grow. `size="touch"` and the coarse
+  pointer default keep a minimum 40px target. `inset` aligns nested entries.
+  `asChild` forwards the actual anchor to Radix, keeping its native link,
+  keyboard and dismissal behavior.
 - `Callout` is a 14px notice using neutral or semantic ink/fill pairs. An
   announcement's `role` and live policy stay explicit, so a visual migration
   never introduces a repeated screen-reader announcement.
@@ -145,14 +153,18 @@ padding, fill, border, shadow and interaction drawing belong to the component.
   plain or solid `appearance`, compact or count `size`, and optional `code`.
   Interactive facts use ChipButton or an inline MetaItem action instead.
 - `Meta` and `MetaItem` own the wrapping 12px line of facts, dot separators,
-  theme-aware energy/deadline/status ink and inline action focus. `as` retains
+  theme-aware energy/deadline/status ink and inline action focus. A badge
+  inside Meta becomes a plain fact. Decorative dots have an empty spoken
+  alternative, so they do not change an action's accessible name. `as` retains
   a real button or link. Labels and handlers stay with their domain component.
 
 `InlineAction` covers actions embedded in prose or a content title, including
 file and entity references. It inherits the surrounding type and line height,
 rather than taking a toolbar height. Plain, underlined link and chip appearances
 own their drawing. Bubble chips inherit the inverted message's ink. Code keeps
-the monospace family. A passive reference may delegate its span through `asChild`.
+the monospace family at 11px. Named caption (12px), body (12px), label (13px)
+and heading (14px) purposes preserve content hierarchy without call-site
+type classes. A passive reference may delegate its span through `asChild`.
 
 The installed Button's `ActionPrimitive` owns only native/Slot behavior, refs and
 disabled activation guards. Button keeps all its existing drawing and sizes.
@@ -481,42 +493,27 @@ Use the implemented system components first. These hooks carry families that hav
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-energy` and `data-task-status` select theme-aware inks, `data-urgency="late"` or `"today"` |
-| `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
-| `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
+| `deadline-band`, `deadline-head` | The deck's deadline heading and layout. ChoiceRow and MetaItem own each row and date | `data-urgency` (late, today, soon) |
 | `review-bar`, `review-bar-title` | The review bar above the chat input, drawn like a second, smaller input | `data-state`, `data-tone`, `data-active` |
-| `task-chip`, `task-chip-label` | The task a chat works on, in its header | `data-status` |
 | `rail-foot` | The rail's footer rows | |
-| `entity-kind`, `entity-kind-label` | "Task · Money" or "Note · Tidewater Coffee" above a task or note title | |
+| `entity-kind` | "Task · Money" or "Note · Tidewater Coffee" above a task or note title | |
 | `properties` | The label and value grid on a task (Status, Deadline, Energy, Effort...) | |
-| `task-picker` | The task a note links to, in the note's `meta` line | |
-| `callout` | A notice or summary inside a pane (Stream's triage digest): a soft raised panel, no outline | |
-| `stream-meta` | The line under a Stream capture | |
-| `search-field` | The phone's search field | |
 | `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"`, `"ghost"` or `"floating"`, `data-tone="status"` or `"warning"`, `aria-pressed`, `aria-selected` or `aria-checked` |
 | `status-strip` | A chat header's git summary and next action, in one quiet capsule | |
 | `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
 | `row-actions` | Hover actions on task, note and deck rows, also revealed by keyboard focus | `:focus-within` |
 | `calendar-toolbar`, `calendar-navigation`, `calendar-date`, `calendar-spacer`, `calendar-work-toggle` | Calendar's header and date navigation. Below 768px the controls wrap, the date gets its own line and the close action stays at the top right | `data-kind="close"` on the close icon button |
 | `work-chain`, `work-chain-step`, `work-chain-arrow` | Calendar's leverage summary. The phone keeps three flexible columns with wrapping labels and narrower connecting arrows | |
-| `run-row`, `run-summary` | A run and its summary. Below 768px the summary wraps above the badges and time, which wrap together | |
 | `search-footer` | Search navigation hints at 12px. All cmdk group headings use sentence case at 12px, including descendant utility variants | |
-| `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content reuses `callout` and the token field uses Field, with one focus outline around the group | |
+| `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content uses Callout and the token field uses Field, with one focus outline around the group | |
 | `floating-tools` | The floating tools list and folded strip: 14px content corners with the shared popover shadow | |
 | `dialog-content`, `alert-dialog-content`, `dialog-overlay`, `alert-dialog-overlay` | Shared 20px centered dialog corners and an unblurred 40% black scrim. Search panels use these hooks too | `data-kind="search-page"` keeps full-page phone search square. `data-kind="wrapped"` lets an inner painted panel inherit the corners and use just the outer shadow |
-| `settings-nav`, `settings-body` | Settings' shared navigation and content boundary. Neutral bordered sections become soft panels, small bordered actions become capsules, descriptive choices stay rows, and fields stay rectangular | `aria-current="page"` on navigation |
-| `choice-row` | A descriptive option in a chooser or Settings, with a soft 8px selection fill | `aria-pressed`, `aria-selected` or `aria-checked` |
+| `settings-nav`, `settings-body` | Settings' shared navigation and content boundary. MenuAction owns navigation rows, Card owns content sections and Field owns fields. The hooks retain the surrounding layout | `aria-current="page"` on navigation |
 | `system-field`, `field-control`, `field-shell` | Private field adapter parts. Product drawing lives in field.css, not compatibility rules | Owned label, help, error and counter associations |
 | `consent-checkbox` | Native server-built OAuth consent checkboxes, retaining submission before hydration | Token accent and visible focus |
-| `status-badge` | A small capsule fact, including schedule state and Runs trigger/activity badges | |
-| `schedule-row` | A schedule's soft row | |
-| `content-card` | A reference, app or thumbnail choice containing a title and supporting content. It stays a soft 14px rectangle even when the whole card opens | `aria-pressed`, `aria-selected` or `aria-checked` |
-| `attachment-chip` | An inline file action, drawn as a capsule. Links written as prose keep their underline | `data-tone="bubble"` inherits the inverted message's ink |
 | `calendar-event` | An event holds time and meeting details. It keeps its position, colored stripe and 8px content shape | |
 | `image-picker` | An image or emoji preview tile, with its placeholder and upload affordance. It keeps a 14px content shape | |
 | `completion-control` | A task's completion mark or a routine's checkbox. These retain their circle or checkbox shape and state, with a visible focus outline | |
-| `menu-action` | A descriptive menu or list row, with an 8px hover shape. Separators stay on the row | |
-| `settings-nav-item` | Settings navigation items whose parent owns their drawing | The parent's state contract |
 | class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside). `panelTabClass` adds it | `panel-tab-on` |
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:
@@ -623,10 +620,15 @@ becomes their drawing owner.
    owned labels and validation, title/code/embedded purposes, native autosize
    fallback, search addons and form behavior. Plain selection controls use the
    installed primitives. Retired input, textarea, field and Settings field
-   compatibility rules are removed. The remaining prompt content frame is
-   explicitly reserved for stage 4.
-4. **Content and feedback.** Cards, descriptive rows, menu actions, callouts,
-   badges and metadata.
+   compatibility rules are removed. The prompt/model frame moves to Card in stage 4.
+4. **Content and feedback (implemented).** Card, ChoiceRow, ChoiceGroup,
+   ChoiceIndicator, MenuAction, Callout, StatusBadge, Meta, MetaItem and
+   InlineAction own content drawing. Task, note, deck, run, app, provider and
+   workstream rows retain their handlers, mounting and nested controls.
+   Native radio values and descriptive associations stay intact. Retired
+   content, metadata, badge, attachment, task-chip and menu compatibility
+   rules are removed. Plain rows, bare connected forms and ordinary user
+   messages keep their unframed surfaces.
 5. **Overlays.** Dialogs, sheets, popovers and menus, by hand.
 6. **Remove scaffolding and lock drift.** Delete redundant compatibility rules and
    hooks. Lint forbids raw interactive elements outside ui/system, drawing
@@ -639,6 +641,31 @@ Commit and push after each stage, then stop for the UI reviewer before continuin
 Each stage includes browser state checks, typecheck, zero lint errors, nearby
 tests, updated API documentation and the light/dark desktop/phone visual matrix.
 
+### Remaining content boundaries
+
+The stage 4 audit keeps these domain drawings explicit. They are not alternate
+button, field or card styles. Stage 6 must carry the named navigation,
+visualization and transport entries into its file-specific allowlist.
+
+| Boundary | Reason and next owner |
+| --- | --- |
+| `phone-tab-bar-navigation`, `question-progress-visualization`, `draggable-chat-navigation` | Preserve the approved navigation and progress drawing, including 48px Create |
+| `calendar-time-visualization` | Events, day columns, time ribbons and overflow marks encode time, position and event color |
+| `completion-marks` | Task, subtask and routine completion retain their recognizable circle or checkbox until a dedicated selection API owns them |
+| `drag-handles` | Task and area handles retain their drag hit testing and reveal behavior |
+| `file-tree-navigation` | Tree entry and directory controls keep tree keyboard, indent and disclosure drawing |
+| `image-preview-picker`, `identity-color-swatch` | Image previews and chosen color marks are the content of the control |
+| `brand-and-identity-marks` | Agent, account and service avatars and logos keep their own mark geometry |
+| `rich-message-renderers` | Source mentions, attachment code previews, quotation and editor/drop-target drawing preserve inline flow and bubble ink |
+| `diagnostic-pages` | Development execution and connector probe screens stay outside the normal product surface |
+| `test-fixtures` | Bare controls in fixtures deliberately exercise engines and native behavior |
+| Floating surfaces | Painted dialog, toast, popup, hover-preview and menu frames move in stage 5, together with their focus, portal and dismissal engines |
+
+These are specific boundaries, not a blanket file exemption. Ordinary actions,
+content panels and facts around them use the implemented APIs. The external
+stage packet contains the original declaration inventory and a decision for
+its remaining entries.
+
 ## Completed raw-control audit
 
 The separate phase 3 inventory is folded into this spec. Every entry is now
@@ -648,8 +675,8 @@ or an event is content as well as a press target:
 
 | Intentionally retained shape | Where and why |
 | --- | --- |
-| Content cards, 14px | Entity references, Board activity, onboarding apps and service-form thumbnail options contain a title, image or supporting text. They use `content-card` |
-| Descriptive rows, 8px | Questions, workstream and model choices, provider choices and source pickers contain descriptions or belong to a list. They use `choice-row` or `menu-action` |
+| Content cards, 14px | Entity references, Board activity, onboarding apps and service-form thumbnail options contain a title, image or supporting text. They use Card |
+| Descriptive rows, 8px | Questions, workstream and model choices, provider choices and source pickers contain descriptions or belong to a list. They use ChoiceRow or MenuAction |
 | Calendar events, 8px | Day, Week and List event blocks represent time and meeting details. `calendar-event` preserves their placement and colored stripe. Join and warning actions are capsules |
 | Image and emoji previews, 14px | Agent and area setup show the current image inside the picker. `image-picker` keeps the preview and dashed empty-state affordance |
 | Completion circles and checkboxes | Task, subtask, area and routine completion marks use `completion-control`. Their state remains recognizable at 14 to 16px |

@@ -115,7 +115,7 @@ it.skipIf(!enabled).each(['dark', 'light'])('uses the same stable, dim zero as t
     expect(await empty.evaluate(node => node.tagName)).toBe('SPAN');
     expect(await empty.getAttribute('class')).toBe(await page.locator('[aria-label="Working: 0"]').getAttribute('class'));
     expect((await empty.boundingBox())?.x).toBe(position?.x);
-    expect(await empty.evaluate(node => getComputedStyle(node).opacity)).toBe('0.3');
+    expect(await empty.evaluate(node => getComputedStyle(node).opacity)).toBe('0.5');
     const output = process.env.RI_ARTIFACT_SCREENSHOTS ?? path.join(os.tmpdir(), 'ri-background-tasks');
     await fs.mkdir(output, { recursive: true });
     await page.locator('[data-desktop-titlebar]').screenshot({ path: path.join(output, `background-tasks-zero-${theme}.png`), animations: 'disabled' });

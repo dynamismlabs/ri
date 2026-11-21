@@ -19,6 +19,7 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 - Every either-or choice, like the tabs at the top of each panel, in one rounded switch.
 - Task and note details as plain words, and deadlines as a colored date instead of a colored box.
 - Rounded buttons in consistent sizes, with larger controls on a phone and a clear outline when you move by keyboard.
+- Lists and choices use soft fills. Status labels keep their meaning in both themes.
 - Text fields keep their labels, help and errors together, with more room to type on a phone.
 - A white message box that stands out from the page.
 

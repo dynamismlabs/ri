@@ -317,7 +317,7 @@ export function McpServerForm({
 
       <PluginSetupHelpButton target={{ kind: 'mcp-new', form: { ...form, authKind, header } }} disabled={busy} />
 
-      <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card/20 p-4">
+      <Card as="form" padding="lg" onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
           <Field
             id="mcp-name"
@@ -375,7 +375,7 @@ export function McpServerForm({
         >
           <Plus size={14} /> {selected === 'oauth' ? 'Add and sign in' : 'Add and connect'}
         </Button>
-      </form>
+      </Card>
     </div>
   );
 }

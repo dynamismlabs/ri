@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
@@ -204,7 +206,7 @@ export function ConversationsSection() {
           size="sm"
         >Retry delivery</Button>
       </div>}
-      {editing === connection.id && <form aria-label={`${connection.name} Slack tokens`} className="space-y-2 rounded border p-3" onSubmit={event => { event.preventDefault(); reconnect.mutate(connection.id); }}>
+      {editing === connection.id && <Card as="form" padding="md" aria-label={`${connection.name} Slack tokens`} className="space-y-2" onSubmit={event => { event.preventDefault(); reconnect.mutate(connection.id); }}>
         <a className="inline-block text-sm underline" href="https://api.slack.com/apps" target="_blank" rel="noreferrer">Open Slack app settings</a>
         <SlackTokenField kind="app" id={`app-${connection.id}`} label="New app-level token" value={newAppToken} onChange={setNewAppToken} />
         <SlackTokenField kind="bot" id={`bot-${connection.id}`} label="New bot token" value={newBotToken} onChange={setNewBotToken} />
@@ -213,7 +215,7 @@ export function ConversationsSection() {
           variant="primary"
           size="md"
         >Reconnect</Button>
-      </form>}
+      </Card>}
       <p className="break-words text-xs text-muted-foreground">{connection.channels.length ? `Channels: ${connection.channels.join(', ')}` : 'Personal DMs only'}</p>
       {connection.provider === 'slack' && <div className="space-y-3 border-t pt-3 text-sm">
         <h4 className="font-medium">6. Link your Slack identity</h4>
@@ -276,7 +278,7 @@ export function ConversationsSection() {
       variant="secondary"
       size="sm"
     >Add another connection</Button>}
-    {query.data?.canManage && !newConnectionId && <form aria-label="Add a conversation connection" className="space-y-4 rounded-lg border p-4" onSubmit={event => { event.preventDefault(); setNotice(''); create.mutate(); }}>
+    {query.data?.canManage && !newConnectionId && <Card as="form" padding="lg" aria-label="Add a conversation connection" className="space-y-4" onSubmit={event => { event.preventDefault(); setNotice(''); create.mutate(); }}>
       <h3 className="font-medium">Add a conversation connection</h3>
       <NativeSelect
         id="conversation-provider"
@@ -345,7 +347,7 @@ export function ConversationsSection() {
           size="md"
         >{create.isPending ? 'Connecting…' : 'Connect'}</Button>
       </>}
-    </form>}
+    </Card>}
     {buzzSetup && <section className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><TextArea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} autoSize /><Button
       onClick={() => void navigator.clipboard.writeText(buzzSetup)}
       variant="secondary"

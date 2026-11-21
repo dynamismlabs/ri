@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { cn } from '@/lib/utils';
 
@@ -63,7 +65,7 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
       {query.isPending && <p role="status" className="text-xs text-muted-foreground">Loading delivery history…</p>}
       {query.isError && <p role="alert" className="text-xs text-destructive">Could not refresh delivery history. Try again shortly.{query.data ? ' Showing the last loaded results.' : ''}</p>}
       {!query.isPending && !query.isError && visible.length === 0 && <p className="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">{deliveries.length ? 'No recent deliveries match these filters.' : 'No deliveries yet. Alerts and channel tests will appear here.'}</p>}
-      {visible.length > 0 && <ol aria-label="Recent notification deliveries" className="max-h-[32rem] divide-y divide-border overflow-y-auto rounded-xl border border-border">
+      {visible.length > 0 && <Card as="ol" padding="none" aria-label="Recent notification deliveries" className="max-h-[32rem] divide-y divide-border overflow-y-auto">
         {visible.map(item => <li key={item.id} className="space-y-1.5 p-3">
           <div className="flex items-start justify-between gap-3">
             <p className="min-w-0 break-words text-sm font-medium">{item.title}</p>
@@ -76,7 +78,7 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
             {item.sentAt ? <> · Sent <time dateTime={item.sentAt}>{displayTime(item.sentAt)}</time></> : item.updatedAt !== item.createdAt ? <> · Updated <time dateTime={item.updatedAt}>{displayTime(item.updatedAt)}</time></> : null}
           </p>
         </li>)}
-      </ol>}
+      </Card>}
     </section>
   );
 }

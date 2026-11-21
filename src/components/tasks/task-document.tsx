@@ -1,4 +1,6 @@
 'use client';
+import { MetaItem } from '@/components/system/meta';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
@@ -43,7 +45,7 @@ export function TaskDocument({ task, onTitleChange, onAreaChange, onDeadlineChan
     <div ref={root} className="min-w-0 space-y-0">
       <div className="px-4 pt-4 md:px-12">
         <div data-slot="entity-kind" className="flex items-center gap-2 text-xs">
-          <span data-slot="entity-kind-label" className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">{task.parentId ? 'Subtask' : 'Task'}</span>
+          <MetaItem kind="entity">{task.parentId ? 'Subtask' : 'Task'}</MetaItem>
           <span className="text-muted-foreground/30">·</span>
           {areaControl ?? <AreaSelect value={task.areaId} onChange={onAreaChange} />}
         </div>

@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Callout } from '@/components/system/callout';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -80,7 +82,7 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
       ) : list.length === 0 ? (
         <p className="text-xs text-muted-foreground">No apps yet. Add one from Apps.</p>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border border-border">
+        <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
           {list.map((app) => {
             const mine = app.agents.find((place) => place.place.kind === 'agent' && place.place.workspaceId === workspaceId);
             const busy = (allow.isPending && allow.variables?.id === app.id) || (remove.isPending && remove.variables?.id === app.id);
@@ -119,7 +121,7 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
               </li>
             );
           })}
-        </ul>
+        </Card>
       )}
       {allowApp.dialog}
     </div>

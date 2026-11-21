@@ -1417,13 +1417,13 @@ function UserMessageBody({
     <>
       {leadingSlash.leadingSpace}
       <Tip label={matchedCommand.description?.trim() || `/${matchedCommand.name}`} onlyWhenTextHidden={!matchedCommand.description?.trim()}>
-        <span
+        <InlineAction asChild appearance="chip" bubble><span
           data-slash-command={matchedCommand.name}
-          className="inline-flex items-center align-baseline gap-1 px-1.5 py-0.5 mr-0.5 rounded-md border border-current/20 bg-current/10 text-[12px] font-medium select-none"
+          className="inline-flex items-center align-baseline gap-1 mr-0.5 select-none"
         >
           <Terminal size={11} className="shrink-0 opacity-75" />
           <span className="self-baseline font-mono text-[11px]">{`/${matchedCommand.name}`}</span>
-        </span>
+        </span></InlineAction>
       </Tip>
     </>
   );

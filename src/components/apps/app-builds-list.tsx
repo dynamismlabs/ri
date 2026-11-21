@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { MenuAction } from '@/components/system/menu-action';
 
 import { useQuery } from '@tanstack/react-query';
@@ -16,7 +18,7 @@ export function AppBuildsList({ onOpen }: { onOpen: (sourceId: string) => void }
   return (
     <section aria-labelledby="app-builds" className="space-y-2">
       <h3 id="app-builds" className="flex items-center gap-1.5 text-xs font-semibold"><Hammer size={13} aria-hidden />Apps in progress</h3>
-      <ul className="divide-y divide-border rounded-lg border border-border">
+      <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
         {open.map((source) => (
           <li key={source.id}>
             <MenuAction type="button" onClick={() => onOpen(source.id)} className="flex w-full items-center gap-3 text-left">
@@ -33,7 +35,7 @@ export function AppBuildsList({ onOpen }: { onOpen: (sourceId: string) => void }
             </MenuAction>
           </li>
         ))}
-      </ul>
+      </Card>
     </section>
   );
 }

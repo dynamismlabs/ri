@@ -1,11 +1,11 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { Play, Square, RotateCw, ExternalLink, ChevronDown, ChevronUp, Monitor, Globe } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Tip } from '@/components/ui/tip';
 
 interface PreviewHeaderProps {
@@ -120,17 +120,10 @@ export function PreviewHeader({
               : `Remote: reached via ${providerLabel}.`
           }
         >
-          <span
-            className={cn(
-              'flex h-7 items-center gap-1 rounded px-1.5 text-[10px] font-medium uppercase tracking-wide',
-              mode === 'local'
-                ? 'text-sky-600 dark:text-sky-400'
-                : 'text-emerald-600 dark:text-emerald-400',
-            )}
-          >
+          <StatusBadge appearance="plain" tone={mode === 'local' ? 'info' : 'success'} className="flex h-7 items-center gap-1">
             {mode === 'local' ? <Monitor size={10} /> : <Globe size={10} />}
             {mode === 'local' ? 'Local' : providerLabel}
-          </span>
+          </StatusBadge>
         </Tip>
       )}
 

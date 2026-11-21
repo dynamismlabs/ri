@@ -17,7 +17,7 @@ export type MenuActionProps = Own & (
 export function MenuAction({ tone = 'neutral', density, size, inset, selected, separator, label, description, leading, trailing, children, className, ...props }: MenuActionProps) {
   const content = props.asChild ? children : <>{leading}{label || description ? <span className="ri-choice-copy">{label && <span className="ri-choice-title">{label}</span>}{description && <span className="ri-choice-description">{description}</span>}{children}</span> : children}{trailing}</>;
   const classes = cn(variants({ density, selected, separator }), size === 'touch' && 'ri-menu-action--touch', toneClass(tone), className);
-  if (props.kind === 'menu') { const {kind, ...menu} = props; return <DropdownMenuItem {...menu} inset={inset} data-action-kind={kind} className={classes}>{content}</DropdownMenuItem>; }
+  if (props.kind === 'menu') { const {kind, ...menu} = props; return <DropdownMenuItem {...menu} inset={inset} data-content-size={size} data-action-kind={kind} className={classes}>{content}</DropdownMenuItem>; }
   const {kind, ...action} = props;
-  return <ActionPrimitive {...action} data-inset={inset || undefined} data-action-kind={kind} type={action.type ?? 'button'} className={classes}>{content}</ActionPrimitive>;
+  return <ActionPrimitive {...action} data-inset={inset || undefined} data-content-size={size} data-action-kind={kind} type={action.type ?? 'button'} className={classes}>{content}</ActionPrimitive>;
 }

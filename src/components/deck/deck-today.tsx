@@ -205,14 +205,14 @@ export function DeckToday({
 
       {/* What you finished from the deck today, revealed from its chip. */}
       {open === 'done' && doneCount > 0 && (
-        <ul className="mb-3 space-y-1 rounded-md border border-border/60 px-3 py-2">
+        <Card as="ul" padding="md" surface="plain" density="row" className="mb-3 space-y-1">
           {completedItems.map((item) => (
             <li key={item.id} className="truncate text-xs text-muted-foreground/60 line-through">
               {item.parentTitle && <>{item.parentTitle} · </>}
               {item.title}
             </li>
           ))}
-        </ul>
+        </Card>
       )}
 
       {/* ── The ranked stack: flat and whole. Nothing is the "top" task. ── */}

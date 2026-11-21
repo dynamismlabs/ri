@@ -286,7 +286,7 @@ function PeopleSection() {
   const pending = (invitations.data ?? []).filter((i) => i.state === 'valid');
   return (
     <Section title="People">
-      <ul className="divide-y divide-border/60 rounded-md border border-border">
+      <Card as="ul" padding="none" surface="plain" className="divide-y divide-border/60">
         {active.map((m) => (
           <li key={m.id} className="flex items-center gap-2 px-3 py-2 text-sm">
             <MemberAvatar name={m.name} size="sm" />
@@ -316,7 +316,7 @@ function PeopleSection() {
             )}
           </li>
         ))}
-      </ul>
+      </Card>
       {owner && (
         <>
           <Button
@@ -431,7 +431,7 @@ function YouSection() {
       />
       </Section>
       <Section title="Sign-ins">
-      {(signIns.data?.length ?? 0) > 0 && <ul className="divide-y divide-border/60 rounded-md border border-border">
+      {(signIns.data?.length ?? 0) > 0 && <Card as="ul" padding="none" surface="plain" className="divide-y divide-border/60">
         {(signIns.data ?? []).map((s) => (
           <li key={s.keyId} className="flex items-center gap-2 px-3 py-2 text-xs">
             {s.deviceKind === 'service' ? <House size={13} className="text-muted-foreground" /> : <Smartphone size={13} className="text-muted-foreground" />}
@@ -454,7 +454,7 @@ function YouSection() {
             )}
           </li>
         ))}
-      </ul>}
+      </Card>}
         <Button
           type="button"
           disabled={makeLink.isPending}

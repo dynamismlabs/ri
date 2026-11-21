@@ -66,13 +66,13 @@ import {IconButton} from '@/components/system/icon-button';
             <Button data-focus data-case="finder-more" aria-label="More open options" variant="secondary" size="sm">⌄</Button>
           </ButtonGroup>
           <div data-slot="row-actions" className="opacity-0"><button data-focus data-case="row-action" aria-label="More task actions" className="rounded p-1 text-muted-foreground hover:bg-muted">…</button></div>
-          <div data-slot="settings-nav"><button data-focus data-case="settings-nav" aria-current="page" className="rounded-lg bg-background px-3 py-2 shadow-sm ring-1 ring-border">General</button></div>
+          <div data-slot="settings-nav"><MenuAction data-focus data-case="settings-nav" aria-current="page">General</MenuAction></div>
           <div data-slot="settings-body" className="space-y-2">
-            <section data-case="settings-section" className="rounded-lg border border-border bg-background p-3">
+            <Card as="section" data-case="settings-section">
               <Field data-focus data-case="settings-field" aria-label="Timezone" defaultValue="America/Denver" />
-              <button data-focus data-case="settings-action" className="rounded border border-border bg-background px-2.5 py-1.5 text-foreground hover:bg-muted">Save</button>
-              <button data-focus data-case="settings-solid" className="rounded border border-border bg-foreground px-2.5 py-1.5 text-background hover:bg-foreground/90">Connect</button>
-            </section>
+              <Button data-focus data-case="settings-action" variant="secondary" size="sm">Save</Button>
+              <Button data-focus data-case="settings-solid" variant="primary" size="sm">Connect</Button>
+            </Card>
           </div>
           <ChoiceRow data-focus data-case="choice" aria-pressed="true" className="w-64">Continue this chat</ChoiceRow>
           <div data-slot="calendar-navigation" className="flex"><button data-focus data-case="previous" aria-label="Previous week" className="rounded-md p-1 text-muted-foreground hover:bg-muted/50">‹</button><button data-focus data-case="today" className="rounded-md px-1.5 py-0.5 text-muted-foreground hover:bg-muted/50">Today</button></div>

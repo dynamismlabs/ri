@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 
 import { useState } from 'react';
@@ -109,7 +111,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
         Each place connects on its own, and {name} asked each one what it may see. An agent you allow sees whatever {name} shows it, including what {name} read from your accounts.
       </p>
       {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{error}</p>}
-      <ul className="divide-y divide-border rounded-lg border border-border">
+      <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
         <li className="flex items-center gap-3 px-3 py-2 text-sm">
           <MessageCircle size={14} className="shrink-0 text-muted-foreground" aria-hidden />
           <span className="min-w-0 flex-1"><span className="block truncate">{APP_NAME}&apos;s own chats</span>
@@ -140,7 +142,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
             >Remove</Button>
           </li>
         ))}
-      </ul>
+      </Card>
       <div className="flex flex-wrap items-center gap-2">
         {others.length > 0 && (
           <NativeSelect aria-label={`Allow an agent to use ${name}`} value="" disabled={busy} className="w-auto"

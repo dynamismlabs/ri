@@ -378,7 +378,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
             {otherKeys.length > 0 && !checking && (
               <div className="space-y-1.5">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{client.signsIn ? 'Connections' : 'Keys'}</p>
-                <ul className="divide-y divide-border/60 rounded-md border border-border">
+                <Card as="ul" padding="none" className="divide-y divide-border/60">
                   {otherKeys.map((key) => (
                     <li key={key.keyId} className="flex items-center gap-2 px-3 py-2 text-xs">
                       <KeyRound size={12} className="shrink-0 text-muted-foreground" aria-hidden />
@@ -396,7 +396,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                       </Button>
                     </li>
                   ))}
-                </ul>
+                </Card>
               </div>
             )}
           </>

@@ -830,12 +830,8 @@ export function NotificationsSection() {
                       {channels.map((c) => {
                         const isChecked = d.deliverResultTo.includes(c.id);
                         return (
-                          <label
-                            key={c.id}
-                            className={cn(
-                              'flex cursor-pointer items-center gap-2 rounded-lg border border-border/40 bg-muted/20 p-2 text-xs transition-all hover:bg-muted/45',
-                              isChecked ? 'border-primary/20 bg-primary/[0.01]' : '',
-                            )}
+                          <ChoiceRow key={c.id} asChild density="list" selected={isChecked}><label
+                            className="flex cursor-pointer items-center gap-2"
                           >
                             <Checkbox
                               disabled={busy}
@@ -844,7 +840,7 @@ export function NotificationsSection() {
 
                             />
                             <span className="truncate font-medium text-foreground/90">{channelLabel(c)}</span>
-                          </label>
+                          </label></ChoiceRow>
                         );
                       })}
                     </div>

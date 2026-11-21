@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { MenuAction } from '@/components/system/menu-action';
 
 import { NativeSelect } from '@/components/system/native-select';
@@ -160,7 +162,7 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
           ? <p className="text-xs text-muted-foreground">{app.views.length
             ? `When your agent uses ${app.views.map(view => view.title).join(', ')}, the interactive result shows in its chat, where it opens again any time, and the latest show here.`
             : `Screens you open show here.`}</p>
-          : <ul className="divide-y divide-border rounded-lg border border-border">{recent.map(item => <li key={item.id}>
+          : <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">{recent.map(item => <li key={item.id}>
             {/* A screen reopens full screen. A chat's result opens here on the page. */}
             <MenuAction type="button" aria-pressed={item.id === open} onClick={() => item.launched ? navigate(`${page}?screen=${encodeURIComponent(item.id)}`) : setOpen(item.id === open ? null : item.id)}
               className="flex w-full items-center gap-3 text-left">
@@ -168,7 +170,7 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
               <span className="min-w-0 flex-1 truncate">{item.title}</span>
               <span className="shrink-0 text-xs text-muted-foreground">{item.chatId ? 'From a chat · ' : ''}{ageLabel(new Date(item.created).toISOString())}</span>
             </MenuAction>
-          </li>)}</ul>}
+          </li>)}</Card>}
       </section>
     </div></div>
   </div>;

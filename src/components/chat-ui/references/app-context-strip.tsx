@@ -1,4 +1,5 @@
 'use client';
+import { ButtonGroup } from '@/components/system/button-group';
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
@@ -43,7 +44,7 @@ function AppContextChip({ group, onRemove }: { group: AppContextGroupView; onRem
     setBusy(true);
     try { await onRemove(); } finally { setBusy(false); }
   };
-  return <span className="inline-flex max-w-full items-center rounded-md bg-muted/60 text-[11.5px] text-foreground ring-1 ring-inset ring-border">
+  return <ButtonGroup variant="toolbar" className="max-w-full items-center">
     <Popover>
       <PopoverTrigger asChild>
         <Button
@@ -80,7 +81,7 @@ function AppContextChip({ group, onRemove }: { group: AppContextGroupView; onRem
         {busy ? <Loader2 size={10} className="animate-spin" /> : <X size={10} />}
       </IconButton>
 
-  </span>;
+  </ButtonGroup>;
 }
 
 function ContextItem({ item }: { item: VisibleContextItem }) {

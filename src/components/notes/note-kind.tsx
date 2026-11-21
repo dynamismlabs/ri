@@ -1,4 +1,5 @@
 'use client';
+import { MetaItem } from '@/components/system/meta';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -30,10 +31,10 @@ export function DecisionLabel({ kind, className }: { kind: NoteKind | null | und
 /** The type line above an open note: "Note", or "Decision" with its mark. */
 export function NoteKindHeading({ kind }: { kind: NoteKind }) {
   return (
-    <span data-slot="entity-kind-label" className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">
+    <MetaItem kind="entity" className="inline-flex items-center gap-1">
       {kind === 'decision' && <Gavel size={10} aria-hidden />}
       {NOTE_KIND_LABELS[kind]}
-    </span>
+    </MetaItem>
   );
 }
 

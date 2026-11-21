@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { useCallback, useState, type ComponentProps, type ReactNode } from 'react';
@@ -32,10 +33,8 @@ export function ArtifactCard({ name, icon, details, preview, children, ...props 
   return (
     // Opaque, so a card reads the same in a person's message bubble, whose
     // colors invert, as in the transcript.
-    <span className={cn(
-      'relative my-1 mx-0.5 inline-flex w-60 max-w-full flex-col overflow-hidden rounded-lg border bg-background align-middle text-foreground transition-colors focus-within:ring-2 focus-within:ring-ring',
-      shown ? 'border-primary/70' : 'border-border hover:border-foreground/30',
-    )}>
+    <Card as="span" padding="none" surface="pane" selected={shown}
+      className="relative my-1 mx-0.5 inline-flex w-60 max-w-full flex-col overflow-hidden align-middle transition-colors">
       <span className="relative block aspect-[3/2] w-full overflow-hidden bg-muted/40">{visible && children}</span>
       <Tip
         label={overTitle ? details ?? name : undefined}
@@ -52,6 +51,8 @@ export function ArtifactCard({ name, icon, details, preview, children, ...props 
         }}
       >
         <MenuAction
+          density="compact"
+          selected={shown}
           ref={ref}
           type="button"
           {...props}
@@ -63,6 +64,6 @@ export function ArtifactCard({ name, icon, details, preview, children, ...props 
           {icon}<span className="min-w-0 flex-1 truncate">{name}</span><Opens size={12} aria-hidden className={cn('shrink-0', shown ? 'text-primary' : 'text-muted-foreground')} />
         </MenuAction>
       </Tip>
-    </span>
+    </Card>
   );
 }

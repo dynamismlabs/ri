@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusBadge } from '@/components/system/status-badge';
 import { Card } from '@/components/system/card';
 import { Callout } from '@/components/system/callout';
 
@@ -129,15 +130,13 @@ function StatusPill({ state }: { state: string }) {
     : state === 'output-error' ? 'error'
     : state
 
-  const color = state === 'output-error' ? 'text-destructive bg-destructive/10'
-    : state === 'output-available' ? 'text-green-600 bg-green-500/10'
-    : 'text-muted-foreground bg-muted'
+  const tone = state === 'output-error' ? 'error'
+    : state === 'output-available' ? 'success'
+    : state === 'input-available' || state === 'input-streaming' ? 'working'
+    : 'neutral'
 
-  return (
-    <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-mono', color)}>
-      {label}
-    </span>
-  )
+  return <StatusBadge tone={tone} code>{label}</StatusBadge>
+
 }
 
 function EntityPill({ entity }: { entity: McpEntity }) {
@@ -148,12 +147,12 @@ function EntityPill({ entity }: { entity: McpEntity }) {
     : <Circle size={10} />
 
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-border/60 bg-background/60 px-1.5 py-0.5 text-[10px] font-mono">
+    <StatusBadge code className="inline-flex items-center gap-1">
       {icon}
       <span className="text-muted-foreground">{entity.type}</span>
       <span className="text-foreground">{entity.title ?? entity.id.slice(0, 8)}</span>
       <span className="text-muted-foreground/60">· {entity.action}</span>
-    </span>
+    </StatusBadge>
   )
 }
 

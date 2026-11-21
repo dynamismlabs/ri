@@ -1,5 +1,6 @@
 'use client';
 
+import { StatusBadge } from '@/components/system/status-badge';
 import { Button } from '@/components/system/button';
 import { LinkedCoordinationMessage } from '@/components/chat-ui/coordination/linked-message';
 import { decodeChatMessageReceipt } from '@/lib/sessions/chat-message';
@@ -235,10 +236,10 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
       </ConversationContent>
       {isLoadingOlder && (
         <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
-          <span className="flex items-center gap-1.5 rounded-full border bg-background/90 px-3 py-1 text-[11px] text-muted-foreground shadow-sm backdrop-blur">
+          <StatusBadge className="flex items-center gap-1.5">
             <Loader2 className="size-3 animate-spin" />
             Loading earlier messages…
-          </span>
+          </StatusBadge>
         </div>
       )}
       {/* "Back to latest", centered on the conversation column. The frame

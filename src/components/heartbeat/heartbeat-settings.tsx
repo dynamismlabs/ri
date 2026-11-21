@@ -252,11 +252,11 @@ function RecentCheckIns({ config, onNavigate }: { config: HeartbeatConfig; onNav
       {config.recentCheckIns.length === 0 ? (
         <p className="text-[11px] text-muted-foreground/85">None yet.</p>
       ) : (
-        <ul className="divide-y divide-border/60 rounded-lg border border-border bg-background">
+        <Card as="ul" padding="none" surface="plain" className="divide-y divide-border/60">
           {config.recentCheckIns.map((checkIn) => (
             <CheckInRow key={checkIn.runId} checkIn={checkIn} onNavigate={onNavigate} />
           ))}
-        </ul>
+        </Card>
       )}
     </section>
   );

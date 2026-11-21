@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -53,7 +54,7 @@ export function ChatAppToolsDialog({ chatId, open, onOpenChange }: { chatId: str
           </DialogDescription>
         </DialogHeader>
         {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{error}</p>}
-        <ul className="divide-y divide-border rounded-lg border border-border">
+        <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
           {(apps.data ?? []).map((app) => (
             <li key={app.toolkitId} className="flex items-center gap-3 px-3 py-2">
               <AppWindow size={14} className="shrink-0 text-muted-foreground" aria-hidden />
@@ -66,7 +67,7 @@ export function ChatAppToolsDialog({ chatId, open, onOpenChange }: { chatId: str
               <SegmentedControl mode="choice" selection="radio" ariaLabel={app.name+' in this chat'} value={app.mode} onChange={mode => {if(mode !== app.mode)set.mutate({toolkitId:app.toolkitId,mode});}} disabled={set.isPending} options={MODES} />
             </li>
           ))}
-        </ul>
+        </Card>
         <p className="text-[11px] text-muted-foreground">A change takes effect from the agent&apos;s next turn.</p>
       </DialogContent>
     </Dialog>

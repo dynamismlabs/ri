@@ -17,13 +17,13 @@ beforeAll(async () => {
       <div style={{fontSize:15,lineHeight:'24px'}}><InlineAction id="inline-summary" className="w-full text-left"><span className="block">A summary title</span><span className="block">The second line stays below</span></InlineAction></div>
       <div style={{fontSize:15}}><InlineAction id="caption" purpose="caption">Supporting reasoning</InlineAction><InlineAction id="heading" purpose="heading">A content title</InlineAction></div>
       <ChoiceRow asChild><div id="nested-content" className="flex items-center"><button aria-label="Drag within content"><svg width="12" height="12"/></button><span>Content with its own controls</span></div></ChoiceRow>
-      <ChoiceRow id="checkbox-choice" indicator="checkbox" aria-pressed={checked} onClick={()=>setChecked(v=>!v)}>Include this project</ChoiceRow><MenuAction id="compact-menu" density="compact">Compact menu action</MenuAction><MenuAction id="touch-menu" size="touch">Phone menu action</MenuAction>
+      <ChoiceRow id="checkbox-choice" indicator="checkbox" aria-pressed={checked} onClick={()=>setChecked(v=>!v)}>Include this project</ChoiceRow><MenuAction id="compact-menu" density="compact" size="compact">Compact menu action</MenuAction><MenuAction id="auto-menu" density="compact">Automatic phone action</MenuAction><MenuAction id="touch-menu" size="touch">Phone menu action</MenuAction>
       <Card id="content">A content panel</Card><Card as="button" id="card-action" onClick={()=>setClicks(c=>c+1)}>Open a summary</Card><Card as="button" disabled id="card-disabled" onClick={()=>setClicks(c=>c+1)}>Unavailable summary</Card>
       <div className="flex gap-2"><ChoiceRow ref={ref} id="row-action" title="Use this agent" description="Continue its existing work" onClick={()=>setClicks(c=>c+1)}/><ChoiceRow id="row-selected" aria-pressed={true}>Chosen agent</ChoiceRow><ChoiceRow id="row-disabled" disabled onClick={()=>setClicks(c=>c+1)}>Unavailable agent</ChoiceRow></div>
       <ChoiceRow id="row-invalid" title="Invalid choice" aria-invalid="true"/><ChoiceRow id="row-touch" size="touch" title="Phone option" description="Supporting text wraps without clipping"/>
       <form id="access-form"><ChoiceGroup aria-label="Access" name="app-access" value={value} onValueChange={setValue}><ChoiceRow selection="radio" value="read" title="Read" description="Read the selected account"/><ChoiceRow selection="radio" value="write" title="Read and write" description="Make changes to the selected account"/></ChoiceGroup><Button type="submit">Inspect form</Button></form>
       <DropdownMenu><DropdownMenuTrigger asChild><Button id="menu-trigger">Actions</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu" onSelect={()=>setClicks(c=>c+1)}>Open item</MenuAction><MenuAction kind="menu" asChild><a href="#details">Open details</a></MenuAction><MenuAction kind="menu" disabled>Unavailable item</MenuAction><MenuAction kind="menu" tone="error" onSelect={()=>setClicks(c=>c+1)}>Delete item</MenuAction></DropdownMenuContent></DropdownMenu>
-      <Meta className="max-w-52" id="metadata"><StatusBadge id="metadata-fact">Shared</StatusBadge><MetaItem>Added today</MetaItem><MetaItem as="button" id="energy-light" kind="energy" energy="light" onClick={()=>setClicks(c=>c+1)}>Light</MetaItem><MetaItem id="energy-deep" kind="energy" energy="deep">Deep</MetaItem><MetaItem as="button" id="due" urgency="today">Due today</MetaItem></Meta>
+      <Meta className="max-w-52" id="metadata"><StatusBadge id="metadata-fact">Shared</StatusBadge><MetaItem>Added today</MetaItem><MetaItem as="button" id="energy-light" kind="energy" energy="light" onClick={()=>setClicks(c=>c+1)}>Light</MetaItem><MetaItem as={InlineAction} appearance="link" tone="success" id="toned-meta">Open a task</MetaItem><MetaItem id="energy-deep" kind="energy" energy="deep">Deep</MetaItem><MetaItem as="button" id="due" urgency="today">Due today</MetaItem></Meta>
       <output id="clicks">{clicks}</output><div id="tones" className="space-y-2">{${JSON.stringify(tones)}.map(tone=><div key={tone}><StatusBadge id={'badge-'+tone} tone={tone}>{tone}</StatusBadge><Callout id={'callout-'+tone} tone={tone}>A readable notice</Callout></div>)}</div>
     </main>};createRoot(document.getElementById('root')).render(<TipProvider><Fixture/></TipProvider>);
     document.addEventListener('submit',e=>{e.preventDefault();window.submitted=Object.fromEntries(new FormData(e.target));});
@@ -106,6 +106,7 @@ for (const theme of ['light', 'dark']) {
       expect(await choice.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
       await page.keyboard.press('Space'); expect(await choice.getAttribute('aria-pressed')).toBe('false');
       expect(await page.locator('#compact-menu').evaluate(el => el.getBoundingClientRect().height)).toBe(24);
+      expect(await page.locator('#auto-menu').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(40);
       expect(await page.locator('#touch-menu').evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(40);
     } finally { await page.close(); }
   });
@@ -170,8 +171,12 @@ for (const theme of ['light', 'dark']) {
     try {
       expect((await page.locator('#row-touch').boundingBox())!.height).toBeGreaterThanOrEqual(40);
       expect(await page.locator('#metadata').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      const factInk = await page.locator('#toned-meta').evaluate(el => getComputedStyle(el).color);
+      await page.locator('#toned-meta').hover();
+      expect(await page.locator('#toned-meta').evaluate(el => getComputedStyle(el).color)).toBe(factInk);
+      expect(await page.getByRole('button', { name: 'Light', exact: true }).count()).toBe(1);
       expect(await page.locator('#metadata-fact').evaluate(el => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
-      expect(await page.locator('#energy-light').evaluate(el => getComputedStyle(el, '::before').content)).toBe('"·"');
+      expect(await page.locator('#energy-light').evaluate(el => getComputedStyle(el, '::before').content)).toContain('"·"');
       for (const id of ['energy-light', 'energy-deep', 'due']) expect(await contrast(page, '#' + id)).toBeGreaterThanOrEqual(4.5);
       await page.keyboard.press('Tab'); await page.locator('#energy-light').focus();
       expect(await page.locator('#energy-light').evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');

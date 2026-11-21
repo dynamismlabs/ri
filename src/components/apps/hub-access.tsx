@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -35,7 +37,7 @@ export function HubAccessList() {
     <section aria-labelledby="hub-access" className="space-y-2">
       <h3 id="hub-access" className="flex items-center gap-1.5 text-xs font-semibold"><KeyRound size={13} aria-hidden />What your apps can reach</h3>
       <p className="text-[11px] text-muted-foreground">Apps that use your accounts through {APP_NAME}, and only what you allowed each one.</p>
-      <ul className="divide-y divide-border rounded-lg border border-border">
+      <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
         {apps.data.map((app) => (
           <li key={app.id}>
             <MenuAction type="button" onClick={() => setOpen(app.id)} className="flex w-full items-center gap-3 text-left">
@@ -49,7 +51,7 @@ export function HubAccessList() {
             </MenuAction>
           </li>
         ))}
-      </ul>
+      </Card>
       <Dialog open={!!open} onOpenChange={(next) => !next && setOpen(null)}>
         <DialogContent className="sm:max-w-lg">
           {open && <HubAppPanel id={open} />}
@@ -187,7 +189,7 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
       <section aria-labelledby={`activity-${id}`} className="space-y-1.5">
         <h3 id={`activity-${id}`} className="text-xs font-semibold">Recent calls</h3>
         {data.calls.length === 0 ? <p className="text-xs text-muted-foreground">None yet.</p> : (
-          <ul className="max-h-48 divide-y divide-border overflow-y-auto rounded-md border border-border text-xs">
+          <Card as="ul" padding="none" surface="plain" className="max-h-48 divide-y divide-border overflow-y-auto">
             {data.calls.map((call) => (
               <li key={call.id} className="flex items-center gap-2 px-2 py-1.5">
                 <span className="min-w-0 flex-1 truncate font-mono">{call.tool}</span>
@@ -196,7 +198,7 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
                 <span className="shrink-0 text-muted-foreground">{ageLabel(call.createdAt)}</span>
               </li>
             ))}
-          </ul>
+          </Card>
         )}
       </section>
 

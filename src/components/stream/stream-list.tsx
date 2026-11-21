@@ -1,9 +1,11 @@
 "use client";
 
+import { Meta, MetaItem } from '@/components/system/meta';
+import { InlineAction } from '@/components/system/inline-action';
 import { StreamToolbar, type StreamViewFilter as ViewFilter } from './stream-toolbar';
 
 import { IconButton } from '@/components/system/icon-button';
-import { Button } from '@/components/system/button';
+
 /**
  * The stream tab: a calm ledger of captures, not a work queue (spec §3.12).
  *
@@ -261,56 +263,51 @@ function StreamRow({
           </p>
           <StreamAttachments attachments={item.attachments} />
 
-          <div data-slot="stream-meta" className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <SourceIcon size={9} className="text-muted-foreground/50" />
-            <p className="text-[8.5px] text-muted-foreground font-mono uppercase">
+          <Meta className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <MetaItem kind="time"><SourceIcon aria-hidden />
               {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-            </p>
+            </MetaItem>
 
             {needsRetry && (
-              <span className="text-[8.5px] text-muted-foreground">
+              <MetaItem kind="processing">
                 Your recording is saved. Reading it needs another try.
-              </span>
+              </MetaItem>
             )}
 
             {isProposed && (
-              <Button
+              <MetaItem as={InlineAction} appearance="link"
                 onClick={onReview}
-                variant="link"
-                size="sm"
               >
                 {STATUS_LABELS.proposed}
-              </Button>
+              </MetaItem>
             )}
 
             {label && !isProposed && item.status !== 'pending' && (
-              <span className="text-[8.5px] text-muted-foreground font-medium">{label}</span>
+              <MetaItem kind="status">{label}</MetaItem>
             )}
 
             {/* Consequences: where this capture went. */}
             {item.outcomes.map((o) => (
               <Tip key={`${o.entityType}:${o.entityId}:${o.relation}`} label={o.relation === 'created' ? 'Created from this capture' : 'This capture was added to it'}>
-                <Button
+                <MetaItem as={InlineAction} appearance="link"
                   onClick={() => onOpenEntity(o.entityType, o.entityId)}
-                  variant="link"
-                  size="sm"
                   tone="success"
                   className="inline-flex items-center gap-1"
                 >
                   {o.entityType === 'task' ? <Target size={8} /> : <FileText size={8} />}
                   {o.relation === 'merged_into' ? 'Added to ' : ''}
                   {o.entityTitle ?? o.entityType}
-                </Button>
+                </MetaItem>
               </Tip>
             ))}
 
             {item.status === 'incubating' && item.resurfaceAt && (
-              <span className="inline-flex items-center gap-1 text-[8.5px] text-sky-500">
+              <MetaItem kind="resurface" tone="info" className="inline-flex items-center gap-1">
                 <Clock size={8} />
                 back {new Date(item.resurfaceAt).toLocaleDateString()}
-              </span>
+              </MetaItem>
             )}
-          </div>
+          </Meta>
         </div>
 
         {/* Row actions */}

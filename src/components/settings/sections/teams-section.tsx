@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { useConnectedTeams } from '@/components/spaces/space-selector';
@@ -36,9 +38,9 @@ export function TeamsSection() {
       {list.length > 0 && (
         <section className="space-y-2">
           <h3 className="text-[12px] font-medium">Your teams</h3>
-          <ul className="divide-y rounded-lg border">
+          <Card as="ul" padding="none" className="divide-y">
             {list.map((connection) => <ConnectedTeam key={connection.id} connection={connection} />)}
-          </ul>
+          </Card>
         </section>
       )}
       <JoinTeam hasTeams={list.length > 0} />
@@ -184,8 +186,8 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
         <h3 className="text-[12px] font-medium">{hasTeams ? 'Join or connect another team' : 'Join a team'}</h3>
         <p className="mt-1 text-xs text-muted-foreground">Paste an invitation, or a sign-in link from a team you already joined.</p>
       </div>
-      <form
-        className="space-y-3 rounded-lg border p-3"
+      <Card as="form" padding="md"
+        className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
           if (shown?.usable && (!joining || name.trim())) connect.mutate();
@@ -228,7 +230,7 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
         >
           {connect.isPending ? 'Connecting…' : joining ? 'Join team' : 'Connect'}
         </Button>
-      </form>
+      </Card>
     </section>
   );
 }

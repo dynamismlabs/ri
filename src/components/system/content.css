@@ -134,7 +134,7 @@
   outline-offset: 2px;
 }
 .ri-meta-item:not([class*='ri-tone--']) { --control-ink: var(--t3); }
-.ri-meta > :is(.ri-meta-item, .ri-status-badge) ~ :is(.ri-meta-item, .ri-status-badge)::before { content: '\00b7'; margin-right: 7px; color: var(--t4); font-weight: 400; }
+.ri-meta > :is(.ri-meta-item, .ri-status-badge) ~ :is(.ri-meta-item, .ri-status-badge)::before { content: '\00b7' / ''; margin-right: 7px; color: var(--t4); font-weight: 400; }
 .ri-meta-item > svg { width: 12px; height: 12px; flex-shrink: 0; }
 .ri-meta-item:is(button, a):hover:not(:disabled, [aria-disabled='true'], [data-energy], [data-urgency], [class*='ri-tone--']) { background: transparent; color: var(--t1); }
 .ri-meta-item:focus-visible { outline: 2px solid var(--ring); }
@@ -188,3 +188,12 @@
 .ri-inline-action.ri-content--code { color: var(--t3); font-size: 11px; }
 
 .ri-meta > .ri-status-badge { padding: 0; background-color: transparent; }
+
+@media (pointer: coarse) {
+  .ri-menu-action:not([data-content-size]),
+  .ri-choice-row:is(button, label, [role='radio'], [role='checkbox']):not([data-content-size]) { min-height: 40px; }
+}
+
+.ri-meta-item:is([data-kind='deadline'], [data-kind='entity']) { font-weight: 500; }
+
+.ri-inline-action:not(.ri-inline-action--chip)[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { color: var(--control-ink); }

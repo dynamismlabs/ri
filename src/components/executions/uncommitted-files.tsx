@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
@@ -97,9 +99,9 @@ export function UncommittedFileList({
     );
   }
   return (
-    <ul
+    <Card as="ul" padding="none" surface="track" density="compact"
       aria-label="Files that would be deleted"
-      className={cn('overflow-y-auto rounded-lg border border-border bg-muted/30 py-1', className)}
+      className={cn("overflow-y-auto", className)}
     >
       {files.map((file) => {
         const folder = file.path.endsWith('/');
@@ -133,6 +135,6 @@ export function UncommittedFileList({
           and {omitted.toLocaleString()} more {omitted === 1 ? 'file' : 'files'}
         </li>
       )}
-    </ul>
+    </Card>
   );
 }

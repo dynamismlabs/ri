@@ -350,7 +350,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                     </Button>
                   </div>
                 ) : (
-                  <ul className="overflow-hidden rounded-xl border border-border">
+                  <Card as="ul" padding="none" surface="plain" className="overflow-hidden">
                     {folders.map((folder, i) => (
                       <FolderRow
                         key={folder}
@@ -370,7 +370,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                         Add folder
                       </MenuAction>
                     </li>
-                  </ul>
+                  </Card>
                 )}
 
                 <p className="text-[11.5px] leading-relaxed text-muted-foreground/80">
