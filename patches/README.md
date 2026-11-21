@@ -31,3 +31,9 @@ is retained. `desktop/windows-platform.test.ts` exercises the actual patched
 resolver and skill links, including native Windows sign-in. No agentex version
 was published for this integration. Remove these hunks after taking up an
 agentex release that includes them and repeating Windows lifecycle qualification.
+
+# tar long symlink targets
+
+`tar@7.5.22.patch` makes a GNU long-link (`K`) record or a PAX `linkpath` win over the header's own linkname field, as tar already does for `path`. tar 7.5.22 (and 7.5.23) applies the pending extended header and then overwrites `linkpath` with the header block's field. `sqfs2tar` writes a symlink target of 100 characters or more as a `K` record followed by a header with an empty linkname, so the strict parser in `desktop/release-artifacts.mjs` rejected the Linux AppImage's long `.next-desktop/node_modules` links with "linkpath required", and the v0.1.0 release build stopped. A PAX archive kept only the first 100 characters of a long target.
+
+The patch changes the four files the package can load: the minified `dist/esm/index.min.js` and `dist/commonjs/index.min.js` that its exports point at, and the matching `header.js` sources. `desktop/tar-long-links.test.ts` builds archives the way `sqfs2tar` and PAX writers do and checks the full target comes through. Remove the patch once tar ships the fix and those tests pass without it.

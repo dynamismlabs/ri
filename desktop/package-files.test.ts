@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, pruneDependencySourceMaps, removeUnusedPackageCopy, assertWindowPreloadsShipped, SERVER_FOLDERS, SHELL_ENTRYPOINTS, rebaseResourceLinks } from './package-files.mjs';
+import { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, pruneDependencySourceMaps, removeUnusedPackageCopy, removeWhatInstallersDrop, assertWindowPreloadsShipped, SERVER_FOLDERS, SHELL_ENTRYPOINTS, rebaseResourceLinks } from './package-files.mjs';
 import { guideRoot, loadGuide } from '@/lib/guide/guide';
 
 const dirs: string[] = [];
@@ -21,6 +21,35 @@ it('removes optional dependency source maps while preserving executable code, ty
   for (const name of remove) expect(fs.existsSync(path.join(modules, name))).toBe(false);
   for (const name of keep) expect(fs.readFileSync(path.join(modules, name), 'utf8')).toBe('fixture');
   expect(fs.readFileSync(path.join(root, 'dist/main.cjs.map'), 'utf8')).toBe('Ri debug map');
+});
+it('removes the .gitkeep, .DS_Store and empty folders the AppImage would drop, and nothing else', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-installer-drops-')); dirs.push(root);
+  const server = path.join(root, 'server');
+  // The fixture that stopped v0.1.0: resolve ships an empty .gitkeep beside an empty foo.js.
+  const fixture = path.join(server, 'node_modules/.pnpm/resolve@1.22.12/node_modules/resolve/test/resolver/symlinked');
+  fs.mkdirSync(path.join(fixture, '_/symlink_target'), { recursive: true });
+  fs.mkdirSync(path.join(fixture, '_/node_modules'), { recursive: true });
+  fs.writeFileSync(path.join(fixture, '_/symlink_target/.gitkeep'), '');
+  fs.writeFileSync(path.join(fixture, '_/node_modules/foo.js'), '');
+  fs.mkdirSync(path.join(server, 'empty/nested/deeper'), { recursive: true });
+  fs.mkdirSync(path.join(server, 'links'));
+  fs.symlinkSync('../public', path.join(server, 'links/public'));
+  fs.mkdirSync(path.join(server, 'public'));
+  fs.writeFileSync(path.join(server, 'public/.DS_Store'), 'x');
+  fs.writeFileSync(path.join(server, 'public/icon.svg'), '<svg/>');
+  fs.writeFileSync(path.join(server, '.gitkeep-not'), 'kept');
+
+  // .gitkeep, symlink_target, .DS_Store, deeper, nested, empty
+  expect(removeWhatInstallersDrop(server)).toBe(6);
+  expect(fs.existsSync(path.join(fixture, '_/symlink_target'))).toBe(false);
+  expect(fs.readFileSync(path.join(fixture, '_/node_modules/foo.js'), 'utf8')).toBe('');
+  expect(fs.existsSync(path.join(server, 'empty'))).toBe(false);
+  expect(fs.readlinkSync(path.join(server, 'links/public'))).toBe('../public');
+  expect(fs.existsSync(path.join(server, 'public/.DS_Store'))).toBe(false);
+  expect(fs.readFileSync(path.join(server, 'public/icon.svg'), 'utf8')).toBe('<svg/>');
+  expect(fs.readFileSync(path.join(server, '.gitkeep-not'), 'utf8')).toBe('kept');
+  expect(fs.existsSync(server)).toBe(true);
+  expect(removeWhatInstallersDrop(server)).toBe(0);
 });
 it('checks static constant, shorthand, nested and registered preloads against the shipped inventory', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-preload-inventory-')); dirs.push(root);
