@@ -4,7 +4,7 @@ import { SegmentedControl } from '@/components/system/segmented-control';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   FileText,
   GitCompareArrows,
@@ -31,6 +31,8 @@ import { useOpenInPreferredEditor } from '@/lib/client/editor-preference';
 import { revealLabel, detectClientPlatform } from '@/lib/client/deep-links';
 import { copyText } from '@/lib/clipboard';
 
+import { cn } from '@/lib/utils';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { FileIcon } from '@/components/file-icon';
 import type { TreeEntry } from '@/lib/api/sessions';
 import {
@@ -48,7 +50,7 @@ import { MarkdownView } from './markdown-view';
 import { HtmlView } from '@/components/chat-ui/artifacts/html-view';
 import { PdfView } from '@/components/chat-ui/artifacts/pdf-view';
 import { Tip } from '@/components/ui/tip';
-import { OpenWithApp } from '@/components/mcp-apps/open-with';
+import { OpenWithAppActions, OpenWithAppApproval, useOpenWithApp } from '@/components/mcp-apps/open-with';
 
 interface FileViewerProps {
   /** The folder being viewed: an execution's worktree or an agent's own folder. */
@@ -287,110 +289,206 @@ function FileViewerHeader({
   const root = useFolderRoot(source);
   // A file outside the folder shows its whole path, the only one it has.
   const displayPath = outside ? path : toRelativePath(path, root);
-  return (
-    <div className="flex items-center gap-2 border-b border-border px-3 py-1.5 min-w-0">
-      <FileIcon name={displayPath} />
-      <Tip label={displayPath} onlyWhenTextHidden>
-        <span className="truncate text-[11px] font-medium text-foreground/85 flex-1">{displayPath}</span>
-      </Tip>
-      {outside && (
-        <Tip label="Outside this chat's folder. The agent shared or used this file.">
-          <span className="inline-flex items-center gap-1 text-[10px] font-normal text-muted-foreground/70 shrink-0">
-            <Lock size={10} />
-            Read only
-          </span>
-        </Tip>
-      )}
-      {saving ? (
-        <span
-          className="inline-flex items-center gap-1 text-[10px] font-normal text-muted-foreground/70 shrink-0"
-          aria-live="polite"
-        >
-          <Loader2 size={10} className="animate-spin" />
-          Saving…
-        </span>
-      ) : (
-        dirty &&
-        onDiscard && (
-          <Button
-            type="button"
-            onClick={onDiscard}
-            data-skip-autosave
-            variant="secondary"
-            size="sm"
-            className="inline-flex items-center gap-1 shrink-0"
-          >
-            <RotateCcw size={10} />
-            Discard
-          </Button>
-        )
-      )}
-      {(isChanged || isMarkdown || isHtml) && (
-        <SegmentedControl<Mode>
-          className="shrink-0"
-          mode="choice"
-          ariaLabel="File view"
-          value={mode}
-          onChange={onModeChange}
-          options={[
-            ...(isConflict
-              ? [{ value: 'conflict' as const, label: 'Conflicts', icon: <GitMerge /> }]
-              : isChanged
-                ? [{ value: 'diff' as const, label: 'Diff', icon: <GitCompareArrows /> }]
-                : []),
-            { value: 'current', label: isHtml ? 'Source' : 'Current', icon: <FileText /> },
-            ...(isMarkdown || isHtml
-              ? [{ value: 'render' as const, label: isHtml ? 'Preview' : 'Render', icon: <BookOpen /> }]
-              : []),
-          ]}
-        />
-      )}
-      {/* A connected app that opens this kind of file (OpenAI's file entrypoint), in an agent's folder or a chat's. */}
-      {!outside && (
-        <OpenWithApp
-          file={
-            source.kind === 'workspace'
-              ? {
-                  kind: 'agent-file',
-                  workspaceId: source.workspaceId,
-                  path: displayPath,
-                  name: displayPath.split('/').pop() ?? displayPath,
-                }
-              : {
-                  kind: 'session-file',
-                  sessionId: source.sessionId,
-                  path: displayPath,
-                  name: displayPath.split('/').pop() ?? displayPath,
-                }
+  const launchActions = useFileLaunchActions({ source, root, path, outside });
+  const openWith = useOpenWithApp(
+    outside
+      ? null
+      : source.kind === 'workspace'
+        ? {
+            kind: 'agent-file',
+            workspaceId: source.workspaceId,
+            path: displayPath,
+            name: displayPath.split('/').pop() ?? displayPath,
           }
-          className="shrink-0"
-        />
-      )}
-      <RevealButton source={source} root={root} path={path} outside={outside} />
-      <FileHeaderMoreMenu
-        relativePath={outside ? null : displayPath}
-        absolutePath={outside ? path : root ? `${root.replace(/\/$/, '')}/${displayPath}` : null}
-        onReferenceInChat={onReferenceInChat}
-      />
-      {onClose && (
-        <IconButton
-          type="button"
-          onClick={onClose}
-          label="Close file"
-          tooltip="Close file"
-          variant="ghost"
-          size="sm"
-          focus="inside"
-          className="inline-flex items-center justify-center shrink-0"
+        : {
+            kind: 'session-file',
+            sessionId: source.sessionId,
+            path: displayPath,
+            name: displayPath.split('/').pop() ?? displayPath,
+          },
+  );
+  const row = useRef<HTMLDivElement | null>(null);
+  const inlineActions = useRef<HTMLDivElement>(null);
+  const modeTrack = useRef<HTMLDivElement>(null);
+  const [folded, setFolded] = useState(false);
+  const [iconModes, setIconModes] = useState(false);
+  const phone = useViewportTier() === 'phone';
+  const fullMode = useRef({ key: '', width: 0 });
+  const modeKey = [phone, isChanged, isConflict, isMarkdown, isHtml].join(':');
+  const hasLaunchActions = launchActions.length > 0 || openWith.apps.length > 0;
+  const discard = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    const header = row.current;
+    if (!header) return;
+    const update = () => {
+      if (fullMode.current.key !== modeKey && iconModes) {
+        setIconModes(false);
+        return;
+      }
+      const track = modeTrack.current?.querySelector('.ri-segment-track');
+      if (!iconModes) fullMode.current = { key: modeKey, width: track?.getBoundingClientRect().width ?? 0 };
+      const style = getComputedStyle(header),
+        gap = parseFloat(style.columnGap) || 0;
+      const available = header.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      const actions = inlineActions.current,
+        reset = discard.current;
+      const children = [...header.children];
+      const fixed = children
+        .filter(
+          (child) =>
+            child !== actions &&
+            child !== reset &&
+            child !== modeTrack.current &&
+            !child.hasAttribute('data-file-identity'),
+        )
+        .reduce((sum, child) => sum + child.getBoundingClientRect().width, 0);
+      const gaps = Math.max(0, children.length - 1) * gap;
+      const actionWidth =
+        (actions?.getBoundingClientRect().width ?? 0) + (reset?.getBoundingClientRect().width ?? 0);
+      // Reserve a little filename at rest. Only the mode, More and Close are
+      // mandatory: actions fold first, then the full mode labels give way.
+      const nextFold = fixed + fullMode.current.width + actionWidth + gaps + 32 > available + 0.5;
+      const foldedGaps = gaps - (Number(!!actions) + Number(!!reset)) * gap;
+      setFolded(nextFold);
+      setIconModes(nextFold && fixed + fullMode.current.width + foldedGaps > available + 0.5);
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(header);
+    if (inlineActions.current) observer.observe(inlineActions.current);
+    if (discard.current) observer.observe(discard.current);
+    if (modeTrack.current) observer.observe(modeTrack.current);
+    return () => observer.disconnect();
+  }, [modeKey, iconModes, hasLaunchActions, dirty, saving]);
+
+  return (
+    <>
+      <div ref={row} className="relative flex items-center gap-2 border-b border-border px-3 py-1.5 min-w-0">
+        <div data-file-identity className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
+          <FileIcon name={displayPath} />
+          <Tip label={displayPath} onlyWhenTextHidden>
+            <span className="truncate text-[11px] font-medium text-foreground/85 flex-1">{displayPath}</span>
+          </Tip>
+        </div>
+        {outside && (
+          <Tip label="Outside this chat's folder. The agent shared or used this file.">
+            <span className="inline-flex items-center gap-1 text-[10px] font-normal text-muted-foreground/70 shrink-0">
+              <Lock size={10} />
+              <span className={iconModes ? 'sr-only' : undefined}>Read only</span>
+            </span>
+          </Tip>
+        )}
+        {saving ? (
+          <span
+            className="inline-flex items-center gap-1 text-[10px] font-normal text-muted-foreground/70 shrink-0"
+            aria-live="polite"
+          >
+            <Loader2 size={10} className="animate-spin" />
+            <span className={iconModes ? 'sr-only' : undefined}>Saving…</span>
+          </span>
+        ) : (
+          dirty &&
+          onDiscard && (
+            <Button
+              ref={discard}
+              type="button"
+              onClick={onDiscard}
+              data-skip-autosave
+              variant="secondary"
+              size="sm"
+              className={cn(
+                'inline-flex items-center gap-1 shrink-0',
+                folded && 'invisible absolute pointer-events-none',
+              )}
+              aria-hidden={folded || undefined}
+              inert={folded || undefined}
+            >
+              <RotateCcw size={10} />
+              Discard
+            </Button>
+          )
+        )}
+        {(isChanged || isMarkdown || isHtml) && (
+          <div ref={modeTrack} className={iconModes ? 'min-w-0' : 'shrink-0'}>
+            <SegmentedControl<Mode>
+              className={iconModes ? 'min-w-0' : 'shrink-0'}
+              size={phone ? 'touch' : 'compact'}
+              iconOnly={iconModes}
+              mode="choice"
+              ariaLabel="File view"
+              value={mode}
+              onChange={onModeChange}
+              options={[
+                ...(isConflict
+                  ? [{ value: 'conflict' as const, label: 'Conflicts', icon: <GitMerge /> }]
+                  : isChanged
+                    ? [{ value: 'diff' as const, label: 'Diff', icon: <GitCompareArrows /> }]
+                    : []),
+                { value: 'current', label: isHtml ? 'Source' : 'Current', icon: <FileText /> },
+                ...(isMarkdown || isHtml
+                  ? [{ value: 'render' as const, label: isHtml ? 'Preview' : 'Render', icon: <BookOpen /> }]
+                  : []),
+              ]}
+            />
+          </div>
+        )}
+        {hasLaunchActions && (
+          <div
+            ref={inlineActions}
+            aria-hidden={folded || undefined}
+            inert={folded || undefined}
+            className={cn(
+              'flex w-max shrink-0 items-center gap-2',
+              folded && 'invisible absolute pointer-events-none',
+            )}
+          >
+            <OpenWithAppActions controller={openWith} />
+            <FileLaunchActions actions={launchActions} />
+          </div>
+        )}
+        <FileHeaderMoreMenu
+          relativePath={outside ? null : displayPath}
+          absolutePath={outside ? path : root ? `${root.replace(/\/$/, '')}/${displayPath}` : null}
+          onReferenceInChat={onReferenceInChat}
         >
-          <X size={12} />
-        </IconButton>
-      )}
-    </div>
+          {folded && (
+            <>
+              {dirty && onDiscard && !saving && (
+                <DropdownMenuItem data-skip-autosave onSelect={onDiscard}>
+                  <RotateCcw size={14} />
+                  Discard changes
+                </DropdownMenuItem>
+              )}
+              <OpenWithAppActions controller={openWith} menu />
+              <FileLaunchActions actions={launchActions} menu />
+              {(openWith.apps.length > 0 ||
+                launchActions.length > 0 ||
+                !!(dirty && onDiscard && !saving)) && <DropdownMenuSeparator />}
+            </>
+          )}
+        </FileHeaderMoreMenu>
+        {onClose && (
+          <IconButton
+            type="button"
+            onClick={onClose}
+            label="Close file"
+            tooltip="Close file"
+            variant="ghost"
+            size="sm"
+            focus="inside"
+            className="inline-flex items-center justify-center shrink-0"
+          >
+            <X size={12} />
+          </IconButton>
+        )}
+      </div>
+      <OpenWithAppApproval controller={openWith} />
+    </>
   );
 }
 
 interface FileHeaderMoreMenuProps {
+  children?: React.ReactNode;
   /** Worktree-relative path. Null for a file outside the folder. */
   relativePath: string | null;
   /** Absolute path on disk. Null while the folder isn't known. */
@@ -406,6 +504,7 @@ interface FileHeaderMoreMenuProps {
  * route into).
  */
 function FileHeaderMoreMenu({
+  children,
   relativePath,
   absolutePath,
   onReferenceInChat,
@@ -415,20 +514,19 @@ function FileHeaderMoreMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-
-          <IconButton
-            label="File actions"
-            tooltip="More actions"
-            variant="ghost"
-            size="sm"
-            focus="inside"
-            className="inline-flex items-center justify-center shrink-0"
-          >
-            <MoreHorizontal size={12} />
-          </IconButton>
-
+        <IconButton
+          label="File actions"
+          tooltip="More actions"
+          variant="ghost"
+          size="sm"
+          focus="inside"
+          className="inline-flex items-center justify-center shrink-0"
+        >
+          <MoreHorizontal size={12} />
+        </IconButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4} className="min-w-44">
+        {children}
         {onReferenceInChat && referencePath && (
           <DropdownMenuItem
             onClick={(e) => {
@@ -484,7 +582,7 @@ interface RevealButtonProps {
  * on a remote client because the path in the URL doesn't exist on the
  * user's laptop.
  */
-function RevealButton({ source, root, path, outside }: RevealButtonProps) {
+function useFileLaunchActions({ source, root, path, outside }: RevealButtonProps) {
   // Opens on the device the file is on, for a browser there (P3.5).
   const { opener } = useOpener(source, root);
   const { label, openInEditor } = useOpenInPreferredEditor(opener);
@@ -533,45 +631,57 @@ function RevealButton({ source, root, path, outside }: RevealButtonProps) {
     }
   }, [absolutePath, opening, openInEditor, worktreePath, label]);
 
-  if (!absolutePath || !opener) return null;
+  if (!absolutePath || !opener) return [];
+  return [
+    {
+      label: revealLabel(detectClientPlatform()),
+      disabled: revealing,
+      onSelect: handleReveal,
+      icon: revealing ? <Loader2 size={12} className="animate-spin" /> : <FolderOpen size={12} />,
+    },
+    {
+      label: `Open in ${label}`,
+      disabled: opening,
+      onSelect: handleOpenInEditor,
+      icon: opening ? <Loader2 size={12} className="animate-spin" /> : <SquareArrowOutUpRight size={12} />,
+    },
+  ];
+}
 
-  const platform = detectClientPlatform();
-
+function FileLaunchActions({
+  actions,
+  menu = false,
+}: {
+  actions: ReturnType<typeof useFileLaunchActions>;
+  menu?: boolean;
+}) {
   return (
     <>
-
-        <IconButton
-          type="button"
-          onClick={handleReveal}
-          disabled={revealing}
-          label={revealLabel(platform)}
-          tooltip={revealLabel(platform)}
-          variant="ghost"
-          size="sm"
-          focus="inside"
-          className="inline-flex items-center justify-center shrink-0"
-        >
-          {revealing ? <Loader2 size={12} className="animate-spin" /> : <FolderOpen size={12} />}
-        </IconButton>
-
-        <IconButton
-          type="button"
-          onClick={handleOpenInEditor}
-          disabled={opening}
-          label={`Open in ${label}`}
-          tooltip={`Open in ${label}`}
-          variant="ghost"
-          size="sm"
-          focus="inside"
-          className="inline-flex items-center justify-center shrink-0"
-        >
-          {opening ? (
-            <Loader2 size={12} className="animate-spin" />
-          ) : (
-            <SquareArrowOutUpRight size={12} />
-          )}
-        </IconButton>
-
+      {actions.map((action) =>
+        menu ? (
+          <DropdownMenuItem
+            key={action.label}
+            disabled={action.disabled}
+            onSelect={() => void action.onSelect()}
+          >
+            {action.icon}
+            {action.label}
+          </DropdownMenuItem>
+        ) : (
+          <IconButton
+            key={action.label}
+            type="button"
+            label={action.label}
+            disabled={action.disabled}
+            onClick={() => void action.onSelect()}
+            variant="ghost"
+            size="sm"
+            focus="inside"
+          >
+            {action.icon}
+          </IconButton>
+        ),
+      )}
     </>
   );
 }

@@ -151,7 +151,7 @@ export function StreamToolbar({
               label="Review"
               iconOnly={compact}
               onClick={onReview}
-              variant="secondary"
+              variant={compact ? 'ghost' : 'secondary'}
               size="compact"
             >
               {compact && <ClipboardCheck />}
@@ -164,7 +164,7 @@ export function StreamToolbar({
             iconOnly={compact}
             onClick={onTriage}
             disabled={triaging}
-            variant="secondary"
+            variant={compact ? 'ghost' : 'secondary'}
             size="compact"
           >
             <ListChecks />

@@ -156,6 +156,8 @@ and panel scroll containers stay where they were.
 
 Stream keeps its primary view labels whole. Its toolbar measures the available width, folds Review and Triage to named icon actions first, then folds away the secondary History filter if needed.
 
+File headers measure their available width and move trailing file-manager, editor and connected-app actions into the existing More actions menu before those actions clip. Only when Mode, More and Close still cannot fit do mode labels fold into distinct icons, retaining their names, Tips and selected thumb. This uses measured header width, including beside the tree on a phone. Phone mode options are 36px high. Discard moves into the same menu while editing. The inline and menu presentations share launch state. Connected-app approval stays outside the menu so dismissal cannot discard a pending approval.
+
 ### Button size and role
 
 Sizes are chosen by role, with no legacy density variants. These control type,

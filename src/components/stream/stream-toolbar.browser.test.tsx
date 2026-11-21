@@ -65,6 +65,9 @@ for (const theme of ['light', 'dark']) {
         const rect = await action.boundingBox();
         expect(rect!.width).toBe(28);
         expect(rect!.height).toBe(28);
+        await expect
+          .poll(() => action.evaluate((el) => getComputedStyle(el).backgroundColor))
+          .toBe('rgba(0, 0, 0, 0)');
         expect(rect!.x + rect!.width).toBeLessThanOrEqual(340);
         await action.hover();
         await page.getByRole('tooltip').waitFor({ timeout: 2000 });

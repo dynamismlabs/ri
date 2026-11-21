@@ -21,6 +21,10 @@ const bundle = () => build({
     import {ConnectedCompanionContext} from '@/lib/client/mcp-app-panel';
     import {ArtifactPreviewProvider} from '@/components/chat-ui/artifacts/artifact-preview-provider';
     import {TipProvider} from '@/components/ui/tip';
+    import {useOpenWithApp,OpenWithAppActions,OpenWithAppApproval} from '@/components/mcp-apps/open-with';
+    import {DropdownMenu,DropdownMenuTrigger,DropdownMenuContent} from '@/components/ui/dropdown-menu';
+    function Overflow(){const controller=useOpenWithApp({kind:'attachment',fileName:'01a1-bracket.stl',name:'bracket.stl'});return <><DropdownMenu><DropdownMenuTrigger asChild><button>File actions</button></DropdownMenuTrigger><DropdownMenuContent><OpenWithAppActions controller={controller} menu/></DropdownMenuContent></DropdownMenu><OpenWithAppApproval controller={controller}/></>}
+
     window.opened = [];
     const file = (fileName, originalName, mimeType) => ({fileName, originalName, mimeType, size: 1200, uploadedAt: '2026-10-19T12:00:00.000Z'});
     const companion = {chatId: 'chat-1', captureId: null, open: id => window.opened.push(id), mount: null, register: () => () => {}};
@@ -29,6 +33,7 @@ const bundle = () => build({
         <p>Here is the bracket <MessageFileChip attachment={file('01a1-bracket.stl', 'bracket.stl', 'application/octet-stream')}/></p>
         <p>And the notes <MessageFileChip attachment={file('01a1-notes.csv', 'notes.csv', 'application/octet-stream')}/></p>
       </ConnectedCompanionContext.Provider></section>
+      <section aria-label="Overflow"><ConnectedCompanionContext.Provider value={companion}><Overflow/></ConnectedCompanionContext.Provider></section>
       <section aria-label="Published"><MessageFileChip attachment={file('01a1-shared.stl', 'shared.stl', 'application/octet-stream')}/></section>
     </ArtifactPreviewProvider></TipProvider></QueryClientProvider>);
   `},
@@ -109,3 +114,25 @@ it('opens a chat attachment with its app beside the chat, through approval, by h
     expect(errors).toEqual([]);
   } finally {await browser.close(); server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));}
 }, 30_000);
+
+it('keeps the overflow launch approval mounted after its menu closes',async()=>{
+  let approved=false;
+  const {server,origin}=await serve(async(method,input)=>{
+    if(method==='connectedApps.files.handle')return {handle:'handle-1',name:'bracket.stl'};
+    if(method==='connectedApps.prepare')return {kind:'launch',viewId:'view-1',invocationId:'capture-1'};
+    if(method==='connectedApps.launch')return approved?{kind:'opened',captureId:'capture-1'}:{kind:'approval',viewId:'view-1',ids:['pending'],preview:{tool:'cad.open'}};
+    if(method==='connectedApps.approval'){approved=input.approve===true;return null;}
+  });
+  const browser=await chromium.launch({executablePath:chromium.executablePath(),headless:true,chromiumSandbox:true});
+  try{
+    const page=await browser.newPage();await page.goto(origin);
+    await page.getByRole('region',{name:'In a chat'}).getByRole('button',{name:'Open with Bits & Bolts'}).waitFor();
+    await page.getByRole('region',{name:'Overflow'}).getByRole('button',{name:'File actions'}).click();
+    await page.getByRole('menuitem',{name:'Open with Bits & Bolts'}).click();
+    await page.getByRole('menu').waitFor({state:'hidden'});
+    const approval=page.getByRole('group',{name:'Allow Bits & Bolts to open bracket.stl'});await approval.waitFor();
+    await approval.getByRole('button',{name:'Allow once'}).click();
+    await expect.poll(()=>read(page,'opened')).toEqual(['capture-1']);
+    expect(await approval.count()).toBe(0);
+  }finally{await browser.close();server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
+},30_000);
