@@ -170,6 +170,7 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
                 value: tab.id,
                 label: tab.label,
                 dot: tab.id === "stream" && needsYourCall ? "attention" : undefined,
+                dotPosition: "trailing" as const,
                 ariaLabel:
                   tab.id === "stream" && needsYourCall ? "Stream, something needs your call" : undefined,
               }))}

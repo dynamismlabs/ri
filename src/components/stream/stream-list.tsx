@@ -1,9 +1,8 @@
 "use client";
 
-import { SegmentedControl } from "@/components/system/segmented-control";
+import { StreamToolbar, type StreamViewFilter as ViewFilter } from './stream-toolbar';
 
 import { IconButton } from '@/components/system/icon-button';
-import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
 /**
  * The stream tab: a calm ledger of captures, not a work queue (spec §3.12).
@@ -19,8 +18,8 @@ import { Button } from '@/components/system/button';
 
 import { useState, useCallback } from 'react';
 import {
-  Loader2, Mic, MessageSquare, Inbox, ListFilter, Archive, BookOpen,
-  RotateCcw, RefreshCw, ListChecks, Target, FileText, Clock, ChevronDown,
+  Loader2, Mic, MessageSquare, Inbox, Archive, BookOpen,
+  RotateCcw, RefreshCw, Target, FileText, Clock,
 } from 'lucide-react';
 import {
   useStream,
@@ -36,9 +35,6 @@ import { StreamTriage } from './stream-triage';
 import { StreamDigest } from './stream-digest';
 import { TaskActions, NoteActions } from './promote-actions';
 import { StreamAttachments } from './stream-attachments';
-import {
-  Popover, PopoverTrigger, PopoverContent,
-} from '@/components/ui/popover';
 import type { StreamRecordWithOutcomes, StreamStatus } from '@/db/types';
 import { Tip } from '@/components/ui/tip';
 
@@ -66,16 +62,6 @@ const STATUS_COLORS: Record<StreamStatus, string> = {
   dismissed: 'bg-muted-foreground',
   incubating: 'bg-sky-400',
 };
-
-type ViewFilter = 'recent' | 'needs_call' | StreamStatus;
-
-const HISTORY_FILTERS: Array<{ id: ViewFilter; label: string }> = [
-  { id: 'pending', label: 'Captured' },
-  { id: 'promoted', label: 'Added' },
-  { id: 'reviewed', label: 'Kept as thoughts' },
-  { id: 'incubating', label: 'Kept for later' },
-  { id: 'dismissed', label: 'Set aside' },
-];
 
 function isPreprocessingPlaceholder(item: StreamRecordWithOutcomes): boolean {
   const head = item.rawText.trimStart();
@@ -136,84 +122,9 @@ export function StreamList() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
-      <div
-        data-slot="list-toolbar"
-        className={cn(
-          "px-3 py-2 border-b border-border flex items-center gap-2 flex-shrink-0",
-          isDark ? "bg-card/50" : "bg-muted",
-        )}
-      >
-        <SegmentedControl
-          mode="choice"
-          ariaLabel="Stream view"
-          value={view}
-          onChange={setView}
-          options={[
-            { value: "recent" as const, label: "Recent" },
-            ...(proposalCount > 0 ? [{ value: "needs_call" as const, label: "Needs your call" }] : []),
-          ]}
-        />
-
-        {/* Power filters: full history, tucked away */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <IconButton
-              label="History"
-              tooltip="History"
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-1"
-            >
-              <ListFilter size={11} />
-              <ChevronDown size={8} />
-            </IconButton>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
-            <div className="py-1">
-              {HISTORY_FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => setView(f.id)}
-                  className={cn(
-                    "w-full text-left px-3 py-1.5 text-[10.5px] hover:bg-muted transition-colors",
-                    view === f.id ? "text-primary font-semibold" : "text-foreground",
-                  )}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <div className="flex-1" />
-
-        {notice && <span className="text-[9.5px] text-muted-foreground truncate max-w-[45%]">{notice}</span>}
-
-        {proposalCount > 0 && (
-          <ChipButton
-            onClick={() => setTriageOpen(true)}
-            variant="secondary"
-            size="compact"
-            className="flex items-center gap-1.5"
-          >
-            Review
-          </ChipButton>
-        )}
-        <Tip label="Have the assistant triage waiting captures">
-          <ChipButton
-            onClick={handleSweep}
-            disabled={sweep.isPending}
-            variant="secondary"
-            size="compact"
-            className="flex items-center gap-1.5"
-          >
-            <ListChecks size={10} />
-            Triage
-          </ChipButton>
-        </Tip>
-      </div>
+      <StreamToolbar view={view} onViewChange={setView} hasProposals={proposalCount > 0}
+        onReview={() => setTriageOpen(true)} onTriage={handleSweep} triaging={sweep.isPending}
+        notice={notice} isDark={isDark}/>
 
       {/* Review slide-over (proposals + manual) */}
       <StreamTriage open={triageOpen} onOpenChange={setTriageOpen} />

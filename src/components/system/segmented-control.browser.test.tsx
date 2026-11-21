@@ -9,7 +9,7 @@ beforeAll(async () => {
     import {TipProvider} from '@/components/ui/tip';
     import {SegmentedControl,SegmentedPanel,SegmentedRoot,SegmentedList} from '@/components/system/segmented-control';
     document.documentElement.classList.toggle('dark',new URLSearchParams(location.search).get('theme')==='dark');
-    const options=[{value:'a',label:'First'},{value:'disabled',label:'Unavailable',disabled:true},{value:'b',label:'Second',count:2,countStyle:'badge',tone:'attention'},{value:'c',label:'Third'}];
+    const options=[{value:'a',label:'First',dot:'attention',dotPosition:'trailing'},{value:'disabled',label:'Unavailable',disabled:true},{value:'b',label:'Second',count:2,countStyle:'badge',tone:'attention'},{value:'c',label:'Third'}];
     function App(){
       const [tab,setTab]=useState('a'),[choice,setChoice]=useState('a'),[radio,setRadio]=useState('a'),[nullable,setNullable]=useState('light'),[scroll,setScroll]=useState('0'),[long,setLong]=useState(false),[remount,setRemount]=useState('a');
       return <main style={{padding:16,background:'var(--pane)',color:'var(--t1)'}}>
@@ -53,6 +53,15 @@ async function contrast(target: Locator) {
   });
 }
 for (const theme of ['light','dark']) {
+  it(`keeps a trailing status signal after the option label (${theme})`,async()=>{
+    const page=await fixture.browser.newPage();try{
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const option=page.getByRole('tablist',{name:'Panels'}).getByRole('tab',{name:'First',exact:true});
+      const dot=await option.locator('.ri-segment-dot').boundingBox(),label=await option.locator('.ri-segment-label').boundingBox();
+      expect(dot!.x).toBeGreaterThan(label!.x+label!.width);
+    }finally{await page.close();}
+  });
+
   it(`tabs associate panels and support arrows, Home/End and disabled skipping (${theme})`, async () => {
     const page=await fixture.browser.newPage();
     try {

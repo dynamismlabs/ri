@@ -122,7 +122,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 `SegmentedControl` takes `mode`, `value`, `onChange`, `options` and a required
 `ariaLabel`. Each option supplies its value and sentence case label, with optional
 icon, count, plain or badge count style, semantic count tone, status dot, pulse,
-hint or disabled state. Working chat badges keep their existing green ink and fill.
+hint or disabled state. `dotPosition="trailing"` keeps a status signal after its label, as on the Stream pane tab. Other status dots default to leading. Working chat badges keep their existing green ink and fill.
 Compact tracks are 28px with 24px options. Touch tracks are 40px with 36px options.
 Call sites pass layout classes and their existing phone or container state.
 `grow` takes available space. `stretch` also distributes options across the track.
@@ -153,6 +153,8 @@ The component measures its own scrolling element and track. Fades update when
 labels, counts or the available width change. Focus and selection reveal an
 option by scrolling this track alone, with an inset focus outline. Parent page
 and panel scroll containers stay where they were.
+
+Stream keeps its primary view labels whole. Its toolbar measures the available width, folds Review and Triage to named icon actions first, then folds away the secondary History filter if needed.
 
 ### Button size and role
 

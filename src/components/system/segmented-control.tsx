@@ -22,6 +22,7 @@ export interface SegmentOption<T extends string = string> {
   count?: number | null;
   countStyle?: 'plain' | 'badge';
   tone?: 'attention' | 'working';
+  dotPosition?: 'leading' | 'trailing';
   dot?: 'attention' | 'working' | 'neutral' | 'info' | 'danger' | 'unavailable';
   pulse?: boolean;
   selectedTone?: 'warning';
@@ -201,20 +202,18 @@ export function SegmentedList<T extends string>({
 
   const items = options.map((option) => {
     const selected = context.value === option.value;
+    const dot = option.dot && (
+      <span
+        aria-hidden
+        className={cn('ri-segment-dot', `ri-segment-dot--${option.dot}`, option.pulse && 'ri-segment-pulse')}
+      />
+    );
     const contents = (
       <>
-        {option.dot && (
-          <span
-            aria-hidden
-            className={cn(
-              'ri-segment-dot',
-              `ri-segment-dot--${option.dot}`,
-              option.pulse && 'ri-segment-pulse',
-            )}
-          />
-        )}
+        {option.dotPosition !== 'trailing' && dot}
         {option.icon}
         <span className="ri-segment-label">{option.label}</span>
+        {option.dotPosition === 'trailing' && dot}
         {option.count != null && option.count > 0 && (
           <span
             className={cn(
