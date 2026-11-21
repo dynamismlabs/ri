@@ -354,6 +354,7 @@ export function ExecutionChatTabs({
           label="New chat"
           tooltip="New chat on this worktree"
           size="xs"
+          focus="inside"
           variant="ghost"
           onClick={onNewChat}
           disabled={newChatPending}
@@ -404,6 +405,7 @@ export function ExecutionChatsMenu({
           <Button
             type="button"
             aria-label="All chats"
+            focus="inside"
             variant="secondary"
             size="sm"
             className="relative flex flex-shrink-0 items-center gap-1.5"
@@ -651,6 +653,7 @@ function ChatTab({
           type="button"
           label={'Close ' + label}
           size="xs"
+          focus="inside"
           variant="ghost"
           onClick={onClose}
           disabled={closing}

@@ -274,7 +274,8 @@ The `segmented`, `segmented-option`, `pane-tab-group`, `pane-tab`, `pane-tab-mor
 owns their drawing, focus and scrolling. The pane header's frame remains a layout
 boundary. Rich file and chat tabs beside a primary track retain their current
 content containers until the content migration. Add and Close use IconButton xs,
-and Close includes the chat name. More menus use the Button family outside the
+and Close includes the chat name. All, Add and Close own their inset focus and
+ink, with no chat-strip action overrides. More menus use the Button family outside the
 tablist. A folded menu chip uses `disclosure` to keep room for its chevron.
 
 The original 54 native declarations were reviewed individually. Task creation's

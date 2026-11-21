@@ -74,11 +74,11 @@ import {IconButton} from '@/components/system/icon-button';
           <button data-focus data-case="choice" data-slot="choice-row" aria-pressed="true" className="w-64 rounded border border-primary/60 bg-primary/5 p-3 text-left ring-1 ring-primary/20 focus:outline-none">Continue this chat</button>
           <div data-slot="calendar-navigation" className="flex"><button data-focus data-case="previous" aria-label="Previous week" className="rounded-md p-1 text-muted-foreground hover:bg-muted/50">‹</button><button data-focus data-case="today" className="rounded-md px-1.5 py-0.5 text-muted-foreground hover:bg-muted/50">Today</button></div>
           <div data-slot="chat-tabs" className="flex h-9 w-64 items-center gap-0.5 border-b px-1.5">
-            <button data-focus data-case="all-chats" className="h-7 shrink-0 rounded px-1.5">≡ 3</button>
+            <Button data-focus data-case="all-chats" size="sm" focus="inside">≡ 3</Button>
             <div data-slot="chat-tabs-scroll" className="flex min-w-0 shrink items-center gap-0.5 overflow-x-auto">
-              {['First chat','Second chat','Third chat'].map((name,i)=><div data-slot="chat-tab" data-current={i===0?'true':undefined} className="flex h-7 shrink-0 rounded bg-muted" key={name}><button data-focus data-case={'chat-'+i} className="h-full whitespace-nowrap px-2">{name}</button><button data-focus data-case={'close-'+i} aria-label={'Close '+name} className="mr-1 size-4 rounded">×</button></div>)}
+              {['First chat','Second chat','Third chat'].map((name,i)=><div data-slot="chat-tab" data-current={i===0?'true':undefined} className="flex h-7 shrink-0 rounded bg-muted" key={name}><button data-focus data-case={'chat-'+i} className="h-full whitespace-nowrap px-2">{name}</button><IconButton data-focus data-case={'close-'+i} label={'Close '+name} size="xs" focus="inside" className="mr-1">×</IconButton></div>)}
             </div>
-            <button data-focus data-case="new-chat" className="size-6 shrink-0 rounded">+</button>
+            <IconButton data-focus data-case="new-chat" label="New chat" size="xs" focus="inside">+</IconButton>
           </div>
           <div data-slot="calendar-toolbar" data-case="calendar-small" className="flex w-72 items-center gap-2">
             <span className="w-32 min-w-0 truncate">November 16 to 22</span>
@@ -686,4 +686,22 @@ for (const theme of ['light', 'dark'] as const) {
       } finally { await page.close(); }
     });
   }
+}
+
+for (const theme of ['light', 'dark'] as const) {
+  it(`lets shared chat actions own their ink and inset focus (${theme})`, async () => {
+    const {page}=await open(theme);
+    try {
+      const all=page.locator('[data-case="all-chats"]');
+      const ink=await page.evaluate(()=>{const probe=document.createElement('span');probe.style.color='var(--t2)';document.body.append(probe);const value=getComputedStyle(probe).color;probe.remove();return value;});
+      expect(await all.evaluate(el=>getComputedStyle(el).color)).toBe(ink);
+      await page.keyboard.press('Tab');
+      for(const action of [all,page.locator('[data-case="close-0"]')]) {
+        await action.focus();
+        expect(await action.evaluate(el=>getComputedStyle(el).outlineWidth)).toBe('2px');
+        expect(await action.evaluate(el=>getComputedStyle(el).outlineOffset)).toBe('-2px');
+      }
+      expect((await page.locator('[data-case="close-0"]').boundingBox())!.height).toBe(24);
+    } finally { await page.close(); }
+  });
 }

@@ -135,12 +135,10 @@ html:root [data-slot="status-strip"] [data-slot="action-button"] { min-height: 2
 
 /* Chat tabs keep their measured scroller. Each tab includes its close button. */
 html:root [data-slot="chat-tabs"] { gap: 4px; }
-html:root [data-slot="chat-tabs"] > button { border-radius: 999px; color: var(--t3); }
-html:root [data-slot="chat-tabs"] > button:hover { color: var(--t1); background-color: var(--hover); }
 html:root [data-slot="chat-tab"] { border-radius: 999px; background-color: transparent; color: var(--t3); }
 html:root [data-slot="chat-tab"]:hover { background-color: var(--hover); color: var(--t1); }
 html:root [data-slot="chat-tab"][data-current="true"] { background-color: var(--selected); color: var(--t1); }
-html:root [data-slot="chat-tab"] > button { border-radius: 999px; }
+html:root [data-slot="chat-tab"] > button:not(.ri-button) { border-radius: 999px; }
 
 /* Hover actions are capsules. Keyboard users see the same actions on focus. */
 html:root [data-slot="row-actions"]:focus-within { opacity: 1; }
@@ -180,8 +178,8 @@ html:root [data-slot="schedule-row"] > button { border-radius: 999px; }
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html:root :is([data-slot="action-button"], [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select):where(:not([data-slot="button"])), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-html:root :is( [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-slot="chat-tab"] > button, [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
+html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select):where(:not([data-slot="button"])), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is( [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
 html:root [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
