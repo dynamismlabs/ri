@@ -4,20 +4,21 @@ import ts from 'typescript';
 import { expect, it } from 'vitest';
 import { teamRoleDecisions } from '@/test/team-role-decisions';
 
-it('keeps role decisions in the team capability table, following aliases and destructuring', () => {
-  const configFile = ts.readConfigFile('tsconfig.json', ts.sys.readFile);
-  const config = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd());
-  const files = config.fileNames.filter(file => /\/src\//.test(file) && !/\.(test|browser)\./.test(file) && !file.includes('/src/test/'));
-  const program = ts.createProgram(files, { ...config.options, noEmit: true });
-  const checker = program.getTypeChecker();
-  const problems = files.filter(file => !file.endsWith('/team/capabilities.ts')).flatMap(file => {
-    const source = program.getSourceFile(file)!;
-    // Avoid type resolution for files with no role policy data.
-    if (!/owner|member/.test(fs.readFileSync(file, 'utf8'))) return [];
-    return teamRoleDecisions(source, checker).map(line => `${path.relative(process.cwd(), file)}:${line}`);
-  });
+const configFile = ts.readConfigFile('tsconfig.json', ts.sys.readFile);
+const config = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd());
+const files = config.fileNames.filter(file => /\/src\//.test(file) && !/\.(test|browser)\./.test(file) && !file.includes('/src/test/'));
+// Keep the original candidate set and full type graph, with one assertion per source file.
+const policyFiles = files.filter(file => !file.endsWith('/team/capabilities.ts') && /owner|member/.test(fs.readFileSync(file, 'utf8')));
+let program: ts.Program | undefined;
+let checker: ts.TypeChecker | undefined;
+
+it.each(policyFiles.map(file => [path.relative(process.cwd(), file), file] as const))('keeps role decisions in the team capability table: %s', (_name, file) => {
+  // Reuse one program so splitting the assertions does not repeat type checking.
+  program ??= ts.createProgram(files, { ...config.options, noEmit: true });
+  checker ??= program.getTypeChecker();
+  const problems = teamRoleDecisions(program.getSourceFile(file)!, checker).map(line => `${path.relative(process.cwd(), file)}:${line}`);
   expect(problems).toEqual([]);
-  // Type-checking the whole app takes over 30 seconds on the Intel Mac runner. It asserts nothing about time.
+  // The Intel runner can take over two minutes for the whole scan. Each file remains bounded.
 }, 120_000);
 
 it.each([
