@@ -325,8 +325,18 @@ it('handles an empty library and recovers a failed source without blocking disco
     await page.getByRole('alert').filter({ hasText: 'Skills could not load' }).waitFor();
     expect(await page.getByRole('heading', { name: 'Discover', exact: true }).isVisible()).toBe(true);
     responses['skills.list'] = { skills: [], projects: [] };
-    await page.getByRole('alert').getByRole('button', { name: 'Retry', exact: true }).click();
-    await page.getByRole('alert').waitFor({ state: 'hidden' });
+    let releaseRetry!: () => void;
+    const retryReady = new Promise<void>(resolve => { releaseRetry = resolve; });
+    await page.route('**/api/trpc/skills.list**', async route => { await retryReady; await route.continue(); });
+    try {
+      await page.getByRole('alert').getByRole('button', { name: 'Retry', exact: true }).click();
+      await page.getByRole('alert').waitFor({ state: 'hidden' });
+      // Clearing the old error starts recovery. Empty rows need the retried data.
+      await page.locator('[data-apps-library][aria-busy="true"]').waitFor();
+      expect(await page.getByRole('heading', { name: 'Discover', exact: true }).isVisible()).toBe(true);
+      expect(await page.getByText('No skills yet.', { exact: true }).isVisible()).toBe(false);
+    } finally { releaseRetry(); }
+    await page.locator('[data-apps-library][aria-busy="false"]').waitFor();
     for (const label of ['No apps yet. Find one in Discover, or make one with New app.', 'No connectors yet.', 'No skills yet.']) expect(await page.getByText(label, { exact: true }).isVisible()).toBe(true);
     await page.getByRole('region', { name: 'Discover and details', exact: true }).getByRole('button', { name: 'Connectors', exact: true }).click();
     await page.getByRole('button', { name: 'Connect Linear', exact: true }).waitFor();
