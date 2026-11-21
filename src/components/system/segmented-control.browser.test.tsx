@@ -9,7 +9,7 @@ beforeAll(async () => {
     import {TipProvider} from '@/components/ui/tip';
     import {SegmentedControl,SegmentedPanel,SegmentedRoot,SegmentedList} from '@/components/system/segmented-control';
     document.documentElement.classList.toggle('dark',new URLSearchParams(location.search).get('theme')==='dark');
-    const options=[{value:'a',label:'First'},{value:'disabled',label:'Unavailable',disabled:true},{value:'b',label:'Second',count:2,tone:'attention'},{value:'c',label:'Third'}];
+    const options=[{value:'a',label:'First'},{value:'disabled',label:'Unavailable',disabled:true},{value:'b',label:'Second',count:2,countStyle:'badge',tone:'attention'},{value:'c',label:'Third'}];
     function App(){
       const [tab,setTab]=useState('a'),[choice,setChoice]=useState('a'),[radio,setRadio]=useState('a'),[nullable,setNullable]=useState('light'),[scroll,setScroll]=useState('0'),[long,setLong]=useState(false),[remount,setRemount]=useState('a');
       return <main style={{padding:16,background:'var(--pane)',color:'var(--t1)'}}>
@@ -26,6 +26,8 @@ beforeAll(async () => {
         </SegmentedRoot>
         <output>{nullable===null?'Empty':nullable}</output>
         <SegmentedControl mode="choice" size="touch" value={choice} onChange={setChoice} options={options} ariaLabel="Phone filter"/>
+        <SegmentedControl mode="choice" value="working" onChange={()=>{}} ariaLabel="Progress counts" options={[{value:'working',label:'Working',count:2,countStyle:'badge',tone:'working'}]}/>
+        <SegmentedControl mode="choice" selection="radio" value="live" onChange={()=>{}} ariaLabel="Isolation" options={[{value:'worktree',label:'Worktree',disabled:true},{value:'live',label:'Live',selectedTone:'warning'}]}/>
         <div id="resize" style={{width:240}}><SegmentedControl mode="choice" value={scroll} onChange={setScroll} options={Array.from({length:10},(_,i)=>({value:String(i),label:i===0&&long?'A very long changed label':'Option '+i}))} ariaLabel="Scrolling"/></div>
         <button onClick={()=>setLong(true)}>Long label</button>
       </main>;
@@ -111,6 +113,7 @@ for (const theme of ['light','dark']) {
         expect(await group.evaluate(el=>el.getBoundingClientRect().height)).toBe(height);
         const selected=group.getByRole('button',{name:'First'}),other=group.getByRole('button',{name:'Third'});
         expect(await selected.evaluate(el=>el.getBoundingClientRect().height)).toBe(height-4);
+        expect(await selected.getAttribute('data-state')).toBe('on');
         expect(await selected.evaluate(el=>getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
         expect(await selected.evaluate(el=>getComputedStyle(el).boxShadow)).not.toBe('none');
         expect(await selected.evaluate(el=>getComputedStyle(el).backgroundColor)).not.toBe(await group.evaluate(el=>getComputedStyle(el).backgroundColor));
@@ -120,6 +123,11 @@ for (const theme of ['light','dark']) {
         await page.keyboard.press('Tab');await selected.focus();expect(await selected.evaluate(el=>getComputedStyle(el).outlineWidth)).toBe('2px');
         const badge=group.locator('.ri-segment-count');expect(await contrast(badge)).toBeGreaterThanOrEqual(4.5);
       }
+      const working=page.getByRole('group',{name:'Progress counts'}).locator('.ri-segment-count');
+      expect(await contrast(working)).toBeGreaterThanOrEqual(4.5);
+      const live=page.getByRole('radiogroup',{name:'Isolation'}).getByRole('radio',{name:'Live'});
+      expect(await contrast(live)).toBeGreaterThanOrEqual(4.5);await live.hover();expect(await contrast(live)).toBeGreaterThanOrEqual(4.5);
+      await page.keyboard.press('Tab');await live.focus();expect(await live.evaluate(el=>getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally { await page.close(); }
   });
   it(`measures scrolling, resizing and changed labels without moving the page (${theme})`, async () => {

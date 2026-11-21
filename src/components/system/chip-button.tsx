@@ -1,4 +1,5 @@
 import { cva } from 'class-variance-authority';
+import { ChevronDown } from 'lucide-react';
 import { Button, type ButtonProps, type ButtonTone } from '@/components/ui/button';
 import type { PermissionMode } from '@/db/types';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,8 @@ export type ChipButtonProps = Omit<ButtonProps, 'size' | 'tone'> & ChipTone & {
   label?: string;
   /** Keep the label accessible while showing only the icon. */
   iconOnly?: boolean;
+  /** A trailing menu affordance, including when the label folds away. */
+  disclosure?: boolean;
 };
 
 const MODE_TONES: Record<PermissionMode, ButtonTone> = {
@@ -29,9 +32,10 @@ const MODE_TONES: Record<PermissionMode, ButtonTone> = {
 };
 
 /** A toolbar, filter or status action. Facts without an action use StatusBadge. */
-export function ChipButton({ size = 'compact', tone = 'neutral', status, mode, label, iconOnly, children, className, variant = 'secondary', ...props }: ChipButtonProps) {
+export function ChipButton({ size = 'compact', tone = 'neutral', status, mode, label, iconOnly, disclosure, children, className, variant = 'secondary', ...props }: ChipButtonProps) {
   const ink = tone === 'mode' ? MODE_TONES[mode!] : tone === 'status' ? status! : tone === 'attention' && !props.pressed && props['aria-pressed'] !== true ? 'neutral' : tone;
-  return <Button {...props} aria-label={props['aria-label'] ?? label} variant={variant} icon={iconOnly || props.icon} size={size === 'touch' ? 'touch' : 'sm'} tone={ink} className={cn(chipVariants({ size, iconOnly }), className)}>
+  return <Button {...props} aria-label={props['aria-label'] ?? label} variant={variant} icon={iconOnly || props.icon} size={size === 'touch' ? 'touch' : 'sm'} tone={ink} className={cn(chipVariants({ size, iconOnly }), disclosure && iconOnly && 'ri-button--disclosure', className)}>
     {label ? <>{children}<span className="ri-chip-label">{label}</span></> : children}
+    {disclosure && <ChevronDown className="ri-disclosure-chevron" />}
   </Button>;
 }

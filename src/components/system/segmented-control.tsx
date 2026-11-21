@@ -11,6 +11,7 @@ export interface SegmentOption<T extends string = string> {
   label: string;
   icon?: ReactNode;
   count?: number | null;
+  countStyle?: 'plain' | 'badge';
   tone?: 'attention' | 'working';
   dot?: 'attention' | 'working' | 'neutral' | 'info' | 'danger' | 'unavailable';
   pulse?: boolean;
@@ -120,7 +121,7 @@ export function SegmentedList<T extends string>({ options, ariaLabel, size, grow
       {option.dot && <span aria-hidden className={cn('ri-segment-dot', `ri-segment-dot--${option.dot}`, option.pulse && 'ri-segment-pulse')} />}
       {option.icon}
       <span className="ri-segment-label">{option.label}</span>
-      {option.count != null && option.count > 0 && <span className={cn('ri-segment-count', option.tone && `ri-segment-count--${option.tone}`, option.pulse && 'ri-segment-pulse')}>{option.count}</span>}
+      {option.count != null && option.count > 0 && <span className={cn('ri-segment-count', option.countStyle === 'badge' && 'ri-segment-count--badge', option.tone && `ri-segment-count--${option.tone}`, option.pulse && 'ri-segment-pulse')}>{option.count}</span>}
     </>;
     const common = {
       value: option.value,
@@ -132,10 +133,15 @@ export function SegmentedList<T extends string>({ options, ariaLabel, size, grow
       onDoubleClick: option.onDoubleClick,
       onFocus: (event: React.FocusEvent<HTMLButtonElement>) => reveal(event.currentTarget),
     };
-    const item = context.mode === 'tabs' ? <Tabs.Trigger {...common}>{contents}</Tabs.Trigger>
-      : context.selection === 'radio' ? <RadioGroup.Item {...common}>{contents}</RadioGroup.Item>
-        : <ToggleGroup.Item {...common} role="button" aria-checked={undefined} aria-pressed={selected}>{contents}</ToggleGroup.Item>;
-    return <Tip key={option.value} label={option.hint ?? option.label} onlyWhenTextHidden={!option.hint}>{item}</Tip>;
+    // Keep Tip inside the primitive, so its open state cannot overwrite the
+    // tab/toggle/radio state and its focus policy runs after selection handlers.
+    const button = <Tip label={option.hint ?? option.ariaLabel ?? option.label} onlyWhenTextHidden={!option.hint}>
+      <button type="button" {...common}>{contents}</button>
+    </Tip>;
+    const itemProps = { key: option.value, value: option.value, disabled: common.disabled, asChild: true };
+    return context.mode === 'tabs' ? <Tabs.Trigger {...itemProps}>{button}</Tabs.Trigger>
+      : context.selection === 'radio' ? <RadioGroup.Item {...itemProps}>{button}</RadioGroup.Item>
+        : <ToggleGroup.Item {...itemProps} role="button" aria-checked={undefined} aria-pressed={selected}>{button}</ToggleGroup.Item>;
   });
   const common = { ref: track, className: 'ri-segment-track', 'aria-label': ariaLabel };
   const content = context.mode === 'tabs' ? <Tabs.List {...common} loop>{items}</Tabs.List>
