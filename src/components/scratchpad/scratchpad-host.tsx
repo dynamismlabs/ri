@@ -300,7 +300,7 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
       onClick={() => (open ? closeScratchpad(wide) : openScratchpad(wide))}
       label="Scratchpad"
       shortcut={variant === 'phone' ? undefined : HOTKEYS.scratchpad.label}
-      variant="ghost"
+      variant={variant === 'phone' ? 'secondary' : 'ghost'}
       size={variant === 'phone' ? "touch" : "sm"}
       className={cn("flex items-center justify-center", (variant === 'phone' ? "shrink-0" : ''))}
     >

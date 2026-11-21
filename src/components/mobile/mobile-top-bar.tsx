@@ -39,7 +39,7 @@ export function MobileTopBar({ onSearch = () => document.dispatchEvent(new Custo
         type="button"
         onClick={onOpenSettings ?? settings ?? undefined}
         label="Settings"
-        variant="ghost"
+        variant="secondary"
         size="touch"
         className="flex items-center justify-center"
       ><Settings size={16} /></IconButton> : <ScratchpadButton variant="phone" />}

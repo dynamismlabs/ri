@@ -147,6 +147,7 @@ Icon-only buttons among siblings in a header, toolbar or row are ghost at rest.
 A resting fill means pressed or open (`aria-pressed`, `aria-expanded`).
 A labeled standalone action may be secondary. Main Send actions retain primary,
 and standalone floating controls retain their floating surface.
+A lone icon action paired with a filled field matches the field's fill.
 
 The Button family owns its cva classes and drawing in
 `src/components/system/button.css`. `Button` is the installed primitive's one
