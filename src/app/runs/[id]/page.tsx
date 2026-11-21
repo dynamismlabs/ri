@@ -43,7 +43,7 @@ export default function RunDetailPage() {
           onClick={() => router.back()}
           label="Back to runs"
           variant="ghost"
-          size="xs"
+          size="sm"
         >
           <ArrowLeft size={16} />
         </IconButton>

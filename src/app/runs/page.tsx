@@ -45,7 +45,7 @@ export default function RunsPage() {
           onClick={() => router.push('/')}
           label="Back to home"
           variant="ghost"
-          size="xs"
+          size="sm"
         >
           <ArrowLeft size={16} />
         </IconButton>
