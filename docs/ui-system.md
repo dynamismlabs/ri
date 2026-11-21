@@ -430,12 +430,15 @@ becomes their drawing owner.
 
 ## Component migration stages
 
-0. **Tokens and native local pages.** Shared palette and semantic pairs, registered
+0. **Tokens and native local pages (implemented).** Shared palette and semantic pairs, registered
    utilities, no look attribute, native controls on the same system. Verify the
    app matrix by pixel diff and render local-page builders in both themes.
-1. **Button family.** Mechanical AST codemod outside the repository, followed by
+1. **Button family (implemented).** Mechanical AST codemod outside the repository, followed by
    manual review of dynamic classes, asChild, drag handles and content rows.
-2. **Segmented controls.** Migrate every track after resolving tabs versus choices.
+2. **Segmented controls (implemented).** Shared tabs and choices replace every
+   track. Panels, nullable values, keyboard navigation, measured scrolling and
+   named navigation exceptions follow the decisions above. Retired drawing and
+   focus hooks are deleted as their callers migrate.
 3. **Fields.** Input, textarea and native select adapters.
 4. **Content and feedback.** Cards, descriptive rows, menu actions, callouts,
    badges and metadata.
