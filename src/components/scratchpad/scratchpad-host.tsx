@@ -155,7 +155,9 @@ function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
     if (!element) return;
     element.appendChild(padContainer);
     queueMicrotask(() => {
-      if (!focusChat.current) editor.current?.commands.focus();
+      // Restore ProseMirror's selection synchronously after moving its DOM.
+      // A delayed focus lets the sheet's focus boundary replace an AllSelection.
+      if (!focusChat.current) editor.current?.view.focus();
     });
   }, [padContainer]);
   const collapse = () => setExpanded(false);

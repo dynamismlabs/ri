@@ -68,7 +68,7 @@ design, and each stage stops for review before the next one starts.
   being migrated. Its unconditional `html:root` anchor preserves selector
   specificity against CSS modules. It has no look switch or look scoping. These
   rules stay unlayered so they keep beating the old Tailwind drawing utilities.
-  Each migration stage deletes the rules and hooks its components replace. Stage 1 retires the chip, toolbar, header, review-action, HUD tools, Send, New agent and split-button drawing hooks. A few action-button hooks remain on later-stage radio choices, calendar event groups and the pairing details summary.
+  Each migration stage deletes the rules and hooks its components replace. Stage 1 retires the chip, toolbar, header, review-action, HUD tools, Send, New agent and split-button drawing hooks. A few action-button hooks remain on later-stage radio choices, calendar event groups and question progress markers.
 - Labels are written in sentence case. The compatibility stylesheet neutralizes
   old `uppercase` utilities and cmdk descendant variants until they are removed.
 
@@ -101,7 +101,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | --- | --- | --- | --- |
 | `Button` | primary, secondary, ghost, destructive, link. xs, sm, md, touch. `icon`, `pressed`, semantic `tone`, `floating`, `focus`, `reveal`, `clip` | Capsule in every state, including Send when disabled. Based on the installed Button. Disabled links cannot activate their child handler | 1, implemented |
 | `IconButton` | Required string `label`, tone, pressed state, size. Optional fuller `tooltip`, `shortcut`, `tipSide`, `tipAlign` | Square Button with an accessible name and `Tip`. Uses the label for both by default. Focus outline included | 1, implemented |
-| `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. Pressed state. Compact or touch | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
+| `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
 | `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
 | `Field`, `TextArea`, `NativeSelect` | Label, value, help text, invalid and disabled state | Input adapters with 10px corners, consistent type and one focus treatment | 3 |
@@ -159,6 +159,13 @@ actual state instead of forwarding opacity, size or palette class strings.
 `ToolbarSearchButton` and `ToolbarToggle` are thin uses of IconButton and
 ChipButton. The class-returning `toolbarButtonClass` helper is removed. Toolbar
 menu triggers render ChipButton with Radix `asChild`, preserving one button.
+
+The composer keeps its controls on one row. At touch size, the model chip shows
+only the model name. Its accessible name and popup retain effort, variant and
+speed. When the row is tight, the mode label gives way before the model name
+truncates. Mode keeps its accessible name and Tip. Add, mode, model, microphone
+and Send remain at least 40px targets at 360px and 390px. The row measures its
+actual contents so a missing microphone does not hide mode text unnecessarily.
 
 The stage 1 AST codemod and review ledger live under
 `/tmp/ri-ui-codemods/stage1` and `/tmp/ri-ui-components/stage1`. The codemod preserves
