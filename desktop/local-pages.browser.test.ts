@@ -41,7 +41,7 @@ afterAll(async () => {
 });
 async function open(view: string, theme: string, platform = process.platform): Promise<Page> {
   const page = await browser.newPage({ viewport: view === 'find' ? { width: 380, height: 56 } : { width: 900, height: 1000 } });
-  await page.addInitScript({ content: `window.riLocal={onTheme(){}};window.riCompanion={request:async()=>({role:'first-run',homeSelected:false,preferences:{},desktop:'1.0'})};window.riMaintenance={request:async()=>({phase:'failed',failure:'Recovery is available',identity:{root:'home',database:'data.db',config:'config',work:'work'}})};` });
+  await page.addInitScript({ content: `window.riLocal={onTheme(){}};window.riCompanion={request:async()=>({role:'first-run',homeSelected:false,preferences:{login:{enabled:false},shortcut:{enabled:false,accelerator:'CommandOrControl+Shift+Space',state:'disabled'}},desktop:'1.0'})};window.riMaintenance={request:async()=>({phase:'failed',failure:'Recovery is available',identity:{root:'home',database:'data.db',config:'config',work:'work'}})};` });
   await page.goto(`${base}/${view}?theme=${theme}&platform=${platform}`);
   await page.locator('main,form').waitFor();
   return page;
@@ -121,6 +121,7 @@ for (const theme of ['light', 'dark']) {
       try {
         const state = await page.evaluate(() => ({ font: getComputedStyle(document.body).fontFamily, width: document.body.scrollWidth, viewport: innerWidth }));
         expect(state.font).toContain('system-ui'); expect(state.font.startsWith('Inter')).toBe(false); expect(state.width).toBeLessThanOrEqual(state.viewport);
+        if (view === 'companion' || view === 'connect') expect(await page.locator('#error').innerText()).toBe('');
         const folder = process.env.RI_ARTIFACT_SCREENSHOTS ?? path.join(process.env.RUNNER_TEMP ?? os.tmpdir(), 'ri-native-system');
         fs.mkdirSync(folder, { recursive: true });
         await page.screenshot({ path: path.join(folder, `${process.platform}-local-${view}-${theme}.png`), fullPage: true });
