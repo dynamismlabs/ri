@@ -1,4 +1,7 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -77,13 +80,13 @@ export function ModeControl({
 /** The Live consequences, shown inline while Live is the armed mode. */
 export function LiveModeNotice() {
   return (
-    <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 text-[10.5px] leading-snug text-amber-700 dark:text-amber-400">
+    <Callout padding="sm" density="row" tone={"warning"} className="flex items-start gap-2">
       <Zap size={12} className="mt-px flex-shrink-0" />
       <span>
         This edits the agent&apos;s own folder on whatever branch is checked out. No
         isolation, commits land on that branch, and two Live sessions will race on files.
       </span>
-    </div>
+    </Callout>
   );
 }
 
@@ -172,7 +175,7 @@ export function RunOnControl({
                   ? 'Not connected right now. The work starts when it is.'
                   : null;
             return (
-              <button data-slot="menu-action"
+              <MenuAction density="compact"
                 key={choice.deviceId}
                 type="button"
                 disabled={!choice.ready && !canSetUp}
@@ -181,10 +184,7 @@ export function RunOnControl({
                   if (canSetUp) setSettingUp({ id: choice.deviceId, name: choice.name });
                   else onChange(choice.deviceId);
                 }}
-                className={cn(
-                  'flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors disabled:cursor-not-allowed',
-                  isSelected ? 'bg-muted' : 'hover:bg-muted/50',
-                )}
+                className="flex w-full items-start gap-2 text-left disabled:cursor-not-allowed"
               >
                 <Laptop size={11} className={cn('mt-0.5 flex-shrink-0', choice.ready ? 'text-primary/70' : 'text-muted-foreground/50')} />
                 <span className="min-w-0 flex-1">
@@ -201,19 +201,19 @@ export function RunOnControl({
                   )}
                 </span>
                 {isSelected && <Check size={11} className="mt-0.5 flex-shrink-0 text-primary" />}
-              </button>
+              </MenuAction>
             );
           })}
           {oneOff && selected.ready && (
-            <button data-slot="menu-action"
+            <MenuAction density="compact" separator
               type="button"
               disabled={savingDefault}
               onClick={() => onMakeDefault(selected.deviceId)}
-              className="mt-1 flex w-full items-center gap-2 rounded-md border-t border-border/70 px-2 py-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+              className="mt-1 flex w-full items-center gap-2 text-left"
             >
               {savingDefault ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} className="opacity-0" />}
               Make {selected.name} the default for this agent
-            </button>
+            </MenuAction>
           )}
         </LauncherPopoverContent>
       </Popover>
@@ -317,15 +317,15 @@ export function BaseControl({
             /></div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (
-                <button data-slot="menu-action"
+                <MenuAction density="compact"
                   type="button"
                   onClick={() => { onClear(); setOpen(false); }}
-                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                  className="flex w-full items-center gap-2 text-left"
                 >
                   <X size={11} />
                   Agent default
                   {workspaceDefault && <span className="font-mono opacity-70">({workspaceDefault})</span>}
-                </button>
+                </MenuAction>
               )}
               {isLoading && (
                 <div className="px-2 py-3 text-center text-[11px] text-muted-foreground/70">Loading…</div>
@@ -336,19 +336,16 @@ export function BaseControl({
                 </div>
               )}
               {filtered.map((b) => (
-                <button data-slot="menu-action"
+                <MenuAction density="compact"
                   key={b}
                   type="button"
                   onClick={() => { onPickBranch(b); setOpen(false); }}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left font-mono text-[11.5px] transition-colors',
-                    b === base.baseBranch ? 'bg-muted text-foreground' : 'text-foreground/90 hover:bg-muted/60',
-                  )}
+                  className="flex w-full items-center gap-2 text-left"
                 >
                   <GitBranch size={11} className="flex-shrink-0 text-muted-foreground/70" />
                   <span className="truncate">{b}</span>
                   {b === base.baseBranch && <Check size={11} className="ml-auto flex-shrink-0 text-primary" />}
-                </button>
+                </MenuAction>
               ))}
             </div>
           </>

@@ -1,4 +1,7 @@
-'use client'
+'use client';
+
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
 
@@ -174,7 +177,7 @@ export default function PlaygroundPage() {
       {/* Input */}
       <div className="flex-shrink-0 border-t border-border p-3">
         <div className="max-w-3xl mx-auto">
-          <div className="rounded-lg border border-border bg-card focus-within:border-primary/50 transition-colors">
+          <Card padding="none" shadow >
             <TextArea
               ref={textareaRef}
               aria-label="Message"
@@ -206,7 +209,7 @@ export default function PlaygroundPage() {
                 {isStreaming ? <Square size={16} /> : <Send size={16} />}
               </IconButton>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
     </div>

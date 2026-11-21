@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -56,7 +58,7 @@ export function ByoPanel({
   const callback = oauthAppRedirectUri(provider, redirectUri);
   const formId = useId();
   const callbackFields = <>
-      <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/40 p-2">
+      <Card padding="sm" className="flex items-center gap-2">
         <code className="min-w-0 flex-1 break-all font-mono text-[11px] text-foreground">{registered ? callback || 'Callback address unavailable' : provider.desktopCallback ? provider.desktopCallback.kind === 'loopback' ? 'http://127.0.0.1:<temporary-port>/oauth/callback' : provider.desktopCallback.redirectUri || 'Configure a hosted callback service first' : redirectUri}</code>
 
           <IconButton
@@ -70,7 +72,7 @@ export function ByoPanel({
             {copied ? <Check size={12} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={12} />}
           </IconButton>
 
-      </div>
+      </Card>
       {(registered || !provider.desktopCallback) && (
         <p className="text-[11px] leading-normal text-muted-foreground">
           This follows {APP_NAME}&apos;s address in Devices, and every sign-in uses it. If that address changes, add the new
@@ -84,9 +86,9 @@ export function ByoPanel({
       {configs.length > 0 && (
         <div className="space-y-1.5">
           {configs.map((cfg) => (
-            <div
+            <Card padding="sm" density="compact"
               key={cfg.id}
-              className="flex items-center justify-between gap-2 rounded-lg border border-border/50 bg-background/40 px-2.5 py-1.5 text-[11px]"
+              className="flex items-center justify-between gap-2"
             >
               <span className="min-w-0 truncate text-foreground">
                 {cfg.label ?? cfg.id}
@@ -125,7 +127,7 @@ export function ByoPanel({
                   Remove
                 </Button>
               </span>
-            </div>
+            </Card>
           ))}
         </div>
       )}

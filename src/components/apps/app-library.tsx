@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { Field } from '@/components/system/field';
 
 import { useViewportTier } from '@/hooks/use-viewport-tier';
@@ -11,7 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUpRight, BookOpen, Check, ChevronDown, Hammer, LayoutGrid, Loader2, MessageCircle, Plug, Plus, Search, Server, X } from 'lucide-react';
 import { Button } from '@/components/system/button';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { IntegrationsSection } from '@/components/settings/sections/integrations-section';
 import { connectedAppsQuery } from '@/components/mcp-apps/catalog';
@@ -112,10 +115,10 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
             </QuietAction>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuItem disabled={createSkill.isPending} onSelect={createSkill.start}>
+            <MenuAction kind="menu" disabled={createSkill.isPending} onSelect={createSkill.start}>
               <BookOpen size={15} />
               <MenuCopy label="Create a skill" detail="Teach your agent a repeatable workflow." />
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
@@ -125,18 +128,18 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
             </PrimaryAction>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuItem onSelect={() => patch({ browse: 'discover', filter: undefined })}>
+            <MenuAction kind="menu" onSelect={() => patch({ browse: 'discover', filter: undefined })}>
               <Search size={15} />
               <MenuCopy label="Browse catalog" detail="Find something to add to your library." />
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => patch({ browse: 'discover', filter: 'connectors' })}>
+            </MenuAction>
+            <MenuAction kind="menu" onSelect={() => patch({ browse: 'discover', filter: 'connectors' })}>
               <Plug size={15} />
               <MenuCopy label="Connect a service" detail="Bring an account and its tools into Ri." />
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => patch({ mcp: 'new' })}>
+            </MenuAction>
+            <MenuAction kind="menu" onSelect={() => patch({ mcp: 'new' })}>
               <Server size={15} />
               <MenuCopy label="Add custom MCP" detail="Connect a server and its tools." />
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
       </AppHeader>
@@ -324,11 +327,11 @@ function LibraryMark() { return <span className="flex size-8 shrink-0 items-cent
 function MenuCopy({ label, detail }: { label: string; detail: string }) { return <span><span className="block text-xs font-medium">{label}</span><span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{detail}</span></span>; }
 
 function LibraryCard({ item, open, chat }: { item: LibraryItem; open: () => void; chat: () => void }) {
-  return <article className="group flex min-w-0 flex-col rounded-xl border border-border bg-card/20 p-4 transition-colors hover:border-foreground/20">
-    <button data-slot="menu-action" type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+  return <Card as="article" padding="lg" shadow className="group flex min-w-0 flex-col">
+    <MenuAction density="none"  type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 text-left">
       {item.providerId ? <IntegrationLogo providerId={item.providerId} name={item.name} size={36} /> : item.kind === 'skills' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BookOpen size={18} /></span> : item.target.kind === 'mcp' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Server size={18} /></span> : <AppMark name={item.name} size="lg" />}
       <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-semibold">{item.name}</h3><p className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">{item.description}</p></div>
-    </button>
+    </MenuAction>
     <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
       {item.chat && !item.draft && <span className="inline-flex items-center gap-1"><MessageCircle size={11} />{item.kind === 'skills' ? 'Agent workflow' : 'Works in chat'}</span>}
       {item.view && <span className="inline-flex items-center gap-1"><LayoutGrid size={11} />Opens in Ri</span>}
@@ -352,5 +355,5 @@ function LibraryCard({ item, open, chat }: { item: LibraryItem; open: () => void
         >{item.draft ? 'Continue' : item.kind === 'skills' ? 'Edit skill' : item.view && item.usable !== false ? 'Open' : item.added ? 'Manage' : 'Connect'}</Button>
       </div>
     </div>
-  </article>;
+  </Card>;
 }

@@ -1,4 +1,6 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
@@ -45,12 +47,12 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
 
   if (collapsed) {
     return (
-      <button
+      <MenuAction
         onClick={onExpand}
-        className="w-full px-4 py-2.5 text-left text-[11px] text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+        className="w-full text-left flex items-center gap-1.5"
       >
         <ArrowLeft size={10} /> Add context...
-      </button>
+      </MenuAction>
     );
   }
 

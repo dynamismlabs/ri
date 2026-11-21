@@ -32,21 +32,8 @@ html:root [data-slot="list-toolbar"] { background-color: var(--background); }
 /* Metadata under a title: plain words separated by dots, not a row of little boxes.
    A direct child tagged meta-item, area-select or task-badges takes part, and so does
    a status-select inside a meta-item wrapper. */
-html:root [data-slot="meta"] { column-gap: 7px; }
-html:root [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badge"]) { padding: 0; border-color: transparent; border-radius: 4px; background-color: transparent; font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: normal; }
-html:root [data-slot="meta"] :where([data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="task-picker"]) { color: var(--t3); }
-html:root [data-slot="meta"] [data-slot="area-select"] { color: var(--t2); }
-html:root [data-slot="meta"] :where(button[data-slot="meta-item"], a[data-slot="meta-item"], [data-slot="meta-item"] > button, [data-slot="area-select"], [data-slot="task-picker"]):hover { background-color: transparent; color: var(--t1); }
-html:root [data-slot="meta"] > :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"]) ~ :is([data-slot="meta-item"], [data-slot="area-select"], [data-slot="task-picker"], [data-slot="task-badges"])::before { content: '·'; margin-right: 7px; color: var(--t4); font-weight: 400; }
-html:root [data-slot="meta"] :is([data-slot="meta-item"], [data-slot="task-badge"]) svg { width: 12px; height: 12px; }
 /* Status, energy and blocked keep the colors carried by their existing utilities (revert-layer hands the
    color back to the component's own utility classes). */
-html:root [data-slot="meta"] :is([data-kind="status"] > button, [data-kind="energy"], [data-kind="blocked"]) { color: revert-layer; }
-html:root [data-slot="meta"] [data-kind="status"] > button { font-weight: 500; }
-html:root [data-slot="meta"] [data-kind="energy"] { text-transform: capitalize; }
-html:root [data-slot="meta"] [data-urgency="late"] { color: var(--danger); font-weight: 500; }
-html:root [data-slot="meta"] [data-urgency="today"] { color: var(--attention); font-weight: 500; }
-html:root [data-slot="meta"] [data-slot="task-badge"] { font-weight: 500; }
 
 /* Deadlines: a colored date on a plain row, not a tinted card. */
 html:root [data-slot="deadline-head"] h3 { font-size: 12px; font-weight: 600; letter-spacing: normal; color: var(--t2); }
@@ -81,11 +68,6 @@ html:root [data-slot="entity-kind"] { gap: 7px; }
 html:root [data-slot="entity-kind-label"] { font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--t3); }
 /* The area above a title is a control you can see at rest: a soft capsule with its
    chevron, like the other property buttons. "No area" says so in quieter type. */
-html:root [data-slot="entity-kind"] [data-slot="area-select"] { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 10px; border-radius: 999px; background-color: var(--track); font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--t1); }
-html:root [data-slot="entity-kind"] [data-slot="area-select"][data-empty] { color: var(--t3); }
-html:root [data-slot="entity-kind"] [data-slot="area-select"]::after { content: ''; width: 10px; height: 10px; background-color: currentColor; opacity: 0.55; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") center / contain no-repeat; }
-html:root [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"]) { background-color: var(--selected); color: var(--t1); }
-html:root [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"])::after { opacity: 0.85; }
 html:root [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
 html:root [data-slot="properties"] > span { font-weight: 400; color: var(--t3); }
 
@@ -99,7 +81,6 @@ html:root [data-slot="stream-meta"] > :is(p, span, button, a) { font-family: inh
 html:root [data-slot="stream-meta"] > svg { width: 12px; height: 12px; }
 
 /* A notice or summary inside a pane: a soft raised panel, no outline. */
-html:root [data-slot="callout"] { border-color: transparent; border-radius: 14px; background-color: var(--raised); }
 
 /* Hand-built buttons and cards across the app, until each one moves onto the shared components. */
 html:root :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"]) { border-radius: 999px; }
@@ -113,7 +94,7 @@ html:root [data-slot="input-group"] { border-radius: 10px; }
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
-html:root :is([data-slot="task-chip"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="task-chip"], .panel-tab, :where(.border.bg-card), [data-slot="search-field"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
 /* ── Phase 3: daily controls and the long tail ─────────────────────────── */
 /* These labels were sized for capitals. Sentence case needs a readable size.
@@ -167,16 +148,10 @@ html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground
 
 /* Choosers hold a title and description. Their selection is a soft row, with
    no outline or card shadow. This also covers hand-built dialog lists. */
-html:root [data-slot="choice-row"] { border-color: transparent; border-radius: 8px; background-color: var(--track); box-shadow: none; }
-html:root [data-slot="choice-row"]:hover:not(:disabled) { border-color: transparent; background-color: var(--selected); }
-html:root [data-slot="choice-row"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
-html:root [data-slot="status-badge"] { border-color: transparent; border-radius: 999px; font-size: 11px; line-height: 1.4; font-weight: 500; letter-spacing: normal; }
-html:root [data-slot="schedule-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--shadow-card); }
-html:root [data-slot="schedule-row"] > button { border-radius: 999px; }
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a):where(:not([data-slot="button"], .ri-field-control)), [data-slot="choice-row"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a):where(:not([data-slot="button"], .ri-field-control))):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 html:root :is( [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
@@ -184,15 +159,10 @@ html:root [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="
 
 /* Content remains rectangular even when the whole card opens something. Image
    pickers and calendar events keep their content geometry and color marks. */
-html:root [data-slot="content-card"] { border-color: transparent; border-radius: 14px; background-color: var(--raised); box-shadow: var(--shadow-card); }
-html:root [data-slot="content-card"]:hover:not(:disabled) { background-color: var(--selected); }
-html:root [data-slot="content-card"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
 html:root [data-slot="image-picker"] { border-radius: 14px; }
 html:root [data-slot="calendar-event"] { border-color: transparent; border-radius: 8px; background-color: var(--raised); }
 html:root [data-slot="calendar-event"]:hover { background-color: var(--selected); }
 /* Menu rows retain separators and their size, rather than becoming small pills. */
-html:root [data-slot="menu-action"] { border-radius: 8px; }
-html:root [data-slot="menu-action"]:hover:not(:disabled) { background-color: var(--selected); }
 
 /* Files in a sentence are capsules. In an inverted message they inherit the
    message's ink, so the chip and its hover stay readable on either bubble. */
@@ -205,29 +175,19 @@ html:root [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-c
 html:root [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--shadow-thumb); }
 html:root [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--raised); }
 
-html:root :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Calendar cells and pickers can clip at their container's edge. */
-html:root :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
+html:root :is([data-slot="calendar-event"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
 
 /* Warning actions keep amber at a readable shade on the quiet status fill. */
 html:root [data-slot="action-button"][data-tone="warning"] { color: var(--warning-ink); }
 
 /* ── Default look audit: state, contrast and phone layout ──────────────── */
 
-html:root :is( [data-slot="run-row"], [data-slot="meta-item"], [data-task-status]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
+html:root :is([data-task-status]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
 
 /* Keep the original energy/status hues, with ink that works at metadata size. */
-html:root [data-slot="meta"] [data-kind="energy"][data-energy="light"] { color: var(--energy-light); }
-html:root [data-slot="meta"] [data-kind="energy"][data-energy="deep"] { color: var(--energy-deep); }
-html:root [data-task-status="consider"] { color: var(--status-consider); }
-html:root [data-task-status="todo"] { color: var(--status-todo); }
-html:root [data-task-status="in_progress"] { color: var(--status-progress); }
-html:root [data-task-status="done"] { color: var(--status-done); }
 /* The meta wrapper normally hands color back to the component's utilities. */
-html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="in_progress"] { color: var(--status-progress); }
-html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="consider"] { color: var(--status-consider); }
-html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="todo"] { color: var(--status-todo); }
-html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="done"] { color: var(--status-done); }
 
 /* Descendant uppercase variants target cmdk headings, rather than .uppercase. */
 html:root [cmdk-group-heading] { font-size: 12px; font-weight: 500; letter-spacing: normal; text-transform: none; color: var(--t3); }
@@ -244,18 +204,13 @@ html:root :is([data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) 
 html:root [data-slot="dialog-content"][data-kind="search"] { width: min(42rem, calc(100% - 16px)); }
 html:root [data-slot="floating-tools"] { border-radius: 14px; box-shadow: var(--shadow-pop); }
 
-html:root [data-slot="run-row"] { border-color: transparent; border-radius: 14px; box-shadow: var(--shadow-card); }
 
 /* Pairing uses the same opaque panels and quiet fields as the rest of Ri. */
 html:root [data-slot="pairing-decoration"] { display: none; }
 html:root [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--raised); box-shadow: none; backdrop-filter: none; }
-html:root [data-slot="pairing"] [data-slot="callout"] { box-shadow: none; backdrop-filter: none; }
 html:root [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--line); }
 
 @media (max-width: 767px) {
-  html:root [data-slot="run-row"] { flex-wrap: wrap; column-gap: 8px; row-gap: 6px; }
-  html:root [data-slot="run-summary"] { order: -1; flex: 0 0 100%; white-space: normal; overflow-wrap: anywhere; }
-  html:root [data-slot="run-row"] > :not([data-slot]) { font-size: 11px; }
   html:root [data-slot="dialog-content"][data-kind="search-page"] { border-radius: 0; }
   html:root [data-slot="calendar-toolbar"] { position: relative; flex-wrap: wrap; padding-right: 44px; }
   html:root [data-slot="calendar-toolbar"] > [data-slot="button"][data-kind="close"] { position: absolute; right: 8px; top: 8px; }

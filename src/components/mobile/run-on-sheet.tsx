@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 /**
@@ -51,14 +52,11 @@ export function RunOnSheet({
                 const canSetUp = choice.needsSetup && choice.connected;
                 return (
                   <li key={choice.deviceId} className="flex items-center gap-2">
-                    <button
+                    <InlineAction
                       type="button"
                       disabled={!choice.ready && !canSetUp}
                       onClick={() => (canSetUp ? setSettingUp({ id: choice.deviceId, name: choice.name }) : onPick(choice.deviceId))}
-                      className={cn(
-                        'flex flex-1 items-start gap-3 rounded-xl px-3 py-2.5 text-left active:bg-muted/60 disabled:opacity-50',
-                        isDefault && 'bg-muted/40',
-                      )}
+                      className={cn("flex flex-1 items-start gap-3 text-left disabled:opacity-50", isDefault && "")}
                     >
                       <Laptop size={16} className="mt-0.5 flex-shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1">
@@ -81,7 +79,7 @@ export function RunOnSheet({
                         </span>
                       </span>
                       {isDefault && <Check size={15} className="mt-0.5 text-foreground/70" />}
-                    </button>
+                    </InlineAction>
                     {!isDefault && choice.ready && (
                       <Button
                         type="button"

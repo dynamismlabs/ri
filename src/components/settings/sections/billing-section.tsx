@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
@@ -35,7 +37,7 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
   const unlimited = value == null;
 
   return (
-    <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+    <Card padding="md" className="space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">Monthly budget</p>
         {unlimited && (
@@ -74,7 +76,7 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
         />
         <span className="text-[11px] text-muted-foreground/60">/ month</span>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -86,7 +88,7 @@ function SpendingSummary() {
   const hasBudget = data.budget != null && data.budget > 0;
   const pct = data.budgetFraction != null ? Math.round(data.budgetFraction * 100) : null;
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-background p-3">
+    <Card padding="md" className="space-y-3">
       <SpendRow label="Today" value={data.todaySpend} />
       <SpendRow
         label="This month"
@@ -107,7 +109,7 @@ function SpendingSummary() {
           ) : null
         }
       />
-    </div>
+    </Card>
   );
 }
 

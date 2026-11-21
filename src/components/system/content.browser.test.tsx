@@ -7,13 +7,15 @@ const tones = ['neutral', 'info', 'warning', 'error', 'success', 'working', 'ene
 beforeAll(async () => {
   fixture = await browserFixture(`
     import React,{useState,useRef,useEffect} from 'react';import{createRoot}from'react-dom/client';
-    import{Card}from'./src/components/system/card';import{Callout}from'./src/components/system/callout';
+    import{InlineAction}from'./src/components/system/inline-action';import{Card}from'./src/components/system/card';import{Callout}from'./src/components/system/callout';
     import{ChoiceRow,ChoiceGroup}from'./src/components/system/choice-row';import{MenuAction}from'./src/components/system/menu-action';
     import{StatusBadge}from'./src/components/system/status-badge';import{Meta,MetaItem}from'./src/components/system/meta';
     import{DropdownMenu,DropdownMenuTrigger,DropdownMenuContent}from'./src/components/ui/dropdown-menu';
     import{Button}from'./src/components/system/button';import{TipProvider}from'./src/components/ui/tip';
     const theme=new URLSearchParams(location.search).get('theme');document.documentElement.classList.toggle('dark',theme==='dark');
     function Fixture(){const[value,setValue]=useState('read'),[clicks,setClicks]=useState(0),ref=useRef(null);useEffect(()=>{window.rowRef=ref.current},[]);return <main className="bg-pane text-t1 p-4 space-y-3">
+      <div style={{fontSize:15,lineHeight:'24px'}}><InlineAction id="inline-summary" className="w-full text-left"><span className="block">A summary title</span><span className="block">The second line stays below</span></InlineAction></div>
+      <ChoiceRow asChild><div id="nested-content" className="flex items-center"><button aria-label="Drag within content"><svg width="12" height="12"/></button><span>Content with its own controls</span></div></ChoiceRow>
       <Card id="content">A content panel</Card><Card as="button" id="card-action" onClick={()=>setClicks(c=>c+1)}>Open a summary</Card><Card as="button" disabled id="card-disabled" onClick={()=>setClicks(c=>c+1)}>Unavailable summary</Card>
       <div className="flex gap-2"><ChoiceRow ref={ref} id="row-action" title="Use this agent" description="Continue its existing work" onClick={()=>setClicks(c=>c+1)}/><ChoiceRow id="row-selected" aria-pressed={true}>Chosen agent</ChoiceRow><ChoiceRow id="row-disabled" disabled onClick={()=>setClicks(c=>c+1)}>Unavailable agent</ChoiceRow></div>
       <ChoiceRow id="row-invalid" title="Invalid choice" aria-invalid="true"/><ChoiceRow id="row-touch" size="touch" title="Phone option" description="Supporting text wraps without clipping"/>
@@ -66,6 +68,15 @@ for (const theme of ['light', 'dark']) {
         expect(await target.evaluate(el => getComputedStyle(el).opacity)).toBe('0.5');
       }
       expect(await page.locator('#row-selected').evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe(await page.locator('#row-disabled').evaluate(el => getComputedStyle(el).backgroundColor));
+    } finally { await page.close(); }
+  });
+  it(`preserves content flow and nested control dimensions without Button drawing (${theme})`, async () => {
+    const page = await open(theme);
+    try {
+      const lines = await page.locator('#inline-summary > span').evaluateAll(els => els.map(el => ({top: el.getBoundingClientRect().top, bottom: el.getBoundingClientRect().bottom})));
+      expect(lines[1].top).toBeGreaterThanOrEqual(lines[0].bottom);
+      expect(await page.locator('#inline-summary').evaluate(el => getComputedStyle(el).fontSize)).toBe('15px');
+      expect(await page.locator('#nested-content svg').evaluate(el => el.getBoundingClientRect().width)).toBe(12);
     } finally { await page.close(); }
   });
   it(`associates choice title/help and preserves radio form values, arrows and focus (${theme})`, async () => {

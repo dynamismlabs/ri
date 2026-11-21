@@ -1,4 +1,9 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -124,14 +129,14 @@ export function BrowserSection() {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-500/20 bg-red-500/5 p-2.5 text-[12px] text-red-500">
+        <Callout padding="sm" tone={"error"} className="flex items-center gap-2">
           <AlertCircle size={14} />
           {error}
-        </div>
+        </Callout>
       )}
 
       {/* Master toggle */}
-      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
+      <Card as="label" padding="md" className="flex cursor-pointer items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
             <Globe size={16} className="text-primary" />
@@ -149,12 +154,12 @@ export function BrowserSection() {
           onCheckedChange={(next) => patch({ enabled: next })}
           aria-label="Enable the agent browser"
         />
-      </label>
+      </Card>
 
       {enabled && (
         <>
           {/* Browser picker */}
-          <div className="rounded-lg border border-border bg-background p-3">
+          <Card padding="md" >
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">Browser</p>
             {detected.length === 0 ? (
               <p className="mt-2 text-[12px] text-amber-500">
@@ -166,39 +171,35 @@ export function BrowserSection() {
                   const active = b.executablePath === resolvedPath;
                   const isDefault = config.chromiumPath === null && detected[0]?.executablePath === b.executablePath;
                   return (
-                    <button
+                    <ChoiceRow
                       key={b.executablePath}
                       onClick={() => patch({ chromiumPath: b.executablePath })}
                       disabled={busy !== null}
-                      data-slot="choice-row"
+
                       aria-pressed={active}
-                      className={`flex w-full items-center justify-between rounded-md border p-2.5 text-left transition-all ${
-                        active
-                          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                          : 'border-border bg-background hover:border-muted-foreground/30'
-                      }`}
+                      className={`flex w-full items-center justify-between text-left ${""}`}
                     >
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-foreground">
                           {b.label}
                           {isDefault && (
-                            <span className="ml-2 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground/70">
+                            <StatusBadge className="ml-2">
                               Default
-                            </span>
+                            </StatusBadge>
                           )}
                         </p>
                         <p className="truncate text-[11px] text-muted-foreground/50">{b.executablePath}</p>
                       </div>
                       {active && <CheckCircle2 size={14} className="shrink-0 text-primary" />}
-                    </button>
+                    </ChoiceRow>
                   );
                 })}
               </div>
             )}
-          </div>
+          </Card>
 
           {/* Default profile */}
-          <div className="rounded-lg border border-border bg-background p-3">
+          <Card padding="md" >
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">Default profile</p>
             <p className="mt-1 text-[11px] text-muted-foreground/60">
               The logged-in identity actions use when none is given. Letters, digits, underscore, or hyphen.
@@ -215,10 +216,10 @@ export function BrowserSection() {
               placeholder="agent"
               aria-label="Default browser profile name"
             />
-          </div>
+          </Card>
 
           {/* Login + status */}
-          <div className="rounded-lg border border-border bg-background p-3">
+          <Card padding="md" >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span
@@ -266,11 +267,11 @@ export function BrowserSection() {
                 </Button>
               )}
             </div>
-          </div>
+          </Card>
 
           {/* Recent activity */}
           {status.audit.length > 0 && (
-            <div className="rounded-lg border border-border bg-background p-3">
+            <Card padding="md" >
               <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">
                 Recent activity
               </p>
@@ -289,7 +290,7 @@ export function BrowserSection() {
                     </li>
                   ))}
               </ul>
-            </div>
+            </Card>
           )}
         </>
       )}

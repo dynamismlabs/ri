@@ -1,4 +1,5 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -63,10 +64,10 @@ function SourceChoices({ item, onClose, onOpenChat }: { item: LibraryItem; onClo
   return <div className="space-y-3">
     {failure && <p role="alert" className="text-sm text-destructive">{failure}</p>}
     {!sources.data?.items.length ? <p className="text-sm text-muted-foreground">No accounts from this connection are available to reference. Check the connection and its access, then try again.</p>
-      : sources.data.items.map(source => <button data-slot="choice-row" key={source.sourceRef} type="button" disabled={source.status === 'unavailable'} onClick={() => open(source.sourceRef)}
-        className="flex w-full items-center gap-3 rounded-lg border p-3 text-left hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50">
+      : sources.data.items.map(source => <ChoiceRow key={source.sourceRef} type="button" disabled={source.status === 'unavailable'} onClick={() => open(source.sourceRef)}
+        className="flex w-full items-center gap-3 text-left disabled:cursor-not-allowed">
         <MessageCircle size={15} className="shrink-0 text-muted-foreground" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{source.label}</span><span className="text-xs text-muted-foreground">{SOURCE_STATUS_LABELS[source.status]}</span></span>
-      </button>)}
+      </ChoiceRow>)}
     {sources.data?.items.some(source => source.status === 'unavailable') && <p className="text-xs text-muted-foreground">Some sources are unavailable with this chat’s engine or access. You can choose a supported engine in chat.</p>}
     {sources.data && !sources.data.items.some(source => source.status !== 'unavailable') && <Button
       onClick={() => open()}

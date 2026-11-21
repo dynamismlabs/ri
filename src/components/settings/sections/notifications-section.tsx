@@ -1,4 +1,11 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { SelectField } from '@/components/system/select-field';
 import { Field } from '@/components/system/field';
@@ -25,7 +32,7 @@ import { rpcQuery } from '@/lib/trpc/request-options';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { setSettingsSection } from '@/components/settings/settings-store';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge as Badge } from '@/components/system/status-badge';
 import { Button } from '@/components/system/button';
 
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
@@ -361,13 +368,13 @@ export function NotificationsSection() {
       )}
 
       {error && (
-        <div className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs text-destructive">
+        <Callout padding="lg" tone={"error"} className="flex items-start gap-3">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <div className="space-y-1">
             <h5 className="font-semibold">Action Failed</h5>
             <p className="opacity-90">{error}</p>
           </div>
-        </div>
+        </Callout>
       )}
 
       {desktopViewer && (
@@ -403,7 +410,7 @@ export function NotificationsSection() {
 
       {/* 1. Shared channel status, not this computer's permission */}
       {channels.length === 0 ? (
-        <div className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-4">
+        <Card padding="lg" className="flex items-start gap-3">
           <div className="rounded-lg bg-muted/70 p-2 text-muted-foreground">
             <Bell size={16} />
           </div>
@@ -413,16 +420,11 @@ export function NotificationsSection() {
               Add a channel below to start getting alerts when an agent needs you or finishes a run.
             </p>
           </div>
-        </div>
+        </Card>
       ) : (
         <div className="space-y-2">
-          <div
-            className={cn(
-              'flex items-center gap-2.5 rounded-xl border p-3 text-xs',
-              enabledChannels.length > 0
-                ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                : 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400',
-            )}
+          <Callout padding="md" tone={(enabledChannels.length > 0 ? "success" : "warning")}
+            className="flex items-center gap-2.5"
           >
             <CheckCircle2 size={16} className="shrink-0" />
             <span className="font-medium">
@@ -435,19 +437,19 @@ export function NotificationsSection() {
                 <>All channels are turned off. You won&apos;t receive anything until you enable one.</>
               )}
             </span>
-          </div>
+          </Callout>
           {externalLinksUnreachable && (
-            <button data-slot="choice-row"
+            <ChoiceRow
               type="button"
               onClick={() => setSettingsSection('devices')}
-              className="flex w-full items-start gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-2.5 text-left text-[11px] leading-normal text-amber-700 transition-colors hover:bg-amber-500/10 dark:text-amber-400"
+              className="flex w-full items-start gap-2 text-left"
             >
               <Info size={13} className="mt-0.5 shrink-0" />
               <span>
                 Telegram links use your LAN address and won&apos;t open off your network.{' '}
                 <span className="font-semibold underline">Set a public URL in Devices.</span>
               </span>
-            </button>
+            </ChoiceRow>
           )}
         </div>
       )}
@@ -467,15 +469,12 @@ export function NotificationsSection() {
           )}
 
           {/* Telegram */}
-          <button data-slot="choice-row"
+          <ChoiceRow
             ref={telegramButton}
             type="button"
             onClick={() => setAddTgOpen((v) => !v)}
             aria-expanded={addTgOpen}
-            className={cn(
-              'flex items-center gap-2.5 rounded-xl border border-border bg-card/30 p-3 text-left transition-colors hover:bg-muted/40',
-              addTgOpen && 'bg-muted/40',
-            )}
+            className="flex items-center gap-2.5 text-left"
           >
             <IntegrationLogo providerId="telegram" name="Telegram" size={36} />
             <div className="min-w-0 flex-1">
@@ -483,12 +482,12 @@ export function NotificationsSection() {
               <div className="text-[11px] text-muted-foreground">Alerts in a Telegram chat</div>
             </div>
             <ChevronDown size={14} className={cn('text-muted-foreground transition-transform', addTgOpen && 'rotate-180')} />
-          </button>
+          </ChoiceRow>
         </div>
 
         {/* Telegram add panel */}
         {addTgOpen && (
-          <div className="rounded-xl border border-border bg-card/20 p-4">
+          <Card padding="lg" >
             {telegramConns.length === 0 ? (
               <div className="space-y-3">
                 <p className="text-xs leading-normal text-muted-foreground">
@@ -626,7 +625,7 @@ export function NotificationsSection() {
                 )}
               </div>
             )}
-          </div>
+          </Card>
         )}
       </div>
 
@@ -635,7 +634,7 @@ export function NotificationsSection() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Channels</h2>
-            <Badge variant="secondary" className="rounded-full text-[10px]">
+            <Badge appearance="soft" className="rounded-full text-[10px]">
               {channels.length} total
             </Badge>
           </div>
@@ -645,16 +644,16 @@ export function NotificationsSection() {
               const isWebPush = c.kind === 'web_push';
               const isDesktop = isDesktopNotificationChannel(c);
               return (
-                <div key={c.id} className="rounded-xl border border-border bg-card/30 p-3">
+                <Card padding="md" key={c.id} >
                   <div className="flex items-center gap-3">
                     <div className={cn('shrink-0', !c.enabled && 'opacity-50')}>{channelVisual(c, 36)}</div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium text-foreground">{channelLabel(c)}</span>
                         {!c.enabled && (
-                          <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <StatusBadge className="shrink-0">
                             Off
-                          </span>
+                          </StatusBadge>
                         )}
                       </div>
                       <p className="truncate text-[11px] text-muted-foreground">
@@ -729,7 +728,7 @@ export function NotificationsSection() {
                       aria-label={'Label'}
                     />
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -745,7 +744,7 @@ export function NotificationsSection() {
             <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Routing</h2>
             <p className="text-[11px] text-muted-foreground">Pick which events each channel delivers.</p>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-border bg-card/20">
+          <Card padding="none" className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr>
@@ -771,9 +770,9 @@ export function NotificationsSection() {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-medium text-foreground">{e.label}</span>
                         {e.type === 'deck.surfaced' && (
-                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-muted-foreground">
+                          <StatusBadge >
                             Soon
-                          </span>
+                          </StatusBadge>
                         )}
                       </div>
                       <div className="mt-0.5 text-[10px] leading-snug text-muted-foreground">{e.description}</div>
@@ -794,7 +793,7 @@ export function NotificationsSection() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
           {channels.some((c) => !c.enabled) && (
             <p className="text-[10px] text-muted-foreground">
               Dimmed channels are turned off and won&apos;t deliver until re-enabled.
@@ -815,10 +814,10 @@ export function NotificationsSection() {
         ) : (
           <div className="space-y-3">
             {digests.map((d) => (
-              <div key={d.id} className="space-y-3 rounded-xl border border-border bg-background/30 p-3.5">
+              <Card padding="md" key={d.id} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-foreground">{d.name}</span>
-                  <Badge variant={d.enabled ? 'default' : 'secondary'} className="rounded-full text-[10px]">
+                  <Badge tone={d.enabled ? 'success' : 'neutral'} className="rounded-full text-[10px]">
                     {d.enabled ? 'Active' : 'Disabled'}
                   </Badge>
                 </div>
@@ -851,7 +850,7 @@ export function NotificationsSection() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
@@ -867,7 +866,7 @@ export function NotificationsSection() {
           (e.g. beamd) in Devices so links open on your phone.
         </p>
         <div className="space-y-3">
-          <div className="space-y-1 rounded-xl border border-border/50 bg-muted/40 p-3 text-xs">
+          <Card padding="md" className="space-y-1">
             <span className="text-muted-foreground">External links currently use </span>
             {baseUrls.tunnel ? (
               <span className="break-all font-mono text-emerald-600 dark:text-emerald-400">{baseUrls.tunnel}</span>
@@ -881,7 +880,7 @@ export function NotificationsSection() {
                 No remote URL set. Links use your LAN address, which won&apos;t open off your network.
               </p>
             )}
-          </div>
+          </Card>
           <Button
             onClick={() => setSettingsSection('devices')}
             variant="secondary"
@@ -911,20 +910,20 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-border bg-card/30">
-      <button
+    <Card padding="none" >
+      <MenuAction
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
+        className="flex w-full items-center justify-between gap-2 text-left"
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
           {icon}
           {title}
         </span>
         <ChevronDown size={16} className={cn('text-muted-foreground transition-transform', open && 'rotate-180')} />
-      </button>
+      </MenuAction>
       {open && <div className="border-t border-border/50 px-4 py-4">{children}</div>}
-    </div>
+    </Card>
   );
 }

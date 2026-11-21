@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -256,13 +257,13 @@ function ContextBlock({ lines }: { lines: string[] }) {
   return (
     <>
       <LineRows lines={lines.slice(0, COLLAPSE_EDGE)} tone="context" />
-      <button
+      <MenuAction density="compact"
         type="button"
         onClick={() => setExpanded(true)}
-        className="block w-full bg-muted/30 px-3 py-0.5 text-left text-[10px] text-muted-foreground/70 hover:bg-muted/50"
+        className="block w-full text-left"
       >
         ⋯ {hidden} unchanged {hidden === 1 ? 'line' : 'lines'}
-      </button>
+      </MenuAction>
       <LineRows lines={lines.slice(-COLLAPSE_EDGE)} tone="context" />
     </>
   );

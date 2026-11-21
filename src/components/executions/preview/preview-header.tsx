@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -97,7 +98,6 @@ export function PreviewHeader({
         </Tip>
       )}
 
-
         <IconButton
           type="button"
           onClick={onRefresh}
@@ -110,7 +110,6 @@ export function PreviewHeader({
         >
           <RotateCw size={13} />
         </IconButton>
-
 
       {/* Reachability chip — local loopback vs the active remote provider. */}
       {isLive && (
@@ -137,19 +136,15 @@ export function PreviewHeader({
 
       {/* URL strip — read-only, click to copy. */}
       <Tip label={copied ? 'Copied!' : url ? 'Click to copy URL' : 'No URL yet'}>
-        <button
+        <InlineAction code
           type="button"
           onClick={handleCopy}
           disabled={!url}
-          className={cn(
-            'mx-1 flex h-7 flex-1 items-center truncate rounded bg-muted/50 px-2.5 text-left font-mono text-[11px] text-muted-foreground hover:bg-muted disabled:opacity-50',
-            copied && 'text-foreground',
-          )}
+          className={cn("mx-1 flex flex-1 items-center truncate text-left disabled:opacity-50", copied && "")}
         >
           {copied ? 'Copied URL' : url ?? '-'}
-        </button>
+        </InlineAction>
       </Tip>
-
 
         <IconButton asChild label="Open in new tab" tooltip="Open in new tab" variant="ghost" size="sm" className="flex items-center justify-center"><a href={url ?? '#'}
           target="_blank"
@@ -158,7 +153,6 @@ export function PreviewHeader({
           onClick={(e) => { if (!url) e.preventDefault(); }}>
           <ExternalLink size={13} />
         </a></IconButton>
-
 
       {shareControl}
 

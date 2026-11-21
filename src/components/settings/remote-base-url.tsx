@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -264,7 +267,7 @@ export function RemoteBaseUrlSection() {
         The URL a remote device would paste in its browser to reach this machine. Anything works, port and all.
       </p>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
+      <Card padding="sm" density="row" className="flex flex-wrap items-center gap-2">
         {checkingBeamd ? (
           <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
@@ -307,13 +310,13 @@ export function RemoteBaseUrlSection() {
             </Button>
           </Tip>
         </div>
-      </div>
+      </Card>
 
       {/* Keep Ri reachable: re-open the Beamd tunnel on every startup so a
           headless/remote box stays accessible across restarts without a manual
           reconnect. Only meaningful for the Beamd tunnel — external tunnels
           (Tailscale, ngrok, Cloudflare) are managed outside Ri. */}
-      <div className="flex items-start justify-between gap-3 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
+      <Card padding="sm" density="row" className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[12px] font-medium text-foreground">
             Reconnect automatically on startup
@@ -340,16 +343,16 @@ export function RemoteBaseUrlSection() {
             aria-label="Reconnect automatically on startup"
           />
         </div>
-      </div>
+      </Card>
 
       {!saved && !isLoading && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5">
+        <Callout padding="sm" tone={"warning"} className="flex items-start gap-2">
           <AlertCircle size={12} className="mt-0.5 shrink-0 text-amber-500" />
           <p className="text-[11px] text-foreground/90">
             No remote URL set yet. Devices off your network can&apos;t reach this app, and notification deep links
             won&apos;t open on your phone. Set one below if you use remote access.
           </p>
-        </div>
+        </Callout>
       )}
 
       <div className="flex items-center gap-2">
@@ -448,7 +451,7 @@ export function RemoteBaseUrlSection() {
       )}
 
       {testResult.status === 'error' && (
-        <div className="mt-1 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5 space-y-1.5">
+        <Callout padding="sm" tone={"warning"} className="mt-1 space-y-1.5">
           <div className="flex items-start gap-2">
             <AlertCircle size={12} className="mt-0.5 shrink-0 text-amber-500" />
             <p className="text-[11px] text-foreground font-medium break-all">
@@ -460,7 +463,7 @@ export function RemoteBaseUrlSection() {
               <li key={hint}>{hint}</li>
             ))}
           </ul>
-        </div>
+        </Callout>
       )}
 
       {/* Advanced: the Beamd tunnel name. Collapsed by default, auto-opened

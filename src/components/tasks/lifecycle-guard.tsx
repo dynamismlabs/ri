@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { trpc } from '@/lib/trpc/client';
@@ -183,7 +184,7 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
               </Dialog.Description>
             </div>
           </div>
-          <div className="mt-3 max-h-40 overflow-y-auto rounded border border-border bg-muted/40 p-2">
+          <Card padding="sm" className="mt-3 max-h-40 overflow-y-auto">
             <ul className="space-y-0.5">
               {(ask?.openChildren ?? []).map((c) => (
                 <li key={c.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -192,7 +193,7 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
           <div className="mt-4 flex justify-end gap-2">
             <Button
               onClick={() => ask?.resolve(false)}
@@ -245,7 +246,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
             </div>
           </div>
 
-          <div className="mt-3 max-h-48 overflow-y-auto rounded border border-border bg-muted/40 p-2">
+          <Card padding="sm" className="mt-3 max-h-48 overflow-y-auto">
             <ul className="space-y-1.5">
               {workstreams.map((w) => (
                 <li key={w.executionId} className="text-xs">
@@ -267,7 +268,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
 
           <div className="mt-4 flex flex-wrap justify-end gap-2">
             <Button

@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import {
@@ -12,12 +13,7 @@ import {
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/system/button';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
 	useCreateDir,
 	useCreateFile,
@@ -57,7 +53,6 @@ import { TreeCollapseAllButton } from './tree-collapse-all-button';
 import { TreeList, type PendingCreate, type PendingError } from './tree-list';
 import { TreeSearchBar } from './tree-search-bar';
 import { TreeViewToggle, type TreeViewMode } from './tree-view-toggle';
-
 
 interface FileTreeProps {
   /**
@@ -703,18 +698,18 @@ export function FileTree({
                 // to this trigger on close, or it steals it from the field.
                 onCloseAutoFocus={(e) => e.preventDefault()}
               >
-                <DropdownMenuItem onClick={() => beginCreate('', 'file')}>
+                <MenuAction kind="menu" onClick={() => beginCreate('', 'file')}>
                   <FilePlus size={14} />
                   New file
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => beginCreate('', 'dir')}>
+                </MenuAction>
+                <MenuAction kind="menu" onClick={() => beginCreate('', 'dir')}>
                   <FolderPlus size={14} />
                   New folder
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled={!worktreePath || !!uploadProgress} onClick={pickFiles}>
+                </MenuAction>
+                <MenuAction kind="menu" disabled={!worktreePath || !!uploadProgress} onClick={pickFiles}>
                   <Upload size={14} />
                   Upload files
-                </DropdownMenuItem>
+                </MenuAction>
               </DropdownMenuContent>
             </DropdownMenu>
             )}

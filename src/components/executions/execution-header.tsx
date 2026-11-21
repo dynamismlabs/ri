@@ -1,4 +1,12 @@
 'use client';
+import { Switch } from '@/components/ui/switch';
+import { ChoiceRow } from '@/components/system/choice-row';
+
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -123,13 +131,13 @@ export function ExecutionHeader({
   ) : null;
 
   const archiveMenuItem = !isArchived && (
-    <button
+    <MenuAction density="compact" tone="error"
       onClick={handleArchive}
-      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-destructive hover:bg-destructive/10 transition-colors"
+      className="w-full flex items-center gap-2"
     >
       <Archive size={11} />
       Archive chat
-    </button>
+    </MenuAction>
   );
 
   // Read-state toggle for the session menu — the same affordance the rail
@@ -141,21 +149,21 @@ export function ExecutionHeader({
   const isUnread = !isRunning && isSessionUnread(session);
 
   const readStateMenuItem = isUnread ? (
-    <button
+    <MenuAction density="compact"
       onClick={() => markRead.mutate(session.id)}
-      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors"
+      className="w-full flex items-center gap-2"
     >
       <Eye size={12} />
       Mark as read
-    </button>
+    </MenuAction>
   ) : (
-    <button
+    <MenuAction density="compact"
       onClick={() => markUnread.mutate(session.id)}
-      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors"
+      className="w-full flex items-center gap-2"
     >
       <EyeOff size={12} />
       Mark as unread
-    </button>
+    </MenuAction>
   );
 
   // Pin toggle — the same rail affordance, reachable from inside the open
@@ -165,21 +173,21 @@ export function ExecutionHeader({
   const isPinned = !!session.execution?.pinnedAt;
   const pinMenuItem = !isArchived && session.executionId ? (
     isPinned ? (
-      <button
+      <MenuAction density="compact"
         onClick={() => unpin.mutate(session.id)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors"
+        className="w-full flex items-center gap-2"
       >
         <PinOff size={12} />
         Unpin from rail
-      </button>
+      </MenuAction>
     ) : (
-      <button
+      <MenuAction density="compact"
         onClick={() => pin.mutate(session.id)}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors"
+        className="w-full flex items-center gap-2"
       >
         <Pin size={12} />
         Pin to rail
-      </button>
+      </MenuAction>
     )
   ) : null;
 
@@ -228,14 +236,14 @@ export function ExecutionHeader({
           className="z-50 max-h-[min(80vh,640px)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-border bg-popover shadow-xl pointer-events-auto outline-none"
         >
           <div className="p-1">
-            <button
+            <MenuAction density="compact"
               type="button"
               onClick={rename.begin}
-              className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors"
+              className="w-full flex items-center gap-2"
             >
               <Pencil12 />
               Rename
-            </button>
+            </MenuAction>
             {pinMenuItem}
             {readStateMenuItem}
             <DensityMenuItem />
@@ -331,19 +339,14 @@ export function ExecutionHeader({
             {workspace?.emoji && <span className="text-base flex-shrink-0">{workspace.emoji}</span>}
             {labelElement ?? (
               <Tip label="Rename">
-                <button
+                <InlineAction
                   type="button"
                   onClick={rename.begin}
-                  className={cn(
-                    'truncate text-left rounded px-1 -mx-1 py-0.5',
-                    'active:bg-muted/40 transition-colors cursor-text',
-                    displayLabel
-                      ? 'text-foreground font-semibold text-[14.5px]'
-                      : 'text-muted-foreground/70 italic font-normal text-[14.5px]',
-                  )}
+                  className={cn("truncate text-left -mx-1", "cursor-text", displayLabel
+    ? "" : "italic")}
                 >
                   {displayLabel ?? 'Untitled'}
-                </button>
+                </InlineAction>
               </Tip>
             )}
           </div>
@@ -395,17 +398,13 @@ export function ExecutionHeader({
           <span className="text-muted-foreground/40 flex-shrink-0" aria-hidden>›</span>
           {labelElement ?? (
             <Tip label="Rename">
-              <button
+              <InlineAction
                 type="button"
                 onClick={rename.begin}
-                className={cn(
-                  'truncate text-left rounded px-0.5 -mx-0.5 min-w-0 text-[13px]',
-                  'hover:bg-muted/50 transition-colors cursor-text',
-                  displayLabel ? 'text-foreground font-semibold' : 'text-muted-foreground/60 italic font-normal',
-                )}
+                className={cn("truncate text-left -mx-0.5 min-w-0", "cursor-text", displayLabel ? "" : "italic")}
               >
                 {displayLabel ?? 'Untitled'}
-              </button>
+              </InlineAction>
             </Tip>
           )}
         </div>
@@ -462,25 +461,11 @@ function DensityMenuItem() {
   const { density, toggle } = useTranscriptDensity();
   const condensed = density === 'condensed';
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={condensed}
-      onClick={toggle}
-      className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors"
-    >
+    <ChoiceRow asChild surface="plain" density="compact"><label className="flex w-full items-center gap-2">
       <Rows3 size={12} />
-      Condensed transcript
-      <span
-        aria-hidden
-        className={cn(
-          'ml-auto inline-flex h-4 w-7 items-center rounded-full p-0.5 transition-colors',
-          condensed ? 'bg-foreground' : 'bg-muted-foreground/30',
-        )}
-      >
-        <span className={cn('h-3 w-3 rounded-full bg-background transition-transform', condensed && 'translate-x-3')} />
-      </span>
-    </button>
+      <span className="flex-1">Condensed transcript</span>
+      <Switch checked={condensed} onCheckedChange={toggle} aria-label="Condensed transcript" size="sm" />
+    </label></ChoiceRow>
   );
 }
 
@@ -496,16 +481,12 @@ function LiveBadge({ branch }: { branch: string | null }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span
-          className={cn(
-            'inline-flex items-center gap-1 rounded px-1.5 py-0.5',
-            'bg-amber-500/15 text-amber-600 dark:text-amber-400',
-            'text-[10px] font-semibold tracking-wide uppercase cursor-default',
-          )}
+        <StatusBadge tone={"warning"}
+          className={cn("inline-flex items-center gap-1", "cursor-default")}
         >
           <Zap size={9} />
           Live
-        </span>
+        </StatusBadge>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={4}>
         <div className="space-y-1 max-w-[260px]">
@@ -575,24 +556,24 @@ function WorktreeDeepLinks({ sessionId, worktreePath }: { sessionId: string; wor
 
   return (
     <div className="space-y-0.5">
-      <button
+      <MenuAction density="compact"
         type="button"
         onClick={handleReveal}
         disabled={revealing}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors disabled:opacity-50"
+        className="w-full flex items-center gap-2 disabled:opacity-50"
       >
         {revealing ? <Loader2 size={12} className="animate-spin" /> : <FolderOpen size={12} />}
         {revealLabel(platform)}
-      </button>
-      <button
+      </MenuAction>
+      <MenuAction density="compact"
         type="button"
         onClick={handleOpenInEditor}
         disabled={opening}
-        className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[12px] text-foreground hover:bg-muted/60 transition-colors disabled:opacity-50"
+        className="w-full flex items-center gap-2 disabled:opacity-50"
       >
         {opening ? <Loader2 size={12} className="animate-spin" /> : <SquareArrowOutUpRight size={12} />}
         Open in {label}
-      </button>
+      </MenuAction>
     </div>
   );
 }
@@ -648,14 +629,10 @@ function CopyableDetailRow({
         {label}
       </span>
       <Tip label={`Copy ${copyLabel}`}>
-        <button
+        <InlineAction code
           type="button"
           onClick={handleCopy}
-          className={cn(
-            'group flex flex-1 min-w-0 items-center gap-1.5 text-left',
-            'font-mono text-[11px] text-foreground/80 hover:text-foreground',
-            'rounded px-1 -mx-1 py-0.5 hover:bg-muted/60 transition-colors',
-          )}
+          className={cn("group flex flex-1 min-w-0 items-center gap-1.5 text-left", "", "-mx-1")}
         >
           <span className="flex-1 min-w-0 truncate">{value}</span>
           {copied ? (
@@ -663,7 +640,7 @@ function CopyableDetailRow({
           ) : (
             <Copy size={11} className="flex-shrink-0 text-muted-foreground/60 group-hover:text-muted-foreground" />
           )}
-        </button>
+        </InlineAction>
       </Tip>
     </div>
   );

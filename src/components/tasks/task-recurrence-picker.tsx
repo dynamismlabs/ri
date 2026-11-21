@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { Check, Repeat } from 'lucide-react';
@@ -117,27 +118,27 @@ function RecurrencePanel({ value, onChange, onClose }: {
             const presetValue = recurrenceValue(preset);
             const current = presetValue === saved;
             return (
-              <button data-slot="menu-action"
+              <MenuAction density="compact"
                 key={presetValue}
                 type="button"
                 aria-pressed={current}
                 onClick={() => finish(presetValue)}
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
+                className="flex items-center justify-between text-left"
               >
                 {describeRecurrence(preset)}
                 {current && <Check size={12} className="text-primary" aria-hidden />}
-              </button>
+              </MenuAction>
             );
           })}
         </div>
         {value && (
-          <button data-slot="menu-action"
+          <MenuAction density="compact" separator
             type="button"
             onClick={() => finish(null)}
-            className="mt-1 rounded-md border-t border-border px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="mt-1 text-left"
           >
             Don&rsquo;t repeat
-          </button>
+          </MenuAction>
         )}
       </div>
     </PopoverContent>

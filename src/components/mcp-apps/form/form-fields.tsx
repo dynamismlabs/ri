@@ -1,4 +1,9 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 
@@ -142,20 +147,20 @@ function Options({options, thumbnails, multiple, chosen, onToggle, disabled, lab
   const role = multiple ? 'checkbox' : 'radio';
   // OpenAI's spec: once any option has a thumbnail, every option shows as an image, with a fallback.
   if (thumbnails) return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
-    {options.map(option => <button data-slot="content-card" key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
-      className={cn('flex min-w-0 flex-col gap-1.5 rounded-lg border p-2 text-left transition-colors disabled:opacity-50', chosen(option) ? 'border-primary bg-primary/5 ring-1 ring-primary/40' : 'border-border hover:bg-muted/40')}>
+    {options.map(option => <Card as="button" padding="sm" shadow  key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+      className="flex min-w-0 flex-col gap-1.5 text-left">
       <Thumbnail icon={option.thumbnail} className="aspect-square w-full" />
       <span className="truncate text-[11px] font-medium">{option.title}</span>
       {option.description && <span className="line-clamp-2 text-[10px] leading-snug text-muted-foreground">{option.description}</span>}
-    </button>)}
+    </Card>)}
   </div>;
   return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="space-y-1">
-    {options.map(option => <button data-slot="choice-row" key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
-      className={cn('flex w-full items-start gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors disabled:opacity-50', chosen(option) ? 'border-primary/50 bg-primary/5' : 'border-border hover:bg-muted/40')}>
+    {options.map(option => <ChoiceRow density="compact"  key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+      className="flex w-full items-start gap-2 text-left">
       <span aria-hidden className={cn('mt-0.5 size-3 shrink-0 border', multiple ? 'rounded-sm' : 'rounded-full', chosen(option) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />
       <span className="min-w-0"><span className="block text-xs">{option.title}</span>
         {option.description && <span className="block text-[11px] leading-snug text-muted-foreground">{option.description}</span>}</span>
-    </button>)}
+    </ChoiceRow>)}
   </div>;
 }
 
@@ -221,7 +226,7 @@ function ResourceControl(props: FormFieldsProps & {field: Extract<FormField, {ki
     {shown.length > 0 && <ul aria-label={field.title ?? field.name} className="space-y-1">
       {shown.map(option => <li key={option.uri} className={cn('flex items-center gap-2 rounded-md border px-2 py-1.5', !implicit && chosen.includes(option.uri) ? 'border-primary/50 bg-primary/5' : 'border-border')}>
         {/* Implicit selection keeps whatever remains, so its rows are removed rather than ticked. */}
-        <button type="button" disabled={disabled || implicit} onClick={() => toggle(option.uri)} className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        <InlineAction  type="button" disabled={disabled || implicit} onClick={() => toggle(option.uri)} className="flex min-w-0 flex-1 items-center gap-2 text-left"
           {...(implicit ? {} : {role: field.multiple ? 'checkbox' : 'radio', 'aria-checked': chosen.includes(option.uri)})}>
           {!implicit && <span aria-hidden className={cn('size-3 shrink-0 border', field.multiple ? 'rounded-sm' : 'rounded-full', chosen.includes(option.uri) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />}
           <Thumbnail icon={option.thumbnail} className="size-9 shrink-0" />
@@ -229,7 +234,7 @@ function ResourceControl(props: FormFieldsProps & {field: Extract<FormField, {ki
             <span className="block truncate text-xs">{option.title ?? option.name}</span>
             {option.description && <span className="block truncate text-[11px] text-muted-foreground">{option.description}</span>}
           </span>
-        </button>
+        </InlineAction>
         {option.preview && <IconButton
           type="button"
           onClick={() => onPreview(option)}

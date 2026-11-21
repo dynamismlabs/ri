@@ -1,4 +1,7 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
+
 import { TextArea } from '@/components/system/text-area';
 import { Field } from '@/components/system/field';
 
@@ -87,15 +90,15 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
           <div className="min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto flex max-w-3xl flex-col gap-4 px-5 py-4">
               {readOnly && saved.linkedFrom && (
-                <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-[11.5px] text-muted-foreground">
+                <Callout as="p" padding="md" density="row" >
                   Another tool links this skill in from {saved.linkedFrom}, so it&apos;s edited there. To
                   change it here, copy it into Ri from the menu above.
-                </p>
+                </Callout>
               )}
               {recovery && (
-                <div
+                <Callout padding="md" density="row" tone={"warning"}
                   role="alert"
-                  className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs"
+                  className="space-y-2"
                 >
                   <p>A retained draft is available for this skill. It has not been sent.</p>
                   <div className="flex gap-3">
@@ -108,10 +111,10 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                       Discard draft
                     </Button>
                   </div>
-                </div>
+                </Callout>
               )}
               {conflict && (
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11.5px] text-amber-700 dark:text-amber-300">
+                <Callout padding="md" density="row" tone={"warning"} className="flex flex-wrap items-center gap-3">
                   <AlertTriangle size={14} className="shrink-0" />
                   <span className="flex-1">
                     The skill changed while you were typing. Nothing was overwritten.
@@ -122,10 +125,10 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                   <Button onClick={keepMine} variant="ghost" size="xs">
                     Keep mine
                   </Button>
-                </div>
+                </Callout>
               )}
               {error && (
-                <p className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-[11.5px] text-destructive">
+                <Callout as="p" padding="md" density="row" tone={"error"} className="flex items-start gap-2">
                   <AlertCircle size={14} className="mt-px shrink-0" />
                   <span>
                     {error}{' '}
@@ -133,7 +136,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                       Try again
                     </Button>
                   </span>
-                </p>
+                </Callout>
               )}
               {(errors.length > 0 || warnings.length > 0) && (
                 <ul className="space-y-1">
@@ -192,7 +195,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                       What the agent follows once it picks the skill. Only what it wouldn&apos;t do well on
                       its own.
                     </p>
-                    <div className="overflow-hidden rounded-lg border border-border bg-card/30 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/30">
+                    <Card padding="none" shadow className="overflow-hidden">
                       <SkillMarkdownEditor
                         value={draft.body}
                         onChange={(body) => saver.edit({ body })}
@@ -202,7 +205,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                         minHeight="320px"
                         readOnly={readOnly || !!recovery}
                       />
-                    </div>
+                    </Card>
                   </section>
 
                   {saved.otherKeys.length > 0 && (
@@ -217,7 +220,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                     The whole file, frontmatter and all. Changing <code className="font-mono">name:</code>{' '}
                     renames the skill.
                   </p>
-                  <div className="overflow-hidden rounded-lg border border-border bg-card/30 focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/30">
+                  <Card padding="none" shadow className="overflow-hidden">
                     <SkillMarkdownEditor
                       value={draft.content}
                       onChange={(content) => saver.edit({ content })}
@@ -226,7 +229,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                       minHeight="420px"
                       readOnly={readOnly || !!recovery}
                     />
-                  </div>
+                  </Card>
                 </section>
               )}
 

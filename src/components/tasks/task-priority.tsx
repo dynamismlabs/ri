@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -11,12 +13,7 @@ import { useRankTask, useTasks } from '@/hooks/use-tasks';
 import { PRIORITY_RANK_FILTER, RANKED_STATUSES, clampRank } from '@/lib/tasks/priority-rank';
 import type { TaskStatus } from '@/lib/tasks/lifecycle';
 import { BUCKET_OPTIONS, bucketRank } from '@/lib/utils/bucket-placement';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
 
 /**
@@ -98,13 +95,13 @@ export function TaskPriority({ taskId, status }: { taskId: string; status: TaskS
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-32">
             {BUCKET_OPTIONS.map((opt) => (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 key={opt.value}
                 onClick={() => setRank(bucketRank(opt.value, position.total))}
-                className="text-xs"
+
               >
                 {opt.label}
-              </DropdownMenuItem>
+              </MenuAction>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>

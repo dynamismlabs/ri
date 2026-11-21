@@ -1,4 +1,9 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
 
 import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
 
@@ -8,7 +13,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowUpCircle, Info, Loader2, MoreHorizontal, RotateCcw, ScrollText, Server } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
@@ -170,7 +175,7 @@ export function AppLogsDialog({ sourceId, name, open, onOpenChange }: { sourceId
             )}
           </div>
           <SegmentedPanel value={which} asChild>
-            <div className="max-h-[60vh] min-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed">
+            <Card padding="sm" purpose="code" className="max-h-[60vh] overflow-auto">
               {logs.error ? (
                 <p className="text-destructive">{logs.error.message}</p>
               ) : logs.data?.message ? (
@@ -195,7 +200,7 @@ export function AppLogsDialog({ sourceId, name, open, onOpenChange }: { sourceId
                   </div>
                 ))
               )}
-            </div>
+            </Card>
           </SegmentedPanel>
         </DialogContent>
       </Dialog>
@@ -239,10 +244,10 @@ function YourAppCard({ source, serverId, update, onOpen, onDetails }: { source: 
   return (
     <li className="rounded-lg border border-border bg-card text-xs transition-colors hover:bg-muted/30">
       <div className="flex items-center gap-3 px-3 pt-3">
-        <button type="button" onClick={open} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-label={`${action} ${source.name}`}>
+        <InlineAction  type="button" onClick={open} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-label={`${action} ${source.name}`}>
           <AppMark name={source.name} size="lg" />
           <span className="min-w-0 flex-1 truncate text-sm font-medium">{source.name}</span>
-        </button>
+        </InlineAction>
         <Button
           onClick={open}
           variant="secondary"
@@ -258,9 +263,9 @@ function YourAppCard({ source, serverId, update, onOpen, onDetails }: { source: 
             ><MoreHorizontal size={14} /></IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {controls.canControl && <DropdownMenuItem disabled={restarting || restart.isPending} onSelect={() => restart.mutate()}><RotateCcw size={14} />Restart</DropdownMenuItem>}
-            {controls.canControl && <DropdownMenuItem onSelect={() => controls.setLogsOpen(true)}><ScrollText size={14} />Logs</DropdownMenuItem>}
-            <DropdownMenuItem onSelect={() => onDetails(source.id)}><Info size={14} />Details</DropdownMenuItem>
+            {controls.canControl && <MenuAction kind="menu" disabled={restarting || restart.isPending} onSelect={() => restart.mutate()}><RotateCcw size={14} />Restart</MenuAction>}
+            {controls.canControl && <MenuAction kind="menu" onSelect={() => controls.setLogsOpen(true)}><ScrollText size={14} />Logs</MenuAction>}
+            <MenuAction kind="menu" onSelect={() => onDetails(source.id)}><Info size={14} />Details</MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

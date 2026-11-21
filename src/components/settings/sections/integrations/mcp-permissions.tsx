@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { SelectField } from '@/components/system/select-field';
 
 import { Button } from '@/components/system/button';
@@ -36,7 +38,7 @@ export function McpDefaultPermissions({ override, busy, serverCount, onChange, o
   override: McpApprovalPolicy | null; busy: boolean; serverCount: number;
   onChange: (policy: McpApprovalPolicy | null) => void; onApplyToAll: () => void;
 }) {
-  return <section aria-label="Global MCP permissions" className="@container space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+  return <Card as="section" padding="lg" aria-label="Global MCP permissions" className="@container space-y-3">
     <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-start @2xl:justify-between">
       <div className="flex min-w-0 items-start gap-2">
         <Globe size={15} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
@@ -60,5 +62,5 @@ export function McpDefaultPermissions({ override, busy, serverCount, onChange, o
       {override === null && <>App default: {MCP_POLICY_LABELS[DEFAULT_MCP_APPROVAL_POLICY]}. </>}
       Saves immediately. Apply to all servers also replaces existing server and tool permission exceptions. Disabled tools stay off.
     </p>
-  </section>;
+  </Card>;
 }

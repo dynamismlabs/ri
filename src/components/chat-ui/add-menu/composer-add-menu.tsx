@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -35,11 +36,11 @@ export function AddMenuRow({ icon: Icon, typed, children, ...props }: ComponentP
   typed?: string;
 }) {
   return (
-    <DropdownMenuItem className="pointer-coarse:py-2.5" {...props}>
+    <MenuAction kind="menu"  {...props}>
       <Icon className="text-muted-foreground" />
       <span className="min-w-0 flex-1 truncate">{children}</span>
       {typed && <kbd className="font-mono text-xs text-muted-foreground">{typed}</kbd>}
-    </DropdownMenuItem>
+    </MenuAction>
   );
 }
 

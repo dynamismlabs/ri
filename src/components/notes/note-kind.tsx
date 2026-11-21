@@ -1,7 +1,10 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { FileText, Gavel } from 'lucide-react';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import { cn } from '@/lib/utils';
 import type { NoteKind } from '@/db/types';
 
@@ -15,15 +18,12 @@ export const NOTE_KIND_LABELS: Record<NoteKind, string> = { note: 'Note', decisi
 export function DecisionLabel({ kind, className }: { kind: NoteKind | null | undefined; className?: string }) {
   if (kind !== 'decision') return null;
   return (
-    <span
-      className={cn(
-        'inline-flex flex-shrink-0 items-center gap-1 rounded bg-foreground/[0.07] px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-foreground/75',
-        className,
-      )}
+    <StatusBadge
+      className={cn("inline-flex flex-shrink-0 items-center gap-1", className)}
     >
       <Gavel size={9} aria-hidden className="flex-shrink-0" />
       Decision
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -55,7 +55,7 @@ export function NoteKindMenuItem({
 }) {
   const next: NoteKind = kind === 'decision' ? 'note' : 'decision';
   return (
-    <DropdownMenuItem
+    <MenuAction kind="menu"
       onClick={(e) => e.stopPropagation()}
       onSelect={() => onChange(next)}
       className={className}
@@ -63,6 +63,6 @@ export function NoteKindMenuItem({
       {next === 'decision'
         ? <><Gavel size={12} className={iconClassName} /> Mark as decision</>
         : <><FileText size={12} className={iconClassName} /> Make regular note</>}
-    </DropdownMenuItem>
+    </MenuAction>
   );
 }

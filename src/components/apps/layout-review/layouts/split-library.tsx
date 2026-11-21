@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
@@ -8,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, BookOpen, LayoutGrid, MoreHorizontal, Plug, Plus, Upload } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { AppLibrary } from '../../app-library';
@@ -145,7 +147,7 @@ function LibraryHeader() {
         className={s.importButton}
       ><MoreHorizontal size={16} /></IconButton></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem disabled={review.busy} onSelect={() => skillInput.current?.click()}><Upload size={14} />Import SKILL.md</DropdownMenuItem>
+          <MenuAction kind="menu" disabled={review.busy} onSelect={() => skillInput.current?.click()}><Upload size={14} />Import SKILL.md</MenuAction>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -193,9 +195,9 @@ function LibraryEntry({ item }: { item: ReviewItem }) {
   const open = () => item.draft || item.kind === 'skills' || !item.view ? review.manage(item) : review.primary(item);
   const selected = review.selected?.key === item.key || review.query.provider === (item.target.kind === 'provider' ? item.target.id : null) || review.query.mcp === (item.target.kind === 'mcp' ? item.target.id : null);
   return <div className={s.libraryEntry} data-item={item.key} data-selected={selected || undefined}>
-    <Tip label={item.name} onlyWhenTextHidden><button data-slot="menu-action" type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
+    <Tip label={item.name} onlyWhenTextHidden><MenuAction density="none"  type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
       <ItemMark item={item} small /><span><strong>{item.name}</strong><small className={item.attention ? s.attention : undefined}>{item.enabled === false ? 'Off' : item.attention ? 'Needs attention' : item.target.kind === 'mcp' ? 'Custom MCP' : item.status}</small></span>
-    </button></Tip>
+    </MenuAction></Tip>
     <ManageButton item={item} />
   </div>;
 }
@@ -260,7 +262,7 @@ function GoalBundle() {
     <div className={s.goalHeading}><h2>{collection.name}</h2><p>{collection.description}</p><span>{added} of {items.length} in your library</span></div>
     <p className={`${s.muted} mb-4`}>Choose the pieces that help. Each has its own setup and access.</p>
     {items.map(item => <div className={s.bundleItem} key={item.key}>
-      <button data-slot="menu-action" className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></button>
+      <MenuAction density="none"  className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></MenuAction>
       <div className={s.bundleItemActions}>{item.added && !item.draft ? <ItemStatus item={item} /> : <span className={s.muted}>Not added</span>}<PrimaryButton item={item} /></div>
     </div>)}
     {!items.length && <Empty>No additions in this bundle are available yet.</Empty>}

@@ -1,10 +1,11 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { ReviewDisposition } from '@/db/types';
 import { apiErrorText } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
@@ -143,13 +144,13 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
               <DropdownMenuContent align="end" className="max-w-xs">
                 <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">Complete which task?</div>
                 {eligible.map((t) => (
-                  <DropdownMenuItem
+                  <MenuAction kind="menu"
                     key={t.id}
-                    className="text-xs"
+
                     onClick={() => review.mutate({ disposition: 'accepted', completeTask: true, taskId: t.id })}
                   >
                     <span className="truncate">{t.title || 'Untitled'}</span>
-                  </DropdownMenuItem>
+                  </MenuAction>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>

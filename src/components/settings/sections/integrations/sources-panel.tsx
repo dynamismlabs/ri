@@ -1,4 +1,7 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -43,13 +46,13 @@ export function SourcesPanel({ onBack, onChanged }: { onBack: () => void; onChan
       </div>
 
       {(preferences?.status === 'invalid' || preferences?.status === 'unsupported') && (
-        <div role="alert" className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive">
+        <Callout padding="md" tone={"error"} role="alert" className="flex items-start gap-3">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <div className="space-y-1">
             <p className="font-semibold">Connection preferences can&apos;t be read</p>
             <p className="opacity-90">{preferences.error} The file was left unchanged at {preferences.file}. Direct connections keep working. Repair or move it to use sources again.</p>
           </div>
-        </div>
+        </Callout>
       )}
 
       {overview.error && <p role="alert" className="text-xs text-destructive">{sourceErrorMessage(overview.error)}</p>}
@@ -159,7 +162,7 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
   };
 
   return (
-    <div className="space-y-3 rounded-xl border border-border bg-card/20 p-3">
+    <Card padding="md" className="space-y-3">
       <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
         <div className="min-w-0 flex-1 basis-48 space-y-1">
           {renaming ? (
@@ -282,7 +285,7 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
       )}
 
       {error && <p role="alert" className="text-[11px] text-destructive">{error}</p>}
-    </div>
+    </Card>
   );
 }
 
@@ -312,7 +315,7 @@ function ComposioSetup({ first, onDone, onCancel }: { first: boolean; onDone: ()
       >Cancel</Button>}>
         {first ? 'Set up Composio' : 'Another Composio project'}
       </GroupHeading>
-      <div className="space-y-4 rounded-xl border border-border bg-card/20 p-4">
+      <Card padding="lg" className="space-y-4">
         <div className="space-y-2 text-xs leading-normal text-foreground/90">
           <p>
             Composio stores the accounts you connect through it and runs their tool calls. When an agent reads your mail or
@@ -368,7 +371,7 @@ function ComposioSetup({ first, onDone, onCancel }: { first: boolean; onDone: ()
           </p>
           {error && <p role="alert" className="text-[11px] text-destructive">{error}</p>}
         </form>
-      </div>
+      </Card>
     </section>
   );
 }

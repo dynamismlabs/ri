@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -310,9 +311,9 @@ function ChatResultItem({
         </div>
         <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] text-muted-foreground/70 md:text-[10px]">
           {archived && (
-            <span className="flex-shrink-0 rounded bg-muted px-1 text-[8.5px] font-semibold uppercase tracking-wide">
+            <StatusBadge className="flex-shrink-0">
               Archived
-            </span>
+            </StatusBadge>
           )}
           <span className="truncate">{wsName}</span>
           {session.branchName && (

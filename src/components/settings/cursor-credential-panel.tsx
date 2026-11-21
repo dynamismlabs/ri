@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -40,7 +42,7 @@ export function CursorCredentialPanel() {
   });
 
   return (
-    <div className="space-y-2 rounded-md border border-border bg-background/50 p-3">
+    <Card padding="md" className="space-y-2">
       <div className="flex items-center gap-1.5 font-medium text-foreground">
         <KeyRound size={13} /> Cursor API key
       </div>
@@ -83,6 +85,6 @@ export function CursorCredentialPanel() {
           Configured through {status.data.source === 'ri_store' ? 'Ri' : 'CURSOR_API_KEY'}
         </p>
       )}
-    </div>
+    </Card>
   );
 }

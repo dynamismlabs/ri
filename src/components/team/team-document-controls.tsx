@@ -1,4 +1,6 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Users } from 'lucide-react';
 import type { EntityVersionRecord, TaskRecord } from '@/db/types';
 import { useTeam } from './team-context';
@@ -11,7 +13,7 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 
 export function TeamAudience() {
   const { team } = useTeam();
-  return <span className="inline-flex min-w-0 items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground"><Users size={11} className="shrink-0" aria-hidden /><span className="truncate">Shared with {team.name}</span></span>;
+  return <StatusBadge className="inline-flex min-w-0 items-center gap-1"><Users size={11} className="shrink-0" aria-hidden /><span className="truncate">Shared with {team.name}</span></StatusBadge>;
 }
 export function TeamTaskAssignee({ task }: { task: TaskRecord }) {
   const { member } = useTeam();

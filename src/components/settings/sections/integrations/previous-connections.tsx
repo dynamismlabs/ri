@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { GroupHeading } from './parts';
@@ -12,7 +13,7 @@ export function PreviousConnections({ connections, busy, onDisconnect }: {
   return <section className="space-y-2">
     <GroupHeading count={connections.length}>Previous connections</GroupHeading>
     <p className="text-xs text-muted-foreground">Connect Atlassian to use Jira and Confluence.</p>
-    <div className="divide-y divide-border/60 rounded-xl border border-border bg-card/20">
+    <Card padding="none" className="divide-y divide-border/60">
       {connections.map(connection => <div key={connection.id} className="flex items-center justify-between gap-3 p-3">
         <div className="min-w-0 text-xs">
           <p className="font-medium">{connection.providerId === 'jira' ? 'Jira' : 'Confluence'}</p>
@@ -25,6 +26,6 @@ export function PreviousConnections({ connections, busy, onDisconnect }: {
           size="xs"
         >Disconnect</Button>
       </div>)}
-    </div>
+    </Card>
   </section>;
 }

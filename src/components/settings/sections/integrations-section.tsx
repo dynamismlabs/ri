@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -683,7 +686,7 @@ export function IntegrationsSection({ active = true, navigation }: {
   return (
     <div ref={rootRef} className="@container space-y-6">
       {activity && <p role="status" className="flex items-center gap-2 rounded-lg border p-3 text-sm"><Loader2 size={14} className="animate-spin" />{activity}</p>}
-      {pendingRegisteredOAuth && <div role="status" className="space-y-2 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
+      {pendingRegisteredOAuth && <Card padding="md" role="status" className="space-y-2">
         <p className="font-medium">Waiting for {pendingRegisteredOAuth.displayName} sign-in</p><p>Approve access in the provider window, then return here. Ri will check the account and load its tools.</p>
         <div className="flex flex-wrap gap-2"><Button
           disabled={!!activity}
@@ -695,7 +698,7 @@ export function IntegrationsSection({ active = true, navigation }: {
           variant="ghost"
           size="sm"
         >Stop waiting</Button></div>
-      </div>}
+      </Card>}
       {pendingOAuth && (
         <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
           <span>Finish connecting in your browser.</span>
@@ -710,20 +713,20 @@ export function IntegrationsSection({ active = true, navigation }: {
         </div>
       )}
       {banner && (
-        <div role="status" className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
+        <Callout padding="md" tone={"success"} role="status" className="flex items-start gap-3">
           <CheckCircle2 size={16} className="mt-0.5 shrink-0" />
           <p className="font-medium">{banner}</p>
-        </div>
+        </Callout>
       )}
 
       {error && !errorShownInAccount && (slackMcpAccessIssue(error) ? <SlackMcpAccessHelp error={error} /> : (
-        <div role="alert" className="flex items-start gap-3 rounded-xl border border-destructive/20 bg-destructive/10 p-4 text-xs text-destructive">
+        <Callout padding="lg" tone={"error"} role="alert" className="flex items-start gap-3">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <div className="space-y-1">
             <h5 className="font-semibold">Action Failed</h5>
             <p className="opacity-90">{error}</p>
           </div>
-        </div>
+        </Callout>
       ))}
 
       {onCatalog ? (
@@ -751,13 +754,13 @@ export function IntegrationsSection({ active = true, navigation }: {
           />
 
           {q && catalog.total === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/10 p-8 text-center">
+            <Card padding="form" className="flex flex-col items-center justify-center text-center">
               <div className="mb-3 rounded-full bg-muted/60 p-3 text-muted-foreground">
                 <Plug size={22} />
               </div>
               <h3 className="text-xs font-semibold text-foreground">No {INTEGRATION_LABELS.plural.toLowerCase()} match “{query}”</h3>
               <p className="mt-1 text-[11px] text-muted-foreground">Try a different name or category.</p>
-            </div>
+            </Card>
           ) : (
             <div className="space-y-6">
               {catalog.connected.length + catalog.connectedApps.length > 0 && (
@@ -935,7 +938,7 @@ function GoogleAlternative({ sourceReady, configured, onOpenApp, onOpenSources }
 }) {
   if (configured && !sourceReady) return null;
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-border bg-card/20 p-3 text-xs">
+    <Card padding="md" className="flex flex-wrap items-center gap-x-3 gap-y-2">
       <Waypoints size={14} className="shrink-0 text-muted-foreground" />
       <span className="min-w-0 flex-1 basis-56 text-foreground/90">
         {sourceReady
@@ -963,6 +966,6 @@ function GoogleAlternative({ sourceReady, configured, onOpenApp, onOpenSources }
           className="shrink-0"
         >Set up Composio</Button>
       )}
-    </div>
+    </Card>
   );
 }

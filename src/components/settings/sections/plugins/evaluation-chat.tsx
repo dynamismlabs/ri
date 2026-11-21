@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { TextArea } from '@/components/system/text-area';
 
@@ -159,7 +161,7 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
   useEffect(() => { log.current?.scrollTo({ top: log.current.scrollHeight }); }, [open, selected, chat.messages, busy]);
   return (
     <div className="absolute bottom-4 right-4 z-10 flex max-w-[calc(100vw-3rem)] flex-col items-end gap-2">
-      {open && <section aria-label="Temporary demo chat" className="flex max-h-[72dvh] w-96 max-w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl">
+      {open && <Card as="section" padding="none" aria-label="Temporary demo chat" className="flex max-h-[72dvh] w-96 max-w-full flex-col overflow-hidden">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div><p className="text-sm font-medium">Demo chat</p><p className="text-xs text-muted-foreground">Discuss the context you attach. Reload ends the chat.</p></div>
           <IconButton
@@ -241,7 +243,7 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
             size="md"
           ><Send className="size-4" /></IconButton>
         </form>
-      </section>}
+      </Card>}
       <Button
         onClick={show}
         aria-expanded={open}

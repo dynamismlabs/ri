@@ -1,4 +1,7 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
@@ -162,7 +165,7 @@ function BesideExecutionChat({
           placeholder="Steer this chat"
           composerDisabledReason={archived ? (continueWork.isPending ? 'Resuming…' : 'Continue this chat to reply') : undefined}
           notice={archived && (
-            <div className="mx-3 mt-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[11.5px] text-muted-foreground">
+            <Card padding="md" density="row" className="mx-3 mt-2 flex items-center justify-between gap-3">
               <span className="min-w-0">This chat is archived.</span>
               <Button
                 type="button"
@@ -175,7 +178,7 @@ function BesideExecutionChat({
                 {continueWork.isPending && <Loader2 size={11} className="animate-spin" />}
                 Continue
               </Button>
-            </div>
+            </Card>
           )}
           onSwitchProvider={newChat.start}
           switchingProvider={newChat.isPending}
@@ -239,16 +242,13 @@ function BesideHeader({
               <ChatTitleInput rename={rename} className="flex-1" />
             ) : (
               <Tip label={title} onlyWhenTextHidden>
-                <button
+                <InlineAction
                   type="button"
                   onClick={rename.begin}
-                  className={cn(
-                    '-mx-0.5 min-w-0 cursor-text truncate rounded px-0.5 text-left transition-colors hover:bg-muted/50',
-                    !rename.label && 'font-normal italic text-muted-foreground',
-                  )}
+                  className={cn("-mx-0.5 min-w-0 cursor-text truncate text-left", !rename.label && "italic")}
                 >
                   {title}
-                </button>
+                </InlineAction>
               </Tip>
             )}
           </h2>

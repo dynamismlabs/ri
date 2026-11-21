@@ -1,4 +1,8 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { HarnessToolSetup } from '@/components/desktop/harness-tool-setup';
@@ -305,17 +309,15 @@ function ModelChoice({
         {options.map((opt) => {
           const active = selected === opt.id;
           return (
-            <button data-slot="choice-row" aria-pressed={active}
+            <ChoiceRow aria-pressed={active}
               key={opt.id}
               type="button"
               onClick={() => onSelect(opt.id)}
-              className={`flex flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition-colors ${
-                active ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/50'
-              }`}
+              className={`flex flex-col items-start gap-0.5 text-left ${""}`}
             >
               <span className="text-sm font-medium">{opt.label}</span>
               {opt.hint && <span className="text-xs text-muted-foreground">{opt.hint}</span>}
-            </button>
+            </ChoiceRow>
           );
         })}
       </div>
@@ -344,7 +346,7 @@ function AuthStatus({
   const busy = auth.phase === 'checking' || auth.verify.phase === 'running';
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <Card padding="lg" shadow >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-medium">Authentication</div>
@@ -382,7 +384,7 @@ function AuthStatus({
       {auth.phase === 'ready' && auth.report && (
         <ReadyState report={auth.report} harness={harness} auth={auth} onAccept={onAccept} />
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -563,13 +565,13 @@ function SubPlusKeyNote({
 }) {
   if (harness === 'claude') {
     return (
-      <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-300">
+      <Callout padding="md" tone={"warning"} className="mt-2 flex items-start gap-2">
         <AlertTriangle className="mt-0.5 size-4 shrink-0" />
         <span>
           Heads up: {apiKeyVar} will override your subscription for Claude Code. Continuing as-is
           bills at API rates. Unset {apiKeyVar} to use your subscription.
         </span>
-      </div>
+      </Callout>
     );
   }
   return (

@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { DISCOVERY_KEY } from '@/components/settings/sections/imports-section';
@@ -195,12 +196,12 @@ export function ImportStep({
           const on = selected.has(project.cwd);
           return (
             <Tip key={project.cwd} label={project.cwd}>
-              <button
+              <MenuAction density="compact"
                 type="button"
                 role="checkbox"
                 aria-checked={on}
                 onClick={() => toggle(project.cwd)}
-                className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/50"
+                className="flex items-center gap-2.5 text-left"
               >
                 <span
                   className={cn(
@@ -220,7 +221,7 @@ export function ImportStep({
                 <span className="flex-shrink-0 text-[10px] text-muted-foreground/70">
                   {formatCompactRelative(project.lastActiveAt)}
                 </span>
-              </button>
+              </MenuAction>
             </Tip>
           );
         })}

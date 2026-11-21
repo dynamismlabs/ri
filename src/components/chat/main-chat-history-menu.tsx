@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useRef, useState } from 'react';
@@ -69,7 +70,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
             sessions.map((s) => {
               const isCurrent = s.id === currentId;
               return (
-                <button
+                <MenuAction selected={!!((isCurrent))} density="compact"
                   key={s.id}
                   onClick={() => {
                     if (onOpenChat) { onOpenChat(s.id); setOpen(false); }
@@ -77,10 +78,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
                     else resume.mutate(s.id, { onSuccess: () => setOpen(false) });
                   }}
                   disabled={resume.isPending}
-                  className={cn(
-                    'w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all disabled:opacity-50',
-                    isCurrent ? 'bg-primary/5' : 'hover:bg-muted/50',
-                  )}
+                  className={cn("w-full flex items-center gap-2 text-left disabled:opacity-50", isCurrent ? "" : "")}
                 >
                   <span
                     className={cn(
@@ -102,7 +100,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
                   <span className="shrink-0 text-[9.5px] text-muted-foreground/60 font-mono">
                     {formatCompactRelative(s.lastActivityAt ?? s.lastOutcomeEventAt ?? s.startedAt)}
                   </span>
-                </button>
+                </MenuAction>
               );
             })
           )}

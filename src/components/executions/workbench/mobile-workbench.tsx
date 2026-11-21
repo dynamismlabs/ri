@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
 
@@ -7,12 +8,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { sessionFolder } from '@/lib/folders/source';
 
 import { FileTree } from '../file-tree/file-tree';
@@ -94,10 +90,10 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
               {MORE_VIEWS.map((v) => {
                 const Icon = VIEW_ICONS[v];
                 return (
-                  <DropdownMenuItem key={v} onClick={() => onShow(v)}>
+                  <MenuAction kind="menu" key={v} onClick={() => onShow(v)}>
                     <Icon size={14} />
                     {PANEL_VIEW_LABELS[v]}
-                  </DropdownMenuItem>
+                  </MenuAction>
                 );
               })}
             </DropdownMenuContent>

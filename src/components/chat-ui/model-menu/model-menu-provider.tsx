@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { useId, useState } from 'react';
@@ -83,12 +84,12 @@ export function ModelMenuProvider({
       </CommandGroup>
       {!search && (
         <>
-          <button data-slot="menu-action"
+          <MenuAction density="compact"
             type="button"
             aria-expanded={expanded}
             aria-controls={regionId}
             onClick={() => setExpanded((value) => !value)}
-            className="mx-1 mb-1 flex w-[calc(100%-0.5rem)] items-center gap-1.5 rounded-md px-2.5 py-1.5 text-left text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mx-1 mb-1 flex w-[calc(100%-0.5rem)] items-center gap-1.5 text-left"
           >
             <ChevronRight
               size={12}
@@ -113,7 +114,7 @@ export function ModelMenuProvider({
                 </span>
               )
             )}
-          </button>
+          </MenuAction>
           {expanded && !loading && error && (
             <div className="px-4 pb-2 text-[11px] text-muted-foreground">
               Could not load models.{' '}

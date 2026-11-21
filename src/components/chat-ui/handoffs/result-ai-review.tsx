@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { HomeLink } from '@/components/home/home-link';
 import { useState } from 'react';
@@ -30,7 +31,7 @@ export function ResultAiReview({ review, result, hasSuccessor, canFeedback, onFe
   const cancel = useCancelResultReview(result.id);
   const active = review.status === 'queued' || review.status === 'running';
   return (
-    <div id={`ai-review-${review.id}`} className="space-y-2 rounded-lg border bg-muted/20 p-3 text-xs">
+    <Card padding="md" id={`ai-review-${review.id}`} className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
         {active && <Loader2 size={12} className="animate-spin" />}
         <span className="font-medium">{resultReviewLabel(review, result, hasSuccessor)}</span>
@@ -77,7 +78,7 @@ export function ResultAiReview({ review, result, hasSuccessor, canFeedback, onFe
         <ChevronRight size={11} className={detailsOpen ? 'rotate-90' : ''} />Review details
       </Button>
       {detailsOpen && <ReviewDetails review={review} />}
-    </div>
+    </Card>
   );
 }
 
@@ -132,5 +133,5 @@ function ReviewDetails({ review: snapshot }: { review: AiReviewDetail }) {
 function ReviewerActivity({ activity, loading }: { activity?: WorkResultReviewActivity; loading: boolean }) {
   if (loading) return <p className="text-muted-foreground">Loading available activity...</p>;
   if (!activity?.activityAvailable || !activity.events.length) return <p className="text-muted-foreground">{activity?.limitation ?? 'Activity is unavailable or has been pruned. The saved review remains readable.'}</p>;
-  return <div className="max-h-96 space-y-3 overflow-y-auto rounded border bg-background p-3">{activity.events.map((event) => <ExecutionEvent key={event.id} event={event} sessionId={activity.session?.id} handoffActions={false} />)}</div>;
+  return <Card padding="md" className="max-h-96 space-y-3 overflow-y-auto">{activity.events.map((event) => <ExecutionEvent key={event.id} event={event} sessionId={activity.session?.id} handoffActions={false} />)}</Card>;
 }

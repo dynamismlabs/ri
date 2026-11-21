@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useAutosizeTextarea } from '@/hooks/use-autosize-textarea';
 import { TextArea } from '@/components/system/text-area';
 
@@ -321,16 +323,13 @@ function TaskMetaStrip({ task }: { task: TaskRecord }) {
         value={task.hardDeadline}
         onChange={(hardDeadline) => save({ hardDeadline } as Partial<TaskRecord>)}
       >
-        <button
+        <MenuAction density="compact" tone="error"
           type="button"
-          className={cn(
-            'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition-colors hover:bg-muted',
-            isPastDate(task.hardDeadline) ? 'text-destructive' : 'text-muted-foreground',
-          )}
+          className={cn("inline-flex items-center gap-1", isPastDate(task.hardDeadline) ? "" : "")}
         >
           <Clock size={10} />
           {deadlineLabel ?? 'Deadline'}
-        </button>
+        </MenuAction>
       </TaskDatePicker>
 
       <span className="text-muted-foreground/30">&middot;</span>

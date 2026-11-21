@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 import { Check, CornerUpLeft, ListTree } from 'lucide-react';
@@ -57,7 +58,7 @@ export function CurrentWorkSection() {
             key={task.id}
             className="group flex items-center gap-2 rounded-md border border-violet-500/20 bg-violet-500/[0.06] px-2.5 py-2 transition-colors hover:border-violet-500/40"
           >
-            <button onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
+            <InlineAction  onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
               <span className="block truncate text-[12px] font-medium text-foreground">{task.title || 'Untitled'}</span>
               <span className="mt-1 flex flex-wrap items-center gap-1.5">
                 <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
@@ -68,7 +69,7 @@ export function CurrentWorkSection() {
                   </span>
                 )}
               </span>
-            </button>
+            </InlineAction>
 
             {/* Always visible on touch (no hover there); hover-reveal on md+. */}
             <div

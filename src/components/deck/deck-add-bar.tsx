@@ -1,4 +1,6 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -157,22 +159,19 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
       {open && (
         <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-popover shadow-md">
           {/* Create new */}
-          <button
+          <MenuAction selected={!!((highlight === 0))}
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onMouseEnter={() => setHighlight(0)}
             onClick={() => choose(0)}
-            className={cn(
-              'flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
-              highlight === 0 ? 'bg-muted' : 'hover:bg-muted/60',
-            )}
+            className={cn("flex w-full items-center gap-2 text-left", highlight === 0 ? "" : "")}
           >
             <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate">
               Create task <span className="font-medium text-foreground">“{q}”</span>
             </span>
             <span className="shrink-0 text-[10px] text-muted-foreground">new</span>
-          </button>
+          </MenuAction>
 
           {matches.length > 0 && (
             <>
@@ -182,20 +181,17 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
               {matches.map((t, i) => {
                 const idx = i + 1;
                 return (
-                  <button
+                  <MenuAction selected={!!((highlight === idx))}
                     key={t.id}
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setHighlight(idx)}
                     onClick={() => choose(idx)}
-                    className={cn(
-                      'flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
-                      highlight === idx ? 'bg-muted' : 'hover:bg-muted/60',
-                    )}
+                    className={cn("flex w-full items-center gap-2 text-left", highlight === idx ? "" : "")}
                   >
                     <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate text-foreground">{t.title}</span>
-                  </button>
+                  </MenuAction>
                 );
               })}
             </>

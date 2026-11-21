@@ -1,4 +1,8 @@
 "use client";
+import { InlineAction } from '@/components/system/inline-action';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { MetaItem, Meta } from '@/components/system/meta';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -60,27 +64,22 @@ function isDeadlineUrgent(deadline?: string): boolean {
 
 function Pill({ kind, children }: { kind: 'area' | 'effort'; children: React.ReactNode }) {
   return (
-    <span data-slot="meta-item" data-kind={kind} className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground">
+    <MetaItem kind={kind} >
       {children}
-    </span>
+    </MetaItem>
   );
 }
 
 function DeadlinePill({ children, urgent, urgency }: { children: React.ReactNode; urgent: boolean; urgency?: 'late' | 'today' }) {
   return (
-    <span
-      data-slot="meta-item"
-      data-kind="deadline"
-      data-urgency={urgency}
-      className={cn(
-        'text-[10px] px-1.5 py-0.5 rounded-md font-medium',
-        urgent
-          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-          : 'bg-muted text-muted-foreground'
-      )}
+    <MetaItem
+
+      kind="deadline"
+      urgency={urgency}
+      tone={urgent ? "warning" : "neutral"}
     >
       {children}
-    </span>
+    </MetaItem>
   );
 }
 
@@ -149,7 +148,6 @@ function Subtasks({ items, onCollapse, actions }: { items: SubtaskItem[]; onColl
                   >
                     <Check className="w-3 h-3" />
                   </IconButton>
-
 
                   <IconButton
                     onClick={() => actions.onDefer(s.id)}
@@ -326,47 +324,44 @@ function SortableDeckItemCard({
 
       <div className="pl-6 pr-20 min-w-0 overflow-hidden">
         {/* Title */}
-        <button
+        <InlineAction
           onClick={() => openTask(item.taskId)}
-          className="text-sm font-medium leading-snug text-left hover:text-primary transition-colors max-w-full break-words"
+          className="text-left max-w-full break-words"
         >
           {item.parentTitle && (
             <span className="text-muted-foreground font-normal">{item.parentTitle} · </span>
           )}
           {item.title}
-        </button>
+        </InlineAction>
 
         {/* Pills */}
-        <div data-slot="meta" className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+        <Meta className="flex items-center gap-1.5 mt-1.5 flex-wrap">
           {item.manuallyAdded && (
-            <span data-slot="meta-item" data-kind="added" className="text-[10px] px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-medium">
+            <MetaItem kind="added" >
               You added
-            </span>
+            </MetaItem>
           )}
           <TeamLabel teamId={item.sourceTeamId} sourceArea={item.sourceArea} />
           {item.areaName && <Pill kind="area">{item.areaName}</Pill>}
           {item.effort && <Pill kind="effort">{item.effort}</Pill>}
           {deadline && <DeadlinePill urgent={urgent} urgency={deadlineUrgency(item.hardDeadline)}>{deadline}</DeadlinePill>}
-        </div>
+        </Meta>
 
         {/* Reasoning — the "why this, why now" plus any "last session" note.
             One muted line so it's a glimpse, not a wall; click to expand. The
             same treatment on every card: no item gets extra text for being first. */}
         {(item.rationale || item.continuityContext) && (
           <Tip label={whyOpen ? 'Hide reasoning' : 'Show reasoning'}>
-            <button
+            <InlineAction
               type="button"
               onClick={() => setWhyOpen((v) => !v)}
-              className={cn(
-                'mt-2 block max-w-full break-words text-left text-xs leading-relaxed text-muted-foreground/70 transition-colors hover:text-muted-foreground',
-                !whyOpen && 'line-clamp-1',
-              )}
+              className={cn("mt-2 block max-w-full break-words text-left", !whyOpen && "line-clamp-1")}
             >
               {item.rationale || item.continuityContext}
               {whyOpen && item.rationale && item.continuityContext && (
                 <span className="mt-1 block">{item.continuityContext}</span>
               )}
-            </button>
+            </InlineAction>
           </Tip>
         )}
 
@@ -472,14 +467,10 @@ export function DeckStack({ items, onComplete, onStart, onNotToday, onFocus, onR
                   onSubtaskFocus={onSubtaskFocus}
                 />
                 {showDivider && (
-                  <button
+                  <MenuAction density="compact"
                     onClick={() => setHideBelowIndex(isActiveHidePoint ? null : i)}
-                    className={cn(
-                      'w-full flex items-center gap-2 py-1 group/divider transition-opacity',
-                      alwaysVisible || isActiveHidePoint
-                        ? 'opacity-100'
-                        : 'opacity-0 hover:opacity-100',
-                    )}
+                    className={cn("w-full flex items-center gap-2 group/divider", alwaysVisible || isActiveHidePoint
+    ? "opacity-100" : "opacity-0 hover:opacity-100")}
                   >
                     <div className="flex-1 h-px bg-border/50" />
                     <span className="flex items-center gap-1 text-[9px] leading-none text-muted-foreground/40 group-hover/divider:text-muted-foreground/60 transition-colors shrink-0">
@@ -496,7 +487,7 @@ export function DeckStack({ items, onComplete, onStart, onNotToday, onFocus, onR
                       )}
                     </span>
                     <div className="flex-1 h-px bg-border/50" />
-                  </button>
+                  </MenuAction>
                 )}
               </Fragment>
             );

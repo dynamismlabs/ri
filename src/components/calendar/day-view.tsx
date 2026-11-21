@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 /**
  * The hour-axis day view — the calendar rendered purely as a calendar.
@@ -222,9 +223,9 @@ function OverflowRow({ event, date }: { event: CalendarEvent; date: string }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button data-slot="menu-action"
+        <MenuAction density="compact"
           type="button"
-          className="w-full flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-muted/60 transition-colors"
+          className="w-full flex items-center gap-2 text-left"
         >
           <span className="text-[10px] tabular-nums text-muted-foreground/70 w-14 shrink-0">
             {w ? hourMinuteLabel(w.startMinute) : ''}
@@ -234,7 +235,7 @@ function OverflowRow({ event, date }: { event: CalendarEvent; date: string }) {
           >
             {event.title}
           </span>
-        </button>
+        </MenuAction>
       </PopoverTrigger>
       <PopoverContent side="left" className="p-0 w-auto">
         <EventPopoverContent event={event} />

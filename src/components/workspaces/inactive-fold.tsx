@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -15,7 +16,6 @@ import {
 import { cn } from '@/lib/utils';
 import { FoldRow } from './fold-row';
 import { useWorkspaceSelection } from './workspace-selection-context';
-
 
 /**
  * The foot of a list section: "N inactive hidden" with Show, folded by
@@ -186,18 +186,15 @@ function InactiveAfterOptions({ stored }: { stored: number | null | undefined })
 
 function Option({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
-    <button
+    <MenuAction selected={!!((active))} density="compact"
       type="button"
       onClick={onClick}
-      className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] transition-colors',
-        active ? 'bg-primary/10 text-foreground' : 'text-foreground/85 hover:bg-muted/60',
-      )}
+      className={cn("flex w-full items-center gap-2 text-left", active ? "" : "")}
     >
       <span className="flex h-3 w-3 flex-shrink-0 items-center justify-center">
         {active && <Check size={12} className="text-primary" strokeWidth={3} />}
       </span>
       <span>{children}</span>
-    </button>
+    </MenuAction>
   );
 }

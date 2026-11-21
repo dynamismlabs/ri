@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState } from 'react';
@@ -132,7 +133,7 @@ function ChangeRow({
     <div className="border-b border-border">
       <div className="group flex h-9 items-center gap-2 pl-2 pr-2 hover:bg-muted/30">
         <Tip label={open ? 'Hide the diff' : 'Show the diff'}>
-          <button
+          <InlineAction
             type="button"
             onClick={onToggle}
             aria-expanded={open}
@@ -148,7 +149,7 @@ function ChangeRow({
               <span className="text-muted-foreground/70">{dir}</span>
               <span className="text-foreground">{name}</span>
             </span>
-          </button>
+          </InlineAction>
         </Tip>
         <span className="flex-shrink-0 font-mono text-[11px] tabular-nums">
           {additions > 0 && <span className="text-emerald-600 dark:text-emerald-400">+{additions}</span>}

@@ -1,4 +1,6 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -123,17 +125,12 @@ export function QuestionCard({
         {q.options.map((opt) => {
           const isSelected = selected.includes(opt.label);
           return (
-            <button data-slot="choice-row"
+            <ChoiceRow
               key={opt.label}
               type="button"
               aria-pressed={isSelected}
               onClick={() => toggleOption(opt.label)}
-              className={cn(
-                'flex items-start gap-2.5 px-3 py-2 rounded-lg text-left transition-all border',
-                isSelected
-                  ? 'bg-primary/10 border-primary/40 text-foreground'
-                  : 'bg-background border-border hover:border-foreground/30 hover:bg-muted/30 text-foreground/90',
-              )}
+              className="flex items-start gap-2.5 text-left"
             >
               <div
                 className={cn(
@@ -152,7 +149,7 @@ export function QuestionCard({
                   </div>
                 )}
               </div>
-            </button>
+            </ChoiceRow>
           );
         })}
 
@@ -162,16 +159,11 @@ export function QuestionCard({
             automatically"). Replaces the dismiss-X that used to live
             in the header — the Stop button on the composer is the
             mechanism for actually cancelling the agent. */}
-        <button data-slot="choice-row"
+        <ChoiceRow
           type="button"
           aria-pressed={otherActive}
           onClick={() => toggleOption(OTHER_VALUE)}
-          className={cn(
-            'flex items-start gap-2.5 px-3 py-2 rounded-lg text-left transition-all border',
-            otherActive
-              ? 'bg-primary/10 border-primary/40 text-foreground'
-              : 'bg-background border-border hover:border-foreground/30 hover:bg-muted/30 text-foreground/90',
-          )}
+          className="flex items-start gap-2.5 text-left"
         >
           <div
             className={cn(
@@ -188,7 +180,7 @@ export function QuestionCard({
               Type a free-form answer.
             </div>
           </div>
-        </button>
+        </ChoiceRow>
 
         {otherActive && (
           <Field

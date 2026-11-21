@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -32,13 +33,13 @@ export default function NewTriggerPage() {
   if (createdWebhook) {
     return (
       <div className="min-h-dvh bg-background flex items-center justify-center p-6">
-        <div className="max-w-lg w-full border border-border rounded-lg p-6 bg-card">
+        <Card padding="xl" shadow className="max-w-lg w-full">
           <WebhookCredentialsPanel
             publicId={createdWebhook.publicId}
             secret={createdWebhook.secret}
             onContinue={() => router.push('/triggers')}
           />
-        </div>
+        </Card>
       </div>
     );
   }

@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import { Loader2 } from 'lucide-react';
@@ -48,9 +49,9 @@ export function ActionButton({
         {pending ? <Loader2 size={11} className="animate-spin" /> : icon}
         <span className="truncate">{label}</span>
         {typeof count === 'number' && count > 0 && (
-          <span className="ml-0.5 inline-flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full text-[9px] font-bold tabular-nums text-muted-foreground bg-muted/60">
+          <StatusBadge className="ml-0.5 inline-flex items-center justify-center min-w-[14px] tabular-nums">
             {count}
-          </span>
+          </StatusBadge>
         )}
       </Button>
     </Tip>

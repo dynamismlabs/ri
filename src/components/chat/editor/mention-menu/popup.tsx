@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Button } from '@/components/system/button';
 import { SOURCE_STATUS_LABELS } from '@/lib/chat-sources/types'
 
@@ -424,13 +428,11 @@ interface MentionRowProps {
 
 function MentionRow({ item, index, selected, onSelect, onHover }: MentionRowProps) {
   return (
-    <button
+    <MenuAction selected={!!((selected))} density="compact"
       data-mention-index={index}
       data-selected={selected ? '' : undefined}
       type="button"
-      className={`flex items-center gap-2 w-full px-2.5 py-1 rounded text-left transition-colors ${
-        selected ? 'bg-accent' : 'hover:bg-accent/50'
-      }`}
+      className={`flex items-center gap-2 w-full text-left  ${selected ? "" : ""}`}
       onMouseDown={(e) => e.preventDefault()}
       onClick={() => onSelect(index)}
       onMouseEnter={() => onHover(index)}
@@ -439,7 +441,7 @@ function MentionRow({ item, index, selected, onSelect, onHover }: MentionRowProp
         <RowIcon item={item} />
       </span>
       <RowBody item={item} />
-    </button>
+    </MenuAction>
   )
 }
 
@@ -505,7 +507,7 @@ function RowBody({ item }: { item: MentionItem }) {
         {account && <span className="text-muted-foreground"> · {account}</span>}
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-1.5">
-        {capabilities && <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground">{capabilities}</span>}
+        {capabilities && <StatusBadge >{capabilities}</StatusBadge>}
         {item.source.status !== 'ready' && <span className="text-[9px] text-muted-foreground">{SOURCE_STATUS_LABELS[item.source.status]}</span>}
       </span>
     </>
@@ -567,14 +569,11 @@ function RowBody({ item }: { item: MentionItem }) {
           {item.title || (item.kind === 'task' ? 'Untitled task' : 'Untitled note')}
         </span>
         {tag && (
-          <span
-            className={cn(
-              'ml-auto shrink-0 rounded px-1 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide',
-              tag === 'Consider' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-            )}
+          <StatusBadge tone={(tag === 'Consider' ? "warning" : "status-progress")}
+            className="ml-auto shrink-0"
           >
             {tag}
-          </span>
+          </StatusBadge>
         )}
       </>
     )

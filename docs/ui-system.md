@@ -113,6 +113,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
 | `MenuAction` | Label, action, tone and disabled state | Menu row type, hover and keyboard focus | 4 |
 | `Callout`, `StatusBadge` | info, warning, error, success, plus neutral for badges | Semantic ink/fill pairs. 14px content callouts and capsule facts | 4 |
+| `InlineAction` | plain, prose link or inline chip, optional bubble and code purpose | Text-sized actions inherit their surrounding type and line height, with an owned capsule fill for references and an inset focus outline | 4 |
 | `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4 |
 | `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
 | `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
@@ -146,6 +147,18 @@ padding, fill, border, shadow and interaction drawing belong to the component.
 - `Meta` and `MetaItem` own the wrapping 12px line of facts, dot separators,
   theme-aware energy/deadline/status ink and inline action focus. `as` retains
   a real button or link. Labels and handlers stay with their domain component.
+
+`InlineAction` covers actions embedded in prose or a content title, including
+file and entity references. It inherits the surrounding type and line height,
+rather than taking a toolbar height. Plain, underlined link and chip appearances
+own their drawing. Bubble chips inherit the inverted message's ink. Code keeps
+the monospace family. A passive reference may delegate its span through `asChild`.
+
+The installed Button's `ActionPrimitive` owns only native/Slot behavior, refs and
+disabled activation guards. Button keeps all its existing drawing and sizes.
+Content APIs use the same behavior without inheriting Button's glyph sizing or
+single-row layout. A content row must not resize a nested drag handle, or place
+a summary beside its title.
 
 All interactive content has an inset focus outline where clipping can occur.
 Disabled controls retain their engine's behavior and do not gain a hover fill.

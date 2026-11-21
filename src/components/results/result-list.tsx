@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -67,7 +69,7 @@ export function ResultList({ taskId, executionId, compact = false, initialHistor
 
 export function ResultListItem({ result, compact = false }: { result: WorkResultRecord; compact?: boolean }) {
   const [expanded, setExpanded] = useState(false);
-  return <div className="min-w-0 rounded-lg border bg-card px-3 py-3">
+  return <Card padding="md" density="comfortable" shadow className="min-w-0">
     <div className="flex items-start gap-2">
       <FileCheck2 size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
       <div className="min-w-0 flex-1 space-y-1">
@@ -87,5 +89,5 @@ export function ResultListItem({ result, compact = false }: { result: WorkResult
       >{expanded ? 'Hide handoff' : 'Inspect here'}</Button>
     </div>}
     {expanded && <div className="mt-4"><ResultRenderer resultId={result.id} /></div>}
-  </div>;
+  </Card>;
 }

@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import type { McpCapabilityChanges, McpCapabilityField } from '@/lib/integrations/mcp-capabilities';
 import { Button } from '@/components/system/button';
@@ -10,7 +11,7 @@ const FIELD_LABELS: Record<McpCapabilityField, string> = {
 };
 export function CapabilityReview({ changes, busy, onReview }: { changes?: McpCapabilityChanges; busy: boolean; onReview?: (revision: string) => void }) {
   if (!changes) return null;
-  return <section className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
+  return <Callout as="section" padding="md" tone={"warning"} className="space-y-2">
     <p className="font-medium">Tools changed</p>
     <ul className="space-y-1 text-muted-foreground">
       {changes.added.map(name => <li key={`added-${name}`}>Added <code>{name}</code></li>)}
@@ -24,5 +25,5 @@ export function CapabilityReview({ changes, busy, onReview }: { changes?: McpCap
       variant="secondary"
       size="xs"
     >Dismiss notice</Button>}
-  </section>;
+  </Callout>;
 }

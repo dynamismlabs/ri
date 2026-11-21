@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 /**
@@ -69,9 +70,9 @@ export function ContinueDialog({
           ) : state ? (
             <>
               {state.problem && (
-                <p role="alert" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-2.5 py-2 text-[12px] text-foreground">
+                <Callout as="p" padding="sm" density="row" tone={"warning"} role="alert" >
                   {state.problem}
-                </p>
+                </Callout>
               )}
               <p className="text-muted-foreground">
                 {state.changed.length > 0
@@ -93,11 +94,11 @@ export function ContinueDialog({
                 </fieldset>
               )}
               {review && (
-                <p className="rounded-md border border-border bg-muted/40 px-2.5 py-2 text-[11.5px] text-muted-foreground">
+                <Callout as="p" padding="sm" density="row" >
                   Your review checkout of <span className="font-mono">{review.sha.slice(0, 7)}</span> on {to.name}
                   {review.dirty ? ' has your edits. It' : ''} stays as it is, apart from this work, which continues in a clean
                   worktree of its own there. {review.dirty ? 'Nothing in it is added to the move. Resolve those edits first if you meant them for this work.' : ''}
-                </p>
+                </Callout>
               )}
               {state.localOnly.length > 0 && (
                 <p className="text-[11px] text-muted-foreground/80">

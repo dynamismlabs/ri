@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field as SystemField } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -78,7 +81,7 @@ export function PreviewSettingsPanel() {
 
         {/* Manual template */}
         {active === 'manual' && (
-          <div className="rounded-md border border-border bg-card/40 p-3 space-y-2.5">
+          <Card padding="md" className="space-y-2.5">
             <SystemField
               value={manualTemplate}
               onChange={(e) => setManualTemplate(e.target.value)}
@@ -102,7 +105,7 @@ export function PreviewSettingsPanel() {
               {update.isPending && <Loader2 size={12} className="animate-spin" />}
               Save
             </Button>
-          </div>
+          </Card>
         )}
 
       </div>
@@ -132,15 +135,12 @@ function ProviderRow({
   onSelect: () => void;
 }) {
   return (
-    <button
+    <ChoiceRow
       type="button"
       onClick={onSelect}
-      data-slot="choice-row"
+
       aria-pressed={selected}
-      className={cn(
-        'flex w-full items-start gap-2.5 rounded-md border p-2.5 text-left transition-colors',
-        selected ? 'border-primary/60 bg-primary/5' : 'border-border bg-card/40 hover:bg-muted/50',
-      )}
+      className="flex w-full items-start gap-2.5 text-left"
     >
       <span
         className={cn(
@@ -154,7 +154,7 @@ function ProviderRow({
         <span className="text-[12px] font-medium text-foreground">{label}</span>
         <span className="text-[11px] text-muted-foreground">{description}</span>
       </span>
-    </button>
+    </ChoiceRow>
   );
 }
 

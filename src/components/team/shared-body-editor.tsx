@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
@@ -183,7 +184,7 @@ export function SharedBodyState({ shared }: { shared: ReturnType<typeof useShare
   const { status } = shared;
   if (status.status === 'conflict') {
     return (
-      <div role="alert" className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+      <Callout padding="md" density="row" tone={"warning"} role="alert" >
         <p className="font-medium">Someone else changed this while you were editing. Your text is kept.</p>
         <p className="mt-0.5 text-amber-700/80 dark:text-amber-300/80">Saving is paused until you choose which to keep.</p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -192,7 +193,7 @@ export function SharedBodyState({ shared }: { shared: ReturnType<typeof useShare
           <ConflictButton onClick={shared.keepMine}>Keep mine</ConflictButton>
         </div>
         <CompareDialog open={comparing} onOpenChange={setComparing} theirs={status.theirs.body} mine={status.mine} />
-      </div>
+      </Callout>
     );
   }
   if (status.status === 'failed') {

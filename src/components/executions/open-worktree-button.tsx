@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 
@@ -16,13 +17,7 @@ import {
   Loader2,
   Info,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { type OpenTarget, type InstalledApp } from '@/lib/api/fs';
 import { useEditorPreference } from '@/lib/client/editor-preference';
 import { useOpener } from '@/hooks/use-opener';
@@ -281,11 +276,11 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[220px] w-auto">
           {installed.map((app) => (
-            <DropdownMenuItem
+            <MenuAction kind="menu"
               key={app.target}
               onClick={() => open(app.target)}
               disabled={busy === app.target}
-              className="text-[12px]"
+
             >
               <AppIcon app={app} />
               <span className="flex-1">{app.label}</span>
@@ -293,13 +288,13 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
               {primaryTarget === app.target && (
                 <Check size={11} className="opacity-50" />
               )}
-            </DropdownMenuItem>
+            </MenuAction>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={copyPath} className="text-[12px]">
+          <MenuAction kind="menu" onClick={copyPath} >
             {copied ? <Check size={13} /> : <Copy size={13} />}
             <span className="flex-1">{copied ? 'Copied!' : 'Copy path'}</span>
-          </DropdownMenuItem>
+          </MenuAction>
         </DropdownMenuContent>
       </DropdownMenu>
 

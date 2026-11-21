@@ -1,4 +1,6 @@
 'use client';
+import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -128,21 +130,20 @@ export function useAllowApp() {
               <DialogTitle>What may {stage.access.placeName} do in {stage.access.appName}?</DialogTitle>
               <DialogDescription>{stage.access.appName} holds {stage.access.placeName} to what you choose, on every call.</DialogDescription>
             </DialogHeader>
-            <fieldset className="space-y-2" disabled={stage.busy}>
+            <ChoiceGroup asChild name="app-access" value={stage.selected} disabled={stage.busy} onValueChange={value => setStage({ ...stage, selected: value as typeof stage.selected, error: null })} aria-label={`What ${stage.access.placeName} may do in ${stage.access.appName}`}><fieldset className="space-y-2" disabled={stage.busy}>
               <legend className="sr-only">What {stage.access.placeName} may do in {stage.access.appName}</legend>
               {stage.access.choices.map((choice) => (
-                <label key={choice.access} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/5">
-                  <input type="radio" name="app-access" value={choice.access} checked={stage.selected === choice.access}
-                    onChange={() => setStage({ ...stage, selected: choice.access, error: null })} className="mt-0.5 accent-primary" />
+                <ChoiceRow key={choice.access} selection="radio" value={choice.access} density="spacious" className="flex items-start gap-3">
+
                   <span className="min-w-0 space-y-0.5">
                     <span className="flex flex-wrap items-center gap-2 font-medium">{choice.label}
-                      {choice.access === stage.access.recommended && <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">Recommended</span>}
+                      {choice.access === stage.access.recommended && <StatusBadge >Recommended</StatusBadge>}
                     </span>
                     {choice.description && <span className="block text-xs text-muted-foreground">{choice.description}</span>}
                   </span>
-                </label>
+                </ChoiceRow>
               ))}
-            </fieldset>
+            </fieldset></ChoiceGroup>
             {stage.error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{stage.error}</p>}
             <DialogFooter>
               <Button

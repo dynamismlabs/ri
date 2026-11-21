@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import type { WorkspaceRecord } from '@/db/types';
@@ -355,24 +356,23 @@ function ChecksBadge({ checks }: { checks: PrChecks }) {
 function ReviewBadge({ decision }: { decision: PrReviewDecision }) {
   const cfg = {
     approved: {
-      cls: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+      tone: 'success' as const,
       label: 'Approved',
     },
     changes_requested: {
-      cls: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+      tone: 'warning' as const,
       label: 'Changes requested',
     },
     review_required: {
-      cls: 'border-border bg-muted/40 text-muted-foreground',
+      tone: 'neutral' as const,
       label: 'Review required',
     },
   }[decision];
   return (
-    <span
-      className={`inline-flex items-center rounded border px-1 py-0.5 text-[10px] font-medium leading-none ${cfg.cls}`}
+    <StatusBadge tone={cfg.tone}
     >
       {cfg.label}
-    </span>
+    </StatusBadge>
   );
 }
 

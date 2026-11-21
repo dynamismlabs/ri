@@ -1,4 +1,7 @@
 'use client';
+import { Switch } from '@/components/ui/switch';
+
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { ComposerControls } from './composer-controls';
@@ -1006,14 +1009,11 @@ function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, c
           const ItemIcon = mm.Icon;
           const active = m === current;
           return (
-            <button
+            <MenuAction selected={!!((active))} density="compact"
               key={m}
               type="button"
               onClick={() => onSelect(m)}
-              className={cn(
-                'w-full flex items-start gap-2.5 px-2 py-1.5 rounded-md text-left transition-colors',
-                active ? 'bg-primary/10' : 'hover:bg-muted/50',
-              )}
+              className={cn("w-full flex items-start gap-2.5 text-left", active ? "" : "")}
             >
               <div className="w-4 h-4 mt-0.5 flex items-center justify-center shrink-0">
                 {active ? (
@@ -1028,7 +1028,7 @@ function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, c
                   {descriptionFor(m)}
                 </div>
               </div>
-            </button>
+            </MenuAction>
           );
         })}
       </PopoverContent>
@@ -1060,33 +1060,10 @@ function AutoSendSwitch({
           : 'Hold transcripts in the textarea (click to auto-send)'
       }
     >
-      <button
-        type="button"
-        role="switch"
-        aria-checked={on}
-        onClick={onToggle}
-        disabled={disabled}
-        className={cn(
-          'inline-flex items-center gap-2 rounded-md px-1.5 py-0.5 text-[10.5px] font-medium',
-          'text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors',
-          'disabled:opacity-50',
-        )}
-      >
-        <span
-          className={cn(
-            'relative inline-flex h-4 w-7 shrink-0 rounded-full border-2 border-transparent transition-colors',
-            on ? 'bg-primary' : 'bg-muted',
-          )}
-        >
-          <span
-            className={cn(
-              'pointer-events-none inline-block h-3 w-3 rounded-full bg-background shadow-sm transition-transform',
-              on ? 'translate-x-3' : 'translate-x-0',
-            )}
-          />
-        </span>
+      <label className="inline-flex items-center gap-2 text-[10.5px] text-t3">
+        <Switch checked={on} onCheckedChange={onToggle} disabled={disabled} aria-label="Auto-send" />
         <span>Auto-send</span>
-      </button>
+      </label>
     </Tip>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 // `Bar` is the shared primitive under its local name — the chat and header
 // skeletons below were written against it.
@@ -107,13 +108,13 @@ function ChatColumn({ withBox }: { withBox: boolean }) {
         {/* Composer: the card in the same column, no rule above it. */}
         <div className={`flex-shrink-0 ${clear}`}>
           <div className="mx-auto max-w-3xl px-5 pb-3">
-            <div className="space-y-2 rounded-xl border border-border bg-card p-3">
+            <Card padding="md" shadow className="space-y-2">
               <Bar w="35%" h="h-2" />
               <div className="flex items-center justify-between pt-1">
                 <Bar w="80px" h="h-2" />
                 <div className="h-6 w-6 rounded-full bg-muted animate-pulse" />
               </div>
-            </div>
+            </Card>
           </div>
         </div>
         {withBox && <ToolsBoxSkeleton />}

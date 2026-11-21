@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { SegmentedList } from '@/components/system/segmented-control';
 
@@ -13,13 +14,7 @@ import type { SkillView } from '@/lib/api/skills';
 import { useArchiveSkill, useCommitSkill } from '@/hooks/use-skills';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
 import { useConfirm } from '@/components/ui/confirm-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 import { SkillLocationControl } from './skill-location-control';
 import { Tip } from '@/components/ui/tip';
@@ -128,22 +123,22 @@ export function SkillHeader({
             </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
+            <MenuAction kind="menu"
               onSelect={() => {
                 void navigator.clipboard.writeText(skill.dir).then(() => toast.success('Folder path copied'));
               }}
             >
               <Copy size={13} /> Copy folder path
-            </DropdownMenuItem>
+            </MenuAction>
             {skill.editable && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
+                <MenuAction tone="error" kind="menu"
                   onSelect={() => void onArchive()}
-                  className="text-destructive focus:text-destructive"
+
                 >
                   <Archive size={13} /> Archive
-                </DropdownMenuItem>
+                </MenuAction>
               </>
             )}
           </DropdownMenuContent>

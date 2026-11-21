@@ -1,4 +1,6 @@
 "use client";
+import { Card } from '@/components/system/card';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -126,7 +128,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
             <DialogPrimitive.Title>New Area</DialogPrimitive.Title>
             <DialogPrimitive.Description>Create a new area</DialogPrimitive.Description>
           </VisuallyHidden.Root>
-          <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
+          <Card padding="none" shadow className="overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
               <span className="text-xs font-semibold tracking-wide text-foreground">
@@ -290,7 +292,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                 Create area
               </Button>
             </div>
-          </div>
+          </Card>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

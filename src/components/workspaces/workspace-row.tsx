@@ -1,4 +1,7 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useRef } from 'react';
@@ -245,14 +248,14 @@ export function WorkspaceRow({
             onClick={open}
             onNewChat={() => onOpenLauncher(workspace.id)}
             trigger={({ ref, onClick }) => (
-              <button
+              <InlineAction
                 ref={ref}
                 onClick={onClick}
-                className="flex-1 min-w-0 text-left text-[11.5px] font-semibold truncate text-foreground"
+                className="flex-1 min-w-0 text-left truncate"
                 aria-current={current}
               >
                 {workspace.name}
-              </button>
+              </InlineAction>
             )}
           >
             {chats}
@@ -281,7 +284,6 @@ export function WorkspaceRow({
               <ArrowUpRight size={13} />
             </IconButton>
 
-
             <IconButton
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
@@ -301,7 +303,6 @@ export function WorkspaceRow({
             >
               <Plus size={13} />
             </IconButton>
-
 
           {hasAnyCount && (
             <div className="absolute inset-y-0 right-1 flex items-center gap-1 pointer-events-none group-hover:opacity-0 transition-opacity">
@@ -352,17 +353,12 @@ const COUNT_VARIANT_LABELS: Record<CountVariant, string> = {
 function CountDot({ variant, count }: { variant: CountVariant; count: number }) {
   return (
     <Tip label={`${count} ${COUNT_VARIANT_LABELS[variant]}`}>
-      <span
-        className={cn(
-          'inline-flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full',
-          'text-[9px] font-bold font-mono tabular-nums leading-none',
-          COUNT_VARIANT_CLASSES[variant],
-          variant === 'working' && 'animate-pulse',
-        )}
+      <StatusBadge tone={({working:"success",attention:"warning"} as const)[variant]} code
+        className={cn("inline-flex items-center justify-center min-w-[14px]", "tabular-nums", COUNT_VARIANT_CLASSES[variant], variant === 'working' && "animate-pulse")}
         aria-label={`${count} ${COUNT_VARIANT_LABELS[variant]}`}
       >
         {count}
-      </span>
+      </StatusBadge>
     </Tip>
   );
 }

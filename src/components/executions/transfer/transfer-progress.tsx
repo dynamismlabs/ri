@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 /**
@@ -50,7 +52,7 @@ function Delivering({ sessionId, transfer }: { sessionId: string; transfer: Tran
     );
   }
   return (
-    <div role="alert" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/40 bg-amber-500/5 px-3 py-2.5">
+    <Callout padding="md" density="comfortable" tone={"warning"} role="alert" className="mx-auto w-full max-w-3xl">
       <p className="text-[12.5px] font-medium text-foreground">{count} didn&apos;t go to {where}.</p>
       <p className="mt-1 whitespace-pre-wrap text-[11.5px] text-muted-foreground">{transfer.error}</p>
       <p className="mt-1 text-[11px] text-muted-foreground/80">They stay in order, and new messages wait behind them.</p>
@@ -64,7 +66,7 @@ function Delivering({ sessionId, transfer }: { sessionId: string; transfer: Tran
       >
         Send them again
       </Button>
-    </div>
+    </Callout>
   );
 }
 
@@ -96,7 +98,7 @@ function Steps({ transfer, failedAt }: { transfer: TransferView; failedAt?: numb
 
 function Moving({ transfer }: { transfer: TransferView }) {
   return (
-    <div role="status" className="mx-auto w-full max-w-3xl rounded-lg border border-border bg-card px-3 py-2.5">
+    <Card padding="md" density="comfortable" shadow role="status" className="mx-auto w-full max-w-3xl">
       <p className="mb-1.5 text-[12.5px] font-medium text-foreground">
         Continuing on {transfer.to.name}, from {transfer.from.name}
       </p>
@@ -106,7 +108,7 @@ function Moving({ transfer }: { transfer: TransferView }) {
           {transfer.heldCount === 1 ? 'A message you sent is' : `${transfer.heldCount} messages you sent are`} held until it arrives.
         </p>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -118,9 +120,8 @@ function Stopped({ sessionId, transfer }: { sessionId: string; transfer: Transfe
   const where = transferStepLabel(stage, transfer.to.name).toLowerCase();
   const busy = retry.isPending || resume.isPending || finish.isPending;
 
-
   return (
-    <div role="alert" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/40 bg-amber-500/5 px-3 py-2.5">
+    <Callout padding="md" density="comfortable" tone={"warning"} role="alert" className="mx-auto w-full max-w-3xl">
       <p className="mb-1.5 text-[12.5px] font-medium text-foreground">
         The move to {transfer.to.name} stopped while {where}.
       </p>
@@ -175,6 +176,6 @@ function Stopped({ sessionId, transfer }: { sessionId: string; transfer: Transfe
           {apiErrorText(err)}
         </p>
       ))}
-    </div>
+    </Callout>
   );
 }

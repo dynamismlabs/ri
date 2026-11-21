@@ -1,4 +1,5 @@
 "use client";
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { Dialog } from '@base-ui/react/dialog';
@@ -20,10 +21,7 @@ export function FocusView() {
         <Dialog.Popup className="fixed inset-0 z-50 flex items-center justify-center p-8 outline-none">
           <div className="max-w-2xl w-full">
             <Dialog.Title className="sr-only">Focus Mode</Dialog.Title>
-            <div className={cn(
-              'p-6 rounded-2xl bg-card border transition-all duration-500',
-              'border-orange-500/40 shadow-2xl shadow-orange-500/10'
-            )}>
+            <Callout padding="xl" shadow tone={"warning"} >
               <div className="flex items-start gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-orange-500 mt-2 shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
                 <div className="flex-1">
@@ -63,7 +61,7 @@ export function FocusView() {
                   <Target size={14} /> Exit Focus
                 </Dialog.Close>
               </div>
-            </div>
+            </Callout>
           </div>
         </Dialog.Popup>
         </div>

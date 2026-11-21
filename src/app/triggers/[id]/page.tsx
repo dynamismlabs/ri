@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -46,9 +47,9 @@ export default function TriggerDetailPage() {
           <div className="flex items-center gap-2">
             <h1 className="text-base font-semibold truncate">{trigger.name}</h1>
             {managed && (
-              <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] rounded-md bg-muted text-muted-foreground">
+              <StatusBadge className="flex-shrink-0">
                 Managed
-              </span>
+              </StatusBadge>
             )}
           </div>
           {trigger.description && (

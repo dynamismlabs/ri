@@ -1,4 +1,8 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Callout } from '@/components/system/callout';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -32,7 +36,6 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover';
-
 
 function timeAgo(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
@@ -108,7 +111,7 @@ function RerouteMenu({ decision }: { decision: TriageDecisionWithItems }) {
       <PopoverContent align="end" className="w-44 p-0" sideOffset={4}>
         <div className="py-1">
           {REROUTE_OPTIONS.filter((o) => o.disposition !== decision.disposition).map((o) => (
-            <button
+            <MenuAction density="compact"
               key={o.disposition}
               onClick={() => {
                 correct.mutate({
@@ -117,11 +120,11 @@ function RerouteMenu({ decision }: { decision: TriageDecisionWithItems }) {
                 });
                 setOpen(false);
               }}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-[10.5px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2"
             >
               <o.icon size={11} className="text-muted-foreground" />
               {o.label}
-            </button>
+            </MenuAction>
           ))}
         </div>
       </PopoverContent>
@@ -140,11 +143,8 @@ function DigestDecisionRow({ decision }: { decision: TriageDecisionWithItems }) 
   return (
     <div className={cn('group flex items-center gap-2 py-1', isUndone && 'opacity-40 line-through')}>
       <Icon size={11} className="text-muted-foreground/70 flex-shrink-0" />
-      <button
-        className={cn(
-          'flex-1 min-w-0 text-left text-[11px] leading-snug truncate',
-          canOpen ? 'text-foreground hover:underline cursor-pointer' : 'text-foreground cursor-default',
-        )}
+      <InlineAction
+        className={cn("flex-1 min-w-0 text-left truncate", canOpen ? "hover:underline cursor-pointer" : "cursor-default")}
         onClick={() => {
           if (!canOpen || isUndone) return;
           if (decision.targetType === 'task') openTask(decision.targetId!);
@@ -152,7 +152,7 @@ function DigestDecisionRow({ decision }: { decision: TriageDecisionWithItems }) 
         }}
       >
         {line.text}
-      </button>
+      </InlineAction>
       {!isUndone && (
         <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
           <RerouteMenu decision={decision} />
@@ -184,7 +184,7 @@ function GraduationOffers() {
   return (
     <div className="mx-4 mt-3 space-y-2">
       {offers.map((offer) => (
-        <div key={offer.disposition} data-slot="callout" className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
+        <Callout padding="md" density="comfortable" key={offer.disposition}  >
           <div className="flex items-start gap-2">
             <Lightbulb size={12} className="text-primary mt-0.5 flex-shrink-0" />
             <p className="flex-1 text-[11px] leading-snug text-foreground">{offer.line}</p>
@@ -205,7 +205,7 @@ function GraduationOffers() {
               Not now
             </Button>
           </div>
-        </div>
+        </Callout>
       ))}
     </div>
   );
@@ -224,14 +224,10 @@ function PassDigest({ passId }: { passId: string }) {
   const unseen = !pass.digestSeenAt;
 
   return (
-    <div
-      data-slot="callout"
-      className={cn(
-        'rounded-lg border px-3 py-2.5 transition-colors',
-        unseen ? 'border-primary/25 bg-primary/[0.03]' : 'border-border bg-card/40',
-      )}
+    <Callout padding="md" density="comfortable" shadow
+
     >
-      <button
+      <MenuAction density="none"
         className="w-full flex items-center gap-2 text-left"
         onClick={() => setExpanded((e) => !e)}
       >
@@ -244,7 +240,7 @@ function PassDigest({ passId }: { passId: string }) {
           Triage {timeAgo(pass.completedAt ?? pass.createdAt)}
         </span>
         {unseen && <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />}
-      </button>
+      </MenuAction>
 
       {expanded && (
         <div className="mt-2 space-y-2">
@@ -286,7 +282,7 @@ function PassDigest({ passId }: { passId: string }) {
           )}
         </div>
       )}
-    </div>
+    </Callout>
   );
 }
 

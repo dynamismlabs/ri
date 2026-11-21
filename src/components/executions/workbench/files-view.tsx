@@ -1,16 +1,13 @@
 'use client';
 
+import { MenuAction } from '@/components/system/menu-action';
+
 import { Button } from '@/components/system/button';
 import { useMemo, useRef, useState } from 'react';
 import { useDefaultLayout, type Layout, type LayoutStorage } from 'react-resizable-panels';
 import { ChevronDown, FilePlus, FileText, FolderPlus, PanelLeft, Plus, Upload } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileIcon } from '@/components/file-icon';
 import { HOTKEYS } from '@/constants/commands';
 import { useSessionDiff } from '@/hooks/use-execution';
@@ -126,18 +123,18 @@ export function FilesView({
             // it, so the next keystroke (or Escape) would miss the field.
             onCloseAutoFocus={(e) => e.preventDefault()}
           >
-            <DropdownMenuItem onClick={() => treeRef.current?.beginCreate('file')}>
+            <MenuAction kind="menu" onClick={() => treeRef.current?.beginCreate('file')}>
               <FilePlus size={14} />
               New file
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => treeRef.current?.beginCreate('dir')}>
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => treeRef.current?.beginCreate('dir')}>
               <FolderPlus size={14} />
               New folder
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled={!worktreePath} onClick={() => treeRef.current?.uploadFiles()}>
+            </MenuAction>
+            <MenuAction kind="menu" disabled={!worktreePath} onClick={() => treeRef.current?.uploadFiles()}>
               <Upload size={14} />
               Upload files
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
       )}
@@ -282,15 +279,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Row({ name, dir, onClick, children }: { name: string; dir: string; onClick: () => void; children?: React.ReactNode }) {
   return (
-    <button
+    <MenuAction
       type="button"
       onClick={onClick}
-      className="flex h-8 items-center gap-2 rounded-md px-2 text-left transition-colors hover:bg-muted/50"
+      className="flex items-center gap-2 text-left"
     >
       <FileIcon name={name} size={13} className="flex-shrink-0" />
       <span className="flex-shrink-0 text-[12.5px] text-foreground">{name}</span>
       <span className="min-w-0 truncate text-[11.5px] text-muted-foreground/70">{dir.replace(/\/$/, '')}</span>
       <span className="ml-auto flex-shrink-0 pl-2">{children}</span>
-    </button>
+    </MenuAction>
   );
 }

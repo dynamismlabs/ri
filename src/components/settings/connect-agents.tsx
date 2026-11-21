@@ -1,4 +1,7 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { useState, type ReactNode } from 'react';
@@ -24,9 +27,6 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
 import { cn } from '@/lib/utils';
 import { AiClientLogo } from './ai-client-logo';
-
-
-
 
 function ago(iso: string): string {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -133,13 +133,10 @@ interface ClientItemProps extends Omit<ConnectAgentsProps, 'children' | 'keys'> 
 
 function StatusChip({ tone, children }: { tone: 'on' | 'waiting' | 'off'; children: ReactNode }) {
   return (
-    <span className={cn(
-      'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium',
-      tone === 'on' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : tone === 'waiting' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-muted text-muted-foreground',
-    )}>
+    <StatusBadge tone={(tone === 'on' ? "success" : (tone === 'waiting' ? "warning" : "neutral"))} className="inline-flex items-center gap-1">
       <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', tone === 'on' ? 'bg-emerald-500' : tone === 'waiting' ? 'bg-amber-500' : 'bg-muted-foreground/50')} />
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -296,9 +293,9 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
             )}
 
             {needsRemote && (
-              <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+              <Callout as="p" padding="md" density="row" tone={"warning"} role="status" >
                 {client.label} reaches Ri from the internet, so it needs your Ri’s remote address. Set one in Settings → Devices, then come back here.
-              </p>
+              </Callout>
             )}
 
             {(linkPreview || steps) && !needsRemote && (
@@ -363,11 +360,11 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                   </p>
                 )}
                 {made && !made.reachable && (
-                  <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+                  <Callout as="p" padding="md" density="row" tone={"warning"} role="status" >
                     {target?.space.kind === 'team'
                       ? 'This address works only on the computer hosting the team until it has an address people can reach. Its owner sets one in Settings.'
                       : 'This is a local address, so these steps work only on the computer running Ri. Set a remote address in Settings → Devices to connect an agent elsewhere.'}
-                  </p>
+                  </Callout>
                 )}
                 {steps?.caveat && <p className="text-xs text-muted-foreground">{steps.caveat}</p>}
                 {client.docsUrl && (
@@ -473,7 +470,7 @@ function PendingKeyBlock({ label, text, busy, disabled, onCreate }: { label: str
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <div className="flex items-start gap-2 rounded-md border border-dashed border-border bg-muted/20 p-2">
+      <Card padding="sm" className="flex items-start gap-2">
         <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] text-muted-foreground">{text}</pre>
         <Button
           type="button"
@@ -484,7 +481,7 @@ function PendingKeyBlock({ label, text, busy, disabled, onCreate }: { label: str
         >
           {busy ? <Loader2 size={12} className="animate-spin" aria-hidden /> : <KeyRound size={12} aria-hidden />} Create key
         </Button>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -494,7 +491,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-2">
+      <Card padding="sm" className="flex items-start gap-2">
         <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] select-all">{text}</pre>
         <Button
           type="button"
@@ -509,7 +506,7 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
         >
           {copied ? <Check size={12} aria-hidden /> : <Copy size={12} aria-hidden />} {copied ? 'Copied' : 'Copy'}
         </Button>
-      </div>
+      </Card>
     </div>
   );
 }

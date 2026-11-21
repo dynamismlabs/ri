@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui';
@@ -90,9 +91,9 @@ export function UncommittedFileList({
 }) {
   if (!files || files.length === 0) {
     return (
-      <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-[12.5px] text-muted-foreground">
+      <Callout as="p" padding="md" density="row" >
         The files couldn&apos;t be listed. Review the changes to see them.
-      </p>
+      </Callout>
     );
   }
   return (

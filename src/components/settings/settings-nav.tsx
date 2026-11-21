@@ -1,4 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -64,27 +67,22 @@ export function SettingsNavigation<Id extends string>({
         const Icon = section.icon;
         const isActive = section.id === active;
         return (
-          <button data-slot="settings-nav-item"
+          <MenuAction
             key={section.id}
             type="button"
             onClick={() => onSelect(section.id)}
             ref={isActive ? activeButton : undefined}
             aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              'flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors',
-              isActive
-                ? 'bg-background font-medium text-foreground shadow-sm ring-1 ring-border'
-                : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-            )}
+            className="flex shrink-0 items-center gap-2 whitespace-nowrap text-left"
           >
             <Icon size={15} className={cn('shrink-0', isActive ? 'text-foreground' : 'text-muted-foreground')} />
             <span>{section.label}</span>
             {section.badge && (
-              <span className="ml-auto hidden rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground sm:inline-block">
+              <StatusBadge className="ml-auto hidden sm:inline-block">
                 {section.badge}
-              </span>
+              </StatusBadge>
             )}
-          </button>
+          </MenuAction>
         );
       })}
 

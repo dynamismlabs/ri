@@ -1,4 +1,8 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -15,13 +19,7 @@ import { parseLocalDate } from '@/lib/dates';
 import { useTasks } from '@/hooks/use-tasks';
 import { useAreas } from '@/hooks/use-areas';
 import { isClientReadyTodo } from '@/lib/deck/client-ready';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { TaskListDTO } from '@/lib/api/dto/entity-list';
 
 const EFFORT_SHORT: Record<string, string> = {
@@ -128,18 +126,18 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
             </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
-            <DropdownMenuItem onClick={() => setAreaFilter(null)} className={cn('text-xs', !areaFilter && 'font-bold')}>
+            <MenuAction kind="menu" onClick={() => setAreaFilter(null)} className={cn("", !areaFilter && "")}>
               All areas
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
             {areas?.map(area => (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 key={area.id}
                 onClick={() => setAreaFilter(area.id)}
-                className={cn('text-xs', area.id === areaFilter && 'font-bold')}
+                className={cn("", area.id === areaFilter && "")}
               >
                 {area.name}
-              </DropdownMenuItem>
+              </MenuAction>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -157,15 +155,15 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
             </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-28">
-            <DropdownMenuItem onClick={() => setSortBy('default')} className={cn('text-xs', sortBy === 'default' && 'font-bold')}>
+            <MenuAction kind="menu" onClick={() => setSortBy('default')} className={cn("", sortBy === "default" && "")}>
               Priority
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortBy('newest')} className={cn('text-xs', sortBy === 'newest' && 'font-bold')}>
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => setSortBy('newest')} className={cn("", sortBy === "newest" && "")}>
               Newest
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortBy('deadline')} className={cn('text-xs', sortBy === 'deadline' && 'font-bold')}>
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => setSortBy('deadline')} className={cn("", sortBy === "deadline" && "")}>
               Deadline
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -191,9 +189,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
             return (
               <div
                 key={task.id}
-                className={cn(
-                  'group/task flex items-center gap-2 px-3 py-1.5 hover:bg-muted/30 transition-colors',
-                )}
+                className="group/task flex items-center gap-2 px-3 py-1.5 hover:bg-muted/30 transition-colors"
               >
                 {onDeck ? (
                   <IconButton
@@ -229,9 +225,9 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
                 <div className="flex items-center gap-1.5 shrink-0">
                   <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
                   {task.areaId && areaMap.get(task.areaId) && (
-                    <span className="text-[9px] px-1 py-0.5 rounded bg-muted/80 text-muted-foreground/70">
+                    <StatusBadge >
                       {areaMap.get(task.areaId)}
-                    </span>
+                    </StatusBadge>
                   )}
                   {task.effort && (
                     <span className="text-[9px] text-muted-foreground/50">

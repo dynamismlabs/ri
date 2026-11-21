@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -431,14 +435,14 @@ export function LaunchBrowse({
             leaving it invisible. Someone who has never opened integration
             settings has no way to learn this list can span Todoist and Jira. */}
         {connectSettings && activeTab.id === 'task' && integrationSources.length === 0 && !anyLoading && (
-          <button
+          <MenuAction density="compact"
             type="button"
             onClick={connectSettings ?? undefined}
-            className="mt-1 flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[10.5px] text-muted-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="mt-1 flex w-full items-center gap-1.5 text-left"
           >
             <Plug size={11} className="flex-shrink-0 text-sky-500/70" />
             Connect {connectMore.map((s) => s.providerLabel).join(', ')} to pull tasks in from there
-          </button>
+          </MenuAction>
         )}
 
         {rendered.map(({ group, shown, hidden, more }) => (
@@ -497,16 +501,13 @@ export function LaunchBrowse({
                 const due = dueLabel(item.due, now);
                 const band = dueBand(item.due, now);
                 return (
-                  <button
+                  <MenuAction selected={!!((active))} density="compact"
                     key={`${item.kind}:${item.key}`}
                     type="button"
                     data-active={active}
                     onMouseEnter={() => setCursor(index)}
                     onClick={() => onPick(item)}
-                    className={cn(
-                      'flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors',
-                      active ? 'bg-muted' : 'hover:bg-muted/50',
-                    )}
+                    className={cn("flex w-full items-start gap-2 text-left", active ? "" : "")}
                   >
                     {item.toolkitId ? (
                       <span className="mt-0.5 flex-shrink-0">
@@ -541,9 +542,9 @@ export function LaunchBrowse({
                             bigger thing than opening a live chat. Say so on the
                             row rather than after the fact. */}
                         {item.archived && (
-                          <span className="flex-shrink-0 rounded-sm bg-muted px-1 py-px text-[9px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                          <StatusBadge className="flex-shrink-0">
                             archived
-                          </span>
+                          </StatusBadge>
                         )}
                       </span>
                       {(due || item.subtitle) && (
@@ -569,7 +570,7 @@ export function LaunchBrowse({
                         </span>
                       )}
                     </span>
-                  </button>
+                  </MenuAction>
                 );
               })
             )}
@@ -577,7 +578,7 @@ export function LaunchBrowse({
             {/* Sharing the list with other sources: the rest of this one is a
                 tab away, not a page away. */}
             {more === 'jump' && (
-              <button
+              <MenuAction density="compact"
                 type="button"
                 onClick={() => {
                   // Jump to the tab that owns this group. Integration groups all
@@ -592,18 +593,18 @@ export function LaunchBrowse({
                     group.toolkitId ?? (group.kind === 'task' ? SCOPE_LOCAL : SCOPE_ALL),
                   );
                 }}
-                className="w-full rounded-md px-2 py-1 text-left text-[10.5px] text-muted-foreground/70 transition-colors hover:bg-muted/50 hover:text-foreground"
+                className="w-full text-left"
               >
                 {jumpLabel(hidden, group.truncated, group.label)}
-              </button>
+              </MenuAction>
             )}
 
             {/* This source owns the list, so the rest of it arrives here. */}
             {more === 'page' && (
-              <button
+              <MenuAction density="compact"
                 type="button"
                 onClick={() => showMore(group.id)}
-                className="flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-[10.5px] font-medium text-muted-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+                className="flex w-full items-center gap-1.5 text-left"
               >
                 {group.isFetching ? (
                   <Loader2 size={10} className="flex-shrink-0 animate-spin" />
@@ -611,7 +612,7 @@ export function LaunchBrowse({
                   <ChevronDown size={10} className="flex-shrink-0" />
                 )}
                 {showMoreLabel(hidden, group.truncated)}
-              </button>
+              </MenuAction>
             )}
           </div>
         ))}

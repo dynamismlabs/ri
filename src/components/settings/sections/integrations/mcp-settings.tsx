@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { SelectField } from '@/components/system/select-field';
 
 /**
@@ -77,7 +79,7 @@ function LoadedSettings({ serverId, name }: { serverId: string; name: string }) 
   }, [data, options.queryKey, queryClient, update]);
 
   if (settings.data?.available === false) return null;
-  return <section aria-label={`Settings for ${name}`} className="@container space-y-4 rounded-xl border border-border bg-card/20 p-4">
+  return <Card as="section" padding="lg" aria-label={`Settings for ${name}`} className="@container space-y-4">
     <GroupHeading action={settings.isFetching && data ? <Loader2 size={12} className="animate-spin text-muted-foreground" aria-label="Refreshing settings" /> : undefined}>Settings</GroupHeading>
     {settings.isPending && <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={12} className="animate-spin" />Loading settings from {name}…</p>}
     {settings.isError && <div role="alert" className="space-y-2">
@@ -90,7 +92,7 @@ function LoadedSettings({ serverId, name }: { serverId: string; name: string }) 
     </div>}
     {data && <McpSettingsGroups serverId={serverId} view={data} saving={saving} errors={errors} entered={entered} onSave={save}
       onToolDone={() => void queryClient.invalidateQueries({ queryKey: options.queryKey })} />}
-  </section>;
+  </Card>;
 }
 
 /** The groups themselves: fields with their current values (or a refused entry), and tool buttons. Rendered alone in tests. */
@@ -101,11 +103,11 @@ export function McpSettingsGroups({ serverId, view, saving = {}, errors = {}, en
   return <div className="space-y-5">
     {view.groups.map(group => <div key={group.title} role="group" aria-label={group.title} className="space-y-2">
       <h4 className="text-xs font-medium">{group.title}</h4>
-      <div className="divide-y divide-border/60 overflow-hidden rounded-lg border border-border bg-background/40">
+      <Card padding="none" className="divide-y divide-border/60 overflow-hidden">
         {group.items.map(item => <SettingsRow key={item.kind === 'property' ? `property:${item.field.key}` : `tool:${item.tool}`} serverId={serverId} item={item}
           value={item.kind === 'property' ? (Object.hasOwn(entered, item.field.key) ? entered[item.field.key] : view.values[item.field.key]) : undefined} saving={item.kind === 'property' && !!saving[item.field.key]}
           error={item.kind === 'property' ? errors[item.field.key] : undefined} onSave={onSave} onToolDone={onToolDone} />)}
-      </div>
+      </Card>
     </div>)}
   </div>;
 }

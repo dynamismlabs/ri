@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -40,7 +41,7 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
             <DialogPrimitive.Description>{message}</DialogPrimitive.Description>
           </VisuallyHidden.Root>
-          <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
+          <Card padding="none" shadow className="overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-rose-700 dark:text-rose-400">
                 <AlertCircle size={13} />
@@ -94,7 +95,7 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
                 </Button>
               )}
             </div>
-          </div>
+          </Card>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

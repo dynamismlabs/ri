@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
@@ -33,7 +35,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { FolderPickerDialog } from './folder-picker-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
-import { cn } from '@/lib/utils';
+
 import type { ReferenceFolderRecord } from '@/db/types';
 import { Tip } from '@/components/ui/tip';
 import { READ_ONLY_DEFAULT } from '@/lib/reference-folders/read-only';
@@ -402,16 +404,11 @@ function Notice({
   tone: 'warning' | 'error';
 }) {
   return (
-    <div
-      className={cn(
-        'flex items-start gap-2 rounded-lg border p-2.5 text-[11px]',
-        tone === 'error'
-          ? 'border-destructive/20 bg-destructive/10 text-destructive'
-          : 'border-amber-500/30 bg-amber-500/10 text-amber-500',
-      )}
+    <Callout padding="sm" tone={(tone === 'error' ? "error" : "warning")}
+      className="flex items-start gap-2"
     >
       <AlertTriangle size={13} className="mt-px shrink-0" />
       <span>{children}</span>
-    </div>
+    </Callout>
   );
 }

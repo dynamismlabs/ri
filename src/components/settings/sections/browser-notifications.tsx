@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Globe, Loader2 } from 'lucide-react';
@@ -113,7 +114,7 @@ export function BrowserNotifications({ channel, onChanged }: Props) {
     }
   }
 
-  return <section aria-label="Browser notifications" className="rounded-xl border border-border bg-card/30 p-3">
+  return <Card as="section" padding="md" aria-label="Browser notifications" >
     <div className="flex items-center gap-2 text-xs font-semibold"><Globe size={16} />{title}{(checking || busy) && <Loader2 size={12} className="animate-spin" />}</div>
     <p className="mt-1 text-[11px] text-muted-foreground">{detail}</p>
     {(actionError || readError) && <p role="alert" className="mt-2 text-xs text-destructive">{actionError || readError}</p>}
@@ -144,5 +145,5 @@ export function BrowserNotifications({ channel, onChanged }: Props) {
         size="xs"
       >Check again</Button>
     </div>
-  </section>;
+  </Card>;
 }

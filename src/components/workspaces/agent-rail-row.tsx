@@ -1,4 +1,7 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -19,13 +22,7 @@ import {
   type VoiceTone,
 } from '@/lib/utils/agent-rail';
 import { AgentIcon } from '@/components/agents/agent-icon';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import type { WorkspaceWithCounts } from '@/db/types';
 import { SessionRow } from './session-row';
@@ -283,7 +280,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
           onClick={open}
           onNewChat={() => onOpenLauncher(workspace.id)}
           trigger={({ ref, onClick }) => (
-            <button
+            <InlineAction
               ref={ref}
               onClick={onClick}
               className="flex-1 min-w-0 text-left"
@@ -302,7 +299,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                   {voice.text}
                 </span>
               )}
-            </button>
+            </InlineAction>
           )}
         >
           {threads}
@@ -388,23 +385,23 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
               {chat && (
                 <>
                   {unread ? (
-                    <DropdownMenuItem onSelect={() => markRead.mutate(chat.id)}>
+                    <MenuAction kind="menu" onSelect={() => markRead.mutate(chat.id)}>
                       <Eye size={12} /> Mark as read
-                    </DropdownMenuItem>
+                    </MenuAction>
                   ) : (
-                    <DropdownMenuItem onSelect={() => markUnread.mutate(chat.id)}>
+                    <MenuAction kind="menu" onSelect={() => markUnread.mutate(chat.id)}>
                       <EyeOff size={12} /> Mark as unread
-                    </DropdownMenuItem>
+                    </MenuAction>
                   )}
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem onSelect={() => onOpenLauncher(workspace.id)}>
+              <MenuAction kind="menu" onSelect={() => onOpenLauncher(workspace.id)}>
                 <Plus size={12} /> New chat
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onOpenSettings(workspace.id)}>
+              </MenuAction>
+              <MenuAction kind="menu" onSelect={() => onOpenSettings(workspace.id)}>
                 <SlidersHorizontal size={12} /> Agent setup
-              </DropdownMenuItem>
+              </MenuAction>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -420,10 +417,10 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
 
       {hasThreads && !expanded && !agentsOnly && (
         <Tip label="Show chats">
-          <button
+          <MenuAction density="none"
             onPointerDown={stop}
             onClick={toggleThreads}
-            className="mb-1.5 flex h-8 w-full items-center gap-1.5 rounded-md pl-4 pr-1.5 text-left text-[10.5px] hover:bg-muted/40 transition-colors"
+            className="mb-1.5 flex w-full items-center gap-1.5 text-left"
             aria-label={`Show ${workspace.name}'s chats`}
           >
             <ChevronRight size={11} className="flex-shrink-0 text-muted-foreground/60" />
@@ -435,7 +432,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                 </span>
               ))}
             </span>
-          </button>
+          </MenuAction>
         </Tip>
       )}
     </div>

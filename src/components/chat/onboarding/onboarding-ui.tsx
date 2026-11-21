@@ -1,4 +1,5 @@
 'use client';
+import { Card as SystemCard } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
@@ -70,7 +71,7 @@ export function Typing() {
 /** The card a step asks its question with. */
 export function Card({ children, className }: { children: ReactNode; className?: string }) {
   return (
-    <div className={cn('rounded-xl border border-border bg-card/60 p-3 shadow-sm', className)}>{children}</div>
+    <SystemCard padding="md" shadow className={cn(className)}>{children}</SystemCard>
   );
 }
 

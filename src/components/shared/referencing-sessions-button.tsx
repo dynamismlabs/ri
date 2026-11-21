@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { useWorkNavigation } from '@/contexts/work-context';
@@ -72,16 +73,13 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
           <ul className="max-h-[300px] overflow-y-auto py-1">
             {query.data?.sessions.map((s) => (
               <li key={s.id}>
-                <button
+                <MenuAction density="compact"
                   type="button"
                   onClick={() => {
                     setOpen(false);
                     openExecution(s.id);
                   }}
-                  className={cn(
-                    'group flex items-center gap-2 w-full px-3 py-1.5 text-left',
-                    'hover:bg-muted/60 transition-colors',
-                  )}
+                  className={cn("group flex items-center gap-2 w-full text-left", "")}
                 >
                   <MessageSquare size={11} className="text-muted-foreground/70 shrink-0" />
                   <span className="flex-1 min-w-0 text-[12px] text-foreground truncate">
@@ -91,7 +89,7 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
                     size={11}
                     className="text-muted-foreground/40 group-hover:text-foreground shrink-0"
                   />
-                </button>
+                </MenuAction>
               </li>
             ))}
           </ul>

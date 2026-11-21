@@ -1,3 +1,5 @@
+
+import { Card } from '@/components/system/card';
 /**
  * Where an app's "Connect" lands (docs/mcp-oauth.md). ChatGPT, Claude or
  * another MCP client opens this page in the owner's browser. It signs the
@@ -34,7 +36,7 @@ const CAN = [
 function Shell({ children }: { children: ReactNode }) {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-sm">{children}</div>
+      <Card padding="xl" shadow className="w-full max-w-sm">{children}</Card>
     </main>
   );
 }

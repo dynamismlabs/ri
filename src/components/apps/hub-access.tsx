@@ -1,4 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
@@ -35,15 +38,15 @@ export function HubAccessList() {
       <ul className="divide-y divide-border rounded-lg border border-border">
         {apps.data.map((app) => (
           <li key={app.id}>
-            <button type="button" onClick={() => setOpen(app.id)} className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/40">
+            <MenuAction type="button" onClick={() => setOpen(app.id)} className="flex w-full items-center gap-3 text-left">
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm">{app.name}</span>
                 <span className="block truncate text-[11px] text-muted-foreground">
                   {app.off ? 'Turned off' : reach(app)}
                 </span>
               </span>
-              {app.pendingApprovals > 0 && <span className="shrink-0 rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">{app.pendingApprovals} waiting</span>}
-            </button>
+              {app.pendingApprovals > 0 && <StatusBadge appearance="solid"  className="shrink-0">{app.pendingApprovals} waiting</StatusBadge>}
+            </MenuAction>
           </li>
         ))}
       </ul>

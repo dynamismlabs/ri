@@ -1,4 +1,6 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
 import { Field } from '@/components/system/field';
 
 import { ChipButton } from '@/components/system/chip-button';
@@ -345,7 +347,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
 
         {/* Personal keeps its primary status selector. Team filters share one menu. */}
         {privatePlanning && <DropdownMenu>
-          <DropdownMenuTrigger asChild><ChipButton aria-label={`Status: ${laneLabel}`} className="">
+          <DropdownMenuTrigger asChild><ChipButton aria-label={`Status: ${laneLabel}`} >
             <span className="max-w-[130px] truncate">{laneLabel}</span>
             {laneCount != null && laneCount > 0 && <span className="tabular-nums opacity-60">{laneCount}</span>}
             <ChevronDown className="size-3.5 shrink-0 opacity-60" />
@@ -662,13 +664,13 @@ function VirtualTaskList({
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    {row.kind === 'group' ? <button type="button"
+                    {row.kind === 'group' ? <MenuAction type="button"
                       aria-label={`${row.label}, ${row.count} ${row.count === 1 ? 'task' : 'tasks'}`} aria-expanded={!collapsed.has(row.key)}
                       onClick={() => setCollapsed(previous => { const next = new Set(previous); if (next.has(row.key)) next.delete(row.key); else next.add(row.key); return next; })}
-                      className="flex h-9 w-full items-center gap-2 border-b border-border px-2 text-left text-[11px] font-semibold text-foreground hover:bg-muted/50">
+                      className="flex w-full items-center gap-2 text-left">
                       <ChevronDown size={13} className={cn('shrink-0 transition-transform', collapsed.has(row.key) && '-rotate-90')} />
                       <span className="truncate">{row.label}</span><span className="tabular-nums font-normal text-muted-foreground">{row.count}</span>
-                    </button> : task && <TaskRow
+                    </MenuAction> : task && <TaskRow
                       task={task}
                       privatePlanning={privatePlanning}
                       contextMeta={rowMeta?.(task)}

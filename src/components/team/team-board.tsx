@@ -1,5 +1,5 @@
 'use client';
-
+import { Card } from '@/components/system/card';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
@@ -96,7 +96,7 @@ function EmptyTeam({ onNewTask }: { onNewTask: () => void }) {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 top-24 flex justify-center px-4">
-      <div className="pointer-events-auto w-full max-w-sm rounded-xl border border-border bg-card p-5 shadow-sm">
+      <Card padding="lg" shadow className="pointer-events-auto w-full max-w-sm">
         <p className="text-sm font-semibold">{team.name} is ready</p>
         <p className="mt-1 text-xs text-muted-foreground">Everyone in the team sees what you add here. Areas are optional.</p>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -127,7 +127,7 @@ function EmptyTeam({ onNewTask }: { onNewTask: () => void }) {
             </Button>
           )}
         </div>
-      </div>
+      </Card>
     </div>
   );
 }

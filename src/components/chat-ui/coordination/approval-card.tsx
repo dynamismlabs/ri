@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import type { ReactNode } from 'react';
@@ -10,7 +12,7 @@ import { ChatMessageLink } from '@/components/chat-ui/messages/chat-message-link
 
 export function CoordinationApprovalCard({ delivery, onDecide, busy = false, destinationName, launchOptions, compact = false }: { compact?: boolean; destinationName?: string | null; launchOptions?: AgentDeliveryRecord['payload']['launch']; delivery: AgentDeliveryRecord; onDecide?: (decision: 'allow' | 'always' | 'deny') => void; busy?: boolean }) {
   const pending = delivery.status === 'awaiting_approval';
-  return <section className={compact ? "space-y-2 rounded-lg border border-border bg-card p-3 text-xs" : "max-w-xl space-y-3 rounded-xl border border-border bg-card p-4 text-xs"} aria-label={delivery.senderKind === 'human' ? 'Shared message delivery' : 'Coordination approval'}>
+  return <Card as="section" padding="md" shadow className={compact ? "space-y-2" : "max-w-xl space-y-3"} aria-label={delivery.senderKind === 'human' ? 'Shared message delivery' : 'Coordination approval'}>
     <div><p className="font-medium">{pending ? delivery.payload.launch || delivery.kind === 'request' && delivery.targetAddress.startsWith('agent:') ? 'Approve work in another chat' : 'Approve message to another chat' : delivery.status === 'denied' ? 'Send declined' : delivery.status === 'failed' ? 'Send failed' : delivery.status === 'cancelled' ? 'Send cancelled' : 'Coordination send authorized'}</p><p className="mt-1 text-muted-foreground">{delivery.kind === 'request' ? 'A returned outcome is expected.' : 'No automatic reply requested.'}</p></div>
     {delivery.targetSessionId ? <ChatMessageLink sessionId={delivery.targetSessionId} eventId={delivery.eventId} label="Destination" direction="outgoing" /> : <p className="break-words text-muted-foreground">{launchOptions ? 'New chat in' : 'Destination:'} {destinationName ?? delivery.targetAddress}</p>}
     {launchOptions?.executionId && <p className="text-muted-foreground">Shares the existing folder, branch and device.</p>}
@@ -38,7 +40,7 @@ export function CoordinationApprovalCard({ delivery, onDecide, busy = false, des
       size="xs"
     >Decline</Button></div>}
     {!compact && delivery.senderKind !== 'human' && <p className="text-[11px] text-muted-foreground">Approval allows this message and replies to this chat{delivery.kind === 'request' ? ', including the returned outcome' : ''}. Always allow lets this chat message any chat and create new chats. Pause incoming queues agent messages in this chat until you resume.</p>}
-  </section>;
+  </Card>;
 }
 export function CoordinationText({ text, children, compact = false }: { text: string; children?: ReactNode; compact?: boolean }) {
   const long = text.length > (compact ? 160 : 800) || text.split('\n').length > 8;

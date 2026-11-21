@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 /**
  * What an MCP server's screens may reach on the network, on its connection
@@ -28,11 +29,11 @@ export function McpAppNetwork({ serverId, name, enabled }: { serverId: string; n
 function LoadedNetwork({ serverId, name }: { serverId: string; name: string }) {
   const network = useQuery(trpc.connectedApps.network.queryOptions({ serverId }, { staleTime: 60_000, retry: false, refetchOnWindowFocus: false }));
   if (network.isError || network.data === null) return null;
-  return <section aria-label={`Network access for ${name}`} className="space-y-2 rounded-xl border border-border bg-card/20 p-4">
+  return <Card as="section" padding="lg" aria-label={`Network access for ${name}`} className="space-y-2">
     <GroupHeading>Network access</GroupHeading>
     {network.data ? <AppNetworkList network={network.data} name={name} />
       : <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={12} className="animate-spin" />Reading what {name}&apos;s screens declare…</p>}
-  </section>;
+  </Card>;
 }
 
 /** The declared sites, by what a screen may do with them. Rendered alone in tests. */

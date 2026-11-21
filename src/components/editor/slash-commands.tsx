@@ -1,4 +1,8 @@
-'use client'
+'use client';
+
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
 
 import { Extension, type Editor, type Range } from '@tiptap/core'
 import Suggestion, { type SuggestionOptions, type SuggestionProps, type SuggestionKeyDownProps } from '@tiptap/suggestion'
@@ -245,16 +249,11 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
         {items.map((item, index) => {
           const Icon = item.icon
           return (
-            <button
+            <MenuAction selected={!!((index === selectedIndex))}
               key={item.title}
               type="button"
-              className={`
-                flex items-center gap-2.5 w-full px-2.5 py-2 rounded text-sm transition-colors
-                ${index === selectedIndex
-                  ? 'bg-accent text-foreground'
-                  : 'text-foreground/80 hover:bg-accent/50'
-                }
-              `}
+              className={` flex items-center gap-2.5 w-full  ${index === selectedIndex
+    ? "" : ""} `}
               // Per-button preventDefault keeps editor focus on click so the
               // Suggestion plugin doesn't tear the popup down before click
               // fires. Scoped to the button so scrollbar drags on the
@@ -263,14 +262,14 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
               onClick={() => selectItem(index)}
               onMouseEnter={() => setSelectedIndex(index)}
             >
-              <div className="flex items-center justify-center w-8 h-8 rounded border border-border bg-background">
+              <Card padding="none" className="flex items-center justify-center w-8">
                 <Icon size={16} />
-              </div>
+              </Card>
               <div className="text-left">
                 <div className="font-medium">{item.title}</div>
                 <div className="text-xs text-muted-foreground">{item.description}</div>
               </div>
-            </button>
+            </MenuAction>
           )
         })}
       </div>

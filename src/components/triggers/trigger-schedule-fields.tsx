@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { Field } from '@/components/system/field';
 import { cn } from '@/lib/utils';
@@ -162,7 +164,7 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
       {value.kind === 'webhook' && <p className="text-[11px] text-muted-foreground">A public ID and signing secret are generated on save. The secret is shown once.</p>}
       {result.error && <p role="alert" className="text-[12px] text-destructive">{result.error}</p>}
       {result.preview.length > 0 && (
-        <div className="rounded-md border border-border bg-muted/30 p-3 text-[12px]">
+        <Card padding="md" >
           <p className="mb-1 font-medium">{value.kind === 'once' ? 'Runs once' : 'Next runs'}</p>
           <ul className="space-y-1 text-muted-foreground">
             {result.preview.map((at) => <li key={at}>{new Date(at).toLocaleString(undefined, {
@@ -170,7 +172,7 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
               hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
             })}</li>)}
           </ul>
-        </div>
+        </Card>
       )}
     </fieldset>
   );

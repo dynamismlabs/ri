@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, useState } from 'react';
@@ -33,7 +34,7 @@ export function ResultFeedback({ result, context, destinationReason, onClose }: 
   };
 
   return (
-    <div className="rounded-lg border bg-background p-3 space-y-2">
+    <Card padding="md" className="space-y-2">
       <div className="flex items-start justify-between gap-2 text-xs">
         <div>
           <p className="font-medium">{context.reviewId ? 'Address findings' : 'Request changes'}</p>
@@ -59,6 +60,6 @@ export function ResultFeedback({ result, context, destinationReason, onClose }: 
           {decision.isPending ? <Loader2 className="animate-spin" /> : <ArrowUp />}Send feedback
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }

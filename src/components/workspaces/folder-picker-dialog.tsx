@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -364,7 +368,7 @@ export function FolderPickerDialog({
                 const isSelected = selected === entry.path;
                 const isDir = entry.kind === 'dir';
                 return (
-                  <button
+                  <MenuAction selected={!!((isDir) || (isSelected))} density="compact"
                     key={entry.path}
                     type="button"
                     onClick={() => {
@@ -373,14 +377,8 @@ export function FolderPickerDialog({
                     }}
                     onDoubleClick={() => enterFolder(entry)}
                     disabled={!isDir}
-                    className={cn(
-                      'w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left',
-                      'border-b border-border/30 last:border-b-0',
-                      isDir
-                        ? 'hover:bg-muted/40 cursor-pointer'
-                        : 'opacity-50 cursor-default',
-                      isSelected && 'bg-primary/10 hover:bg-primary/15',
-                    )}
+                    className={cn("w-full flex items-center gap-2 text-left", "", isDir
+    ? "cursor-pointer" : "opacity-50 cursor-default", isSelected && "")}
                   >
                     {isDir ? (
                       <FolderIcon name={entry.name} opened={false} size={14} />
@@ -396,11 +394,11 @@ export function FolderPickerDialog({
                       {entry.name}
                     </span>
                     {entry.git && (
-                      <span
-                        className="ml-auto flex shrink-0 items-center gap-0.5 rounded bg-accent px-1 py-px text-[9px] text-muted-foreground"
+                      <StatusBadge
+                        className="ml-auto flex shrink-0 items-center gap-0.5"
                       >
                         <GitBranch size={8} /> git
-                      </span>
+                      </StatusBadge>
                     )}
                     {isDir && (
                       <ChevronRight
@@ -408,7 +406,7 @@ export function FolderPickerDialog({
                         className={cn('shrink-0 text-muted-foreground/40', !entry.git && 'ml-auto')}
                       />
                     )}
-                  </button>
+                  </MenuAction>
                 );
               })}
             </div>

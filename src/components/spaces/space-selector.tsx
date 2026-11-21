@@ -1,16 +1,11 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown, House, Plus, Settings, User, UserPlus } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 import { currentSpaceId, spacePath, spaceApiBase, spacePlaceKey } from '@/lib/spaces/document';
 import { myRiClient } from '@/lib/spaces/my-ri-client';
@@ -145,33 +140,33 @@ export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { vari
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="start" side={variant === 'phone' ? 'bottom' : 'top'} className="w-56">
-        {standalone ? <DropdownMenuItem className="gap-2 text-[13px]">
+        {standalone ? <MenuAction kind="menu" className="gap-2">
           <Mark name={standalone.name} imageUrl={currentLogo} />
           <span className="min-w-0 flex-1 truncate">{standalone.name}</span>
           <Check size={14} />
-        </DropdownMenuItem> : <DropdownMenuItem onSelect={() => openSpace(null)} className="gap-2 text-[13px]">
+        </MenuAction> : <MenuAction kind="menu" onSelect={() => openSpace(null)} className="gap-2">
           <Mark name={null} />
           <span className="flex-1">My Ri</span>
           {!here && <Check size={14} />}
-        </DropdownMenuItem>}
+        </MenuAction>}
         {teams.map((team) => (
-          <DropdownMenuItem key={team.id} onSelect={() => openSpace(team.id)} className="gap-2 text-[13px]">
+          <MenuAction kind="menu" key={team.id} onSelect={() => openSpace(team.id)} className="gap-2">
             <ConnectedTeamMark id={team.id} name={teamDisplayName(team.id, connected.data)} selected={here === team.id} currentLogo={currentLogo} />
             <span className="min-w-0 flex-1 truncate">{teamDisplayName(team.id, connected.data)}</span>
             {here === team.id && <Check size={14} />}
-          </DropdownMenuItem>
+          </MenuAction>
         ))}
-        {onOpenAccount && <><DropdownMenuSeparator /><DropdownMenuItem onSelect={onOpenAccount} className="gap-2 text-[13px]"><User size={14} className="text-muted-foreground" />Your account</DropdownMenuItem>
-          {standalone && <DropdownMenuItem onSelect={onOpenAccount} className="gap-2 text-[13px]"><House size={14} className="text-muted-foreground" />Connect to My Ri</DropdownMenuItem>}</>}
+        {onOpenAccount && <><DropdownMenuSeparator /><MenuAction kind="menu" onSelect={onOpenAccount} className="gap-2"><User size={14} className="text-muted-foreground" />Your account</MenuAction>
+          {standalone && <MenuAction kind="menu" onSelect={onOpenAccount} className="gap-2"><House size={14} className="text-muted-foreground" />Connect to My Ri</MenuAction>}</>}
         <DropdownMenuSeparator />
-        {standalone ? <DropdownMenuItem onSelect={onOpenSettings} className="gap-2 text-[13px]">
+        {standalone ? <MenuAction kind="menu" onSelect={onOpenSettings} className="gap-2">
           <Settings size={14} className="text-muted-foreground" /> Team settings
-        </DropdownMenuItem> : <><DropdownMenuItem onSelect={openTeamsSettings} className="gap-2 text-[13px]">
+        </MenuAction> : <><MenuAction kind="menu" onSelect={openTeamsSettings} className="gap-2">
           <UserPlus size={14} className="text-muted-foreground" /> Join a team
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={createTeam} className="gap-2 text-[13px]">
+        </MenuAction>
+        <MenuAction kind="menu" onSelect={createTeam} className="gap-2">
           <Plus size={14} className="text-muted-foreground" /> Create a team
-        </DropdownMenuItem></>}
+        </MenuAction></>}
       </DropdownMenuContent>
     </DropdownMenu>
   );

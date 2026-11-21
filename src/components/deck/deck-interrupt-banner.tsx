@@ -1,10 +1,10 @@
 "use client";
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { AlertTriangle, X } from 'lucide-react';
 import type { DeckChangeView } from '@/types/dashboard';
-
 
 interface DeckInterruptBannerProps {
   interrupts: DeckChangeView[];
@@ -22,7 +22,7 @@ export function DeckInterruptBanner({ interrupts, onRestore, onDismiss }: DeckIn
   if (interrupts.length === 0) return null;
 
   return (
-    <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5">
+    <Callout padding="md" density="comfortable" tone={"warning"} className="mb-3">
       <div className="flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -65,6 +65,6 @@ export function DeckInterruptBanner({ interrupts, onRestore, onDismiss }: DeckIn
           </IconButton>
 
       </div>
-    </div>
+    </Callout>
   );
 }

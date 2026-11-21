@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { NativeSelect } from '@/components/system/native-select';
@@ -31,7 +33,7 @@ export function FilePreviewView({ source, name }: { source: FilePreviewSource; n
   if (data.kind === 'document') return <iframe className="h-full w-full border-0 bg-white" title="Document preview" sandbox="" referrerPolicy="no-referrer" srcDoc={documentHtml(data.html)} />;
   if (data.kind === 'slides') return <div className="h-full overflow-auto bg-muted/30 p-4">
     <p className="mb-4 text-xs text-muted-foreground">Slide content preview. Download the presentation for its original layout.</p>
-    {data.slides.map((slide, index) => <section key={index} aria-label={slide.title} className="mx-auto mb-4 min-h-48 max-w-3xl rounded-lg border border-border bg-background p-6 shadow-sm"><h2 className="mb-4 text-sm font-semibold">{slide.title}</h2><p className="whitespace-pre-wrap text-sm leading-relaxed">{slide.text || 'This slide has no text.'}</p></section>)}
+    {data.slides.map((slide, index) => <Card as="section" padding="xl" key={index} aria-label={slide.title} className="mx-auto mb-4 max-w-3xl"><h2 className="mb-4 text-sm font-semibold">{slide.title}</h2><p className="whitespace-pre-wrap text-sm leading-relaxed">{slide.text || 'This slide has no text.'}</p></Card>)}
     {!data.slides.length && <p className="text-sm text-muted-foreground">No slides could be read. Download the presentation to open it.</p>}
     {data.truncated && <p role="status" className="text-xs text-muted-foreground">Showing part of this presentation.</p>}
   </div>;

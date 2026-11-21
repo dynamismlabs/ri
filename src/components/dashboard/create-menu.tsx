@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { useState, useCallback, useMemo } from "react";
@@ -66,7 +67,6 @@ export function CreateMenu() {
     setAreaOpen(true);
   }, []);
 
-
   return (
     <>
       <Popover open={open} onOpenChange={setOpen}>
@@ -95,9 +95,9 @@ export function CreateMenu() {
         >
           {/* Personal capture stays in its owning Home. */}
           {!team && <>
-          <button
+          <MenuAction
             onClick={handleQuickCapture}
-            className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-accent transition-colors group mb-1"
+            className="w-full flex items-center gap-2.5 group mb-1"
           >
             <div className="w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center group-hover:bg-amber-500/25 transition-colors flex-shrink-0">
               <Zap size={16} className="text-amber-500" />
@@ -111,15 +111,15 @@ export function CreateMenu() {
             <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/70 font-sans flex-shrink-0">
               {HOTKEYS.quickCapture.label}
             </kbd>
-          </button>
+          </MenuAction>
 
           <div className="h-px bg-border my-1" />
 
           </>}
           <div className="grid grid-cols-3 gap-1">
-            <button
+            <MenuAction
               onClick={handleNewTask}
-              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-lg hover:bg-accent transition-colors group"
+              className="flex flex-col items-center gap-1.5 group"
             >
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <CheckSquare size={16} className="text-primary" />
@@ -127,11 +127,11 @@ export function CreateMenu() {
               <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 Task
               </span>
-            </button>
+            </MenuAction>
 
-            <button
+            <MenuAction
               onClick={handleNewNote}
-              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-lg hover:bg-accent transition-colors group"
+              className="flex flex-col items-center gap-1.5 group"
             >
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
                 <FileText size={16} className="text-emerald-500" />
@@ -139,11 +139,11 @@ export function CreateMenu() {
               <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 Note
               </span>
-            </button>
+            </MenuAction>
 
-            <button
+            <MenuAction
               onClick={handleNewArea}
-              className="flex flex-col items-center gap-1.5 px-2 py-3 rounded-lg hover:bg-accent transition-colors group"
+              className="flex flex-col items-center gap-1.5 group"
             >
               <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-accent transition-colors">
                 <Layers size={16} className="text-foreground" />
@@ -151,22 +151,22 @@ export function CreateMenu() {
               <span className="text-[10px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 Area
               </span>
-            </button>
+            </MenuAction>
 
           </div>
           {!team && <><div className="h-px bg-border my-1" />
-          <button type="button" onClick={() => { setOpen(false); openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService }); }}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] hover:bg-accent">
+          <MenuAction type="button" onClick={() => { setOpen(false); openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService }); }}
+            className="flex w-full items-center gap-2.5 text-left">
             <Plus size={15} className="shrink-0 text-muted-foreground" /> Connect a service
-          </button>
-          <button type="button" disabled={newSkill.isPending} onClick={() => { setOpen(false); newSkill.start(); }}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] hover:bg-accent disabled:opacity-50">
+          </MenuAction>
+          <MenuAction type="button" disabled={newSkill.isPending} onClick={() => { setOpen(false); newSkill.start(); }}
+            className="flex w-full items-center gap-2.5 text-left disabled:opacity-50">
             <Plus size={15} className="shrink-0 text-muted-foreground" /> New skill
-          </button>
-          <button type="button" onClick={() => { setOpen(false); openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.mcpServer }); }}
-            className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[11px] hover:bg-accent">
+          </MenuAction>
+          <MenuAction type="button" onClick={() => { setOpen(false); openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.mcpServer }); }}
+            className="flex w-full items-center gap-2.5 text-left">
             <Plus size={15} className="shrink-0 text-muted-foreground" /> Add MCP server
-          </button></>}
+          </MenuAction></>}
         </PopoverContent>
       </Popover>
 

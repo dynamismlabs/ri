@@ -1,15 +1,14 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppWindow, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
 import { useOptionalDashboard } from '@/contexts/dashboard-context';
 import {
@@ -148,14 +147,14 @@ export function OpenWithAppActions({
     return (
       <>
         {apps.map((choice) => (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             key={`${choice.app.id}:${choice.tool}`}
             disabled={busy}
             onSelect={() => void open(choice)}
           >
             <AppWindow size={14} />
             Open with {choice.label}
-          </DropdownMenuItem>
+          </MenuAction>
         ))}
       </>
     );
@@ -186,9 +185,9 @@ export function OpenWithAppActions({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {apps.map((choice) => (
-              <DropdownMenuItem key={`${choice.app.id}:${choice.tool}`} onSelect={() => void open(choice)}>
+              <MenuAction kind="menu" key={`${choice.app.id}:${choice.tool}`} onSelect={() => void open(choice)}>
                 {choice.label}
-              </DropdownMenuItem>
+              </MenuAction>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -203,10 +202,10 @@ export function OpenWithAppApproval({ controller }: { controller: OpenWithContro
   return (
     <>
       {approval && (
-        <span
+        <StatusBadge tone={"warning"}
           role="group"
           aria-label={`Allow ${approval.app.label} to open ${fileName}`}
-          className="mt-1 block space-y-2 rounded-lg bg-amber-500/10 p-2.5 text-xs"
+          className="mt-1 block space-y-2"
         >
           <span className="block">
             Allow {approval.app.label} to open {fileName}?
@@ -224,7 +223,7 @@ export function OpenWithAppApproval({ controller }: { controller: OpenWithContro
               Decline
             </Button>
           </span>
-        </span>
+        </StatusBadge>
       )}
     </>
   );

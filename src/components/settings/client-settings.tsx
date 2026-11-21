@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { useEffect, useState } from 'react';
@@ -45,7 +48,7 @@ export function ClientSettings() {
         <h3 className="text-[13px] font-semibold">This browser</h3>
       </header>
 
-      <div className="space-y-2.5 rounded-md border border-border bg-card/40 p-3">
+      <Card padding="md" className="space-y-2.5">
         <Row label="Connected to">
           <span className="font-mono text-foreground">
             {hostInfo.data?.hostname ?? hostname}
@@ -53,13 +56,8 @@ export function ClientSettings() {
           </span>
         </Row>
         <Row label="Mode">
-          <span
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[11px] font-medium',
-              location.kind === 'host'
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-            )}
+          <StatusBadge tone={(location.kind === 'host' ? "success" : "warning")}
+            className="inline-flex items-center gap-1.5"
           >
             <span
               className={cn(
@@ -68,7 +66,7 @@ export function ClientSettings() {
               )}
             />
             {location.kind === 'host' ? 'On the host machine' : 'Remote client'}
-          </span>
+          </StatusBadge>
         </Row>
 
         {!isLoopback && (
@@ -90,7 +88,7 @@ export function ClientSettings() {
             </label>
           </div>
         )}
-      </div>
+      </Card>
     </section>
   );
 }

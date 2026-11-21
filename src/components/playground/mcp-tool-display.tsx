@@ -1,4 +1,7 @@
-'use client'
+'use client';
+
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react'
@@ -29,7 +32,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
   const errored = state === 'output-error'
 
   return (
-    <div className="rounded-md border border-border/60 bg-muted/30 my-1.5 text-xs">
+    <Card padding="none" className="my-1.5">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -47,18 +50,18 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {/* Message */}
           <div>
             <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Message</div>
-            <div className="rounded bg-background/60 border border-border/60 p-1.5 font-mono text-[11px] break-words whitespace-pre-wrap">
+            <Card padding="xs" purpose="code" className="break-words whitespace-pre-wrap">
               {inputMessage || JSON.stringify(input, null, 2)}
-            </div>
+            </Card>
           </div>
 
           {/* Context (optional) */}
           {inputContext && (
             <div>
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Context</div>
-              <div className="rounded bg-background/60 border border-border/60 p-1.5 font-mono text-[11px] break-words whitespace-pre-wrap text-muted-foreground">
+              <Card padding="xs" purpose="code" className="break-words whitespace-pre-wrap">
                 {inputContext}
-              </div>
+              </Card>
             </div>
           )}
 
@@ -71,9 +74,9 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {errored && (
             <div>
               <div className="text-[10px] uppercase tracking-wide text-destructive mb-0.5">Error</div>
-              <div className="rounded bg-destructive/10 border border-destructive/30 p-1.5 font-mono text-[11px] text-destructive break-words whitespace-pre-wrap">
+              <Callout padding="xs" tone={"error"} purpose="code" className="break-words whitespace-pre-wrap">
                 {errorText || 'Tool call failed.'}
-              </div>
+              </Callout>
             </div>
           )}
 
@@ -82,9 +85,9 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
             <>
               <div>
                 <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Response</div>
-                <div className="rounded bg-background/60 border border-border/60 p-1.5 text-[11px] break-words whitespace-pre-wrap">
+                <Card padding="xs" className="break-words whitespace-pre-wrap">
                   {parsed.response}
-                </div>
+                </Card>
               </div>
 
               {parsed.entities.length > 0 && (
@@ -115,7 +118,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           )}
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -181,7 +184,7 @@ function InnerStepsList({ steps }: { steps: McpInnerStep[] }) {
 function InnerStepRow({ step, index }: { step: McpInnerStep; index: number }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="rounded border border-border/40 bg-background/40">
+    <Card padding="none" >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -207,7 +210,7 @@ function InnerStepRow({ step, index }: { step: McpInnerStep; index: number }) {
           </div>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 

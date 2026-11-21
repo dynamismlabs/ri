@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { ChevronDown, FileText, Loader2 } from 'lucide-react';
@@ -132,11 +136,11 @@ export function FilesToCopySection({
           No globs configured. Nothing will be copied.
         </p>
       ) : (
-        <div className="rounded-md border border-border bg-muted/20 overflow-hidden">
-          <button
+        <Card padding="none" className="overflow-hidden">
+          <MenuAction density="compact"
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-[11px] text-muted-foreground hover:bg-muted/40 transition-colors"
+            className="w-full flex items-center justify-between gap-2"
           >
             <span className="flex items-center gap-1.5 min-w-0">
               {loading ? (
@@ -161,7 +165,7 @@ export function FilesToCopySection({
               size={11}
               className={cn('shrink-0 transition-transform', expanded && 'rotate-180')}
             />
-          </button>
+          </MenuAction>
           {expanded && (
             <div className="border-t border-border max-h-48 overflow-y-auto bg-background/40">
               {previewError ? (
@@ -190,7 +194,7 @@ export function FilesToCopySection({
               )}
             </div>
           )}
-        </div>
+        </Card>
       )}
     </div>
   );

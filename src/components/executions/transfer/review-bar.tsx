@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -40,7 +41,7 @@ export function ReviewBar({ session, workspace }: { session: ChatSessionWithExec
   const ownBranch = `git switch -c ${review.branch}-mine`;
 
   return (
-    <div className="mx-auto w-full max-w-3xl rounded-lg border border-border bg-card px-3 py-1.5 text-[11.5px]">
+    <Card padding="md" density="compact" shadow className="mx-auto w-full max-w-3xl">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="text-foreground/85">
           Reviewing <span className="font-mono">{review.sha.slice(0, 7)}</span> from {review.source?.name ?? 'its device'} here
@@ -117,7 +118,7 @@ export function ReviewBar({ session, workspace }: { session: ChatSessionWithExec
       {continuing && here && owner && (
         <ContinueDialog sessionId={sessionId} open={continuing} onOpenChange={setContinuing} to={here.to} from={owner.name} />
       )}
-    </div>
+    </Card>
   );
 }
 

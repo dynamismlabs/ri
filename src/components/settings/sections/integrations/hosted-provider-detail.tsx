@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { Field } from '@/components/system/field';
 
@@ -102,7 +104,7 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
         const checking = !!connection && props.testing === connection.id;
         const problem = result?.ok === false ? result.error : account.error;
         const accessBlocked = slack && slackMcpAccessIssue(problem);
-        return <div key={account.serverId} className="space-y-3 rounded-xl border border-border bg-card/20 p-3">
+        return <Card padding="md" key={account.serverId} className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0"><p className="truncate text-sm font-medium">{label}</p>
               <p role={checking ? 'status' : undefined} className="text-xs text-muted-foreground">{checking ? slack ? 'Checking Slack access…' : 'Checking connection…' : accessBlocked ? 'Enable access in Slack' : account.enabled === false ? 'Off' : account.requiresAuth ? accountKind === 'bearer' ? 'Token needed' : 'Sign-in needed' : account.status === 'ok' ? 'Connected' : 'Needs attention'}{!checking && account.toolCount !== undefined ? ` · ${account.toolCount} tools` : ''}</p>
@@ -150,9 +152,9 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
           <CapabilityReview changes={account.capabilityChanges} busy={busy} onReview={props.onReviewCapabilities ? revision => props.onReviewCapabilities!(account.serverId, revision) : undefined} />
           <McpServerSettings serverId={account.serverId} name={label} enabled={!!account.settings && !!connection && account.enabled !== false && !account.requiresAuth && account.status === 'ok'} />
           <McpAppNetwork serverId={account.serverId} name={label} enabled={!!connection && account.enabled !== false && !account.requiresAuth && account.status === 'ok'} />
-        </div>;
+        </Card>;
       })}</div>
-      {previousConnections.map(connection => <div key={connection.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card/20 p-3">
+      {previousConnections.map(connection => <Card padding="md" key={connection.id} className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0"><p className="truncate text-sm font-medium">{connectionIdentity(connection)}</p><p className="text-xs text-muted-foreground">Reconnect this saved account to use the current {INTEGRATION_LABELS.singular.toLowerCase()}.</p></div>
         <div className="flex gap-1">
           <Button
@@ -168,7 +170,7 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
             size="xs"
           >Disconnect</Button>
         </div>
-      </div>)}
+      </Card>)}
     </section>}
 
     {!hasAccounts && form}
@@ -219,7 +221,7 @@ function HostedAccountForm(props: ProviderDetailProps & { account?: HostedMcpAcc
     onConnectOAuth: selected => { if (ready) props.onConnectOAuth(selected ?? (chooseApp ? authConfigId : undefined), intent()); },
     onConnectDirect: () => { if (ready) props.onConnectDirect(intent()); },
   };
-  return <div className="space-y-4 rounded-xl border border-border bg-card/20 p-4">
+  return <Card padding="lg" className="space-y-4">
     {tokenAuth && !account && !previousConnection && <div className="flex gap-2" aria-label="Connection method">
       <Button
         type="button"
@@ -273,5 +275,5 @@ function HostedAccountForm(props: ProviderDetailProps & { account?: HostedMcpAcc
       >OAuth apps</Button>
       {props.advancedOpen && <Byo {...formProps} />}
     </div>}
-  </div>;
+  </Card>;
 }

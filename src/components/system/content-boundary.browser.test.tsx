@@ -31,11 +31,11 @@ for (const theme of ['light', 'dark']) for (const width of [360, 900]) {
     try {
       await page.goto(`${fixture.url}/?theme=${theme}`);
       await page.getByRole('heading', { name: 'Runs', exact: true }).waitFor({ timeout: 5000 });
-      const row = page.locator('[data-slot="run-row"]');
+      const row = page.getByRole('link').filter({ hasText: 'Prepared the weekly operations review' });
       expect(await row.count()).toBe(1);
       const geometry = await row.evaluate(el => {
-        const rect = el.getBoundingClientRect(), summary = el.querySelector('[data-slot="run-summary"]')!.getBoundingClientRect();
-        const meta = [...el.querySelectorAll('[data-slot="status-badge"]')].map(el => el.getBoundingClientRect());
+        const rect = el.getBoundingClientRect(), summary = el.querySelector('span.order-first')!.getBoundingClientRect();
+        const meta = [...el.querySelectorAll('.ri-status-badge')].map(el => el.getBoundingClientRect());
         return { height: rect.height, summaryBottom: summary.bottom, metaTop: Math.min(...meta.map(r => r.top)), contained: [...el.children].every(child => { const r=child.getBoundingClientRect();return r.top>=rect.top && r.bottom<=rect.bottom && r.left>=rect.left && r.right<=rect.right; }) };
       });
       expect(geometry.contained).toBe(true);

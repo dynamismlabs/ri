@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from '@/components/system/chip-button';
 
@@ -20,12 +21,7 @@ import {
   NotebookPen,
   Play,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
 import type { Workbench } from './use-workbench';
@@ -126,7 +122,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
               {MORE_VIEWS.map((v) => {
                 const Icon = VIEW_ICONS[v];
                 return (
-                  <DropdownMenuItem key={v} onClick={() => show(v)} className={cn(view === v && 'bg-accent')}>
+                  <MenuAction kind="menu" key={v} onClick={() => show(v)} className={cn(view === v && "")}>
                     <Icon size={14} />
                     {PANEL_VIEW_LABELS[v]}
                     <span className="ml-auto pl-4 text-[11px] text-muted-foreground">
@@ -138,7 +134,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
                         />
                       )}
                     </span>
-                  </DropdownMenuItem>
+                  </MenuAction>
                 );
               })}
             </DropdownMenuContent>

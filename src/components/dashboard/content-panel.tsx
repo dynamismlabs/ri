@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from "@/components/system/chip-button";
 
@@ -231,7 +232,7 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
                   )}
                 >
                   {moreTabs.map((tab) => (
-                    <button
+                    <MenuAction selected={!!((activeTab === tab.id))}
                       key={tab.id}
                       onClick={() => {
                         if (tab.id === "areas") {
@@ -241,29 +242,25 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
                         }
                         setMoreOpen(false);
                       }}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all",
-                        activeTab === tab.id
-                          ? "text-primary bg-primary/5"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                      )}
+                      className={cn("w-full flex items-center gap-3", activeTab === tab.id
+    ? "" : "")}
                     >
                       <tab.icon size={14} />
                       <span className="font-medium">{tab.label}</span>
-                    </button>
+                    </MenuAction>
                   ))}
                   {!showExpand && (
-                    <button
+                    <MenuAction
                       type="button"
                       onClick={() => {
                         setExpandedPanel(panelId);
                         setMoreOpen(false);
                       }}
-                      className="flex w-full items-center gap-3 border-t border-border px-3 py-2 text-[11px] text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                      className="flex w-full items-center gap-3"
                     >
                       <Maximize2 size={14} />
                       <span className="font-medium">Expand panel</span>
-                    </button>
+                    </MenuAction>
                   )}
                 </div>
               )}

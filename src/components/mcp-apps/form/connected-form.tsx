@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClipboardList, Loader2 } from 'lucide-react';
@@ -140,5 +142,5 @@ function againLabels(again: FormContent | null | undefined): Record<string, stri
 }
 
 function Frame({bare, children}: {bare: boolean; children: React.ReactNode}) {
-  return <section aria-label="Form" className={cn('space-y-3', !bare && 'my-2 rounded-xl border border-border bg-card/40 p-3')}>{children}</section>;
+  return <Card as="section" padding="md" shadow aria-label="Form" className={cn("space-y-3", !bare && "my-2")}>{children}</Card>;
 }

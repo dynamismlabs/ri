@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { BookOpen, Check, CirclePause, LayoutGrid, MessageCircle, Server, Settings2 } from 'lucide-react';
@@ -43,11 +45,11 @@ export function ManageButton({ item }: { item: ReviewItem }) {
 }
 export function ItemCard({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <article data-slot="content-card" className={s.card} data-item={item.key}>
-    <button data-slot="menu-action" className={s.cardTop} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}>
+  return <Card as="article" padding="none" shadow  className={s.card} data-item={item.key}>
+    <MenuAction density="none"  className={s.cardTop} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}>
       <ItemMark item={item} /><span className={s.cardCopy}><h3>{item.name}</h3><span className={s.description}>{item.description}</span></span>
-    </button>
+    </MenuAction>
     <div className={s.itemType}>{item.view ? <LayoutGrid size={11} /> : item.kind === 'skills' ? <BookOpen size={11} /> : <MessageCircle size={11} />}{itemType(item)}{item.view && ' · Opens in Ri'}</div>
     <div className={s.cardFoot}><ItemStatus item={item} /><div className={s.actions}><PrimaryButton item={item} />{item.added && <ManageButton item={item} />}</div></div>
-  </article>;
+  </Card>;
 }

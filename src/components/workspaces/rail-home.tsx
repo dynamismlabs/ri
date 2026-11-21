@@ -1,4 +1,7 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
@@ -62,22 +65,18 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
 
   return (
     <div className="flex items-center gap-1 px-2 pt-2 pb-1">
-      <button
+      <InlineAction
         type="button"
         onClick={home}
         aria-label={homeLabel}
         aria-current={isHome ? 'page' : undefined}
-        className={cn(
-          'flex min-w-0 flex-1 items-center gap-2 rounded-md px-1.5 py-1.5 text-left transition-colors',
-          'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          isHome ? 'bg-muted/60' : 'hover:bg-muted/40',
-        )}
+        className={cn("flex min-w-0 flex-1 items-center gap-2 text-left", "", isHome ? "" : "")}
       >
         <OrchestratorAvatar size={team ? 'md' : 'sm'} />
         <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">{name}</span>
         {unread && <span aria-hidden className="ml-auto size-2 shrink-0 rounded-full bg-amber-500" />}
-        {team && <span className="ml-auto inline-flex shrink-0 items-center gap-1 rounded-md bg-primary px-1.5 py-1 text-[10px] font-semibold text-primary-foreground"><Users size={11} aria-hidden />Team</span>}
-      </button>
+        {team && <StatusBadge appearance="solid"  className="ml-auto inline-flex shrink-0 items-center gap-1"><Users size={11} aria-hidden />Team</StatusBadge>}
+      </InlineAction>
       {action}
     </div>
   );

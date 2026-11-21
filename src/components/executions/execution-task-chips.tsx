@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 
 import { useWorkNavigation } from '@/contexts/work-context';
 import { trpc } from '@/lib/trpc/client';
@@ -33,19 +34,15 @@ export function ExecutionTaskChips({ executionId }: { executionId: string }) {
       </span>
       {active.map((t) => (
         <Tip key={t.id} label={t.title || 'Untitled'} onlyWhenTextHidden>
-          <button
+          <Button variant="secondary" size="xs"
             onClick={() => openTask(t.id)}
-            data-slot="task-chip"
+
             data-status={t.status}
-            className={cn(
-              'inline-flex max-w-[16rem] items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors',
-              t.status === 'in_progress'
-                ? 'border-violet-500/30 bg-violet-500/[0.06] text-foreground hover:border-violet-500/50'
-                : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground',
-            )}
+            className={cn("inline-flex max-w-[16rem] items-center gap-1", t.status === "in_progress"
+    ? "" : "")}
           >
             <span className="truncate">{t.title || 'Untitled'}</span>
-          </button>
+          </Button>
         </Tip>
       ))}
     </div>

@@ -1,4 +1,6 @@
-'use client'
+'use client';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -105,16 +107,9 @@ function SortableAreaRow({ area, onOpen }: { area: AreaRecord; onOpen: (id: stri
           )}
         </div>
 
-        <span className={cn(
-          'text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md flex-shrink-0',
-          area.status === 'active'
-            ? 'text-emerald-500 bg-emerald-500/10'
-            : area.status === 'inactive'
-              ? 'text-amber-500 bg-amber-500/10'
-              : 'text-muted-foreground bg-muted'
-        )}>
+        <StatusBadge tone={(area.status === 'active' ? "success" : (area.status === 'inactive' ? "warning" : "neutral"))} className="flex-shrink-0">
           {area.status}
-        </span>
+        </StatusBadge>
       </div>
     </div>
   )
@@ -171,7 +166,6 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
       }
     })
   }, [displayedAreas, queryClient, updateArea])
-
 
   // Drag to resize
   const handleResizeStart = useCallback(

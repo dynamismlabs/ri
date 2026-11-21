@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -9,7 +13,7 @@ import { integrationMeta } from '@/components/integrations/integration-meta';
 import type { Connection, ProviderStatus } from '@/components/settings/sections/integrations/types';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 import { trpcClient } from '@/lib/trpc/client';
-import { cn } from '@/lib/utils';
+
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Loader2, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -84,7 +88,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
   const connectedNames = (data?.providers ?? []).filter((p) => connected.has(p.id)).map((p) => p.displayName);
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-3 shadow-sm">
+    <Card padding="md" shadow >
       {isLoading ? (
         <div className="flex items-center gap-2 px-1 py-6 text-[11px] text-muted-foreground">
           <Loader2 size={12} className="animate-spin" /> Loading apps…
@@ -127,11 +131,11 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                 </p>
               ) : (
                 results.slice(0, SEARCH_LIMIT).map((p) => (
-                  <button data-slot="action-button" data-variant="ghost"
+                  <MenuAction density="compact"
                     key={p.id}
                     type="button"
                     onClick={() => open(p)}
-                    className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/50"
+                    className="flex items-center gap-2.5 text-left"
                   >
                     <IntegrationLogo providerId={p.id} name={p.displayName} size={26} />
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">
@@ -139,7 +143,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                       <span className="truncate text-[10.5px] text-muted-foreground">{integrationMeta(p.id).description}</span>
                     </span>
                     <ConnectState connected={connected.has(p.id)} />
-                  </button>
+                  </MenuAction>
                 ))
               )}
               {results.length > SEARCH_LIMIT && (
@@ -180,27 +184,24 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
           </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
 function AppTile({ provider, connected, onOpen }: { provider: ProviderStatus; connected: boolean; onOpen: () => void }) {
   return (
     <Tip label={integrationMeta(provider.id).description}>
-      <button data-slot="content-card"
+      <Card as="button" padding="sm" shadow
         type="button"
         onClick={onOpen}
-        className={cn(
-          'flex w-[7.5rem] flex-shrink-0 snap-start flex-col items-start gap-2 rounded-lg border p-2 text-left transition-colors',
-          connected ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-border hover:bg-muted/50',
-        )}
+        className="flex w-[7.5rem] flex-shrink-0 snap-start flex-col items-start gap-2 text-left"
       >
         <IntegrationLogo providerId={provider.id} name={provider.displayName} size={30} />
         <span className="flex w-full flex-col leading-tight">
           <span className="truncate text-[12px] font-medium text-foreground">{provider.displayName}</span>
           <ConnectState connected={connected} />
         </span>
-      </button>
+      </Card>
     </Tip>
   );
 }

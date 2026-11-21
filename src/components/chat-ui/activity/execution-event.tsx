@@ -1,4 +1,12 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Callout } from '@/components/system/callout';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Button } from '@/components/system/button';
 import { parseSourceMarkers } from '@/lib/chat-sources/reference';
 import { SourceText, SourceMetadataProvider, type SourceChipTone } from '@/components/chat-ui/references/source-chip';
@@ -197,7 +205,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const isFailed = clientStatus?.status === 'failed';
       const isSending = clientStatus?.status === 'sending';
       return (
-        <div className={cn('group flex flex-col', origin && 'max-w-[95%] rounded-xl border border-border bg-muted/20')}>
+        <Card padding="none" className={cn("group flex flex-col", origin && "max-w-[95%]")}>
           {sourceId ? <SenderChip senderSessionId={sourceId} eventId={metadata?.sourceEventId} label={origin?.label ?? 'Message from'} action={returned && <ReturnedChatArchive sessionId={returned.sessionId} />} /> : origin && <p className="px-3 py-2 text-xs text-muted-foreground">{origin.label}{metadata?.senderKind !== 'system' && ' · Source chat unavailable'}</p>}
           {metadata?.directions && <div className="border-t px-3 py-2 text-xs"><p className="mb-1 font-medium">Your directions</p><CoordinationText text={metadata.directions} /></div>}
           {metadata?.senderKind === 'human' && <p className="px-3 pt-2 text-[11px] font-medium text-muted-foreground">Quoted source material</p>}
@@ -247,7 +255,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               className={origin ? 'mx-3 mb-2' : undefined}
             />
           )}
-        </div>
+        </Card>
       );
     }
 
@@ -282,9 +290,9 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       // transcript also filters these, this is a belt-and-suspenders guard.
       if (!content) return null;
       return (
-        <button
+        <MenuAction density="none"
           onClick={() => setExpanded((v) => !v)}
-          className="group/row w-full text-left text-[11px] text-muted-foreground/70 italic"
+          className="group/row w-full text-left italic"
         >
           <div className="flex items-center gap-1.5">
             <RowDisclosure expanded={expanded}>
@@ -297,7 +305,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {content}
             </div>
           )}
-        </button>
+        </MenuAction>
       );
     }
 
@@ -366,14 +374,14 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
             ) : (
               <>
                 {d.target && (
-                  <span className="flex-shrink-0 truncate max-w-[40%] rounded bg-muted/60 px-1.5 py-px font-mono text-[10.5px] text-muted-foreground">
+                  <StatusBadge code className="flex-shrink-0 truncate max-w-[40%]">
                     {d.target}
-                  </span>
+                  </StatusBadge>
                 )}
                 {d.detail && d.detail !== d.target && (
-                  <button onClick={() => setExpanded((v) => !v)} className="flex-1 truncate text-left font-mono text-[10.5px] text-muted-foreground/55">
+                  <InlineAction code  onClick={() => setExpanded((v) => !v)} className="flex-1 truncate text-left">
                     {d.detail}
-                  </button>
+                  </InlineAction>
                 )}
               </>
             )}
@@ -441,9 +449,9 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const isError = event.toolIsError === true;
       const text = event.content ?? '';
       return (
-        <button
+        <MenuAction density="none"
           onClick={() => setExpanded((v) => !v)}
-          className="w-full text-left text-[11px]"
+          className="w-full text-left"
         >
           <div className="flex items-center gap-1.5 min-w-0 text-muted-foreground/70">
             <ChevronRight size={11} className={cn('flex-shrink-0 transition-transform text-muted-foreground/40', expanded && 'rotate-90')} />
@@ -457,7 +465,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {text}
             </pre>
           )}
-        </button>
+        </MenuAction>
       );
     }
 
@@ -488,10 +496,10 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
           : 'text-emerald-500';
 
       return (
-        <button
+        <MenuAction density="none"
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="group/row w-full text-left text-[11px]"
+          className="group/row w-full text-left"
         >
           <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground/80">
             <RowDisclosure expanded={expanded}>
@@ -510,7 +518,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {summary}
             </div>
           )}
-        </button>
+        </MenuAction>
       );
     }
 
@@ -520,7 +528,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const info = (event.raw ?? {}) as { from?: string; checkpoint?: { sha?: string }; handoff?: string };
       return (
         <div className="my-2 text-[11px] text-muted-foreground">
-          <button type="button" onClick={() => setExpanded((v) => !v)} className="flex w-full items-center gap-2">
+          <MenuAction density="none" type="button" onClick={() => setExpanded((v) => !v)} className="flex w-full items-center gap-2">
             <div className="h-px flex-1 bg-border/60" />
             <span className="inline-flex items-center gap-1.5 font-medium text-foreground/80">
               <ArrowRightLeft size={11} />
@@ -529,7 +537,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
             {info.from && <span className="text-muted-foreground/70">from {info.from}</span>}
             {info.checkpoint?.sha && <span className="font-mono text-muted-foreground/60">{info.checkpoint.sha.slice(0, 7)}</span>}
             <div className="h-px flex-1 bg-border/60" />
-          </button>
+          </MenuAction>
           {expanded && info.handoff && (
             <div className="mx-auto mt-1.5 max-w-2xl whitespace-pre-wrap break-words rounded-md border border-border/60 px-3 py-2 text-[11.5px] text-muted-foreground/90">
               {info.handoff}
@@ -573,13 +581,13 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
 
     case 'error':
       return (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
+        <Callout padding="sm" density="compact" tone={"error"} >
           <div className="flex items-center gap-1.5 font-medium">
             <AlertTriangle size={11} />
             <span>Error</span>
           </div>
           {event.content && <div className="mt-1 text-foreground/80">{event.content}</div>}
-        </div>
+        </Callout>
       );
 
     case 'auth_required':
@@ -654,7 +662,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const tool = event.toolName ? toolDisplayName(event.toolName) : 'tool';
       const summary = summarizeToolInput(event.toolInput);
       return (
-        <div className="rounded-md border border-blue-500/30 bg-blue-500/5 px-2.5 py-1.5">
+        <Callout padding="sm" density="compact" tone={"info"} >
           <div className="flex items-center gap-1.5 text-[11px]">
             <ShieldCheck size={11} className="text-blue-500" />
             <span className="text-foreground/90">Permission requested</span>
@@ -666,7 +674,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {event.content}
             </div>
           )}
-        </div>
+        </Callout>
       );
     }
 
@@ -694,7 +702,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const questions = extractQuestions(event.toolInput);
       const first = questions[0];
       return (
-        <div className="rounded-md border border-foreground/20 bg-foreground/5 px-2.5 py-1.5">
+        <Card padding="sm" density="compact" >
           <div className="flex items-center gap-1.5 text-[11px]">
             <HelpCircle size={11} className="text-foreground/80" />
             <span className="text-foreground/90">Question</span>
@@ -707,16 +715,16 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {first.header || first.question}
             </div>
           )}
-        </div>
+        </Card>
       );
     }
 
     case 'question_response': {
       const text = event.content ?? '';
       return (
-        <button data-slot="choice-row" aria-expanded={expanded}
+        <ChoiceRow density="compact"  aria-expanded={expanded}
           onClick={() => setExpanded((v) => !v)}
-          className="group/row w-full text-left rounded-md border border-foreground/15 bg-foreground/5 px-2.5 py-1.5"
+          className="group/row w-full text-left"
         >
           <div className="flex items-center gap-1.5 text-[11px]">
             <RowDisclosure expanded={expanded}>
@@ -732,7 +740,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {text}
             </pre>
           )}
-        </button>
+        </ChoiceRow>
       );
     }
 
@@ -859,7 +867,7 @@ function ClaudeAuthRequiredBanner({
   }
 
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px]">
+    <Callout padding="md" density="row" tone={"warning"} >
       <div className="flex items-start gap-2">
         <AlertTriangle size={12} className="mt-0.5 text-amber-500" />
         <div className="flex-1 min-w-0">
@@ -890,7 +898,7 @@ function ClaudeAuthRequiredBanner({
           )}
         </Button>
       </div>
-    </div>
+    </Callout>
   );
 }
 
@@ -925,7 +933,7 @@ function CliSignInBanner({
   if (signedIn && sessionId) return <AuthRestoredBanner sessionId={sessionId} />;
 
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px]">
+    <Callout padding="md" density="row" tone={"warning"} >
       <div className="flex items-start gap-2">
         <AlertTriangle size={12} className="mt-0.5 text-amber-500" />
         <div className="flex-1 min-w-0">
@@ -967,14 +975,14 @@ function CliSignInBanner({
           </Button>
         )}
       </div>
-    </div>
+    </Callout>
   );
 }
 
 /** Sign-in is back: the only thing left is to retry the message that failed. */
 function AuthRestoredBanner({ sessionId }: { sessionId: string }) {
   return (
-    <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-[11px]">
+    <Callout padding="md" density="row" tone={"success"} >
       <div className="flex items-start gap-2">
         <ShieldCheck size={12} className="mt-0.5 text-emerald-500" />
         <div className="flex-1 min-w-0">
@@ -985,7 +993,7 @@ function AuthRestoredBanner({ sessionId }: { sessionId: string }) {
         </div>
         <ResendLastMessageButton sessionId={sessionId} />
       </div>
-    </div>
+    </Callout>
   );
 }
 

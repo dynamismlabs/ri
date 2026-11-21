@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Loader2 } from 'lucide-react';
@@ -68,10 +69,10 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
       </div>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
+        <Callout padding="sm" tone={"error"} role="alert" className="flex items-start gap-2">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
-        </div>
+        </Callout>
       )}
 
       {apps.isPending ? (

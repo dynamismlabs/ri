@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
@@ -23,7 +25,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Activity, Hourglass } from 'lucide-react';
 import Link from 'next/link';
 import { useRuns } from '@/hooks/use-triggers';
-import { cn } from '@/lib/utils';
+
 import type { RunRecord, RunTrigger } from '@/db/types';
 import { RunActivityBadge } from '@/components/runs/run-activity-badge';
 
@@ -101,24 +103,24 @@ function RunRow({ run }: { run: RunRecord }) {
       ? run.status
       : undefined;
   return (
-    <Link data-slot="run-row"
+    <Card as={Link} padding="md" shadow
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
-      className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted text-sm"
+      className="flex flex-wrap items-center gap-x-2 gap-y-1.5 md:flex-nowrap md:gap-3"
     >
       <TriggerBadge trigger={run.triggerKind} />
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
-      <span data-slot="run-summary" className="flex-1 truncate text-muted-foreground text-[12px]">
+      <span className="order-first basis-full min-w-0 flex-1 whitespace-normal break-words text-t3 text-[12px] md:order-none md:basis-auto md:truncate">
         {run.status === 'failed' ? run.errorMessage ?? run.summary ?? '-' : run.summary ?? '-'}
       </span>
-      <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
+      <span className="text-[11px] md:text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
         {run.startedAt ? humanize(run.startedAt) : '-'}
       </span>
       {run.costUsd != null && run.costUsd > 0 && (
-        <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
+        <span className="text-[11px] md:text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link>
+    </Card>
   );
 }
 
@@ -127,16 +129,11 @@ function TriggerBadge({ trigger }: { trigger: RunTrigger }) {
     return null; // default — no badge clutter
   }
   return (
-    <span data-slot="status-badge"
-      className={cn(
-        'px-1.5 py-0.5 text-[10px] uppercase tracking-wider rounded border',
-        trigger === 'webhook'
-          ? 'border-amber-500/40 text-amber-700 dark:text-amber-400'
-          : 'border-blue-500/40 text-blue-700 dark:text-blue-400',
-      )}
+    <StatusBadge tone={(trigger === 'webhook' ? "warning" : "info")}
+
     >
       {trigger}
-    </span>
+    </StatusBadge>
   );
 }
 

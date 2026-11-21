@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { Square, StickyNote } from 'lucide-react';
@@ -58,7 +59,7 @@ export const EntityLinkMenuList = forwardRef<SuggestionPopupRef, Props>(
             const label =
               item.title.trim() || (item.kind === 'task' ? 'Untitled task' : 'Untitled note');
             return (
-              <button
+              <MenuAction selected={!!((i === selected))} density="compact"
                 key={`${item.kind}:${item.id}`}
                 type="button"
                 onMouseDown={(e) => {
@@ -66,17 +67,14 @@ export const EntityLinkMenuList = forwardRef<SuggestionPopupRef, Props>(
                   command(item);
                 }}
                 onMouseEnter={() => setSelected(i)}
-                className={cn(
-                  'flex items-center gap-2 w-full text-left px-3 py-1.5',
-                  i === selected ? 'bg-accent text-accent-foreground' : 'text-foreground/90',
-                )}
+                className={cn("flex items-center gap-2 w-full text-left", i === selected ? "" : "")}
               >
                 <Icon size={13} className="shrink-0 text-muted-foreground" />
                 <span className="truncate flex-1">{label}</span>
                 <span className="text-[10px] uppercase tracking-wide text-muted-foreground/60">
                   {item.kind}
                 </span>
-              </button>
+              </MenuAction>
             );
           })
         )}

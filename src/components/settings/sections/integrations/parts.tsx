@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 /**
@@ -21,14 +23,6 @@ const DOT: Record<Tone, string> = {
   warn: 'bg-amber-500',
   error: 'bg-destructive',
   off: 'bg-muted-foreground/40',
-};
-
-const CHIP: Record<Tone | 'neutral', string> = {
-  ok: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  warn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  error: 'bg-destructive/10 text-destructive',
-  off: 'bg-muted text-muted-foreground',
-  neutral: 'bg-muted/70 text-muted-foreground',
 };
 
 /** Small uppercase label over a group of tiles or a detail section. */
@@ -63,23 +57,20 @@ export function GroupHeading({
  */
 export function ConnectFormSection({ opened, children }: { opened: boolean; children: ReactNode }) {
   return (
-    <section className={cn('space-y-2', opened && 'rounded-xl border border-primary/30 bg-primary/5 p-3')}>
+    <Card as="section" padding={opened ? "md" : "none"} surface={opened ? "raised" : "plain"} className="space-y-2">
       {children}
-    </section>
+    </Card>
   );
 }
 
 /** Rounded pill for status and facts in a detail header or account row. */
 export function Chip({ tone = 'neutral', children }: { tone?: Tone | 'neutral'; children: ReactNode }) {
   return (
-    <span
-      className={cn(
-        'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
-        CHIP[tone],
-      )}
+    <StatusBadge tone={({ok:"success",warn:"warning",error:"error",off:"neutral",neutral:"neutral"} as const)[tone]}
+      className="inline-flex shrink-0 items-center"
     >
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -105,10 +96,10 @@ export function CatalogTile({
   onOpen: () => void;
 }) {
   return (
-    <button data-slot="content-card"
+    <Card as="button" padding="md" shadow
       type="button"
       onClick={onOpen}
-      className="group flex min-w-0 items-center gap-3 rounded-xl border border-border bg-card/20 p-3 text-left transition-colors hover:border-foreground/15 hover:bg-muted/40 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      className="group flex min-w-0 items-center gap-3 text-left"
     >
       {logo}
       <div className="min-w-0 flex-1">
@@ -128,7 +119,7 @@ export function CatalogTile({
         size={14}
         className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-foreground/70"
       />
-    </button>
+    </Card>
   );
 }
 

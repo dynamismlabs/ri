@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { trpcClient } from '@/lib/trpc/client';
@@ -74,10 +75,10 @@ export function WorkspaceIntegrationsSection({ workspaceId }: { workspaceId: str
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
+        <Callout padding="sm" tone={"error"} className="flex items-start gap-2">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
-        </div>
+        </Callout>
       )}
 
       {loading ? (

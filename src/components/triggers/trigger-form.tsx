@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { Field as SystemField } from '@/components/system/field';
 import { TextArea } from '@/components/system/text-area';
 import { NativeSelect } from '@/components/system/native-select';
@@ -546,18 +548,18 @@ function WorkspacePill({
         <div className="absolute left-0 top-full mt-1 z-20 min-w-[180px] rounded-md border border-border bg-card shadow-md p-1">
           {workspaces.length === 0 && <p className="px-2 py-1 text-[11px] text-muted-foreground">No agents.</p>}
           {workspaces.map((w) => (
-            <button
+            <MenuAction density="compact"
               key={w.id}
               type="button"
               onClick={() => {
                 onChange(w.id);
                 setOpen(false);
               }}
-              className="w-full text-left px-2 py-1 text-[12px] hover:bg-muted rounded flex items-center gap-1.5"
+              className="w-full text-left flex items-center gap-1.5"
             >
               {w.emoji && <span>{w.emoji}</span>}
               <span>{w.name}</span>
-            </button>
+            </MenuAction>
           ))}
         </div>
       )}

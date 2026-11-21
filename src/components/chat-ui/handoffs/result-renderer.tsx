@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 
 import { useSavedWorkAuthor } from '@/components/chat-ui/member-attribution';
@@ -85,7 +88,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
   };
 
   return (
-    <article className={exact ? 'space-y-5' : 'space-y-4 rounded-xl border bg-muted/10 p-4'} aria-label={reportTargetId ? 'Saved AI review' : 'Saved handoff'}>
+    <Card as="article" padding="lg" className={exact ? "space-y-5" : "space-y-4"} aria-label={reportTargetId ? 'Saved AI review' : 'Saved handoff'}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{reportTargetId ? 'AI review' : 'Handoff'}</p>
@@ -95,11 +98,11 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
         {!exact && <Button asChild variant="secondary" size="xs" className="inline-flex items-center gap-1"><Link href={`/results/${result.id}`}><ExternalLink size={12} />View handoff</Link></Button>}
       </div>
       {reportTargetId && <Link href={`/results/${reportTargetId}`} className="block text-xs text-primary hover:underline">View the reviewed handoff</Link>}
-      {detail.successorId && <Link href={`/results/${detail.successorId}`} className="block rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">Newer result available. Open the newer handoff.</Link>}
+      {detail.successorId && <Callout as={Link} padding="md" density="row" tone={"warning"} href={`/results/${detail.successorId}`} className="block">Newer result available. Open the newer handoff.</Callout>}
       <ResultBody result={result} />
       <ResultArtifacts result={result} onFeedback={canFeedback && primary ? setFeedback : undefined} />
       {primary && <ResultGithubChecks result={result} />}
-      {result.attention && <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3"><p className="mb-2 text-xs font-medium">Needs your attention</p><MessageResponse className="text-xs">{result.attention}</MessageResponse></div>}
+      {result.attention && <Callout padding="md" tone={"warning"} ><p className="mb-2 text-xs font-medium">Needs your attention</p><MessageResponse className="text-xs">{result.attention}</MessageResponse></Callout>}
       {primary && (
         <div className="space-y-3">
           {aiReviews.length === 0 && <p className="text-xs text-muted-foreground">No AI review recorded</p>}
@@ -171,7 +174,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
           {result.supersedesId && <><dt>Previous snapshot</dt><dd><Link href={`/results/${result.supersedesId}`} className="text-primary hover:underline">View earlier handoff</Link></dd></>}
         </dl>
       </details>
-    </article>
+    </Card>
   );
 }
 

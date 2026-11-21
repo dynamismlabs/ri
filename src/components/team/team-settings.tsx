@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -226,7 +228,7 @@ function AreasSection() {
 function CopyLink({ link, note }: { link: string; note?: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-md border border-border bg-muted/30 p-2">
+    <Card padding="sm" >
       <div className="flex items-center gap-2">
         <code className="min-w-0 flex-1 truncate text-[11px] select-all">{link}</code>
         <Button
@@ -243,20 +245,20 @@ function CopyLink({ link, note }: { link: string; note?: string }) {
         </Button>
       </div>
       {note && <p className="mt-1.5 text-[11px] text-muted-foreground">{note}</p>}
-    </div>
+    </Card>
   );
 }
 
 /** Keep the original link action in place while its address prerequisite is fixed. */
 function LinkAddressSetup({ action, onReady }: { action: string; onReady: () => void }) {
   const owner = useHomeContext().capabilities.administerMembers;
-  return <section aria-label={`${action}: Team address`} className="space-y-3 rounded-lg border border-border bg-muted/20 p-3">
+  return <Card as="section" padding="md" aria-label={`${action}: Team address`} className="space-y-3">
     <h4 className="text-sm font-medium">{action}</h4>
     {owner ? <>
       <p className="text-xs text-muted-foreground">Set up or reconnect the Team address below. We will finish making your link automatically.</p>
       <TeamAddressSetup onSaved={onReady} />
     </> : <p role="status" className="text-sm text-muted-foreground">Ask a team owner to set up or reconnect the Team address. Then try this action again. Your membership stays the same.</p>}
-  </section>;
+  </Card>;
 }
 
 function PeopleSection() {

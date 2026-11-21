@@ -1,4 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
 
 import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
 
@@ -22,7 +25,6 @@ import { PersonalTaskDocument } from './personal-task-document';
 import { SharedTaskBody } from '@/components/spaces/shared-task-body';
 import { removeFromMyWork } from '@/components/spaces/my-work';
 
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { SlideoutChat, useDocumentChat } from '@/components/ai-elements/slideout-chat';
 import { useDragResize } from '@/hooks/use-drag-resize';
 import { ReferencingSessionsButton } from '@/components/shared/referencing-sessions-button';
@@ -299,13 +301,13 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                 archiveLabel={shared ? 'Archive for the team' : 'Archive'}
               >
                 {shared && task?.source?.addedAt && task.sourceTeamId && task.sourceTaskId && (
-                  <DropdownMenuItem
+                  <MenuAction kind="menu"
                     onSelect={() =>
                       void removeFromMyWork(task.sourceTeamId!, task.sourceTaskId!).then(onClose)
                     }
                   >
                     <X size={12} /> Remove from my work
-                  </DropdownMenuItem>
+                  </MenuAction>
                 )}
               </EntityActionsMenu>
             </div>
@@ -371,10 +373,10 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                   )}
                   {aiBusy && (
                     <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-auto transition-opacity duration-200">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground/80 bg-card/90 border border-border/50 rounded-full px-4 py-2 shadow-md">
+                      <Card padding="lg" density="row" shadow className="flex items-center gap-2">
                         <Pencil size={14} className="text-primary/70 animate-pulse" />
                         <span>AI is editing...</span>
-                      </div>
+                      </Card>
                     </div>
                   )}
                 </div>

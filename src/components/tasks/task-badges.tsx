@@ -1,5 +1,7 @@
 'use client';
 
+import { StatusBadge } from '@/components/system/status-badge';
+import { MetaItem, useInMeta } from '@/components/system/meta';
 import { Ban, AlertTriangle, Eye, Loader2 } from 'lucide-react';
 import type { TaskAttentionSignals } from '@/db/types';
 import { cn } from '@/lib/utils';
@@ -11,10 +13,10 @@ import { Tip } from '@/components/ui/tip';
 // The review signal reads as "Update" because it is an execution-level
 // workstream checkpoint, not proof this exact task needs task-scoped review.
 const BADGES = [
-  { key: 'blocked', label: 'Blocked', title: 'Blocked by an unresolved dependency', icon: Ban, cls: 'text-red-600 dark:text-red-400 bg-red-500/10' },
-  { key: 'stalled', label: 'Stalled', title: 'The agent workstream stalled', icon: AlertTriangle, cls: 'text-orange-600 dark:text-orange-400 bg-orange-500/10' },
-  { key: 'review', label: 'Update', title: 'Workstream update. The agent posted output to review', icon: Eye, cls: 'text-violet-600 dark:text-violet-400 bg-violet-500/10' },
-  { key: 'working', label: 'Working', title: 'An agent is actively working this', icon: Loader2, cls: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' },
+  { key: 'blocked', label: 'Blocked', title: 'Blocked by an unresolved dependency', icon: Ban, tone: 'error' },
+  { key: 'stalled', label: 'Stalled', title: 'The agent workstream stalled', icon: AlertTriangle, tone: 'warning' },
+  { key: 'review', label: 'Update', title: 'Workstream update. The agent posted output to review', icon: Eye, tone: 'status-progress' },
+  { key: 'working', label: 'Working', title: 'An agent is actively working this', icon: Loader2, tone: 'success' },
 ] as const;
 
 /**
@@ -25,36 +27,25 @@ const BADGES = [
 export function TaskBadges({
   signals,
   className,
-  size = 'sm',
 }: {
   signals?: TaskAttentionSignals | null;
   className?: string;
   size?: 'sm' | 'xs';
 }) {
+  const inMeta = useInMeta();
   if (!signals) return null;
   const active = BADGES.filter((b) => signals[b.key]);
   if (active.length === 0) return null;
   return (
-    <span data-slot="task-badges" className={cn('inline-flex flex-wrap items-center gap-1', className)}>
+    <MetaItem kind="attention" className={cn('flex-wrap', className)}>
       {active.map((b) => (
         <Tip key={b.key} label={b.title}>
-          <span
-            data-slot="task-badge"
-            className={cn(
-              'inline-flex items-center gap-0.5 rounded px-1 py-0.5 font-semibold uppercase tracking-wide',
-              size === 'xs' ? 'text-[8.5px]' : 'text-[9.5px]',
-              b.cls,
-            )}
-          >
-            <b.icon
-              size={size === 'xs' ? 9 : 10}
-              className={b.key === 'working' ? 'animate-spin [animation-duration:2.5s] motion-reduce:animate-none' : ''}
-              aria-hidden
-            />
+          <StatusBadge tone={b.tone} appearance={inMeta ? 'plain' : 'soft'}>
+            <b.icon className={b.key === 'working' ? 'animate-spin [animation-duration:2.5s] motion-reduce:animate-none' : ''} aria-hidden />
             {b.label}
-          </span>
+          </StatusBadge>
         </Tip>
       ))}
-    </span>
+    </MetaItem>
   );
 }

@@ -1,5 +1,5 @@
 'use client';
-
+import { MenuAction } from '@/components/system/menu-action';
 
 import type { ComponentProps, ReactNode } from 'react';
 import { ChevronRight, type LucideIcon } from 'lucide-react';
@@ -41,20 +41,14 @@ export function RailRow({
   ...props
 }: Omit<ComponentProps<'button'>, 'children'> & { place: RailPlace; pressed?: boolean }) {
   return (
-    <button
+    <MenuAction density="compact"
       type="button"
       onClick={onClick}
       onPointerEnter={onIntent}
       onFocus={onIntent}
       aria-current={active ? 'page' : undefined}
       {...props}
-      className={cn(
-        'w-full flex items-center gap-2 py-1.5 pr-2 rounded-md text-[12px] font-medium transition-colors',
-        depth === 1 ? 'pl-[22px]' : 'pl-2',
-        'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-        active || pressed ? 'bg-muted/60 text-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted/40',
-        className,
-      )}
+      className={cn("w-full flex items-center gap-2", depth === 1 ? "" : "", "", active || pressed ? "" : "", className)}
     >
       {mark ?? (Icon && <Icon size={14} className="flex-shrink-0" />)}
       <span className="truncate">{label}</span>
@@ -66,7 +60,7 @@ export function RailRow({
           className={cn('flex-shrink-0 text-muted-foreground/50', count === undefined && 'ml-auto')}
         />
       )}
-    </button>
+    </MenuAction>
   );
 }
 
@@ -98,8 +92,6 @@ export function RailRows({ places, label, expanded = true }: { places: readonly 
     </nav>
   );
 }
-
-
 
 /** Common rail structure. Context supplies places, lists and account controls. */
 export function RailLayout({ header, actions, children, footer }: { header: ReactNode; actions?: ReactNode; children: ReactNode; footer: ReactNode }) {

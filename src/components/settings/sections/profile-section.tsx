@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 import { TextArea } from '@/components/system/text-area';
 
@@ -100,11 +102,11 @@ export function ProfileSection() {
   return (
     <div className="space-y-5">
       {/* Why this matters — the pitch, up front and unmuted. */}
-      <div className="rounded-xl border border-primary/20 border-l-2 border-l-primary bg-primary/5 p-4">
+      <Card padding="lg" >
         <p className="text-[12.5px] leading-relaxed text-foreground/90">
           Share your role, how you work, and what you&apos;re focused on to give your daily plan more useful context.
         </p>
-      </div>
+      </Card>
 
       {/* Name */}
       <Field
@@ -123,7 +125,7 @@ export function ProfileSection() {
       {/* The assistant (the orchestrator): its name and look */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Your assistant</h3>
-        <div className="max-w-xl rounded-xl border border-border bg-card/40 p-3">
+        <Card padding="md" className="max-w-xl">
           <IdentityEditor draft={identity} onChange={setAssistantDraft} onSubmit={() => void commitIdentity()} />
           {identityDirty && (
             <div className="mt-3 flex items-center justify-end gap-1.5">
@@ -146,7 +148,7 @@ export function ProfileSection() {
               </Button>
             </div>
           )}
-        </div>
+        </Card>
         <p className="text-[11px] text-muted-foreground/60">
           The name and face at the top of the rail and in your main chat. It answers to the name.
         </p>

@@ -1,4 +1,6 @@
 "use client";
+import { StatusBadge } from '@/components/system/status-badge';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 /**
@@ -121,12 +123,12 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
               <WorkWorth stats={work?.days.get(day.date)?.stats} className="truncate text-[10px]" />
               {day.allDay.map((e) => (
                 <Tip key={e.id} label={e.calendar ? `${e.title} (${e.calendar.name})` : e.title}>
-                  <span
-                    className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground truncate"
+                  <StatusBadge
+                    className="truncate"
                     style={stripeStyle(e.color, 2)}
                   >
                     {e.title}
-                  </span>
+                  </StatusBadge>
                 </Tip>
               ))}
               {deadlines.map((d) => (
@@ -271,16 +273,16 @@ function OverflowRow({ event }: { event: CalendarEvent }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button data-slot="menu-action"
+        <MenuAction density="compact"
           type="button"
-          className="w-full flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-muted/60 transition-colors"
+          className="w-full flex items-center gap-2 text-left"
         >
           <span
             className={cn('flex-1 truncate text-xs', !event.countsAsBusy && 'opacity-50', event.rsvp === 'declined' && 'line-through')}
           >
             {event.title}
           </span>
-        </button>
+        </MenuAction>
       </PopoverTrigger>
       <PopoverContent side="left" className="p-0 w-auto">
         <EventPopoverContent event={event} />

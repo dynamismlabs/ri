@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
@@ -156,7 +158,7 @@ export default function PairPage() {
           </p>
         </div>
 
-        <div data-slot="callout" className="rounded-2xl border border-border/50 bg-card/60 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+        <Callout padding="xl" shadow  className="animate-in fade-in slide-in-from-bottom-6 delay-150">
           <div className="space-y-6">
             <div className="space-y-3">
               <Field
@@ -239,11 +241,11 @@ export default function PairPage() {
 
             <div className="space-y-4 pt-2">
               <h2 className="text-sm font-medium text-foreground">Need a token?</h2>
-              <div data-slot="callout" className="rounded-xl border border-border/50 bg-muted/30 p-4 text-sm shadow-sm transition-colors hover:bg-muted/50 text-muted-foreground/90 leading-relaxed text-xs">
+              <Callout padding="lg"  >
                 <p>
                   On any paired device, open the <strong className="text-foreground font-medium">Devices</strong> menu and click <strong className="text-foreground font-medium">Add device</strong>. Paste the raw token here.
                 </p>
-              </div>
+              </Callout>
 
               <details className="group [&_summary::-webkit-details-marker]:hidden">
                 <summary data-slot="action-button" data-variant="ghost" className="flex cursor-pointer select-none items-center justify-between rounded-lg px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground">
@@ -256,21 +258,21 @@ export default function PairPage() {
                 <div className="mt-2 space-y-3 px-2 text-xs text-muted-foreground animate-in slide-in-from-top-2 fade-in duration-300">
                   <div>
                     <p className="mb-1.5">On the host machine, run:</p>
-                    <span data-slot="callout" className="block rounded-md border border-border/50 bg-background/50 p-2 font-mono text-[11px] text-foreground shadow-inner">
+                    <Callout as="span" padding="sm" purpose="code"  className="block">
                       {APP_SHORT_ID} pair
-                    </span>
+                    </Callout>
                   </div>
                   <div className="pt-1">
                     <p className="mb-1 text-[11px] text-muted-foreground/70">If pairing off-network for the first time, first set your URL:</p>
-                    <span data-slot="callout" className="block rounded bg-background/50 px-1.5 py-1 font-mono text-[10px] text-foreground border border-border/50 shadow-inner">
+                    <Callout as="span" padding="xs" density="compact" purpose="code"  className="block">
                       {APP_SHORT_ID} pair --set-url &lt;url&gt;
-                    </span>
+                    </Callout>
                   </div>
                 </div>
               </details>
             </div>
           </div>
-        </div>
+        </Callout>
 
         <p className="text-center text-[11px] text-muted-foreground/40 animate-in fade-in duration-1000 delay-300">
           Tokens are securely validated and stored in localStorage.

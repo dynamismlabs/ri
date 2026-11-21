@@ -1,5 +1,6 @@
 'use client';
 
+import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
 import { AudioLines, ChevronDown } from 'lucide-react';
@@ -54,23 +55,7 @@ export function VoiceSentBadge() {
         <div className="absolute top-full right-0 mt-1 w-56 rounded-lg border border-border bg-card shadow-xl z-50 p-3 space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="text-[11px] font-medium text-foreground">Auto-send voice</span>
-            <button data-slot="switch"
-              type="button"
-              role="switch"
-              aria-checked={voiceAutoSend}
-              onClick={toggle}
-              className={cn(
-                'relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors',
-                voiceAutoSend ? 'bg-primary' : 'bg-muted',
-              )}
-            >
-              <span
-                className={cn(
-                  'pointer-events-none inline-block h-4 w-4 rounded-full bg-background shadow-sm transition-transform',
-                  voiceAutoSend ? 'translate-x-4' : 'translate-x-0',
-                )}
-              />
-            </button>
+            <Switch checked={voiceAutoSend} onCheckedChange={toggle} aria-label="Auto-send voice" />
           </div>
           <p className="text-[9px] text-muted-foreground leading-relaxed">
             {voiceAutoSend

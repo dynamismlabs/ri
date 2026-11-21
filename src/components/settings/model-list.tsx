@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -310,14 +312,11 @@ function ModelRow({
       )}
     >
       <Tip label={title ?? (model.custom ? `Pinned: ${model.id}` : undefined)}>
-        <button data-slot="menu-action"
+        <MenuAction density="compact"
           type="button"
           disabled={disabled}
           onClick={onSelect}
-          className={cn(
-            'flex w-full items-start gap-2.5 rounded-md px-2 py-1.5 text-left disabled:cursor-not-allowed',
-            onRemove && 'pr-7',
-          )}
+          className="flex w-full items-start gap-2.5 text-left disabled:cursor-not-allowed"
         >
           <div className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center">
             {pending && <Loader2 size={11} className="animate-spin text-muted-foreground" />}
@@ -334,9 +333,9 @@ function ModelRow({
                 </Tip>
               )}
               {model.custom && (
-                <span className="rounded bg-muted px-1 py-px text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+                <StatusBadge >
                   pinned
-                </span>
+                </StatusBadge>
               )}
             </div>
             {model.hint && (
@@ -350,7 +349,7 @@ function ModelRow({
               </div>
             )}
           </div>
-        </button>
+        </MenuAction>
       </Tip>
       {onRemove && (
           <IconButton

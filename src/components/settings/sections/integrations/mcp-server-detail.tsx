@@ -1,4 +1,9 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
+import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -121,9 +126,9 @@ export function McpServerDetail({
           }
         />
         {s.lastStatus && s.lastStatus !== 'ok' && s.lastError && (
-          <p className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] leading-normal text-amber-600 dark:text-amber-400">
+          <Callout as="p" padding="sm" tone={"warning"} >
             {s.lastError}
-          </p>
+          </Callout>
         )}
         {s.lastCheckedAt && <p className="text-[11px] text-muted-foreground">Last checked <time dateTime={s.lastCheckedAt} suppressHydrationWarning>{new Date(s.lastCheckedAt).toLocaleString()}</time></p>}
         <div className="flex flex-wrap items-center gap-1.5">
@@ -159,7 +164,7 @@ export function McpServerDetail({
 
       <CapabilityReview changes={s.capabilityChanges} busy={busy} onReview={onReviewCapabilities} />
 
-      {onSetPolicy && <section aria-label={`Server permissions for ${s.displayName}`} className="@container space-y-3 rounded-xl border border-border bg-card/20 p-4">
+      {onSetPolicy && <Card as="section" padding="lg" aria-label={`Server permissions for ${s.displayName}`} className="@container space-y-3">
         <h3 className="break-words text-xs font-medium">Permissions for {s.displayName}</h3>
         <McpPermissionControls label={`Permission choice and bulk action for ${s.displayName}`}>
           <McpPermissionSelect value={s.approvalPolicy ?? null} inheritedLabel="Use global default"
@@ -176,7 +181,7 @@ export function McpServerDetail({
           {s.approvalPolicy == null && <>Global default: {MCP_POLICY_LABELS[defaultPolicy]}. </>}
           Changing this applies immediately to this server&apos;s tools, including new tools, and clears individual approval choices. Disabled tools stay off.
         </p>
-      </section>}
+      </Card>}
 
       <McpServerSettings serverId={s.id} name={s.displayName} enabled={s.enabled && s.lastStatus === 'ok' && !!settingsCapability(s.protocol?.extensions)} />
 
@@ -190,7 +195,7 @@ export function McpServerDetail({
           <p className="text-[11px] leading-normal text-muted-foreground">
             Turn off tools agents should never call. Ask first pauses each call for approval. Individual switches override the server setting.
           </p>
-          <div className="overflow-hidden rounded-xl border border-border bg-card/20 py-1">
+          <Card padding="none" density="compact" className="overflow-hidden">
             <div className="grid grid-cols-[1fr_2.5rem_3.5rem_1.25rem] items-center gap-x-2 px-3 pb-1 pt-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
               <span>Tool</span>
               <span className="text-center">On</span>
@@ -250,7 +255,7 @@ export function McpServerDetail({
                 </div>
               );
             })}
-          </div>
+          </Card>
         </section>
       )}
     </div>
@@ -415,45 +420,36 @@ function McpAuthChoice({ detection, url, selected, busy, onChoose, fields }: {
         )}
       </div>
       {detected?.method === 'unknown' && summary && (
-        <p role="status" className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] leading-normal text-amber-700 dark:text-amber-400">
+        <Callout as="p" padding="sm" tone={"warning"} role="status" className="flex items-start gap-2">
           <AlertCircle size={14} className="mt-px shrink-0" aria-hidden />
           <span><span className="font-semibold">{summary.title}.</span> {summary.detail}</span>
-        </p>
+        </Callout>
       )}
       {/* A group, not a radiogroup: the selected method's text fields sit inside it. */}
-      <div role="group" aria-labelledby="mcp-auth-label" className="-mx-2 space-y-0.5">
+      <ChoiceGroup asChild name="mcp-auth" value={selected} disabled={busy} onValueChange={value => onChoose(value as Exclude<typeof selected, null>)}><div role="group" aria-labelledby="mcp-auth-label" className="-mx-2 space-y-0.5">
         {MCP_AUTH_OPTIONS.map((option) => {
           const isDetected = option.kind === detectedKind;
           const warn = isDetected && summary?.tone === 'warn';
           return (
             <div key={option.kind}>
-              <label className={cn('flex items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors', busy ? 'opacity-60' : 'cursor-pointer hover:bg-muted/40')}>
-                <input
-                  type="radio"
-                  name="mcp-auth"
-                  value={option.kind}
-                  checked={selected === option.kind}
-                  disabled={busy}
-                  onChange={() => onChoose(option.kind)}
-                  className="mt-px size-3.5 shrink-0 appearance-none rounded-full border border-muted-foreground/50 transition-[border-color,border-width] checked:border-4 checked:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring enabled:cursor-pointer"
-                />
+              <ChoiceRow selection="radio" value={option.kind} density="compact" surface="plain" className="flex items-start gap-2.5">
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-1.5 text-xs font-medium leading-4 text-foreground">
                     {option.title}
-                    {isDetected && <span className="rounded-full border border-border px-1.5 text-[10px] font-medium leading-4 text-muted-foreground">Detected</span>}
+                    {isDetected && <StatusBadge >Detected</StatusBadge>}
                   </span>
                   <span className={cn('mt-0.5 flex items-start gap-1 text-[11px] leading-normal', warn ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground')}>
                     {warn && <AlertCircle size={12} className="mt-0.5 shrink-0" aria-hidden />}
                     <span>{isDetected && summary ? summary.detail : option.description}</span>
                   </span>
                 </span>
-              </label>
+              </ChoiceRow>
               {/* Indented to the option's text: padding, radio and gap. */}
               {selected === option.kind && fields && <div className="pb-2 pl-8 pr-2 pt-1">{fields}</div>}
             </div>
           );
         })}
-      </div>
+      </div></ChoiceGroup>
     </div>
   );
 }

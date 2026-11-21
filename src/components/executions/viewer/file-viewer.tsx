@@ -1,4 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -35,13 +38,7 @@ import { cn } from '@/lib/utils';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { FileIcon } from '@/components/file-icon';
 import type { TreeEntry } from '@/lib/api/sessions';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { FileSkeleton } from '../skeletons';
 import { FileView, type FileViewHandle } from './file-view';
 import { DiffView } from './diff-view';
@@ -454,10 +451,10 @@ function FileViewerHeader({
           {folded && (
             <>
               {dirty && onDiscard && !saving && (
-                <DropdownMenuItem data-skip-autosave onSelect={onDiscard}>
+                <MenuAction kind="menu" data-skip-autosave onSelect={onDiscard}>
                   <RotateCcw size={14} />
                   Discard changes
-                </DropdownMenuItem>
+                </MenuAction>
               )}
               <OpenWithAppActions controller={openWith} menu />
               <FileLaunchActions actions={launchActions} menu />
@@ -528,7 +525,7 @@ function FileHeaderMoreMenu({
       <DropdownMenuContent align="end" sideOffset={4} className="min-w-44">
         {children}
         {onReferenceInChat && referencePath && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onReferenceInChat(referencePath);
@@ -536,11 +533,11 @@ function FileHeaderMoreMenu({
           >
             <AtSign size={14} />
             Reference in chat
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {onReferenceInChat && referencePath && <DropdownMenuSeparator />}
         {relativePath !== null && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               void copyText(relativePath, 'Relative path copied');
@@ -548,10 +545,10 @@ function FileHeaderMoreMenu({
           >
             <Copy size={14} />
             Copy relative path
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {absolutePath && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               void copyText(absolutePath, 'Absolute path copied');
@@ -559,7 +556,7 @@ function FileHeaderMoreMenu({
           >
             <Copy size={14} />
             Copy absolute path
-          </DropdownMenuItem>
+          </MenuAction>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -659,14 +656,14 @@ function FileLaunchActions({
     <>
       {actions.map((action) =>
         menu ? (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             key={action.label}
             disabled={action.disabled}
             onSelect={() => void action.onSelect()}
           >
             {action.icon}
             {action.label}
-          </DropdownMenuItem>
+          </MenuAction>
         ) : (
           <IconButton
             key={action.label}
@@ -698,9 +695,9 @@ function FileLaunchActions({
 function NoFileOpen({ kind, writable }: { kind: FolderSource['kind']; writable: boolean }) {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-background px-6 text-center">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
+      <Card padding="none" className="flex w-11 items-center justify-center">
         <FileText size={18} className="text-muted-foreground/70" />
-      </div>
+      </Card>
       <div className="flex flex-col gap-1">
         <span className="text-[13px] font-medium text-foreground/90">No file open</span>
         <span className="max-w-[22rem] text-[11.5px] leading-relaxed text-muted-foreground/80">

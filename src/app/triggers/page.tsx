@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -92,9 +94,9 @@ function TriggerRow({
   const failing = trigger.consecutiveFailures >= 3;
   const overdue = overdueLabel(trigger);
   return (
-    <Link
+    <Card as={Link} padding="lg" shadow
       href={`/triggers/${trigger.id}`}
-      className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card hover:border-muted-foreground/30 transition-colors"
+      className="flex items-center gap-4"
     >
 
         <IconButton
@@ -112,27 +114,26 @@ function TriggerRow({
           {trigger.enabled ? <Play size={14} /> : <Pause size={14} />}
         </IconButton>
 
-
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <p className="text-sm font-medium truncate">{trigger.name}</p>
           {isReservedTrigger(trigger.id) && (
             <Tip label="Managed by the app. Change its schedule in Settings › General.">
-              <span
-                className="flex-shrink-0 px-1.5 py-0.5 text-[10px] rounded-md bg-muted text-muted-foreground"
+              <StatusBadge
+                className="flex-shrink-0"
               >
                 Managed
-              </span>
+              </StatusBadge>
             </Tip>
           )}
           {failing && (
             <Tip label={`${trigger.consecutiveFailures} consecutive failures`}>
-              <span
-                className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-md bg-destructive/10 text-destructive"
+              <StatusBadge tone={"error"}
+                className="flex items-center gap-1"
               >
                 <AlertTriangle size={10} />
                 {trigger.consecutiveFailures} failed
-              </span>
+              </StatusBadge>
             </Tip>
           )}
         </div>
@@ -148,7 +149,7 @@ function TriggerRow({
       </div>
 
       <ChevronRight size={14} className="text-muted-foreground flex-shrink-0" />
-    </Link>
+    </Card>
   );
 }
 

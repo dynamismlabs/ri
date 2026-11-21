@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { IconButton } from '@/components/system/icon-button';
 
 import {
@@ -10,14 +12,7 @@ import {
   Copy,
   AtSign,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 interface TreeRowActionsProps {
   kind: 'file' | 'dir';
@@ -66,7 +61,7 @@ export function TreeRowActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4} className="min-w-44">
         {kind === 'dir' && onCreateFile && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onCreateFile();
@@ -74,10 +69,10 @@ export function TreeRowActions({
           >
             <FilePlus size={14} />
             New file
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {kind === 'dir' && onCreateFolder && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onCreateFolder();
@@ -85,11 +80,11 @@ export function TreeRowActions({
           >
             <FolderPlus size={14} />
             New folder
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {kind === 'dir' && (onCreateFile || onCreateFolder) && <DropdownMenuSeparator />}
         {onReferenceInChat && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onReferenceInChat();
@@ -97,10 +92,10 @@ export function TreeRowActions({
           >
             <AtSign size={14} />
             Reference in chat
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {onCopyRelativePath && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onCopyRelativePath();
@@ -108,10 +103,10 @@ export function TreeRowActions({
           >
             <Copy size={14} />
             Copy relative path
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {onCopyAbsolutePath && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onCopyAbsolutePath();
@@ -119,11 +114,11 @@ export function TreeRowActions({
           >
             <Copy size={14} />
             Copy absolute path
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {hasPathActions && (onRename || onDelete) && <DropdownMenuSeparator />}
         {onRename && (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             onClick={(e) => {
               e.stopPropagation();
               onRename();
@@ -131,11 +126,11 @@ export function TreeRowActions({
           >
             <Pencil size={14} />
             Rename
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {onDelete && (
-          <DropdownMenuItem
-            variant="destructive"
+          <MenuAction kind="menu"
+            tone="error"
             onClick={(e) => {
               e.stopPropagation();
               onDelete();
@@ -143,7 +138,7 @@ export function TreeRowActions({
           >
             <Trash2 size={14} />
             Delete
-          </DropdownMenuItem>
+          </MenuAction>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

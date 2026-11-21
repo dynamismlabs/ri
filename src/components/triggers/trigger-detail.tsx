@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 /**
@@ -49,15 +51,15 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
   return (
     <div className="space-y-6">
       {overdue && (
-        <p className="rounded-md px-3 py-2 text-sm bg-amber-500/10 border border-amber-500/30">
+        <Callout as="p" padding="md" density="row" tone={"warning"} >
           {overdue}.{' '}
           {isWaitingForChat(trigger)
             ? 'It goes when the chat is free or its Hold is released.'
             : `Check the computer has free disk space. If this stays, restart ${APP_NAME}.`}
-        </p>
+        </Callout>
       )}
       {failing && (
-        <div className="rounded-md px-3 py-3 bg-destructive/10 border border-destructive/30 flex items-start gap-3">
+        <Callout padding="md" density="comfortable" tone={"error"} className="flex items-start gap-3">
           <AlertTriangle size={16} className="text-destructive mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-destructive">
@@ -95,7 +97,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
               </Button>
             </div>
           </div>
-        </div>
+        </Callout>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
@@ -133,7 +135,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
       </div>
 
       {managed && (
-        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12px] text-muted-foreground">
+        <Card padding="md" density="row" className="flex items-center gap-2">
           <span className="flex-1">
             This schedule is managed by the app. {describeLocks(lockedFieldsFor(id))} It is turned off
             rather than deleted.{isHeartbeat ? ' More options are in Settings > Heartbeat.' : ''}
@@ -146,7 +148,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
           >
             Open settings
           </Button>
-        </div>
+        </Card>
       )}
 
       <TriggerForm key={id} trigger={trigger} onNavigateAway={onNavigateAway} />
@@ -215,10 +217,10 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
       ? run.status
       : undefined;
   return (
-    <Link
+    <Card as={Link} padding="sm" shadow
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
       onNavigate={onNavigateAway}
-      className="flex items-center gap-3 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
+      className="flex items-center gap-3"
     >
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
       <span className="flex-1 truncate text-muted-foreground text-[12px]">
@@ -237,7 +239,7 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link>
+    </Card>
   );
 }
 

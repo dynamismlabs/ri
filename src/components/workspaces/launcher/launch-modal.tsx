@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -958,20 +959,11 @@ function LaunchModalInner({
  */
 function Chip({ chip, onRemove }: { chip: LaunchChip; onRemove: () => void }) {
   const Icon = CHIP_ICON[chip.sourceKind];
-  const tone =
-    chip.chipKind === 'base'
-      ? 'border-primary/30 bg-primary/5'
-      : chip.chipKind === 'continue'
-        ? 'border-primary/30 bg-primary/5'
-        : 'border-border bg-background';
 
   return (
     <Tip label={chip.detail ? `${chip.label} · ${chip.detail}` : chip.label} onlyWhenTextHidden>
-      <span
-        className={cn(
-          'inline-flex max-w-[20rem] items-center gap-1.5 rounded-md border px-2 py-1 text-[11px]',
-          tone,
-        )}
+      <StatusBadge
+        className="max-w-[20rem]"
       >
         <Icon size={10} className="flex-shrink-0 text-muted-foreground/80" />
         <span className="flex-shrink-0 font-medium text-muted-foreground/80">{chip.chipKind}:</span>
@@ -991,7 +983,7 @@ function Chip({ chip, onRemove }: { chip: LaunchChip; onRemove: () => void }) {
         >
           <X size={10} />
         </IconButton>
-      </span>
+      </StatusBadge>
     </Tip>
   );
 }

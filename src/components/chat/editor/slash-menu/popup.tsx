@@ -1,4 +1,6 @@
-'use client'
+'use client';
+
+import { MenuAction } from '@/components/system/menu-action';
 
 import {
   useState,
@@ -118,12 +120,10 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
     return (
       <div ref={listRef} className="slash-command-menu chat-slash-menu">
         {items.map((item, index) => (
-          <button
+          <MenuAction selected={!!((index === selectedIndex))} density="compact"
             key={item.command.id}
             type="button"
-            className={`flex items-baseline gap-2 w-full px-2.5 py-1 rounded text-left transition-colors ${
-              index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
-            }`}
+            className={`flex items-baseline gap-2 w-full text-left  ${index === selectedIndex ? "" : ""}`}
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => selectItem(index)}
             onMouseEnter={() => setSelectedIndex(index)}
@@ -139,7 +139,7 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
                 />
               </span>
             )}
-          </button>
+          </MenuAction>
         ))}
       </div>
     )

@@ -1,4 +1,8 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -379,7 +383,7 @@ function Row({
   });
   const overdue = overdueLabel(trigger);
   return (
-    <div data-slot="schedule-row" className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted/40 transition-colors">
+    <Card padding="md" shadow  className="flex items-center gap-3">
 
         <IconButton
           type="button"
@@ -396,8 +400,7 @@ function Row({
           {trigger.enabled ? <Play size={12} /> : <Pause size={12} />}
         </IconButton>
 
-
-      <button
+      <InlineAction
         type="button"
         onClick={onOpen}
         className="flex-1 min-w-0 text-left"
@@ -406,25 +409,20 @@ function Row({
           <p className="text-sm font-medium truncate">{trigger.name}</p>
           {isReservedTrigger(trigger.id) && (
             <Tip label="Managed by the app. Its schedule and who runs it can change, the rest is fixed.">
-              <span
-                data-slot="status-badge"
-                className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-medium bg-muted text-muted-foreground"
+              <StatusBadge
+
+                className="flex-shrink-0"
               >
                 Managed
-              </span>
+              </StatusBadge>
             </Tip>
           )}
           {trigger.lastRunStatus && (
-            <span data-slot="status-badge"
-              className={cn(
-                'px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-medium',
-                trigger.lastRunStatus === 'completed' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-                trigger.lastRunStatus === 'failed' && 'bg-destructive/10 text-destructive',
-                trigger.lastRunStatus === 'skipped' && 'bg-muted text-muted-foreground',
-              )}
+            <StatusBadge tone={(trigger.lastRunStatus === 'completed' ? "success" : 'neutral')}
+
             >
               {trigger.lastRunStatus}
-            </span>
+            </StatusBadge>
           )}
         </div>
         <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
@@ -435,9 +433,9 @@ function Row({
           {trigger.lastFiredAt && ` · ran ${ranAgo(trigger.lastFiredAt)}`}
         </p>
         {overdue && <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 truncate">{overdue}</p>}
-      </button>
+      </InlineAction>
 
-    </div>
+    </Card>
   );
 }
 

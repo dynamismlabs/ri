@@ -1,4 +1,6 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -229,21 +231,18 @@ export function IdentityEditor({
             const selected = matchesPreset(draft, preset);
             return (
               <Tip key={preset.name} label={preset.note} onlyWhenTextHidden>
-                <button data-slot="choice-row"
+                <ChoiceRow density="compact"
                   type="button"
                   aria-pressed={selected}
                   onClick={() => onChange({ name: preset.name, emoji: preset.emoji, color: preset.color, image: null })}
-                  className={cn(
-                    'flex w-36 flex-shrink-0 snap-start items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition-colors',
-                    selected ? 'border-primary/60 bg-primary/5' : 'border-border hover:bg-muted/50',
-                  )}
+                  className="flex w-36 flex-shrink-0 snap-start items-center gap-2 text-left"
                 >
                   <OrchestratorMark name={preset.name} emoji={preset.emoji} color={preset.color} size="md" />
                   <span className="flex min-w-0 flex-col leading-tight">
                     <span className="truncate text-[12px] font-medium text-foreground">{preset.name}</span>
                     <span className="truncate text-[10px] text-muted-foreground">{preset.note}</span>
                   </span>
-                </button>
+                </ChoiceRow>
               </Tip>
             );
           })}

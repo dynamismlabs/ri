@@ -56,35 +56,17 @@ export type ButtonProps = React.ComponentProps<'button'> & VariantProps<typeof b
 export type ButtonTone = NonNullable<ButtonProps['tone']>;
 export type ButtonSize = NonNullable<ButtonProps['size']>;
 
-function Button({
-  className,
-  variant = 'secondary',
-  size = 'sm',
-  tone = 'neutral',
-  icon = false,
-  pressed,
-  floating,
-  clip,
-  reveal,
-  focus = 'outside',
-  asChild = false,
-  disabled,
-  onClick,
-  ...props
-}: ButtonProps) {
+/** Shared native/Slot behavior for controls whose drawing belongs to another family. */
+export type ActionPrimitiveProps = React.ComponentProps<'button'> & { asChild?: boolean };
+export function ActionPrimitive({ asChild = false, disabled, onClick, className, ...props }: ActionPrimitiveProps) {
   const Comp = asChild ? Slot.Root : 'button';
   return (
     <Comp
       {...props}
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      data-tone={tone}
-      aria-pressed={pressed ?? props['aria-pressed']}
       aria-disabled={asChild && disabled ? true : props['aria-disabled']}
       disabled={disabled}
       tabIndex={asChild && disabled ? -1 : props.tabIndex}
-      className={cn(buttonVariants({ variant, size, tone, icon, pressed, floating, clip, reveal, focus }), className)}
+      className={className}
       onClickCapture={(event) => {
         if (asChild && disabled) {
           event.preventDefault();
@@ -101,6 +83,32 @@ function Button({
         }
         onClick?.(event);
       }}
+    />
+  );
+}
+
+function Button({
+  className,
+  variant = 'secondary',
+  size = 'sm',
+  tone = 'neutral',
+  icon = false,
+  pressed,
+  floating,
+  clip,
+  reveal,
+  focus = 'outside',
+  ...props
+}: ButtonProps) {
+  return (
+    <ActionPrimitive
+      {...props}
+      data-slot="button"
+      data-variant={variant}
+      data-size={size}
+      data-tone={tone}
+      aria-pressed={pressed ?? props['aria-pressed']}
+      className={cn(buttonVariants({ variant, size, tone, icon, pressed, floating, clip, reveal, focus }), className)}
     />
   );
 }

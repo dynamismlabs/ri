@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState } from 'react';
@@ -16,7 +17,6 @@ import {
 import type { TreeEntryStatus } from '@/lib/api/sessions';
 import type { FileHistoryEntry } from '@/hooks/use-file-history';
 import { cn } from '@/lib/utils';
-
 
 interface FileHistoryMenuProps {
   sessionId: string;
@@ -112,15 +112,11 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
               const isActive = entry.path === selectedPath;
               return (
                 <li key={entry.path}>
-                  <button
+                  <MenuAction selected={!!((isActive))} density="compact"
                     type="button"
                     onClick={() => handleOpen(entry.path)}
-                    className={cn(
-                      'flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors',
-                      isActive
-                        ? 'bg-primary/10 text-foreground'
-                        : 'text-foreground/80 hover:bg-muted/60',
-                    )}
+                    className={cn("flex w-full items-center gap-2 text-left", isActive
+    ? "" : "")}
                   >
                     <FileIcon name={entry.path} size={13} className="shrink-0" />
                     <span className="flex min-w-0 flex-1 flex-col">
@@ -153,7 +149,7 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
                     <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground/60">
                       {formatCompactRelative(new Date(entry.openedAt).toISOString())}
                     </span>
-                  </button>
+                  </MenuAction>
                 </li>
               );
             })}

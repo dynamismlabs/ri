@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -62,7 +63,7 @@ export default function RunDetailPage() {
 
       <main className="px-6 py-6 max-w-3xl mx-auto space-y-4">
         {run.errorMessage && (
-          <section className="p-3 rounded-md border border-destructive/30 bg-destructive/10">
+          <Callout as="section" padding="md" tone={"error"} >
             <p className="text-[11px] uppercase tracking-wider text-destructive">
               Error
             </p>
@@ -74,7 +75,7 @@ export default function RunDetailPage() {
                 Code: <code className="font-mono">{run.errorCode}</code>
               </p>
             )}
-          </section>
+          </Callout>
         )}
 
         {run.summary && (

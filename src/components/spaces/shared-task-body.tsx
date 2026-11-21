@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { teamDisplayName } from '@/lib/home/team-display-name';
@@ -85,7 +87,7 @@ function SourceNotice({ task, teamName, lastSyncedAt, lastError }: { task: TaskR
   else if (task.sourceState === 'released') text = `This is no longer assigned to you at ${teamName}. Your private planning is kept.`;
   else if (lastError) text = `${lastError}${lastSyncedAt ? ` Shown as of ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.` : ''}`;
   if (!text) return null;
-  return <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">{text}</p>;
+  return <Callout as="p" padding="md" density="row" tone={"warning"} role="status" >{text}</Callout>;
 }
 
 /** Text that follows the shared value while nobody is typing in it. */

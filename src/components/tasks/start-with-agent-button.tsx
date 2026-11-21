@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
@@ -106,15 +110,15 @@ export function StartWithAgentButton({
           </Dialog.Description>
           <div className="mt-3 space-y-1.5">
             {(chooser ?? []).map((t) => (
-              <button
+              <ChoiceRow
                 key={t.executionId}
-                data-slot="choice-row"
+
                 onClick={() => { setChooser(null); openExecution(t.sessionId); }}
-                className="flex w-full items-center gap-2 rounded border border-border px-2.5 py-2 text-left text-xs hover:border-violet-500/50 hover:bg-violet-500/[0.06]"
+                className="flex w-full items-center gap-2 text-left"
               >
                 <Bot size={13} className="flex-shrink-0 text-violet-500" />
                 <span className="truncate text-foreground">{t.label || 'Agent workstream'}</span>
-              </button>
+              </ChoiceRow>
             ))}
           </div>
           <div className="mt-4 flex justify-between">
@@ -164,14 +168,14 @@ export function StartWithAgentButton({
   if (variant === 'menuitem') {
     return (
       <>
-        <button
+        <MenuAction density="compact"
           onClick={onClick}
           disabled={busy}
-          className={cn('flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-foreground hover:bg-accent disabled:opacity-60', className)}
+          className={cn("flex w-full items-center gap-2 text-left disabled:opacity-60", className)}
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <Bot size={13} className="text-violet-500" />}
           {label}
-        </button>
+        </MenuAction>
         {chooserDialog}
       </>
     );

@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { cn } from '@/lib/utils';
 
@@ -52,7 +54,7 @@ export function InteractiveExamples() {
 
   return (
     <>
-      <div className="mb-5 space-y-4 rounded-lg border border-border bg-muted/20 p-4">
+      <Card padding="lg" className="mb-5 space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <PanelsTopLeft className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         <div className="min-w-0 flex-1">
@@ -114,7 +116,7 @@ export function InteractiveExamples() {
         </table>
       </div>
       {accounts.error && <p role="alert" className="text-xs text-destructive">Account status could not load. Use Manage accounts to check your connection.</p>}
-      </div>
+      </Card>
       <Dialog open={!!view} onOpenChange={open => { if (!open) setView(null); }}>
         <DialogContent onCloseAutoFocus={event => { event.preventDefault(); launchButton.current?.focus(); }} className="flex h-[92dvh] w-[calc(100%-1rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-[calc(100%-2rem)]">
           <DialogHeader className="border-b border-border px-4 py-3 pr-12 text-left">

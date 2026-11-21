@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Boxes, Info } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -36,16 +37,13 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
             const location = chat.location && !chat.location.isHome ? chat.location.name : 'This server';
             return (
               <Tip key={chat.id} label={label} onlyWhenTextHidden>
-                <button
+                <MenuAction selected={!!((activeSessionId === chat.id))} density="compact"
                   type="button"
                   onClick={() => {
                     setActiveView(executionView(chat.id));
                     close();
                   }}
-                  className={cn(
-                    'flex w-full items-start gap-1.5 rounded-md px-2.5 py-1.5 text-left transition-colors',
-                    activeSessionId === chat.id ? 'bg-secondary' : 'hover:bg-muted/50',
-                  )}
+                  className={cn("flex w-full items-start gap-1.5 text-left", activeSessionId === chat.id ? "" : "")}
                 >
                   <AgentIcon workspace={{ name: chat.workspaceName ?? 'Main chat', emoji: chat.workspaceEmoji, attachments: chat.workspaceAttachments, areaId: chat.workspaceAreaId }} size="sm" />
                   <span className="min-w-0 flex-1 leading-tight">
@@ -57,7 +55,7 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
                   <span className="shrink-0 text-[10px] text-sky-600 dark:text-sky-400">
                     {chat.taskCount} {chat.taskCount === 1 ? 'task' : 'tasks'}
                   </span>
-                </button>
+                </MenuAction>
               </Tip>
             );
           })}

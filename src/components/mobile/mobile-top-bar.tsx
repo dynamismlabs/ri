@@ -1,4 +1,5 @@
 "use client";
+import { Button } from '@/components/system/button';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Search } from 'lucide-react';
@@ -26,15 +27,15 @@ export function MobileTopBar({ onSearch = () => document.dispatchEvent(new Custo
     >
       {/* My Ri and its teams, once one is connected (docs/homes-spec.md §3.2). */}
       <SpaceSelector variant="phone" onOpenSettings={onOpenSettings} onOpenAccount={team ? onOpenAccount : undefined} />
-      <button
+      <Button variant="secondary" size="touch"
         onClick={onSearch}
-        data-slot="search-field"
-        className="min-w-0 flex-1 h-10 flex items-center gap-2.5 px-3.5 rounded-lg border border-border text-muted-foreground active:bg-muted/60 transition-colors"
+
+        className="min-w-0 flex-1 flex items-center gap-2.5"
         aria-label={searchLabel.replace(/…$/, '')}
       >
         <Search size={15} className="flex-shrink-0" />
         <span className="truncate text-sm text-muted-foreground/70">{searchLabel}</span>
-      </button>
+      </Button>
       {team ? <IconButton
         type="button"
         onClick={onOpenSettings ?? settings ?? undefined}

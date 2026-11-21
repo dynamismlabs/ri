@@ -1,4 +1,6 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -17,7 +19,6 @@ import {
 } from '@/components/ui/popover';
 import { useTasks } from '@/hooks/use-tasks';
 import { useNotes } from '@/hooks/use-notes';
-import type { TaskStatus } from '@/db/types';
 
 // ─── Task promote/merge ─────────────────────────────────────
 
@@ -69,27 +70,27 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
         {mode === 'menu' && (
           <div className="py-1">
-            <button
+            <MenuAction
               onClick={() => { onPromote('todo'); handleOpenChange(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <Plus size={12} className="text-blue-500" />
               <span className="font-medium">Add to Todo</span>
-            </button>
-            <button
+            </MenuAction>
+            <MenuAction
               onClick={() => { onPromote('consider'); handleOpenChange(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <Plus size={12} className="text-amber-500" />
               <span className="font-medium">Save to Consider</span>
-            </button>
-            <button
+            </MenuAction>
+            <MenuAction
               onClick={() => { setMode('search'); setTimeout(() => inputRef.current?.focus(), 0); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <GitMerge size={12} className="text-muted-foreground" />
               <span className="font-medium">Merge into task...</span>
-            </button>
+            </MenuAction>
           </div>
         )}
 
@@ -112,16 +113,16 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No tasks found</p>
               )}
               {filtered.map((task) => (
-                <button
+                <MenuAction density="compact"
                   key={task.id}
                   onClick={() => handleMerge(task.id)}
-                  className="w-full flex items-start gap-2 px-3 py-1.5 text-left hover:bg-muted transition-colors"
+                  className="w-full flex items-start gap-2 text-left"
                 >
                   <Target size={10} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span className="text-[10.5px] text-foreground leading-snug line-clamp-2">
                     {task.title}
                   </span>
-                </button>
+                </MenuAction>
               ))}
             </div>
           </div>
@@ -181,20 +182,20 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
         {mode === 'menu' && (
           <div className="py-1">
-            <button
+            <MenuAction
               onClick={() => { onPromote(); handleOpenChange(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <Plus size={12} className="text-primary" />
               <span className="font-medium">New note</span>
-            </button>
-            <button
+            </MenuAction>
+            <MenuAction
               onClick={() => { setMode('search'); setTimeout(() => inputRef.current?.focus(), 0); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <GitMerge size={12} className="text-muted-foreground" />
               <span className="font-medium">Append to note...</span>
-            </button>
+            </MenuAction>
           </div>
         )}
 
@@ -217,16 +218,16 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No notes found</p>
               )}
               {filtered.map((note) => (
-                <button
+                <MenuAction density="compact"
                   key={note.id}
                   onClick={() => handleMerge(note.id)}
-                  className="w-full flex items-start gap-2 px-3 py-1.5 text-left hover:bg-muted transition-colors"
+                  className="w-full flex items-start gap-2 text-left"
                 >
                   <FileText size={10} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span className="text-[10.5px] text-foreground leading-snug line-clamp-2">
                     {note.title ?? (note.bodyExcerpt ?? '').slice(0, 80)}
                   </span>
-                </button>
+                </MenuAction>
               ))}
             </div>
           </div>

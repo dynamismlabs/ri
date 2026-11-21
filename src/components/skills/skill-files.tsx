@@ -1,4 +1,7 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -162,17 +165,17 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
             return (
               <li key={f.path}>
                 <div className="group flex items-center gap-1 rounded-md hover:bg-muted/40">
-                  <button
+                  <InlineAction
                     type="button"
                     aria-expanded={isOpen}
                     onClick={() => setOpen(isOpen ? null : f.path)}
-                    className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1 text-left text-[11.5px] text-muted-foreground hover:text-foreground"
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
                   >
                     <ChevronRight size={12} className={cn('shrink-0 transition-transform', isOpen && 'rotate-90')} />
                     <Icon size={12} className="shrink-0" />
                     <span className="truncate font-mono">{f.path}</span>
                     <span className="ml-auto shrink-0 tabular-nums text-muted-foreground/60">{formatBytes(f.size)}</span>
-                  </button>
+                  </InlineAction>
                   {editable && (
                       <IconButton
                         type="button"
@@ -218,9 +221,9 @@ function FileContents({ skillRef, file }: { skillRef: string; file: { path: stri
     );
   }
   return (
-    <div className="mb-2 ml-5 mt-1 max-h-96 overflow-auto rounded-lg border border-border bg-card/30">
+    <Card padding="none" shadow className="mb-2 ml-5 mt-1 max-h-96 overflow-auto">
       <SkillMarkdownEditor value={data.text} onChange={NOOP} onSave={NOOP} ariaLabel={file.path} minHeight="0" readOnly language={language} />
-    </div>
+    </Card>
   );
 }
 

@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 
 import { useState } from 'react';
@@ -17,7 +19,7 @@ export function ResultCompletionAction({ resultId, options }: { resultId: string
   if (!choices.length && !pending) return null;
   const reason = options?.staleReason === 'superseded' ? 'This handoff has a newer snapshot. Open that snapshot before completing a task.'
     : options?.staleReason === 'revision_mismatch' ? 'The work has changed since this handoff. Save a current snapshot before completing a task.' : null;
-  return <div className="w-full space-y-2 rounded-md border bg-muted/20 p-3">
+  return <Card padding="md" className="w-full space-y-2">
     {pending && !complete.isPending && <p className="text-xs text-muted-foreground">The earlier submission&apos;s outcome is uncertain. Retry that same acceptance and task completion to confirm it.</p>}
     {!pending && choices.length > 1 && <NativeSelect
       value={selectedId}
@@ -46,5 +48,5 @@ export function ResultCompletionAction({ resultId, options }: { resultId: string
       variant="secondary"
       size="xs"
     >{complete.isPending ? <Loader2 className="animate-spin" /> : <CheckCheck />}{complete.isPending ? 'Accepting and completing' : pending ? 'Retry acceptance and completion' : 'Accept and complete'}</Button>
-  </div>;
+  </Card>;
 }

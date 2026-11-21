@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -429,19 +431,19 @@ export function ExecutionChatsMenu({
         >
           {onNewChat && (
             <>
-              <button
+              <MenuAction density="compact"
                 type="button"
                 disabled={newChatPending}
                 onClick={() => {
                   setHistoryOpen(false);
                   onNewChat();
                 }}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px] font-medium text-foreground transition-colors hover:bg-muted/50 disabled:opacity-50"
+                className="flex w-full items-center gap-2 text-left disabled:opacity-50"
               >
                 {newChatPending ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                 New chat
                 <span className="ml-auto text-[10.5px] font-normal text-muted-foreground/75">same worktree</span>
-              </button>
+              </MenuAction>
               <div className="my-1 h-px bg-border" />
             </>
           )}
@@ -451,17 +453,14 @@ export function ExecutionChatsMenu({
           {entries.map((s) => {
             const unread = !s.isCurrent && isSessionUnread(s);
             return (
-              <button
+              <MenuAction selected={!!((s.isCurrent))} density="compact"
                 key={s.id}
                 type="button"
                 onClick={() => {
                   if (!s.isCurrent) onOpen(s.id);
                   setHistoryOpen(false);
                 }}
-                className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors',
-                  s.isCurrent ? 'bg-primary/10' : 'hover:bg-muted/50',
-                )}
+                className={cn("flex w-full items-center gap-2 text-left", s.isCurrent ? "" : "")}
               >
                 <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
                   <span className="flex w-full items-center gap-1.5">
@@ -502,7 +501,7 @@ export function ExecutionChatsMenu({
                 {s.isCurrent && (
                   <Check size={12} className="flex-shrink-0 text-primary" strokeWidth={3} />
                 )}
-              </button>
+              </MenuAction>
             );
           })}
         </PopoverPrimitive.Content>

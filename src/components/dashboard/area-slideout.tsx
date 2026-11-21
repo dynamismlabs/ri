@@ -1,4 +1,9 @@
-'use client'
+'use client';
+
+import { InlineAction } from '@/components/system/inline-action';
+
+import { MenuAction } from '@/components/system/menu-action';
+
 import { Field } from '@/components/system/field';
 import { TextArea } from '@/components/system/text-area';
 
@@ -17,12 +22,7 @@ import { LifecycleStatusControl } from '@/components/tasks/lifecycle-status-cont
 import type { TaskStatus } from '@/db/types'
 import { useNotes, useCreateNote } from '@/hooks/use-notes'
 import { useDashboard } from '@/contexts/dashboard-context'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/ui/dropdown-menu'
 import { NoteIcon } from '@/components/shared/note-icon'
 import { DecisionLabel } from '@/components/notes/note-kind'
 import { coverAttachmentUrl } from '@/lib/attachments/view'
@@ -264,13 +264,13 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-44">
                     {isArchived ? (
-                      <DropdownMenuItem onClick={handleRestore} className="text-xs">
+                      <MenuAction kind="menu" onClick={handleRestore} >
                         <RotateCcw size={12} className="mr-2" /> Restore
-                      </DropdownMenuItem>
+                      </MenuAction>
                     ) : (
-                      <DropdownMenuItem onClick={handleArchive} className="text-xs text-destructive">
+                      <MenuAction tone="error" kind="menu" onClick={handleArchive} >
                         <Archive size={12} className="mr-2" /> Archive
-                      </DropdownMenuItem>
+                      </MenuAction>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -367,19 +367,19 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors hover:bg-card group"
                         >
                           <Tip label="Complete">
-                            <button
+                            <MenuAction density="none"
                               onClick={() => lifecycle.toggle(task.id, task.status as TaskStatus)}
                               aria-label="Complete task"
                               className="flex-shrink-0"
                             >
                               <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 transition-colors hover:border-primary" />
-                            </button>
+                            </MenuAction>
                           </Tip>
-                          <button onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
+                          <InlineAction  onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
                             <span className="text-[12px] font-medium text-foreground truncate block">
                               {task.title}
                             </span>
-                          </button>
+                          </InlineAction>
                           <span onClick={(e) => e.stopPropagation()}>
                             <LifecycleStatusControl taskId={task.id} status={task.status as TaskStatus} size="xs" />
                           </span>
@@ -423,13 +423,13 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           />
                         </div>
                       ) : (
-                        <button data-slot="menu-action"
+                        <MenuAction density="compact"
                           onClick={() => setAddingTask(true)}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-muted-foreground/40 hover:text-muted-foreground transition-colors hover:bg-card"
+                          className="w-full flex items-center gap-2 text-left"
                         >
                           <Plus size={12} />
                           <span className="text-[11px]">Add task</span>
-                        </button>
+                        </MenuAction>
                       )}
 
                       {doneTasks.length > 0 && (
@@ -453,11 +453,11 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                                   <Check size={8} strokeWidth={3} className="text-primary-foreground" />
                                 </button>
                               </Tip>
-                              <button onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
+                              <InlineAction  onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
                                 <span className="text-[12px] font-medium text-muted-foreground line-through truncate block">
                                   {task.title}
                                 </span>
-                              </button>
+                              </InlineAction>
                             </div>
                           ))}
                         </>
@@ -476,10 +476,10 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
 
                     <div className="space-y-0.5">
                       {notes.map((note) => (
-                        <button data-slot="menu-action"
+                        <MenuAction
                           key={note.id}
                           onClick={() => openNote(note.id)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-card"
+                          className="w-full flex items-center gap-2.5 text-left"
                         >
                           <NoteIcon body={note.bodyExcerpt} size={13} className="text-muted-foreground/40 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
@@ -496,7 +496,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           <span className="text-[9px] text-muted-foreground/40 flex-shrink-0">
                             {new Date(note.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </span>
-                        </button>
+                        </MenuAction>
                       ))}
 
                       {/* Inline add note */}
@@ -526,13 +526,13 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           />
                         </div>
                       ) : (
-                        <button data-slot="menu-action"
+                        <MenuAction density="compact"
                           onClick={() => setAddingNote(true)}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-muted-foreground/40 hover:text-muted-foreground transition-colors hover:bg-card"
+                          className="w-full flex items-center gap-2 text-left"
                         >
                           <Plus size={12} />
                           <span className="text-[11px]">Add note</span>
-                        </button>
+                        </MenuAction>
                       )}
                     </div>
                   </div>

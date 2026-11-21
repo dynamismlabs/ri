@@ -1,3 +1,7 @@
+@layer components {
+  .ri-choice-row, .ri-menu-action { display: inline-flex; align-items: center; flex-shrink: 0; }
+  .ri-inline-action { display: inline-block; }
+}
 /* Shared content drawing. Layout stays in the call site, never in compatibility selectors. */
 .ri-card {
   --content-inset: 12px;
@@ -107,7 +111,7 @@
 .ri-choice-row .ri-choice-description, .ri-menu-action .ri-choice-description { display: block; margin-top: 2px; color: var(--t3); font-size: 12px; font-weight: 400; line-height: 1.5; }
 /* Rich children retain their own hierarchy, rather than Button's label reset. */
 .ri-choice-row :where(span), .ri-menu-action :where(span) { letter-spacing: normal; }
-.ri-meta { gap: 0 7px; color: var(--t3); font-size: 12px; line-height: 18px; }
+.ri-meta { gap: 6px 7px; color: var(--t3); font-size: 12px; line-height: 18px; }
 .ri-meta-item {
   display: inline-flex;
   align-items: center;
@@ -128,9 +132,9 @@
   outline-offset: 2px;
 }
 .ri-meta-item:not([class*='ri-tone--']) { --control-ink: var(--t3); }
-.ri-meta > .ri-meta-item ~ .ri-meta-item::before { content: '\00b7'; margin-right: 5px; color: var(--t4); font-weight: 400; }
+.ri-meta > .ri-meta-item ~ .ri-meta-item::before { content: '\00b7'; margin-right: 7px; color: var(--t4); font-weight: 400; }
 .ri-meta-item > svg { width: 12px; height: 12px; flex-shrink: 0; }
-.ri-meta-item:is(button, a):hover:not(:disabled, [aria-disabled='true']) { background: transparent; color: var(--t1); }
+.ri-meta-item:is(button, a):hover:not(:disabled, [aria-disabled='true'], [data-energy], [data-urgency], [class*='ri-tone--']) { background: transparent; color: var(--t1); }
 .ri-meta-item:focus-visible { outline: 2px solid var(--ring); }
 .ri-meta-item:where(:disabled, [aria-disabled='true']) { opacity: .5; cursor: not-allowed; }
 .ri-meta-item[data-kind='energy'] { text-transform: capitalize; }
@@ -139,3 +143,33 @@
 .ri-meta-item[data-urgency='late'] { color: var(--danger); font-weight: 500; }
 .ri-meta-item[data-urgency='today'] { color: var(--attention); font-weight: 500; }
 @media (min-width: 640px) { .ri-inset--form { --content-inset: 32px; } }
+
+.ri-meta-item[data-kind='area'] { color: var(--t2); }
+.ri-meta-item[data-kind='status'] { font-weight: 500; }
+
+.ri-choice-row--list { padding: 8px; }
+.ri-meta .ri-status-badge { font-size: 12px; line-height: 18px; }
+
+.ri-choice-row--spacious { padding: 12px; }
+.ri-choice-indicator { width: 14px; height: 14px; flex-shrink: 0; margin-top: 3px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--pane); }
+.ri-choice-row[data-state='checked'] .ri-choice-indicator { border: 4px solid var(--primary); }
+
+.ri-menu-action[data-inset] { padding-inline-start: 32px; }
+
+.ri-inline-action { height: auto; min-height: 0; padding: 0; gap: 4px; border: 0 solid transparent; border-radius: 999px; background: transparent; color: inherit; font: inherit; line-height: inherit; letter-spacing: normal; text-transform: none; text-decoration: none; white-space: inherit; }
+.ri-inline-action:not(.ri-inline-action--chip):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background: transparent; color: inherit; }
+.ri-inline-action--link { text-decoration: underline; text-underline-offset: 3px; }
+.ri-inline-action--chip { padding: 1px 6px; background-color: var(--track); color: var(--t2); }
+.ri-inline-action--chip:is(button, a):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--selected); color: var(--t1); }
+.ri-inline-action--bubble, .ri-inline-action--bubble:is(button, a):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { color: inherit; background-color: color-mix(in oklch, currentColor 10%, transparent); }
+.ri-inline-action--bubble:is(button, a):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: color-mix(in oklch, currentColor 15%, transparent); }
+.ri-inline-action:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+
+.ri-status-badge.ri-content--code, .ri-inline-action.ri-content--code { font-family: var(--font-mono); }
+
+.ri-inline-action:where(:disabled, [aria-disabled='true']) { opacity: .5; cursor: not-allowed; }
+.ri-inline-action[aria-invalid='true'] { outline: 1px solid var(--danger); outline-offset: 0; }
+.ri-inline-action[aria-invalid='true']:focus-visible { outline-width: 2px; }
+.ri-card[aria-invalid='true'] { outline: 1px solid var(--danger); outline-offset: -1px; }
+.ri-card[aria-invalid='true']:focus-visible { outline-width: 2px; }
+.ri-inline-action[class*='ri-tone--'] { color: var(--control-ink); }

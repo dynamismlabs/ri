@@ -1,8 +1,11 @@
 "use client";
+import { InlineAction } from '@/components/system/inline-action';
+
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BACKGROUND_DOT, BACKGROUND_LABEL } from '@/components/workspaces/activity-style';
 import { InactiveFold } from '@/components/workspaces/inactive-fold';
 import { WorkspaceCreateModal } from '@/components/workspaces/workspace-create-modal';
@@ -105,16 +108,16 @@ export function MobileAgentsView() {
           {workspaces?.map((ws) => <WorkspaceBlock key={ws.id} workspace={ws} />)}
           {/* Adding an agent is rare, so it waits at the end of the list. */}
           {canConfigure && workspaces && (
-            <button
+            <MenuAction
               type="button"
               onClick={() => setCreateWsOpen(true)}
-              className="w-full flex items-center gap-2.5 px-1 py-2.5 rounded-lg text-left text-[14px] font-medium text-primary active:bg-primary/10 transition-colors"
+              className="w-full flex items-center gap-2.5 text-left"
             >
               <span className="w-8 h-8 flex items-center justify-center flex-shrink-0 rounded-lg bg-primary/10">
                 <Plus size={16} />
               </span>
               New agent
-            </button>
+            </MenuAction>
           )}
         </div>
       </ChatLensPanel>
@@ -227,11 +230,11 @@ function MobileAgentAttentionRow({ item }: { item: AgentAttentionItem }) {
   const voice = agentVoice({ activity, waitingOn: chat.waitingOn, preview: chat.preview, purpose: workspace.purpose });
   const at = latestActivityAt(chat);
   return (
-    <button
+    <MenuAction
       type="button"
       onClick={() => openAgent(workspace.id)}
       aria-label={`${workspace.name}: ${PRESENCE[activity].label}`}
-      className="w-full flex items-start gap-2.5 px-1 py-2 rounded-lg text-left active:bg-muted/40 transition-colors"
+      className="w-full flex items-start gap-2.5 text-left"
     >
       <AgentPresenceIcon workspace={workspace} activity={activity} />
       <span className="flex-1 min-w-0">
@@ -241,7 +244,7 @@ function MobileAgentAttentionRow({ item }: { item: AgentAttentionItem }) {
         </span>
         <span className={cn('mt-0.5 block line-clamp-2 text-[12px] leading-snug', VOICE_TONE[voice.tone])}>{voice.text}</span>
       </span>
-    </button>
+    </MenuAction>
   );
 }
 
@@ -334,7 +337,7 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
           creates a new execution. Sibling buttons, not nested, so a tap on
           one never also fires another. */}
       <div className="w-full flex items-center gap-1.5 px-1 py-2 rounded-lg active:bg-muted/40 transition-colors">
-        <button
+        <InlineAction
           type="button"
           onClick={() => {
             if (!opensView) return toggle();
@@ -359,7 +362,7 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
               </span>
             )}
           </span>
-        </button>
+        </InlineAction>
         <ChatCounts {...counts} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -374,16 +377,16 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
             </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onSelect={() => setPickingDevice(true)} className="gap-2 py-2.5 text-[14px]">
+            <MenuAction kind="menu" onSelect={() => setPickingDevice(true)} className="gap-2">
               <Laptop size={15} /> New chat on…
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => openAgentTab('files')} className="gap-2 py-2.5 text-[14px]">
+            <MenuAction kind="menu" onSelect={() => openAgentTab('files')} className="gap-2">
               <FileText size={15} /> Files
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => openAgentTab('setup')} className="gap-2 py-2.5 text-[14px]">
+            </MenuAction>
+            <MenuAction kind="menu" onSelect={() => openAgentTab('setup')} className="gap-2">
               <Settings size={15} /> Setup
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
         <IconButton
@@ -543,15 +546,11 @@ function MobileChatRow({ session, agentName, waitingOn, inactive = false }: Mobi
   );
 
   return (
-    <button
+    <MenuAction selected={!!((isActive))}
       type="button"
       onClick={() => openExecution(session.id)}
       data-chat-row={session.id}
-      className={cn(
-        'w-full flex items-start gap-2 px-1.5 py-2 rounded-lg text-left transition-[color,background-color,opacity]',
-        isActive ? 'bg-secondary' : 'active:bg-muted/40',
-        inactive && !isActive && 'opacity-60',
-      )}
+      className={cn("w-full flex items-start gap-2 text-left", isActive ? "" : "", inactive && !isActive && "opacity-60")}
     >
       <span className="flex h-[18px] w-4 flex-shrink-0 items-center justify-center">
         {(isPending || unread) && <span className="sr-only">{isPending ? 'Waiting on you: ' : 'Unread: '}</span>}
@@ -593,7 +592,7 @@ function MobileChatRow({ session, agentName, waitingOn, inactive = false }: Mobi
         )}
         {meta && <span className="mt-0.5 block truncate text-[11px] text-muted-foreground/70">{meta}</span>}
       </span>
-    </button>
+    </MenuAction>
   );
 }
 

@@ -1,3 +1,5 @@
+
+import { Card } from '@/components/system/card';
 /**
  * The hub's consent screen (docs/personal-apps.md "The hub"): a personal app asks to use the
  * person's accounts through Ri. The person chooses which accounts, which tools on each, and which
@@ -32,11 +34,11 @@ export async function HubConsent({ request, params, issuer }: { request: Authori
       </div>
 
       {request.client.purpose && (
-        <div className="space-y-1 rounded-md border border-border bg-muted/30 p-3">
+        <Card padding="md" className="space-y-1">
           <p className="flex items-center gap-1.5 text-xs font-medium text-foreground"><Info size={13} aria-hidden />What {name} says it&apos;s for</p>
           <p className="text-sm text-foreground">“{request.client.purpose}”</p>
           <p className="text-[11px] text-muted-foreground">This is the app&apos;s own description. {APP_NAME} doesn&apos;t enforce it. What {APP_NAME} enforces is what you choose below.</p>
-        </div>
+        </Card>
       )}
 
       <fieldset className="space-y-2">

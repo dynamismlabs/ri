@@ -1,4 +1,9 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Callout } from '@/components/system/callout';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -25,7 +30,6 @@ import { Check, ChevronRight, Clock, Loader2, RotateCcw, ShieldAlert, ShieldChec
 import { useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { Tip } from '@/components/ui/tip';
-
 
 /** Items shown before "Show N more" on a large batch. */
 const VISIBLE_ITEMS = 5;
@@ -96,11 +100,8 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
   const hidden = views.length - visible.length;
 
   return (
-    <div
-      className={cn(
-        'overflow-hidden rounded-xl border bg-card text-[11px]',
-        isPending ? 'border-amber-500/40' : 'border-border',
-      )}
+    <Callout padding="none" shadow tone={(isPending ? "warning" : "neutral")}
+      className="overflow-hidden"
     >
       {/* Two lines, so the account the call acts as stays readable in a narrow panel. */}
       <div
@@ -139,13 +140,13 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
         ))}
       </ul>
       {hidden > 0 && (
-        <button
+        <MenuAction density="compact"
           type="button"
           onClick={() => setShowAll(true)}
-          className="w-full border-t border-border/40 px-3 py-1.5 text-left text-[10.5px] text-muted-foreground hover:bg-muted/30"
+          className="w-full text-left"
         >
           Show {hidden} more
-        </button>
+        </MenuAction>
       )}
 
       {isPending ? (
@@ -180,15 +181,15 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
       ) : (
         <CardStatus states={states} actionLabel={head.actionLabel} toolName={head.toolName} sessionId={sessionId} isLatest={isLatest} />
       )}
-    </div>
+    </Callout>
   );
 }
 
 function RiskChip({ children }: { children: ReactNode }) {
   return (
-    <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9.5px] font-medium text-amber-600 dark:text-amber-400">
+    <StatusBadge tone={"warning"} className="shrink-0">
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -209,10 +210,10 @@ function ApprovalItem({
     <li className="px-3 py-1.5">
       <div className="flex items-center gap-2">
         <ItemStateIcon state={state} />
-        <button
+        <InlineAction
           type="button"
           onClick={() => hasDetails && setExpanded((v) => !v)}
-          className={cn('flex min-w-0 flex-1 items-center gap-1 text-left', !hasDetails && 'cursor-default')}
+          className={cn("flex min-w-0 flex-1 items-center gap-1 text-left", !hasDetails && "cursor-default")}
           aria-expanded={hasDetails ? expanded : undefined}
         >
           <span className={cn('truncate', state === 'expired' ? 'text-muted-foreground' : 'text-foreground/90')}>
@@ -224,7 +225,7 @@ function ApprovalItem({
               className={cn('shrink-0 text-muted-foreground/50 transition-transform', expanded && 'rotate-90')}
             />
           )}
-        </button>
+        </InlineAction>
         {onDecide && state === 'pending' && (
           <span className="flex shrink-0 items-center gap-0.5">
 
@@ -239,7 +240,6 @@ function ApprovalItem({
               >
                 <Check size={11} />
               </IconButton>
-
 
               <IconButton
                 type="button"

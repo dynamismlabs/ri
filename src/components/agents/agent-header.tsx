@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { SegmentedList } from '@/components/system/segmented-control';
 
@@ -62,9 +63,9 @@ export function AgentHeader({
           <div className="flex items-center gap-2 min-w-0">
             <h1 className="truncate text-[13px] font-semibold text-foreground">{workspace.name}</h1>
             {archived && (
-              <span className="flex-shrink-0 rounded border border-border px-1.5 py-px text-[9.5px] font-medium uppercase tracking-wide text-muted-foreground">
+              <StatusBadge className="flex-shrink-0">
                 Archived
-              </span>
+              </StatusBadge>
             )}
           </div>
           <AgentFolderLine workspace={workspace} />
@@ -134,13 +135,8 @@ function CountPill({
 }) {
   if (count === 0) return null;
   return (
-    <span
-      className={cn(
-        'flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium',
-        tone === 'working'
-          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-      )}
+    <StatusBadge tone={(tone === 'working' ? "success" : "warning")}
+      className="flex items-center gap-1"
     >
       <span
         className={cn(
@@ -149,7 +145,7 @@ function CountPill({
         )}
       />
       {count} {count === 1 && singular ? singular : label}
-    </span>
+    </StatusBadge>
   );
 }
 

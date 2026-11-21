@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -13,7 +15,7 @@ import { useCaptureDraft } from '@/hooks/use-capture-draft';
 import { LiveWaveform } from '@/components/ui/live-waveform';
 import { api, apiErrorText } from '@/lib/api/client';
 import type { StreamRecord } from '@/db/types';
-import { cn } from '@/lib/utils';
+
 import { retainCaptureDraft } from '@/lib/client/capture-draft';
 import { CAPTURE_MAX_TEXT_LENGTH, CAPTURE_MAX_IMAGES, chooseCaptureImages, transferFiles } from '@/lib/client/capture-images';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
@@ -187,7 +189,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
         }}>
         <VisuallyHidden.Root><DialogPrimitive.Title>Quick Capture</DialogPrimitive.Title>
           <DialogPrimitive.Description>Capture a thought into your Stream. Type, speak, paste or drop images. Closing keeps your draft on this device.</DialogPrimitive.Description></VisuallyHidden.Root>
-        <div className="relative flex max-h-[85dvh] flex-col overflow-y-auto rounded-3xl border border-border/80 bg-card shadow-2xl">
+        <div className="relative flex max-h-[85dvh] flex-col overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
           <div className="flex items-center justify-between px-5 pt-4 pb-2">
             <div className="flex items-center gap-2 text-muted-foreground"><Zap size={14} /><span className="text-sm font-medium">Quick capture</span></div>
             <DialogPrimitive.Close asChild><IconButton
@@ -198,7 +200,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
             ><X size={15} /></IconButton></DialogPrimitive.Close>
           </div>
           <div className="space-y-3 px-5 pb-5 pt-2">
-            {!!draft.recoveries.length && <section aria-label="Saved captures on this device" className="space-y-2 rounded-xl border bg-muted/20 p-3">
+            {!!draft.recoveries.length && <Card as="section" padding="md" aria-label="Saved captures on this device" className="space-y-2">
               <p className="text-xs font-medium">Saved captures on this device</p>
               {draft.recoveries.map(saved => <div key={saved.id} className="space-y-1 border-t pt-2 first:border-0">
                 <p className="line-clamp-2 break-words text-xs text-muted-foreground">{saved.text.trim() || 'Image capture'}{saved.imageCount > 0 && ` · ${saved.imageCount} image${saved.imageCount === 1 ? '' : 's'}`}</p>
@@ -218,14 +220,14 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                   >Discard saved capture</Button></div>
               </div>)}
               {hasInput && <p className="text-xs text-muted-foreground">Capture or discard the current draft before restoring another.</p>}
-            </section>}
+            </Card>}
             {draft.recoveryError && <p role="alert" className="text-xs text-amber-600 dark:text-amber-500">Saved drafts could not be read. {draft.recoveryError} <Button
               type="button"
               onClick={() => void draft.refreshRecoveries()}
               variant="link"
               size="sm"
             >Retry recovery</Button></p>}
-            <div className={cn('rounded-[20px] border bg-background shadow-sm', pristine ? 'border-input' : 'border-primary/30 ring-2 ring-primary/10')}>
+            <Card padding="none" surface={pristine ? "pane" : "raised"}>
               {!!images.length && <div className="flex gap-3 overflow-x-auto px-3 pt-4 pb-2">
                 {draft.previews.map(({ id, file }, index) => <ImagePreview key={id} file={file} disabled={busy || savedRemotely} remove={() => draft.edit({ files: images.filter((_, position) => position !== index) })} />)}
               </div>}
@@ -302,7 +304,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                   className="flex items-center gap-1"
                 ><Square size={12} />Stop</Button>
               </div>}
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-b-[20px] border-t bg-muted/10 p-2">
+              <Card padding="sm" className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex gap-1">
                   <Button
                     type="button"
@@ -335,8 +337,8 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 >
                   {imageUploading || createStream.isPending ? <Loader2 size={15} className="animate-spin" /> : <ArrowUp size={15} />}Capture
                 </Button>
-              </div>
-            </div>
+              </Card>
+            </Card>
             <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
               <p>Paste or drop images. Closing keeps your draft.</p>
               {(hasDraft || !!voice.transcript) && <Button

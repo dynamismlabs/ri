@@ -1,4 +1,9 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+import { MenuAction } from '@/components/system/menu-action';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -140,7 +145,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       >
         {connected ? hosted ? 'Reconnect' : 'Add another account' : 'Connect'}
       </GroupHeading>
-      <div className="space-y-4 rounded-xl border border-border bg-card/20 p-4">
+      <Card padding="lg" className="space-y-4">
         {hosted && p.mcp?.endpointConfig && <HostedEndpointFields setup={p.mcp.endpointConfig} value={props.endpointSelection} disabled={busy} onChange={props.onEndpointChange} />}
         <ConnectPanel {...props} />
         {!connected && (p.mcp?.endpointConfig?.locked || registered) && p.mcp?.serverId && props.onCancelSetup && (
@@ -151,7 +156,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
             size="xs"
           >Cancel setup</Button>
         )}
-      </div>
+      </Card>
     </ConnectFormSection>
   );
 
@@ -211,7 +216,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
             Accounts
           </GroupHeading>
           {opened && connectForm}
-          <div className="divide-y divide-border/60 rounded-xl border border-border bg-card/20">
+          <Card padding="none" className="divide-y divide-border/60">
             {conns.map((c) => (
               <AccountRow
                 key={c.id}
@@ -226,14 +231,14 @@ function SingleProviderDetail(props: ProviderDetailProps) {
                 reconnectLabel={authKind === 'oauth' ? 'Sign-in needed' : authKind === 'bearer' ? 'Token needed' : 'Reconnect needed'}
               />
             ))}
-          </div>
+          </Card>
         </section>
       )}
 
       {hosted && p.mcp?.error && !needsReconnect && (
-        <p role="status" className="rounded-xl border border-border bg-card/20 p-3 text-xs text-muted-foreground">
+        <Callout as="p" padding="md" role="status" >
           {p.displayName} could not be reached. {p.mcp.error}
-        </p>
+        </Callout>
       )}
 
       {hosted && p.mcp?.endpointConfig && !showConnect && (
@@ -252,11 +257,11 @@ function SingleProviderDetail(props: ProviderDetailProps) {
 
       {(p.method === 'oauth2' || registered) && p.configured && canConnect && (
         <section className="rounded-xl border border-border/70">
-          <button data-slot="menu-action"
+          <MenuAction density="comfortable"
             type="button"
             aria-expanded={props.advancedOpen}
             onClick={props.onToggleAdvanced}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
+            className="flex w-full items-center gap-3 text-left"
           >
             <KeyRound size={14} className="shrink-0 text-muted-foreground" />
             <span className="min-w-0 flex-1">
@@ -269,7 +274,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
               size={14}
               className={cn('shrink-0 text-muted-foreground transition-transform', props.advancedOpen && 'rotate-180')}
             />
-          </button>
+          </MenuAction>
           {props.advancedOpen && (
             <div className="border-t border-border/60 p-3">
               <Byo {...props} />
@@ -399,7 +404,7 @@ function ConnectPanelContent(props: ProviderDetailProps) {
   return (
     <form onSubmit={submit} className="space-y-3">
       {hasHelp && (
-        <div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-2.5">
+        <Card padding="sm" className="space-y-2">
           {meta.setup && meta.setup.length > 0 && (
             <ol className="list-decimal space-y-1 pl-4 text-[11px] leading-normal text-muted-foreground">
               {meta.setup.map((step, i) => (
@@ -418,7 +423,7 @@ function ConnectPanelContent(props: ProviderDetailProps) {
               <ExternalLink size={11} />
             </a>
           )}
-        </div>
+        </Card>
       )}
       <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
         {fields.map((f) => (
@@ -604,7 +609,7 @@ export function ToolList({
         Review available tools and choose which writes need your approval. Switch{' '}
         <span className="font-medium text-foreground/80">Ask first</span> on or off for any write.
       </p>
-      <div className="overflow-hidden rounded-xl border border-border bg-card/20">
+      <Card padding="none" className="overflow-hidden">
         {groups.map(({ toolkit: t, actions }) => (
           <div key={t.id} className="border-b border-border/60 py-1 last:border-b-0">
             {toolkits.length > 1 && (
@@ -618,7 +623,7 @@ export function ToolList({
         {groups.length === 0 && (
           <p className="px-3 py-3 text-[11px] text-muted-foreground">No tools match “{filter}”.</p>
         )}
-      </div>
+      </Card>
     </section>
   );
 }
@@ -635,14 +640,11 @@ function ToolRow({
   const gated = policy ? policy.mode === 'ask' : true; // gated until the policy loads
   return (
     <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-muted/30">
-      <span
-        className={cn(
-          'w-10 shrink-0 rounded px-1 py-0.5 text-center text-[8px] font-semibold uppercase',
-          a.mutating ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-muted text-muted-foreground',
-        )}
+      <StatusBadge tone={(a.mutating ? "warning" : "neutral")}
+        className="w-10 shrink-0 text-center"
       >
         {a.mutating ? 'Write' : 'Read'}
-      </span>
+      </StatusBadge>
       <div className="min-w-0 flex-1">
         <Tip label={a.id} onlyWhenTextHidden>
           <div className="truncate font-mono text-[11px] text-foreground">

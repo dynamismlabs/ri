@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
@@ -48,15 +50,11 @@ export function GateButton({ busy, children, ...button }: React.ComponentProps<'
 
 export function GateNotice({ tone = 'info', children }: { tone?: 'info' | 'error'; children: ReactNode }) {
   return (
-    <p
+    <Callout as="p" padding="md" density="row" tone={(tone === 'error' ? "error" : "neutral")}
       role={tone === 'error' ? 'alert' : 'status'}
-      className={
-        tone === 'error'
-          ? 'rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-600 dark:text-red-300'
-          : 'rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground'
-      }
+
     >
       {children}
-    </p>
+    </Callout>
   );
 }

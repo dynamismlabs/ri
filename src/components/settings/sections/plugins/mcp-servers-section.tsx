@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -191,8 +193,8 @@ export function McpServersSection({ active, navigation }: {
         variant="secondary"
         size="xs"
       >Cancel</Button></div>}
-    {banner && <div role="status" className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 size={15} className="shrink-0" /><p>{banner}</p></div>}
-    {error && <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"><AlertCircle size={15} className="shrink-0" /><p>{error}</p></div>}
+    {banner && <Callout padding="md" tone={"success"} role="status" className="flex items-start gap-2"><CheckCircle2 size={15} className="shrink-0" /><p>{banner}</p></Callout>}
+    {error && <Callout padding="md" tone={"error"} role="alert" className="flex items-start gap-2"><AlertCircle size={15} className="shrink-0" /><p>{error}</p></Callout>}
     {view.kind === 'new' ? <McpServerForm form={form} detection={detection} busy={busy} onSubmit={add} onBack={back}
         onChange={patch => setForm(form => patchMcpForm(form, patch))} />
       : loading ? <SettingsSkeleton rows={3} />

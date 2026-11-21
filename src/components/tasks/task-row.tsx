@@ -1,4 +1,9 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { MetaItem, Meta } from '@/components/system/meta';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -16,16 +21,7 @@ import {
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from '@/components/ui/dropdown-menu';
 import { BUCKET_OPTIONS, type Bucket } from '@/lib/utils/bucket-placement';
 import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from '@/components/ui/popover';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
@@ -40,11 +36,6 @@ import { isRestingUntilNext, recurrenceHasDetail, recurrenceLabel } from '@/lib/
 import type { Energy, Effort, TaskAttentionSignals } from '@/db/types';
 import type { TaskListDTO } from '@/lib/api/dto/entity-list';
 import { Tip } from '@/components/ui/tip';
-
-const ENERGY_COLORS: Record<string, string> = {
-  deep: 'text-orange-500',
-  light: 'text-sky-400',
-};
 
 const ENERGY_ICONS: Record<string, typeof Flame> = {
   deep: Flame,
@@ -142,15 +133,15 @@ export function TaskRow({
     recurrenceHasDetail(task.recurrence) ? `Saved as “${task.recurrence}”` : null,
   ].filter(Boolean).join('. ');
   const repeatChip = (
-    <button
+    <MetaItem as="button"
       onClick={(e) => e.stopPropagation()}
       aria-label={repeat ? `Repeats ${repeat.toLowerCase()}${nextOne ? `. ${nextOne}` : ''}` : 'Repeat'}
-      data-slot="meta-item"
-      data-kind="repeat"
-      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-primary/60 uppercase tracking-wider transition-colors hover:bg-muted"
+
+      kind="repeat"
+      className="inline-flex items-center gap-0.5"
     >
       <Repeat size={8} /> {repeat ?? 'Repeat'}{resting && <> · {formatDate(task.nextRecurrenceAt)}</>}
-    </button>
+    </MetaItem>
   );
 
   const cycleEnergy = () => {
@@ -168,18 +159,12 @@ export function TaskRow({
   const EnergyIcon = task.energy ? ENERGY_ICONS[task.energy] : null;
 
   return (
-    <div
+    <ChoiceRow asChild density="list" surface="plain" selected={isHighlighted}><div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...(isMobile && dragEnabled ? listeners : {})}
-      className={cn(
-        'group flex items-start gap-1.5 px-2 py-2 rounded-lg transition-all border border-transparent cursor-pointer',
-        'hover:bg-card hover:border-border',
-        isDragging && 'opacity-50 shadow-lg',
-        isDone && 'opacity-50',
-        isHighlighted && 'bg-primary/10 border-primary/30 ring-1 ring-primary/20',
-      )}
+      className={cn("group flex items-start gap-1.5 cursor-pointer", isDragging && "opacity-50", isDone && "opacity-50")}
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey) {
           window.open(homeResourceHref('task', task.id, { kind: home?.home.kind ?? 'personal', spaceId: space?.id }), '_blank')
@@ -244,11 +229,11 @@ export function TaskRow({
         </p>
 
         {/* Metadata row */}
-        <div data-slot="meta" className="mt-1 flex items-center gap-1.5 flex-wrap">
+        <Meta className="mt-1 flex items-center gap-1.5 flex-wrap">
           {/* Editable lifecycle status */}
-          <span data-slot="meta-item" data-kind="status" onClick={(e) => e.stopPropagation()}>
+          <MetaItem kind="status" onClick={(e) => e.stopPropagation()}>
             <LifecycleStatusControl taskId={task.id} status={task.status} size="xs" />
-          </span>
+          </MetaItem>
           <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
 
           {/* Derived attention badges (In progress) */}
@@ -264,31 +249,28 @@ export function TaskRow({
           {privatePlanning && <>
           {/* Energy pill */}
           <Tip label={`Energy: ${task.energy ?? 'unset'} (click to cycle)`}>
-            <button
+            <MetaItem as="button"
               onClick={(e) => { e.stopPropagation(); cycleEnergy(); }}
-              data-slot="meta-item"
-              data-kind="energy" data-energy={task.energy ?? undefined}
-              className={cn(
-                'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
-                task.energy ? ENERGY_COLORS[task.energy] : 'text-muted-foreground/40',
-              )}
+
+              kind="energy" energy={task.energy ?? undefined}
+              className="inline-flex items-center gap-0.5"
             >
               {EnergyIcon && <EnergyIcon size={8} />}
               {task.energy ?? '~'}
-            </button>
+            </MetaItem>
           </Tip>
 
           {/* Effort pill */}
           {(task.effort || false) && (
             <Tip label={`Effort: ${task.effort} (click to cycle)`}>
-              <button
+              <MetaItem as="button"
                 onClick={(e) => { e.stopPropagation(); cycleEffort(); }}
-                data-slot="meta-item"
-                data-kind="effort"
-                className="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground uppercase tracking-wider transition-colors hover:bg-muted"
+
+                kind="effort"
+                className="inline-flex items-center"
               >
                 {EFFORT_LABELS[task.effort!] ?? task.effort}
-              </button>
+              </MetaItem>
             </Tip>
           )}
 
@@ -302,20 +284,15 @@ export function TaskRow({
               onOpenChange={setEditingDeadline}
               onChange={(date) => onUpdate(task.id, 'hardDeadline', date)}
             >
-              <button
+              <MetaItem as="button"
                 onClick={(e) => e.stopPropagation()}
-                data-slot="meta-item"
-                data-kind="deadline"
-                data-urgency={isPastDate(task.hardDeadline) ? 'late' : undefined}
-                className={cn(
-                  'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
-                  isPastDate(task.hardDeadline)
-                    ? 'text-destructive'
-                    : 'text-muted-foreground',
-                )}
+
+                kind="deadline"
+                urgency={isPastDate(task.hardDeadline) ? 'late' : undefined}
+                className="inline-flex items-center gap-0.5"
               >
                 <Clock size={8} /> {deadline ?? 'Deadline'}
-              </button>
+              </MetaItem>
             </TaskDatePicker>
           )}
 
@@ -327,14 +304,14 @@ export function TaskRow({
               onChange={(date) => onUpdate(task.id, 'resurfaceAfter', date)}
             >
               <Tip label="Click to edit resurface date">
-                <button
+                <MetaItem as="button"
                   onClick={(e) => e.stopPropagation()}
-                  data-slot="meta-item"
-                  data-kind="snooze"
-                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground/60 uppercase tracking-wider transition-colors hover:bg-muted"
+
+                  kind="snooze"
+                  className="inline-flex items-center gap-0.5"
                 >
                   <Timer size={8} /> {boomerang}
-                </button>
+                </MetaItem>
               </Tip>
             </TaskDatePicker>
           )}
@@ -350,25 +327,25 @@ export function TaskRow({
               {repeatTip ? <Tip label={repeatTip}>{repeatChip}</Tip> : repeatChip}
             </TaskRecurrencePicker>
           ) : (
-            <span data-slot="meta-item" data-kind="repeat" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-primary/60 uppercase tracking-wider">
+            <MetaItem kind="repeat" className="inline-flex items-center gap-0.5">
               <Repeat size={8} /> {repeat}{resting && <> · {formatDate(task.nextRecurrenceAt)}</>}
-            </span>
+            </MetaItem>
           ))}
 
           {/* Blocked */}
           {task.blockedOn && (
-            <span data-slot="meta-item" data-kind="blocked" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold text-amber-500 uppercase tracking-wider">
+            <MetaItem tone="warning"  kind="blocked" className="inline-flex items-center gap-0.5">
               <Lock size={8} /> Blocked
-            </span>
+            </MetaItem>
           )}
 
           {/* Has body */}
           {task.bodyLen > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span data-slot="meta-item" data-kind="body" className="inline-flex items-center px-1 py-0.5 text-foreground/60">
+                <MetaItem kind="body" className="inline-flex items-center">
                   <AlignLeft size={8} />
-                </span>
+                </MetaItem>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[300px] whitespace-pre-wrap text-xs leading-relaxed line-clamp-5">
                 {task.bodyExcerpt}
@@ -380,9 +357,9 @@ export function TaskRow({
           {task.subtaskCount > 0 && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span data-slot="meta-item" data-kind="subtasks" className="inline-flex items-center gap-0.5 px-1 py-0.5 text-foreground/60 text-[8.5px] font-medium">
+                <MetaItem kind="subtasks" className="inline-flex items-center gap-0.5">
                   <ListTree size={8} /> {task.subtaskCount}
-                </span>
+                </MetaItem>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="block max-w-[280px] text-xs">
                 <p className="font-semibold mb-1">{task.subtaskCount} subtask{task.subtaskCount === 1 ? '' : 's'}</p>
@@ -400,7 +377,7 @@ export function TaskRow({
               </TooltipContent>
             </Tooltip>
           )}
-        </div>
+        </Meta>
       </div>
 
       {/* Hover actions */}
@@ -436,16 +413,16 @@ export function TaskRow({
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-32">
                     {BUCKET_OPTIONS.map(opt => (
-                      <DropdownMenuItem
+                      <MenuAction kind="menu"
                         key={opt.value}
                         onClick={(e) => {
                           e.stopPropagation();
                           onPickBucket(task.id, opt.value);
                         }}
-                        className="text-xs"
+
                       >
                         {opt.label}
-                      </DropdownMenuItem>
+                      </MenuAction>
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
@@ -453,58 +430,58 @@ export function TaskRow({
               </>
             )}
             {privatePlanning && <>
-            <DropdownMenuItem onClick={() => onSnooze(task.id, 1)} className="text-xs">
+            <MenuAction kind="menu" onClick={() => onSnooze(task.id, 1)} >
               <Timer size={12} className="mr-2" /> Snooze 1 day
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSnooze(task.id, 3)} className="text-xs">
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => onSnooze(task.id, 3)} >
               <Timer size={12} className="mr-2" /> Snooze 3 days
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSnooze(task.id, 7)} className="text-xs">
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => onSnooze(task.id, 7)} >
               <Timer size={12} className="mr-2" /> Snooze 1 week
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
             {!task.effort && (
-              <DropdownMenuItem onClick={() => cycleEffort()} className="text-xs">
+              <MenuAction kind="menu" onClick={() => cycleEffort()} >
                 Set effort
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             </>}
             {!task.hardDeadline && (
-              <DropdownMenuItem onClick={() => { afterMenu.current = () => setEditingDeadline(true); }} className="text-xs">
+              <MenuAction kind="menu" onClick={() => { afterMenu.current = () => setEditingDeadline(true); }} >
                 <Clock size={12} className="mr-2" /> Set deadline
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             {canRepeat && !task.recurrence && task.status !== 'done' && task.status !== 'archived' && (
-              <DropdownMenuItem onClick={() => { afterMenu.current = () => setEditingRecurrence(true); }} className="text-xs">
+              <MenuAction kind="menu" onClick={() => { afterMenu.current = () => setEditingRecurrence(true); }} >
                 <Repeat size={12} className="mr-2" /> Repeat
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             {privatePlanning && !task.blockedOn && (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 onClick={() => { afterMenu.current = () => setBlockPopoverOpen(true); }}
-                className="text-xs"
+
               >
                 <Lock size={12} className="mr-2" /> Block
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             {privatePlanning && task.blockedOn && (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 onClick={() => {
                   onUpdate(task.id, 'blockedOn', null);
                   onUpdate(task.id, 'blockedSince', null);
                 }}
-                className="text-xs"
+
               >
                 <ShieldAlert size={12} className="mr-2" /> Unblock
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem
+            <MenuAction tone="error" kind="menu"
               onClick={() => onArchive(task.id)}
-              className="text-xs text-destructive"
+
             >
               <Archive size={12} className="mr-2" /> Archive
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -550,6 +527,6 @@ export function TaskRow({
           </PopoverContent>
         </Popover>
       </div>
-    </div>
+    </div></ChoiceRow>
   );
 }

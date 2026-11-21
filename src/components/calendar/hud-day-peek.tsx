@@ -1,4 +1,5 @@
 "use client";
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 /**
@@ -68,13 +69,13 @@ export function HudDayPeek({
         {day && day.allDay.length > 0 && (
           <div className="flex flex-wrap gap-1 px-3 py-1.5">
             {day.allDay.map((e: CalendarEvent) => (
-              <span
+              <StatusBadge
                 key={e.id}
-                className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground truncate max-w-36"
+                className="truncate max-w-36"
                 style={stripeStyle(e.color, 2)}
               >
                 {e.title}
-              </span>
+              </StatusBadge>
             ))}
           </div>
         )}

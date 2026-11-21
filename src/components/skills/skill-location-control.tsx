@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { documentSaves } from '@/lib/client/document-saves';
@@ -8,17 +9,7 @@ import { apiErrorText } from '@/lib/api/client';
 import type { MoveSkillBody, ProjectInfo, SkillView } from '@/lib/api/skills';
 import { useMoveSkill, useSkills } from '@/hooks/use-skills';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { WHO_USES, displayPath, locationLabel } from './location-copy';
 import { Tip } from '@/components/ui/tip';
@@ -208,19 +199,19 @@ function PlaceItem({
   onSelect: () => void;
 }) {
   return (
-    <DropdownMenuItem
+    <MenuAction kind="menu"
       onSelect={(e) => {
         if (current) return e.preventDefault();
         onSelect();
       }}
       disabled={disabled && !current}
       aria-current={current || undefined}
-      className="items-start gap-2 py-1.5"
+      className="items-start gap-2"
     >
       <span className="mt-0.5 text-muted-foreground">{icon ?? (kind && <PlaceIcon kind={kind} />)}</span>
       <ItemText label={label} detail={detail} />
       {current && <Check size={13} className="mt-0.5 flex-shrink-0 text-primary" />}
-    </DropdownMenuItem>
+    </MenuAction>
   );
 }
 
@@ -252,12 +243,12 @@ function ProjectsSub({
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="max-h-80 w-64 overflow-y-auto">
         {projects.length === 0 ? (
-          <DropdownMenuItem disabled className="text-[11px]">
+          <MenuAction kind="menu" disabled >
             {current ? 'No other agent has a folder on this computer.' : 'No agent has a folder on this computer yet.'}
-          </DropdownMenuItem>
+          </MenuAction>
         ) : (
           projects.map((p) => (
-            <DropdownMenuItem key={p.workspaceId} onSelect={() => onPick(p)} className="items-start py-1.5">
+            <MenuAction kind="menu" key={p.workspaceId} onSelect={() => onPick(p)} className="items-start">
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate text-[12px] text-foreground">{p.name}</span>
                 <span className="truncate font-mono text-[10.5px] text-muted-foreground">
@@ -265,7 +256,7 @@ function ProjectsSub({
                   {!p.isGit && ' · not a git repo'}
                 </span>
               </span>
-            </DropdownMenuItem>
+            </MenuAction>
           ))
         )}
       </DropdownMenuSubContent>

@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { Field } from '@/components/system/field';
 
@@ -147,7 +150,7 @@ export function GeneralSection() {
         <p className="text-[11px] text-muted-foreground/85">
           Used with your working hours to plan the day in your local time.
         </p>
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="flex flex-wrap items-center gap-2">
           <NativeSelect
             value={effectiveTz}
             onChange={(e) => update.mutate({ timezone: e.target.value })}
@@ -172,7 +175,7 @@ export function GeneralSection() {
               Reset to browser ({browserTz.replace(/_/g, ' ')})
             </Button>
           )}
-        </div>
+        </Card>
       </section>
 
       {/* Working hours */}
@@ -181,11 +184,11 @@ export function GeneralSection() {
         <p className="text-[11px] text-muted-foreground/85">
           The window your deck plans around, used to size the day and pace proactive work.
         </p>
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="flex items-center gap-3">
           <TimeField label="Start" value={start} onChange={(v) => { setStart(v); update.mutate({ workdayStart: v }); }} />
           <span className="mt-4 text-muted-foreground">-</span>
           <TimeField label="End" value={end} onChange={(v) => { setEnd(v); update.mutate({ workdayEnd: v }); }} />
-        </div>
+        </Card>
       </section>
 
       {/* Daily deck refresh */}
@@ -195,7 +198,7 @@ export function GeneralSection() {
           Prepares tomorrow&apos;s deck overnight so it&apos;s ready before you open the app. Your deck is
           always generated the first time you open it each day regardless.
         </p>
-        <div className="space-y-3 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Refresh each morning</span>
             <Switch
@@ -211,13 +214,13 @@ export function GeneralSection() {
               onChange={(v) => { setMorningTime(v); updateMorning.mutate({ time: v }); }}
             />
           )}
-        </div>
+        </Card>
       </section>
 
       {/* Which device an execution names (presentation trial) */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Where work runs</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Show which device runs a chat</span>
             <NativeSelect
@@ -235,7 +238,7 @@ export function GeneralSection() {
               ? 'Work runs on the computer that hosts Ri unless you pick another device, so only the exception is labeled. Its device is always in its details, and moving it is in its … menu.'
               : 'Every chat names its device once more than one runs agents, including the computer that hosts Ri.'}
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Stream triage automation */}
@@ -245,14 +248,12 @@ export function GeneralSection() {
           How much the assistant handles on its own when you capture thoughts. It earns more
           autonomy over time by asking, and everything it does can be undone in one tap.
         </p>
-        <div className="space-y-1 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-1">
           {AUTOMATION_MODES.map((m) => (
-            <button data-slot="choice-row" aria-pressed={autonomyState?.mode === m.id}
+            <ChoiceRow aria-pressed={autonomyState?.mode === m.id}
               key={m.id}
               onClick={() => setAutonomy.mutate({ mode: m.id })}
-              className={`w-full flex items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${
-                autonomyState?.mode === m.id ? 'bg-primary/10' : 'hover:bg-muted'
-              }`}
+              className={`w-full flex items-start gap-2.5 text-left ${""}`}
             >
               <span
                 className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
@@ -263,15 +264,15 @@ export function GeneralSection() {
                 <span className="block text-sm text-foreground">{m.label}</span>
                 <span className="block text-[11px] text-muted-foreground/85">{m.description}</span>
               </span>
-            </button>
+            </ChoiceRow>
           ))}
-        </div>
+        </Card>
       </section>
 
       {/* Chat density */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Chat density</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Transcript</span>
             <NativeSelect
@@ -289,13 +290,13 @@ export function GeneralSection() {
               ? 'Completed turns fold their thinking, tool calls, and results into a summary you can expand. Every message the agent wrote to you stays visible, along with the live turn.'
               : 'Every event renders as its own row.'}
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Notes and tasks (agent-first trial) */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Notes and tasks</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Open with</span>
             <NativeSelect
@@ -313,13 +314,13 @@ export function GeneralSection() {
               ? 'A note or task opens with the agent: a brief of what is in it, then a conversation to read, add, change, or remove. The editor stays one click away, and every agent edit has a diff and undo. Switch back here at any time.'
               : 'The classic editor with the agent in a side panel.'}
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Agents (agent view trial) */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Agents</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Clicking an agent</span>
             <NativeSelect
@@ -375,7 +376,7 @@ export function GeneralSection() {
                 : 'One line per agent, with every active chat listed under it on two lines.'}
           </p>
           <ChatStatusLinesSetting />
-        </div>
+        </Card>
       </section>
 
       {/* Inactive chats */}
@@ -384,7 +385,7 @@ export function GeneralSection() {
       {/* Editor */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Editor</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Open files in</span>
             <NativeSelect
@@ -419,7 +420,7 @@ export function GeneralSection() {
               ? 'Runs on the host machine. Placeholders: {file}, {line}, {column}, {dir}.'
               : 'Used when you click “Open in editor” on a file or worktree. This preference is saved on this browser.'}
           </p>
-        </div>
+        </Card>
       </section>
     </div>
   );
@@ -458,7 +459,7 @@ function InactiveExecutionsSetting() {
   return (
     <section className="space-y-2">
       <h3 className="text-[12px] font-medium text-foreground">Inactive chats</h3>
-      <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+      <Card padding="md" className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm text-foreground">Go inactive after</span>
           <NativeSelect
@@ -482,7 +483,7 @@ function InactiveExecutionsSetting() {
             ? 'Every chat stays in its list however long it sits.'
             : 'Chats with no activity for this long fold into an "inactive" row at the bottom of each list, where one click shows them. Pinned ones stay put, marked inactive. Nothing is archived, and new activity brings one back.'}
         </p>
-      </div>
+      </Card>
     </section>
   );
 }

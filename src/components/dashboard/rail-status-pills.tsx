@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
@@ -142,13 +143,10 @@ function PillSessionRow({ session, onPick }: PillSessionRowProps) {
   };
 
   return (
-    <button
+    <MenuAction selected={!!((isActive))} density="compact"
       type="button"
       onClick={handleOpen}
-      className={cn(
-        'w-full flex items-start gap-1.5 px-2.5 py-1.5 text-left rounded-md transition-colors',
-        isActive ? 'bg-secondary' : 'hover:bg-muted/50',
-      )}
+      className={cn("w-full flex items-start gap-1.5 text-left", isActive ? "" : "")}
     >
       <AgentIcon workspace={{ name: wsName, attachments: session.workspaceAttachments, emoji: session.workspaceEmoji, areaId: session.workspaceAreaId }} size="sm" />
       <div className="flex-1 min-w-0 leading-tight">
@@ -162,6 +160,6 @@ function PillSessionRow({ session, onPick }: PillSessionRowProps) {
           {wsName}
         </div>
       </div>
-    </button>
+    </MenuAction>
   );
 }

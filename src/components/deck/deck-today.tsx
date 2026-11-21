@@ -1,4 +1,7 @@
 "use client";
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { ChipButton } from '@/components/system/chip-button';
@@ -146,16 +149,13 @@ export function DeckToday({
       {/* ── Framing: the deck-level "why", as a glimpse ── */}
       {framing && (
         <Tip label={framingOpen ? 'Collapse' : 'Show full note'}>
-          <button
+          <InlineAction
             type="button"
             onClick={() => setFramingOpen((v) => !v)}
-            className={cn(
-              'mb-2.5 block w-full px-1 text-left text-xs leading-relaxed text-muted-foreground/70 transition-colors hover:text-muted-foreground',
-              !framingOpen && 'line-clamp-1',
-            )}
+            className={cn("mb-2.5 block w-full text-left", !framingOpen && "line-clamp-1")}
           >
             {framing}
-          </button>
+          </InlineAction>
         </Tip>
       )}
 
@@ -229,12 +229,12 @@ export function DeckToday({
           onSubtaskFocus={onSubtaskFocus}
         />
       ) : (
-        <div className="rounded-lg border border-border bg-muted/20 px-4 py-6 text-center">
+        <Card padding="lg" density="comfortable" className="text-center">
           <p className="text-sm font-medium text-foreground">Nothing queued right now</p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             Add a task at the top to start today&apos;s deck.
           </p>
-        </div>
+        </Card>
       )}
     </section>
   );

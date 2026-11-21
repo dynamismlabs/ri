@@ -1,10 +1,11 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { AlertCircle, CheckCircle2, Loader2, Monitor } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge as Badge } from '@/components/system/status-badge';
 import { Button } from '@/components/system/button';
 import type { DesktopNotificationStatus } from '@/lib/notifications/desktop-contract';
-import { cn } from '@/lib/utils';
 
 interface Props {
   status: DesktopNotificationStatus | null;
@@ -44,20 +45,13 @@ export function DesktopNotifications({
   const systemFix = !!issue && BLOCKED_BY_SYSTEM.test(issue) && canOpenSystemSettings && onOpenSystemSettings;
 
   return (
-    <section aria-label="Desktop notifications on this computer" className={cn(
-      'space-y-3 rounded-xl border p-4',
-      needsSetup ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-card/30',
-    )}>
+    <Callout as="section" padding="lg" tone={(needsSetup ? "warning" : "neutral")} aria-label="Desktop notifications on this computer" className="space-y-3">
       <div className="flex items-start gap-3">
         <Monitor size={20} className="mt-0.5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold">Desktop notifications</h3>
-            <Badge variant="outline" role="status" className={cn(
-              'gap-1 rounded-full text-[10px]',
-              enabled && !checking && 'border-emerald-500/25 text-emerald-700 dark:text-emerald-400',
-              needsSetup && 'border-amber-500/30 text-amber-700 dark:text-amber-400',
-            )}>
+            <Badge appearance="plain" role="status" tone={enabled && !checking ? "success" : needsSetup ? "warning" : "neutral"}>
               {checking ? <Loader2 size={11} className="animate-spin" /> : enabled ? <CheckCircle2 size={11} /> : needsSetup ? <AlertCircle size={11} /> : null}
               {label}
             </Badge>
@@ -112,20 +106,20 @@ export function DesktopNotifications({
       </div>
       {enabled && <p className="text-[11px] text-muted-foreground">Use Test on the Desktop channel below to check delivery.</p>}
       {needsSetup && !issue && <p className="text-[11px] text-muted-foreground">Keep Ri running in the menu bar to receive alerts.</p>}
-    </section>
+    </Callout>
   );
 }
 
 /** Nothing on this computer can turn notifications on, so say why and where alerts still arrive. */
 function UnsignedBuild({ telegramReady, onUseTelegram }: { telegramReady: boolean; onUseTelegram?: () => void }) {
   return (
-    <section aria-label="Desktop notifications on this computer" className="space-y-3 rounded-xl border border-border bg-card/30 p-4">
+    <Card as="section" padding="lg" aria-label="Desktop notifications on this computer" className="space-y-3">
       <div className="flex items-start gap-3">
         <Monitor size={20} className="mt-0.5 shrink-0 text-muted-foreground" />
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-sm font-semibold">Desktop notifications</h3>
-            <Badge variant="outline" role="status" className="rounded-full text-[10px]">Not in this build</Badge>
+            <Badge appearance="plain" role="status" className="rounded-full text-[10px]">Not in this build</Badge>
           </div>
           <p className="text-xs text-muted-foreground">
             macOS shows notifications only from apps signed with an Apple Developer ID. This build of Ri isn’t signed yet, so macOS
@@ -143,6 +137,6 @@ function UnsignedBuild({ telegramReady, onUseTelegram }: { telegramReady: boolea
         variant="primary"
         size="md"
       >Set up Telegram</Button>}
-    </section>
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -499,9 +500,9 @@ function RemoteProviderStatus({ providerLabel, hasManualUrl }: { providerLabel: 
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[12px] font-medium text-foreground">{providerLabel} connected</span>
-          <span className="rounded-full border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <StatusBadge >
             {hasManualUrl ? 'Override active' : 'Automatic'}
-          </span>
+          </StatusBadge>
         </div>
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           {hasManualUrl

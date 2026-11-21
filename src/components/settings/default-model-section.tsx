@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { useState } from 'react';
 import { Button } from '@/components/system/button';
@@ -43,7 +44,7 @@ export function DefaultModelSection() {
           harness below keeps its own default, used only when something picks that harness.
         </p>
       </header>
-      <div className="space-y-3 rounded-lg border border-border bg-card/30 p-3">
+      <Card padding="md" className="space-y-3">
         <div className="flex items-center gap-2.5">
           <ProviderIcon id={saved?.harness ?? DEFAULT_HARNESS} />
           <p className="min-w-0 flex-1 text-[12.5px] font-medium text-foreground">{summary}</p>
@@ -67,7 +68,7 @@ export function DefaultModelSection() {
             />
           </div>
         )}
-      </div>
+      </Card>
     </section>
   );
 }

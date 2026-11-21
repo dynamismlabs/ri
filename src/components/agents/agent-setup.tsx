@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { Field as SystemField } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
@@ -479,11 +482,11 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                 </label>
               </>
             )}
-            <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1.5 text-[11px]">
+            <Card padding="md" className="space-y-1.5">
               <InfoRow label="Repository" value={workspace.isGit ? 'yes' : 'no, a plain folder'} />
               {workspace.isGit && <InfoRow label="Remote" value={workspace.remoteName ?? 'none'} mono />}
               <GhRow gh={gh ?? null} />
-            </div>
+            </Card>
           </Section>
 
           <Section
@@ -610,22 +613,22 @@ function GhRow({ gh }: { gh: GhStatus | null }) {
   if (gh === null) return null;
   if (!gh.installed) {
     return (
-      <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 mt-1">
+      <Callout padding="sm" density="row" tone={"warning"} className="mt-1">
         <p className="text-amber-500 font-medium">gh not found</p>
         <p className="text-muted-foreground mt-0.5">
           Install with <code className="font-mono">brew install gh</code> to enable PR creation.
         </p>
-      </div>
+      </Callout>
     );
   }
   if (!gh.authenticated) {
     return (
-      <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 mt-1">
+      <Callout padding="sm" density="row" tone={"warning"} className="mt-1">
         <p className="text-amber-500 font-medium">gh installed but not signed in</p>
         <p className="text-muted-foreground mt-0.5">
           Run <code className="font-mono">gh auth login</code> to enable GitHub features.
         </p>
-      </div>
+      </Callout>
     );
   }
   return (

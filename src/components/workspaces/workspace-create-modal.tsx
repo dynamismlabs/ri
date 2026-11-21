@@ -1,4 +1,9 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 
@@ -225,7 +230,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
         <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
           className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
-          <div className="flex max-h-[88vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+          <Card padding="none" shadow className="flex max-h-[88vh] flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3">
               <DialogPrimitive.Title className="text-lg font-semibold text-foreground">New agent</DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>
@@ -249,7 +254,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 handleSubmit();
               }}
             >
-              <div className="flex items-center rounded-xl border border-border bg-background">
+              <Card padding="none" className="flex items-center">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
                 <EmojiPicker
                   onSelect={(picked) => {
@@ -312,7 +317,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                   purpose="title"
                   titleSize="form"
                 />
-              </div>
+              </Card>
 
               <SharedComputerWarning />
 
@@ -353,14 +358,14 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                       />
                     ))}
                     <li>
-                      <button
+                      <MenuAction
                         type="button"
                         onClick={() => setPicking(true)}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-[13px] text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                        className="flex w-full items-center gap-2.5 text-left"
                       >
                         <FolderPlus size={15} className="shrink-0" />
                         Add folder
-                      </button>
+                      </MenuAction>
                     </li>
                   </ul>
                 )}
@@ -415,7 +420,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
 
               {primary && (
                 <section>
-                  <button
+                  <MenuAction density="none"
                     type="button"
                     onClick={() => setScriptsOpen((v) => !v)}
                     aria-expanded={scriptsOpen}
@@ -430,7 +435,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                       </span>
                     </span>
                     {scriptsOpen ? <ChevronDown size={15} className="shrink-0 text-muted-foreground" /> : <ChevronRight size={15} className="shrink-0 text-muted-foreground" />}
-                  </button>
+                  </MenuAction>
                   {scriptsOpen && (
                     <div className="mt-3">
                       <WorktreeScriptsSection
@@ -464,9 +469,9 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
               </Section>
 
               {error && (
-                <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
+                <Callout padding="md" density="row" tone={"error"} role="alert" >
                   {error}
-                </div>
+                </Callout>
               )}
             </form>
 
@@ -492,7 +497,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 Create agent
               </Button>
             </div>
-          </div>
+          </Card>
           <FolderPickerDialog
             open={picking}
             onOpenChange={setPicking}

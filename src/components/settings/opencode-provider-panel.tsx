@@ -1,4 +1,9 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -55,7 +60,7 @@ export function OpenCodeProviderPanel() {
   };
 
   return (
-    <div className="space-y-2 rounded-md border border-border bg-background/50 p-3">
+    <Card padding="md" className="space-y-2">
       <div className="flex items-center justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 font-medium text-foreground"><PlugZap size={13} /> OpenCode providers</div>
@@ -64,9 +69,9 @@ export function OpenCodeProviderPanel() {
         {providers.isFetching && <Loader2 size={13} className="animate-spin text-muted-foreground" />}
       </div>
       {providers.error && (
-        <p className="rounded border border-destructive/30 bg-destructive/5 p-2 text-[10.5px] text-destructive">
+        <Callout as="p" padding="sm" tone={"error"} >
           OpenCode provider management is unavailable. Check the installed OpenCode version.
-        </p>
+        </Callout>
       )}
       <Field
         value={search}
@@ -80,15 +85,15 @@ export function OpenCodeProviderPanel() {
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (
           <div key={provider.id} className="rounded-md border border-border/70">
-            <button
+            <MenuAction
               type="button"
               onClick={() => setExpanded(expanded === provider.id ? null : provider.id)}
-              className="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-muted/40"
+              className="flex w-full items-center gap-2 text-left"
             >
               <span className={cn('h-2 w-2 rounded-full', provider.connected ? 'bg-emerald-500' : 'bg-muted-foreground/35')} />
               <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-foreground">{provider.name}</span>
               <span className="text-[10px] text-muted-foreground">{provider.connected ? 'Connected' : 'Set up'}</span>
-            </button>
+            </MenuAction>
             {expanded === provider.id && (
               <ProviderSetup provider={provider} onChanged={refresh} />
             )}
@@ -102,7 +107,7 @@ export function OpenCodeProviderPanel() {
           size="xs"
         >View all providers</Button>
       )}
-    </div>
+    </Card>
   );
 }
 

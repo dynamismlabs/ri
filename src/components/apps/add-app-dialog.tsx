@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
@@ -77,9 +79,9 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             <p className="text-[11px] text-muted-foreground">The app asks next what Ri may see and whether it may make changes. Each agent you allow later gets its own connection and its own choice.</p>
           </div>
           {error && (
-            <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
+            <Callout padding="sm" tone={"error"} role="alert" className="flex items-start gap-2">
               <AlertCircle size={14} className="mt-0.5 shrink-0" /><span>{error}</span>
-            </div>
+            </Callout>
           )}
           <DialogFooter>
             <Button

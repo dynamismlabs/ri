@@ -1,4 +1,6 @@
 "use client";
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -35,8 +37,6 @@ const PLACEMENT_LABELS: Record<string, string> = {
   low: 'Low',
   backlog: 'Backlog',
 };
-
-
 
 const ENERGY_ICONS: Record<string, typeof Flame> = {
   deep: Flame,
@@ -192,13 +192,9 @@ function TriageCard({
   const showQuickActions = !item.resolved && item.recommendation.action === 'promoteTask';
 
   return (
-    <div
-      className={cn(
-        'group rounded-lg transition-all border border-transparent px-2 py-2',
-        item.resolved
-          ? 'opacity-50'
-          : 'hover:bg-card hover:border-border',
-      )}
+    <Card padding="sm" density="row" shadow
+      className={cn("group", item.resolved
+    ? "opacity-50" : "")}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
@@ -209,9 +205,9 @@ function TriageCard({
           {/* Metadata row with quick actions */}
           <div className="mt-1 flex items-center gap-1.5 flex-wrap">
             {/* AI recommendation action type */}
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold text-primary/80 uppercase tracking-wider">
+            <StatusBadge className="inline-flex items-center">
               {ACTION_LABELS[item.recommendation.action]}
-            </span>
+            </StatusBadge>
 
             {/* Area — editable for tasks, static for others */}
             {showQuickActions ? (
@@ -220,9 +216,9 @@ function TriageCard({
                 onChange={(areaId) => onUpdateField('area', areaId)}
               />
             ) : item.recommendation.area ? (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground uppercase tracking-wider bg-muted/50">
+              <StatusBadge className="inline-flex items-center">
                 {item.recommendation.area}
-              </span>
+              </StatusBadge>
             ) : null}
 
             {/* Energy pill — cycleable (only for tasks) */}
@@ -291,7 +287,6 @@ function TriageCard({
                 <Check size={12} />
               </IconButton>
 
-
               <IconButton
                 onClick={onEdit}
                 label="Edit"
@@ -303,7 +298,6 @@ function TriageCard({
                 <Pencil size={11} />
               </IconButton>
 
-
               <IconButton
                 onClick={onSkipItem}
                 label="Skip and handle later"
@@ -314,7 +308,6 @@ function TriageCard({
               >
                 <SkipForward size={11} />
               </IconButton>
-
 
               <IconButton
                 onClick={onArchive}
@@ -354,6 +347,6 @@ function TriageCard({
           {item.recommendation.rationale}
         </p>
       )}
-    </div>
+    </Card>
   );
 }

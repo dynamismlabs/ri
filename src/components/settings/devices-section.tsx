@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 
@@ -18,7 +21,7 @@ import { Button } from '@/components/system/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { QrCode } from '@/components/settings/qr-code';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 const DEVICE_KINDS: { value: DeviceKind; label: string }[] = [
@@ -120,7 +123,7 @@ export function DevicesSection() {
       </div>
 
       {formOpen && (
-        <div className="rounded-lg border border-border bg-background p-3 space-y-2">
+        <Card padding="md" className="space-y-2">
           <Field
             autoFocus
             type="text"
@@ -155,7 +158,7 @@ export function DevicesSection() {
           {pairMutation.isError && (
             <p className="text-[11px] text-destructive">Couldn&apos;t add the device. Try again.</p>
           )}
-        </div>
+        </Card>
       )}
 
       {pairing && !pairing.inCard && <PairingPanel pairing={pairing.res} baseUrls={baseUrls} onDone={() => setPairing(null)} />}
@@ -260,7 +263,7 @@ function PairingPanel({
   if (pairingTabs.tabs.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3">
+    <Card padding="md" className="space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-medium text-foreground">Pairing link for {pairing.device.name}</p>
@@ -332,22 +335,17 @@ function PairingPanel({
           </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function Marker({ children, tone = 'muted' }: { children: React.ReactNode; tone?: 'muted' | 'agents' }) {
   return (
-    <span
-      className={cn(
-        'rounded px-1.5 py-0.5 text-[10px] font-medium',
-        tone === 'agents'
-          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-          : 'bg-muted text-muted-foreground',
-      )}
+    <StatusBadge tone={(tone === 'agents' ? "success" : "neutral")}
+
     >
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -457,7 +455,7 @@ function DeviceCard({
   const status = workerLine(device);
 
   return (
-    <div className="rounded-lg border border-border bg-background p-3 space-y-2.5">
+    <Card padding="md" className="space-y-2.5">
       {editing ? (
         <div className="space-y-2">
           <Field
@@ -567,7 +565,7 @@ function DeviceCard({
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 

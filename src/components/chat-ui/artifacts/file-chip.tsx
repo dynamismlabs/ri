@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { HoverCard as HoverCardPrimitive } from 'radix-ui';
 import { FileIcon } from '@/components/file-icon';
@@ -66,23 +67,18 @@ export function FileChip({ path, diff, label, className }: FileChipProps) {
   const hasDiff = !!diff && diff.lines.length > 0;
 
   const chip = (
-    <button data-slot="attachment-chip"
+    <InlineAction appearance="chip"
       type="button"
       onClick={(e) => {
         e.stopPropagation();
         dispatchOpenFile(path, e.currentTarget);
       }}
-      className={cn(
-        'inline-flex max-w-full items-center gap-1.5 rounded-md border border-border bg-background',
-        'px-1.5 py-0.5 text-[11px] text-foreground/90 transition-colors',
-        'hover:bg-muted/50 hover:border-border',
-        className,
-      )}
+      className={cn("inline-flex max-w-full items-center gap-1.5", "", "", className)}
     >
       <FileIcon name={name} size={13} />
       <span className="truncate font-medium">{name}</span>
       {diff && <DiffCounts additions={diff.additions} deletions={diff.deletions} />}
-    </button>
+    </InlineAction>
   );
 
   if (!hasDiff) return chip;

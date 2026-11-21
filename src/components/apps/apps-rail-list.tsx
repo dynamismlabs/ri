@@ -1,5 +1,5 @@
 'use client';
-
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, LayoutGrid, Server } from 'lucide-react';
@@ -88,20 +88,15 @@ function Row({
   ...props
 }: React.ComponentProps<'button'> & { active?: boolean; icon: React.ReactNode; trailing?: React.ReactNode }) {
   return (
-    <button
+    <MenuAction density="compact"
       type="button"
       aria-current={active ? 'page' : undefined}
       {...props}
-      className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[12px] font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-        active ? 'bg-muted/60 text-foreground' : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
-        className,
-      )}
+      className={cn("flex w-full items-center gap-2", "", active ? "" : "", className)}
     >
       {icon}
       <span className="min-w-0 flex-1 truncate text-left">{children}</span>
       {trailing}
-    </button>
+    </MenuAction>
   );
 }

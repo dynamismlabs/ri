@@ -1,4 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
 
 import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
 import { Button } from '@/components/system/button';
@@ -16,7 +19,7 @@ import { AreaSelect } from '@/components/shared/area-select';
 import { NoteKindHeading, NoteKindMenuItem } from '@/components/notes/note-kind';
 import { SharedNoteBody } from '@/components/spaces/shared-note-body';
 import { removeFromMyNotes } from '@/components/spaces/my-work';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import { SlideoutChat, useDocumentChat } from '@/components/ai-elements/slideout-chat';
 import { useDragResize } from '@/hooks/use-drag-resize';
 import { ReferencingSessionsButton } from '@/components/shared/referencing-sessions-button';
@@ -296,20 +299,20 @@ export function NoteSlideout({ noteId, onClose, onCloseAll, hasHistory }: NoteSl
                 }
               >
                 {note?.url && (
-                  <DropdownMenuItem asChild>
+                  <MenuAction kind="menu" asChild>
                     <a href={note.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink size={12} /> Open link
                     </a>
-                  </DropdownMenuItem>
+                  </MenuAction>
                 )}
                 {shared && note?.sourceTeamId && note.sourceNoteId && (
-                  <DropdownMenuItem
+                  <MenuAction kind="menu"
                     onSelect={() =>
                       void removeFromMyNotes(note.sourceTeamId!, note.sourceNoteId!).then(onClose)
                     }
                   >
                     <X size={12} /> Remove from my notes
-                  </DropdownMenuItem>
+                  </MenuAction>
                 )}
                 {!shared && note && (
                   <NoteKindMenuItem
@@ -410,10 +413,10 @@ export function NoteSlideout({ noteId, onClose, onCloseAll, hasHistory }: NoteSl
                   )}
                   {aiBusy && (
                     <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-auto transition-opacity duration-200">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground/80 bg-card/90 border border-border/50 rounded-full px-4 py-2 shadow-md">
+                      <Card padding="lg" density="row" shadow className="flex items-center gap-2">
                         <Pencil size={14} className="text-primary/70 animate-pulse" />
                         <span>AI is editing...</span>
-                      </div>
+                      </Card>
                     </div>
                   )}
                 </div>

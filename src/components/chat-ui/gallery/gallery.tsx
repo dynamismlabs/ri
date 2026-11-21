@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -142,22 +144,19 @@ export function ChatUiGallery() {
             )}
             <nav className="mt-4 hidden space-y-1 lg:block" aria-label="Chat UI examples">
               {matches.map((item) => (
-                <button
-                  data-slot="menu-action"
+                <MenuAction density="comfortable"
+
                   type="button"
                   key={item.id}
                   aria-current={selected === item.id ? 'page' : undefined}
                   onClick={() => choose(item)}
-                  className={cn(
-                    'w-full rounded-lg px-3 py-2.5 text-left transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                    selected === item.id ? 'bg-muted' : 'hover:bg-muted/50',
-                  )}
+                  className="w-full text-left"
                 >
                   <span className="block text-[13px] font-medium">{item.name}</span>
                   <span className="mt-0.5 block text-[10px] text-muted-foreground">
                     {GALLERY_ORIGINS[item.origin].label}
                   </span>
-                </button>
+                </MenuAction>
               ))}
             </nav>
           </aside>

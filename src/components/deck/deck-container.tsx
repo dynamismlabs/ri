@@ -1,4 +1,5 @@
 "use client";
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -83,7 +84,6 @@ function taskToDeckItem(
 // Prior mock shape, kept for reference when wiring this up:
 //   { id: 'rt1', title: 'Work out', completedCount: 3, targetCount: 4, period: 'this week', streak: 12, taskId: 'task-rt1' }
 const MOCK_ROUTINES: RoutineItem[] = [];
-
 
 // ─── Hydrate a persisted DeckRecord into a client DeckPlan ──────
 
@@ -297,7 +297,6 @@ export function DeckContainer() {
       .catch(err => console.error('Failed to load deck:', err))
       .finally(() => setInitialLoadDone(true));
   }, [tasks, areaMap, parentMap, initialLoadDone, loadVersions]);
-
 
   // ─── Load specific deck when navigated from chat ────────────
 
@@ -834,7 +833,7 @@ export function DeckContainer() {
             couldn't refresh it). Deadlines above are always current. */}
         {deckIsStale && !generating && (
           <div className="px-4 pt-2">
-            <div className="flex items-center gap-2 rounded-md border border-amber-500/25 bg-amber-500/[0.05] px-2.5 py-1.5 text-[11px] text-muted-foreground">
+            <Callout padding="sm" density="compact" tone={"warning"} className="flex items-center gap-2">
               <span className="flex-1 leading-snug">
                 Showing {formatLocalDate(activeDeckRecord?.forDate) ?? 'an earlier'} plan because
                 today&apos;s couldn&apos;t be built. Your deadlines above are current.
@@ -848,7 +847,7 @@ export function DeckContainer() {
               >
                 Rebuild
               </Button>
-            </div>
+            </Callout>
           </div>
         )}
 

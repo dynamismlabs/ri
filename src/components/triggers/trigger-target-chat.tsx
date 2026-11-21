@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 /**
  * "Sends to" for a trigger whose target is one existing chat
@@ -34,14 +35,14 @@ export function TriggerTargetChat({
 
   return (
     <div className="space-y-1">
-      <Link
+      <Card as={Link} padding="sm" shadow
         href={`/?session=${sessionId}`}
         onNavigate={onNavigateAway}
-        className="flex items-center gap-2 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
+        className="flex items-center gap-2"
       >
         <MessageCircle size={14} className="flex-shrink-0 text-muted-foreground" />
         <span className="flex-1 truncate">{chat?.label ?? (isLoading ? 'Loading…' : 'Untitled chat')}</span>
-      </Link>
+      </Card>
       <p className="text-[11px] text-muted-foreground">
         {chat?.status === 'archived'
           ? 'This chat is archived, so the trigger pauses on its next fire.'

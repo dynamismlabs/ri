@@ -1,4 +1,6 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
@@ -398,15 +400,15 @@ function VirtualModelChecklist({
                   <span className="flex items-center gap-1.5 text-[11.5px] font-medium text-foreground">
                     <span className="truncate">{model.label}</span>
                     {model.custom && (
-                      <span className="rounded bg-muted px-1 py-px text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <StatusBadge >
                         pinned
-                      </span>
+                      </StatusBadge>
                     )}
                     {isGlobalDefault && (
                       <Tip label="Your global default model stays visible. Change the default model to hide this one.">
-                        <span className="rounded bg-primary/10 px-1 py-px text-[9px] font-medium uppercase tracking-wide text-primary">
+                        <StatusBadge >
                           global default
-                        </span>
+                        </StatusBadge>
                       </Tip>
                     )}
                     {model.providerName && <span className="truncate text-[10px] font-normal text-muted-foreground">{model.providerName}</span>}

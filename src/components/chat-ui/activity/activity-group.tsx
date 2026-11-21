@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import type { ChatEventRecord } from '@/lib/api/dto/records';
 import { cn } from '@/lib/utils';
@@ -33,10 +34,10 @@ export function ActivityGroup({
 
   return (
     <div className="flex flex-col">
-      <button
+      <MenuAction density="none"
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="group/grp flex w-full items-center gap-1.5 text-left text-[11px] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+        className="group/grp flex w-full items-center gap-1.5 text-left"
       >
         <ChevronRight
           size={11}
@@ -44,7 +45,7 @@ export function ActivityGroup({
         />
         <span className="truncate font-medium">{summary}</span>
         {span && <span className="flex-shrink-0 text-muted-foreground/45 tabular-nums">{span}</span>}
-      </button>
+      </MenuAction>
 
       {expanded && (
         <div className="mt-2 flex flex-col gap-2">

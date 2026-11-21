@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useCallback, useState, type ComponentProps, type ReactNode } from 'react';
 import { Expand, PanelLeft, PanelRight } from 'lucide-react';
@@ -50,20 +51,17 @@ export function ArtifactCard({ name, icon, details, preview, children, ...props 
           setOverTitle(event.clientY >= bounds.top && event.clientY <= bounds.bottom && event.clientX >= bounds.left && event.clientX <= bounds.right);
         }}
       >
-        <button
+        <MenuAction
           ref={ref}
           type="button"
           {...props}
           data-artifact-card=""
           aria-current={shown || undefined}
           onClick={event => open(preview, event.currentTarget)}
-          className={cn(
-            "flex w-full items-center gap-1.5 border-t px-2 py-2 text-left text-[11px] leading-normal outline-none after:absolute after:inset-0 after:content-['']",
-            shown ? 'border-primary/40 bg-primary/10' : 'border-border bg-muted/30',
-          )}
+          className={cn("flex w-full items-center gap-1.5 text-left after:absolute after:inset-0 after:content-['']", shown ? "" : "")}
         >
           {icon}<span className="min-w-0 flex-1 truncate">{name}</span><Opens size={12} aria-hidden className={cn('shrink-0', shown ? 'text-primary' : 'text-muted-foreground')} />
-        </button>
+        </MenuAction>
       </Tip>
     </span>
   );

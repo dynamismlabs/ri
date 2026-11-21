@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -10,13 +11,7 @@ import { cn } from '@/lib/utils';
 import { useAreas } from '@/hooks/use-areas';
 import { useMorningDeck, useUpdateMorningDeck } from '@/hooks/use-morning-deck';
 import { openSettings } from '@/components/settings/settings-store';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import type { WorkMode } from '@/types/dashboard';
 import { Tip } from '@/components/ui/tip';
 
@@ -103,21 +98,21 @@ export function DeckConductor({
             </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
-            <DropdownMenuItem
+            <MenuAction kind="menu"
               onClick={() => onAreaFilterChange(null)}
-              className={cn('text-xs', !areaFilter && 'font-bold')}
+              className={cn("", !areaFilter && "")}
             >
               All areas
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
             {areas?.map(area => (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 key={area.id}
                 onClick={() => onAreaFilterChange(area.id)}
-                className={cn('text-xs', area.id === areaFilter && 'font-bold')}
+                className={cn("", area.id === areaFilter && "")}
               >
                 {area.name}
-              </DropdownMenuItem>
+              </MenuAction>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -160,20 +155,20 @@ export function DeckConductor({
 
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onClick={toggleMorning} className="text-xs gap-2">
+            <MenuAction kind="menu" onClick={toggleMorning} className="gap-2">
               <span className="flex-1">Auto-refresh each morning</span>
               {morning?.enabled && <Check size={12} className="text-primary" />}
-            </DropdownMenuItem>
+            </MenuAction>
             <div className="px-2 py-1.5 text-[10px] text-muted-foreground/70 leading-snug">
               {morning?.enabled
                 ? `Reconciles yesterday into today around ${morning.time} (while the app is running).`
                 : 'Off: the deck still deals itself the first time you open it each day.'}
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => openSettings('profile')} className="text-xs gap-2">
+            <MenuAction kind="menu" onClick={() => openSettings('profile')} className="gap-2">
               <SlidersHorizontal size={12} className="text-muted-foreground" />
               <span className="flex-1">Edit deck sources…</span>
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
 

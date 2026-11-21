@@ -1,16 +1,11 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import {
   MoreVertical, Archive, Eye, EyeOff, Settings, Plus, Pin, PinOff,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
   useMarkSessionRead,
   useMarkSessionUnread,
@@ -18,7 +13,6 @@ import {
   useUnpinSession,
 } from '@/hooks/use-workspaces';
 import { useArchiveExecution } from '@/hooks/use-archive-execution';
-
 
 interface SessionRowMenuProps {
   sessionId: string;
@@ -115,24 +109,24 @@ export function SessionRowMenu({
         onClick={(e) => e.stopPropagation()}
       >
         {isUnread ? (
-          <DropdownMenuItem onSelect={() => markRead.mutate(sessionId)}>
+          <MenuAction kind="menu" onSelect={() => markRead.mutate(sessionId)}>
             <Eye size={12} /> Mark as read
-          </DropdownMenuItem>
+          </MenuAction>
         ) : (
-          <DropdownMenuItem onSelect={() => markUnread.mutate(sessionId)}>
+          <MenuAction kind="menu" onSelect={() => markUnread.mutate(sessionId)}>
             <EyeOff size={12} /> Mark as unread
-          </DropdownMenuItem>
+          </MenuAction>
         )}
 
         {isPinned !== undefined && (
           isPinned ? (
-            <DropdownMenuItem onSelect={() => unpin.mutate(sessionId)}>
+            <MenuAction kind="menu" onSelect={() => unpin.mutate(sessionId)}>
               <PinOff size={12} /> Unpin
-            </DropdownMenuItem>
+            </MenuAction>
           ) : (
-            <DropdownMenuItem onSelect={() => pin.mutate(sessionId)}>
+            <MenuAction kind="menu" onSelect={() => pin.mutate(sessionId)}>
               <Pin size={12} /> Pin to top
-            </DropdownMenuItem>
+            </MenuAction>
           )
         )}
 
@@ -140,22 +134,22 @@ export function SessionRowMenu({
           <>
             <DropdownMenuSeparator />
             {onOpenLauncher && workspaceId && (
-              <DropdownMenuItem onSelect={() => onOpenLauncher(workspaceId)}>
+              <MenuAction kind="menu" onSelect={() => onOpenLauncher(workspaceId)}>
                 <Plus size={12} /> New chat here…
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             {onOpenWorkspaceSettings && workspaceId && (
-              <DropdownMenuItem onSelect={() => onOpenWorkspaceSettings(workspaceId)}>
+              <MenuAction kind="menu" onSelect={() => onOpenWorkspaceSettings(workspaceId)}>
                 <Settings size={12} /> Agent setup
-              </DropdownMenuItem>
+              </MenuAction>
             )}
           </>
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onSelect={handleArchive}>
+        <MenuAction kind="menu" tone="error" onSelect={handleArchive}>
           <Archive size={12} /> Archive
-        </DropdownMenuItem>
+        </MenuAction>
       </DropdownMenuContent>
     </DropdownMenu>
   );

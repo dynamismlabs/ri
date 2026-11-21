@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
@@ -28,7 +29,7 @@ export function ConnectAiSection() {
   >
     <p className="text-[12.5px] text-foreground">You don’t need this to use the team in Ri. It’s for when you work in another agent, like Claude Code or Codex, and want it to see the team’s tasks and notes.</p>
     <p className="text-xs text-muted-foreground">Connected agents work on {team.name}’s shared tasks, notes, decisions and Areas as {member.name}, with their own model, using your existing membership. Connecting one doesn’t add a member or start chats on the team’s computer. For shared chats inside the team, use AI &amp; Models.</p>
-    {address.data && !address.data.reachable && <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">Until the team has an address people can reach, these steps work only on the computer hosting it. Its owner sets one in Settings.</p>}
+    {address.data && !address.data.reachable && <Callout as="p" padding="md" density="row" tone={"warning"} role="status" >Until the team has an address people can reach, these steps work only on the computer hosting it. Its owner sets one in Settings.</Callout>}
     {(keys.isError || address.isError) && <p role="alert" className="text-xs text-destructive">{apiErrorText(keys.error ?? address.error)} <Button
       type="button"
       onClick={() => { void keys.refetch(); void address.refetch(); }}

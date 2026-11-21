@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useMemo } from 'react';
 import { Files } from 'lucide-react';
@@ -50,13 +51,13 @@ function ArtifactRow({ item }: { item: ArtifactListItem }) {
   const open = useArtifactPreview();
   const path = item.source.kind === 'session' ? item.source.path : 'Message attachment';
   return <Tip label={path} onlyWhenTextHidden>
-    <button data-slot="menu-action" type="button" ref={ref} data-artifact-card="" aria-label={`Open artifact: ${item.name}`} onClick={event => open(preview, event.currentTarget)}
-      className="flex w-full min-w-0 items-start gap-3 rounded-md px-3 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <MenuAction density="comfortable"  type="button" ref={ref} data-artifact-card="" aria-label={`Open artifact: ${item.name}`} onClick={event => open(preview, event.currentTarget)}
+      className="flex w-full min-w-0 items-start gap-3 text-left">
       <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground"><PreviewIcon preview={preview} size={16} /></span>
       <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium text-foreground">{item.name}</span>
         <span className="mt-0.5 block truncate font-mono text-[10.5px] text-muted-foreground">{path}</span>
         <span className="mt-1 block truncate text-[11px] text-muted-foreground/80">{item.chatLabel}</span>
       </span>
-    </button>
+    </MenuAction>
   </Tip>;
 }

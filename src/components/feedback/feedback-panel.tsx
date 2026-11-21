@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { SegmentedControl } from '@/components/system/segmented-control';
 import { TextArea } from '@/components/system/text-area';
 
@@ -238,9 +240,9 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
         {value.attachments.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {value.attachments.map((file) => (
-              <div
+              <Card padding="sm"
                 key={file.fileName}
-                className="relative flex w-full min-w-0 items-center gap-2 rounded-lg border border-border bg-muted/30 p-2"
+                className="relative flex w-full min-w-0 items-center gap-2"
               >
                 <a
                   href={attachmentUrl(file.fileName)}
@@ -298,7 +300,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                     <X size={13} />
                   </IconButton>
 
-              </div>
+              </Card>
             ))}
           </div>
         )}

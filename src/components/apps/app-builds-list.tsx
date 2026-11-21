@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useQuery } from '@tanstack/react-query';
 import { GitBranch, Hammer, Loader2 } from 'lucide-react';
@@ -18,7 +19,7 @@ export function AppBuildsList({ onOpen }: { onOpen: (sourceId: string) => void }
       <ul className="divide-y divide-border rounded-lg border border-border">
         {open.map((source) => (
           <li key={source.id}>
-            <button type="button" onClick={() => onOpen(source.id)} className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/40">
+            <MenuAction type="button" onClick={() => onOpen(source.id)} className="flex w-full items-center gap-3 text-left">
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm">{source.name}</span>
                 <span className="block truncate text-[11px] text-muted-foreground">
@@ -29,7 +30,7 @@ export function AppBuildsList({ onOpen }: { onOpen: (sourceId: string) => void }
                 </span>
               </span>
               {source.job?.state === 'running' && <Loader2 size={13} className="animate-spin text-muted-foreground" aria-label="Running" />}
-            </button>
+            </MenuAction>
           </li>
         ))}
       </ul>

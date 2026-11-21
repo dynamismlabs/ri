@@ -1,4 +1,7 @@
-'use client'
+'use client';
+
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
 
 import { useOptionalWorkActivity, useOptionalWorkNavigation } from '@/contexts/work-context';
 import { trpc } from '@/lib/trpc/client';
@@ -157,12 +160,9 @@ function TaskCard({ data, onClick }: { data: TaskRecord; onClick: () => void }) 
   const isOverdue = isPastDate(data.hardDeadline)
 
   return (
-    <button data-slot="content-card"
+    <Card as="button" padding="md" density="comfortable" shadow
       onClick={onClick}
-      className={cn(
-        'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
-        ENTITY_CONFIG.task.borderColor,
-      )}
+      className="flex items-start gap-2.5 w-full text-left"
     >
       <Target size={14} className={cn('flex-shrink-0 mt-0.5', ENTITY_CONFIG.task.iconColor)} />
       <div className="flex-1 min-w-0">
@@ -201,7 +201,7 @@ function TaskCard({ data, onClick }: { data: TaskRecord; onClick: () => void }) 
           )}
         </div>
       </div>
-    </button>
+    </Card>
   )
 }
 
@@ -211,12 +211,9 @@ function NoteCard({ data, onClick }: { data: NoteRecord; onClick: () => void }) 
   const preview = data.body ? stripMarkdown(data.body).slice(0, 120) : null
 
   return (
-    <button data-slot="content-card"
+    <Card as="button" padding="md" density="comfortable" shadow
       onClick={onClick}
-      className={cn(
-        'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
-        ENTITY_CONFIG.note.borderColor,
-      )}
+      className="flex items-start gap-2.5 w-full text-left"
     >
       <NoteIcon body={data.body} size={14} className={cn('flex-shrink-0 mt-0.5', ENTITY_CONFIG.note.iconColor)} />
       <div className="flex-1 min-w-0">
@@ -232,7 +229,7 @@ function NoteCard({ data, onClick }: { data: NoteRecord; onClick: () => void }) 
           </div>
         )}
       </div>
-    </button>
+    </Card>
   )
 }
 
@@ -241,11 +238,8 @@ function NoteCard({ data, onClick }: { data: NoteRecord; onClick: () => void }) 
 function AreaCard({ data }: { data: AreaRecord & { emoji?: string } }) {
   const coverUrl = coverAttachmentUrl(data.attachments)
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5',
-        ENTITY_CONFIG.area.borderColor,
-      )}
+    <Card padding="md" density="comfortable" shadow
+      className="flex items-center gap-2.5 w-full"
     >
       {coverUrl ? (
         <img
@@ -268,7 +262,7 @@ function AreaCard({ data }: { data: AreaRecord & { emoji?: string } }) {
           </div>
         )}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -278,12 +272,9 @@ function DeckCard({ data, onClick }: { data: { id: string; framing?: string | nu
   const itemCount = data.items?.length ?? 0
 
   return (
-    <button data-slot="content-card"
+    <Card as="button" padding="md" density="comfortable" shadow
       onClick={onClick}
-      className={cn(
-        'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
-        ENTITY_CONFIG.deck.borderColor,
-      )}
+      className="flex items-start gap-2.5 w-full text-left"
     >
       <LayoutList size={14} className={cn('flex-shrink-0 mt-0.5', ENTITY_CONFIG.deck.iconColor)} />
       <div className="flex-1 min-w-0">
@@ -304,7 +295,7 @@ function DeckCard({ data, onClick }: { data: { id: string; framing?: string | nu
           </span>
         </div>
       </div>
-    </button>
+    </Card>
   )
 }
 
@@ -350,12 +341,9 @@ function ExecutionCard({ data, onClick }: { data: ChatSessionWithExecution; onCl
           : { text: 'Idle', className: 'text-muted-foreground/70' }
 
   return (
-    <button data-slot="content-card"
+    <Card as="button" padding="md" density="comfortable" shadow
       onClick={onClick}
-      className={cn(
-        'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
-        ENTITY_CONFIG.execution.borderColor,
-      )}
+      className="flex items-start gap-2.5 w-full text-left"
     >
       <SquareTerminal size={14} className={cn('flex-shrink-0 mt-0.5', ENTITY_CONFIG.execution.iconColor)} />
       <div className="flex-1 min-w-0">
@@ -374,7 +362,7 @@ function ExecutionCard({ data, onClick }: { data: ChatSessionWithExecution; onCl
           )}
         </div>
       </div>
-    </button>
+    </Card>
   )
 }
 
@@ -406,7 +394,7 @@ function TeamRecordCard({ kind, id, view }: { kind: RemoteRecordKind; id: string
   return (
     <div className="my-1">
       {look.opens
-        ? <button type="button" onClick={() => open(kind, id, view)} className={cn(frame, 'transition-colors hover:bg-accent/50')}>{inner}</button>
+        ? <Card as="button" padding="md" type="button" onClick={() => open(kind, id, view)} className={cn(frame, "")}>{inner}</Card>
         : <div className={frame}>{inner}</div>}
     </div>
   )
@@ -415,22 +403,19 @@ function TeamRecordCard({ kind, id, view }: { kind: RemoteRecordKind; id: string
 function EntityLoading({ entityType }: { entityType: EntityType }) {
   const config = ENTITY_CONFIG[entityType]
   return (
-    <div className={cn(
-      'flex items-center gap-2 rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 my-1',
-      config.borderColor,
-    )}>
+    <Card padding="md" density="comfortable" shadow className={cn("flex items-center gap-2 my-1", config.borderColor)}>
       <Loader2 size={12} className="animate-spin text-muted-foreground" />
       <span className="text-[11px] text-muted-foreground">Loading {config.label.toLowerCase()}...</span>
-    </div>
+    </Card>
   )
 }
 
 function EntityNotFound({ entityType, detail }: { entityType: EntityType; detail?: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border border-l-2 border-l-destructive bg-card px-3 py-2 my-1">
+    <Callout padding="md" density="row" shadow tone={"error"} className="flex items-center gap-2 my-1">
       <AlertCircle size={12} className="text-destructive" />
       <span className="text-[11px] text-muted-foreground">{detail ?? `${ENTITY_CONFIG[entityType].label} not found`}</span>
-    </div>
+    </Callout>
   )
 }
 

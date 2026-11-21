@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
@@ -145,7 +149,7 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
   const update = useUpdateTrigger();
   const next = trigger.enabled ? nextRunLabel(trigger) : null;
   return (
-    <div className="flex items-start gap-2 rounded-md border border-border bg-card p-2">
+    <Card padding="sm" shadow className="flex items-start gap-2">
       <div className="min-w-0 flex-1">
         <p className="text-[12px] font-medium text-foreground">
           {describeFrequency(trigger)}
@@ -177,7 +181,7 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
           <Pencil size={12} />
         </IconButton>
 
-    </div>
+    </Card>
   );
 }
 
@@ -203,13 +207,13 @@ function NewChatSchedule({
   if (!expanded) {
     return (
       <div className="p-2">
-        <button
+        <MenuAction density="compact"
           type="button"
           onClick={() => setExpanded(true)}
-          className="w-full rounded-md px-2 py-1.5 text-left text-[12px] text-foreground hover:bg-muted/60"
+          className="w-full text-left"
         >
           Add another schedule
-        </button>
+        </MenuAction>
       </div>
     );
   }

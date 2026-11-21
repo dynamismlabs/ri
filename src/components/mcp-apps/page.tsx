@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+
 import { NativeSelect } from '@/components/system/native-select';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -160,12 +162,12 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
             : `Screens you open show here.`}</p>
           : <ul className="divide-y divide-border rounded-lg border border-border">{recent.map(item => <li key={item.id}>
             {/* A screen reopens full screen. A chat's result opens here on the page. */}
-            <button type="button" aria-pressed={item.id === open} onClick={() => item.launched ? navigate(`${page}?screen=${encodeURIComponent(item.id)}`) : setOpen(item.id === open ? null : item.id)}
-              className={cn('flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-muted/40', item.id === open && 'bg-muted/40')}>
+            <MenuAction type="button" aria-pressed={item.id === open} onClick={() => item.launched ? navigate(`${page}?screen=${encodeURIComponent(item.id)}`) : setOpen(item.id === open ? null : item.id)}
+              className={cn("flex w-full items-center gap-3 text-left", item.id === open && "")}>
               <AppWindow size={14} className="shrink-0 text-muted-foreground"/>
               <span className="min-w-0 flex-1 truncate">{item.title}</span>
               <span className="shrink-0 text-xs text-muted-foreground">{item.chatId ? 'From a chat · ' : ''}{ageLabel(new Date(item.created).toISOString())}</span>
-            </button>
+            </MenuAction>
           </li>)}</ul>}
       </section>
     </div></div>

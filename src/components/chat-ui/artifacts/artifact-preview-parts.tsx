@@ -1,4 +1,5 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -84,8 +85,8 @@ export function PreviewSource({ preview }: { preview: ArtifactPreview }) {
   const source = previewCopySource(preview);
   if (!source) return <span className="text-xs text-muted-foreground">Embedded image</span>;
   return <FileSourceTip source={source.value} onlyWhenTextHidden>
-    <button data-slot="choice-row" type="button" aria-label={source.label} aria-describedby={descriptionId}
-      className="flex w-full min-w-0 items-center gap-3 rounded-md border border-border bg-muted/30 px-2.5 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    <ChoiceRow type="button" aria-label={source.label} aria-describedby={descriptionId}
+      className="flex w-full min-w-0 items-center gap-3 text-left"
       onClick={() => {
         let value = source.value;
         if (source.label === 'Copy link') {
@@ -95,7 +96,7 @@ export function PreviewSource({ preview }: { preview: ArtifactPreview }) {
       }}>
       <span id={descriptionId} className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground">{source.value}</span>
       <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground"><Copy size={12} aria-hidden />{source.label}</span>
-    </button>
+    </ChoiceRow>
   </FileSourceTip>;
 }
 

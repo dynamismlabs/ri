@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useLayoutEffect, useRef, useState } from 'react';
 import { ClipboardCheck, ListChecks, ListFilter } from 'lucide-react';
@@ -125,16 +126,13 @@ export function StreamToolbar({
           <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
             <div className="py-1">
               {HISTORY_FILTERS.map((f) => (
-                <button
+                <MenuAction selected={!!((view === f.id))} density="compact"
                   key={f.id}
                   onClick={() => onViewChange(f.id)}
-                  className={cn(
-                    'w-full text-left px-3 py-1.5 text-[10.5px] hover:bg-muted transition-colors',
-                    view === f.id ? 'text-primary font-semibold' : 'text-foreground',
-                  )}
+                  className={cn("w-full text-left", view === f.id ? "" : "")}
                 >
                   {f.label}
-                </button>
+                </MenuAction>
               ))}
             </div>
           </PopoverContent>

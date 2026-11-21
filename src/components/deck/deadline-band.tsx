@@ -1,4 +1,8 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { TeamLabel } from '@/components/spaces/team-label';
 import { useState } from 'react';
@@ -73,12 +77,12 @@ export function DeadlineBand() {
 
         {hiddenUrgent > 0 && (
           <li>
-            <button
+            <MenuAction density="compact"
               onClick={() => setUrgentExpanded(true)}
-              className="w-full rounded-md px-2.5 py-1 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="w-full text-left"
             >
               +{hiddenUrgent} more overdue or due today
-            </button>
+            </MenuAction>
           </li>
         )}
 
@@ -86,12 +90,12 @@ export function DeadlineBand() {
           ? soon.map((d) => <DeadlineRow key={d.id} d={d} onOpen={openTask} />)
           : soon.length > 0 && (
               <li>
-                <button
+                <MenuAction density="compact"
                   onClick={() => setSoonExpanded(true)}
-                  className="w-full rounded-md px-2.5 py-1 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  className="w-full text-left"
                 >
                   {soon.length} more due soon
-                </button>
+                </MenuAction>
               </li>
             )}
       </ul>
@@ -122,7 +126,7 @@ function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => v
         tint,
       )}
     >
-      <button onClick={() => onOpen(d.id)} className="min-w-0 flex-1 text-left">
+      <InlineAction  onClick={() => onOpen(d.id)} className="min-w-0 flex-1 text-left">
         <span className="block truncate text-[12px] font-medium text-foreground">
           {d.title || 'Untitled'}
         </span>
@@ -130,14 +134,14 @@ function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => v
           <DeadlinePill d={d} />
           <TeamLabel teamId={d.sourceTeamId} sourceArea={d.sourceArea} />
           {d.blocked && (
-            <span className="inline-flex items-center gap-0.5 rounded-sm bg-red-500/10 px-1 py-px text-[9px] font-medium text-red-600 dark:text-red-400">
+            <StatusBadge tone={"error"} className="inline-flex items-center gap-0.5">
               <Ban size={9} /> Blocked
-            </span>
+            </StatusBadge>
           )}
           {d.status === 'in_progress' && (
-            <span className="inline-flex items-center gap-0.5 rounded-sm bg-violet-500/10 px-1 py-px text-[9px] font-medium text-violet-600 dark:text-violet-400">
+            <StatusBadge tone={"status-progress"} className="inline-flex items-center gap-0.5">
               <Loader2 size={9} /> In progress
-            </span>
+            </StatusBadge>
           )}
           {d.parentId && (
             <span className="inline-flex items-center gap-0.5 text-[9px] text-muted-foreground">
@@ -145,7 +149,7 @@ function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => v
             </span>
           )}
         </span>
-      </button>
+      </InlineAction>
     </li>
   );
 }

@@ -1,11 +1,12 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookmarkPlus, Check, ChevronDown, ListPlus } from 'lucide-react';
 import { useState } from 'react';
 import { myRiClient } from '@/lib/spaces/my-ri-client';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
 import { addToMyWork, removeFromMyNotes, removeFromMyWork, saveToMyNotes } from './my-work';
 import { useSpace } from './space-root';
@@ -68,20 +69,20 @@ export function MyWorkControl({ taskId }: { taskId: string }) {
       <DropdownMenuContent align="end" className="w-48">
         {localId && (
           // My Ri is its own document (src/lib/spaces/document.ts).
-          <DropdownMenuItem className="text-xs" onClick={() => window.location.assign(`/task/${localId}`)}>
+          <MenuAction kind="menu"  onClick={() => window.location.assign(`/task/${localId}`)}>
             Open in My Ri
-          </DropdownMenuItem>
+          </MenuAction>
         )}
         {added && !assigned && (
-          <DropdownMenuItem
-            className="text-xs"
+          <MenuAction kind="menu"
+
             onClick={async () => {
               await removeFromMyWork(space.id, taskId);
               settle();
             }}
           >
             Remove from my work
-          </DropdownMenuItem>
+          </MenuAction>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -143,19 +144,19 @@ export function SaveNoteControl({ noteId }: { noteId: string }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {localId && (
-          <DropdownMenuItem className="text-xs" onClick={() => window.location.assign(`/note/${localId}`)}>
+          <MenuAction kind="menu"  onClick={() => window.location.assign(`/note/${localId}`)}>
             Open in My Ri
-          </DropdownMenuItem>
+          </MenuAction>
         )}
-        <DropdownMenuItem
-          className="text-xs"
+        <MenuAction kind="menu"
+
           onClick={async () => {
             await removeFromMyNotes(space.id, noteId);
             settle();
           }}
         >
           Remove from my notes
-        </DropdownMenuItem>
+        </MenuAction>
       </DropdownMenuContent>
     </DropdownMenu>
   );

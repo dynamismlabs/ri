@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -136,7 +137,7 @@ function StuckSessionRow({ session }: { session: StuckSession }) {
 
   return (
     <div className="flex items-start gap-2 border-b border-border/60 px-3 py-2 last:border-b-0">
-      <button
+      <InlineAction
         type="button"
         onClick={() => setActiveView(executionView(session.id))}
         className="flex-1 min-w-0 text-left"
@@ -150,7 +151,7 @@ function StuckSessionRow({ session }: { session: StuckSession }) {
             &ldquo;{preview}&rdquo;
           </div>
         )}
-      </button>
+      </InlineAction>
       {canResend && (
         <Tip label="Resend the last message in this session">
           <Button

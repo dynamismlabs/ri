@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import {
@@ -275,19 +276,16 @@ export function ToolsRow({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <MenuAction
         type="button"
         onClick={onClick}
-        className={cn(
-          'group flex w-full items-center gap-2.5 rounded-lg px-2.5 text-left font-medium text-foreground/85 transition-colors hover:bg-muted/60 hover:text-foreground',
-          touch ? 'h-11 text-[14.5px]' : 'h-9 text-[13px]',
-        )}
+        className={cn("group flex w-full items-center gap-2.5 text-left", touch ? "" : "")}
       >
         <span className="flex-shrink-0 text-muted-foreground group-hover:text-foreground">{icon}</span>
         <span className="min-w-0 truncate">{label}</span>
         <span className="ml-auto flex min-w-0 flex-shrink-0 items-center gap-2 text-[11.5px] font-normal text-muted-foreground/80">{right}</span>
         <RowChevron />
-      </button>
+      </MenuAction>
     </Tip>
   );
 }
@@ -300,14 +298,10 @@ export function ToolsRow({
 export function TerminalToolsRow({ open, onToggle, touch = false }: { open: boolean; onToggle: () => void; touch?: boolean }) {
   return (
     <Tip label={open ? 'Hide the terminal. Shells keep running.' : undefined}>
-      <button
+      <MenuAction selected={!!((open))}
         type="button"
         onClick={onToggle}
-        className={cn(
-          'group flex w-full items-center gap-2.5 rounded-lg px-2.5 text-left font-medium text-foreground/85 transition-colors hover:bg-muted/60 hover:text-foreground',
-          touch ? 'h-11 text-[14.5px]' : 'h-9 text-[13px]',
-          open && 'bg-muted/50 text-foreground',
-        )}
+        className={cn("group flex w-full items-center gap-2.5 text-left", touch ? "" : "", open && "")}
       >
         <SquareTerminal size={15} className="flex-shrink-0 text-muted-foreground group-hover:text-foreground" />
         Terminal
@@ -315,7 +309,7 @@ export function TerminalToolsRow({ open, onToggle, touch = false }: { open: bool
           {open ? 'Open below' : <Kbd aria-hidden>{HOTKEYS.toggleTerminal.label}</Kbd>}
         </span>
         {open ? <ChevronDown size={13} className="flex-shrink-0 text-muted-foreground/60" /> : <RowChevron />}
-      </button>
+      </MenuAction>
     </Tip>
   );
 }

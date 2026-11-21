@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { useMemo, type ReactNode } from 'react';
 import { FileText } from 'lucide-react';
@@ -12,9 +13,9 @@ export function TextPreviewLink({ sessionId, path, children }: { sessionId: stri
   const open = useArtifactPreview();
   const ref = useArtifactPreviewCard(preview);
   return <FileSourceTip source={path} onlyWhenTextHidden={(children || name) === path}>
-    <button ref={ref} type="button" data-artifact-card="" aria-label={`Open file: ${name}`}
+    <InlineAction  ref={ref} type="button" data-artifact-card="" aria-label={`Open file: ${name}`}
       onClick={event => { event.stopPropagation(); open(preview, event.currentTarget); }}
-      className="inline-flex max-w-full items-baseline gap-1 text-left font-medium text-primary underline underline-offset-2"
-    ><FileText size={12} aria-hidden className="shrink-0 self-center" /><span className="wrap-anywhere">{children || name}</span></button>
+      className="inline-flex max-w-full items-baseline gap-1 text-left underline underline-offset-2"
+    ><FileText size={12} aria-hidden className="shrink-0 self-center" /><span className="wrap-anywhere">{children || name}</span></InlineAction>
   </FileSourceTip>;
 }

@@ -1,4 +1,6 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 import type { ChatEventRecord } from '@/lib/api/dto/records';
@@ -194,13 +196,13 @@ function BackgroundTasksSheet({
                 ))}
               {done.length > 0 && (
                 <li>
-                  <button
+                  <MenuAction
                     type="button"
                     onClick={() => setShowDone((v) => !v)}
-                    className="flex w-full items-center justify-center gap-1 px-3 py-2 text-[10px] text-muted-foreground/70 transition-colors hover:bg-muted/40 hover:text-muted-foreground"
+                    className="flex w-full items-center justify-center gap-1"
                   >
                     {showDone ? 'Hide finished' : `Show ${done.length} finished`}
-                  </button>
+                  </MenuAction>
                 </li>
               )}
             </ul>
@@ -225,10 +227,10 @@ function TaskListRow({
   return (
     <li className="border-b last:border-b-0">
       <div className={cn('flex items-center gap-2.5 pr-2 text-xs', muted && 'opacity-70')}>
-        <button
+        <InlineAction
           type="button"
           onClick={onSelect}
-          className="flex min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 text-left transition-colors hover:bg-muted/60"
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
         >
           <TaskTypeIcon
             taskType={task.taskType}
@@ -241,7 +243,7 @@ function TaskListRow({
             <div className="truncate text-[10px] text-muted-foreground/70">{metaLine(task)}</div>
           </div>
           <StatusBadge status={task.status} active={task.isActive} />
-        </button>
+        </InlineAction>
         {task.isActive && (
           <StopButton
             sessionId={sessionId}

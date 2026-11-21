@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { cn } from '@/lib/utils';
 import { TURN_STATUS_EFFORT_LABEL, type ChatTurnStatus } from '@/lib/sessions/turn-status';
@@ -35,11 +36,11 @@ export function ChatStatusLine({ status, className }: { status: ChatTurnStatus |
 export function ChatAskSize({ status }: { status: ChatTurnStatus | null | undefined }) {
   if (!status?.needsYou || !status.effort) return null;
   return (
-    <span
+    <StatusBadge
       data-chat-ask-size={status.effort}
-      className="ml-auto flex-shrink-0 whitespace-nowrap rounded bg-muted px-1 py-[2px] text-[9px] font-medium leading-none text-foreground/75"
+      className="ml-auto flex-shrink-0 whitespace-nowrap"
     >
       {TURN_STATUS_EFFORT_LABEL[status.effort]}
-    </span>
+    </StatusBadge>
   );
 }

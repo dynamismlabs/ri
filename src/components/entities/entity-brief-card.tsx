@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { CircleDashed, FileText, Loader2, RefreshCw, MessageSquarePlus } from 'lucide-react';
@@ -188,9 +189,9 @@ const INLINE_SUGGESTIONS: Record<BriefEntityType, string[]> = {
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-card/40 px-4 py-3.5">
+    <Card padding="lg" density="comfortable" shadow >
       {children}
-    </div>
+    </Card>
   );
 }
 

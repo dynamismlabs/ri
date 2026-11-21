@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
 import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
@@ -29,7 +31,7 @@ export function PermissionCard({
     });
 
   return (
-    <div className="rounded-xl border border-blue-500/30 bg-card overflow-hidden animate-in fade-in slide-in-from-bottom-1 duration-200">
+    <Callout padding="none" shadow tone={"info"} className="overflow-hidden animate-in fade-in slide-in-from-bottom-1">
       <div className="flex items-center gap-2.5 px-3.5 py-2 bg-blue-500/5 border-b border-blue-500/20">
         <ShieldCheck size={12} className="text-blue-500 shrink-0" />
         <div className="flex-1 min-w-0 flex items-baseline gap-2">
@@ -103,7 +105,7 @@ export function PermissionCard({
           )}
         </Button>
       </div>
-    </div>
+    </Callout>
   );
 }
 

@@ -1,4 +1,6 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Download, Smartphone } from 'lucide-react';
@@ -42,16 +44,16 @@ export function PhoneInstall() {
         Keep using the same URL so this device keeps its sign-in and drafts.
       </p>
       {install.ready && !install.secure && (
-        <p className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5 text-xs">
+        <Callout as="p" padding="sm" tone={"warning"} >
           This connection is not secure. Open your HTTPS remote URL to install Ri and use microphone access and browser notifications.
-        </p>
+        </Callout>
       )}
       {install.installed && !install.desktop ? (
         <p className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
           <CheckCircle2 size={14} /> Ri is running as an installed web app on this device.
         </p>
       ) : (
-        <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs">
+        <Card padding="md" className="space-y-3">
           <div>
             <p className="font-medium">iPhone and iPad</p>
             <p className="mt-1 leading-relaxed text-muted-foreground">
@@ -75,7 +77,7 @@ export function PhoneInstall() {
               <Download size={14} /> {busy ? 'Opening installation…' : 'Install Ri on this device'}
             </Button>
           )}
-        </div>
+        </Card>
       )}
       {message && <p role="status" className="text-xs text-muted-foreground">{message}</p>}
       <p className="text-xs leading-relaxed text-muted-foreground">

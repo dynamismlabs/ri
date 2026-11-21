@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import { Field as SystemField } from '@/components/system/field';
 
@@ -115,12 +118,12 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
   };
 
   return (
-    <div className="rounded-md border border-border bg-card/40 p-3 space-y-2.5">
+    <Card padding="md" className="space-y-2.5">
       {skew && (
-        <div className="flex items-start gap-1.5 rounded border border-amber-500/40 bg-amber-500/5 p-2 text-[11px] leading-relaxed text-amber-700 dark:text-amber-400">
+        <Callout padding="sm" tone={"warning"} className="flex items-start gap-1.5">
           <AlertTriangle size={13} className="mt-0.5 shrink-0" />
           <span>{skew.message}</span>
-        </div>
+        </Callout>
       )}
 
       {connected ? (
@@ -323,6 +326,6 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
           <span>{result.text}</span>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

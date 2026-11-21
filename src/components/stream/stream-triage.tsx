@@ -1,4 +1,9 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Callout } from '@/components/system/callout';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -164,7 +169,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
   }, [correct, decision, titleDraft]);
 
   return (
-    <div data-slot="callout" className="rounded-lg border border-border bg-card/50 px-3 py-2.5 space-y-1.5">
+    <Callout padding="md" density="comfortable" shadow  className="space-y-1.5">
       <div className="flex items-start gap-2">
         <Icon size={12} className="text-primary mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
@@ -259,7 +264,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
             <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
               <div className="py-1">
                 {REROUTE_OPTIONS.filter((o) => o.disposition !== decision.disposition).map((o) => (
-                  <button
+                  <MenuAction density="compact"
                     key={o.disposition}
                     onClick={() =>
                       correct.mutate({
@@ -267,11 +272,11 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
                         correction: { disposition: o.disposition, draft: decision.draft ?? null },
                       })
                     }
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[10.5px] text-foreground hover:bg-muted transition-colors"
+                    className="w-full flex items-center gap-2"
                   >
                     <o.icon size={11} className="text-muted-foreground" />
                     {o.label}
-                  </button>
+                  </MenuAction>
                 ))}
               </div>
             </PopoverContent>
@@ -295,7 +300,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
           <Clock size={8} /> {timeAgo(decision.createdAt)}
         </span>
       </div>
-    </div>
+    </Callout>
   );
 }
 
@@ -339,7 +344,7 @@ function ManualRow({
   const EnergyIcon = energy ? ENERGY_ICONS[energy] : null;
 
   return (
-    <div className="group rounded-lg transition-all border border-transparent px-2 py-2 hover:bg-card hover:border-border">
+    <ChoiceRow asChild density="list" surface="plain"><div className="group">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-[12px] font-medium text-foreground leading-tight">
@@ -408,7 +413,7 @@ function ManualRow({
 
         </div>
       </div>
-    </div>
+    </div></ChoiceRow>
   );
 }
 

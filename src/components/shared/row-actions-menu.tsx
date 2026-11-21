@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
@@ -48,20 +49,17 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
           <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto mb-3" />
           <div className="flex flex-col">
             {actions.map((action) => (
-              <button
+              <MenuAction
                 key={action.id}
                 onClick={() => {
                   setOpen(false);
                   action.onClick();
                 }}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-3.5 rounded-lg active:bg-muted transition-colors text-left',
-                  action.destructive ? 'text-red-500' : 'text-foreground',
-                )}
+                className={cn("flex items-center gap-3 text-left", action.destructive ? "" : "")}
               >
                 <action.icon size={18} className="flex-shrink-0" />
                 <span className="text-sm font-medium">{action.label}</span>
-              </button>
+              </MenuAction>
             ))}
           </div>
         </SheetContent>

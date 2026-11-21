@@ -2,7 +2,7 @@
 import { NativeSelect } from '@/components/system/native-select';
 import { cn } from '@/lib/utils';
 
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge as Badge } from '@/components/system/status-badge';
 import { Button } from '@/components/system/button';
 import { NOTIFICATION_HISTORY_CHANNEL_LABELS, NOTIFICATION_HISTORY_STATUS_LABELS, type NotificationHistoryStatus } from '@/lib/notifications/history';
 import { trpcClient } from '@/lib/trpc/client';
@@ -68,7 +68,7 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
         {visible.map(item => <li key={item.id} className="space-y-1.5 p-3">
           <div className="flex items-start justify-between gap-3">
             <p className="min-w-0 break-words text-sm font-medium">{item.title}</p>
-            <Badge variant={item.status === 'failed' ? 'destructive' : 'secondary'} className="shrink-0">{NOTIFICATION_HISTORY_STATUS_LABELS[item.status]}</Badge>
+            <Badge tone={item.status === 'failed' ? 'error' : 'neutral'} className="shrink-0">{NOTIFICATION_HISTORY_STATUS_LABELS[item.status]}</Badge>
           </div>
           <p className="break-words text-xs text-muted-foreground">{item.channel.label} · {NOTIFICATION_HISTORY_CHANNEL_LABELS[item.channel.type]} · {item.eventLabel}</p>
           <p className="text-xs text-muted-foreground">{item.detail}</p>

@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { NativeSelect } from '@/components/system/native-select';
 import { Field } from '@/components/system/field';
 import { TextArea } from '@/components/system/text-area';
@@ -147,7 +149,7 @@ function HeartbeatSettingsBody({
       {/* Schedule */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Schedule</h3>
-        <div className="space-y-3 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-3">
           <IntervalInput seconds={config.intervalSeconds} onCommit={(intervalSeconds) => save({ intervalSeconds })} />
           {/* The container is this row alone, because the model picker below
               can't have one above it (see LauncherPopoverContent). */}
@@ -210,7 +212,7 @@ function HeartbeatSettingsBody({
               disabled={update.isPending}
             />
           </div>
-        </div>
+        </Card>
       </section>
 
       <InstructionsEditor config={config} compact={compact} onSave={save} saving={update.isPending} />

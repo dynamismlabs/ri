@@ -1,4 +1,8 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Card } from '@/components/system/card';
+
 import { Field } from '@/components/system/field';
 
 import { ChipButton } from '@/components/system/chip-button';
@@ -91,16 +95,10 @@ function KanbanCard({
   const showAgentRow =
     !!signals && (signals.blocked || signals.stalled || signals.review || signals.working || !!agentSessionId);
   return (
-    <div
+    <Callout padding="sm" shadow tone={(signals?.working ? "success" : 'neutral')}
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn(
-        'group rounded-md border border-border bg-card p-2 text-xs shadow-sm',
-        'hover:border-primary/40 cursor-grab active:cursor-grabbing',
-        // An agent running a turn on it right now: findable at a glance.
-        signals?.working && 'border-emerald-500/50 hover:border-emerald-500/70',
-        isDragging && 'opacity-40',
-      )}
+      className={cn("group", "cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}
       {...attributes}
       {...listeners}
       onClick={() => onOpen(task.id)}
@@ -115,7 +113,7 @@ function KanbanCard({
       <div className="mt-1 flex items-center gap-2">
         <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
         {showArea && areaName && (
-          <span className="rounded bg-muted px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">{areaName}</span>
+          <StatusBadge >{areaName}</StatusBadge>
         )}
         {task.hardDeadline && (
           <span className="text-[10px] text-amber-600">{task.hardDeadline.slice(0, 10)}</span>
@@ -152,7 +150,7 @@ function KanbanCard({
           )}
         </div>
       )}
-    </div>
+    </Callout>
   );
 }
 
@@ -206,7 +204,7 @@ function ColumnAddTask({
     );
   }
   return (
-    <div className="mt-1.5 flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1.5">
+    <Card padding="sm" density="compact" shadow className="mt-1.5 flex items-center gap-1">
       <Plus size={13} className="shrink-0 text-muted-foreground" />
       <Field
         ref={inputRef}
@@ -221,7 +219,7 @@ function ColumnAddTask({
         aria-label={placeholder}
         className="flex-1" purpose="embedded"
       />
-    </div>
+    </Card>
   );
 }
 
@@ -596,9 +594,9 @@ export function TaskKanban({
           </div>
           <DragOverlay>
             {activeTask ? (
-              <div className="rounded-md border border-primary/50 bg-card p-2 text-xs shadow-lg">
+              <Card padding="sm" shadow >
                 <div className="line-clamp-3 font-medium">{activeTask.title || 'Untitled'}</div>
-              </div>
+              </Card>
             ) : null}
           </DragOverlay>
         </DndContext>

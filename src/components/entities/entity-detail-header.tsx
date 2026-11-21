@@ -1,11 +1,12 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import type { ReactNode } from 'react';
 import { IconButton } from '@/components/system/icon-button';
 import { Archive, MoreHorizontal, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ENTITY_HEADER } from './entity-header';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 /** Shared task/note chrome. Audience, navigation and contextual controls are slots. */
 export function EntityDetailHeader({ children, className }: { children: ReactNode; className?: string }) {
@@ -31,8 +32,8 @@ export function EntityActionsMenu({ onArchive, onDelete, archiveLabel = 'Archive
     <DropdownMenuTrigger asChild><IconButton label="More actions" size="sm"><MoreHorizontal /></IconButton></DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="w-48 text-xs">
       {children}
-      {onArchive && <DropdownMenuItem onSelect={onArchive}><Archive size={13} /> {archiveLabel}</DropdownMenuItem>}
-      {onDelete && <DropdownMenuItem onSelect={onDelete} className="text-destructive"><Trash2 size={13} /> {deleteLabel}</DropdownMenuItem>}
+      {onArchive && <MenuAction kind="menu" onSelect={onArchive}><Archive size={13} /> {archiveLabel}</MenuAction>}
+      {onDelete && <MenuAction tone="error" kind="menu" onSelect={onDelete} ><Trash2 size={13} /> {deleteLabel}</MenuAction>}
     </DropdownMenuContent>
   </DropdownMenu>;
 }

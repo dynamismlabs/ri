@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -295,16 +296,16 @@ function AgentGroup({
         )}
         {group.quietChats.map((chat) => (
           <li key={chat.sessionId}>
-            <button
+            <MenuAction density="none"
               type="button"
               onClick={() => chat.executionId && onOpenChat(chat.sessionId)}
-              className="flex items-start gap-1.5 text-left text-[11.5px] leading-snug text-muted-foreground hover:text-foreground"
+              className="flex items-start gap-1.5 text-left"
             >
               <MessageSquare size={11} className="mt-[3px] shrink-0" />
               <span className="min-w-0">
                 {chat.label} <span className="text-[10px]">· {formatDuration(chat.agentMinutes)}</span>
               </span>
-            </button>
+            </MenuAction>
           </li>
         ))}
       </ul>

@@ -1,4 +1,5 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -54,7 +55,7 @@ export function EntityChangeBanner({
           buttons don't fit on one line, the buttons take a row of their own
           under the words (the dismiss X stays top right), instead of the
           sentence being squeezed to a word per line beside them. */}
-      <div className="@container sticky top-0 z-20 mx-4 mt-2 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 shadow-sm backdrop-blur md:mx-12">
+      <Card padding="md" density="row" className="@container sticky top-0 z-20 mx-4 mt-2 md:mx-12">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
           <FilePenLine size={15} className="flex-shrink-0 text-primary" />
           <span className="min-w-0 flex-1 text-[12.5px] text-foreground">
@@ -91,7 +92,7 @@ export function EntityChangeBanner({
             <X size={14} />
           </IconButton>
         </div>
-      </div>
+      </Card>
       {modalOpen && (
         <EntityDiffModal open={modalOpen} onClose={() => setModalOpen(false)} entityType={entityType} entityId={entityId} />
       )}

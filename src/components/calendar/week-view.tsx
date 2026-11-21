@@ -1,4 +1,5 @@
 "use client";
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
 /**
@@ -95,12 +96,12 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
             {/* All-day chips */}
             {day.allDay.map((e) => (
               <Tip key={e.id} label={e.calendar ? `${e.title} (${e.calendar.name})` : e.title}>
-                <span
-                  className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground truncate shrink-0"
+                <StatusBadge
+                  className="truncate shrink-0"
                   style={stripeStyle(e.color, 2)}
                 >
                   {e.title}
-                </span>
+                </StatusBadge>
               </Tip>
             ))}
 
