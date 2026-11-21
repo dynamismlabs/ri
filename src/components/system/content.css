@@ -1,5 +1,6 @@
 @layer components {
   .ri-choice-row, .ri-menu-action { display: inline-flex; align-items: center; flex-shrink: 0; }
+  .ri-choice-row--container { display: block; }
   .ri-inline-action { display: inline-block; white-space: inherit; }
   .ri-status-badge { width: fit-content; }
 }

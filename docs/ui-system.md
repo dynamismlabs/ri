@@ -136,7 +136,8 @@ padding, fill, border, shadow and interaction drawing belong to the component.
   uses Radix's radio keyboard and native form inputs. `size="touch"` sets a
   minimum 40px target without fixing the content's height. A coarse pointer
   uses the same minimum unless the caller requests compact. `asChild` keeps
-  a rich row's existing container and nested controls. `ChoiceIndicator`
+  a rich row's existing container, stacked flow and nested controls. Explicit
+  flex or grid layout on that container still applies. `ChoiceIndicator`
   supplies its decorative checkbox or radio mark without adding another input.
 - `MenuAction` keeps list actions as buttons. `kind="menu"` uses the installed
   Radix menu item, preserving keyboard focus, disabled items and dismissal.

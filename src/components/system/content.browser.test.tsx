@@ -17,6 +17,7 @@ beforeAll(async () => {
       <div style={{fontSize:15,lineHeight:'24px'}}><InlineAction id="inline-summary" className="w-full text-left"><span className="block">A summary title</span><span className="block">The second line stays below</span></InlineAction></div>
       <div style={{fontSize:15}}><InlineAction id="caption" purpose="caption">Supporting reasoning</InlineAction><InlineAction id="heading" purpose="heading">A content title</InlineAction></div>
       <ChoiceRow asChild><div id="nested-content" className="flex items-center"><button aria-label="Drag within content"><svg width="12" height="12"/></button><span>Content with its own controls</span></div></ChoiceRow>
+      <ChoiceRow asChild><div id="stacked-content"><p>Stacked title</p><div>Content below the title</div></div></ChoiceRow>
       <ChoiceRow id="checkbox-choice" indicator="checkbox" aria-pressed={checked} onClick={()=>setChecked(v=>!v)}>Include this project</ChoiceRow><MenuAction id="compact-menu" density="compact" size="compact">Compact menu action</MenuAction><MenuAction id="auto-menu" density="compact">Automatic phone action</MenuAction><MenuAction id="touch-menu" size="touch">Phone menu action</MenuAction>
       <Card id="content">A content panel</Card><Card as="button" id="card-action" onClick={()=>setClicks(c=>c+1)}>Open a summary</Card><Card as="button" disabled id="card-disabled" onClick={()=>setClicks(c=>c+1)}>Unavailable summary</Card>
       <div className="flex gap-2"><ChoiceRow ref={ref} id="row-action" title="Use this agent" description="Continue its existing work" onClick={()=>setClicks(c=>c+1)}/><ChoiceRow id="row-selected" aria-pressed={true}>Chosen agent</ChoiceRow><ChoiceRow id="row-disabled" disabled onClick={()=>setClicks(c=>c+1)}>Unavailable agent</ChoiceRow></div>
@@ -79,6 +80,8 @@ for (const theme of ['light', 'dark']) {
       expect(lines[1].top).toBeGreaterThanOrEqual(lines[0].bottom);
       expect(await page.locator('#inline-summary').evaluate(el => getComputedStyle(el).fontSize)).toBe('15px');
       expect(await page.locator('#nested-content svg').evaluate(el => el.getBoundingClientRect().width)).toBe(12);
+      const stacked = await page.locator('#stacked-content > *').evaluateAll(els => els.map(el => el.getBoundingClientRect().toJSON()));
+      expect(stacked[1].top).toBeGreaterThanOrEqual(stacked[0].bottom);
     } finally { await page.close(); }
   });
   it(`keeps caption actions quiet and content titles distinct (${theme})`, async () => {

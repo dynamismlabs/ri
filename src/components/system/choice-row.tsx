@@ -25,7 +25,7 @@ export function ChoiceRow({ title, description, leading, trailing, children, sel
   const id = useId();
   // A content row may contain its own controls. Slot keeps that existing
   // container instead of creating an invalid button around other buttons.
-  if (asChild) return <ActionPrimitive {...props} asChild data-content-size={size} className={cn(variants({density, surface, size, selected}), className)}>{children}</ActionPrimitive>;
+  if (asChild) return <ActionPrimitive {...props} asChild data-content-size={size} className={cn(variants({density, surface, size, selected}), 'ri-choice-row--container', className)}>{children}</ActionPrimitive>;
   const row = <ActionPrimitive {...props} data-content-size={size} type={props.type ?? 'button'}
     aria-labelledby={props['aria-labelledby'] ?? (title ? `${id}-title` : undefined)}
     aria-describedby={[props['aria-describedby'], description ? `${id}-description` : undefined].filter(Boolean).join(' ') || undefined}

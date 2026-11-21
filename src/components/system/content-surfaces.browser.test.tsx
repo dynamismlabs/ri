@@ -104,6 +104,10 @@ for (const theme of ['light', 'dark']) {
     try {
       await page.goto(`${fixture.url}/?theme=${theme}`);
       const input = page.getByRole('textbox', { name: 'Existing folder' });
+      const title = page.getByRole('radio', { name: /Use an existing folder/ }).locator('p');
+      await input.waitFor();
+      expect((await input.boundingBox())!.y).toBeGreaterThanOrEqual((await title.boundingBox())!.y + (await title.boundingBox())!.height);
+      expect((await input.boundingBox())!.width).toBeGreaterThanOrEqual(290);
       await input.fill('My'); await input.press('End'); await input.press('Space');
       expect(await input.inputValue()).toBe('My ');
       expect(await page.evaluate(() => Reflect.get(window, 'setupSelections') ?? 0)).toBe(0);
