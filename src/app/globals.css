@@ -5,6 +5,7 @@
 @import '../styles/edge.css';
 @import '../components/system/button.css';
 @import '../components/system/segmented-control.css';
+@import '../components/system/field.css';
 
 @source "../../node_modules/streamdown/dist/*.js";
 

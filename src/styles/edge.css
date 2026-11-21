@@ -164,7 +164,7 @@ html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], 
    matching text-background in both themes and on hover. */
 html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
 html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
-html:root :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
+html:root :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border:not(.ri-field-control),
 html:root [data-slot="field"] { border-color: var(--line-2); border-radius: 10px; background-color: var(--background); }
 
 /* Choosers hold a title and description. Their selection is a soft row, with
@@ -178,7 +178,7 @@ html:root [data-slot="schedule-row"] > button { border-radius: 999px; }
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select):where(:not([data-slot="button"])), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select):where(:not([data-slot="button"], .ri-field-control)), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 html:root :is( [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
@@ -216,7 +216,7 @@ html:root :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slo
 html:root [data-slot="action-button"][data-tone="warning"] { color: var(--warning-ink); }
 
 /* Fields use one focus treatment. Preserve an invalid field's error border. */
-html:root [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
+html:root [data-slot="settings-body"] :where(input, textarea, select).border:not(.ri-field-control):focus-visible,
 html:root [data-slot="field"]:focus-visible { border-color: var(--line-2); box-shadow: none; }
 html:root [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
 

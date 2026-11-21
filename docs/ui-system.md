@@ -108,7 +108,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch, `disclosure` | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
 | `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch. Choice supports radio selection and explicit `allowEmpty` | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2, implemented |
-| `Field`, `TextArea`, `NativeSelect` | Label, value, help text, invalid and disabled state | Input adapters with 10px corners, consistent type and one focus treatment | 3 |
+| `Field`, `TextArea`, `NativeSelect`, `SelectField` | Label, value, description, error, invalid and disabled state. sm, md or touch, with title, code and embedded purposes | Input adapters with 10px corners, owned ids and ARIA, consistent type and one focus treatment. SelectField retains the installed Radix picker | 3, APIs implemented, migration in progress |
 | `Card` | Content and layout | Raised 14px content panel | 4 |
 | `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
 | `MenuAction` | Label, action, tone and disabled state | Menu row type, hover and keyboard focus | 4 |
@@ -116,6 +116,55 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4 |
 | `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
 | `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
+
+### Fields
+
+`Field`, `TextArea` and `NativeSelect` adapt the installed Input and Textarea or
+native select. `SelectField` adapts the installed Radix SelectTrigger, preserving
+its Root, options, portals and keyboard behavior. This keeps existing rich
+pickers intact while giving them the same field drawing.
+
+| Size | Height | Type | Use |
+| --- | --- | --- | --- |
+| sm | 28px | 13px | Headers, toolbars and filter rows, beside sm buttons |
+| md | 32px | 13px | Standalone Settings, dialog and setup forms |
+| touch | 40px | 16px | Phone entry, avoiding focus zoom |
+
+An omitted size follows the existing viewport tier: md on a computer and touch
+on a phone. A caller choosing a compact row supplies sm on a computer and touch
+on a phone, matching its sibling buttons. The control owns its padding.
+TextArea uses rows for height, with optional `autoSize`, `maxRows` and vertical
+`resize`. It retains native value, selection, form, event and ref behavior.
+
+The three purposes are:
+
+- `title`: editing a title in place. Inline titles follow their heading context
+  with a readable minimum. Form titles use 18px, entity titles 24px and document
+  titles 40px. Title text areas can grow with the title.
+- `code`: commands, paths, model ids and tokens use the platform's monospace font.
+- `embedded`: entry within an existing search or composer, including cmdk, with a
+  transparent fill and inset focus. The installed engine keeps its own roles,
+  ids and root label. `Field asChild` is limited to embedded engines and accepts
+  their existing value events on the child. Native fields use Field's label.
+
+`label`, `description` and `error` own their markup and associations. Existing
+correct ids can be supplied as `id`, `labelId`, `descriptionId` and `errorId`.
+Otherwise Field generates them. Existing described-by references are retained.
+An error sets aria-invalid and joins the description. Keep message props in JSX
+with conditional values, so their control stays mounted as validation changes.
+`descriptionPosition="before"` retains instructions that precede a field.
+
+`leading` and `trailing` make one input group with one focus outline. The date
+and repeat parsers use `inlineMessage`, keeping their reading or error inside
+the group and linked to the control. Each trailing action keeps its own Button
+behavior. Disabled controls retain native behavior. Read-only values can still
+be focused and copied. Field invalid focus uses the danger ink. Other focus uses
+the ring token, with no second shadow or border ring.
+
+Call sites pass layout classes only. Field owns shape, type, padding, fill,
+border, shadow and states. Width and placement utilities remain available to
+callers. Checkbox, radio and switch controls keep their separate semantics.
+Hidden and file transport inputs remain unchanged during this stage.
 
 ### Segmented controls
 
