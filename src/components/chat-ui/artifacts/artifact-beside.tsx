@@ -71,7 +71,7 @@ export function BesideFileTab({ host, active, onSelect, className, selectProps, 
           onClick={select}
           variant="link"
           size="xs"
-          className="flex min-w-0 items-center gap-1.5 self-stretch"
+          className="flex min-w-0 items-center gap-1.5 self-stretch justify-start"
         >
           <PreviewIcon preview={open.preview} size={12} className="shrink-0" />
           <span className="max-w-40 truncate">{name}</span>

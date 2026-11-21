@@ -41,7 +41,7 @@ export function FeedbackRailButton({ collapsed }: { collapsed: boolean }) {
             aria-expanded={open}
             variant="secondary"
             size="sm"
-            className="w-full flex items-center gap-1.5"
+            className="w-full flex items-center gap-1.5 justify-start"
           >
             <MessageSquarePlus size={13} className="shrink-0" />
             <span className="truncate">Feedback & bugs</span>

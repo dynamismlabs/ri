@@ -199,7 +199,7 @@ function ColumnAddTask({
         onClick={() => setOpen(true)}
         variant="secondary"
         size="sm"
-        className="mt-1.5 flex w-full items-center gap-1"
+        className="mt-1.5 flex w-full items-center gap-1 justify-start"
       >
         <Plus size={13} className="shrink-0" /> Add task
       </Button>

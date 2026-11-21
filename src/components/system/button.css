@@ -72,7 +72,7 @@
 .ri-button--primary[class*='ri-tone--'] { background-color: var(--control-ink); color: var(--control-on-solid); }
 .ri-button--primary[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: color-mix(in oklch, var(--control-ink) 90%, var(--t1)); color: var(--control-on-solid); }
 .ri-button--clip { overflow: hidden; }
-.ri-button--floating { background-color: var(--popover); box-shadow: var(--shadow-thumb); }
+.ri-button--floating { background-color: var(--popover); box-shadow: var(--shadow-thumb); pointer-events: auto; }
 .ri-button--floating:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--raised); }
 .ri-button:where(:disabled, [aria-disabled='true']) { --control-opacity: 0.5; opacity: var(--control-opacity); cursor: not-allowed; }
 .ri-button[aria-invalid='true'] { outline: 1px solid var(--danger); outline-offset: 0; }

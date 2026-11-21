@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import http from 'node:http';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { build } from 'esbuild';
 import { chromium, type Browser, type Page } from 'playwright-core';
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
@@ -143,11 +144,12 @@ beforeAll(async () => {
       },
     ],
   });
-  const html = await fs.readFile(
-    path.resolve('public/chat-ui-gallery/model-menu.html'),
-    'utf8',
-  );
-  const css = html.match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
+  // Exercise the current components and tokens, rather than an exported gallery snapshot.
+  const require = createRequire(import.meta.url);
+  const postcss = createRequire(require.resolve('@tailwindcss/postcss'))('postcss');
+  const css = (await postcss([require('@tailwindcss/postcss')()]).process(
+    await fs.readFile('src/app/globals.css', 'utf8'), { from: path.resolve('src/app/globals.css') },
+  )).css;
   server = http.createServer((req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.end(
@@ -572,6 +574,7 @@ it.skipIf(!enabled)('saves native speed ids through the live composer menu', asy
 it.skipIf(!enabled)('opens effort and speed on hover, preserves values, and keeps pointer transit and click working', async () => {
   const page = await openPage('?speed');
   try {
+    await page.clock.install();
     await openMenu(page);
     const effort = page.getByRole('button', { name: 'Effort: High' });
     await effort.hover();
@@ -579,9 +582,12 @@ it.skipIf(!enabled)('opens effort and speed on hover, preserves values, and keep
     expect(await page.getByLabel('Selection', { exact: true }).textContent()).toBe('gpt-6.1-sol:high');
     const choice = page.getByRole('menuitemradio', { name: /Extra high/ });
     const target = await choice.boundingBox();
+    // Keep this synthetic crossing brief even on a busy runner, then exercise the close delay.
+    await page.clock.pauseAt(await page.evaluate(() => Date.now() + 5_000));
     await page.mouse.move(target!.x + target!.width / 2, target!.y + target!.height / 2, { steps: 12 });
-    await page.waitForTimeout(300);
+    await page.clock.runFor(300);
     expect(await choice.isVisible()).toBe(true);
+    await page.clock.resume();
     const speed = page.getByRole('button', { name: 'Speed: Normal' });
     await speed.hover();
     await page.getByRole('menuitemradio', { name: 'Fast', exact: true }).waitFor();

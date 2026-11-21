@@ -135,7 +135,7 @@ export function AgentTools({
               onClick={chat.onShow}
               variant="link"
               size="sm"
-              className="flex min-w-0 items-center gap-1.5 self-stretch"
+              className="flex min-w-0 items-center gap-1.5 self-stretch justify-start"
             >
               <BesideChatTabLabel chatId={chat.id} />
             </Button>

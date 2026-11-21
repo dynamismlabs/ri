@@ -125,7 +125,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
           aria-label={reconnect ? `Connect accounts, ${needingYou.length} waiting on you` : 'Connect accounts'}
           variant="secondary"
           size="sm"
-          className="group min-w-0 flex-1 flex items-center gap-1.5"
+          className="group min-w-0 flex-1 flex items-center gap-1.5 justify-start"
         >
           <Plug size={13} className="flex-shrink-0 text-primary" />
           <span className="truncate">Connect accounts</span>

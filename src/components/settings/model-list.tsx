@@ -230,7 +230,7 @@ function ProviderGroup({
           onClick={() => setShowMore((open) => !open)}
           variant="ghost"
           size="sm"
-          className="mt-0.5 flex w-full items-center gap-1"
+          className="mt-0.5 flex w-full items-center gap-1 justify-start"
         >
           <ChevronRight
             size={10}

@@ -76,7 +76,7 @@ export function CreateMenu() {
               type="button"
               aria-label="Create"
               variant="primary"
-              size="md"
+              size="sm"
               className="flex shrink-0 items-center gap-1"
             >
               <Plus size={14} className="shrink-0" /> <span className="hud-create-label uppercase">Create</span>

@@ -68,7 +68,10 @@ design, and each stage stops for review before the next one starts.
   being migrated. Its unconditional `html:root` anchor preserves selector
   specificity against CSS modules. It has no look switch or look scoping. These
   rules stay unlayered so they keep beating the old Tailwind drawing utilities.
-  Each migration stage deletes the rules and hooks its components replace. Stage 1 retires the chip, toolbar, header, review-action, HUD tools, Send, New agent and split-button drawing hooks. A few action-button hooks remain on later-stage radio choices, calendar event groups and question progress markers.
+  Each migration stage deletes the rules and hooks its components replace. Stage 1
+  retires the chip, toolbar, header, review-action, HUD tools, Send, New agent and
+  split-button drawing hooks. Action-button hooks remain on later-stage choices,
+  menu rows, descriptive Create choices, calendar event groups and question progress.
 - Labels are written in sentence case. The compatibility stylesheet neutralizes
   old `uppercase` utilities and cmdk descendant variants until they are removed.
 
@@ -159,6 +162,9 @@ actual state instead of forwarding opacity, size or palette class strings.
 `ToolbarSearchButton` and `ToolbarToggle` are thin uses of IconButton and
 ChipButton. The class-returning `toolbarButtonClass` helper is removed. Toolbar
 menu triggers render ChipButton with Radix `asChild`, preserving one button.
+Floating actions own their pointer interaction over a non-interactive edge shield.
+Callers keep their existing flex alignment, including `justify-start` where an
+action stretches across a row or grid cell.
 
 The composer keeps its controls on one row. At touch size, the model chip shows
 only the model name. Its accessible name and popup retain effort, variant and
@@ -174,6 +180,15 @@ non-main solid actions, inline content, drag handles, menu rows and later-stage
 choices. Codemod scripts are kept outside the repository. Component browser checks
 cover each variant and semantic tone in both themes, including hover contrast,
 pressed and disabled states, focus, touch size, refs and disabled links.
+
+Stage 1 leaves content links and descriptive choices for their content APIs.
+Runs, trigger history, check-ins, review summaries, warning handoffs and connector
+choices retain their natural height and hierarchy. The phone Create sheet keeps
+its two-line choices and vertical icon tiles. These are not fixed-height action
+buttons. Completion marks, drag handles and interactive timeline drawings also
+retain their existing structure until their own migration. The final native
+inventory has 323 button declarations, down from 1,097, with a per-declaration
+decision in the review ledger. This includes diagnostic and fixture surfaces.
 
 Until a family migrates, its existing shared hooks below remain the drawing
 contract. Do not add a parallel hand-built variant.

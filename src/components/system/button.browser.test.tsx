@@ -39,6 +39,7 @@ beforeAll(async () => {
           <Button ref={ref} id="ref-button" onClick={()=>setClicks(c=>c+1)}>Ref and event</Button>
           <Button id="disabled-link" asChild disabled><a href="#wrong" onClick={()=>setClicks(c=>c+1)}>Unavailable link</a></Button>
           <Button id="invalid" aria-invalid="true">Invalid</Button><output id="clicks">{clicks}</output>
+          <div style={{pointerEvents:'none'}}><Button id="floating-action" floating onClick={()=>setClicks(c=>c+1)}>Scroll choices</Button></div>
           <Popover><PopoverTrigger asChild><IconButton id="menu-trigger" label="More actions" tooltip="Actions for this task" shortcut="⌘K"><X/></IconButton></PopoverTrigger><PopoverContent>Task actions</PopoverContent></Popover>
           <span id="selected-color" className="bg-selected"/><span id="thumb-color" className="bg-thumb"/>
           <ButtonGroup id="toolbar-group" variant="toolbar"><IconButton label="Selected tool" pressed><X/></IconButton><IconButton label="Other tool"><X/></IconButton></ButtonGroup>
@@ -164,6 +165,8 @@ for (const theme of ['light', 'dark']) {
       expect(await page.locator('#clicks').textContent()).toBe('1');
       expect(new URL(page.url()).hash).toBe('');
       expect(await page.locator('#disabled-link').getAttribute('aria-disabled')).toBe('true');
+      await page.locator('#floating-action').click();
+      expect(await page.locator('#clicks').textContent()).toBe('2');
       await page.keyboard.press('Tab');
       await page.getByRole('button',{name:'More actions',exact:true}).focus();
       await expect.poll(()=>page.getByRole('tooltip').textContent()).toContain('Actions for this task');

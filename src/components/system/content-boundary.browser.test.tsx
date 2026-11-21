@@ -11,14 +11,14 @@ beforeAll(async () => {
     import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
     import {TipProvider} from './src/components/ui/tip';
     import RunsPage from './src/app/runs/page';
-    import {VerbRow,ThingTile} from './src/components/mobile/mobile-create-sheet';import {MessageSquarePlus,CheckSquare} from 'lucide-react';
+    import {VerbRow,ThingTile,SetupRow} from './src/components/mobile/mobile-create-sheet';import {MessageSquarePlus,CheckSquare} from 'lucide-react';
     const params=new URLSearchParams(location.search);
     document.documentElement.classList.toggle('dark',params.get('theme')==='dark');
     const client=new QueryClient({defaultOptions:{queries:{retry:false}}});
-    createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><TipProvider>{params.has('create')?<main><VerbRow icon={MessageSquarePlus} label="New chat" hint="Put an agent to work" onClick={()=>{}}/><ThingTile icon={CheckSquare} label="Task" onClick={()=>{}}/></main>:<RunsPage/>}</TipProvider></QueryClientProvider>);
+    createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><TipProvider>{params.has('create')?<main><VerbRow icon={MessageSquarePlus} label="New chat" hint="Put an agent to work" onClick={()=>{}}/><ThingTile icon={CheckSquare} label="Task" onClick={()=>{}}/><div className="grid"><SetupRow label="Connect a service" onClick={()=>{}}/></div></main>:<RunsPage/>}</TipProvider></QueryClientProvider>);
   `, [{ name: 'synthetic-page-data', setup(build) {
     // Expose the existing presentation helpers without mounting unrelated data hooks.
-    build.onLoad({ filter: /mobile-create-sheet\.tsx$/ }, args => ({ loader: 'tsx', resolveDir: path.dirname(args.path), contents: fs.readFileSync(args.path, 'utf8') + '\nexport {VerbRow, ThingTile};' }));
+    build.onLoad({ filter: /mobile-create-sheet\.tsx$/ }, args => ({ loader: 'tsx', resolveDir: path.dirname(args.path), contents: fs.readFileSync(args.path, 'utf8') + '\nexport {VerbRow, ThingTile, SetupRow};' }));
     build.onResolve({ filter: /(?:^next\/navigation$|use-triggers$|contexts\/dashboard-context$)/ }, args => ({ path: args.path, namespace: 'page-data' }));
     build.onLoad({ filter: /.*/, namespace: 'page-data' }, args => ({ loader: 'ts', contents: args.path === 'next/navigation' ? `export const useRouter=()=>({push(){}});export const usePathname=()=>'/runs';export const useSearchParams=()=>new URLSearchParams();` : args.path.endsWith('use-triggers') ? `export const useRuns=()=>({data:[{id:'run',status:'completed',triggerKind:'cron',summary:'Prepared the weekly operations review for the whole team, including delivery notes and the next steps for every account.',startedAt:'2026-11-20T10:30:00Z',costUsd:0.2}]});` : `export const useOptionalDashboard=()=>null;export const useDashboard=()=>({mobileCreateOpen:true,setMobileCreateOpen(){},openNote(){},openTask(){},setQuickCaptureOpen(){}});` }));
   } }], { css: true });
@@ -55,6 +55,7 @@ for (const theme of ['light', 'dark']) for (const width of [360, 900]) {
         const r=el.getBoundingClientRect();return [...el.querySelectorAll('span')].every(child => {const c=child.getBoundingClientRect();return c.top>=r.top && c.bottom<=r.bottom;});
       })).toBe(true);
       expect(await choice.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(60);
+      expect(await page.getByRole('button', { name: 'Connect a service', exact: true }).evaluate(el => Math.round(el.querySelector('svg')!.getBoundingClientRect().left - el.getBoundingClientRect().left))).toBe(16);
       await page.keyboard.press('Tab');await choice.focus();
       expect(await choice.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally { await page.close(); }

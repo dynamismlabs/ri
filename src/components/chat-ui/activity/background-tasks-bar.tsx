@@ -108,7 +108,7 @@ export function BackgroundTasksBar({
           onClick={() => setOpen(true)}
           variant="ghost"
           size="xs"
-          className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2"
+          className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 justify-start"
         >
           {/* Sky and still: background work, not the agent working. */}
           <span aria-hidden className={cn('size-1.5 shrink-0', BACKGROUND_DOT)} />

@@ -272,7 +272,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
 
                   <IconButton
                     asChild
-                    label="Save this file to add it to your GitHub issue"
+                    label={`Download ${file.originalName}`}
                     tooltip="Save this file to add it to your GitHub issue"
                     variant="ghost"
                     size="xs"

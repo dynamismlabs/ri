@@ -118,7 +118,7 @@ function SetupRow({ label, onClick, disabled }: { label: string; onClick: () => 
       disabled={disabled}
       variant="ghost"
       size="touch"
-      className="flex items-center gap-3"
+      className="flex items-center gap-3 justify-start"
     >
       <Plus size={17} className="shrink-0 text-muted-foreground" /> {label}
     </Button>
