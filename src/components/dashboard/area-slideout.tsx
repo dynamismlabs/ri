@@ -362,15 +362,13 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors hover:bg-card group"
                         >
                           <Tip label="Complete">
-                            <Button
+                            <button
                               onClick={() => lifecycle.toggle(task.id, task.status as TaskStatus)}
                               aria-label="Complete task"
-                              variant="ghost"
-                              size="sm"
                               className="flex-shrink-0"
                             >
                               <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 transition-colors hover:border-primary" />
-                            </Button>
+                            </button>
                           </Tip>
                           <button onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
                             <span className="text-[12px] font-medium text-foreground truncate block">

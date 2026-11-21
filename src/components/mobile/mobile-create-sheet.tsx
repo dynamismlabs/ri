@@ -89,13 +89,7 @@ export function MobileCreateSheet() {
 
 function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label: string; hint: string; onClick: () => void }) {
   return (
-    <Button
-      type="button"
-      onClick={onClick}
-      variant="ghost"
-      size="touch"
-      className="flex items-center gap-3"
-    >
+    <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClick} className="flex items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors active:bg-accent">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground">
         <Icon size={19} />
       </span>
@@ -103,22 +97,16 @@ function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label
         <span className="block text-[15px] font-medium text-foreground">{label}</span>
         <span className="block text-xs text-muted-foreground">{hint}</span>
       </span>
-    </Button>
+    </button>
   );
 }
 
 function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: string; onClick: () => void }) {
   return (
-    <Button
-      type="button"
-      onClick={onClick}
-      variant="secondary"
-      size="touch"
-      className="flex items-center gap-1.5"
-    >
+    <button data-slot="action-button" type="button" onClick={onClick} className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-3.5 transition-colors active:bg-accent">
       <Icon size={20} className="text-foreground" />
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
-    </Button>
+    </button>
   );
 }
 

@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/system/button';
 import { HomeLink as Link } from '@/components/home/home-link';
 import { ClipboardCheck } from 'lucide-react';
 import { useRailSessions } from '@/hooks/use-workspaces';
@@ -21,7 +20,7 @@ export function MobileReviewRow({ review }: { review: ReviewAttention }) {
     : review.statusReason?.replaceAll('_', ' ')
       ?? (review.status === 'running' ? 'Reviewing with AI' : review.status === 'queued' ? 'Queued' : 'Review failed');
   return (
-    <Button asChild variant="secondary" size="sm" className="flex items-start gap-2"><Link href={`/results/${review.resultId}`}>
+    <Link href={`/results/${review.resultId}`} className="flex min-h-11 items-start gap-2 rounded-lg px-1.5 py-2 active:bg-muted/40">
       <span className="flex h-[18px] w-4 flex-shrink-0 items-center justify-center text-muted-foreground">
         <ClipboardCheck size={13} aria-hidden />
       </span>
@@ -29,6 +28,6 @@ export function MobileReviewRow({ review }: { review: ReviewAttention }) {
         <span className="block truncate text-[14px] font-medium leading-[18px]">{review.label ?? 'AI review'}</span>
         <span className="mt-0.5 block text-[12px] text-muted-foreground">{state}</span>
       </span>
-    </Link></Button>
+    </Link>
   );
 }

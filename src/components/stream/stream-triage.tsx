@@ -256,7 +256,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
             <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
               <div className="py-1">
                 {REROUTE_OPTIONS.filter((o) => o.disposition !== decision.disposition).map((o) => (
-                  <Button
+                  <button
                     key={o.disposition}
                     onClick={() =>
                       correct.mutate({
@@ -264,13 +264,11 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
                         correction: { disposition: o.disposition, draft: decision.draft ?? null },
                       })
                     }
-                    variant="secondary"
-                    size="sm"
-                    className="w-full flex items-center gap-2"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[10.5px] text-foreground hover:bg-muted transition-colors"
                   >
                     <o.icon size={11} className="text-muted-foreground" />
                     {o.label}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </PopoverContent>

@@ -1,7 +1,6 @@
 'use client';
 
 import { IconButton } from '@/components/system/icon-button';
-import { Button } from '@/components/system/button';
 /**
  * Runs list at /runs.
  *
@@ -112,8 +111,10 @@ function RunRow({ run }: { run: RunRecord }) {
       ? run.status
       : undefined;
   return (
-    <Button asChild variant="secondary" size="sm" className="flex items-center gap-3"><Link data-slot="run-row"
-      href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}>
+    <Link data-slot="run-row"
+      href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
+      className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted text-sm"
+    >
       <TriggerBadge trigger={run.triggerKind} />
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
       <span data-slot="run-summary" className="flex-1 truncate text-muted-foreground text-[12px]">
@@ -127,7 +128,7 @@ function RunRow({ run }: { run: RunRecord }) {
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link></Button>
+    </Link>
   );
 }
 

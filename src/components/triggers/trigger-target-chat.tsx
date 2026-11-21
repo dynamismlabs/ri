@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/system/button';
 /**
  * "Sends to" for a trigger whose target is one existing chat
  * (`targetKind: 'session'`). That chat keeps its own provider and model, so
@@ -35,11 +34,14 @@ export function TriggerTargetChat({
 
   return (
     <div className="space-y-1">
-      <Button asChild variant="secondary" size="sm" className="flex items-center gap-2"><Link href={`/?session=${sessionId}`}
-        onNavigate={onNavigateAway}>
+      <Link
+        href={`/?session=${sessionId}`}
+        onNavigate={onNavigateAway}
+        className="flex items-center gap-2 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
+      >
         <MessageCircle size={14} className="flex-shrink-0 text-muted-foreground" />
         <span className="flex-1 truncate">{chat?.label ?? (isLoading ? 'Loading…' : 'Untitled chat')}</span>
-      </Link></Button>
+      </Link>
       <p className="text-[11px] text-muted-foreground">
         {chat?.status === 'archived'
           ? 'This chat is archived, so the trigger pauses on its next fire.'

@@ -94,7 +94,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
         {!exact && <Button asChild variant="secondary" size="xs" className="inline-flex items-center gap-1"><Link href={`/results/${result.id}`}><ExternalLink size={12} />View handoff</Link></Button>}
       </div>
       {reportTargetId && <Link href={`/results/${reportTargetId}`} className="block text-xs text-primary hover:underline">View the reviewed handoff</Link>}
-      {detail.successorId && <Button asChild variant="secondary" size="xs" tone="warning" className="block"><Link href={`/results/${detail.successorId}`}>Newer result available. Open the newer handoff.</Link></Button>}
+      {detail.successorId && <Link href={`/results/${detail.successorId}`} className="block rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">Newer result available. Open the newer handoff.</Link>}
       <ResultBody result={result} />
       <ResultArtifacts result={result} onFeedback={canFeedback && primary ? setFeedback : undefined} />
       {primary && <ResultGithubChecks result={result} />}

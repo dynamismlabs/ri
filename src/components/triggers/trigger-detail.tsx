@@ -215,8 +215,11 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
       ? run.status
       : undefined;
   return (
-    <Button asChild variant="secondary" size="sm" className="flex items-center gap-3"><Link href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
-      onNavigate={onNavigateAway}>
+    <Link
+      href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
+      onNavigate={onNavigateAway}
+      className="flex items-center gap-3 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
+    >
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
       <span className="flex-1 truncate text-muted-foreground text-[12px]">
         {run.status === 'failed'
@@ -234,7 +237,7 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link></Button>
+    </Link>
   );
 }
 

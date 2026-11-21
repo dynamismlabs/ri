@@ -92,7 +92,10 @@ function TriggerRow({
   const failing = trigger.consecutiveFailures >= 3;
   const overdue = overdueLabel(trigger);
   return (
-    <Button asChild variant="secondary" size="sm" className="flex items-center gap-4"><Link href={`/triggers/${trigger.id}`}>
+    <Link
+      href={`/triggers/${trigger.id}`}
+      className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card hover:border-muted-foreground/30 transition-colors"
+    >
 
         <IconButton
           onClick={(e) => {
@@ -145,7 +148,7 @@ function TriggerRow({
       </div>
 
       <ChevronRight size={14} className="text-muted-foreground flex-shrink-0" />
-    </Link></Button>
+    </Link>
   );
 }
 

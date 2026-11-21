@@ -123,13 +123,11 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                 </p>
               ) : (
                 results.slice(0, SEARCH_LIMIT).map((p) => (
-                  <Button
+                  <button data-slot="action-button" data-variant="ghost"
                     key={p.id}
                     type="button"
                     onClick={() => open(p)}
-                    variant="ghost"
-                    size="md"
-                    className="flex items-center gap-2.5"
+                    className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/50"
                   >
                     <IntegrationLogo providerId={p.id} name={p.displayName} size={26} />
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">
@@ -137,7 +135,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                       <span className="truncate text-[10.5px] text-muted-foreground">{integrationMeta(p.id).description}</span>
                     </span>
                     <ConnectState connected={connected.has(p.id)} />
-                  </Button>
+                  </button>
                 ))
               )}
               {results.length > SEARCH_LIMIT && (

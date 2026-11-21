@@ -270,11 +270,14 @@ function CheckInRow({ checkIn, onNavigate }: { checkIn: HeartbeatCheckIn; onNavi
   return (
     <li className="flex items-center gap-2 pr-2">
       {checkIn.chatSessionId ? (
-        <Button asChild variant="secondary" size="sm" className="flex min-w-0 flex-1 items-center gap-2"><Link href={`/?session=${checkIn.chatSessionId}`}
+        <Link
+          href={`/?session=${checkIn.chatSessionId}`}
           onClick={onNavigate}
-          aria-label={`Open the check-in from ${formatCheckInTime(checkIn.at)}: ${text}`}>
+          aria-label={`Open the check-in from ${formatCheckInTime(checkIn.at)}: ${text}`}
+          className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5 hover:bg-muted/50"
+        >
           {body}
-        </Link></Button>
+        </Link>
       ) : (
         <span className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5">{body}</span>
       )}
