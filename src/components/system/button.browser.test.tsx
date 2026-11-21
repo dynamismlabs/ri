@@ -28,6 +28,7 @@ beforeAll(async () => {
       import {IconButton} from '@/components/system/icon-button';
       import {ChipButton} from '@/components/system/chip-button';
       import {ButtonGroup} from '@/components/system/button-group';
+      import {TipProvider} from '@/components/ui/tip';
       import {Popover, PopoverTrigger, PopoverContent} from '@/components/ui/popover';
       const variants=${JSON.stringify(variants)}, tones=${JSON.stringify(tones)};
       function Fixture(){
@@ -52,7 +53,7 @@ beforeAll(async () => {
           <div id="cases">{variants.flatMap(variant=>tones.map(tone=><div key={variant+tone} className="flex items-center gap-2 p-1" data-row={variant+'-'+tone}><Button id={variant+'-'+tone} variant={variant} tone={tone}>Action</Button><Button id={variant+'-'+tone+'-pressed'} variant={variant} tone={tone} pressed>Selected</Button><Button id={variant+'-'+tone+'-disabled'} variant={variant} tone={tone} disabled>Unavailable</Button></div>))}</div>
         </>;
       }
-      createRoot(document.getElementById('root')).render(<Fixture/>);
+      createRoot(document.getElementById('root')).render(<TipProvider><Fixture/></TipProvider>);
     ` },
     bundle: true, write: false, format: 'iife', jsx: 'automatic', tsconfig: 'tsconfig.json', logLevel: 'silent',
   });

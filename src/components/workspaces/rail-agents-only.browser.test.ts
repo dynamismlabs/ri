@@ -93,7 +93,7 @@ beforeAll(async () => {
       import {trpc} from '@/lib/trpc/client';
       import {createRoot} from 'react-dom/client';
       import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
-      import {TooltipProvider} from '@/components/ui/tooltip';
+      import {TipProvider} from '@/components/ui/tip';
       import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {WorkContext} from '@/contexts/work-context';
       import {RailListBody,RailListHeader} from '@/components/workspaces/rail-list';
@@ -202,7 +202,7 @@ beforeAll(async () => {
       // The agent view's Chats tab, for one agent, beside the rail.
       const chatsTab=new URLSearchParams(location.search).get('panel')==='chats';
       createRoot(document.getElementById('root')).render(
-        <QueryClientProvider client={client}><TooltipProvider><ConfirmProvider>
+        <QueryClientProvider client={client}><TipProvider><ConfirmProvider>
           <Work><SessionHoverProvider disabled>
             {strip
               ? <aside className="flex h-screen w-[44px] flex-col items-center pt-2 border-r border-border bg-background"><AgentsFlyout/></aside>
@@ -212,7 +212,7 @@ beforeAll(async () => {
             <div data-chat-bar className="fixed left-[300px] top-4 flex items-center gap-1.5"><ReadStateButton sessionId="notes-main"/></div>
             {chatsTab && <div data-chats-tab className="fixed left-[300px] top-12 w-[320px] bg-background"><AgentOverview workspace={workspaces.find(w=>w.id==='fin')} onSelectTab={noop}/></div>}
           </SessionHoverProvider></Work>
-        </ConfirmProvider></TooltipProvider></QueryClientProvider>);
+        </ConfirmProvider></TipProvider></QueryClientProvider>);
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', logLevel: 'silent',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },

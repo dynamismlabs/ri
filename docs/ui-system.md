@@ -151,6 +151,10 @@ ARIA stay intact. `IconButton` takes its label from the caller's existing access
 name or tooltip. Missing names are reviewed by hand from the action, with sentence
 case copy. A tooltip that adds context goes in `tooltip`, and a shortcut goes in
 `shortcut`. It does not need a surrounding Tip.
+Tip does not open when focus first enters a dialog, sheet or popover from outside.
+This keeps the first Escape available to dismiss that layer. Tab inside the layer
+still opens a focused control's tooltip. Returning from a nested portaled menu
+also keeps that control's tooltip quiet.
 
 `clip` contains a preview or an overlay within the capsule. `focus="inside"`
 keeps its outline visible inside that clipping. `floating` gives an
