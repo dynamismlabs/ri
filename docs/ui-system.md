@@ -117,6 +117,40 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
 | `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
 
+### Content components
+
+Stage 4 introduces the content APIs. Their call sites pass layout classes only,
+including flex/grid alignment, gaps, width, position and margins. Shape, type,
+padding, fill, border, shadow and interaction drawing belong to the component.
+
+- `Card` adapts the installed Card. It holds content at 14px corners. `as`
+  preserves the original element, including a whole-card button or navigation
+  link. Named `padding` and `density` preserve content insets. `surface` selects
+  raised, pane, card, track or plain. `shadow` is for existing lifted content,
+  and `purpose="code"` keeps commands and diagnostic text in monospace.
+- `ChoiceRow` is a descriptive option with 8px corners. It accepts `title`,
+  `description`, `leading` and `trailing`, and owns their ids and associations.
+  Rich children can keep existing hierarchy. Pressed/checked/selected/expanded
+  state has a soft fill. `ChoiceGroup` plus `selection="radio"` and `value`
+  uses Radix's radio keyboard and native form inputs. `size="touch"` sets a
+  minimum 40px target without fixing the content's height.
+- `MenuAction` keeps list actions as buttons. `kind="menu"` uses the installed
+  Radix menu item, preserving keyboard focus, disabled items and dismissal.
+  `density`, `selected`, `separator` and semantic `tone` own its drawing.
+- `Callout` is a 14px notice using neutral or semantic ink/fill pairs. An
+  announcement's `role` and live policy stay explicit, so a visual migration
+  never introduces a repeated screen-reader announcement.
+- `StatusBadge` is a passive capsule fact. It takes a semantic `tone`, soft,
+  plain or solid `appearance`, compact or count `size`, and optional `code`.
+  Interactive facts use ChipButton or an inline MetaItem action instead.
+- `Meta` and `MetaItem` own the wrapping 12px line of facts, dot separators,
+  theme-aware energy/deadline/status ink and inline action focus. `as` retains
+  a real button or link. Labels and handlers stay with their domain component.
+
+All interactive content has an inset focus outline where clipping can occur.
+Disabled controls retain their engine's behavior and do not gain a hover fill.
+Semantic colors use the existing token pairs and reach 4.5:1 in both themes.
+
 ### Fields
 
 `Field`, `TextArea` and `NativeSelect` adapt the installed Input and Textarea or
