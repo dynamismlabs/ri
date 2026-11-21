@@ -162,7 +162,6 @@ All mutations use `useUpdateTask()` which auto-invalidates the task list cache.
 - [x] `AreaSelect` — dropdown area picker (used by tasks + notes) — `src/components/shared/area-select.tsx`
 - [x] `SearchOverlay` — Cmd+K modal with combined FTS results — `src/components/shared/search-overlay.tsx`
 - [x] `Popover` — Radix UI Popover wrapper — `src/components/ui/popover.tsx`
-- [x] `TagEditor` — inline tag pill editor with add/remove — `src/components/shared/tag-editor.tsx`
 - [x] `TaskPicker` — search-and-select a task (for linking notes to tasks) — `src/components/shared/task-picker.tsx`
 
 ---
