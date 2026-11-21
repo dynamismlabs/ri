@@ -4,6 +4,7 @@ import path from 'node:path';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
 
+const fileManagerNames = /^(Reveal in Finder|Show in Files|Show in Explorer)$/;
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 beforeAll(async () => {
   fixture = await browserFixture(
@@ -99,7 +100,7 @@ for (const theme of ['light', 'dark'])
           expect(rect!.x).toBeGreaterThanOrEqual(clip!.x);
           expect(rect!.x + rect!.width).toBeLessThanOrEqual(clip!.x + clip!.width);
         }
-        expect(await header.getByRole('button', { name: /Reveal/ }).count()).toBe(0);
+        expect(await header.getByRole('button', { name: fileManagerNames }).count()).toBe(0);
         expect(await header.getByRole('button', { name: 'Open in Editor', exact: true }).count()).toBe(0);
         expect(await header.getByRole('button', { name: 'Close file', exact: true }).isVisible()).toBe(true);
         for (const label of ['Current', 'Render'])
@@ -110,7 +111,7 @@ for (const theme of ['light', 'dark'])
               .isVisible(),
           ).toBe(true);
         await header.getByRole('button', { name: 'File actions', exact: true }).click();
-        await page.getByRole('menuitem', { name: /Reveal/ }).click();
+        await page.getByRole('menuitem', { name: fileManagerNames }).click();
         await expect
           .poll(() => page.evaluate(() => !!(window as unknown as { revealed: boolean }).revealed))
           .toBe(true);
@@ -164,7 +165,7 @@ for (const theme of ['light', 'dark'])
         await render.click();
         expect(await render.getAttribute('aria-pressed')).toBe('true');
         await header.getByRole('button', { name: 'File actions', exact: true }).click();
-        expect(await page.getByRole('menuitem', { name: /Reveal/ }).isVisible()).toBe(true);
+        expect(await page.getByRole('menuitem', { name: fileManagerNames }).isVisible()).toBe(true);
         expect(await page.getByRole('menuitem', { name: 'Open in Editor', exact: true }).isVisible()).toBe(
           true,
         );
@@ -205,3 +206,18 @@ for (const theme of ['light', 'dark'])
       await page.close();
     }
   });
+
+for(const theme of ['light','dark'])for(const [platform,label] of [['MacIntel','Reveal in Finder'],['Linux aarch64','Show in Files'],['Win32','Show in Explorer']]){
+  it(`keeps the platform's file-manager action in More (${platform}, ${theme})`,async()=>{
+    const page=await fixture.browser.newPage({viewport:{width:360,height:700}});
+    try{
+      await page.addInitScript(value=>Object.defineProperty(navigator,'platform',{value}),platform);
+      await page.goto(`${fixture.url}/?theme=${theme}&whole`);
+      const header=page.locator('#file-pane > div');
+      expect(await header.getByRole('button',{name:label,exact:true}).count()).toBe(0);
+      await header.getByRole('button',{name:'File actions',exact:true}).click();
+      await page.getByRole('menuitem',{name:label,exact:true}).click();
+      await expect.poll(()=>page.evaluate(()=>!!(window as unknown as {revealed:boolean}).revealed)).toBe(true);
+    }finally{await page.close();}
+  });
+}
