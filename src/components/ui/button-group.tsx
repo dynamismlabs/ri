@@ -4,26 +4,18 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 
-const buttonGroupVariants = cva(
-  "flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-4xl [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
-  {
-    variants: {
-      orientation: {
-        horizontal:
-          "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-4xl!",
-        vertical:
-          "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-4xl!",
-      },
-    },
-    defaultVariants: {
-      orientation: "horizontal",
-    },
-  }
-)
+const buttonGroupVariants = cva("ri-button-group", {
+  variants: {
+    orientation: { horizontal: "", vertical: "ri-button-group--vertical" },
+    variant: { plain: "", toolbar: "ri-button-group--toolbar", joined: "ri-button-group--joined" },
+  },
+  defaultVariants: { orientation: "horizontal", variant: "plain" },
+})
 
 function ButtonGroup({
   className,
   orientation,
+  variant,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof buttonGroupVariants>) {
   return (
@@ -31,7 +23,7 @@ function ButtonGroup({
       role="group"
       data-slot="button-group"
       data-orientation={orientation}
-      className={cn(buttonGroupVariants({ orientation }), className)}
+      className={cn(buttonGroupVariants({ orientation, variant }), className)}
       {...props}
     />
   )

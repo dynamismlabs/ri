@@ -1,11 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useAllowApp } from './allow-app';
 
@@ -56,14 +57,23 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <label className="block space-y-1 text-xs font-medium text-foreground">
-              <span>Name</span>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Reading Log" autoFocus required maxLength={60} />
-            </label>
-            <label className="block space-y-1 text-xs font-medium text-foreground">
-              <span>MCP address</span>
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://127.0.0.1:4310/mcp" required inputMode="url" />
-            </label>
+            <Field
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Reading Log"
+              autoFocus
+              required
+              maxLength={60}
+              label="Name"
+            />
+            <Field
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="http://127.0.0.1:4310/mcp"
+              required
+              inputMode="url"
+              label="MCP address"
+            />
             <p className="text-[11px] text-muted-foreground">The app asks next what Ri may see and whether it may make changes. Each agent you allow later gets its own connection and its own choice.</p>
           </div>
           {error && (
@@ -72,8 +82,18 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             </div>
           )}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={busy || !name.trim() || !url.trim()}>{busy && <Loader2 size={14} className="animate-spin" />}Continue</Button>
+            <Button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              variant="ghost"
+              size="md"
+            >Cancel</Button>
+            <Button
+              type="submit"
+              disabled={busy || !name.trim() || !url.trim()}
+              variant="primary"
+              size="md"
+            >{busy && <Loader2 size={14} className="animate-spin" />}Continue</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,5 +1,11 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
+import { useElementWidth } from '@/hooks/use-element-width';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { useState, type ReactNode } from 'react';
 import { AppWindow, FolderTree, MessagesSquare, Settings2, X, type LucideIcon } from 'lucide-react';
 import type { WorkspaceRecord } from '@/db/types';
@@ -9,7 +15,7 @@ import { AgentOverview } from './agent-overview';
 import { AgentFiles } from './agent-files';
 import { AgentPreview } from './agent-preview';
 import { AgentSetup } from './agent-setup';
-import { Tip } from '@/components/ui/tip';
+
 import { BesideFileTab, BesideFileView } from '@/components/chat-ui/artifacts/artifact-beside';
 import { PanelWindowControls, panelTabClass } from '@/components/executions/workbench/panel-strip';
 import { AgentBesideChat, BesideChatTabLabel } from './agent-beside-chat';
@@ -69,6 +75,8 @@ export function AgentTools({
   /** Expand and close, beside the main chat. One pane at a time has the Chat / Tools switch instead. */
   panel?: { maximized: boolean; onToggleMaximize: () => void; onClose: () => void } | null;
 }) {
+  const [measure, width] = useElementWidth<HTMLDivElement>();
+  const tier = useViewportTier();
   const chatActive = !!chat?.active;
   const fileActive = !!file?.active && !chatActive;
   const toolActive = !fileActive && !chatActive;
@@ -92,100 +100,117 @@ export function AgentTools({
   };
 
   return (
-    <div className="@container/panel flex h-full min-h-0 min-w-0 flex-col bg-background">
-      <div data-slot="tool-tab-bar" className="flex h-9 flex-shrink-0 items-stretch gap-0.5 border-b border-border pl-1 pr-1.5">
-        <div role="tablist" aria-label="Agent tools" data-slot="segmented" data-size="responsive" data-scroll className="flex min-w-0 items-stretch gap-0.5">
-          {AGENT_TOOL_TABS.map((t) => {
-            const on = tab === t.id && toolActive;
-            return (
-              <Tip key={t.id} label={t.label} onlyWhenTextHidden>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-label={t.label}
-                  data-tab={t.id}
-                  aria-selected={on}
-                  onClick={() => onSelectTab(t.id)}
-                  onDoubleClick={panel?.onToggleMaximize}
-                  className={cn('flex items-center gap-1.5', panelTabClass(on))}
-                >
-                  <t.Icon size={13} />
-                  <span data-slot="tool-tab-label" className="@max-[560px]/panel:hidden">{t.label}</span>
-                </button>
-              </Tip>
-            );
-          })}
-        </div>
-        {/* Outside the tab list, which may hold only tabs: these two carry their ×. */}
-        {file && (
-          <BesideFileTab
-            host={file.host}
-            active={fileActive}
-            onSelect={file.onShow}
-            className={cn('gap-0.5', panelTabClass(fileActive))}
+    <SegmentedRoot asChild mode="tabs" value={toolActive ? tab : null} onChange={onSelectTab}>
+      <div ref={measure} className="@container/panel flex h-full min-h-0 min-w-0 flex-col bg-background">
+        <div
+          className={cn(
+            'flex flex-shrink-0 items-center gap-0.5 border-b border-border pl-1 pr-1.5',
+            tier === 'phone' ? 'h-11' : 'h-9',
+          )}
+        >
+          <SegmentedList
+            ariaLabel="Agent tools"
+            size={tier === 'phone' ? 'touch' : 'compact'}
+            iconOnly={tier !== 'phone' && (width ?? 0) < 560}
+            options={AGENT_TOOL_TABS.map((t) => ({
+              value: t.id,
+              label: t.label,
+              icon: <t.Icon />,
+              onDoubleClick: panel?.onToggleMaximize,
+            }))}
           />
-        )}
-        {chat && (
-          <div className={cn('flex min-w-0 shrink items-center gap-0.5', panelTabClass(chatActive))}>
-            <button
-              type="button"
-              aria-pressed={chatActive}
-              onClick={chat.onShow}
-              className="flex min-w-0 items-center gap-1.5 self-stretch outline-none focus-visible:underline"
-            >
-              <BesideChatTabLabel chatId={chat.id} />
-            </button>
-            <Tip label="Put it away. The chat keeps going.">
-              <button
+          {/* Outside the tab list, which may hold only tabs: these two carry their ×. */}
+          {file && (
+            <BesideFileTab
+              host={file.host}
+              active={fileActive}
+              onSelect={file.onShow}
+              className={cn('gap-0.5', panelTabClass(fileActive))}
+            />
+          )}
+          {chat && (
+            <div className={cn('flex min-w-0 shrink items-center gap-0.5', panelTabClass(chatActive))}>
+              <Button
                 type="button"
-                aria-label="Put away the chat beside"
+                aria-pressed={chatActive}
+                onClick={chat.onShow}
+                variant="link"
+                size="sm"
+                className="flex min-w-0 items-center gap-1.5 self-stretch justify-start"
+              >
+                <BesideChatTabLabel chatId={chat.id} />
+              </Button>
+
+              <IconButton
+                type="button"
                 onClick={chat.onClose}
-                className="ml-1 inline-flex size-4 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                label="Put away the chat beside"
+                tooltip="Put it away. The chat keeps going."
+                variant="ghost"
+                size="sm"
+                className="ml-1 inline-flex shrink-0 items-center justify-center"
               >
                 <X size={11} />
-              </button>
-            </Tip>
-          </div>
-        )}
-        <span className="flex-1" />
-        {panel && <PanelWindowControls maximized={panel.maximized} onToggleMaximize={panel.onToggleMaximize} onClose={panel.onClose} />}
-      </div>
-      <div className="flex-1 min-h-0 relative">
-        {AGENT_TOOL_TABS.filter((t) => visited.has(t.id)).map((t) => (
-          // Inactive tabs stay laid out (so a preview or a file keeps its
-          // size) but are transparent and inert. Not `visibility: hidden`,
-          // which a descendant that sets `visibility: visible` would override
-          // and paint through the tab on screen.
-          <div
-            key={t.id}
-            role="tabpanel"
-            data-agent-tab={t.id}
-            inert={tab !== t.id || !toolActive}
-            className={cn('absolute inset-0 flex flex-col min-h-0', tab === t.id ? 'z-10' : 'opacity-0')}
-          >
-            {body(t.id)}
-          </div>
-        ))}
-        {/* Mounted while there's a file, like a visited tab, so a PDF keeps its page behind another tab. */}
-        {file && (
-          <div inert={!fileActive} className={cn('absolute inset-0 flex flex-col min-h-0', fileActive ? 'z-20' : 'pointer-events-none opacity-0')}>
-            <BesideFileView host={file.host} />
-          </div>
-        )}
-        {/* Mounted while it's open, behind another tab too, so its draft and scroll survive a look at Overview. */}
-        {chat && (
-          <div inert={!chatActive} className={cn('absolute inset-0 flex flex-col min-h-0', chatActive ? 'z-30' : 'pointer-events-none opacity-0')}>
-            <AgentBesideChat
-              chatId={chat.id}
-              agent={workspace}
-              active={chatActive}
-              onOpenChat={chat.onOpenChat}
-              onOpenFull={chat.onOpenFull}
-              onClose={chat.onClose}
+              </IconButton>
+            </div>
+          )}
+          <span className="flex-1" />
+          {panel && (
+            <PanelWindowControls
+              maximized={panel.maximized}
+              onToggleMaximize={panel.onToggleMaximize}
+              onClose={panel.onClose}
             />
-          </div>
-        )}
+          )}
+        </div>
+        <div className="flex-1 min-h-0 relative">
+          {AGENT_TOOL_TABS.filter((t) => visited.has(t.id)).map((t) => (
+            // Inactive tabs stay laid out (so a preview or a file keeps its
+            // size) but are transparent and inert. Not `visibility: hidden`,
+            // which a descendant that sets `visibility: visible` would override
+            // and paint through the tab on screen.
+            <SegmentedPanel
+              key={t.id}
+              value={t.id}
+              preserveLayout
+              className="absolute inset-0 flex flex-col min-h-0"
+            >
+              {body(t.id)}
+            </SegmentedPanel>
+          ))}
+          {/* Mounted while there's a file, like a visited tab, so a PDF keeps its page behind another tab. */}
+          {file && (
+            <div
+              inert={!fileActive}
+              className={cn(
+                'absolute inset-0 flex flex-col min-h-0',
+                fileActive ? 'z-20' : 'pointer-events-none opacity-0',
+              )}
+            >
+              <BesideFileView host={file.host} />
+            </div>
+          )}
+          {/* Mounted while it's open, behind another tab too, so its draft and scroll survive a look at Overview. */}
+          {chat && (
+            <div
+              inert={!chatActive}
+              className={cn(
+                'absolute inset-0 flex flex-col min-h-0',
+                chatActive ? 'z-30' : 'pointer-events-none opacity-0',
+              )}
+            >
+              <AgentBesideChat
+                chatId={chat.id}
+                agent={workspace}
+                active={chatActive}
+                onOpenChat={chat.onOpenChat}
+                onOpenFull={chat.onOpenFull}
+                onClose={chat.onClose}
+              />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </SegmentedRoot>
   );
 }

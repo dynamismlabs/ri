@@ -1,4 +1,5 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { useEffect, useState } from 'react';
 import { Laptop } from 'lucide-react';
@@ -73,11 +74,10 @@ export function ClientSettings() {
         {!isLoopback && (
           <div className="border-t border-border/60 pt-1">
             <label className="flex cursor-pointer items-start gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={claimed}
-                onChange={toggleClaim}
-                className="mt-0.5 accent-primary"
+                onCheckedChange={toggleClaim}
+                className="mt-0.5"
               />
               <div className="flex-1 text-[11.5px]">
                 <div className="font-medium text-foreground">Treat this hostname as my host machine</div>

@@ -427,6 +427,70 @@ it('batches held child outcomes in one durable reservation and handles a later o
   expect(q.terminalAgentDelivery(children[2].requestId!)?.continuationRunId).toBe(q.getAgentRequest(initial.requestId!)?.runId);
 });
 
+describe('delegating into an existing execution', () => {
+  it('waits for approval, shares the execution, returns the outcome and reuses the chat on retry', async () => {
+    const { execution, session: source } = q.createExecutionWithChat({ workspaceId: agent.id, harness: 'claude', permissionMode: 'ask', label: 'Existing work' });
+    q.setAgentCoordinationPolicy('chat', source.id, 'ask');
+    const input = { workspace_id: agent.id, execution_id: execution.id, request_id: 'sibling-review', prompt: 'Review the current changes.', provider: 'claude', model: 'sonnet', effort: 'high', permission_mode: 'auto_all', label: 'Review' };
+    const result = await act(source, 'delegate_work', input);
+    expect(result).toMatchObject({ ok: true, result: { status: 'awaiting_approval' } });
+    const id = stableCoordinationId('request', source.id, input.request_id);
+    await drainAgentCoordination();
+    expect(q.listChatSessions({ executionId: execution.id })).toHaveLength(1);
+    q.decideAgentDelivery(id, 'allow');
+    await drainAgentCoordination();
+    const childId = requestScopedId('session', agent.id, id);
+    expect(q.getChatSession(childId)).toMatchObject({ executionId: execution.id, harness: 'claude', model: 'sonnet', effort: 'high', permissionMode: 'ask', label: 'Review' });
+    expect(q.agentCoordinationPolicy(childId)).toMatchObject({ policy: 'ask', source: 'chat', unrestricted: false });
+    expect(q.getExecution(execution.id)?.label).toBe('Existing work');
+    expect(q.getChatSession(source.id)?.status).toBe('active');
+    expect(fake.launch).not.toHaveBeenCalled();
+    expect(q.initialAgentDelivery(id)?.eventId).toBe(requestScopedId('prompt', agent.id, id));
+    await complete(childId, 'The changes pass review.');
+    expect(q.terminalAgentDelivery(id)).toMatchObject({ payload: { content: 'The changes pass review.' }, targetSessionId: source.id, status: 'accepted' });
+    expect(await act(source, 'delegate_work', input)).toMatchObject({ ok: true, result: { targetSessionId: childId } });
+    await drainAgentCoordination();
+    expect(q.listChatSessions({ executionId: execution.id })).toHaveLength(2);
+    expect(accepted.filter(row => row.sessionId === childId)).toHaveLength(1);
+    expect(await act(source, 'delegate_work', { ...input, execution_id: 'another-execution' })).toMatchObject({ ok: false, error: { code: 'conflict' } });
+  });
+
+  it('refuses missing, foreign, archived and mismatched executions before saving a request', async () => {
+    const other = q.createWorkspace({ name: 'Other agent', cwd: home.root, isGit: false });
+    const wrongAgent = q.createExecutionWithChat({ workspaceId: other.id, harness: 'claude', label: null }).execution;
+    const archived = q.createExecutionWithChat({ workspaceId: agent.id, harness: 'claude', label: null }).execution;
+    q.archiveExecution(archived.id);
+    const foreign = q.createExecution({ workspaceId: agent.id, userId: 'another-owner' });
+    for (const [executionId, code] of [['missing', 'not_found'], [wrongAgent.id, 'invalid_params'], [archived.id, 'conflict'], [foreign.id, 'not_found']]) {
+      expect(await act(main, 'delegate_work', { workspace_id: agent.id, execution_id: executionId, request_id: executionId, prompt: 'Review.' })).toMatchObject({ ok: false, error: { code } });
+    }
+    expect(q.listAgentRequests(main.id)).toEqual([]);
+    expect(fake.launch).not.toHaveBeenCalled();
+  });
+
+  it.each(['device_id', 'task_id'])('refuses %s overrides when sharing an execution', async field => {
+    const { execution } = q.createExecutionWithChat({ workspaceId: agent.id, harness: 'claude', label: null });
+    expect(await act(main, 'delegate_work', { workspace_id: agent.id, execution_id: execution.id, request_id: field, prompt: 'Review.', [field]: 'override' })).toMatchObject({ ok: false, error: { code: 'invalid_params' } });
+    expect(q.listAgentRequests(main.id)).toEqual([]);
+  });
+
+  it('rechecks the execution after approval and never launches replacement work for an archived destination', async () => {
+    const { execution, session: source } = q.createExecutionWithChat({ workspaceId: agent.id, harness: 'claude', label: null });
+    const { execution: destination } = q.createExecutionWithChat({ workspaceId: agent.id, harness: 'claude', label: null });
+    q.setAgentCoordinationPolicy('chat', source.id, 'ask');
+    await act(source, 'delegate_work', { workspace_id: agent.id, execution_id: destination.id, request_id: 'archive-before-approval', prompt: 'Review.' });
+    const id = stableCoordinationId('request', source.id, 'archive-before-approval');
+    q.archiveExecution(destination.id);
+    q.decideAgentDelivery(id, 'allow');
+    await drainAgentCoordination();
+    expect(q.getAgentRequest(id)?.status).toBe('failed');
+    expect(q.terminalAgentDelivery(id)?.payload.content).toContain('archived');
+    expect(q.listChatSessions({ executionId: destination.id })).toHaveLength(1);
+    expect(q.listChatSessions({ executionId: execution.id })).toHaveLength(1);
+    expect(fake.launch).not.toHaveBeenCalled();
+  });
+});
+
 describe('personal conversation retrieval', () => {
   it('searches main and content conversations while keeping team and reviewer history separate', async () => {
     const content = q.createChatSession({ type: 'content', harness: 'claude', status: 'active' });

@@ -1,10 +1,12 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
 
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft, PanelsTopLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { EvaluationChat } from './evaluation-chat';
@@ -59,7 +61,13 @@ export function InteractiveExamples() {
           {launch.error && <p role="alert" className="mt-2 text-xs text-destructive">{launch.error.message}</p>}
           {launchAccount.error && <p role="alert" className="mt-2 text-xs text-destructive">{launchAccount.error.message}</p>}
         </div>
-        <Button ref={launchButton} variant="outline" size="sm" disabled={launch.isPending || !status.data?.available} onClick={() => void open()}>
+        <Button
+          ref={launchButton}
+          disabled={launch.isPending || !status.data?.available}
+          onClick={() => void open()}
+          variant="secondary"
+          size="sm"
+        >
           {launch.isPending ? 'Opening…' : 'Try interactive examples'}
         </Button>
       </div>
@@ -76,13 +84,27 @@ export function InteractiveExamples() {
               <td className="min-w-40 py-3 pr-3 align-top text-muted-foreground">{demo.description}</td>
               <td className="min-w-44 space-y-2 py-3 align-top">
                 <p className="text-muted-foreground">{demo.access}</p>
-                {needsAccount && choices.length > 1 && <select aria-label={`${demo.name} account`} value={selectedAccounts[demo.id] ?? ''} onChange={event => setSelectedAccounts(previous => ({ ...previous, [demo.id]: event.target.value }))} className="max-w-full rounded border border-input bg-background p-1"><option value="">Choose account</option>{choices.map(value => <option key={value.serverId} value={value.serverId}>{value.label}</option>)}</select>}
+                {needsAccount && choices.length > 1 && <NativeSelect aria-label={`${demo.name} account`} value={selectedAccounts[demo.id] ?? ''} onChange={event => setSelectedAccounts(previous => ({ ...previous, [demo.id]: event.target.value }))} className={cn("max-w-full", 'w-auto')}><option value="">Choose account</option>{choices.map(value => <option key={value.serverId} value={value.serverId}>{value.label}</option>)}</NativeSelect>}
                 {needsAccount && selected && <p role="status" className="text-[11px] text-muted-foreground">{selected.label}: {selected.status}</p>}
                 <div className="flex flex-wrap gap-1">
                   {needsAccount ? <>
-                    <Button size="xs" variant="outline" onClick={() => openSettings('plugins', { anchor: `integrations:${demo.id}` })}>{choices.length ? 'Manage accounts' : 'Connect account'}</Button>
-                    <Button size="xs" disabled={!status.data?.available || !selected?.available || !selected.interactiveTools || launchAccount.isPending} onClick={() => void open(undefined, selected?.serverId)}>Try interactive view</Button>
-                  </> : <Button size="xs" variant="outline" disabled={!status.data?.available || launch.isPending} onClick={() => void open(demo.id as 'excalidraw' | 'flint' | 'buildings' | 'tldraw')}>Open demo</Button>}
+                    <Button
+                      onClick={() => openSettings('plugins', { anchor: `integrations:${demo.id}` })}
+                      variant="secondary"
+                      size="xs"
+                    >{choices.length ? 'Manage accounts' : 'Connect account'}</Button>
+                    <Button
+                      disabled={!status.data?.available || !selected?.available || !selected.interactiveTools || launchAccount.isPending}
+                      onClick={() => void open(undefined, selected?.serverId)}
+                      variant="secondary"
+                      size="md"
+                    >Try interactive view</Button>
+                  </> : <Button
+                    disabled={!status.data?.available || launch.isPending}
+                    onClick={() => void open(demo.id as 'excalidraw' | 'flint' | 'buildings' | 'tldraw')}
+                    variant="secondary"
+                    size="xs"
+                  >Open demo</Button>}
                 </div>
                 <PluginSetupHelpButton target={{ kind: 'plugin', id: demo.id, name: demo.name, docsUrl: demo.source }} />
                 {demo.id === 'figma' && <p className="text-[11px] text-muted-foreground">Ri client approval and UI discovery are checked separately.</p>}
@@ -97,7 +119,11 @@ export function InteractiveExamples() {
         <DialogContent onCloseAutoFocus={event => { event.preventDefault(); launchButton.current?.focus(); }} className="flex h-[92dvh] w-[calc(100%-1rem)] max-w-none flex-col gap-0 overflow-hidden p-0 sm:max-w-[calc(100%-2rem)]">
           <DialogHeader className="border-b border-border px-4 py-3 pr-12 text-left">
             <div className="flex flex-wrap items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={() => setView(null)}><ArrowLeft className="size-4" />Return to Plugins</Button>
+              <Button
+                onClick={() => setView(null)}
+                variant="ghost"
+                size="sm"
+              ><ArrowLeft className="size-4" />Return to Plugins</Button>
               <DialogTitle className="text-sm">Interactive examples</DialogTitle>
             </div>
             <DialogDescription className="px-2 text-xs">{view?.account ? `Selected account: ${view.account}. App actions use your current access and approvals.` : 'Sample inputs and public data from external services.'} Closing or reloading ends this view. Your conversation stays in Ri.</DialogDescription>
@@ -106,7 +132,11 @@ export function InteractiveExamples() {
           {(state === 'failed' || state === 'ended') ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
               <p role="status" className="text-sm">{state === 'ended' ? 'Example session ended.' : 'The examples could not load. Your conversation is still available.'}</p>
-              <Button variant="outline" onClick={() => { setView(null); void open(); }}>Open a new example session</Button>
+              <Button
+                onClick={() => { setView(null); void open(); }}
+                variant="secondary"
+                size="sm"
+              >Open a new example session</Button>
             </div>
           ) : view && <iframe ref={frame} title="Interactive plugin examples" src={view.url} onLoad={() => setGeneration(previous => previous + 1)} sandbox="allow-scripts allow-same-origin" referrerPolicy="origin" className="min-h-0 w-full flex-1 border-0 bg-background" />}
           {view?.handle && <AccountEvaluationBridge key={view.handle} handle={view.handle} url={view.url} account={view.account!} frame={frame} />}

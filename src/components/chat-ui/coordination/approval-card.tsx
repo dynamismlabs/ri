@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -12,11 +13,30 @@ export function CoordinationApprovalCard({ delivery, onDecide, busy = false, des
   return <section className={compact ? "space-y-2 rounded-lg border border-border bg-card p-3 text-xs" : "max-w-xl space-y-3 rounded-xl border border-border bg-card p-4 text-xs"} aria-label={delivery.senderKind === 'human' ? 'Shared message delivery' : 'Coordination approval'}>
     <div><p className="font-medium">{pending ? delivery.payload.launch || delivery.kind === 'request' && delivery.targetAddress.startsWith('agent:') ? 'Approve work in another chat' : 'Approve message to another chat' : delivery.status === 'denied' ? 'Send declined' : delivery.status === 'failed' ? 'Send failed' : delivery.status === 'cancelled' ? 'Send cancelled' : 'Coordination send authorized'}</p><p className="mt-1 text-muted-foreground">{delivery.kind === 'request' ? 'A returned outcome is expected.' : 'No automatic reply requested.'}</p></div>
     {delivery.targetSessionId ? <ChatMessageLink sessionId={delivery.targetSessionId} eventId={delivery.eventId} label="Destination" direction="outgoing" /> : <p className="break-words text-muted-foreground">{launchOptions ? 'New chat in' : 'Destination:'} {destinationName ?? delivery.targetAddress}</p>}
+    {launchOptions?.executionId && <p className="text-muted-foreground">Shares the existing folder, branch and device.</p>}
     {launchOptions && <p className="text-[11px] text-muted-foreground">{[launchOptions.provider,launchOptions.model,launchOptions.effort && `${launchOptions.effort} effort`,launchOptions.permissionMode].filter(Boolean).join(' · ') || 'Normal launcher defaults'}</p>}
     <CoordinationText text={delivery.payload.content} compact={compact} />
     {!compact && <p className="text-[11px] text-muted-foreground">{delivery.status === 'awaiting_approval' ? 'Waiting for your approval. This message has not been sent.' : delivery.status === 'queued' ? 'Authorized and queued' : delivery.status === 'delivered' ? 'Saved in the receiving chat, waiting for acceptance' : delivery.status === 'accepted' ? 'Supplied to an agent turn' : delivery.status === 'denied' ? 'The receiving work was not started' : delivery.status === 'cancelled' ? 'This send was cancelled' : 'Delivery failed'}</p>}
     {delivery.error && <p className="text-destructive">{delivery.error}</p>}
-    {pending && <div className="flex flex-wrap gap-2"><button data-slot="action-button" data-variant="primary" type="button" disabled={busy} onClick={() => onDecide?.('allow')} className="rounded-md bg-primary px-3 py-1.5 text-primary-foreground">Approve</button><Tip label="Let this chat message any chat and create new chats automatically."><button data-slot="action-button" type="button" disabled={busy} onClick={() => onDecide?.('always')} className="rounded-md border px-3 py-1.5">Always</button></Tip><button data-slot="action-button" data-variant="ghost" type="button" disabled={busy} onClick={() => onDecide?.('deny')} className="rounded-md px-3 py-1.5 text-muted-foreground">Decline</button></div>}
+    {pending && <div className="flex flex-wrap gap-2"><Button
+      type="button"
+      disabled={busy}
+      onClick={() => onDecide?.('allow')}
+      variant="primary"
+      size="xs"
+    >Approve</Button><Tip label="Let this chat message any chat and create new chats automatically."><Button
+      type="button"
+      disabled={busy}
+      onClick={() => onDecide?.('always')}
+      variant="secondary"
+      size="xs"
+    >Always</Button></Tip><Button
+      type="button"
+      disabled={busy}
+      onClick={() => onDecide?.('deny')}
+      variant="ghost"
+      size="xs"
+    >Decline</Button></div>}
     {!compact && delivery.senderKind !== 'human' && <p className="text-[11px] text-muted-foreground">Approval allows this message and replies to this chat{delivery.kind === 'request' ? ', including the returned outcome' : ''}. Always allow lets this chat message any chat and create new chats. Pause incoming queues agent messages in this chat until you resume.</p>}
   </section>;
 }

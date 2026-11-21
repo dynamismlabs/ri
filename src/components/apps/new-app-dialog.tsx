@@ -1,13 +1,14 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
@@ -76,41 +77,78 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
               A small app of your own, with its own data, that works in {APP_NAME} and with any assistant. An agent builds it in its own folder. You install it when it&apos;s ready.
             </DialogDescription>
           </DialogHeader>
-          <label className="block space-y-1 text-xs font-medium">
-            <span>Name</span>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Baby tracker" required maxLength={60} autoFocus />
-          </label>
-          <label className="block space-y-1 text-xs font-medium">
-            <span>What should it do?</span>
-            <Textarea value={ask} onChange={(e) => setAsk(e.target.value)} rows={4} placeholder="Track feeds, sleep and diapers, with a daily summary." />
-          </label>
+          <Field
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Baby tracker"
+            required
+            maxLength={60}
+            autoFocus
+            label="Name"
+          />
+          <TextArea
+            value={ask}
+            onChange={(e) => setAsk(e.target.value)}
+            rows={4}
+            placeholder="Track feeds, sleep and diapers, with a daily summary."
+            autoSize
+            label="What should it do?"
+          />
           {showSettings ? (
             <div className="space-y-3 rounded-md border border-border p-3">
-              <label className="block space-y-1 text-xs font-medium">
-                <span>Apps folder</span>
-                <Input value={appsDir} onChange={(e) => setAppsDir(e.target.value)} />
-                <span className="block font-normal text-muted-foreground">Each app gets its own folder and git repository here.</span>
-              </label>
-              <label className="block space-y-1 text-xs font-medium">
-                <span>{tools?.kit ? 'Kit checkout (for developers)' : 'App kit command'}</span>
-                <Input value={kit} onChange={(e) => setKit(e.target.value)} placeholder="pnpm --dir /path/to/app-kit create:app" className="font-mono text-xs" />
-                <span className="block font-normal text-muted-foreground">
-                  {tools?.kit
-                    ? <>{APP_NAME} makes apps with the app kit {tools.kit.version} it carries. To use a kit checkout instead, give the command that runs its create. {APP_NAME} adds the new app&apos;s folder at the end.</>
-                    : <>The command that runs the app kit&apos;s create. {APP_NAME} adds the new app&apos;s folder at the end.</>}
-                </span>
-              </label>
+              <Field
+                value={appsDir}
+                onChange={(e) => setAppsDir(e.target.value)}
+                label="Apps folder"
+                description="Each app gets its own folder and git repository here."
+              />
+              <Field
+                value={kit}
+                onChange={(e) => setKit(e.target.value)}
+                placeholder="pnpm --dir /path/to/app-kit create:app"
+                purpose="code"
+                label={tools?.kit ? 'Kit checkout (for developers)' : 'App kit command'}
+                description={
+                  tools?.kit ? (
+                    <>
+                      {APP_NAME} makes apps with the app kit {tools.kit.version} it carries. To use
+                      a kit checkout instead, give the command that runs its create. {APP_NAME} adds
+                      the new app&apos;s folder at the end.
+                    </>
+                  ) : (
+                    <>
+                      The command that runs the app kit&apos;s create. {APP_NAME} adds the new
+                      app&apos;s folder at the end.
+                    </>
+                  )
+                }
+              />
             </div>
           ) : (
-            <button type="button" className="text-[11px] text-muted-foreground underline underline-offset-2" onClick={() => setShowSettings(true)}>
+            <Button
+              type="button"
+              onClick={() => setShowSettings(true)}
+              variant="link"
+              size="sm"
+            >
               Made in {settings.data?.appsDir ?? 'your apps folder'}. Change
-            </button>
+            </Button>
           )}
           {tools && !tools.git && tools.gitHelp && <p role="status" className="flex items-start gap-2 text-xs text-muted-foreground"><AlertCircle size={13} className="mt-0.5 shrink-0" />{tools.gitHelp}</p>}
           {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={busy || !name.trim() || !kitReady || tools?.git === false}>{busy && <Loader2 size={14} className="animate-spin" />}Create</Button>
+            <Button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              variant="ghost"
+              size="md"
+            >Cancel</Button>
+            <Button
+              type="submit"
+              disabled={busy || !name.trim() || !kitReady || tools?.git === false}
+              variant="primary"
+              size="md"
+            >{busy && <Loader2 size={14} className="animate-spin" />}Create</Button>
           </DialogFooter>
         </form>
       </DialogContent>

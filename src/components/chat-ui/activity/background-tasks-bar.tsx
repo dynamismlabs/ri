@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ChatEventRecord } from '@/lib/api/dto/records';
 import { formatSpanSeconds } from '@/lib/executions/duration';
 import { cn } from '@/lib/utils';
@@ -102,10 +103,12 @@ export function BackgroundTasksBar({
           width, inset like a tab, no borders. Render it directly before
           the composer so the two touch. */}
       <div className="mx-auto max-w-3xl px-5">
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => setOpen(true)}
-          className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-t-lg bg-muted/60 px-3 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground/85"
+          variant="ghost"
+          size="xs"
+          className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 justify-start"
         >
           {/* Sky and still: background work, not the agent working. */}
           <span aria-hidden className={cn('size-1.5 shrink-0', BACKGROUND_DOT)} />
@@ -113,7 +116,7 @@ export function BackgroundTasksBar({
           <span className="ml-auto flex shrink-0 items-center gap-0.5 text-muted-foreground/60">
             running <ChevronRight className="size-3" />
           </span>
-        </button>
+        </Button>
       </div>
 
       <BackgroundTasksSheet
@@ -267,13 +270,15 @@ function TaskDetail({
   return (
     <>
       <SheetHeader className="gap-2 border-b">
-        <button
+        <Button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1 self-start text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          size="xs"
+          className="flex items-center gap-1 self-start"
         >
           <ChevronLeft className="size-3.5" /> All tasks
-        </button>
+        </Button>
         <SheetTitle className="flex items-center gap-2 text-sm">
           <TaskTypeIcon taskType={task.taskType} className="size-4 text-muted-foreground" />
           <span className="truncate">{task.description ?? task.taskId}</span>
@@ -370,19 +375,16 @@ function StopButton({
   if (!canStop || providerType === 'codex') return null;
   return (
     <Tip label={couldntStop ? 'Could not stop (already ended or unsupported)' : undefined}>
-      <button data-slot="action-button" data-tone="status"
+      <Button
         type="button"
         disabled={stop.isPending}
         onClick={(e) => {
           e.stopPropagation();
           stop.mutate(taskId);
         }}
-        className={cn(
-          'flex shrink-0 items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] transition-colors',
-          couldntStop
-            ? 'border-border text-muted-foreground/60'
-            : 'border-red-500/40 text-red-600 hover:bg-red-500/10 dark:text-red-500',
-        )}
+        variant="ghost"
+        size="xs"
+        tone={couldntStop ? "neutral" : "danger"}
       >
         {stop.isPending ? (
           <Loader2 className="size-2.5 animate-spin" />
@@ -390,7 +392,7 @@ function StopButton({
           <Square className="size-2.5 fill-current" />
         )}
         {couldntStop ? 'ended' : 'Stop'}
-      </button>
+      </Button>
     </Tip>
   );
 }

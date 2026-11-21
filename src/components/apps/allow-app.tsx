@@ -4,7 +4,7 @@ import { useCallback, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2, MonitorSmartphone } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { APP_NAME } from '@/constants/app';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -145,8 +145,18 @@ export function useAllowApp() {
             </fieldset>
             {stage.error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{stage.error}</p>}
             <DialogFooter>
-              <Button variant="ghost" disabled={stage.busy} onClick={() => end('cancelled')}>Not now</Button>
-              <Button disabled={stage.busy} onClick={() => void confirm()}>{stage.busy && <Loader2 size={14} className="animate-spin" />}Allow</Button>
+              <Button
+                disabled={stage.busy}
+                onClick={() => end('cancelled')}
+                variant="ghost"
+                size="md"
+              >Not now</Button>
+              <Button
+                disabled={stage.busy}
+                onClick={() => void confirm()}
+                variant="primary"
+                size="md"
+              >{stage.busy && <Loader2 size={14} className="animate-spin" />}Allow</Button>
             </DialogFooter>
           </>
         )}
@@ -157,8 +167,16 @@ export function useAllowApp() {
               <DialogDescription>{elsewhereMessage(stage.access)}</DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => void openAnyway()}>Open it anyway</Button>
-              <Button onClick={() => end('elsewhere')}>OK</Button>
+              <Button
+                onClick={() => void openAnyway()}
+                variant="ghost"
+                size="md"
+              >Open it anyway</Button>
+              <Button
+                onClick={() => end('elsewhere')}
+                variant="primary"
+                size="md"
+              >OK</Button>
             </DialogFooter>
           </>
         )}

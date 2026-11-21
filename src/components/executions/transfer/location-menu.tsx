@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
 /**
  * Where an execution runs, and moving it (docs/homes-model.md, spec §3.4):
@@ -150,9 +151,13 @@ export function LocationMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Tip label={`Runs on ${name}. Move it to another device.`}>
-            <button type="button" className="rounded hover:bg-muted/80">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+            >
               {chip}
-            </button>
+            </Button>
           </Tip>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">

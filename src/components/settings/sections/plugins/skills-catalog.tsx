@@ -1,4 +1,7 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
 
 /**
  * Skills in Plugins (docs/skills.md): the shared New skill action above the tabs,
@@ -13,11 +16,11 @@ import type { SkillSummary } from '@/lib/api/skills';
 import { useSkills } from '@/hooks/use-skills';
 import { useStartSkill } from '@/hooks/use-start-skill';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button, type ButtonSize } from '@/components/system/button';
+
 import { LOCATION_GROUPS, displayPath } from '@/components/skills/location-copy';
 import { apiErrorText } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
+
 import { CatalogTile, Chip, GroupHeading } from '../integrations/parts';
 
 function SkillLogo() {
@@ -34,15 +37,15 @@ function SkillLogo() {
  * there. Clicking again before writing anything opens the same blank draft
  * rather than piling up empty ones.
  */
-export function NewSkillButton({ className }: { className?: string }) {
+export function NewSkillButton({ className, size = 'xs' }: { className?: string; size?: ButtonSize }) {
   const create = useStartSkill();
   return (
     <Button
-      variant="outline"
-      size="xs"
-      className={cn('text-[11.5px]', className)}
       disabled={create.isPending}
       onClick={create.start}
+      variant="secondary"
+      size={size}
+      className={className}
     >
       {create.isPending ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
       New skill
@@ -151,6 +154,8 @@ export function SkillsGroup({ skills, searching }: { skills: SkillSummary[]; sea
  * NewSkillButton, above the tabs and in the main Create menu.
  */
 export function SkillsTab() {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { showSetupHelp, canManage } = useSkillNavigation();
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
@@ -161,23 +166,26 @@ export function SkillsTab() {
     <div className="@container space-y-5">
       {showSetupHelp && <PluginSetupHelpButton target={{ kind: 'plugins', tab: 'skills' }} />}
       {all > 8 && (
-        <div className="relative">
-          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search skills"
-            aria-label="Search skills"
-            className="rounded-4xl pl-9 text-xs"
-          />
-        </div>
+        <Field
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search skills"
+          aria-label="Search skills"
+          leading={<Search />}
+          className="relative"
+          size={compactFieldSize}
+        />
       )}
       {isLoading ? (
         <div className="flex items-center gap-2 py-4 text-xs text-muted-foreground">
           <Loader2 size={14} className="animate-spin" /> Loading skills…
         </div>
       ) : error ? (
-        <p role="alert" className="text-xs text-destructive">{apiErrorText(error)} <button className="underline" onClick={() => void refetch()}>Retry</button></p>
+        <p role="alert" className="text-xs text-destructive">{apiErrorText(error)} <Button
+          onClick={() => void refetch()}
+          variant="link"
+          size="sm"
+        >Retry</Button></p>
       ) : all === 0 ? (
         <p className="py-6 text-center text-[12px] text-muted-foreground">
           No skills yet. A skill teaches your agents one way of working, like how you review a pull request. Start

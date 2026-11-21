@@ -1,5 +1,8 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { TeamLabel } from '@/components/spaces/team-label';
 
@@ -42,13 +45,11 @@ import type { TaskAttentionSignals, TaskStatus } from '@/db/types';
 import {
   ListToolbar,
   ToolbarActiveDot,
-  toolbarButtonClass,
-} from '@/components/shared/list-toolbar';
+  } from '@/components/shared/list-toolbar';
 import { cn } from '@/lib/utils';
 import { Tip } from '@/components/ui/tip';
 import { ColumnPicker, HiddenColumnsEmpty } from '@/components/board/column-picker';
 import { useBoardColumns } from '@/hooks/use-board-columns';
-
 
 /** How often the board looks for changes made elsewhere: an agent moving a
  * task in the middle of a long turn, the CLI, another device. Turn starts and
@@ -131,7 +132,7 @@ function KanbanCard({
             // Straight to the agent's chat. Its own click, press and keys, so
             // it neither opens the task nor picks the card up.
             <Tip label="Open the agent's chat">
-              <button
+              <Button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -139,12 +140,14 @@ function KanbanCard({
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
-                className="ml-auto inline-flex items-center gap-1 rounded px-1 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Open the agent's chat"
+                variant="secondary"
+                size="sm"
+                className="ml-auto inline-flex items-center gap-1"
               >
                 <Bot size={11} aria-hidden />
                 Open
-              </button>
+              </Button>
             </Tip>
           )}
         </div>
@@ -191,19 +194,21 @@ function ColumnAddTask({
 
   if (!open) {
     return (
-      <button
+      <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-1.5 flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        variant="secondary"
+        size="sm"
+        className="mt-1.5 flex w-full items-center gap-1 justify-start"
       >
         <Plus size={13} className="shrink-0" /> Add task
-      </button>
+      </Button>
     );
   }
   return (
     <div className="mt-1.5 flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1.5">
       <Plus size={13} className="shrink-0 text-muted-foreground" />
-      <input
+      <Field
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -214,7 +219,7 @@ function ColumnAddTask({
         onBlur={() => { if (!value.trim()) setOpen(false); }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1" purpose="embedded"
       />
     </div>
   );
@@ -375,7 +380,6 @@ export function TaskKanban({
     [createTask, areaMode, lifecycle, createDefaults],
   );
 
-
   // One query per column, ordered by the shared sort contract.
   const live = { refetchInterval: BOARD_POLL_MS };
   const scope = assigneeMemberId ? { assigneeMemberId } : {};
@@ -531,16 +535,13 @@ export function TaskKanban({
         {leading}
         <div className="flex-1" />
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={areaMode !== 'all' ? `Filter, active: ${areaLabel}` : 'Filter tasks'}
-            className={toolbarButtonClass({ active: areaMode !== 'all' })}
-          >
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={areaMode !== 'all' ? `Filter, active: ${areaLabel}` : 'Filter tasks'} pressed={areaMode !== 'all'}>
             <Filter className="size-3.5 shrink-0" />
             <span className="hidden @sm/lt:inline max-w-[140px] truncate">
               {areaMode !== 'all' ? areaLabel : 'Filter'}
             </span>
             {areaMode !== 'all' && <ToolbarActiveDot />}
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
             <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaMode} onValueChange={setAreaMode}>
@@ -558,7 +559,12 @@ export function TaskKanban({
 
       {[consider, todo, current, done, archived].some((query, index) => columns.includes(ALL_COLUMNS[index]) && query.isError) && (
         <div role="alert" className="px-4 py-2 text-xs text-destructive">
-          Some tasks could not be loaded. <button type="button" className="underline" onClick={() => void Promise.all([consider, todo, current, done, archived].map((query) => query.refetch()))}>Try again</button>
+          Some tasks could not be loaded. <Button
+            type="button"
+            onClick={() => void Promise.all([consider, todo, current, done, archived].map((query) => query.refetch()))}
+            variant="link"
+            size="sm"
+          >Try again</Button>
         </div>
       )}
       <div className="min-h-0 flex-1 overflow-x-auto p-3">

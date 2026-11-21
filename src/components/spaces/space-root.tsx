@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { getAuthToken } from '@/lib/api/client';
 import type { SpacePage } from '@/lib/spaces/page';
@@ -34,9 +35,15 @@ export function SpaceRoot({ space, children }: { space: SpacePage; children: Rea
               : 'Connect a team in Settings, Teams, with an invitation or a sign-in link from it.'}
           </p>
           {/* A whole page: My Ri is its own document (src/lib/spaces/document.ts). */}
-          <button type="button" onClick={() => window.location.assign('/?settings=teams')} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
+          <Button
+            type="button"
+            onClick={() => window.location.assign('/?settings=teams')}
+            variant="primary"
+            size="md"
+            className="inline-flex w-full items-center justify-center"
+          >
             Open Settings, Teams
-          </button>
+          </Button>
         </TeamGate>
       </SpaceContext.Provider>
     );

@@ -63,3 +63,27 @@ it('prevents signed agents from bypassing delegation approval through sibling or
   expect(await orchestrator.POST(orchestrator.POSTInput.parse({ body: {} }), context)).toMatchObject({ ok: false, status: 403 });
   expect(q.listChatSessions({})).toHaveLength(1);
 });
+
+it('binds sibling launch approval to its execution and recovers the reserved chat after creation', async () => {
+  const source = q.createChatSession({ type: 'orchestration', harness: 'claude', permissionMode: 'plan' });
+  const workspace = q.createWorkspace({ name: 'Project', cwd: home.root, isGit: false });
+  const { execution } = q.createExecutionWithChat({ workspaceId: workspace.id, harness: 'claude', label: null });
+  const delivery = q.createInitiatingAgentDelivery({ id: 'approved-sibling', source, sourceRunId: null, address: `agent:${workspace.id}`, targetSessionId: null, requestKey: 'sibling-key', parentRequestId: null, kind: 'delegation', content: 'Review.', options: { workspaceId: workspace.id, executionId: execution.id, provider: 'claude', permissionMode: 'auto_all' }, eventId: 'sibling-input', prompt: 'Review.', status: 'queued' });
+  const { requestScopedId } = await import('./start-id');
+  const sessionId = requestScopedId('session', workspace.id, delivery.id);
+  const actor = { source: 'ai' as const, sessionId: source.id };
+  const { assertAgentLaunchAuthorization } = await import('./permissions');
+  const input = { workspaceId: workspace.id, sessionId, coordinationDeliveryId: delivery.id };
+  expect(() => assertAgentLaunchAuthorization(actor, input)).toThrow(/delegate_work/);
+  expect(() => assertAgentLaunchAuthorization(actor, { ...input, executionId: 'another-execution' })).toThrow(/delegate_work/);
+  expect(() => assertAgentLaunchAuthorization(actor, { ...input, executionId: execution.id })).not.toThrow();
+  const { startDelegatedExecution } = await import('./start-execution');
+  expect(await startDelegatedExecution(delivery.id)).toEqual({ sessionId, executionId: execution.id });
+  expect(q.getChatSession(sessionId)?.permissionMode).toBe('plan');
+  expect(await startDelegatedExecution(delivery.id)).toEqual({ sessionId, executionId: execution.id });
+  expect(q.listChatSessions({ executionId: execution.id })).toHaveLength(2);
+  expect(q.listChatEvents(sessionId).filter(event => event.content === 'coordination_initialized')).toHaveLength(1);
+  q.updateChatSession(sessionId, { permissionMode: 'auto_all' });
+  await expect(startDelegatedExecution(delivery.id)).rejects.toMatchObject({ code: 'conflict' });
+  expect(q.getChatSession(sessionId)?.permissionMode).toBe('auto_all');
+});

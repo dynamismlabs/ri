@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * `/triggers/new` — full-page wrapper around
  * `<TriggerCreateForm>`. Kept for deep linking; the rail's Triggers
@@ -45,14 +46,15 @@ export default function NewTriggerPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           type="button"
           onClick={() => router.push('/triggers')}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
-          aria-label="Back"
+          label="Back"
+          variant="ghost"
+          size="sm"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <h1 className="text-base font-semibold">Create scheduled task</h1>
       </header>
 

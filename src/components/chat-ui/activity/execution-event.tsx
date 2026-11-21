@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { parseSourceMarkers } from '@/lib/chat-sources/reference';
 import { SourceText, SourceMetadataProvider, type SourceChipTone } from '@/components/chat-ui/references/source-chip';
 import { ConnectedView } from '@/components/mcp-apps/view';
@@ -345,8 +346,10 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       return (
         <div className="group/row w-full text-[11px]">
           <div className="flex items-center gap-1.5 min-w-0">
-            <button
+            <Button
               onClick={() => setExpanded((v) => !v)}
+              variant="ghost"
+              size="xs"
               className="flex flex-shrink-0 items-center gap-1.5"
             >
               <RowDisclosure expanded={expanded}>
@@ -355,7 +358,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               <span className={cn(d.mono ? 'font-mono text-foreground/90' : 'font-medium text-foreground/90')}>
                 {d.verb}
               </span>
-            </button>
+            </Button>
             {entityEdit ? (
               <EntityEditChip entityType={entityEdit.entityType} entityId={entityEdit.entityId} />
             ) : filePath ? (
@@ -866,11 +869,13 @@ function ClaudeAuthRequiredBanner({
             <div className="mt-1 text-destructive">{errorMessage}</div>
           )}
         </div>
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           type="button"
           onClick={() => login.mutate()}
           disabled={login.isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-2.5 py-1 text-[11px] font-medium hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed"
+          variant="primary"
+          size="xs"
+          className="inline-flex items-center gap-1.5"
         >
           {login.isPending ? (
             <>
@@ -883,7 +888,7 @@ function ClaudeAuthRequiredBanner({
               <span>Log in</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -940,11 +945,13 @@ function CliSignInBanner({
           )}
         </div>
         {harness && (
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => recheck.mutate(harness)}
             disabled={recheck.isPending}
-            className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-2.5 py-1 text-[11px] font-medium hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed"
+            variant="primary"
+            size="xs"
+            className="inline-flex items-center gap-1.5"
           >
             {recheck.isPending ? (
               <>
@@ -957,7 +964,7 @@ function CliSignInBanner({
                 <span>Check again</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -1004,11 +1011,13 @@ function ResendLastMessageButton({ sessionId }: { sessionId: string }) {
   if (!lastUser || !(lastUser.content ?? '').trim()) return null;
 
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <Button
       type="button"
       onClick={() => resend.mutate()}
       disabled={resend.isPending}
-      className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-2.5 py-1 text-[11px] font-medium hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed"
+      variant="primary"
+      size="xs"
+      className="inline-flex items-center gap-1.5"
     >
       {resend.isPending ? (
         <>
@@ -1021,7 +1030,7 @@ function ResendLastMessageButton({ sessionId }: { sessionId: string }) {
           <span>Resend</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -1047,11 +1056,14 @@ function FailedSendBadge({
         <AlertTriangle size={11} />
         <span>{error ? `Send failed: ${error}` : 'Send failed'}</span>
       </div>
-      <button data-slot="action-button" data-tone="status"
+      <Button
         type="button"
         onClick={() => retry.mutate({ eventId })}
         disabled={retry.isPending}
-        className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-1.5 py-0.5 text-[10.5px] text-destructive hover:bg-destructive/10 disabled:opacity-60 disabled:cursor-not-allowed"
+        variant="secondary"
+        size="xs"
+        tone="danger"
+        className="inline-flex items-center gap-1"
       >
         {retry.isPending ? (
           <>
@@ -1064,7 +1076,7 @@ function FailedSendBadge({
             <span>Retry</span>
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -1128,25 +1140,28 @@ function DeliveryLine({
       {tone === 'warn' && <AlertTriangle size={10} />}
       <span>{text}</span>
       {delivery.cancellable && (
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => cancel.mutate(eventId)}
           disabled={cancel.isPending}
-          className="rounded px-1 py-0.5 font-medium text-foreground/80 hover:bg-muted/60 disabled:opacity-50"
+          variant="ghost"
+          size="xs"
         >
           {cancel.isPending ? 'Withdrawing…' : 'Cancel'}
-        </button>
+        </Button>
       )}
       {again && (
-        <button data-slot="action-button"
+        <Button
           type="button"
           onClick={() => send.mutate({ content, attachments })}
           disabled={send.isPending}
-          className="inline-flex items-center gap-1 rounded border border-current/30 px-1.5 py-0.5 font-medium hover:bg-muted/60 disabled:opacity-50"
+          variant="secondary"
+          size="xs"
+          className="inline-flex items-center gap-1"
         >
           <RefreshCw size={9} />
           Send again
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -1224,16 +1239,13 @@ function RowDisclosure({ children, expanded }: { children: ReactNode; expanded: 
 /** "PR #N ↗" external link — opens the pull request in a new tab. */
 function PrLink({ url, number }: { url: string; number: number }) {
   return (
-    <a data-slot="action-button"
-      href={url}
+    <Button asChild variant="secondary" size="xs" className="inline-flex flex-shrink-0 items-center gap-0.5"><a href={url}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="inline-flex flex-shrink-0 items-center gap-0.5 rounded border border-border bg-background px-1.5 py-px text-[10.5px] font-medium text-foreground/90 hover:bg-muted/50 transition-colors"
-    >
+      onClick={(e) => e.stopPropagation()}>
       PR #{number}
       <ArrowUpRight size={10} className="text-muted-foreground/70" />
-    </a>
+    </a></Button>
   );
 }
 
@@ -1312,14 +1324,16 @@ function CollapsedToolInput({ input }: { input: unknown }) {
   const text = typeof input === 'string' ? input : JSON.stringify(input, null, 2);
   return (
     <div>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-[10.5px] text-muted-foreground/55 hover:text-muted-foreground transition-colors"
+        variant="ghost"
+        size="xs"
+        className="flex items-center gap-1"
       >
         <ChevronRight size={10} className={cn('transition-transform', open && 'rotate-90')} />
         Prompt
-      </button>
+      </Button>
       {open && (
         <pre className="mt-1 text-[10.5px] text-muted-foreground bg-muted/30 rounded p-2 overflow-x-auto whitespace-pre-wrap break-words">
           {text}

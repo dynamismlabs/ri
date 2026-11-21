@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMergePr, useSessionPr, useSetAutoMerge } from '@/hooks/use-execution-actions';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
@@ -193,33 +194,36 @@ export function MergeButton({
                       ? 'Auto-merge is on. GitHub merges when checks pass.'
                       : 'Or let GitHub merge automatically once checks pass.'}
                   </span>
-                  <button data-slot="action-button"
+                  <Button
                     type="button"
                     onClick={handleAutoMerge}
                     disabled={autoMerge.isPending}
-                    className="px-2.5 py-1 rounded-md text-[11px] font-medium border border-border hover:bg-muted/40 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                    variant="secondary"
+                    size="sm"
                   >
                     {autoMerge.isPending ? '…' : autoMergeEnabled ? 'Disable auto-merge' : 'Enable auto-merge'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border bg-muted/20">
-                <button
+                <Button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-3 py-1.5 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                  variant="secondary"
+                  size="md"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={handleMerge}
                   disabled={!enabled || merge.isPending}
-                  className="px-3 py-1.5 rounded-md text-[11px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="secondary"
+                  size="md"
                 >
                   {merge.isPending ? 'Merging…' : 'Merge'}
-                </button>
+                </Button>
               </div>
             </div>
           </DialogPrimitive.Content>

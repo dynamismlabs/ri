@@ -179,13 +179,13 @@ async function phone(query = '', theme: 'dark' | 'light' = 'dark'): Promise<{ pa
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(`${base}/?theme=${theme}${query}`);
-  await page.getByRole('tablist').waitFor().catch((error) => { throw new Error(`${error.message}\n${errors.join('\n')}`); });
+  await page.getByRole('group', {name:'Show chats'}).waitFor().catch((error) => { throw new Error(`${error.message}\n${errors.join('\n')}`); });
   return { page, errors };
 }
 
-const tabs = (page: Page) => page.getByRole('tab').allTextContents();
-const selected = (page: Page) => page.getByRole('tab', { selected: true }).textContent();
-const panel = (page: Page) => page.getByRole('tabpanel');
+const tabs = (page: Page) => page.getByRole('group', {name:'Show chats'}).getByRole('button').allTextContents();
+const selected = (page: Page) => page.getByRole('group', {name:'Show chats'}).locator('[aria-pressed="true"]').textContent();
+const panel = (page: Page) => page.locator('[data-chat-lens-results]');
 /** Each row's first line (its title or agent), top to bottom. */
 const rowTitles = (page: Page) =>
   panel(page).locator('button[data-chat-row], button[aria-label*=": "]').evaluateAll((rows) =>
@@ -201,7 +201,7 @@ it('opens on Unread with what wants you first, and counts agree with the tab bar
     expect(await tabs(page)).toEqual(['Unread4', 'Working2', 'Agents']);
     expect(await selected(page)).toBe('Unread4');
     // Something is blocked on you, so Unread's count pulses.
-    expect(await page.locator('[data-lens="unread"] [data-lens-count]').getAttribute('class')).toContain('animate-pulse');
+    expect(await page.locator('[data-value="unread"] .ri-segment-count').getAttribute('class')).toContain('ri-segment-pulse');
 
     // Ri's own reply, the blocked chat, then the unread ones newest first.
     // The chat mid-turn waits for its outcome, under Working.
@@ -235,7 +235,7 @@ it('opens on Unread with what wants you first, and counts agree with the tab bar
 it('lists only running chats under Working, each naming its agent', async () => {
   const { page, errors } = await phone();
   try {
-    await page.getByRole('tab', { name: /^Working/ }).tap();
+    await page.getByRole('group', {name:'Show chats'}).getByRole('button', { name: /^Working/ }).tap();
     expect(await selected(page)).toBe('Working2');
     const rows = panel(page).locator('[data-chat-row]');
     expect(await rows.evaluateAll((els) => els.map((el) => el.getAttribute('data-chat-row')))).toEqual(['ri-1', 'fin-3']);
@@ -254,7 +254,7 @@ it('lists only running chats under Working, each naming its agent', async () => 
 it('lists every agent with its own state and counts, its chats one tap away', async () => {
   const { page, errors } = await phone();
   try {
-    await page.getByRole('tab', { name: 'Agents' }).tap();
+    await page.getByRole('group', {name:'Show chats'}).getByRole('button', { name: 'Agents',exact:true }).tap();
     // The agent's own line: its reply, what it's doing, or what it last said.
     expect(await panel(page).getByRole('button', { name: 'Ri: New reply' }).innerText()).toContain('Merged the schedules fix. Want me to restart dev?');
     expect(await panel(page).getByRole('button', { name: 'Research: Thinking' }).innerText()).toContain('Thinking…');
@@ -290,13 +290,13 @@ it('lists every agent with its own state and counts, its chats one tap away', as
 it('remembers the picked tab across a reload', async () => {
   const { page, errors } = await phone();
   try {
-    await page.getByRole('tab', { name: /^Working/ }).tap();
+    await page.getByRole('group', {name:'Show chats'}).getByRole('button', { name: /^Working/ }).tap();
     await page.reload();
-    await page.getByRole('tablist').waitFor();
+    await page.getByRole('group', {name:'Show chats'}).waitFor();
     expect(await selected(page)).toBe('Working2');
-    await page.getByRole('tab', { name: 'Agents' }).tap();
+    await page.getByRole('group', {name:'Show chats'}).getByRole('button', { name: 'Agents',exact:true }).tap();
     await page.reload();
-    await page.getByRole('tablist').waitFor();
+    await page.getByRole('group', {name:'Show chats'}).waitFor();
     expect(await selected(page)).toBe('Agents');
     expect(errors).toEqual([]);
   } finally {
@@ -316,17 +316,17 @@ it("opens an agent's Chats tab on All, with Unread and Working a tap away", asyn
       .toEqual(['Tax estimate', 'Reconcile Amex', 'Import Chase CSV']);
     expect(await all.locator('[role="button"]', { hasText: 'Tax estimate' }).innerText()).toContain('working');
 
-    await page.getByRole('tab', { name: /^Unread/ }).click();
+    await page.getByRole('group', {name:'Show chats'}).getByRole('button', { name: /^Unread/ }).click();
     expect(await panel(page).locator('[role="button"]').evaluateAll((rows) => rows.map((r) => r.querySelector('.truncate')?.textContent)))
       .toEqual(['Reconcile Amex', 'Import Chase CSV']);
-    await page.getByRole('tab', { name: /^Working/ }).click();
+    await page.getByRole('group', {name:'Show chats'}).getByRole('button', { name: /^Working/ }).click();
     expect(await panel(page).locator('[role="button"]').evaluateAll((rows) => rows.map((r) => r.querySelector('.truncate')?.textContent)))
       .toEqual(['Tax estimate']);
     await page.screenshot({ path: '/tmp/ri-agent-chats-working.png' });
 
     // Remembered, for every agent.
     await page.reload();
-    await page.getByRole('tablist').waitFor();
+    await page.getByRole('group', {name:'Show chats'}).waitFor();
     expect(await selected(page)).toBe('Working1');
     expect(errors).toEqual([]);
   } finally {

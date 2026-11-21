@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { Link2, Paperclip } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -52,28 +53,22 @@ export function PublishedResultList({
           {(result.links.length > 0 || result.attachments.length > 0) && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               {result.links.map((link) => (
-                <a data-slot="action-button"
-                  key={link.url}
+                <Button key={link.url} asChild variant="secondary" size="sm" className="inline-flex max-w-full items-center gap-1"><a
                   href={link.url}
                   target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex max-w-full items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:bg-muted"
-                >
+                  rel="noopener noreferrer">
                   <Link2 size={12} aria-hidden />
                   <span className="truncate">{link.label}</span>
-                </a>
+                </a></Button>
               ))}
               {result.attachments.map((file) => (
-                <a data-slot="action-button"
-                  key={file.fileName}
+                <Button key={file.fileName} asChild variant="secondary" size="sm" className="inline-flex max-w-full items-center gap-1"><a
                   href={fileUrl(file.fileName)}
-                  download={file.originalName}
-                  className="inline-flex max-w-full items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] text-foreground hover:bg-muted"
-                >
+                  download={file.originalName}>
                   <Paperclip size={12} aria-hidden />
                   <span className="truncate">{file.originalName}</span>
                   <span className="text-muted-foreground">{size(file.size)}</span>
-                </a>
+                </a></Button>
               ))}
             </div>
           )}

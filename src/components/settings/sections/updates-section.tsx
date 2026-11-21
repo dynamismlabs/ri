@@ -1,10 +1,12 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
+import { Field } from '@/components/system/field';
 
 import { RuntimeSetup } from '@/components/desktop/runtime-setup';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
 import { documentSaves } from '@/lib/client/document-saves';
@@ -55,26 +57,42 @@ function ActivationSettings({ update, disabled, onAction }: {
       <div className="space-y-2">
         <Label htmlFor={`${id}-hour`}>Start time</Label>
         <Select value={hour} onValueChange={setHour} disabled={disabled}>
-          <SelectTrigger id={`${id}-hour`}><SelectValue /></SelectTrigger>
+          <SelectField id={`${id}-hour`} className="w-fit">
+            <SelectValue />
+          </SelectField>
           <SelectContent>{Array.from({ length: 24 }, (_, value) => <SelectItem key={value} value={String(value)}>{String(value).padStart(2, '0')}:00</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-duration`}>Window length</Label>
         <Select value={duration} onValueChange={setDuration} disabled={disabled}>
-          <SelectTrigger id={`${id}-duration`}><SelectValue /></SelectTrigger>
+          <SelectField id={`${id}-duration`} className="w-fit">
+            <SelectValue />
+          </SelectField>
           <SelectContent>{Array.from({ length: 12 }, (_, index) => index + 1).map(value => <SelectItem key={value} value={String(value)}>{value} {value === 1 ? 'hour' : 'hours'}</SelectItem>)}</SelectContent>
         </Select>
       </div>
-      <div className="space-y-2 sm:col-span-2">
-        <Label htmlFor={`${id}-zone`}>Time zone</Label>
-        <Input id={`${id}-zone`} value={timeZone} onChange={event => setTimeZone(event.target.value)} disabled={disabled} placeholder="America/Denver" autoComplete="off" spellCheck={false} />
-        <p className="text-xs text-muted-foreground">The selected time zone stays the same when you travel. If this computer is asleep or busy, Ri waits for another eligible window.</p>
-      </div>
+      <Field
+        id={`${id}-zone`}
+        value={timeZone}
+        onChange={(event) => setTimeZone(event.target.value)}
+        disabled={disabled}
+        placeholder="America/Denver"
+        autoComplete="off"
+        spellCheck={false}
+        label="Time zone"
+        description="The selected time zone stays the same when you travel. If this computer is asleep or busy, Ri waits for another eligible window."
+        className="sm:col-span-2"
+      />
     </div>}
     {update.approved && !update.now && update.window && <p className="text-muted-foreground">Scheduled {maintenanceWindowText(update.window)}.</p>}
     <div className="flex flex-wrap gap-2">
-      <Button disabled={disabled} onClick={schedule}>{scheduled ? 'Schedule update' : 'Update when idle'}</Button>
+      <Button
+        disabled={disabled}
+        onClick={schedule}
+        variant="primary"
+        size="md"
+      >{scheduled ? 'Schedule update' : 'Update when idle'}</Button>
     </div>
   </div>;
 }
@@ -91,10 +109,30 @@ function WhatIsWaiting({ update, canUse, disabled, onAction }: {
   return <div className="space-y-2">
     {update.waitingLong && <p role="status" className="text-muted-foreground">This update has been waiting for over a day.</p>}
     {canUse && <div className="flex flex-wrap gap-2">
-      {!running && <Button disabled={disabled} onClick={() => void onAction({ action: 'apply' })}>Update now</Button>}
-      {running && <Button disabled={disabled} variant="outline" onClick={() => void onAction({ action: 'apply-now' })}>Update now and end them</Button>}
-      {waiting && update.automatic && !update.heldUntil && <Button disabled={disabled} variant="ghost" onClick={() => void onAction({ action: 'later' })}>Not now</Button>}
-      {waiting && !update.automatic && <Button disabled={disabled} variant="ghost" onClick={() => void onAction({ action: 'later' })}>Don&apos;t update yet</Button>}
+      {!running && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'apply' })}
+        variant="primary"
+        size="md"
+      >Update now</Button>}
+      {running && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'apply-now' })}
+        variant="secondary"
+        size="sm"
+      >Update now and end them</Button>}
+      {waiting && update.automatic && !update.heldUntil && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'later' })}
+        variant="ghost"
+        size="sm"
+      >Not now</Button>}
+      {waiting && !update.automatic && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'later' })}
+        variant="ghost"
+        size="sm"
+      >Don&apos;t update yet</Button>}
     </div>}
   </div>;
 }
@@ -110,12 +148,27 @@ function GoBack({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => P
     } catch (error) { toast.error(apiErrorText(error)); }
   };
   return <div className="space-y-2">
-    {!text && <Button variant="outline" disabled={disabled} onClick={() => void look()}>Go back to the previous version…</Button>}
+    {!text && <Button
+      disabled={disabled}
+      onClick={() => void look()}
+      variant="secondary"
+      size="sm"
+    >Go back to the previous version…</Button>}
     {text && <>
       <p className="whitespace-pre-wrap text-muted-foreground">{text}</p>
       <div className="flex gap-2">
-        {available && <Button variant="destructive" disabled={disabled} onClick={() => void onConfirm().then(() => setText(''))}>Roll back</Button>}
-        <Button variant="ghost" disabled={disabled} onClick={() => setText('')}>{available ? 'Cancel' : 'Close'}</Button>
+        {available && <Button
+          disabled={disabled}
+          onClick={() => void onConfirm().then(() => setText(''))}
+          variant="destructive"
+          size="sm"
+        >Roll back</Button>}
+        <Button
+          disabled={disabled}
+          onClick={() => setText('')}
+          variant="ghost"
+          size="sm"
+        >{available ? 'Cancel' : 'Close'}</Button>
       </div>
     </>}
   </div>;
@@ -187,14 +240,26 @@ export function UpdatesSection() {
       <summary className="cursor-pointer font-medium">Advanced</summary>
       <div className="mt-4 space-y-4">
         {update.configured && !fromCheckout && <div className="flex flex-wrap gap-2">
-          <Button variant="outline" disabled={disabled || update.phase === 'recovery-required'} onClick={() => void action({ action: 'check' })}>Check for updates</Button>
-          {update.release && ['available', 'failed'].includes(update.phase) && <Button disabled={disabled} onClick={() => void action({ action: 'download' })}>{update.phase === 'failed' ? 'Retry download' : 'Download update'}</Button>}
+          <Button
+            disabled={disabled || update.phase === 'recovery-required'}
+            onClick={() => void action({ action: 'check' })}
+            variant="secondary"
+            size="sm"
+          >Check for updates</Button>
+          {update.release && ['available', 'failed'].includes(update.phase) && <Button
+            disabled={disabled}
+            onClick={() => void action({ action: 'download' })}
+            variant="primary"
+            size="md"
+          >{update.phase === 'failed' ? 'Retry download' : 'Download update'}</Button>}
         </div>}
         {update.policy && !fromCheckout && <>
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1"><Label htmlFor={`${id}-channel`}>Release channel</Label><p className="text-xs text-muted-foreground">Latest gets every release as it ships.</p></div>
             <Select value={update.policy.channel} disabled={disabled} onValueChange={channel => void savePreferences({ channel: channel as 'stable' | 'latest' })}>
-              <SelectTrigger id={`${id}-channel`} className="w-32"><SelectValue /></SelectTrigger>
+              <SelectField id={`${id}-channel`} className="w-32">
+                <SelectValue />
+              </SelectField>
               <SelectContent><SelectItem value="stable">Stable</SelectItem><SelectItem value="latest">Latest</SelectItem></SelectContent>
             </Select>
           </div>

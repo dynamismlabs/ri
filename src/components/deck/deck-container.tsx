@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDashboard } from '@/contexts/dashboard-context';
 import type { DeckItem as DbDeckItem, DeckChange, DeckRecord, TaskRecord } from '@/db/types';
@@ -838,12 +839,15 @@ export function DeckContainer() {
                 Showing {formatLocalDate(activeDeckRecord?.forDate) ?? 'an earlier'} plan because
                 today&apos;s couldn&apos;t be built. Your deadlines above are current.
               </span>
-              <button
+              <Button
                 onClick={() => generateDeck()}
-                className="shrink-0 rounded px-1.5 py-0.5 font-medium text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
+                variant="ghost"
+                size="xs"
+                tone="warning"
+                className="shrink-0"
               >
                 Rebuild
-              </button>
+              </Button>
             </div>
           </div>
         )}

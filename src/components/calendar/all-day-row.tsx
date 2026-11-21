@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * All-day events pinned above the hour axis: birthdays, OOO, multi-day spans.
  * They never join the busy math (a birthday must not zero out the day) but
@@ -44,13 +45,14 @@ export function AllDayRow({ events }: { events: CalendarEvent[] }) {
         </Popover>
       ))}
       {!expanded && hidden > 0 && (
-        <button
+        <Button
           type="button"
           onClick={() => setExpanded(true)}
-          className="px-1.5 py-0.5 rounded text-[10px] text-muted-foreground/70 hover:text-foreground transition-colors"
+          variant="ghost"
+          size="sm"
         >
           +{hidden} more
-        </button>
+        </Button>
       )}
     </div>
   );

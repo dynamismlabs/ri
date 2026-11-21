@@ -1,5 +1,9 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import type { Connection, ProviderStatus } from '@/components/settings/sections/integrations/types';
@@ -34,6 +38,8 @@ interface Catalog {
  * returning from a sign-in page) refreshes what's connected.
  */
 export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['integrations', 'onboarding-catalog'],
     queryFn: async (): Promise<Catalog> => {
@@ -94,29 +100,29 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
             ))}
           </div>
 
-          <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background px-2.5">
-            <Search size={12} className="flex-shrink-0 text-muted-foreground/60" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
-              aria-label="Search apps"
-              className="h-8 min-w-0 flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
-            />
-          </div>
+          <Field
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
+            aria-label="Search apps"
+            className={'min-w-0 flex-1'}
+            leading={<Search />}
+            size={compactFieldSize}
+          />
 
           {q && (
             <div className="mt-1.5 flex flex-col">
               {results.length === 0 ? (
                 <p className="px-1 py-2 text-[11px] text-muted-foreground">
                   Nothing by that name.{' '}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-                    className="underline-offset-2 hover:underline"
+                    variant="link"
+                    size="md"
                   >
                     Add your own in Settings
-                  </button>
+                  </Button>
                   , any MCP server works.
                 </p>
               ) : (
@@ -137,13 +143,15 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                 ))
               )}
               {results.length > SEARCH_LIMIT && (
-                <button
+                <Button
                   type="button"
                   onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-                  className="self-start px-1.5 py-1 text-[11px] text-muted-foreground underline-offset-2 hover:underline"
+                  variant="link"
+                  size="md"
+                  className="self-start"
                 >
                   {results.length - SEARCH_LIMIT} more in Settings
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -152,21 +160,24 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
 
       <div className="mt-3 flex items-center justify-end gap-1.5">
         {connectedNames.length === 0 ? (
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             type="button"
             onClick={() => onDone('Not now')}
-            className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            variant="ghost"
+            size="md"
           >
             Not now
-          </button>
+          </Button>
         ) : (
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => onDone(`Connected ${listJoin(connectedNames)}`)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             Continue <ArrowRight size={12} />
-          </button>
+          </Button>
         )}
       </div>
     </div>

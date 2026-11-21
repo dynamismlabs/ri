@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { DefaultSelectionEditor } from '@/components/settings/default-selection-editor';
 import { ProviderIcon } from '@/components/settings/harness-connection-ui';
 import { useDefaultSelection, useSetDefaultSelection } from '@/hooks/use-default-selection';
@@ -47,7 +47,13 @@ export function DefaultModelSection() {
         <div className="flex items-center gap-2.5">
           <ProviderIcon id={saved?.harness ?? DEFAULT_HARNESS} />
           <p className="min-w-0 flex-1 text-[12.5px] font-medium text-foreground">{summary}</p>
-          <Button type="button" size="xs" variant="outline" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+          <Button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setOpen((o) => !o)}
+            variant="secondary"
+            size="xs"
+          >
             {open ? 'Close' : 'Change'}
           </Button>
         </div>

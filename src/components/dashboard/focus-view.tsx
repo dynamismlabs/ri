@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { Dialog } from '@base-ui/react/dialog';
 import { Target } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -43,15 +44,18 @@ export function FocusView() {
                 'mt-6 flex items-center gap-2 pt-5 border-t',
                 isDark ? 'border-secondary' : 'border-muted'
               )}>
-                <button className="px-4 py-2 bg-orange-500 text-white text-[11px] font-bold rounded-lg shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                >
                   Complete
-                </button>
-                <button data-slot="action-button" className={cn(
-                  'px-4 py-2 text-[11px] font-bold rounded-lg border border-border text-muted-foreground hover:text-foreground transition-all',
-                  isDark ? 'bg-secondary' : 'bg-muted'
-                )}>
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                >
                   Defer
-                </button>
+                </Button>
                 <div className="flex-1" />
                 <Dialog.Close
                   className="px-4 py-2 flex items-center gap-2 text-[11px] font-bold rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-500 transition-all cursor-pointer"

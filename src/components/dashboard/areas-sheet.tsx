@@ -1,5 +1,7 @@
 'use client'
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useCallback, useRef, useState } from 'react'
 import { Dialog } from 'radix-ui'
 import { X, Plus, GripVertical } from 'lucide-react'
@@ -247,25 +249,28 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-4 h-11 flex-shrink-0 border-b border-border">
               <div className="flex items-center gap-3">
-                <button
+                <IconButton
                   onClick={() => onOpenChange(false)}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  aria-label="Close"
+                  label="Close"
+                  variant="ghost"
+                  size="sm"
                 >
                   <X size={16} />
-                </button>
+                </IconButton>
                 <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60 uppercase">
                   Areas
                 </span>
               </div>
 
-              <button
+              <Button
                 onClick={() => setCreateModalOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
               >
                 <Plus size={12} />
                 New
-              </button>
+              </Button>
             </div>
 
             {/* Area list */}
@@ -273,12 +278,13 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
               {displayedAreas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
                   <p className="text-[11px]">No areas yet</p>
-                  <button
+                  <Button
                     onClick={() => setCreateModalOpen(true)}
-                    className="text-[11px] text-primary hover:underline"
+                    variant="link"
+                    size="sm"
                   >
                     Create your first area
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -296,14 +302,15 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
             {/* Footer */}
             {archivedAreas.length > 0 && (
               <div className="flex-shrink-0 border-t border-border px-4 py-2">
-                <button
+                <Button
                   onClick={() => setShowArchived(!showArchived)}
-                  className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                  variant="ghost"
+                  size="sm"
                 >
                   {showArchived
                     ? 'Hide archived'
                     : `Show ${archivedAreas.length} archived`}
-                </button>
+                </Button>
               </div>
             )}
           </div>

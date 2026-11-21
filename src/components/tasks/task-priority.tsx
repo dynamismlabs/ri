@@ -1,5 +1,10 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useRankTask, useTasks } from '@/hooks/use-tasks';
@@ -69,21 +74,27 @@ export function TaskPriority({ taskId, status }: { taskId: string; status: TaskS
           </span>
         ) : (
           <Tip label="Type an exact rank">
-            <button
+            <Button
               ref={rankButton}
               onClick={() => setEditing(true)}
-              className="inline-flex items-center px-2 py-0.5 rounded text-foreground/80 text-[12px] font-medium tabular-nums hover:bg-muted transition-colors"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center"
             >
               {position.ranked ? `Ranked #${position.rank} of ${position.total}` : 'Not yet ranked'}
-            </button>
+            </Button>
           </Tip>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition-colors">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="inline-flex items-center gap-1"
+            >
               {position.ranked ? 'Move' : 'Place'}
               <ChevronDown size={10} />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-32">
             {BUCKET_OPTIONS.map((opt) => (
@@ -120,6 +131,8 @@ function RankInput({
   total: number;
   onDone: (rank: number | null, fromKeyboard: boolean) => void;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   // Enter and Escape unmount the field, and a removed field can still fire
   // blur. Finish once.
   const finished = useRef(false);
@@ -131,7 +144,7 @@ function RankInput({
   };
 
   return (
-    <input
+    <Field
       type="number"
       inputMode="numeric"
       min={1}
@@ -153,8 +166,10 @@ function RankInput({
           finish(null, true);
         }
       }}
-      style={{ width: `${String(total).length + 2}ch` }}
-      className="h-5 rounded border border-border bg-card px-1 text-center text-[12px] font-medium tabular-nums outline-none focus:border-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      style={{ width: `calc(${String(total).length + 2}ch + 2 * var(--field-padding))` }}
+      className="w-auto"
+      align="center"
+      size={compactFieldSize}
     />
   );
 }

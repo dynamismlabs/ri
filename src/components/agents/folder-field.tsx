@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 /**
  * A folder on one of the person's devices: typed, or chosen with Browse,
@@ -9,8 +10,8 @@
 
 import { useState } from 'react';
 import { FolderOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { FolderPickerDialog } from '@/components/workspaces/folder-picker-dialog';
 import { Tip } from '@/components/ui/tip';
 
@@ -33,7 +34,7 @@ export function FolderField({
   return (
     <>
       <div className="flex min-w-0 gap-2">
-        <Input
+        <Field
           autoFocus={autoFocus}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -41,19 +42,21 @@ export function FolderField({
           spellCheck={false}
           autoCapitalize="off"
           autoCorrect="off"
-          className="h-8 min-w-0 flex-1 font-mono text-[12px]"
+          className="min-w-0 flex-1"
+          purpose="code"
+          aria-label={'Folder'}
         />
         <Tip label={browsable ? undefined : `${device.name} isn't running Ri right now. Type the path instead.`}>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               setPicking(true);
             }}
             disabled={!browsable}
-            className="h-8 shrink-0 gap-1.5 text-[12px]"
+            variant="secondary"
+            size="sm"
+            className="shrink-0 gap-1.5"
           >
             <FolderOpen size={13} />
             Browse

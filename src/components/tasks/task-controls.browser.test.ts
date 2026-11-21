@@ -30,7 +30,7 @@ afterAll(async()=>{await fixture?.close();});
 it.skipIf(!enabled).each([['Asia/Tokyo','2026-11-06','Fri, Nov 6','Nov 6, 2026'],['America/Denver','2026-11-05','Thu, Nov 5','Nov 5, 2026']])('types or picks a task date on the local calendar in %s',async(timezoneId,tomorrow,described,shown)=>{
  const page=await fixture.browser.newPage({timezoneId});testTimeouts(page, 4000);try{await page.clock.setFixedTime(new Date('2026-11-04T20:00:00Z'));await page.goto(fixture.url);
  const field=page.getByRole('button',{name:/^Snooze until: /}),input=page.getByRole('textbox',{name:'Snooze until'}),outside=page.getByRole('button',{name:'Outside',exact:true}),changes=()=>page.evaluate('window.changes');
- await field.waitFor();expect(await field.getAttribute('class')).toContain('text-red-500');
+ await field.waitFor();expect(await field.getAttribute('data-tone')).toBe('danger');
  // Typed text shows what it read, and saves on leaving.
  await field.click();await expect.poll(()=>input.evaluate(el=>el===document.activeElement)).toBe(true);expect(await input.inputValue()).toBe('Jan 1, 2026');
  await input.fill('tomorrow');await page.getByText(described,{exact:true}).waitFor();expect(await changes()).toEqual([]);await outside.click();await input.waitFor({state:'detached'});expect(await changes()).toEqual([tomorrow]);

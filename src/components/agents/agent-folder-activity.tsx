@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { trpc } from '@/lib/trpc/client';
@@ -13,7 +14,11 @@ export function AgentFolderActivity({ workspaceId }: { workspaceId: string }) {
   return <details className="shrink-0 border-b px-3 py-2 text-xs" onToggle={event => { if (event.currentTarget.open) void activity.refetch(); }}>
     <summary className="cursor-pointer text-muted-foreground">Recent shared folder activity</summary>
     <div className="max-h-36 overflow-y-auto pt-2">
-      {activity.error ? <p>Activity could not be read. <button className="underline" onClick={() => void activity.refetch()}>Retry</button></p>
+      {activity.error ? <p>Activity could not be read. <Button
+        onClick={() => void activity.refetch()}
+        variant="link"
+        size="sm"
+      >Retry</Button></p>
         : !activity.data?.length ? <p className="text-muted-foreground">No recorded file changes or terminals yet.</p>
           : <ol className="space-y-1">{activity.data.map(item => <li key={item.id}><span className="font-medium">{item.memberName}</span> · {item.kind === 'terminal_open' ? 'opened a terminal' : `${item.operation} ${item.resource}`} · <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString()}</time></li>)}</ol>}
     </div>

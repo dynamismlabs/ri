@@ -1,5 +1,7 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { useHomeStorageScope } from '@/components/home/home-context';
 
 import { useState } from 'react';
@@ -32,11 +34,12 @@ import { HarnessMark, ProviderIcon } from '@/components/settings/harness-connect
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { readProviderEffort } from '@/lib/executions/provider-effort';
 import { readProviderSpeed } from '@/lib/executions/provider-speed';
-import { serviceTierForModel, serviceTierOptions } from '@/lib/harness/service-tiers';
-import { cn } from '@/lib/utils';
+import { serviceTierForModel, serviceTierOptions, serviceTierLabel } from '@/lib/harness/service-tiers';
+
 import { Tip } from '@/components/ui/tip';
 
 interface ComposerProviderMenuProps {
+  size?: "compact" | "touch";
   open: boolean;
   onOpenChange: (open: boolean) => void;
   /** This session's provider (composer harness, mapped to provider vocab). */
@@ -85,6 +88,7 @@ interface ComposerProviderMenuProps {
  * Settings owns the full catalog, visibility controls and connection setup.
  */
 export function ComposerProviderMenu({
+  size = "compact",
   open,
   onOpenChange,
   currentProvider,
@@ -174,20 +178,18 @@ export function ComposerProviderMenu({
     <Popover open={open} onOpenChange={reset}>
       <PopoverTrigger asChild>
         <Tip label="Choose a model and adjust its settings">
-          <button
+          <ChipButton
             type="button"
-            data-slot="chip-button"
-            aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
+            data-composer-model
+            aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}${serviceTier ? `, ${serviceTierLabel(serviceTier)}` : ''}`}
             disabled={disabled || switching}
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors',
-              'border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-              'disabled:opacity-50',
-            )}
+            variant="secondary"
+            size={size}
+            className="inline-flex min-w-0 shrink items-center gap-1.5"
           >
             <HarnessMark id={currentProvider} />
-            <ModelMenuLabel model={fallbackLabel} effort={effortLabel} variant={variantLabel} speed={serviceTier ?? undefined} />
-          </button>
+            <ModelMenuLabel model={fallbackLabel} effort={size === 'touch' ? undefined : effortLabel} variant={size === 'touch' ? undefined : variantLabel} speed={size === 'touch' ? undefined : serviceTier ?? undefined} />
+          </ChipButton>
         </Tip>
       </PopoverTrigger>
       <PopoverContent
@@ -217,7 +219,7 @@ export function ComposerProviderMenu({
               </p>
             </div>
             <div className="flex flex-col gap-1.5">
-              <button
+              <Button
                 type="button"
                 onClick={() => {
                   const modelOption = pendingModel ?? {
@@ -227,7 +229,9 @@ export function ComposerProviderMenu({
                   switchProvider(pending.harness, modelOption);
                 }}
                 disabled={switching}
-                className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-2 py-1.5 text-[12px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                variant="primary"
+                size={size === "touch" ? "touch" : "md"}
+                className="inline-flex items-center justify-center gap-1.5"
               >
                 {switching ? (
                   <Loader2 size={13} className="animate-spin" />
@@ -235,15 +239,16 @@ export function ComposerProviderMenu({
                   <MessageSquarePlus size={13} />
                 )}
                 Start new chat
-              </button>
-              <button data-slot="action-button"
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setPending(null)}
                 disabled={switching}
-                className="rounded-md border border-border px-2 py-1.5 text-[12px] text-muted-foreground hover:text-foreground disabled:opacity-50"
+                variant="secondary"
+                size={size === "touch" ? "touch" : "md"}
               >
                 Back
-              </button>
+              </Button>
             </div>
           </div>
         ) : (

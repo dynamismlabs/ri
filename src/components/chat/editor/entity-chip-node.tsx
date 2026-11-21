@@ -1,3 +1,4 @@
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Inline entity reference chip — sibling to FileChipNode (attachments)
  * and MentionChipNode (worktree files / folders). Renders as
@@ -194,15 +195,18 @@ function ChipFrame({
         {icon}
         {/* The label sets the chip's baseline, so a picture first doesn't lift it off the line. */}
         <span className="self-baseline text-[11px] truncate max-w-[200px]">{label}</span>
-        <button
+        <IconButton
           type="button"
           onMouseDown={handleRemove}
-          className="ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors"
-          aria-label={`Remove ${label}`}
           tabIndex={-1}
+          label={`Remove ${label}`}
+          variant="ghost"
+          size="xs"
+          focus="inside"
+          className="ml-0.5 inline-flex items-center justify-center"
         >
           <X size={10} />
-        </button>
+        </IconButton>
       </NodeViewWrapper>
     </Tip>
   );

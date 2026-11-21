@@ -12,7 +12,7 @@ let root: Root | undefined;
 afterEach(async () => { await act(async () => root?.unmount()); vi.unstubAllGlobals(); });
 async function mount(props: Parameters<typeof TaskSurface>[0]) {
   const { window, document } = parseHTML('<html><body></body></html>');
-  vi.stubGlobal('window', window); vi.stubGlobal('document', document); vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
+  vi.stubGlobal('window', window); vi.stubGlobal('document', document); vi.stubGlobal('HTMLElement', window.HTMLElement); vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   window.HTMLElement.prototype.scrollIntoView = () => {};
   vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   const storage = new Map(); vi.stubGlobal('localStorage', { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) });

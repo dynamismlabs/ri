@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { Play, Square, RotateCw, ExternalLink, ChevronDown, ChevronUp, Monitor, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -68,40 +70,47 @@ export function PreviewHeader({
   return (
     <div className="flex h-9 items-center gap-1.5 border-b border-border bg-background px-2">
       {!onStart || !onStop ? null : isStarted || isStarting ? (
-        <button
+        <Button
           type="button"
           onClick={onStop}
           disabled={isStarting}
-          className="flex h-7 items-center gap-1.5 rounded px-2 text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1.5"
         >
           <Square size={12} className="fill-current" />
           Stop
-        </button>
+        </Button>
       ) : (
         <Tip label={disableStart ? disableStartReason ?? 'Start unavailable' : undefined}>
-          <button
+          <Button
             type="button"
             onClick={onStart}
             disabled={isStarting || disableStart}
-            className="flex h-7 items-center gap-1.5 rounded px-2 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1.5"
           >
             <Play size={12} className="fill-current" />
             Start
-          </button>
+          </Button>
         </Tip>
       )}
 
-      <Tip label="Reload">
-        <button
+
+        <IconButton
           type="button"
           onClick={onRefresh}
           disabled={!isLive}
-          className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 disabled:hover:bg-transparent"
-          aria-label="Reload"
+          label="Reload"
+          tooltip="Reload"
+          variant="ghost"
+          size="sm"
+          className="flex items-center justify-center"
         >
           <RotateCw size={13} />
-        </button>
-      </Tip>
+        </IconButton>
+
 
       {/* Reachability chip — local loopback vs the active remote provider. */}
       {isLive && (
@@ -141,37 +150,29 @@ export function PreviewHeader({
         </button>
       </Tip>
 
-      <Tip label="Open in new tab">
-        <a
-          href={url ?? '#'}
+
+        <IconButton asChild label="Open in new tab" tooltip="Open in new tab" variant="ghost" size="sm" className="flex items-center justify-center"><a href={url ?? '#'}
           target="_blank"
           rel="noopener noreferrer"
           aria-disabled={!url}
-          onClick={(e) => { if (!url) e.preventDefault(); }}
-          className={cn(
-            'flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground',
-            !url && 'pointer-events-none opacity-30',
-          )}
-          aria-label="Open in new tab"
-        >
+          onClick={(e) => { if (!url) e.preventDefault(); }}>
           <ExternalLink size={13} />
-        </a>
-      </Tip>
+        </a></IconButton>
+
 
       {shareControl}
 
       {onToggleLogs && (
-        <button
+        <Button
           type="button"
           onClick={onToggleLogs}
-          className={cn(
-            'flex h-7 items-center gap-1 rounded px-2 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground',
-            logsOpen && 'bg-muted text-foreground',
-          )}
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1"
         >
           {logsOpen ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
           Logs
-        </button>
+        </Button>
       )}
     </div>
   );

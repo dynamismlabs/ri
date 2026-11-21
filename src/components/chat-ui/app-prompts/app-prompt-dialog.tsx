@@ -1,11 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useState, type FormEvent } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+
 import type { ChatAppPrompt } from '@/lib/integrations/app-prompts';
 import { promptArgumentLabel } from '@/lib/integrations/prompt-argument-label';
 
@@ -54,23 +54,45 @@ function PromptForm({ prompt, onCancel, onFill }: { prompt: ChatAppPrompt; onCan
         {prompt.arguments.map((arg, index) => {
           const id = `app-prompt-${index}`;
           return (
-            <div key={arg.name} className="space-y-1.5">
-              <Label htmlFor={id} className="text-xs">
-                {promptArgumentLabel(arg)}
-                {!arg.required && <span className="font-normal text-muted-foreground"> (optional)</span>}
-              </Label>
-              <Input id={id} value={values[arg.name] ?? ''} required={arg.required} autoFocus={index === 0} disabled={pending}
-                aria-describedby={arg.description ? `${id}-help` : undefined}
-                onChange={(event) => setValues((current) => ({ ...current, [arg.name]: event.target.value }))} />
-              {arg.description && <p id={`${id}-help`} className="text-[11px] text-muted-foreground">{arg.description}</p>}
-            </div>
+            <Field
+              id={id}
+              value={values[arg.name] ?? ''}
+              required={arg.required}
+              autoFocus={index === 0}
+              disabled={pending}
+              aria-describedby={arg.description ? `${id}-help` : undefined}
+              onChange={(event) =>
+                setValues((current) => ({ ...current, [arg.name]: event.target.value }))
+              }
+              label={
+                <>
+                  {promptArgumentLabel(arg)}
+                  {!arg.required && (
+                    <span className="font-normal text-muted-foreground"> (optional)</span>
+                  )}
+                </>
+              }
+              key={arg.name}
+              description={arg.description && arg.description}
+            />
           );
         })}
       </div>
       {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" aria-hidden />{error}</p>}
       <DialogFooter>
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>Cancel</Button>
-        <Button type="submit" disabled={pending}>
+        <Button
+          type="button"
+          onClick={onCancel}
+          disabled={pending}
+          variant="ghost"
+          size="md"
+        >Cancel</Button>
+        <Button
+          type="submit"
+          disabled={pending}
+          variant="primary"
+          size="md"
+        >
           {pending && <Loader2 size={13} className="animate-spin" aria-hidden />}
           Add to draft
         </Button>

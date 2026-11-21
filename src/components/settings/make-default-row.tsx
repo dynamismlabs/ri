@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useExecutionRuntimeScope } from '@/components/home/execution-runtime-context';
 
 import { Loader2 } from 'lucide-react';
@@ -56,15 +57,17 @@ export function MakeDefaultRow({
         {defaultLabel ? `Your default is ${defaultLabel}` : 'No default yet'}
       </span>
       <Tip label="New chats start on your default">
-        <button
+        <Button
           type="button"
           onClick={make}
           disabled={setDefault.isPending}
-          className="inline-flex shrink-0 items-center gap-1 font-medium text-foreground underline-offset-2 hover:underline disabled:opacity-50"
+          variant="link"
+          size="sm"
+          className="inline-flex shrink-0 items-center gap-1"
         >
           {setDefault.isPending && <Loader2 size={10} className="animate-spin" />}
           Make {currentLabel} default
-        </button>
+        </Button>
       </Tip>
     </div>
   );

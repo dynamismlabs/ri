@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react'
 import { ChevronRight, Wrench, Search, Pencil, Circle, CheckCircle2, Trash2, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -157,15 +158,17 @@ function InnerStepsList({ steps }: { steps: McpInnerStep[] }) {
   const [open, setOpen] = useState(false)
   return (
     <div>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors mb-0.5"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1.5 mb-0.5"
       >
         <ChevronRight size={10} className={cn('transition-transform', open && 'rotate-90')} />
         <Wrench size={10} />
         Inner server tool calls ({steps.length})
-      </button>
+      </Button>
       {open && (
         <div className="pl-3 space-y-1 border-l border-border/60">
           {steps.map((step, i) => <InnerStepRow key={i} step={step} index={i} />)}

@@ -1,5 +1,11 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
+import { Field } from '@/components/system/field';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -42,70 +48,29 @@ export function ModeControl({
   disabled?: boolean;
 }) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="Isolation mode"
-      className="inline-flex items-center gap-0.5 rounded-md border border-border p-0.5"
-    >
-      <ModeSegment
-        selected={mode === 'worktree'}
-        disabled={disabled}
-        onSelect={() => onChange('worktree')}
-        icon={<GitBranch size={11} />}
-        label="Worktree"
-        title="Isolated copy on its own branch"
-      />
-      <ModeSegment
-        selected={mode === 'live'}
-        disabled={disabled}
-        onSelect={() => onChange('live')}
-        icon={<Zap size={11} />}
-        label="Live"
-        title="Runs in the agent's own folder, no isolation"
-        tone="warning"
-      />
-    </div>
-  );
-}
-
-function ModeSegment({
-  selected,
-  disabled,
-  onSelect,
-  icon,
-  label,
-  title,
-  tone,
-}: {
-  selected: boolean;
-  disabled?: boolean;
-  onSelect: () => void;
-  icon: React.ReactNode;
-  label: string;
-  title: string;
-  tone?: 'warning';
-}) {
-  return (
-    <Tip label={title}>
-      <button data-slot="action-button" data-variant="ghost"
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        disabled={disabled}
-        onClick={onSelect}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-40',
-          selected
-            ? tone === 'warning'
-              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-              : 'bg-muted text-foreground'
-            : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-        )}
-      >
-        {icon}
-        {label}
-      </button>
-    </Tip>
+    <SegmentedControl
+      mode="choice"
+      selection="radio"
+      ariaLabel="Isolation mode"
+      value={mode}
+      onChange={onChange}
+      disabled={disabled}
+      options={[
+        {
+          value: 'worktree',
+          label: 'Worktree',
+          icon: <GitBranch />,
+          hint: 'Isolated copy on its own branch',
+        },
+        {
+          value: 'live',
+          label: 'Live',
+          icon: <Zap />,
+          hint: "Runs in the agent's own folder, no isolation",
+          selectedTone: 'warning',
+        },
+      ]}
+    />
   );
 }
 
@@ -180,14 +145,16 @@ export function RunOnControl({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Tip label="Where this chat runs">
-            <button
+            <Button
               type="button"
               disabled={disabled}
-              className={cn(TRIGGER_CLASS, oneOff && 'border-primary/40 text-foreground', !selected.ready && 'border-amber-500/40 text-amber-600 dark:text-amber-400')}
+              variant={oneOff ? "secondary" : "ghost"}
+              size="sm"
+              tone={!selected.ready ? "warning" : "neutral"}
             >
               <Laptop size={11} />
               <span className="max-w-[9rem] truncate">{selected.name}</span>
-            </button>
+            </Button>
           </Tip>
         </PopoverTrigger>
         <LauncherPopoverContent align="start" className="w-[280px] p-1">
@@ -282,6 +249,8 @@ export function BaseControl({
   onClear: () => void;
   disabled?: boolean;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const { data: branches, isLoading } = useWorkspaceBranches(open ? workspaceId : null);
@@ -303,14 +272,15 @@ export function BaseControl({
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setFilter(''); }}>
       <PopoverTrigger asChild>
         <Tip label={fromPr ? `Forking from pull request #${base.prNumber}` : 'Fork point'}>
-          <button
+          <Button
             type="button"
             disabled={disabled}
-            className={cn(TRIGGER_CLASS, explicit && 'border-primary/40 text-foreground')}
+            variant={explicit ? "secondary" : "ghost"}
+            size="sm"
           >
             <GitBranch size={11} />
             <span className="max-w-[11rem] truncate font-mono">from {label}</span>
-          </button>
+          </Button>
         </Tip>
       </PopoverTrigger>
       <LauncherPopoverContent align="start" className="w-[300px] p-0">
@@ -321,30 +291,30 @@ export function BaseControl({
               <span className="font-mono text-foreground">#{base.prNumber}</span>. Resolved on the
               server, so it works for forks and PRs you have never checked out.
             </p>
-            <button data-slot="action-button" data-variant="ghost"
+            <Button
               type="button"
               onClick={() => { onClear(); setOpen(false); }}
-              className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center gap-1.5"
             >
               <X size={11} />
               Use the agent&apos;s default instead
-            </button>
+            </Button>
           </div>
         ) : (
           <>
-            <div className="relative border-b border-border/70">
-              <Search
-                size={11}
-                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-              />
-              <input
-                autoFocus
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter branches…"
-                className="w-full bg-transparent py-1.5 pl-7 pr-2 text-[11.5px] focus:outline-none"
-              />
-            </div>
+            <div className="relative border-b border-border/70"><Field
+              autoFocus
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter branches…"
+              className={'w-full'}
+              purpose="embedded"
+              leading={<Search />}
+              aria-label={'Filter branches'}
+              size={compactFieldSize}
+            /></div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (
                 <button data-slot="menu-action"
@@ -452,15 +422,13 @@ export function LiveFreshnessControl({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
+        <Button
           type="button"
           disabled={disabled || status.isLoading || pull.isPending || current || blocked}
           onClick={() => pull.mutate()}
-          className={cn(
-            TRIGGER_CLASS,
-            behind > 0 && !blocked && 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-            blocked && 'border-border',
-          )}
+          variant="secondary"
+          size="xs"
+          tone={behind > 0 && !blocked ? "warning" : "neutral"}
         >
           {pull.isPending || status.isLoading ? (
             <Loader2 size={11} className="animate-spin" />
@@ -470,7 +438,7 @@ export function LiveFreshnessControl({
             <RefreshCw size={11} />
           )}
           <span className="max-w-[13rem] truncate">{label}</span>
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={4} className="max-w-[280px]">
         {error

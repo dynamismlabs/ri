@@ -1,5 +1,9 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -135,15 +139,21 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
   return (
     <DialogPrimitive.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content data-slot="dialog-content"
+        <DialogPrimitive.Overlay
+          data-slot="dialog-overlay"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        />
+        <DialogPrimitive.Content
+          data-slot="dialog-content"
           // Fixed frame — width/height don't shift with content while paging
           // through changes. Body scrolls internally.
           className="fixed left-1/2 top-1/2 z-50 flex h-[min(820px,86vh)] w-[min(1100px,92vw)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           <VisuallyHidden.Root>
             <DialogPrimitive.Title>Changes to this {noun}</DialogPrimitive.Title>
-            <DialogPrimitive.Description>Review and undo a change to this {noun}.</DialogPrimitive.Description>
+            <DialogPrimitive.Description>
+              Review and undo a change to this {noun}.
+            </DialogPrimitive.Description>
           </VisuallyHidden.Root>
 
           {/* Header */}
@@ -152,50 +162,43 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
             <span className="text-sm font-semibold text-foreground">Changes to this {noun}</span>
             {groups.length > 1 && (
               <div className="ml-2 flex items-center gap-1 text-[11px] text-muted-foreground">
-                <button data-slot="action-button" data-variant="ghost"
+                <IconButton
                   onClick={() => setGroupIndex((i) => Math.min(i + 1, groups.length - 1))}
                   disabled={idx >= groups.length - 1}
-                  className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
-                  aria-label="Older change"
+                  label="Older change"
+                  variant="ghost"
+                  size="xs"
                 >
                   <ChevronLeft size={13} />
-                </button>
+                </IconButton>
                 <span className="tabular-nums">
                   {idx + 1} / {groups.length}
                 </span>
-                <button data-slot="action-button" data-variant="ghost"
+                <IconButton
                   onClick={() => setGroupIndex((i) => Math.max(i - 1, 0))}
                   disabled={idx <= 0}
-                  className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
-                  aria-label="Newer change"
+                  label="Newer change"
+                  variant="ghost"
+                  size="xs"
                 >
                   <ChevronRight size={13} />
-                </button>
+                </IconButton>
               </div>
             )}
             <div className="ml-auto flex items-center gap-1.5">
-              <div data-slot="segmented" className="flex rounded-md border border-border p-0.5 text-[10.5px]">
-                {(['split', 'unified'] as const).map((m) => (
-                  <button data-slot="segmented-option"
-                    key={m}
-                    aria-pressed={viewMode === m}
-                    onClick={() => setViewMode(m)}
-                    className={cn(
-                      'rounded px-1.5 py-0.5 capitalize transition-colors',
-                      viewMode === m ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground',
-                    )}
-                  >
-                    {m}
-                  </button>
-                ))}
-              </div>
-              <button data-slot="action-button" data-variant="ghost"
-                onClick={onClose}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                aria-label="Close"
-              >
+              <SegmentedControl
+                mode="choice"
+                ariaLabel="Compare changes"
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { value: 'split', label: 'Split' },
+                  { value: 'unified', label: 'Unified' },
+                ]}
+              />
+              <IconButton onClick={onClose} label="Close" variant="ghost" size="xs">
                 <X size={15} />
-              </button>
+              </IconButton>
             </div>
           </div>
 
@@ -206,7 +209,9 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                 <Loader2 size={16} className="animate-spin text-muted-foreground" />
               </div>
             ) : error ? (
-              <p className="py-12 text-center text-[12px] text-muted-foreground">Couldn’t load change history.</p>
+              <p className="py-12 text-center text-[12px] text-muted-foreground">
+                Couldn’t load change history.
+              </p>
             ) : !group ? (
               <p className="py-12 text-center text-[12px] text-muted-foreground">
                 No recorded changes for this {noun} yet.
@@ -226,19 +231,28 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
           {group && (
             <div className="flex h-14 flex-shrink-0 items-center gap-3 border-t border-border px-4">
               <div className="text-[11px] text-muted-foreground">
-                <span className="font-medium text-foreground/80">{describeActor ? describeActor(group.after) : groupLabel(group)}</span>
+                <span className="font-medium text-foreground/80">
+                  {describeActor ? describeActor(group.after) : groupLabel(group)}
+                </span>
                 {' · '}
                 {formatWhen(group.after.createdAt)}
               </div>
-              <Tip label={canUndo ? 'Restore the version from before this change' : 'Nothing earlier to restore'}>
-                <button data-slot="action-button" data-variant="primary"
-                  onClick={async () => { if (group.before && (!confirmRevert || await confirmRevert())) revert.mutate(group.before.id); }}
+              <Tip
+                label={canUndo ? 'Restore the version from before this change' : 'Nothing earlier to restore'}
+              >
+                <Button
+                  onClick={async () => {
+                    if (group.before && (!confirmRevert || (await confirmRevert())))
+                      revert.mutate(group.before.id);
+                  }}
                   disabled={!canUndo || revert.isPending}
-                  className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  variant="primary"
+                  size="md"
+                  className="ml-auto inline-flex items-center gap-1.5"
                 >
                   {revert.isPending ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                   Undo this change
-                </button>
+                </Button>
               </Tip>
             </div>
           )}

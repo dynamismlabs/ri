@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { ChatDropZone } from '@/components/chat/editor/chat-drop-zone';
 import { AppCompanion } from '@/components/apps/app-companion';
 import {
@@ -96,12 +97,14 @@ export function HarnessChat({
               ? ((apiErrorBody(error) as { error?: string } | null)?.error ?? apiErrorText(error))
               : 'Unknown error.'}
           </p>
-          <button
+          <Button
             onClick={() => refetch()}
-            className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10"
+            variant="ghost"
+            size="sm"
+            className="mt-3 inline-flex items-center gap-1"
           >
             <RefreshCw size={11} /> Retry
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -330,7 +333,13 @@ function NewAgentConversation({ scope, intro, placeholder, clearBox }: { scope: 
   });
   return <div className={cn('flex min-h-0 flex-1 flex-col', clearBox)}>
     {intro ? <MainChatIntroPanel intro={intro} disabled={send.isPending || !choice?.available} onSend={content => send.mutate({ content })} onDraft={text => { composer.current?.insertTextAtCursor(text); composer.current?.focus(); }} /> : <div className="flex-1 p-6 text-sm text-muted-foreground">Start a conversation. Everyone on the team can read it.</div>}
-    {availability.error && <button type="button" className="mx-4 mb-2 self-start text-xs text-muted-foreground underline" onClick={() => void availability.refetch()}>Retry agent availability</button>}
+    {availability.error && <Button
+      type="button"
+      onClick={() => void availability.refetch()}
+      variant="link"
+      size="sm"
+      className="mx-4 mb-2 self-start"
+    >Retry agent availability</Button>}
     <ExecutionComposer ref={composer} sessionId="" draftKey={`main:new:${scope}`} permissionMode={DEFAULT_PERMISSION_MODE} model={null} effort={null} harness={null}
       placeholder={placeholder} helperText="Starts with the team's default model and permissions." disabled={send.isPending || !choice?.available}
       disabledReason={availability.isPending ? 'Checking agent availability…' : availability.error ? 'Agent availability could not be checked.' : choice?.unavailableReason ?? undefined}

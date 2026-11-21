@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useSavedWorkAuthor } from '@/components/chat-ui/member-attribution';
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { Check, ChevronRight, ExternalLink, Loader2, MessageSquare, RefreshCw } 
 import { MessageResponse } from '@/components/ai-elements/message';
 import { MessageFileChip } from '@/components/chat-ui/artifacts/message-file-chip';
 import type { WorkResultRecord, WorkResultDecisionRecord } from '@/db/types';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import { usePrepareHandoff, useRequestResultReview, useResult, useResultCapabilities, useResultDecision, useRetryResultFeedback } from '@/hooks/use-results';
 import { apiErrorText } from '@/lib/api/client';
@@ -29,7 +30,11 @@ import { ResultGithubChecks } from './result-github-checks';
 export function ResultRenderer({ resultId, exact = false }: { resultId: string; exact?: boolean }) {
   const query = useResult(resultId);
   if (query.isLoading) return <div className="flex items-center gap-2 rounded-lg border p-4 text-xs text-muted-foreground"><Loader2 size={13} className="animate-spin" />Loading handoff...</div>;
-  if (query.error || !query.data) return <div className="space-y-2 rounded-lg border p-4 text-xs"><p role="alert">{query.error ? apiErrorText(query.error) : 'This handoff is unavailable.'}</p><Button variant="outline" size="xs" onClick={() => void query.refetch()}>Retry loading</Button><Link href={`/results/${resultId}`} className="ml-2 text-primary hover:underline">Exact handoff link</Link></div>;
+  if (query.error || !query.data) return <div className="space-y-2 rounded-lg border p-4 text-xs"><p role="alert">{query.error ? apiErrorText(query.error) : 'This handoff is unavailable.'}</p><Button
+    onClick={() => void query.refetch()}
+    variant="secondary"
+    size="xs"
+  >Retry loading</Button><Link href={`/results/${resultId}`} className="ml-2 text-primary hover:underline">Exact handoff link</Link></div>;
   return <><SavedResult key={query.data.result.id} detail={query.data} exact={exact} /></>;
 }
 
@@ -87,7 +92,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
           {result.title && <h2 className="mt-1 text-base font-semibold leading-snug">{result.title}</h2>}
           <p className="mt-1 text-[11px] text-muted-foreground">Saved {result.createdAt} by {author(result)}</p>
         </div>
-        {!exact && <Link href={`/results/${result.id}`} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-primary hover:bg-muted"><ExternalLink size={12} />View handoff</Link>}
+        {!exact && <Button asChild variant="secondary" size="xs" className="inline-flex items-center gap-1"><Link href={`/results/${result.id}`}><ExternalLink size={12} />View handoff</Link></Button>}
       </div>
       {reportTargetId && <Link href={`/results/${reportTargetId}`} className="block text-xs text-primary hover:underline">View the reviewed handoff</Link>}
       {detail.successorId && <Link href={`/results/${detail.successorId}`} className="block rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">Newer result available. Open the newer handoff.</Link>}
@@ -101,9 +106,21 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
           {aiReviews.map((review) => <ResultAiReview key={review.id} review={review} result={result} hasSuccessor={!!detail.successorId} canFeedback={canFeedback} onFeedback={setFeedback} onRetry={aiEnabled && !activeReview ? () => { void requestReview({ rerun: true, focus: review.focus ?? undefined, ...(review.selection.harness ? { harness: review.selection.harness } : {}), ...(review.selection.model ? { model: review.selection.model } : {}), ...(review.selection.variant ? { variant: review.selection.variant } : {}), ...(review.selection.effort ? { effort: review.selection.effort } : {}) }); } : undefined} />)}
           {aiEnabled && !activeReview && <div className="space-y-2">
             <ReviewerSelection value={reviewer} onChange={setReviewer} associatedWorkspace={detail.associatedWorkspace} />
-            <details><summary className="cursor-pointer text-xs text-muted-foreground">Add a review focus</summary><label className="mt-2 block space-y-1 text-xs text-muted-foreground"><span>Optional focus</span><input value={focus} onChange={(event) => setFocus(event.target.value)} placeholder="Any concern the reviewer should investigate?" className="w-full rounded-md border bg-background px-3 py-2 text-foreground" /></label></details>
+            <details><summary className="cursor-pointer text-xs text-muted-foreground">Add a review focus</summary><Field
+              value={focus}
+              onChange={(event) => setFocus(event.target.value)}
+              placeholder="Any concern the reviewer should investigate?"
+              controlClassName="w-full"
+              label="Optional focus"
+              className="mt-2"
+            /></details>
             {!!reviewRequest.error && <p className="text-xs text-destructive" role="alert">{apiErrorText(reviewRequest.error)}</p>}
-            <Button size="xs" variant="outline" onClick={() => void requestReview()} disabled={reviewRequest.isPending}>{reviewRequest.isPending && <Loader2 className="animate-spin" />}{aiReviews.some((review) => !!review.report) ? 'Review again' : 'Review with AI'}</Button>
+            <Button
+              onClick={() => void requestReview()}
+              disabled={reviewRequest.isPending}
+              variant="secondary"
+              size="xs"
+            >{reviewRequest.isPending && <Loader2 className="animate-spin" />}{aiReviews.some((review) => !!review.report) ? 'Review again' : 'Review with AI'}</Button>
           </div>}
         </div>
       )}
@@ -114,10 +131,29 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
         {reviews.length > 1 && <details><summary className="cursor-pointer text-[11px] text-muted-foreground">Earlier decisions</summary><div className="mt-2 space-y-2">{reviews.slice(1).map((review) => <div key={review.id} className="text-xs"><p>{dispositionLabel(review, author(review))} · {review.createdAt}</p><DecisionNote review={review} result={result} />{review.disposition === 'changes_requested' && <FeedbackDelivery reviewId={review.id} resultId={result.id} />}</div>)}</div></details>}
       </div>}
       {enabled && primary && <div className="flex flex-wrap gap-2 border-t pt-3">
-        <Button variant="outline" size="xs" disabled={decision.isPending} onClick={() => void decide('accepted')}><Check />Accept</Button>
-        <Tip label={destination.reason}><Button variant="outline" size="xs" onClick={() => setFeedback({})}><MessageSquare />Request changes</Button></Tip>
-        <Button variant="ghost" size="xs" disabled={decision.isPending} onClick={() => void decide('dismissed')}>Dismiss</Button>
-        {sourceAvailable && !detail.successorId && <Button variant="ghost" size="xs" disabled={prepare.isPending || activePreparation} onClick={update}><RefreshCw />{prepare.isPending || activePreparation ? 'Preparing handoff' : retryPreparation ? 'Retry update handoff' : 'Update handoff'}</Button>}
+        <Button
+          disabled={decision.isPending}
+          onClick={() => void decide('accepted')}
+          variant="secondary"
+          size="xs"
+        ><Check />Accept</Button>
+        <Tip label={destination.reason}><Button
+          onClick={() => setFeedback({})}
+          variant="secondary"
+          size="xs"
+        ><MessageSquare />Request changes</Button></Tip>
+        <Button
+          disabled={decision.isPending}
+          onClick={() => void decide('dismissed')}
+          variant="ghost"
+          size="xs"
+        >Dismiss</Button>
+        {sourceAvailable && !detail.successorId && <Button
+          disabled={prepare.isPending || activePreparation}
+          onClick={update}
+          variant="ghost"
+          size="xs"
+        ><RefreshCw />{prepare.isPending || activePreparation ? 'Preparing handoff' : retryPreparation ? 'Retry update handoff' : 'Update handoff'}</Button>}
         <ResultCompletionAction resultId={result.id} options={detail.completionOptions} />
       </div>}
       {previousPreparation ? <PreparationStatus event={previousPreparation.event} /> : prepare.data && <p className="text-xs text-muted-foreground">Preparing handoff: {prepare.data.status}{prepare.data.statusReason ? ` (${prepare.data.statusReason.replaceAll('_', ' ')})` : ''}. It will appear in the authoring conversation when saved.</p>}
@@ -163,6 +199,11 @@ function FeedbackDelivery({ resultId, reviewId }: { resultId: string; reviewId: 
     <p>Feedback saved. {delivery ? `Delivery: ${delivery.status.replaceAll('_', ' ')}${delivery.statusReason ? ` (${delivery.statusReason.replaceAll('_', ' ')})` : ''}` : 'Delivery details are available in the authoring conversation.'}</p>
     {delivery && 'errorMessage' in delivery && !!delivery.errorMessage && <p className="whitespace-pre-wrap break-words text-destructive">{delivery.errorMessage}</p>}
     {delivery?.statusReason === 'delivery_uncertain' && <p>Ri cannot confirm whether this feedback reached the author. Check its conversation before sending it again.</p>}
-    {delivery?.canRetry && <Button variant="outline" size="xs" disabled={retry.isPending} onClick={() => retry.mutate(reviewId)}>{retry.isPending && <Loader2 className="animate-spin" />}Retry delivery</Button>}
+    {delivery?.canRetry && <Button
+      disabled={retry.isPending}
+      onClick={() => retry.mutate(reviewId)}
+      variant="secondary"
+      size="xs"
+    >{retry.isPending && <Loader2 className="animate-spin" />}Retry delivery</Button>}
   </div>;
 }

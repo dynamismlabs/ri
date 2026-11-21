@@ -19,8 +19,9 @@ const shareBuild = process.argv.includes('--share');
 const signing = macSigning({ release: releaseBuild, share: shareBuild });
 const { build, Platform, Arch } = await import('electron-builder');
 const tar = await import('tar');
-const { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, LINUX_ICON_RELATIVE_PATH, MAC_MINIMUM_SYSTEM_VERSION, MAC_SIGN_IGNORE, pruneDependencySourceMaps, removeUnusedPackageCopy, SERVER_FOLDERS, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
+const { copyNextVectorExtension, appPartId, assertCompanionPackage, assertShellDependencies, assertWindowPreloadsShipped, LINUX_ICON_RELATIVE_PATH, MAC_MINIMUM_SYSTEM_VERSION, MAC_SIGN_IGNORE, pruneDependencySourceMaps, removeUnusedPackageCopy, removeWhatInstallersDrop, SERVER_FOLDERS, SHELL_ENTRYPOINTS, rebaseResourceLinks } = await import('./package-files.mjs');
 const { signRuntime } = await import('./sign-runtime.mjs');
+const { notarizeApp } = await import('./notarize.mjs');
 const { stageSpeechHelper } = await import('./speech/package.mjs');
 
 const repo = fileURLToPath(new URL('../', import.meta.url));
@@ -113,6 +114,9 @@ for (const name of ['better-sqlite3', 'node-pty']) {
 // Before the checks below, so they run against what ships.
 removeUnusedPackageCopy(server);
 console.info(`Removed ${pruneDependencySourceMaps(path.join(server, 'node_modules')) + pruneDependencySourceMaps(path.join(server, '.next-desktop/server'))} source maps from the release.`);
+// The AppImage never carries .gitkeep, .DS_Store or empty folders. Ship none anywhere,
+// so every installer matches the runtime and its manifest.
+console.info(`Removed ${removeWhatInstallersDrop(server) + removeWhatInstallersDrop(node)} files and empty folders the AppImage would drop.`);
 const portableNode = path.join(node, process.platform === 'win32' ? 'node.exe' : 'bin/node');
 run(portableNode, ['dist/cli/index.mjs', '--help'], server);
 for (const name of ['.env', '.env.local', '.env.production', '.config', '.work', 'data.db']) {
@@ -200,7 +204,9 @@ if (!headless) {
     files: [...SHELL_ENTRYPOINTS, 'package.json', '!node_modules/**/*'], asar: true,
     npmRebuild: false, nodeGypRebuild: false, forceCodeSigning: signing.notarize,
     protocols: [{ name: 'Ri OAuth callback', schemes: ['ri'] }],
-    mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: signing.identity, signIgnore: MAC_SIGN_IGNORE, minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION, hardenedRuntime: true, notarize: signing.notarize,
+    mac: { icon: path.join(repo, 'assets/brand/icons/icon.icns'), identity: signing.identity, signIgnore: MAC_SIGN_IGNORE, minimumSystemVersion: MAC_MINIMUM_SYSTEM_VERSION, hardenedRuntime: true,
+      // Notarized in afterSign instead (desktop/notarize.mjs), which rides out network drops.
+      notarize: false,
       extendInfo: { NSMicrophoneUsageDescription: 'Ri uses the microphone when you record a voice message.', NSCameraUsageDescription: 'Ri uses the camera when you scan a pairing code.' } },
     linux: { executableName: 'ri', syncDesktopName: true, icon: path.join(repo, LINUX_ICON_RELATIVE_PATH), category: 'Office', maintainer: 'Ri contributors' },
     // The package manager owns a deb install, so its app never replaces itself
@@ -227,6 +233,8 @@ if (!headless) {
       if (process.platform !== 'darwin') return;
       const resources = path.join(context.appOutDir, 'Ri.app/Contents/Resources');
       run(process.execPath, ['dist/cli/index.mjs', 'service', 'verify', resources]);
+      // electron-builder makes the dmg and zip after this hook, so both hold the stapled app.
+      if (signing.notarize) await notarizeApp({ appPath: path.join(context.appOutDir, 'Ri.app') });
     },
   } });
   // GitHub's Mac runners, the Intel ones above all, sometimes keep the DMG's

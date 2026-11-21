@@ -1,8 +1,9 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { Maximize2, Minimize2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
+
 
 /**
  * The parts of a tools panel's strip that the execution view's panel
@@ -11,10 +12,10 @@ import { Tip } from '@/components/ui/tip';
  * itself, which brings every execution view with it.
  */
 
-/** A tab in a tools panel's strip, the execution view's and the agent view's: underlined while it's in front. */
+/** Rich file/chat containers beside the primary track, retained until the content migration. */
 export function panelTabClass(on: boolean): string {
   return cn(
-    // panel-tab(-on) are style hooks for the new look (src/styles/edge.css).
+    // Compatibility drawing for content containers, not SegmentedControl options.
     'panel-tab -mb-px whitespace-nowrap border-b-2 px-2.5 text-[12.5px] font-medium transition-colors',
     on ? 'panel-tab-on border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
   );
@@ -36,29 +37,34 @@ export function PanelWindowControls({
 }) {
   return (
     <>
-      <Tip
-        label={maximized ? 'Bring the chat back' : 'Expand to the whole view (or double-click a tab)'}
-        shortcut={maximized ? 'Esc' : undefined}
-      >
-        <button
+
+        <IconButton
           type="button"
           onClick={onToggleMaximize}
-          aria-label={maximized ? 'Restore the chat' : 'Expand the panel'}
-          className="my-1 inline-flex w-7 flex-shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          label={maximized ? 'Restore the chat' : 'Expand the panel'}
+          tooltip={maximized ? 'Bring the chat back' : 'Expand to the whole view (or double-click a tab)'}
+          shortcut={maximized ? 'Esc' : undefined}
+          variant="ghost"
+          size="sm"
+          className="my-1 inline-flex flex-shrink-0 items-center justify-center"
         >
           {maximized ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-        </button>
-      </Tip>
-      <Tip label="Close the panel" shortcut="Esc">
-        <button
+        </IconButton>
+
+
+        <IconButton
           type="button"
           onClick={onClose}
-          aria-label="Close the panel"
-          className="my-1 inline-flex w-7 flex-shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          label="Close the panel"
+          tooltip="Close the panel"
+          shortcut="Esc"
+          variant="ghost"
+          size="sm"
+          className="my-1 inline-flex flex-shrink-0 items-center justify-center"
         >
           <X size={14} />
-        </button>
-      </Tip>
+        </IconButton>
+
     </>
   );
 }

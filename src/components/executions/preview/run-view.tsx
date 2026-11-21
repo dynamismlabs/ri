@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { AlertCircle, AppWindow, Loader2, Play, RotateCw, Square } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommandEditor } from './preview-empty';
@@ -155,9 +156,14 @@ export function RunView({ controller: c, onStartAndPreview, onOpenPreview, onOpe
                   {onOpenWorkspaceSettings && (
                     <>
                       {' '}
-                      <button type="button" onClick={onOpenWorkspaceSettings} className="underline underline-offset-2 hover:text-foreground">
+                      <Button
+                        type="button"
+                        onClick={onOpenWorkspaceSettings}
+                        variant="link"
+                        size="sm"
+                      >
                         Set the port in the agent&apos;s setup
-                      </button>
+                      </Button>
                       , then restart.
                     </>
                   )}
@@ -258,19 +264,15 @@ function RunButton({
 }) {
   return (
     <Tip label={title}>
-      <button data-slot="action-button" data-variant={primary ? 'primary' : 'secondary'}
+      <Button
         type="button"
         onClick={onClick}
         disabled={disabled}
-        className={cn(
-          'inline-flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border px-2.5 text-[12px] font-medium transition-colors disabled:opacity-50',
-          primary
-            ? 'border-transparent bg-foreground text-background hover:bg-foreground/90'
-            : 'border-border bg-background text-foreground/90 hover:bg-muted',
-        )}
+        variant={primary ? "primary" : "secondary"}
+        size="xs"
       >
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }

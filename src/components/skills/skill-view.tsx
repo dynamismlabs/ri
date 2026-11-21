@@ -1,5 +1,8 @@
 'use client';
 
+import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { openSettings } from '@/components/settings/settings-store';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -99,18 +102,22 @@ export function SkillView({
             {apiErrorStatus(error) !== undefined && apiErrorStatus(error) === 404 ? 'It may have been renamed or archived.' : 'Try again in a moment.'}
           </p>
           <div className="mt-3 flex justify-center gap-1">
-            <button
+            <Button
               onClick={() => openSettings('plugins', { anchor: 'skills' })}
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center"
             >
               Open Plugins
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={goHome}
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center"
             >
               Back to Home
-            </button>
+            </Button>
           </div>
         </div>
       </div>,
@@ -122,18 +129,23 @@ export function SkillView({
   const editor = <SkillEditor key={`editor:${skill.ref}`} skill={skill} aiWriting={build.isActive} />;
 
   return frame(
-    <>
-      <SkillHeader skill={skill} onBack={onBack} pane={narrow ? { value: pane, onChange: setPane } : undefined} />
+    <SegmentedRoot mode="tabs" value={pane} onChange={setPane}>
+      <SkillHeader
+        skill={skill}
+        onBack={onBack}
+        pane={narrow ? { value: pane, onChange: setPane } : undefined}
+      />
       {narrow ? (
         <div className="relative min-h-0 flex-1">
           {(['chat', 'skill'] as const).map((p) => (
-            <div
+            <SegmentedPanel
               key={p}
-              inert={pane !== p}
-              className={cn('absolute inset-0 flex min-h-0 flex-col', pane === p ? 'z-10' : 'opacity-0')}
+              value={p}
+              preserveLayout
+              className="absolute inset-0 flex flex-col min-h-0"
             >
               {p === 'chat' ? chat : editor}
-            </div>
+            </SegmentedPanel>
           ))}
         </div>
       ) : (
@@ -157,6 +169,6 @@ export function SkillView({
           </ResizablePanel>
         </ResizablePanelGroup>
       )}
-    </>,
+    </SegmentedRoot>,
   );
 }

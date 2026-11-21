@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { CornerDownLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -51,7 +53,7 @@ export function PinModelInput({
     // the submit to the OUTER form and create a trigger instead of a pin.
     <div className="mb-1 rounded-md border border-dashed border-border px-2 py-1.5">
       <div className="flex items-center gap-1.5">
-        <input
+        <Field
           value={value}
           disabled={disabled || add.isPending}
           onChange={(event) => setValue(event.target.value)}
@@ -66,18 +68,22 @@ export function PinModelInput({
           placeholder="Exact model ID"
           spellCheck={false}
           autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent font-mono text-[11px] text-foreground outline-none placeholder:font-sans placeholder:text-muted-foreground/60 disabled:opacity-50"
+          className="min-w-0 flex-1"
+          purpose="code"
+          aria-label={'Exact model ID'}
         />
         <Tip label="Pin this model ID and use it">
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             type="button"
             disabled={disabled || !modelId || add.isPending}
             onClick={() => void submit()}
-            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent"
+            variant="ghost"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             {add.isPending ? <Loader2 size={10} className="animate-spin" /> : <CornerDownLeft size={10} />}
             Pin
-          </button>
+          </Button>
         </Tip>
       </div>
       <p className="mt-0.5 text-[10px] leading-snug text-muted-foreground/70">

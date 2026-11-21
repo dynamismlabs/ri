@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { useSpace } from '@/components/spaces/space-root';
 import { homeResourceHref } from '@/lib/home/resource-href';
@@ -130,13 +131,15 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
       <div data-slot="row-actions" className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              aria-label="More note actions"
-              className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
+            <IconButton
               onClick={(e) => e.stopPropagation()}
+              label="More note actions"
+              variant="ghost"
+              size="xs"
+              focus="inside"
             >
               <MoreHorizontal size={14} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             {note.url && (

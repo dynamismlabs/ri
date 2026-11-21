@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { trpcClient } from '@/lib/trpc/client';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -44,16 +45,18 @@ export function DeckSourcesField() {
 
   return (
     <section className="space-y-2">
-      <label htmlFor="deck-sources" className="block text-[12px] font-medium text-foreground">
-        Deck sources
-      </label>
-      <p className="text-[11px] leading-snug text-muted-foreground/70">
-        Tell your deck, in plain words, how to plan your day and which connected services to
-        use (your calendar, task trackers, etc.). Just write naturally — no formatting needed.
-        The deck reads this on every refresh.
-      </p>
-      <textarea
+      <TextArea
+        rows={9}
         id="deck-sources"
+        label="Deck sources"
+        description={
+          <>
+            Tell your deck, in plain words, how to plan your day and which connected services to use
+            (your calendar, task trackers, etc.). Just write naturally — no formatting needed. The
+            deck reads this on every refresh.
+          </>
+        }
+        messagePosition="before-control"
         value={content}
         onChange={(e) => onChange(e.target.value)}
         disabled={!loaded}
@@ -63,7 +66,8 @@ export function DeckSourcesField() {
           'When something has a hard deadline, rank it up even if it still feels early.\n' +
           "I'm heads-down shipping right now — favor momentum over starting new things."
         }
-        className="h-48 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
+        className="w-full"
+        resize="vertical"
       />
       <p className="text-[11px] text-muted-foreground/60">
         {saving ? 'Saving…' : saved ? 'Saved' : 'Auto-saved'}

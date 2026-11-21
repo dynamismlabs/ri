@@ -155,10 +155,20 @@ function googleRsvp(r?: string): CalendarEvent['rsvp'] {
   }
 }
 
+/** Select the connected account, since numeric Google account slots vary by browser. */
+function googleMeetUrl(joinUrl: string | undefined, accountEmail?: string): string | undefined {
+  if (!joinUrl || !accountEmail || !URL.canParse(joinUrl)) return joinUrl;
+  const url = new URL(joinUrl);
+  if (url.protocol !== 'https:' || url.hostname !== 'meet.google.com') return joinUrl;
+  url.searchParams.set('authuser', accountEmail);
+  return url.href;
+}
+
 export function normalizeGoogleEvent(
   e: RawGoogleEvent,
   connectionId: string,
   calendar: CalendarSource | null = null,
+  accountEmail?: string,
 ): CalendarEvent | null {
   if (!e.start || !e.end) return null;
   if (e.status === 'cancelled') return null;
@@ -171,7 +181,7 @@ export function normalizeGoogleEvent(
     end: e.end,
     allDay: isDateOnly(e.start),
     location: e.location,
-    joinUrl: e.joinUrl,
+    joinUrl: googleMeetUrl(e.joinUrl, accountEmail),
     sourceUrl: e.htmlLink,
     transparency: e.transparency === 'transparent' ? 'free' : 'busy',
     rsvp: googleRsvp(e.responseStatus),

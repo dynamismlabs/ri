@@ -86,6 +86,7 @@ beforeAll(async () => {
     import {TipProvider} from './src/components/ui/tip';
     import {AgentBesideChat} from './src/components/agents/agent-beside-chat';
     const width=new URLSearchParams(location.search).get('width')??'520';
+    document.documentElement.classList.toggle('dark',new URLSearchParams(location.search).get('theme')==='dark');
     const agent={id:'agent-1',name:'Field Notes'};
     createRoot(document.getElementById('root')).render(
       <TipProvider><div className="flex h-screen flex-col bg-background text-foreground" style={{width:width+"px"}}>
@@ -115,8 +116,8 @@ const textLeft = (page: Page) => page.evaluate(() => {
   return el.getBoundingClientRect().left + parseFloat(style.borderLeftWidth) + parseFloat(style.paddingLeft);
 });
 
-it('turns the title into a field holding it, selected, where the title was', async () => {
-  const page = await open();
+for (const theme of ['light','dark']) it(`turns the title into a selected field in place (${theme})`, async () => {
+  const page = await open('theme='+theme);
   try {
     expect(await title(page).textContent()).toBe('Roast curve notes');
     const before = { left: await textLeft(page), header: (await header(page).boundingBox())!.height };
@@ -134,7 +135,7 @@ it('turns the title into a field holding it, selected, where the title was', asy
     // The text doesn't jump and the header doesn't grow.
     expect(Math.abs((await textLeft(page)) - before.left)).toBeLessThanOrEqual(0.5);
     expect((await header(page).boundingBox())!.height).toBe(before.header);
-    await page.screenshot({ path: '/tmp/ri-beside-rename-editing.png', clip: { x: 0, y: 0, width: 540, height: 80 } });
+    await page.screenshot({ path: '/tmp/ri-beside-rename-editing-'+theme+'.png', clip: { x: 0, y: 0, width: 540, height: 80 } });
   } finally {
     await page.close();
   }

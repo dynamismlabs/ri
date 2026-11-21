@@ -1,14 +1,15 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { IconButton } from '@/components/system/icon-button';
 import { Check, Copy, ExternalLink, Plus } from 'lucide-react';
 import { useId } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/system/button';
+
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { APP_NAME } from '@/constants/app';
 import { isRegisteredMcp, oauthAppRedirectUri, type AuthConfigSummary, type ByoForm, type ProviderStatus } from './types';
-import { Tip } from '@/components/ui/tip';
+
 import { SlackAccountSetup } from './slack-account-setup';
 
 /**
@@ -57,11 +58,18 @@ export function ByoPanel({
   const callbackFields = <>
       <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/40 p-2">
         <code className="min-w-0 flex-1 break-all font-mono text-[11px] text-foreground">{registered ? callback || 'Callback address unavailable' : provider.desktopCallback ? provider.desktopCallback.kind === 'loopback' ? 'http://127.0.0.1:<temporary-port>/oauth/callback' : provider.desktopCallback.redirectUri || 'Configure a hosted callback service first' : redirectUri}</code>
-        <Tip label="Copy redirect URI">
-          <Button disabled={registered ? !callback : !!provider.desktopCallback && !provider.desktopCallback.redirectUri} variant="ghost" size="icon-xs" aria-label="Copy redirect URI" onClick={onCopyRedirect}>
+
+          <IconButton
+            disabled={registered ? !callback : !!provider.desktopCallback && !provider.desktopCallback.redirectUri}
+            onClick={onCopyRedirect}
+            label="Copy redirect URI"
+            tooltip="Copy redirect URI"
+            variant="ghost"
+            size="xs"
+          >
             {copied ? <Check size={12} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={12} />}
-          </Button>
-        </Tip>
+          </IconButton>
+
       </div>
       {(registered || !provider.desktopCallback) && (
         <p className="text-[11px] leading-normal text-muted-foreground">
@@ -85,32 +93,37 @@ export function ByoPanel({
                 {cfg.isDefault && <span className="ml-1 text-muted-foreground">· default</span>}
               </span>
               <span className="flex shrink-0 items-center gap-2">
-                <button
+                <Button
                   aria-label={`Connect using ${cfg.label ?? cfg.id}`}
                   onClick={() => onConnect(cfg.id)}
                   disabled={busy || connectDisabled || cfg.status !== 'active' || (!!boundClientId && cfg.id !== boundClientId)}
-                  className="inline-flex items-center gap-1 font-semibold text-primary hover:underline disabled:opacity-40"
+                  variant="link"
+                  size="sm"
+                  className="inline-flex items-center gap-1"
                 >
                   <ExternalLink size={11} /> Connect
-                </button>
+                </Button>
                 {!cfg.isDefault && (
-                  <button
+                  <Button
                     aria-label={`Make ${cfg.label ?? cfg.id} default`}
                     onClick={() => onSetDefault(cfg.id)}
                     disabled={busy}
-                    className="text-muted-foreground hover:text-foreground disabled:opacity-40"
+                    variant="ghost"
+                    size="sm"
                   >
                     Default
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
                   aria-label={`Remove ${cfg.label ?? cfg.id}`}
                   onClick={() => onDelete(cfg.id)}
                   disabled={busy || cfg.id === boundClientId || usedAuthConfigIds.includes(cfg.id)}
-                  className="text-destructive hover:underline disabled:opacity-40"
+                  variant="link"
+                  size="sm"
+                  tone="danger"
                 >
                   Remove
-                </button>
+                </Button>
               </span>
             </div>
           ))}
@@ -118,44 +131,40 @@ export function ByoPanel({
       )}
   </>;
   const credentials = <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2">
-      <div className="space-y-1">
-        <Label className="text-xs" htmlFor={`${formId}-label`}>App label in Ri</Label>
-        <Input id={`${formId}-label`}
-          value={form.label}
-          onChange={(e) => onField('label', e.target.value)}
-          placeholder="Label (e.g. Work)"
-          className="h-8 rounded-lg text-xs"
-        />
-      </div>
-      <div className="space-y-1">
-        <Label className="text-xs" htmlFor={`${formId}-client-id`}>Client ID</Label>
-        <Input id={`${formId}-client-id`}
-          value={form.clientId}
-          onChange={(e) => onField('clientId', e.target.value)}
-          placeholder="Client ID"
-          className="h-8 rounded-lg font-mono text-xs"
-        />
-      </div>
-      <div className="space-y-1 @lg:col-span-2">
-        <Label className="text-xs" htmlFor={`${formId}-client-secret`}>{registered ? 'Client secret' : 'Client secret (if required)'}</Label>
-        <Input id={`${formId}-client-secret`}
-          type="password"
-          autoComplete="off"
-          value={form.clientSecret}
-          onChange={(e) => onField('clientSecret', e.target.value)}
-          placeholder={registered ? 'Client secret' : 'Client secret (if required)'}
-          required={registered}
-          className="h-8 rounded-lg font-mono text-xs"
-        />
-      </div>
+      <Field
+        id={`${formId}-label`}
+        value={form.label}
+        onChange={(e) => onField('label', e.target.value)}
+        placeholder="Label (e.g. Work)"
+        label="App label in Ri"
+      />
+      <Field
+        id={`${formId}-client-id`}
+        value={form.clientId}
+        onChange={(e) => onField('clientId', e.target.value)}
+        placeholder="Client ID"
+        purpose="code"
+        label="Client ID"
+      />
+      <Field
+        id={`${formId}-client-secret`}
+        type="password"
+        autoComplete="off"
+        value={form.clientSecret}
+        onChange={(e) => onField('clientSecret', e.target.value)}
+        placeholder={registered ? 'Client secret' : 'Client secret (if required)'}
+        required={registered}
+        purpose="code"
+        label={registered ? 'Client secret' : 'Client secret (if required)'}
+        className="@lg:col-span-2"
+      />
     </div>;
   const saveAction = <Button
-        size="sm"
-        variant="outline"
-        onClick={onAdd}
-        disabled={busy || !form.label.trim() || !form.clientId.trim() || (registered && (!callback || !form.clientSecret.trim()))}
-        className="text-xs font-semibold"
-      >
+    onClick={onAdd}
+    disabled={busy || !form.label.trim() || !form.clientId.trim() || (registered && (!callback || !form.clientSecret.trim()))}
+    variant="secondary"
+    size="sm"
+  >
         <Plus size={14} /> {provider.id === 'slack' ? busy ? 'Saving app…' : 'Save app and continue' : 'Add app'}
       </Button>;
 

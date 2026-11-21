@@ -1,4 +1,8 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
+
+import { Button } from '@/components/system/button';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { Pause, Play, MessagesSquare, ChevronDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -25,7 +29,12 @@ function AvailableCoordinationControls({ sessionId }: { sessionId: string }) {
     <div className="min-w-0 flex-1 space-y-0.5 leading-4">
     {data.heldAt ? <span role="status" className="text-amber-700 dark:text-amber-400">Incoming agent messages paused{data.pending > 0 ? ` · ${data.pending} waiting` : ''}</span>
       : data.active.chatIds.length === 1 ? <ChatMessageLink sessionId={data.active.chatIds[0]} label="Working with" direction="outgoing" compact />
-      : data.active.chatIds.length > 1 ? <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center gap-1 underline underline-offset-2"><MessagesSquare size={12} />Working with {data.active.chatIds.length} chats<ChevronDown size={11} /></button></PopoverTrigger><PopoverContent align="start" className="max-h-72 w-80 space-y-2 overflow-y-auto">{data.active.chatIds.map(id => <ChatMessageLink key={id} sessionId={id} label="Active chat" direction="outgoing" />)}</PopoverContent></Popover>
+      : data.active.chatIds.length > 1 ? <Popover><PopoverTrigger asChild><Button
+        type="button"
+        variant="link"
+        size="xs"
+        className="inline-flex items-center gap-1"
+      ><MessagesSquare size={12} />Working with {data.active.chatIds.length} chats<ChevronDown size={11} /></Button></PopoverTrigger><PopoverContent align="start" className="max-h-72 w-80 space-y-2 overflow-y-auto">{data.active.chatIds.map(id => <ChatMessageLink key={id} sessionId={id} label="Active chat" direction="outgoing" />)}</PopoverContent></Popover>
       : <span role="status">{data.active.starting ? 'Starting another chat' : 'Incoming agent messages waiting'}</span>}
     {data.heldAt && data.assignmentsWaiting > 0 && <p>{data.assignmentsWaiting} assignment{data.assignmentsWaiting === 1 ? '' : 's'} waiting</p>}
     </div>
@@ -51,9 +60,17 @@ function IncomingPauseButton({ sessionId }: { sessionId: string }) {
   const { data } = useCoordinationState(sessionId);
   const hold = useCoordinationHold(sessionId);
   if (!data) return null;
-  return <Tip label="Queues incoming agent messages in this chat. Your messages still run, and work already running continues."><button data-slot="action-button" data-variant="ghost" type="button" aria-pressed={!!data.heldAt} disabled={hold.isPending} onClick={() => hold.mutate(!data.heldAt)} className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted disabled:opacity-50">
+  return <Tip label="Queues incoming agent messages in this chat. Your messages still run, and work already running continues."><Button
+    type="button"
+    aria-pressed={!!data.heldAt}
+    disabled={hold.isPending}
+    onClick={() => hold.mutate(!data.heldAt)}
+    variant="ghost"
+    size="xs"
+    className="inline-flex shrink-0 items-center gap-1"
+  >
     {data.heldAt ? <Play size={12} /> : <Pause size={12} />}{data.heldAt ? 'Resume' : 'Pause incoming'}
-  </button></Tip>;
+  </Button></Tip>;
 }
 
 /** What each policy scope is called on screen. Code says execution, people say workstream. */
@@ -76,7 +93,40 @@ function AvailableCoordinationSettings({ sessionId }: { sessionId: string }) {
       if (level.source === 'global') return null;
       const id = data.scopes[level.source];
       if (!id) return null;
-      return <label key={level.source} className="flex min-w-0 items-center justify-between gap-3"><span>{level.source === 'chat' ? 'This chat' : level.source === 'execution' ? 'All chats in this workstream' : 'This agent'}</span><select aria-label={`Coordination for this ${COORDINATION_SCOPE_NOUNS[level.source] ?? level.source}`} className="min-w-0 max-w-40 rounded border bg-background p-1" value={level.value ?? ''} disabled={policy.isPending} onChange={event => policy.mutate({ scope: level.source, id, policy: event.target.value === 'ask' ? 'ask' : event.target.value === 'allow' ? 'allow' : null })}><option value="">Inherit</option><option value="ask">Ask first</option><option value="allow">Allow automatically</option></select></label>;
+      return <NativeSelect
+        aria-label={`Coordination for this ${COORDINATION_SCOPE_NOUNS[level.source] ?? level.source}`}
+        controlClassName={cn('min-w-0 max-w-40', 'w-auto')}
+        value={level.value ?? ''}
+        disabled={policy.isPending}
+        onChange={(event) =>
+          policy.mutate({
+            scope: level.source,
+            id,
+            policy:
+              event.target.value === 'ask'
+                ? 'ask'
+                : event.target.value === 'allow'
+                  ? 'allow'
+                  : null,
+          })
+        }
+        label={
+          <>
+            {level.source === 'chat'
+              ? 'This chat'
+              : level.source === 'execution'
+                ? 'All chats in this workstream'
+                : 'This agent'}
+          </>
+        }
+        orientation="horizontal"
+        className="min-w-0 w-auto"
+        key={level.source}
+      >
+        <option value="">Inherit</option>
+        <option value="ask">Ask first</option>
+        <option value="allow">Allow automatically</option>
+      </NativeSelect>;
     })}
     <p className="text-muted-foreground">Applies to new sends. Approved messages keep their authorization.</p>
     </>}
@@ -88,7 +138,25 @@ function AvailableCoordinationSettings({ sessionId }: { sessionId: string }) {
 export function DefaultCoordinationSetting() {
   const { data } = useQuery({ queryKey: ['coordination', 'defaults'], queryFn: () => trpcClient.coordination.defaults.query() });
   const mutation = useCoordinationPolicy();
-  return <div className="space-y-2"><label className="flex items-center justify-between gap-3 text-sm"><span>Default coordination</span><select aria-label="Default coordination" className="rounded-md border bg-background px-2 py-1" value={data?.global ?? 'ask'} disabled={mutation.isPending} onChange={event => mutation.mutate({ scope: 'global', id: '1', policy: event.target.value === 'allow' ? 'allow' : 'ask' })}><option value="ask">Ask first</option><option value="allow">Allow automatically</option></select></label><p className="text-xs text-muted-foreground">Agent, workstream and chat overrides take precedence. Agent main chats and Ri&apos;s main chat are unrestricted. Already approved sends keep their authorization.</p></div>;
+  return <div className="space-y-2"><NativeSelect
+    aria-label="Default coordination"
+    controlClassName="w-auto"
+    value={data?.global ?? 'ask'}
+    disabled={mutation.isPending}
+    onChange={(event) =>
+      mutation.mutate({
+        scope: 'global',
+        id: '1',
+        policy: event.target.value === 'allow' ? 'allow' : 'ask',
+      })
+    }
+    label={<>Default coordination</>}
+    orientation="horizontal"
+    className="w-auto"
+  >
+    <option value="ask">Ask first</option>
+    <option value="allow">Allow automatically</option>
+  </NativeSelect><p className="text-xs text-muted-foreground">Agent, workstream and chat overrides take precedence. Agent main chats and Ri&apos;s main chat are unrestricted. Already approved sends keep their authorization.</p></div>;
 }
 
 export function IncomingDeliveryStatus({sessionId,deliveryId}:{sessionId:string;deliveryId:string}) {

@@ -1,5 +1,10 @@
 'use client';
 
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Runs list at /runs.
  *
@@ -27,6 +32,7 @@ type Filter = 'all' | 'manual' | 'scheduled' | 'webhook';
 const SCHEDULED_TRIGGERS: RunTrigger[] = ['cron', 'every', 'at'];
 
 export default function RunsPage() {
+  const tier = useViewportTier();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const { data: runs, isLoading } = useRuns(
@@ -40,12 +46,14 @@ export default function RunsPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           onClick={() => router.push('/')}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+          label="Back to home"
+          variant="ghost"
+          size="sm"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <Activity size={16} className="text-primary" />
         <h1 className="text-base font-semibold">Runs</h1>
         <div className="flex-1" />
@@ -58,22 +66,7 @@ export default function RunsPage() {
       </header>
 
       <div className="px-6 py-3 border-b border-border flex items-center gap-2">
-        <div data-slot="segmented" data-size="responsive" className="contents">
-        {(['all', 'manual', 'scheduled', 'webhook'] as Filter[]).map((f) => (
-          <button data-slot="segmented-option" aria-pressed={filter === f}
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              'px-2 py-1 rounded-md text-[11px] uppercase tracking-wider border transition-all',
-              filter === f
-                ? 'border-primary text-primary bg-primary/5'
-                : 'border-border text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {f[0].toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-        </div>
+        <SegmentedControl mode="choice" ariaLabel="Run trigger" size={tier === 'phone' ? 'touch' : 'compact'} value={filter} onChange={setFilter} options={(['all','manual','scheduled','webhook'] as Filter[]).map(value => ({value,label:value[0].toUpperCase()+value.slice(1)}))} />
       </div>
 
       <main className="px-6 py-6 max-w-4xl mx-auto">
@@ -108,8 +101,7 @@ function RunRow({ run }: { run: RunRecord }) {
       ? run.status
       : undefined;
   return (
-    <Link
-      data-slot="run-row"
+    <Link data-slot="run-row"
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
       className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted text-sm"
     >

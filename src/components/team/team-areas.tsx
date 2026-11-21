@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { apiErrorText } from '@/lib/api/client';
@@ -46,22 +48,23 @@ export function NewAreaDialog({ open, onOpenChange, onCreated }: { open: boolean
           }}
         >
           <label className="sr-only" htmlFor="new-team-area">Area name</label>
-          <input data-slot="field"
+          <Field
             id="new-team-area"
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
             placeholder="Garden, Taxes, Launch…"
-            className="min-w-0 flex-1 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-sm outline-none focus-visible:border-primary/60"
+            className="min-w-0 flex-1"
           />
-          <button data-slot="action-button"
+          <Button
             type="submit"
             disabled={!name.trim() || create.isPending}
-            className="rounded-md border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-muted/50 disabled:opacity-50"
+            variant="secondary"
+            size="sm"
           >
             Add
-          </button>
+          </Button>
         </form>
       </DialogContent>
     </Dialog>

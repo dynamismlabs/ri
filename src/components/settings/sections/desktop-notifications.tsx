@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle2, Loader2, Monitor } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import type { DesktopNotificationStatus } from '@/lib/notifications/desktop-contract';
 import { cn } from '@/lib/utils';
 
@@ -77,19 +77,38 @@ export function DesktopNotifications({
 
       <div className="flex flex-wrap items-center gap-2">
         {systemFix ? (
-          <Button size="sm" onClick={onOpenSystemSettings}>Open Notification Settings</Button>
+          <Button
+            onClick={onOpenSystemSettings}
+            variant="primary"
+            size="md"
+          >Open Notification Settings</Button>
         ) : localControls && status && (!unsupported || status.enabled) ? (
-          <Button size="sm" variant={status.enabled ? 'outline' : 'default'} disabled={busy || checking || !!error} onClick={onToggle}>
+          <Button
+            disabled={busy || checking || !!error}
+            onClick={onToggle}
+            variant={status.enabled ? "secondary" : "primary"}
+            size="sm"
+          >
             {status.enabled ? 'Disable desktop notifications' : 'Enable desktop notifications'}
           </Button>
         ) : canOpenSettings ? (
-          <Button size="sm" variant={enabled || unsupported ? 'outline' : 'default'} disabled={busy || checking} onClick={onOpenSettings}>
+          <Button
+            disabled={busy || checking}
+            onClick={onOpenSettings}
+            variant={enabled || unsupported ? "secondary" : "primary"}
+            size="sm"
+          >
             {enabled || unsupported || issue ? 'Open notification settings' : 'Enable desktop notifications'}
           </Button>
         ) : (
           <p className="text-xs font-medium">Open Tools, then Ri on This Device, then Notifications on this computer.</p>
         )}
-        {issue && <Button size="sm" variant="ghost" disabled={busy || checking} onClick={onCheck}>Check again</Button>}
+        {issue && <Button
+          disabled={busy || checking}
+          onClick={onCheck}
+          variant="ghost"
+          size="sm"
+        >Check again</Button>}
       </div>
       {enabled && <p className="text-[11px] text-muted-foreground">Use Test on the Desktop channel below to check delivery.</p>}
       {needsSetup && !issue && <p className="text-[11px] text-muted-foreground">Keep Ri running in the menu bar to receive alerts.</p>}
@@ -119,7 +138,11 @@ function UnsignedBuild({ telegramReady, onUseTelegram }: { telegramReady: boolea
           </p>
         </div>
       </div>
-      {!telegramReady && onUseTelegram && <Button size="sm" onClick={onUseTelegram}>Set up Telegram</Button>}
+      {!telegramReady && onUseTelegram && <Button
+        onClick={onUseTelegram}
+        variant="primary"
+        size="md"
+      >Set up Telegram</Button>}
     </section>
   );
 }

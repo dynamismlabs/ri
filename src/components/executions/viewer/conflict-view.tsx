@@ -1,5 +1,8 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Loader2,
@@ -149,15 +152,17 @@ export function ConflictView({ source, path }: ConflictViewProps) {
             contents and mark it resolved, or edit it in Current mode first.
           </p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={onResolve}
           disabled={resolve.isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="inline-flex items-center gap-1.5"
         >
           {resolve.isPending ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
           Mark resolved
-        </button>
+        </Button>
       </div>
     );
   }
@@ -182,30 +187,34 @@ export function ConflictView({ source, path }: ConflictViewProps) {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <button
+          <Button
             type="button"
             onClick={() => acceptAll('current')}
-            className="rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             All current
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => acceptAll('incoming')}
-            className="rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             All incoming
-          </button>
+          </Button>
           <Tip label={allResolved ? 'Save the resolution and mark resolved' : 'Resolve every conflict first'}>
-            <button
+            <Button
               type="button"
               onClick={onResolve}
               disabled={!allResolved || resolve.isPending}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {resolve.isPending ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               Resolve file
-            </button>
+            </Button>
           </Tip>
         </div>
       </div>
@@ -281,17 +290,17 @@ function ConflictHunk({
           <TriangleAlert size={11} className="text-orange-500" />
           Conflict {index + 1} of {total}
         </span>
-        <div data-slot="segmented" className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
-          <ChoiceButton active={resolution === 'current'} onClick={() => onChoose('current')}>
-            Accept current
-          </ChoiceButton>
-          <ChoiceButton active={resolution === 'incoming'} onClick={() => onChoose('incoming')}>
-            Accept incoming
-          </ChoiceButton>
-          <ChoiceButton active={resolution === 'both'} onClick={() => onChoose('both')}>
-            Accept both
-          </ChoiceButton>
-        </div>
+        <SegmentedControl
+          mode="choice"
+          ariaLabel={'Resolve conflict ' + (index + 1)}
+          value={resolution}
+          onChange={onChoose}
+          options={[
+            { value: 'current', label: 'Accept current' },
+            { value: 'incoming', label: 'Accept incoming' },
+            { value: 'both', label: 'Accept both' },
+          ]}
+        />
       </div>
 
       {resolution == null ? (
@@ -312,45 +321,21 @@ function ConflictHunk({
                   ? 'Using incoming change'
                   : 'Using both changes'}
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => onChoose(null)}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center gap-1"
             >
               <Undo2 size={10} />
               Undo
-            </button>
+            </Button>
           </div>
           <LineRows lines={resolvedLines(block, resolution)} tone="resolved" />
         </div>
       )}
     </div>
-  );
-}
-
-function ChoiceButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        'rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors',
-        active
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-      )}
-    >
-      {children}
-    </button>
   );
 }
 

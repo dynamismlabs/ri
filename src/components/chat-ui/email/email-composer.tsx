@@ -1,10 +1,15 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Check, Copy, Loader2, Mail, Send, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tip } from '@/components/ui/tip';
+import { Button } from '@/components/system/button';
+
+import { useTouchFirst } from '@/hooks/use-touch-first';
 import { useEmailDraft } from '@/hooks/use-email-draft';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { emailSendProblem, type EmailDraftFields } from '@/lib/email/validation';
@@ -13,6 +18,7 @@ import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 
 export function EmailComposer({ id, sessionId, initial }: { id: string; sessionId: string; initial: EmailDraft }) {
+  const touch = useTouchFirst();
   const recovery = useQuery({
     ...trpc.email.get.queryOptions({ id, sessionId }),
     enabled: initial.status === 'sending',
@@ -56,12 +62,28 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
   const editable = draft.status === 'draft' && !send.isPending && !discard.isPending;
   const problem = emailSendProblem(draft) ?? (accounts.data && !accounts.data.some(account => account.id === draft.connectionId) ? 'Choose an available sending account' : null);
   const field = (name: 'to' | 'cc' | 'bcc' | 'subject', label: string, placeholder: string) => (
-    <label className="flex items-start gap-3 border-b border-border/60 px-4 py-2.5 text-sm">
-      <span className="w-12 shrink-0 pt-0.5 text-xs text-muted-foreground">{label}</span>
-      <input aria-label={label} name={name} value={draft[name]} disabled={!editable} placeholder={placeholder} autoComplete="off" inputMode={name === 'subject' ? 'text' : 'email'} autoCapitalize={name === 'subject' ? 'sentences' : 'none'} spellCheck={name === 'subject'} maxLength={2000}
-        className="min-w-0 flex-1 rounded-sm bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/45 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-80"
-        onChange={event => { setMessage(null); editor.change({ [name]: event.target.value }); }} />
-    </label>
+    <div className="border-b border-border/60 px-4 py-2.5"><Field
+      aria-label={label}
+      name={name}
+      value={draft[name]}
+      disabled={!editable}
+      placeholder={placeholder}
+      autoComplete="off"
+      inputMode={name === 'subject' ? 'text' : 'email'}
+      autoCapitalize={name === 'subject' ? 'sentences' : 'none'}
+      spellCheck={name === 'subject'}
+      maxLength={2000}
+      className="min-w-0 flex-1"
+      label={label}
+      orientation="horizontal"
+      labelClassName="w-12 shrink-0"
+      controlClassName="min-w-0 flex-1"
+      onChange={(event) => {
+        setMessage(null);
+        editor.change({ [name]: event.target.value });
+      }}
+      purpose="embedded"
+    /></div>
   );
 
   if (draft.status === 'discarded' && !hasEdits) return <div className="flex items-center gap-2 py-2 text-xs text-muted-foreground"><Mail size={14} />Email draft discarded</div>;
@@ -74,62 +96,157 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
         <span aria-live="polite" className="text-[11px] text-muted-foreground">{save.isPending ? 'Saving…' : hasEdits ? 'Unsaved edits' : draft.status === 'draft' ? 'Saved' : ''}</span>
       </div>
       <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 text-[13px]">
-        <label htmlFor={`${labelId}-from`} className="w-12 shrink-0 text-xs text-muted-foreground">From</label>
-        {editable ? <select id={`${labelId}-from`} value={draft.connectionId ?? ''} disabled={accounts.isPending || accounts.isError} className="min-w-0 flex-1 rounded-sm bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/50" onChange={event => editor.change({ connectionId: event.target.value || null })}>
+        {editable ? <NativeSelect
+          label="From"
+          orientation="horizontal"
+          labelClassName="w-12 shrink-0"
+          controlClassName="min-w-0 flex-1"
+          id={`${labelId}-from`}
+          value={draft.connectionId ?? ''}
+          disabled={accounts.isPending || accounts.isError}
+          className="min-w-0 flex-1"
+          onChange={(event) => editor.change({ connectionId: event.target.value || null })}
+          purpose="embedded"
+        >
           <option value="">{accounts.isPending ? 'Loading accounts…' : 'Choose an account'}</option>
-          {draft.connectionId && !accounts.data?.some(account => account.id === draft.connectionId) && <option value={draft.connectionId}>Account unavailable</option>}
-          {accounts.data?.map(account => <option key={account.id} value={account.id}>{account.label} ({account.provider === 'google' ? 'Gmail' : 'Outlook'})</option>)}
-        </select> : <span>{draft.fromLabel ?? accounts.data?.find(account => account.id === draft.connectionId)?.label ?? 'Selected account'}</span>}
+          {draft.connectionId &&
+            !accounts.data?.some((account) => account.id === draft.connectionId) && (
+              <option value={draft.connectionId}>Account unavailable</option>
+            )}
+          {accounts.data?.map((account) => (
+            <option key={account.id} value={account.id}>
+              {account.label} ({account.provider === 'google' ? 'Gmail' : 'Outlook'})
+            </option>
+          ))}
+        </NativeSelect> : <><span className="w-12 shrink-0 text-xs">From</span><span>{draft.fromLabel ?? accounts.data?.find(account => account.id === draft.connectionId)?.label ?? 'Selected account'}</span></>}
         {editable && <div className="flex gap-2 text-xs text-muted-foreground">
-          {!showCc && !draft.cc && <button type="button" onClick={() => setShowCc(true)}>Cc</button>}
-          {!showBcc && !draft.bcc && <button type="button" onClick={() => setShowBcc(true)}>Bcc</button>}
+          {!showCc && !draft.cc && <Button
+            type="button"
+            onClick={() => setShowCc(true)}
+            variant="ghost"
+            size={touch ? 'touch' : 'sm'}
+          >Cc</Button>}
+          {!showBcc && !draft.bcc && <Button
+            type="button"
+            onClick={() => setShowBcc(true)}
+            variant="ghost"
+            size={touch ? 'touch' : 'sm'}
+          >Bcc</Button>}
         </div>}
       </div>
-      {editable && accounts.isError && <p role="alert" className="px-4 py-2 text-xs text-destructive">Could not load accounts. <button type="button" className="underline" onClick={() => void accounts.refetch()}>Try again</button></p>}
-      {editable && !accounts.isPending && !accounts.isError && accounts.data?.length === 0 && <p className="px-4 py-2 text-xs text-muted-foreground">Connect Gmail or Outlook in <button type="button" className="underline" onClick={() => openSettings('plugins', { anchor: 'integrations' })}>{INTEGRATION_LABELS.plural}</button> to send this email. You can keep drafting here.</p>}
+      {editable && accounts.isError && <p role="alert" className="px-4 py-2 text-xs text-destructive">Could not load accounts. <Button
+        type="button"
+        onClick={() => void accounts.refetch()}
+        variant="link"
+        size="sm"
+      >Try again</Button></p>}
+      {editable && !accounts.isPending && !accounts.isError && accounts.data?.length === 0 && <p className="px-4 py-2 text-xs text-muted-foreground">Connect Gmail or Outlook in <Button
+        type="button"
+        onClick={() => openSettings('plugins', { anchor: 'integrations' })}
+        variant="link"
+        size="sm"
+      >{INTEGRATION_LABELS.plural}</Button> to send this email. You can keep drafting here.</p>}
       {field('to', 'To', 'name@example.com, another@example.com')}
       {(showCc || draft.cc) && field('cc', 'Cc', 'Copy recipients')}
       {(showBcc || draft.bcc) && field('bcc', 'Bcc', 'Hidden recipients')}
       {field('subject', 'Subject', 'Subject')}
-      <div className="flex items-center justify-between gap-3 px-4 pt-2.5">
-        <label htmlFor={`${labelId}-body`} className="text-xs text-muted-foreground">Message</label>
-        <Button variant="ghost" size="xs" type="button" aria-label="Copy email body" disabled={!draft.body} className="text-muted-foreground pointer-coarse:h-11" onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(draft.body);
-            setCopyStatus('copied');
-          } catch {
-            setCopyStatus('error');
-          }
-        }}>
-          {copyStatus === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
-          <span role="status">{copyStatus === 'copied' ? 'Copied' : copyStatus === 'error' ? 'Copy failed' : 'Copy body'}</span>
-        </Button>
-      </div>
-      <textarea id={`${labelId}-body`} name="body" value={draft.body} disabled={!editable} placeholder="Write your message…" rows={9} maxLength={200_000}
-        className="block min-h-48 w-full resize-y bg-transparent px-4 pb-4 pt-2.5 text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/45 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 disabled:opacity-80"
-        onChange={event => { setMessage(null); editor.change({ body: event.target.value }); }} />
+      <TextArea
+        label="Message"
+        labelId={`${labelId}-body-label`}
+        labelAction={
+          <Button
+            type="button"
+            aria-label="Copy email body"
+            disabled={!draft.body}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(draft.body);
+                setCopyStatus('copied');
+              } catch {
+                setCopyStatus('error');
+              }
+            }}
+            variant="ghost"
+            size={touch ? 'touch' : 'xs'}
+          >
+            {copyStatus === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
+            <span role="status">
+              {copyStatus === 'copied'
+                ? 'Copied'
+                : copyStatus === 'error'
+                  ? 'Copy failed'
+                  : 'Copy body'}
+            </span>
+          </Button>
+        }
+        id={`${labelId}-body`}
+        name="body"
+        value={draft.body}
+        disabled={!editable}
+        placeholder="Write your message…"
+        rows={9}
+        maxLength={200_000}
+        className="mx-4 my-2 w-[calc(100%_-_2rem)]"
+        onChange={(event) => {
+          setMessage(null);
+          editor.change({ body: event.target.value });
+        }}
+        purpose="embedded"
+        resize="vertical"
+      />
       {(conflict || save.isError || hasEdits && !save.isPending) && editable && <div role="alert" className="space-y-2 border-t border-border bg-muted/30 px-4 py-3 text-xs">
         <p>{conflict ? 'This draft changed while you were editing. Your edits are kept here.' : save.error?.message ?? 'Your recovered edits are ready to save.'}</p>
         {conflict && <details><summary className="cursor-pointer">Review saved changes</summary><dl className="mt-2 space-y-2">{(Object.keys(edits) as (keyof EmailDraftFields)[]).map(key => <div key={key}><dt className="font-medium">{key === 'connectionId' ? 'Sending account' : key}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-muted-foreground">{key === 'connectionId' ? accounts.data?.find(account => account.id === conflict.connectionId)?.label ?? 'No available account' : conflict[key] || '(empty)'}</dd></div>)}</dl></details>}
         <div className="flex gap-3">
-          <button type="button" disabled={busy} className="font-medium underline" onClick={() => void editor.resolve(true).catch(error => setMessage(error.message))}>{conflict ? 'Keep my edits' : 'Save edits'}</button>
-          <button type="button" disabled={busy} className="text-muted-foreground underline" onClick={() => void editor.resolve(false).catch(error => setMessage(error.message))}>Use saved draft</button>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void editor.resolve(true).catch(error => setMessage(error.message))}
+            variant="link"
+            size="sm"
+          >{conflict ? 'Keep my edits' : 'Save edits'}</Button>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void editor.resolve(false).catch(error => setMessage(error.message))}
+            variant="link"
+            size="sm"
+          >Use saved draft</Button>
         </div>
       </div>}
       {hasEdits && draft.status !== 'draft' && <div role="alert" className="space-y-2 border-t border-border px-4 py-3 text-xs">
         <p>This email closed before your local edits were saved. These edits were not sent.</p>
         <details><summary className="cursor-pointer">Your unsent edits</summary><dl className="mt-2 space-y-2">{Object.entries(edits).map(([key, value]) => <div key={key}><dt className="font-medium">{key}</dt><dd className="whitespace-pre-wrap break-words">{value || '(empty)'}</dd></div>)}</dl></details>
-        <button type="button" className="text-muted-foreground underline" onClick={() => void editor.resolve(false).catch(error => setMessage(error.message))}>Dismiss unsent edits</button>
+        <Button
+          type="button"
+          onClick={() => void editor.resolve(false).catch(error => setMessage(error.message))}
+          variant="link"
+          size="sm"
+        >Dismiss unsent edits</Button>
       </div>}
       {draft.status !== 'sent' && (message || draft.error) && <p role="alert" className="border-t border-border px-4 py-3 text-xs text-destructive">{message ?? draft.error}</p>}
       {(draft.status === 'sending' || send.isPending) && <p role="status" className="flex items-center gap-2 border-t border-border px-4 py-3 text-xs text-muted-foreground"><Loader2 size={13} className="animate-spin" />Waiting for delivery confirmation. Check Sent mail if confirmation does not arrive.</p>}
       {draft.status === 'sent' && <p className="border-t border-border px-4 py-3 text-xs text-muted-foreground">Sent{draft.sentAt ? ` on ${new Date(draft.sentAt).toLocaleString()}` : ''}</p>}
       {editable && <div className="flex items-center gap-3 border-t border-border px-4 py-3">
-        <Button size="sm" type="button" disabled={busy || hasEdits || Boolean(conflict)} onClick={() => { if (problem) setMessage(problem); else { setMessage(null); send.mutate(); } }}>
+        <Button
+          type="button"
+          disabled={busy || hasEdits || Boolean(conflict)}
+          onClick={() => { if (problem) setMessage(problem); else { setMessage(null); send.mutate(); } }}
+          variant="primary"
+          size={touch ? 'touch' : 'md'}
+        >
           {send.isPending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}Send
         </Button>
         <span className="flex-1 text-[11px] text-muted-foreground">{problem ?? 'Ready to send'}</span>
-        <Tip label="Discard this draft"><Button variant="ghost" size="icon-sm" type="button" aria-label="Discard email draft" disabled={busy || hasEdits} onClick={() => discard.mutate()}><Trash2 size={14} /></Button></Tip>
+        <IconButton
+          type="button"
+          disabled={busy || hasEdits}
+          onClick={() => discard.mutate()}
+          label="Discard email draft"
+          tooltip="Discard this draft"
+          variant="ghost"
+          size={touch ? 'touch' : 'md'}
+        ><Trash2 size={14} /></IconButton>
       </div>}
     </section>
   );

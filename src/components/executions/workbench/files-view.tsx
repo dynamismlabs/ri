@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMemo, useRef, useState } from 'react';
 import { useDefaultLayout, type Layout, type LayoutStorage } from 'react-resizable-panels';
 import { ChevronDown, FilePlus, FileText, FolderPlus, PanelLeft, Plus, Upload } from 'lucide-react';
@@ -16,7 +17,7 @@ import { useSessionDiff } from '@/hooks/use-execution';
 import type { FileHistoryEntry } from '@/hooks/use-file-history';
 import { folderIsWritable, sessionFolder } from '@/lib/folders/source';
 import { formatCompactRelative } from '@/lib/utils/relative-time';
-import { cn } from '@/lib/utils';
+
 import { FileTree, type FileTreeHandle } from '../file-tree/file-tree';
 import { OpenWorktreeButton } from '../open-worktree-button';
 import { FileViewer } from '../viewer/file-viewer';
@@ -105,11 +106,15 @@ export function FilesView({
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Tip label="Create or upload files">
-              <button className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-muted-foreground outline-none transition-colors hover:bg-muted/60 hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="inline-flex items-center gap-1"
+              >
                 <Plus size={13} />
                 New
                 <ChevronDown size={11} className="opacity-60" />
-              </button>
+              </Button>
             </Tip>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -195,18 +200,17 @@ function BarButton({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <Button
         type="button"
         onClick={onClick}
         aria-label={title}
         aria-pressed={pressed}
-        className={cn(
-          'inline-flex size-7 items-center justify-center rounded-md transition-colors',
-          pressed ? 'text-foreground hover:bg-muted/60' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-        )}
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center justify-center"
       >
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState } from 'react';
 import { History } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -15,7 +16,7 @@ import {
 import type { TreeEntryStatus } from '@/lib/api/sessions';
 import type { FileHistoryEntry } from '@/hooks/use-file-history';
 import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
+
 
 interface FileHistoryMenuProps {
   sessionId: string;
@@ -64,18 +65,19 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Tip label="Recently opened files">
-          <button
+
+          <IconButton
             type="button"
-            aria-label="Recently opened files"
-            className={cn(
-              'flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground',
-              open && 'bg-muted text-foreground',
-            )}
+            label="Recently opened files"
+            tooltip="Recently opened files"
+            variant="ghost"
+            size="sm"
+            focus="inside"
+            className="flex items-center justify-center"
           >
             <History size={13} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={6} className="w-80 p-0">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">

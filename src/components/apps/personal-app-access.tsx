@@ -1,9 +1,10 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Bot, MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
@@ -113,27 +114,48 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
           <MessageCircle size={14} className="shrink-0 text-muted-foreground" aria-hidden />
           <span className="min-w-0 flex-1"><span className="block truncate">{APP_NAME}&apos;s own chats</span>
             <span className="block text-xs text-muted-foreground">{ri ? statusText(ri.status, name, ri.error) : 'Not connected'}</span></span>
-          {ri && ri.status !== 'connected' && <Button size="xs" variant="outline" disabled={busy} onClick={() => reconnectRi.mutate()}>{ri.status === 'sign_in' ? 'Continue' : 'Reconnect'}</Button>}
+          {ri && ri.status !== 'connected' && <Button
+            disabled={busy}
+            onClick={() => reconnectRi.mutate()}
+            variant="secondary"
+            size="xs"
+          >{ri.status === 'sign_in' ? 'Continue' : 'Reconnect'}</Button>}
         </li>
         {[...allowed.entries()].map(([workspaceId, place]) => (
           <li key={workspaceId} className="flex items-center gap-3 px-3 py-2 text-sm">
             <Bot size={14} className="shrink-0 text-muted-foreground" aria-hidden />
             <span className="min-w-0 flex-1"><span className="block truncate">{place.label}</span>
               <span className="block text-xs text-muted-foreground">{statusText(place.status, name, place.error)}</span></span>
-            {place.status !== 'connected' && <Button size="xs" variant="outline" disabled={busy} onClick={() => allow.mutate({ id: workspaceId, name: place.label, serverId: place.serverId })}>{place.status === 'sign_in' ? 'Continue' : 'Reconnect'}</Button>}
-            <Button size="xs" variant="ghost" disabled={busy} onClick={() => disallow.mutate({ id: workspaceId, name: place.label })}>Remove</Button>
+            {place.status !== 'connected' && <Button
+              disabled={busy}
+              onClick={() => allow.mutate({ id: workspaceId, name: place.label, serverId: place.serverId })}
+              variant="secondary"
+              size="xs"
+            >{place.status === 'sign_in' ? 'Continue' : 'Reconnect'}</Button>}
+            <Button
+              disabled={busy}
+              onClick={() => disallow.mutate({ id: workspaceId, name: place.label })}
+              variant="ghost"
+              size="xs"
+            >Remove</Button>
           </li>
         ))}
       </ul>
       <div className="flex flex-wrap items-center gap-2">
         {others.length > 0 && (
-          <select aria-label={`Allow an agent to use ${name}`} value="" disabled={busy} className="rounded-md border bg-background p-1.5 text-xs"
+          <NativeSelect aria-label={`Allow an agent to use ${name}`} value="" disabled={busy} className="w-auto"
             onChange={(event) => { const agent = others.find((workspace) => workspace.id === event.target.value); if (agent) allow.mutate({ id: agent.id, name: agent.name }); }}>
             <option value="">Allow an agent…</option>
             {others.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
-          </select>
+          </NativeSelect>
         )}
-        <Button size="xs" variant="ghost" className="text-destructive" disabled={busy} onClick={() => remove.mutate()}>Remove {name}</Button>
+        <Button
+          disabled={busy}
+          onClick={() => remove.mutate()}
+          variant="ghost"
+          size="xs"
+          tone="danger"
+        >Remove {name}</Button>
       </div>
       {hubApp && <div className="pt-4"><HubAppPanel id={hubApp.id} embedded /></div>}
       {allowApp.dialog}

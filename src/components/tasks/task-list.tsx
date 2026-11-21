@@ -1,5 +1,8 @@
 "use client";
+import { Field } from '@/components/system/field';
 
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 import { cn } from '@/lib/utils';
 import { entityKeys } from '@/lib/query/entity-keys';
@@ -44,8 +47,7 @@ import {
   ListToolbar,
   ToolbarActiveDot,
   ToolbarSearchButton,
-  toolbarButtonClass,
-} from '@/components/shared/list-toolbar';
+  } from '@/components/shared/list-toolbar';
 import { TaskViewToggle, type TaskView } from './task-view';
 import { TaskRow } from './task-row';
 import { todayLocalDate } from '@/lib/deck/date';
@@ -343,11 +345,11 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
 
         {/* Personal keeps its primary status selector. Team filters share one menu. */}
         {privatePlanning && <DropdownMenu>
-          <DropdownMenuTrigger aria-label={`Status: ${laneLabel}`} className={toolbarButtonClass({ className: 'font-semibold' })}>
+          <DropdownMenuTrigger asChild><ChipButton aria-label={`Status: ${laneLabel}`} className="">
             <span className="max-w-[130px] truncate">{laneLabel}</span>
             {laneCount != null && laneCount > 0 && <span className="tabular-nums opacity-60">{laneCount}</span>}
             <ChevronDown className="size-3.5 shrink-0 opacity-60" />
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">{statusOptions}</DropdownMenuContent>
         </DropdownMenu>}
 
@@ -357,12 +359,17 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Tip label="Filter tasks" onlyWhenTextHidden>
-              <button type="button" aria-label={filterActive ? `Filter, active: ${privatePlanning ? filterSummary : teamFilterSummary}` : 'Filter tasks'}
-                className={toolbarButtonClass({ active: filterActive, className: privatePlanning ? undefined : 'w-8 px-0 @lg/lt:w-auto @lg/lt:px-3' })}>
+              <ChipButton
+                type="button"
+                aria-label={filterActive ? `Filter, active: ${privatePlanning ? filterSummary : teamFilterSummary}` : 'Filter tasks'}
+                variant="ghost"
+                size="compact"
+                pressed={filterActive}
+              >
                 <Filter className="size-3.5 shrink-0" />
                 <span className={cn('hidden max-w-[120px] truncate', privatePlanning ? '@sm/lt:inline' : '@lg/lt:inline')}>{privatePlanning ? filterSummary : 'Filter'}</span>
                 {filterActive && <ToolbarActiveDot />}
-              </button>
+              </ChipButton>
             </Tip>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
@@ -412,10 +419,10 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
         </DropdownMenu>
 
         {privatePlanning ? <DropdownMenu>
-          <DropdownMenuTrigger aria-label={`Sort by ${SORT_LABELS[sortBy]}`} className={toolbarButtonClass()}>
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={`Sort by ${SORT_LABELS[sortBy]}`}>
             <ArrowDownAz className="size-3.5 shrink-0" />
             <span className="hidden @md/lt:inline">{SORT_LABELS[sortBy]}</span>
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
             {sortOptions}
@@ -423,11 +430,15 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
         </DropdownMenu> : <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Tip label="Grouping and sorting">
-              <button type="button" aria-label="Task view options"
-                className={toolbarButtonClass({ className: 'w-8 px-0 @lg/lt:w-auto @lg/lt:px-3' })}>
+              <ChipButton
+                type="button"
+                aria-label="Task view options"
+                variant="ghost"
+                size="compact"
+              >
                 <SlidersHorizontal className="size-3.5" />
                 <span className="hidden @lg/lt:inline">View</span>
-              </button>
+              </ChipButton>
             </Tip>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -460,12 +471,13 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
           <span>
             Switched to <span className="font-bold">Priority Order</span> so you can reorder.
           </span>
-          <button
+          <Button
             onClick={handleSwitchBack}
-            className="px-2.5 py-1 rounded bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground text-[10px] font-semibold uppercase tracking-wider transition-colors"
+            variant="ghost"
+            size="sm"
           >
             Back to {SORT_LABELS[switchedFromSort]}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -528,7 +540,7 @@ function QuickCreateRow({ lane, onCreate }: { lane: TaskLane; onCreate: (title: 
   return (
     <div className="flex items-center gap-2 border-t border-border px-3 py-1.5">
       <Plus size={13} className="text-muted-foreground flex-shrink-0" />
-      <input
+      <Field
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
@@ -537,7 +549,7 @@ function QuickCreateRow({ lane, onCreate }: { lane: TaskLane; onCreate: (title: 
         }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1" purpose="embedded"
       />
     </div>
   );

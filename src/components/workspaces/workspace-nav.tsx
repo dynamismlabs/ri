@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { Bot, Plus } from 'lucide-react';
 import {
@@ -162,12 +163,14 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
       <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
         No agents yet. Add one to get started.
       </p>
-      <button
+      <Button
         onClick={onCreate}
-        className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium text-primary hover:bg-primary/10 transition-colors"
+        variant="ghost"
+        size="sm"
+        className="mt-2 inline-flex items-center gap-1"
       >
         <Plus size={11} /> New agent
-      </button>
+      </Button>
     </div>
   );
 }

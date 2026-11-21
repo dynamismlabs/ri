@@ -1,5 +1,8 @@
 "use client";
+import { TextArea } from '@/components/system/text-area';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { EmojiPicker } from "@/components/shared/emoji-picker";
 import type { Attachment } from '@/db/types';
 import { useCreateArea } from "@/hooks/use-areas";
@@ -91,8 +94,6 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
     (e: FormEvent<HTMLTextAreaElement>) => {
       const target = e.currentTarget;
       setName(target.value);
-      target.style.height = "auto";
-      target.style.height = target.scrollHeight + "px";
     },
     []
   );
@@ -132,9 +133,13 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                 New Area
               </span>
               <DialogPrimitive.Close asChild>
-                <button data-slot="action-button" data-variant="ghost" className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <IconButton
+                  label="Close new area"
+                  variant="ghost"
+                  size="xs"
+                >
                   <X size={16} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
 
@@ -156,12 +161,17 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                       alt="Area image"
                       className="w-20 h-20 rounded-xl object-cover border border-border"
                     />
-                    <button data-slot="action-button" data-variant="primary"
+                    <IconButton
                       onClick={handleRemoveImage}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      label="Remove area image"
+                      variant="ghost"
+                      size="xs"
+                      tone="danger"
+                      reveal
+                      className="absolute -top-1.5 -right-1.5"
                     >
                       <Trash2 size={10} />
-                    </button>
+                    </IconButton>
                   </div>
                 ) : (
                   <div className="flex gap-3">
@@ -188,12 +198,17 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                         </button>
                       </EmojiPicker>
                       {emoji && (
-                        <button data-slot="action-button" data-variant="primary"
+                        <IconButton
                           onClick={() => setEmoji(null)}
-                          className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          label="Remove area emoji"
+                          variant="ghost"
+                          size="xs"
+                          tone="danger"
+                          reveal
+                          className="absolute -top-1.5 -right-1.5"
                         >
                           <Trash2 size={10} />
-                        </button>
+                        </IconButton>
                       )}
                     </div>
                     <button data-slot="image-picker"
@@ -221,25 +236,33 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
 
               {/* Name */}
               <div>
-                <textarea
+                <TextArea
                   value={name}
                   onInput={handleNameInput}
                   onKeyDown={handleNameKeyDown}
+                  aria-label="Area name"
                   placeholder="Area name"
-                  className="w-full text-lg font-semibold bg-transparent text-foreground placeholder:text-muted-foreground/40 focus:outline-none border-b border-border pb-2 text-center resize-none overflow-hidden"
+                  className="w-full"
                   autoFocus
                   rows={1}
+                  purpose="title"
+                  titleSize="form"
+                  autoSize
+                  align="center"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <textarea
+                <TextArea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   onKeyDown={handleDescriptionKeyDown}
+                  aria-label="Area description"
                   placeholder="Description (optional)"
-                  className="w-full h-16 resize-none bg-transparent text-xs text-muted-foreground placeholder:text-muted-foreground/40 focus:outline-none leading-relaxed"
+                  className="w-full"
+                  purpose="embedded"
+                  rows={3}
                 />
               </div>
             </div>
@@ -247,20 +270,25 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
             {/* Footer */}
             <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
               <DialogPrimitive.Close asChild>
-                <button data-slot="action-button" data-variant="ghost" className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
+                <Button
+                  variant="ghost"
+                  size="md"
+                >
                   Cancel
-                </button>
+                </Button>
               </DialogPrimitive.Close>
-              <button data-slot="action-button" data-variant="primary"
+              <Button
                 onClick={handleSubmit}
                 disabled={!name.trim() || createArea.isPending}
-                className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                variant="primary"
+                size="md"
+                className="flex items-center gap-1.5"
               >
                 {createArea.isPending && (
                   <Loader2 size={14} className="animate-spin" />
                 )}
                 Create area
-              </button>
+              </Button>
             </div>
           </div>
         </DialogPrimitive.Content>

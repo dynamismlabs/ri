@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
 import { HelpCircle, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { useResolvePendingInput } from '@/hooks/use-execution';
@@ -189,13 +191,11 @@ export function QuestionCard({
         </button>
 
         {otherActive && (
-          <input data-slot="field"
+          <Field
             ref={otherInputRef}
             type="text"
             value={otherTyped}
-            onChange={(e) =>
-              setOtherText((prev) => ({ ...prev, [currentIdx]: e.target.value }))
-            }
+            onChange={(e) => setOtherText((prev) => ({ ...prev, [currentIdx]: e.target.value }))}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && currentAnswered && !resolve.isPending) {
                 e.preventDefault();
@@ -204,12 +204,8 @@ export function QuestionCard({
             }}
             placeholder="Your answer…"
             disabled={resolve.isPending}
-            className={cn(
-              'w-full text-[12.5px] bg-background border border-primary/40 rounded-lg px-3 py-2',
-              'text-foreground placeholder:text-muted-foreground/50',
-              'focus:outline-none focus:border-primary/70',
-              'disabled:opacity-60',
-            )}
+            className="w-full"
+            aria-label={'Your answer'}
           />
         )}
       </div>
@@ -238,15 +234,13 @@ export function QuestionCard({
           <div />
         )}
 
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           type="button"
           disabled={!currentAnswered || resolve.isPending || (isLast && !allAnswered)}
           onClick={handleNext}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-1 rounded-md text-[11.5px] font-medium transition-colors',
-            'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98]',
-            'disabled:bg-muted disabled:text-muted-foreground/50 disabled:cursor-not-allowed',
-          )}
+          variant="primary"
+          size="xs"
+          className="flex items-center gap-1.5"
         >
           {resolve.isPending ? (
             <><Loader2 size={11} className="animate-spin" /> Sending</>
@@ -255,7 +249,7 @@ export function QuestionCard({
           ) : (
             <>Next <ChevronRight size={11} /></>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

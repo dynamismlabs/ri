@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * A move between devices, in one place (docs/homes-spec.md §8.2, P4.2 to
  * P4.4): Preparing, Saving work, Setting up MacBook, Continuing. When it
@@ -53,14 +54,16 @@ function Delivering({ sessionId, transfer }: { sessionId: string; transfer: Tran
       <p className="text-[12.5px] font-medium text-foreground">{count} didn&apos;t go to {where}.</p>
       <p className="mt-1 whitespace-pre-wrap text-[11.5px] text-muted-foreground">{transfer.error}</p>
       <p className="mt-1 text-[11px] text-muted-foreground/80">They stay in order, and new messages wait behind them.</p>
-      <button data-slot="action-button" data-variant="primary"
+      <Button
         type="button"
         disabled={again.isPending}
         onClick={() => again.mutate()}
-        className="mt-2 rounded-md border border-primary bg-primary px-2.5 py-1 text-[12px] text-primary-foreground hover:opacity-90 disabled:opacity-50"
+        variant="primary"
+        size="md"
+        className="mt-2"
       >
         Send them again
-      </button>
+      </Button>
     </div>
   );
 }
@@ -114,7 +117,7 @@ function Stopped({ sessionId, transfer }: { sessionId: string; transfer: Transfe
   const stage = transfer.failedStage ?? transfer.stage;
   const where = transferStepLabel(stage, transfer.to.name).toLowerCase();
   const busy = retry.isPending || resume.isPending || finish.isPending;
-  const button = 'rounded-md border border-border px-2.5 py-1 text-[12px] hover:bg-muted/60 disabled:opacity-50';
+
 
   return (
     <div role="alert" className="mx-auto w-full max-w-3xl rounded-lg border border-amber-500/40 bg-amber-500/5 px-3 py-2.5">
@@ -135,22 +138,35 @@ function Stopped({ sessionId, transfer }: { sessionId: string; transfer: Transfe
       </p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {transfer.ownershipChanged ? (
-          <button type="button" className={button} disabled={busy} onClick={() => finish.mutate()}>
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => finish.mutate()}
+            variant="secondary"
+            size="sm"
+          >
             {transfer.heldCount > 0 ? `Deliver held messages on ${transfer.to.name}` : `Finish on ${transfer.to.name}`}
-          </button>
+          </Button>
         ) : (
           <>
-            <button
+            <Button
               type="button"
-              className={cn(button, 'bg-primary text-primary-foreground border-primary hover:opacity-90 hover:bg-primary')}
               disabled={busy}
               onClick={() => retry.mutate({ toDeviceId: transfer.to.deviceId, includeUntracked: transfer.includeUntracked })}
+              variant="primary"
+              size="md"
             >
               Try again
-            </button>
-            <button type="button" className={button} disabled={busy} onClick={() => resume.mutate()}>
+            </Button>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={() => resume.mutate()}
+              variant="secondary"
+              size="sm"
+            >
               Resume on {transfer.from.name}
-            </button>
+            </Button>
           </>
         )}
       </div>

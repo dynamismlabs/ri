@@ -1,5 +1,8 @@
 "use client";
+import { Field } from '@/components/system/field';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * The review surface (spec §3.12): "Needs your call" first — the agent's
  * proposals, pre-filled, one tap to accept, correction affordances that
@@ -15,7 +18,7 @@ import {
   Archive, BookOpen, Check, ChevronDown, ChevronRight, Clock,
   Flame, Inbox, Pencil, Target, FileText, Undo2, Zap, CornerUpRight,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { AreaSelect } from '@/components/shared/area-select';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { TaskActions, NoteActions } from './promote-actions';
@@ -49,7 +52,7 @@ const EFFORT_LABELS: Record<string, string> = {
 };
 const ENERGY_CYCLE: (Energy | null)[] = ['deep', 'light', null];
 const EFFORT_CYCLE: (Effort | null)[] = ['trivial', 'small', 'medium', 'large', 'epic', null];
-const ENERGY_COLORS: Record<string, string> = { deep: 'text-orange-500', light: 'text-sky-400' };
+
 const ENERGY_ICONS: Record<string, typeof Flame> = { deep: Flame, light: Zap };
 
 /** Wrongly merging is the most trust-destroying operation — merges and
@@ -166,30 +169,35 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
         <Icon size={12} className="text-primary mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           {editingTitle ? (
-            <input
+            <Field
               autoFocus
               value={titleDraft}
               onChange={(e) => setTitleDraft(e.target.value)}
               onBlur={handleSaveTitle}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSaveTitle();
-                if (e.key === 'Escape') { setTitleDraft(decision.draft?.title ?? ''); setEditingTitle(false); }
+                if (e.key === 'Escape') {
+                  setTitleDraft(decision.draft?.title ?? '');
+                  setEditingTitle(false);
+                }
               }}
-              className="w-full text-[11.5px] font-medium bg-background border border-border rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-primary"
+              className="w-full"
+              aria-label={'Task title'}
             />
           ) : (
             <p className="text-[11.5px] font-medium text-foreground leading-snug">
               {headline.text}
               {canEditTitle && (
-                <Tip label="Edit the title">
-                  <button
+                  <IconButton
                     onClick={() => setEditingTitle(true)}
-                    className="ml-1.5 inline-flex text-muted-foreground/50 hover:text-foreground align-middle"
-                    aria-label="Edit the title"
+                    label="Edit the title"
+                    tooltip="Edit the title"
+                    variant="ghost"
+                    size="sm"
+                    className="ml-1.5 inline-flex"
                   >
                     <Pencil size={9} />
-                  </button>
-                </Tip>
+                  </IconButton>
               )}
             </p>
           )}
@@ -200,13 +208,15 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
       </div>
 
       {/* Source captures: provenance on demand */}
-      <button
+      <Button
         onClick={() => setShowSources((s) => !s)}
-        className="flex items-center gap-1 text-[9px] text-muted-foreground/70 hover:text-foreground transition-colors ml-5"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1 ml-5"
       >
         {showSources ? <ChevronDown size={9} /> : <ChevronRight size={9} />}
         {decision.items.length === 1 ? 'the capture' : `${decision.items.length} captures`}
-      </button>
+      </Button>
       {showSources && (
         <div className="ml-5 space-y-1">
           {decision.items.map((item) => (
@@ -223,22 +233,28 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
 
       {/* Actions: accept is primary, correction is one hop away */}
       <div className="flex items-center gap-1.5 ml-5 pt-0.5">
-        <button
+        <Button
           onClick={handleAccept}
           disabled={accept.isPending}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[10px] font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="flex items-center gap-1"
         >
           <Check size={10} />
           Looks right
-        </button>
+        </Button>
 
         {canReroute && (
           <Popover>
             <PopoverTrigger asChild>
-              <button className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <Button
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1"
+              >
                 <CornerUpRight size={10} />
                 Instead…
-              </button>
+              </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
               <div className="py-1">
@@ -263,13 +279,15 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
         )}
 
         <Tip label="Leave the capture as it was">
-          <button
+          <Button
             onClick={() => undo.mutate(decision.id)}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1"
           >
             <Undo2 size={10} />
             Not this
-          </button>
+          </Button>
         </Tip>
 
         <span className="flex-1" />
@@ -336,24 +354,25 @@ function ManualRow({
               onChange={(areaId) => onUpdateOverride('areaId', areaId)}
             />
             <Tip label={`Energy: ${energy ?? 'unset'} (click to cycle)`}>
-              <button
+              <Button
                 onClick={cycleEnergy}
-                className={cn(
-                  'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
-                  energy ? ENERGY_COLORS[energy] : 'text-muted-foreground/40',
-                )}
+                variant="ghost"
+                size="xs"
+                tone={energy === "light" ? "energy-light" : energy === "deep" ? "energy-deep" : "neutral"}
               >
                 {EnergyIcon && <EnergyIcon size={8} />}
                 {energy ?? '~'}
-              </button>
+              </Button>
             </Tip>
             <Tip label={`Effort: ${effort ?? 'unset'} (click to cycle)`}>
-              <button
+              <Button
                 onClick={cycleEffort}
-                className="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground uppercase tracking-wider transition-colors hover:bg-muted"
+                variant="secondary"
+                size="sm"
+                className="inline-flex items-center"
               >
                 {effort ? (EFFORT_LABELS[effort] ?? effort) : '~'}
-              </button>
+              </Button>
             </Tip>
             <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
               <Clock size={8} /> {timeAgo(item.createdAt)}
@@ -364,24 +383,29 @@ function ManualRow({
         <div className="flex items-center gap-0.5 flex-shrink-0">
           <TaskActions onPromote={() => onDecide('promote_task')} onMerge={onMergeTask} />
           <NoteActions onPromote={() => onDecide('promote_note')} onMerge={onMergeNote} />
-          <Tip label="Keep as a thought" side="bottom">
-            <button
-              aria-label="Keep as a thought"
+
+            <IconButton
               onClick={() => onDecide('journal')}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-violet-500 hover:bg-muted transition-colors"
+              label="Keep as a thought"
+              tooltip="Keep as a thought"
+              tipSide="bottom"
+              variant="ghost"
+              size="sm"
             >
               <BookOpen size={11} />
-            </button>
-          </Tip>
-          <Tip label="Set aside" side="bottom">
-            <button
-              aria-label="Set aside"
+            </IconButton>
+
+            <IconButton
               onClick={() => onDecide('dismiss')}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-muted-foreground/80 hover:bg-muted transition-colors"
+              label="Set aside"
+              tooltip="Set aside"
+              tipSide="bottom"
+              variant="ghost"
+              size="sm"
             >
               <Archive size={11} />
-            </button>
-          </Tip>
+            </IconButton>
+
         </div>
       </div>
     </div>
@@ -470,13 +494,15 @@ export function StreamTriage({ open, onOpenChange }: StreamTriageProps) {
             <div className="space-y-2">
               {allLowRisk && (
                 <div className="flex justify-end">
-                  <button
+                  <Button
                     onClick={handleAcceptAll}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-semibold text-primary hover:bg-primary/5 transition-colors"
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1"
                   >
                     <Check size={10} />
                     Accept all
-                  </button>
+                  </Button>
                 </div>
               )}
               {groupByPass(proposalList).map((group, i) => (

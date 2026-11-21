@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import type { RiDesktop } from '@/lib/client/desktop';
 import { openSettings } from './settings-store';
 
@@ -29,7 +29,13 @@ export function DesktopControls() {
       <h3 className="text-sm font-medium">This computer</h3>
       <p className="mt-1 text-xs text-muted-foreground">Enable agents on this computer, manage its connection to Ri, and choose how it starts.</p>
     </div>
-    <Button type="button" variant="outline" size="sm" disabled={opening} onClick={() => void open()}>
+    <Button
+      type="button"
+      disabled={opening}
+      onClick={() => void open()}
+      variant="secondary"
+      size="sm"
+    >
       {opening ? 'Opening desktop settings…' : 'Open desktop settings'}
     </Button>
     {error && <p role="alert" className="text-xs text-destructive">{error}</p>}

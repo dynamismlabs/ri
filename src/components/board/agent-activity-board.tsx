@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useActivityBuckets } from '@/hooks/use-activity-buckets';
@@ -50,7 +51,12 @@ export function AgentActivityBoard({ focusBucket }: { focusBucket: BucketId | nu
       Showing {BUCKET_CONFIG[focusBucket].label} for this visit. Your saved columns are unchanged.
     </p>}
     {error && <div role="alert" className="px-4 py-2 text-xs text-destructive">
-      Activity could not be refreshed. <button type="button" className="underline" onClick={() => void Promise.all([rail.refetch(), agents.refetch()])}>Try again</button>
+      Activity could not be refreshed. <Button
+        type="button"
+        onClick={() => void Promise.all([rail.refetch(), agents.refetch()])}
+        variant="link"
+        size="sm"
+      >Try again</Button>
     </div>}
     <div className="min-h-0 flex-1 overflow-x-auto p-3">
       <div className="flex h-full gap-3">

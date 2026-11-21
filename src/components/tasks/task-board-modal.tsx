@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { useEffect, useRef } from 'react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { SquareKanban, X } from 'lucide-react';
@@ -9,7 +11,7 @@ import { viewKey } from '@/lib/client/active-view';
 import { closeCalendarModal } from '@/lib/client/calendar-modal';
 import { closeTaskBoard, openBoard, syncBoardFromUrl, useBoardState } from '@/lib/client/task-board';
 import { AgentActivityBoard } from '@/components/board/agent-activity-board';
-import { SegmentedTabs } from '@/components/shared/list-toolbar';
+import { } from '@/components/shared/list-toolbar';
 import { useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { TaskKanban } from './task-kanban';
@@ -94,7 +96,7 @@ export function TaskBoardModal() {
             <DialogTitle className="mr-1 flex items-center gap-1.5 text-sm font-semibold">
               <SquareKanban className="size-4 text-muted-foreground" />Board
             </DialogTitle>
-            <SegmentedTabs ariaLabel="Board view" value={view} onChange={(next) => openBoard({ view: next })}
+            <SegmentedControl mode="choice" ariaLabel="Board view" value={view} onChange={(next) => openBoard({ view: next })}
               options={[{ value: 'activity', label: 'Agent Activity' }, { value: 'tasks', label: 'Tasks' }]} grow={false} />
             <Tip label="Close Board" shortcut="Esc">
               <DialogPrimitive.Close className="ml-auto flex size-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close Board">

@@ -1,0 +1,102 @@
+/* Product field drawing. The adapters retain their installed input engines. */
+.ri-field-control, .ri-field-shell {
+  --field-size: 32px;
+  --field-font: 13px;
+  --field-line: 20px;
+  --field-padding: 10px;
+  --field-block: calc((var(--field-size) - var(--field-line) - 2px) / 2);
+  color-scheme: light;
+  box-sizing: border-box;
+  height: var(--field-size);
+  padding: var(--field-block) var(--field-padding);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  background: var(--pane);
+  color: var(--t1);
+  font-family: var(--font-sans);
+  font-size: var(--field-font);
+  font-weight: 400;
+  line-height: var(--field-line);
+  letter-spacing: normal;
+  text-transform: none;
+  box-shadow: none;
+  outline: 0 solid transparent;
+  outline-offset: 0;
+  transition: border-color 120ms, background-color 120ms;
+}
+.ri-field--sm { --field-size: 28px; --field-padding: 8px; }
+.ri-field--touch { --field-size: 40px; --field-font: 16px; --field-line: 24px; --field-padding: 12px; }
+.ri-field-control::placeholder { color: var(--t3); opacity: 1; }
+.ri-field-control:hover:not(:disabled, :read-only), .ri-field-shell:hover:not([data-disabled]):not(:has(.ri-field-control:disabled)) { border-color: var(--t4); }
+.ri-field-control:disabled, .ri-field-shell[data-disabled] { opacity: .5; cursor: not-allowed; }
+.ri-field-control[aria-invalid='true'], .ri-field-shell[aria-invalid='true'] { border-color: var(--danger); }
+.ri-field-control:focus-visible, .ri-field-shell:has(.ri-field-control:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; box-shadow: none; }
+.ri-field-control[aria-invalid='true']:focus-visible, .ri-field-shell[aria-invalid='true']:has(.ri-field-control:focus-visible) { outline-color: var(--danger); }
+.ri-field-shell { align-items: center; gap: 0; padding: 0; }
+.ri-field-shell .ri-field-control { flex: 1; align-self: stretch; height: auto; border: 0; border-radius: 10px; background: transparent; box-shadow: none; }
+.ri-field-shell .ri-field-control:focus-visible { outline: 0 solid transparent; }
+.ri-field-shell .ri-field-control:disabled { opacity: 1; }
+.ri-field-addon { margin: 0; opacity: 1; display: flex; flex-shrink: 0; align-items: center; gap: 6px; height: auto; padding: 0 var(--field-padding); color: var(--t3); font-size: 12px; line-height: var(--field-line); font-weight: 400; }
+.ri-field-addon[data-align='inline-start'] { padding-right: 0; }
+.ri-field-addon[data-align='inline-end'] { padding-left: 0; }
+.ri-field-addon > svg { width: 14px; height: 14px; flex-shrink: 0; }
+.ri-field-shell[aria-invalid='true'] .ri-field-addon { color: var(--danger); }
+.ri-field-frame { flex-direction: column; align-items: flex-start; gap: 6px; }
+.ri-field-label { display: flex; align-items: center; width: fit-content; gap: 6px; margin: 0; color: var(--t1); font: 500 12.5px/18px var(--font-sans); }
+.ri-field-description, .ri-field-error { width: 100%; margin: 0; color: var(--t3); font: 400 12px/18px var(--font-sans); }
+.ri-field-error { color: var(--danger); }
+.ri-field--code { font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace); }
+.ri-field--embedded { border-color: transparent; background: transparent; padding-inline: 0; }
+.ri-field--embedded:hover:not(:disabled, :read-only) { border-color: transparent; }
+.ri-field--embedded:focus-visible { outline-offset: -2px; }
+.ri-field--title { height: auto; min-height: 0; border: 0; background: transparent; padding: 0; font-size: max(1em, var(--field-font)); font-weight: 600; line-height: 1.25; }
+.ri-field-title--inline { font: inherit; }
+.ri-field-textarea.ri-field--title { display: inline-block; }
+.ri-field-title--form { font-size: 18px; }
+.ri-field-title--entity { font-size: 24px; font-weight: 700; }
+.ri-field-title--document { font-size: 40px; font-weight: 700; }
+/* Keep the existing phone title size instead of enlarging a document heading. */
+.ri-field--touch.ri-field--title { font-size: var(--field-font); }
+.ri-field--center { text-align: center; }
+.ri-field--completed { color: var(--t3); text-decoration: line-through; }
+.ri-field-textarea { height: auto; min-height: 0; max-height: none; resize: none; field-sizing: fixed; }
+.ri-field-textarea--auto { field-sizing: content; min-height: calc(var(--field-rows) * var(--field-line) + 2 * var(--field-block) + 2px); max-height: calc(var(--field-max-rows) * var(--field-line) + 2 * var(--field-block) + 2px); overflow-y: auto; }
+.ri-field-textarea--auto.ri-field--title { min-height: 1.25em; max-height: none; }
+.ri-field-textarea--resize { resize: vertical; }
+.ri-field-select { appearance: auto; cursor: pointer; }
+.ri-field-select option, .ri-field-select optgroup { background: var(--pane); color: var(--t1); }
+
+.ri-field-label > svg { width: 14px; height: 14px; flex-shrink: 0; }
+.ri-field-description > p + p { margin-top: 8px; }
+.ri-field-select:hover:not(:disabled) { border-color: var(--t4); }
+.ri-field-select-trigger { display: flex; align-items: center; justify-content: space-between; gap: 6px; text-align: start; }
+.ri-field-select-trigger > svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.ri-field-select-trigger:hover:not(:disabled) { border-color: var(--t4); }
+
+.dark .ri-field-control { color-scheme: dark; }
+
+.ri-field-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ri-field-counter { margin-left: auto; color: var(--t3); font: 400 12px/18px var(--font-sans); font-variant-numeric: tabular-nums; }
+.ri-field-counter[data-over] { color: var(--danger); }
+
+/* Consent remains a native HTML form that works before hydration. */
+[data-slot="consent-checkbox"] { accent-color: var(--primary); }
+[data-slot="consent-checkbox"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+
+/* Inline labels retain wrapping when a value grows or the panel narrows. */
+.ri-field-frame--horizontal { flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 8px; }
+.ri-field-frame--horizontal > .ri-field-label-row { flex-shrink: 0; }
+
+.ri-field-shell.ri-field--embedded:hover:not([data-disabled]) { border-color: transparent; }
+
+.ri-field-label-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
+
+.ri-field-shell:has(.ri-field-control:disabled) { opacity: .5; cursor: not-allowed; }
+.ri-field-shell:has(.ri-field-control:disabled) .ri-button:disabled { opacity: 1; }
+
+/* Server markup precedes the viewport hook. Keep phone focus safe in that first frame. */
+@media (max-width: 767px) {
+  .ri-field-control { --field-font: 16px; }
+  .ri-field-control.ri-field--title { font-size: 16px; }
+}

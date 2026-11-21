@@ -1,4 +1,7 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
 
 /**
  * Detail view for one integration provider. Everything the catalog tile used to
@@ -11,9 +14,9 @@
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { ChevronDown, ExternalLink, KeyRound, Loader2, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -125,7 +128,11 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       <GroupHeading
         action={
           opened && (
-            <Button variant="ghost" size="xs" onClick={() => setAddOpen(false)} className="text-xs">
+            <Button
+              onClick={() => setAddOpen(false)}
+              variant="ghost"
+              size="xs"
+            >
               Cancel
             </Button>
           )
@@ -137,7 +144,12 @@ function SingleProviderDetail(props: ProviderDetailProps) {
         {hosted && p.mcp?.endpointConfig && <HostedEndpointFields setup={p.mcp.endpointConfig} value={props.endpointSelection} disabled={busy} onChange={props.onEndpointChange} />}
         <ConnectPanel {...props} />
         {!connected && (p.mcp?.endpointConfig?.locked || registered) && p.mcp?.serverId && props.onCancelSetup && (
-          <Button variant="ghost" size="xs" onClick={() => props.onCancelSetup?.()} disabled={busy}>Cancel setup</Button>
+          <Button
+            onClick={() => props.onCancelSetup?.()}
+            disabled={busy}
+            variant="ghost"
+            size="xs"
+          >Cancel setup</Button>
         )}
       </div>
     </ConnectFormSection>
@@ -185,7 +197,12 @@ function SingleProviderDetail(props: ProviderDetailProps) {
               canConnect &&
               !hosted &&
               !addOpen && (
-                <Button variant="outline" size="xs" onClick={() => setAddOpen(true)} disabled={busy} className="text-xs">
+                <Button
+                  onClick={() => setAddOpen(true)}
+                  disabled={busy}
+                  variant="secondary"
+                  size="xs"
+                >
                   <Plus size={12} /> Add account
                 </Button>
               )
@@ -293,7 +310,12 @@ function ConnectPanelContent(props: ProviderDetailProps) {
           {meta.helpLinks?.map(link => <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{link.label} <ExternalLink size={11} /></a>)}
         </div>
       </div> : selfHosted ? <div className="space-y-2 text-xs text-muted-foreground"><p>{meta.setup?.[0]}</p><a href={meta.docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Setup guide <ExternalLink size={11} /></a></div> : <p className="text-xs text-muted-foreground">{p.displayName} does not require an account or a token.</p>}
-      <Button size="sm" onClick={() => props.onConnectDirect()} disabled={busy || !endpointReady || props.connectDisabled} className="text-xs font-semibold">
+      <Button
+        onClick={() => props.onConnectDirect()}
+        disabled={busy || !endpointReady || props.connectDisabled}
+        variant="primary"
+        size="md"
+      >
         <Plus size={14} /> {again ? 'Reconnect' : `Connect ${p.displayName}`}
       </Button>
     </div>;
@@ -348,10 +370,10 @@ function ConnectPanelContent(props: ProviderDetailProps) {
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <Button
-            size="sm"
             onClick={() => props.onConnectOAuth()}
             disabled={busy || !endpointReady || props.connectDisabled || (multi && selected.length === 0)}
-            className="text-xs font-semibold"
+            variant="primary"
+            size="md"
           >
             <ExternalLink size={13} /> {again ? hosted ? 'Sign in to reconnect' : 'Sign in to another account' : `Connect ${p.displayName}`}
           </Button>
@@ -400,29 +422,28 @@ function ConnectPanelContent(props: ProviderDetailProps) {
       )}
       <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
         {fields.map((f) => (
-          <div key={f} className="space-y-1">
-            <label
-              htmlFor={`cred-${p.id}-${f}`}
-              className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              {fieldLabel(f)}
-            </label>
-            <Input
-              id={`cred-${p.id}-${f}`}
-              type={SECRETY.test(f) ? 'password' : 'text'}
-              autoComplete="off"
-              value={props.creds[f] ?? ''}
-              onChange={(e) => props.onCredChange(f, e.target.value)}
-              placeholder={fieldLabel(f)}
-              className="h-8 rounded-lg font-mono text-xs"
-            />
-          </div>
+          <Field
+            id={`cred-${p.id}-${f}`}
+            type={SECRETY.test(f) ? 'password' : 'text'}
+            autoComplete="off"
+            value={props.creds[f] ?? ''}
+            onChange={(e) => props.onCredChange(f, e.target.value)}
+            placeholder={fieldLabel(f)}
+            purpose="code"
+            label={fieldLabel(f)}
+            key={f}
+          />
         ))}
       </div>
       <p className="text-[11px] leading-normal text-muted-foreground">
         Your credentials are stored encrypted and never shown to agents.
       </p>
-      <Button type="submit" size="sm" disabled={busy || !filled || !endpointReady || props.connectDisabled} className="text-xs font-semibold">
+      <Button
+        type="submit"
+        disabled={busy || !filled || !endpointReady || props.connectDisabled}
+        variant="primary"
+        size="md"
+      >
         <Plus size={14} /> {hosted && again ? 'Update token' : `Connect ${p.displayName}`}
       </Button>
     </form>
@@ -497,20 +518,30 @@ function AccountRow({
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1">
         {onReconnect && (
-          <Button variant="ghost" size="xs" onClick={onReconnect} disabled={busy} className="text-xs">
+          <Button
+            onClick={onReconnect}
+            disabled={busy}
+            variant="ghost"
+            size="xs"
+          >
             <ExternalLink size={12} /> Reconnect
           </Button>
         )}
-        <Button variant="ghost" size="xs" onClick={onTest} disabled={busy || testing} className="text-xs">
+        <Button
+          onClick={onTest}
+          disabled={busy || testing}
+          variant="ghost"
+          size="xs"
+        >
           {testing ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
           Test
         </Button>
         <Button
-          variant="ghost"
-          size="xs"
           onClick={onDisconnect}
           disabled={busy}
-          className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+          variant="ghost"
+          size="xs"
+          tone="danger"
         >
           <Trash2 size={12} /> Disconnect
         </Button>
@@ -535,6 +566,8 @@ export function ToolList({
   writePolicy: Record<string, WritePolicyAction>;
   onSetApproval: (actionId: string, mode: ApprovalMode) => void;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [filter, setFilter] = useState('');
   const q = filter.trim().toLowerCase();
   const total = toolkits.reduce((n, t) => n + t.actions.length, 0);
@@ -553,19 +586,15 @@ export function ToolList({
         count={total}
         action={
           total > TOOL_FILTER_THRESHOLD && (
-            <div className="relative">
-              <Search
-                size={11}
-                className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter tools"
-                aria-label="Filter tools"
-                className="h-7 w-44 rounded-lg pl-6 text-[11px]"
-              />
-            </div>
+            <Field
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter tools"
+              aria-label="Filter tools"
+              className={cn('w-44', 'relative')}
+              leading={<Search />}
+              size={compactFieldSize}
+            />
           )
         }
       >

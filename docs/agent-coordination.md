@@ -46,6 +46,8 @@ Stable addresses are `orchestrator`, `agent` for the caller's own agent, and `ag
 
 `delegate_work` requires `workspace_id`, `request_id` and `prompt`. It retains provider, model, effort, permission mode, task, device and label options. Approval precedes creation. Retries reuse reserved chat, execution and input identities. An unavailable device is refused instead of replaced.
 
+Optional `execution_id` adds the new chat to an existing active execution in the named agent. `get_session_context` returns the caller's execution as `session.executionId`. The execution keeps its worktree, branch, tasks and device placement. `task_id` and `device_id` cannot be combined with `execution_id`. Approval, permission ceilings, child coordination policy and automatic returned outcomes still apply. The destination is checked before proposing work and again at launch, and launch retries reuse the reserved chat ID without creating an execution. Omitting `execution_id` retains the separate-execution behavior.
+
 Receipts expose `delivery_id`, optional `request_id`, delivery `status`, `request_status`, logical target, exact target when resolved and `return_delivery`. Acceptance is separate from completed work. Agents may finish their current turn while waiting, and tracked outcomes resume them without transcript polling.
 
 ### Consolidated interface

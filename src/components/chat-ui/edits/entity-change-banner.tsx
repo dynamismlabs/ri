@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -59,29 +61,35 @@ export function EntityChangeBanner({
             AI {verb} this {noun}.
           </span>
           <div className="flex items-center gap-2 @max-[30rem]:order-last @max-[30rem]:basis-full @max-[30rem]:pl-[23px]">
-            <button data-slot="action-button" data-variant="primary"
+            <Button
               onClick={() => setModalOpen(true)}
-              className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md bg-primary px-2.5 py-1 text-[11.5px] font-medium text-primary-foreground hover:bg-primary/90"
+              variant="secondary"
+              size="xs"
+              className="inline-flex flex-shrink-0 items-center gap-1.5"
             >
               <Eye size={12} /> Review changes
-            </button>
+            </Button>
             {latest.before && (
-              <button data-slot="action-button"
+              <Button
                 onClick={() => revert.mutate(latest.before!.id)}
                 disabled={revert.isPending}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-background/60 px-2.5 py-1 text-[11.5px] font-medium text-foreground hover:bg-muted/60 disabled:opacity-50"
+                variant="secondary"
+                size="xs"
+                className="inline-flex flex-shrink-0 items-center gap-1.5"
               >
                 {revert.isPending ? <Loader2 size={12} className="animate-spin" /> : <Undo2 size={12} />} Undo
-              </button>
+              </Button>
             )}
           </div>
-          <button data-slot="action-button" data-variant="ghost"
+          <IconButton
             onClick={() => setDismissedId(latest.after.id)}
-            className="flex-shrink-0 rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Dismiss"
+            label="Dismiss"
+            variant="ghost"
+            size="xs"
+            className="flex-shrink-0"
           >
             <X size={14} />
-          </button>
+          </IconButton>
         </div>
       </div>
       {modalOpen && (

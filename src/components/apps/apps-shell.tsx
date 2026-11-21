@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { AppsLibraryScreen } from './layout-review';
@@ -44,20 +45,24 @@ function page(route: string, appQuery: Record<string, string>, navigate: (value:
           <p className="text-[13px] font-semibold text-foreground">This app isn’t here anymore.</p>
           <p className="mt-1 text-[11px] text-muted-foreground/80">It may have been renamed or removed, or the link is wrong.</p>
           <div className="mt-3 flex justify-center gap-1">
-            <button
+            <Button
               type="button"
               onClick={() => navigate('')}
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center"
             >
               Open Apps
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={goHome}
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center"
             >
               Back to Home
-            </button>
+            </Button>
           </div>
         </div>
       </div>

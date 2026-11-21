@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
@@ -47,7 +48,7 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
       </p>
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">$</span>
-        <input
+        <Field
           type="number"
           inputMode="decimal"
           min={0}
@@ -68,7 +69,8 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
             }
             if (parsed !== value) onSave(parsed);
           }}
-          className="w-32 rounded-md border border-border bg-card px-2 py-1 text-sm tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-32"
+          aria-label={'Monthly budget'}
         />
         <span className="text-[11px] text-muted-foreground/60">/ month</span>
       </div>

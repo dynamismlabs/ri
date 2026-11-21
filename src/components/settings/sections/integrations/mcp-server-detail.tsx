@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Detail + add views for remote MCP servers. An ingested server's tools become
  * integrations behind the same approval gate, so they get the same drill-in
@@ -9,9 +11,9 @@
 import dynamic from 'next/dynamic';
 import type { FormEvent, ReactNode } from 'react';
 import { AlertCircle, Loader2, LogIn, Plus, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { BackLink, Chip, DetailHeader, GroupHeading, McpLogo, type Tone } from './parts';
 import type { McpForm, McpServerEntry } from './types';
@@ -126,19 +128,29 @@ export function McpServerDetail({
         {s.lastCheckedAt && <p className="text-[11px] text-muted-foreground">Last checked <time dateTime={s.lastCheckedAt} suppressHydrationWarning>{new Date(s.lastCheckedAt).toLocaleString()}</time></p>}
         <div className="flex flex-wrap items-center gap-1.5">
           {needsSignIn && (
-            <Button size="xs" onClick={onAuthorize} disabled={busy} className="text-xs font-semibold">
+            <Button
+              onClick={onAuthorize}
+              disabled={busy}
+              variant="primary"
+              size="md"
+            >
               <LogIn size={12} /> Sign in
             </Button>
           )}
-          <Button variant="outline" size="xs" onClick={onRetest} disabled={busy} className="text-xs">
+          <Button
+            onClick={onRetest}
+            disabled={busy}
+            variant="secondary"
+            size="xs"
+          >
             <RefreshCw size={12} /> Re-test
           </Button>
           <Button
-            variant="ghost"
-            size="xs"
             onClick={onRemove}
             disabled={busy}
-            className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+            variant="ghost"
+            size="xs"
+            tone="danger"
           >
             <Trash2 size={12} /> Remove server
           </Button>
@@ -153,7 +165,12 @@ export function McpServerDetail({
           <McpPermissionSelect value={s.approvalPolicy ?? null} inheritedLabel="Use global default"
             label={`Permissions for ${s.displayName}`} busy={busy} onChange={onSetPolicy} />
           {Object.values(s.toolOverrides ?? {}).some(override => mcpToolApprovalOverride(override) !== undefined) &&
-            <Button variant="outline" size="sm" className="h-9 text-xs" disabled={busy} onClick={() => onSetPolicy(s.approvalPolicy ?? null)}>Apply to all tools</Button>}
+            <Button
+              disabled={busy}
+              onClick={() => onSetPolicy(s.approvalPolicy ?? null)}
+              variant="secondary"
+              size="sm"
+            >Apply to all tools</Button>}
         </McpPermissionControls>
         <p className="text-[11px] leading-normal text-muted-foreground">
           {s.approvalPolicy == null && <>Global default: {MCP_POLICY_LABELS[defaultPolicy]}. </>}
@@ -219,11 +236,17 @@ export function McpServerDetail({
                     aria-label={`Ask before ${t.name} runs`}
                     className="justify-self-center"
                   />
-                  {mcpToolApprovalOverride(ov) !== undefined && <Tip label="Use server permissions">
-                    <button type="button" aria-label={`Use server permissions for ${t.name}`} disabled={busy}
+                  {mcpToolApprovalOverride(ov) !== undefined &&
+                    <IconButton
+                      type="button"
+                      disabled={busy}
                       onClick={() => onToolOverride(t.name, { approvalMode: null })}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-50"><RotateCcw size={12} /></button>
-                  </Tip>}
+                      label={`Use server permissions for ${t.name}`}
+                      tooltip="Use server permissions"
+                      variant="ghost"
+                      size="sm"
+                    ><RotateCcw size={12} /></IconButton>
+                  }
                 </div>
               );
             })}
@@ -291,50 +314,46 @@ export function McpServerForm({
 
       <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card/20 p-4">
         <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
-          <Field label="Name" htmlFor="mcp-name">
-            <Input
-              id="mcp-name"
-              value={form.name}
-              onChange={(e) => onChange({ name: e.target.value })}
-              placeholder="Sentry"
-              className="h-8 rounded-lg text-xs"
-              autoFocus
-            />
-          </Field>
-          <Field label="Server URL" htmlFor="mcp-url">
-            <Input
-              id="mcp-url"
-              value={form.url}
-              onChange={(e) => onChange({ url: e.target.value })}
-              placeholder="https://mcp.example.com"
-              className="h-8 rounded-lg font-mono text-xs"
-            />
-          </Field>
+          <Field
+            id="mcp-name"
+            value={form.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            placeholder="Sentry"
+            autoFocus
+            label="Name"
+          />
+          <Field
+            id="mcp-url"
+            value={form.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+            placeholder="https://mcp.example.com"
+            purpose="code"
+            label="Server URL"
+          />
           <div className="pt-1 @lg:col-span-2">
             <McpAuthChoice detection={detection} url={url} selected={selected} busy={busy} onChoose={choose} fields={usesSecret && (
               <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
                 {selected === 'header' && (
-                  <Field label="Header name" htmlFor="mcp-header">
-                    <Input
-                      id="mcp-header"
-                      value={form.header}
-                      onChange={(e) => onChange({ header: e.target.value })}
-                      placeholder={headerHint ?? 'X-API-Key'}
-                      className="h-8 rounded-lg font-mono text-xs"
-                    />
-                  </Field>
-                )}
-                <Field label="Secret" htmlFor="mcp-secret" wide={selected !== 'header'}>
-                  <Input
-                    id="mcp-secret"
-                    type="password"
-                    autoComplete="off"
-                    value={form.secret}
-                    onChange={(e) => onChange({ secret: e.target.value })}
-                    placeholder="Token or key"
-                    className="h-8 rounded-lg font-mono text-xs"
+                  <Field
+                    id="mcp-header"
+                    value={form.header}
+                    onChange={(e) => onChange({ header: e.target.value })}
+                    placeholder={headerHint ?? 'X-API-Key'}
+                    purpose="code"
+                    label="Header name"
                   />
-                </Field>
+                )}
+                <Field
+                  id="mcp-secret"
+                  type="password"
+                  autoComplete="off"
+                  value={form.secret}
+                  onChange={(e) => onChange({ secret: e.target.value })}
+                  placeholder="Token or key"
+                  purpose="code"
+                  label="Secret"
+                  className={selected !== 'header' ? '@lg:col-span-2' : undefined}
+                />
                 <p className="text-[11px] leading-normal text-muted-foreground @lg:col-span-2">The secret is sealed in your Ri and never shown to the model.</p>
               </div>
             )} />
@@ -343,7 +362,12 @@ export function McpServerForm({
         <p className="text-[11px] leading-normal text-muted-foreground">
           If an agent session is already running, restart it to use newly added tools.
         </p>
-        <Button type="submit" size="sm" disabled={busy || !ready} className="text-xs font-semibold">
+        <Button
+          type="submit"
+          disabled={busy || !ready}
+          variant="primary"
+          size="md"
+        >
           <Plus size={14} /> {selected === 'oauth' ? 'Add and sign in' : 'Add and connect'}
         </Button>
       </form>
@@ -430,27 +454,6 @@ function McpAuthChoice({ detection, url, selected, busy, onChoose, fields }: {
           );
         })}
       </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  wide,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  wide?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div className={wide ? 'space-y-1 @lg:col-span-2' : 'space-y-1'}>
-      <label htmlFor={htmlFor} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </label>
-      {children}
     </div>
   );
 }

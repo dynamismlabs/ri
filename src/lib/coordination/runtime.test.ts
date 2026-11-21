@@ -104,6 +104,51 @@ it('reports delegated worktree setup failure without starting the destination ha
   expect(q.terminalAgentDelivery(request.id)?.payload.content).toContain('Fixture worktree creation failed');
 }, 15_000);
 
+it('runs a sibling delegation in the existing worktree and returns its result without provisioning again', async () => {
+  const { workspace, runAction } = await setupRuntime();
+  makeGitWorkspace(workspace);
+  let provisions = 0;
+  worktrees.beforeCreate = async () => { provisions++; };
+  const { dispatchExecutionSession } = await import('@/lib/sessions/dispatch');
+  const source = await dispatchExecutionSession({ workspaceId: workspace.id, harness: 'claude', permissionMode: 'ask', label: 'Shared work' });
+  await vi.waitFor(() => expect(q.getChatSessionWithExecution(source.id)?.worktreePath).toBeTruthy());
+  const execution = q.getExecution(source.executionId!)!;
+  const placement = q.chatPlacement(source.id);
+  q.setAgentCoordinationPolicy('chat', source.id, 'ask');
+  const input = { workspace_id: workspace.id, execution_id: execution.id, request_id: 'shared-review', prompt: 'Review the current changes.', provider: 'claude', label: 'Review' };
+  harness!.onTurn(async turn => {
+    const chatId = verifySessionCredential(turn.session.ctx.env?.RI_SESSION_CREDENTIAL, home!.token)!;
+    expect(turn.session.ctx.cwd).toBe(execution.worktreePath);
+    if (chatId === source.id) {
+      expect(turn.message).toContain('The shared changes pass review.');
+      await turn.say('The review is ready.');
+    } else {
+      expect(q.getChatSession(chatId)?.executionId).toBe(execution.id);
+      expect(q.getChatSession(chatId)?.permissionMode).toBe('ask');
+      expect(q.chatPlacement(chatId)).toEqual(placement);
+      expect(q.getChatSession(source.id)?.status).toBe('active');
+      await turn.say('The shared changes pass review.');
+    }
+  });
+  const ctx = { remote: true, actor: { source: 'ai' as const, sessionId: source.id } };
+  const result = await runAction('delegate_work', input, ctx);
+  expect(result).toMatchObject({ ok: true, result: { status: 'awaiting_approval' } });
+  expect(q.listChatSessions({ executionId: execution.id })).toHaveLength(1);
+  if (!result.ok) throw new Error(result.error.message);
+  q.decideAgentDelivery((result.result as { id: string }).id, 'allow');
+  const { drainAgentCoordination } = await import('./service');
+  await drainAgentCoordination();
+  await vi.waitFor(() => expect(q.getLastChatEventBySource(source.id, 'agent')?.content).toBe('The review is ready.'), { timeout: 10_000, interval: 25 });
+  const [request] = q.listAgentRequests(source.id);
+  expect(request.status).toBe('completed');
+  expect(q.terminalAgentDelivery(request.id)).toMatchObject({ payload: { content: 'The shared changes pass review.' }, status: 'accepted' });
+  expect(q.getExecution(execution.id)).toEqual(execution);
+  expect(q.listChatSessions({ workspaceId: workspace.id, type: 'execution' })).toHaveLength(2);
+  expect(provisions).toBe(1);
+  expect(await runAction('delegate_work', input, ctx)).toMatchObject({ ok: true, result: { targetSessionId: request.targetSessionId } });
+  expect(q.listChatSessions({ executionId: execution.id })).toHaveLength(2);
+}, 20_000);
+
 /** Real Ri operations, dispatcher, runner, event ingestion, run completion,
  * SQLite migration and reply queue. Only the harness model is a stand-in. */
 async function setupRuntime() {

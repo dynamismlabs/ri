@@ -1,4 +1,7 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
 
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { trpcClient } from '@/lib/trpc/client';
@@ -27,8 +30,8 @@ import { CATEGORY_ORDER, integrationMeta, type IntegrationCategory } from '@/com
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { setSettingsAnchor, useSettingsStore } from '@/components/settings/settings-store';
 import { APP_ANCHOR, PLUGIN_CREATE_ANCHORS } from './plugins/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 import { type HostedEndpointSelection } from '@/lib/client/integration-endpoint';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -115,6 +118,8 @@ export function IntegrationsSection({ active = true, navigation }: {
   /** Apps can reuse account setup without opening or changing Settings. */
   navigation?: { providerId: string; returnTo?: string; onBack: () => void };
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [toolkits, setToolkits] = useState<ToolkitInfo[]>([]);
@@ -666,7 +671,11 @@ export function IntegrationsSection({ active = true, navigation }: {
     return <div className="space-y-3"><p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading your accounts and connection status…</p><SettingsSkeleton rows={5} /></div>;
   }
 
-  if (stale && navigation) return <div role="alert" className="space-y-3 text-sm"><p>{error ?? 'This service is no longer available.'}</p><Button variant="outline" onClick={back}>Back to library</Button></div>;
+  if (stale && navigation) return <div role="alert" className="space-y-3 text-sm"><p>{error ?? 'This service is no longer available.'}</p><Button
+    onClick={back}
+    variant="secondary"
+    size="sm"
+  >Back to library</Button></div>;
 
   const onCatalog = view.kind === 'catalog' || stale;
   const errorShownInAccount = selectedProvider?.id === 'slack' && !!error && selectedProvider.mcp?.accounts?.some(account => account.error && error.includes(account.error));
@@ -676,15 +685,28 @@ export function IntegrationsSection({ active = true, navigation }: {
       {activity && <p role="status" className="flex items-center gap-2 rounded-lg border p-3 text-sm"><Loader2 size={14} className="animate-spin" />{activity}</p>}
       {pendingRegisteredOAuth && <div role="status" className="space-y-2 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm">
         <p className="font-medium">Waiting for {pendingRegisteredOAuth.displayName} sign-in</p><p>Approve access in the provider window, then return here. Ri will check the account and load its tools.</p>
-        <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" disabled={!!activity} onClick={() => void checkRegisteredOAuth().then(ready => { if (ready) finishRegisteredOAuth(); else toast.info('Still waiting for sign-in', {description:'Finish approving access in the provider window, then check again.'}); }).catch(failRegisteredOAuth)}>I’ve finished signing in</Button><Button size="sm" variant="ghost" onClick={() => setPendingRegisteredOAuth(null)}>Stop waiting</Button></div>
+        <div className="flex flex-wrap gap-2"><Button
+          disabled={!!activity}
+          onClick={() => void checkRegisteredOAuth().then(ready => { if (ready) finishRegisteredOAuth(); else toast.info('Still waiting for sign-in', {description:'Finish approving access in the provider window, then check again.'}); }).catch(failRegisteredOAuth)}
+          variant="secondary"
+          size="sm"
+        >I’ve finished signing in</Button><Button
+          onClick={() => setPendingRegisteredOAuth(null)}
+          variant="ghost"
+          size="sm"
+        >Stop waiting</Button></div>
       </div>}
       {pendingOAuth && (
         <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
           <span>Finish connecting in your browser.</span>
-          <Button variant="outline" size="sm" onClick={() => void run(async () => {
+          <Button
+            onClick={() => void run(async () => {
             await trpcClient.desktop.cancelOAuth.mutate({ body: { id: pendingOAuth } });
             setPendingOAuth(null);
-          })}>Cancel</Button>
+          })}
+            variant="secondary"
+            size="sm"
+          >Cancel</Button>
         </div>
       )}
       {banner && (
@@ -706,27 +728,27 @@ export function IntegrationsSection({ active = true, navigation }: {
 
       {onCatalog ? (
         <>
-          <div className="relative">
-            <Search
-              size={14}
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              ref={searchRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
-              aria-label={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
-              className="rounded-4xl pl-9 pr-9 text-xs"
-            />
-            {busy && (
-              <Loader2
-                size={14}
-                aria-label="Working"
-                className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
-              />
-            )}
-          </div>
+          <Field
+            ref={searchRef}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
+            aria-label={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
+            leading={<Search />}
+            trailing={
+              <>
+                {busy && (
+                  <Loader2
+                    size={14}
+                    aria-label="Working"
+                    className="animate-spin text-muted-foreground"
+                  />
+                )}
+              </>
+            }
+            className="relative"
+            size={compactFieldSize}
+          />
 
           {q && catalog.total === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/10 p-8 text-center">
@@ -922,11 +944,24 @@ function GoogleAlternative({ sourceReady, configured, onOpenApp, onOpenSources }
       </span>
       {sourceReady ? (
         <span className="flex shrink-0 gap-1">
-          <Button variant="outline" size="xs" className="text-xs" onClick={() => onOpenApp('gmail')}>Gmail</Button>
-          <Button variant="outline" size="xs" className="text-xs" onClick={() => onOpenApp('google_calendar')}>Google Calendar</Button>
+          <Button
+            onClick={() => onOpenApp('gmail')}
+            variant="secondary"
+            size="xs"
+          >Gmail</Button>
+          <Button
+            onClick={() => onOpenApp('google_calendar')}
+            variant="secondary"
+            size="xs"
+          >Google Calendar</Button>
         </span>
       ) : (
-        <Button variant="outline" size="xs" className="shrink-0 text-xs" onClick={onOpenSources}>Set up Composio</Button>
+        <Button
+          onClick={onOpenSources}
+          variant="secondary"
+          size="xs"
+          className="shrink-0"
+        >Set up Composio</Button>
       )}
     </div>
   );

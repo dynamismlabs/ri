@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { LinkedCoordinationMessage } from '@/components/chat-ui/coordination/linked-message';
 import { decodeChatMessageReceipt } from '@/lib/sessions/chat-message';
 
@@ -167,7 +168,14 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
           loadOlder={loadOlder}
           oldestEventId={oldestEventId}
         />
-        {hasOlder && <button data-slot="action-button" data-variant="ghost" type="button" className="self-center rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60" disabled={isLoadingOlder} onClick={() => void loadOlder()}>{isLoadingOlder ? 'Loading…' : 'Load earlier messages'}</button>}
+        {hasOlder && <Button
+          type="button"
+          disabled={isLoadingOlder}
+          onClick={() => void loadOlder()}
+          variant="ghost"
+          size="xs"
+          className="self-center"
+        >{isLoadingOlder ? 'Loading…' : 'Load earlier messages'}</Button>}
         {before}
         <LinkedCoordinationMessage sessionId={session.id} />
 
@@ -238,7 +246,7 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
           so this mirrors the scroller's padding to stay over the messages
           instead of drifting to the far right under the tools box. */}
       <div className={cn('pointer-events-none absolute inset-x-0 bottom-4 flex justify-center', scrollClassName)}>
-        <ConversationScrollButton className="pointer-events-auto static shadow-md" />
+        <ConversationScrollButton className="static" />
       </div>
     </Conversation>
   );

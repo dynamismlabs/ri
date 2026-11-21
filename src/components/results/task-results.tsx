@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { HomeLink as Link } from '@/components/home/home-link';
 import { useResults } from '@/hooks/use-results';
@@ -20,7 +21,13 @@ export function TaskResults({ taskId }: { taskId: string }) {
     {(current.error || history.error) && <p role="alert" className="text-xs text-destructive">{apiErrorText(current.error ?? history.error)}</p>}
     {!expanded && current.data?.map((result) => <ResultListItem key={result.id} result={result} compact />)}
     {!expanded && !current.data?.length && !!history.data?.length && <p className="text-xs text-muted-foreground">Earlier saved snapshots are available.</p>}
-    <button type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)} className="text-xs text-muted-foreground hover:text-foreground">{expanded ? 'Hide result history' : 'Show result history'}</button>
+    <Button
+      type="button"
+      aria-expanded={expanded}
+      onClick={() => setExpanded(!expanded)}
+      variant="ghost"
+      size="sm"
+    >{expanded ? 'Hide result history' : 'Show result history'}</Button>
     {expanded && <ResultList taskId={taskId} compact initialHistory />}
   </section>;
 }

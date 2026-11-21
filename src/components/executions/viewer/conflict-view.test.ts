@@ -12,7 +12,6 @@ vi.mock('@/hooks/use-folder', () => ({
   useResolveFileConflict: () => ({ mutateAsync: vi.fn(), isPending: false, isSuccess: false }),
 }));
 vi.mock('../skeletons', () => ({ FileSkeleton: () => null }));
-vi.mock('@/components/ui/tip', () => ({ Tip: ({ children }: { children: unknown }) => children }));
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 
 const conflict = (current: string, incoming: string) =>
@@ -32,6 +31,9 @@ beforeEach(() => {
   const { window, document } = parseHTML('<!doctype html><html><body><div id="root"></div></body></html>');
   vi.stubGlobal('window', window);
   vi.stubGlobal('document', document);
+  vi.stubGlobal('HTMLElement', window.HTMLElement);
+  // Domain checks use a synthetic DOM. Measured scrolling is covered in Chromium.
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   fixtures.files.clear();
   container = document.getElementById('root') as unknown as HTMLElement;

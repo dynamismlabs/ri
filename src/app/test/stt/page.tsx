@@ -205,7 +205,7 @@ export default function SttBenchPage() {
 
             <div className="flex items-center gap-3">
               {!isRecording && !audioBlob && (
-                <Button onClick={startRecording} size="lg" disabled={isRunning}>
+                <Button onClick={startRecording} size="touch" disabled={isRunning}>
                   <Mic className="size-4" data-icon="inline-start" />
                   Record
                 </Button>
@@ -215,7 +215,7 @@ export default function SttBenchPage() {
                 <Button
                   onClick={stopRecording}
                   variant="destructive"
-                  size="lg"
+                  size="touch"
                 >
                   <Square className="size-3.5" data-icon="inline-start" />
                   Stop
@@ -226,7 +226,7 @@ export default function SttBenchPage() {
                 <>
                   <Button
                     onClick={() => runBenchmark(audioBlob)}
-                    size="lg"
+                    size="touch"
                     disabled={isRunning}
                   >
                     {isRunning ? (
@@ -241,8 +241,8 @@ export default function SttBenchPage() {
                   </Button>
                   <Button
                     onClick={startRecording}
-                    variant="outline"
-                    size="lg"
+                    variant="secondary"
+                    size="touch"
                     disabled={isRunning}
                   >
                     <Mic className="size-4" data-icon="inline-start" />
@@ -251,7 +251,7 @@ export default function SttBenchPage() {
                   <Button
                     onClick={reset}
                     variant="ghost"
-                    size="lg"
+                    size="touch"
                     disabled={isRunning}
                   >
                     <RotateCcw className="size-4" data-icon="inline-start" />
@@ -342,7 +342,7 @@ function ModelCard({
           <div className="flex shrink-0 items-center gap-2">
             {result?.latencyMs != null && (
               <Badge
-                variant="outline"
+                variant="secondary"
                 className={
                   isFastest
                     ? "border-emerald-500/30 bg-emerald-500/10 font-mono text-xs text-emerald-600 dark:text-emerald-400"

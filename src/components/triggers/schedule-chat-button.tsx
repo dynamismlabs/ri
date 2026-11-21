@@ -1,5 +1,8 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Schedule this chat: the clock in a chat's header. It opens a small form
  * (how often, the message, and whether each run starts a new chat) and,
@@ -45,11 +48,13 @@ function nextRunLabel(trigger: Pick<TriggerWithLastRun, 'kind' | 'nextRunAt' | '
 export function ScheduleChatButton({
   sessionId,
   compact = false,
+  size = "sm",
   className,
 }: {
   sessionId: string | null;
   /** A phone header: the clock alone, lit while scheduled, so the title keeps its room. */
   compact?: boolean;
+  size?: "xs" | "sm" | "md" | "touch";
   className?: string;
 }) {
   const { data: chat } = useSession(sessionId);
@@ -70,19 +75,17 @@ export function ScheduleChatButton({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Tip label={chip ? 'This chat is scheduled. Change or pause it.' : 'Send this chat a message on a schedule'}>
-          <button
+          <Button
             type="button"
             aria-label={chip ? `Scheduled: ${chip}` : 'Schedule'}
-            className={cn(
-              'flex min-w-0 flex-shrink-0 items-center gap-1 rounded-md text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground',
-              chip && !compact ? 'px-1.5 py-0.5 text-[11px] text-foreground/80 bg-primary/10' : 'p-1.5',
-              chip && compact && 'bg-primary/10',
-              className,
-            )}
+            variant={chip && !compact ? "secondary" : "ghost"}
+            size={size}
+            icon={compact || !chip}
+            className={cn("flex min-w-0 flex-shrink-0 items-center gap-1", className)}
           >
             <Clock size={compact ? 16 : 13} className={chip ? 'text-primary' : undefined} />
             {chip && !compact && <span className="max-w-[12rem] truncate">{chip}</span>}
-          </button>
+          </Button>
         </Tip>
       </PopoverTrigger>
       {/* Built only while open: every chat header carries this button. */}
@@ -150,27 +153,30 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
         </p>
         <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{trigger.prompt}</p>
       </div>
-      <Tip label={trigger.enabled ? 'Pause' : 'Resume'}>
-        <button
+
+        <IconButton
           type="button"
-          aria-label={trigger.enabled ? 'Pause schedule' : 'Resume schedule'}
           onClick={() => update.mutate({ id: trigger.id, enabled: !trigger.enabled })}
           disabled={update.isPending}
-          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+          label={trigger.enabled ? 'Pause schedule' : 'Resume schedule'}
+          tooltip={trigger.enabled ? 'Pause' : 'Resume'}
+          variant="ghost"
+          size="sm"
         >
           {trigger.enabled ? <Pause size={12} /> : <Play size={12} />}
-        </button>
-      </Tip>
-      <Tip label="Change everything about it in Schedules">
-        <button
+        </IconButton>
+
+        <IconButton
           type="button"
-          aria-label="Edit schedule"
           onClick={onEdit}
-          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          label="Edit schedule"
+          tooltip="Change everything about it in Schedules"
+          variant="ghost"
+          size="sm"
         >
           <Pencil size={12} />
-        </button>
-      </Tip>
+        </IconButton>
+
     </div>
   );
 }
@@ -230,17 +236,18 @@ function NewChatSchedule({
     <form onSubmit={save} className="space-y-3 p-3">
       <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Schedule this chat</p>
       <TriggerScheduleFields value={schedule} onChange={setSchedule} kinds={CHAT_KINDS} disabled={create.isPending} />
-      <label className="block space-y-1 text-[12px] font-medium">
-        <span>Message</span>
-        <textarea data-slot="field"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          rows={3}
-          required
-          placeholder={freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'}
-          className="block w-full resize-y rounded-md border border-border bg-card px-3 py-2 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </label>
+      <TextArea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        rows={3}
+        required
+        placeholder={
+          freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'
+        }
+        controlClassName="block w-full"
+        resize="vertical"
+        label="Message"
+      />
       <div className="flex items-start gap-2">
         <Switch
           id={`fresh-chat-${chat.id}`}
@@ -266,18 +273,25 @@ function NewChatSchedule({
       {create.error && <p role="alert" className="text-[12px] text-destructive">{(create.error as Error).message}</p>}
       <div className="flex items-center justify-end gap-2">
         {!startOpen && (
-          <button type="button" onClick={() => setExpanded(false)} className="rounded-md px-3 py-1.5 text-[12px] text-muted-foreground hover:text-foreground">
+          <Button
+            type="button"
+            onClick={() => setExpanded(false)}
+            variant="ghost"
+            size="sm"
+          >
             Cancel
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
           disabled={!result.schedule || !prompt.trim() || create.isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="inline-flex items-center gap-1.5"
         >
           {create.isPending && <Loader2 size={12} className="animate-spin" />}
           Schedule it
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -1,4 +1,8 @@
 'use client';
+
+import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { EntityDetailHeader, EntityActionsMenu } from '@/components/entities/entity-detail-header';
 import { EntityPageBoundary } from '@/components/home/entity-page-boundary';
 import { HomeBoundary } from '@/components/home/home-context';
@@ -20,13 +24,11 @@ import { EntityAgentView } from '@/components/entities/entity-agent-view';
 import { useEntityViewMode, resolveEntityView, type EntityViewMode } from '@/lib/client/entity-view-mode';
 import { PersonalTaskDocument } from '@/components/tasks/personal-task-document';
 
-
-
 import { SharedTaskBody } from '@/components/spaces/shared-task-body';
 import { removeFromMyWork } from '@/components/spaces/my-work';
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+
 import type { Attachment } from '@/db/types';
 
 function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
@@ -57,8 +59,6 @@ function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
   const handleAttachment = useCallback((attachment: Attachment) => {
     pendingAttachmentsRef.current = [...pendingAttachmentsRef.current, attachment];
   }, []);
-
-
 
   const handleBodyChange = useCallback(
     (markdown: string) => {
@@ -101,10 +101,7 @@ function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
     router.push('/');
   }, [taskId, deleteTask, router]);
 
-
   const isDone = task?.status === 'done';
-
-
 
   const goBack = useCallback(() => {
     if (window.history.length > 1) router.back();
@@ -127,97 +124,125 @@ function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
   }, [goBack]);
 
   const header = (
-        <EntityDetailHeader className="h-11 sticky top-0 z-10 bg-background/80 px-0 py-0 backdrop-blur-sm">
-          <button
-            onClick={goBack}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5 shrink-0"
-            aria-label="Back"
-          >
-            <ChevronLeft size={16} />
-            <span className="text-xs">Back</span>
-          </button>
+    <EntityDetailHeader className="h-11 sticky top-0 z-10 bg-background/80 px-0 py-0 backdrop-blur-sm">
+      <Button
+        onClick={goBack}
+        aria-label="Back"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1.5 shrink-0"
+      >
+        <ChevronLeft size={16} />
+        <span className="text-xs">Back</span>
+      </Button>
 
-          <div className="flex items-center gap-2 min-w-0 overflow-x-auto no-scrollbar [&>*]:shrink-0">
-            {agentFirst && !shared && <EntityViewToggle value={view} onChange={setView} />}
-            {task && !shared && <EntityHistoryButton entityType="task" entityId={task.id} />}
-            {task && task.status !== 'done' && task.status !== 'archived' && (
-              <StartWithAgentButton task={task} />
-            )}
-            {/* Complete/Reopen only where it is the real action. Consider is
+      <div className="flex items-center gap-2 min-w-0 overflow-x-auto no-scrollbar [&>*]:shrink-0">
+        {agentFirst && !shared && <EntityViewToggle />}
+        {task && !shared && <EntityHistoryButton entityType="task" entityId={task.id} />}
+        {task && task.status !== 'done' && task.status !== 'archived' && <StartWithAgentButton task={task} />}
+        {/* Complete/Reopen only where it is the real action. Consider is
                 not committed work and Archived is history — change those with
                 the status control, so no button mislabels a no-op or a
                 restore as "Complete". */}
-            {task && task.status !== 'consider' && task.status !== 'archived' && (
-              <button data-slot="header-action" data-state={isDone ? "done" : undefined}
-                onClick={handleComplete}
-                aria-label={isDone ? 'Completed' : 'Complete'}
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                  isDone
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'border border-border text-muted-foreground hover:text-foreground hover:bg-accent',
-                )}
-              >
-                <Check size={12} />
-                <span className={ENTITY_HEADER_LABEL}>{isDone ? 'Completed' : 'Complete'}</span>
-              </button>
-            )}
+        {task && task.status !== 'consider' && task.status !== 'archived' && (
+          <Button
+            onClick={handleComplete}
+            aria-label={isDone ? 'Completed' : 'Complete'}
+            variant="secondary"
+            size="sm"
+            pressed={isDone}
+            className="inline-flex shrink-0 items-center gap-1.5"
+          >
+            <Check size={12} />
+            <span className={ENTITY_HEADER_LABEL}>{isDone ? 'Completed' : 'Complete'}</span>
+          </Button>
+        )}
 
-            <EntityActionsMenu onArchive={handleArchive} archiveLabel={shared ? 'Archive for the team' : 'Archive'} onDelete={shared ? undefined : handleDelete}>
-              {shared && task?.source?.addedAt && task.sourceTeamId && task.sourceTaskId && (
-                <DropdownMenuItem onSelect={() => void removeFromMyWork(task.sourceTeamId!, task.sourceTaskId!).then(() => router.push('/'))}>
-                  <X size={12} /> Remove from my work
-                </DropdownMenuItem>
-              )}
-            </EntityActionsMenu>
-          </div>
-        </EntityDetailHeader>
+        <EntityActionsMenu
+          onArchive={handleArchive}
+          archiveLabel={shared ? 'Archive for the team' : 'Archive'}
+          onDelete={shared ? undefined : handleDelete}
+        >
+          {shared && task?.source?.addedAt && task.sourceTeamId && task.sourceTaskId && (
+            <DropdownMenuItem
+              onSelect={() =>
+                void removeFromMyWork(task.sourceTeamId!, task.sourceTaskId!).then(() => router.push('/'))
+              }
+            >
+              <X size={12} /> Remove from my work
+            </DropdownMenuItem>
+          )}
+        </EntityActionsMenu>
+      </div>
+    </EntityDetailHeader>
   );
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
-      {/* Content + Chat */}
-      <div className="flex-1 flex overflow-hidden">
-        {view === 'agent' && task ? (
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <div className="max-w-3xl mx-auto w-full px-6 flex-shrink-0">{header}</div>
-            <EntityAgentView
-              entityType="task"
-              entityId={task.id}
-              chat={chat}
-              onOpenDocument={() => setView('editor')}
-              onOpenTask={(id) => router.push(`/task/${id}`)}
-            />
-          </div>
-        ) : (
-        <>
-        <div className="flex-1 overflow-y-auto min-w-0">
-          <div className="max-w-3xl mx-auto px-6">
-            {header}
-            {task && shared ? (
-              <div className="-mx-4 md:-mx-12">
-                <SharedTaskBody task={task} onOpenTask={(id) => router.push(`/task/${id}`)} />
+    <SegmentedRoot mode="tabs" value={view} onChange={setView}>
+      <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
+        {/* Content + Chat */}
+        <div className="flex-1 flex overflow-hidden">
+          {view === 'agent' && task ? (
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+              <div className="max-w-3xl mx-auto w-full px-6 flex-shrink-0">{header}</div>
+              <SegmentedPanel value="agent" className="flex min-h-0 flex-1 flex-col">
+                <EntityAgentView
+                  entityType="task"
+                  entityId={task.id}
+                  chat={chat}
+                  onOpenDocument={() => setView('editor')}
+                  onOpenTask={(id) => router.push(`/task/${id}`)}
+                />
+              </SegmentedPanel>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto min-w-0">
+                <div className="max-w-3xl mx-auto px-6">
+                  {header}
+                  <SegmentedPanel value="editor" className="contents">
+                    {task && shared ? (
+                      <div className="-mx-4 md:-mx-12">
+                        <SharedTaskBody task={task} onOpenTask={(id) => router.push(`/task/${id}`)} />
+                      </div>
+                    ) : task ? (
+                      <div className="space-y-0">
+                        <EntityChangeBanner entityType="task" entityId={task.id} />
+                        <PersonalTaskDocument
+                          task={task}
+                          parentTask={parentTask}
+                          openTask={(id) => router.push(`/task/${id}`)}
+                          save={(patch) => updateTask.mutate({ id: task.id, ...patch })}
+                          autosave={autosave}
+                          bodyEditor={{
+                            content: task.body ?? '',
+                            onChange: handleBodyChange,
+                            onAttachment: handleAttachment,
+                            editable: !aiBusy,
+                            placeholder: "Type '/' for commands, @ to link a task or note...",
+                            hideFooter: true,
+                            foldedHeadings: task.foldedHeadings ?? [],
+                            onFoldedHeadingsChange: handleFoldedHeadingsChange,
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+                        Loading...
+                      </div>
+                    )}
+                  </SegmentedPanel>
+                </div>
               </div>
-            ) : task ? (
-              <div className="space-y-0">
-                <EntityChangeBanner entityType="task" entityId={task.id} />
-                    <PersonalTaskDocument task={task} parentTask={parentTask} openTask={id => router.push(`/task/${id}`)}
-                      save={patch => updateTask.mutate({ id: task.id, ...patch })} autosave={autosave}
-                      bodyEditor={{ content: task.body ?? '', onChange: handleBodyChange, onAttachment: handleAttachment, editable: !aiBusy, placeholder: "Type '/' for commands, @ to link a task or note...", hideFooter: true, foldedHeadings: task.foldedHeadings ?? [], onFoldedHeadingsChange: handleFoldedHeadingsChange }} />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-                Loading...
-              </div>
-            )}
-          </div>
-        </div>
 
-        {!shared && <SlideoutChat slideoutWidth={9999} contextLabel="this task" chat={chat} disabled={!task} />}
-        </>
-        )}
+              {!shared && (
+                <SlideoutChat slideoutWidth={9999} contextLabel="this task" chat={chat} disabled={!task} />
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </SegmentedRoot>
   );
 }
 

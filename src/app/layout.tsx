@@ -57,10 +57,9 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} dark`}
-      // The defaults: dark, and the one look (docs/ui-system.md). APPEARANCE_SCRIPT
+      // The default is dark. APPEARANCE_SCRIPT
       // applies this browser's light theme before first paint, so the server's class
       // can differ from the document's by the time React hydrates.
-      data-look="edge"
       suppressHydrationWarning
       data-ri-authority={team ? 'team' : space ? 'space' : 'personal'}
       data-ri-home={documentHome}

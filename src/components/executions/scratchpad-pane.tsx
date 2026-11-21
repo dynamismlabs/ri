@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { tasksApi } from '@/lib/api/tasks';
 import { notesApi } from '@/lib/api/notes';
 
@@ -329,15 +330,13 @@ function PromotionBar({
       </span>
       <div className="ml-auto flex items-center gap-1">
         <Tip label="Create a task from the selection">
-          <button
+          <Button
             type="button"
             disabled={!hasSelection || promoteMutation.isPending}
             onClick={() => handlePromote('task')}
-            className={cn(
-              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-medium',
-              'text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
-              'disabled:opacity-40 disabled:cursor-not-allowed',
-            )}
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             {pendingKind === 'task' ? (
               <Loader2 size={10} className="animate-spin" />
@@ -345,18 +344,16 @@ function PromotionBar({
               <Plus size={10} />
             )}
             Task
-          </button>
+          </Button>
         </Tip>
         <Tip label="Create a note from the selection">
-          <button
+          <Button
             type="button"
             disabled={!hasSelection || promoteMutation.isPending}
             onClick={() => handlePromote('note')}
-            className={cn(
-              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-medium',
-              'text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
-              'disabled:opacity-40 disabled:cursor-not-allowed',
-            )}
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             {pendingKind === 'note' ? (
               <Loader2 size={10} className="animate-spin" />
@@ -364,22 +361,20 @@ function PromotionBar({
               <Plus size={10} />
             )}
             Note
-          </button>
+          </Button>
         </Tip>
         <Tip label="Insert the selected text into the composer">
-          <button
+          <Button
             type="button"
             disabled={!hasSelection}
             onClick={handleSendToChat}
-            className={cn(
-              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10.5px] font-medium',
-              'text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors',
-              'disabled:opacity-40 disabled:cursor-not-allowed',
-            )}
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             <ArrowRight size={10} />
             To chat
-          </button>
+          </Button>
         </Tip>
       </div>
     </div>

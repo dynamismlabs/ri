@@ -1,5 +1,7 @@
 'use client'
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useState, useCallback, useRef } from 'react'
 import { Check, ChevronRight, Plus, ArrowUpRight } from 'lucide-react'
 import { useTasks, useCreateTask } from '@/hooks/use-tasks'
@@ -67,9 +69,11 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
     <div className="px-4 md:px-10 py-3">
       {/* Header row: chevron + label + count + add button */}
       <div className="flex items-center gap-2 mb-1">
-        <button
+        <Button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1.5"
         >
           <ChevronRight
             size={12}
@@ -88,21 +92,23 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
               </span>
             </Tip>
           )}
-        </button>
+        </Button>
 
         <div className="flex-1" />
 
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           onClick={() => {
             setIsAdding(true)
             setIsExpanded(true)
             setTimeout(() => inputRef.current?.focus(), 50)
           }}
-          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors px-1.5 py-0.5 rounded hover:bg-muted"
+          variant="ghost"
+          size="sm"
+          className="inline-flex items-center gap-1"
         >
           <Plus size={12} />
           New
-        </button>
+        </Button>
       </div>
 
       {/* Subtask list */}
@@ -167,7 +173,7 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
           {isAdding && (
             <div className="flex items-center gap-2 py-1.5 px-1">
               <div className="flex-shrink-0 w-4 h-4 rounded-full border border-muted-foreground/20" />
-              <input
+              <Field
                 ref={inputRef}
                 type="text"
                 value={newTitle}
@@ -175,8 +181,10 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
                 onKeyDown={handleKeyDown}
                 onBlur={handleAdd}
                 placeholder="Subtask title..."
-                className="flex-1 text-[12px] bg-transparent outline-none placeholder:text-muted-foreground/40"
+                className="flex-1"
                 autoFocus
+                purpose="embedded"
+                aria-label={'Subtask title'}
               />
             </div>
           )}

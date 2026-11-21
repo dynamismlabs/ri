@@ -1,5 +1,7 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useActivityBuckets } from '@/hooks/use-activity-buckets';
@@ -56,9 +58,15 @@ export function ReviewAttentionPill({ reviews, pendingSessionIds }: { reviews: N
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Tip label="AI review activity"><button data-slot="chip-button" data-tone="status" aria-label={`AI reviews: ${reviews.length}${needsAttention ? ', attention needed' : ''}`} className={cn('flex h-[18px] items-center gap-1 rounded px-1.5 text-[10px]', needsAttention ? 'bg-amber-500/15 text-amber-500' : 'bg-muted text-muted-foreground')}>
+        <Tip label="AI review activity"><ChipButton
+          aria-label={`AI reviews: ${reviews.length}${needsAttention ? ', attention needed' : ''}`}
+          variant="secondary"
+          size="compact"
+          tone="status"
+          status={needsAttention ? "warning" : "neutral"}
+        >
           {needsAttention ? <ShieldAlert size={10} /> : <ClipboardCheck size={10} />}<span className="font-mono font-semibold">{reviews.length}</span>
-        </button></Tip>
+        </ChipButton></Tip>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-2">
         <p className="px-1 pb-2 text-xs font-medium">AI review activity</p>
@@ -86,13 +94,18 @@ function ActivityStatusPill({ bucketId, items }: ActivityStatusPillProps) {
       count={items.length}
       action={(close) => (
         <Tip label={`Show ${cfg.label} in Agent Activity`}>
-          <button type="button" aria-label={`Expand ${cfg.label} in Board`}
-            className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          <Button
+            type="button"
+            aria-label={`Expand ${cfg.label} in Board`}
             onClick={() => {
               close();
               // Let the popover restore focus before the Board captures its opener.
               requestAnimationFrame(() => openBoard({ focusBucket: bucketId }));
-            }}><Maximize2 className="size-3" />Board</button>
+            }}
+            variant="secondary"
+            size="sm"
+            className="ml-1 inline-flex items-center gap-1"
+          ><Maximize2 className="size-3" />Board</Button>
         </Tip>
       )}
     >

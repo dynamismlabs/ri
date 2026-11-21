@@ -1,8 +1,10 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { Check, Repeat } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
+import { Field } from '@/components/system/field';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tip } from '@/components/ui/tip';
 import {
@@ -13,7 +15,6 @@ import {
   recurrenceLabel,
   recurrenceValue,
 } from '@/lib/tasks/recurrence';
-import { cn } from '@/lib/utils';
 
 /** Clicks inside reach the row behind through React's portal bubbling, and a held touch would start dragging it. */
 function keepFromRow(event: SyntheticEvent) {
@@ -46,6 +47,7 @@ function RecurrencePanel({ value, onChange, onClose }: {
   value: string | null; onChange: (recurrence: string | null) => void; onClose: () => void;
 }) {
   const savedCadence = parseRecurrence(value);
+  const phone = useViewportTier() === 'phone';
   const saved = savedCadence ? recurrenceValue(savedCadence) : null;
   const initial = recurrenceLabel(value) ?? '';
   const [text, setText] = useState(initial);
@@ -87,32 +89,26 @@ function RecurrencePanel({ value, onChange, onClose }: {
       }}
     >
       <div onClick={keepFromRow} onTouchStart={keepFromRow} className="flex flex-col gap-1">
-        <InputGroup className="h-8 rounded-md">
-          <InputGroupInput
-            ref={input}
-            aria-label="Repeat"
-            aria-invalid={unreadable}
-            autoComplete="off"
-            placeholder="Type one, like every 2 weeks"
-            value={text}
-            className="h-8 px-2 md:text-xs"
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return;
-              event.preventDefault();
-              if (empty) finish(null);
-              else if (typed) finish(recurrenceValue(typed));
-              else if (!edited) onClose();
-            }}
-          />
-          {edited && !empty && (
-            <InputGroupAddon align="inline-end" className="py-0 pr-2">
-              <InputGroupText aria-live="polite" className={cn('whitespace-nowrap text-xs', unreadable && 'text-destructive')}>
-                {typed ? describeRecurrence(typed) : 'Not a repeat'}
-              </InputGroupText>
-            </InputGroupAddon>
-          )}
-        </InputGroup>
+        <Field
+          inlineMessage
+          size={phone ? 'touch' : 'sm'}
+          error={unreadable ? 'Not a repeat' : undefined}
+          description={edited && !empty && typed ? describeRecurrence(typed) : undefined}
+          ref={input}
+          aria-label="Repeat"
+          aria-invalid={unreadable}
+          autoComplete="off"
+          placeholder="Type one, like every 2 weeks"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            if (empty) finish(null);
+            else if (typed) finish(recurrenceValue(typed));
+            else if (!edited) onClose();
+          }}
+        />
         {recurrenceHasDetail(value) && (
           <p className="px-2 pt-1 text-[11px] leading-snug text-muted-foreground">Saved as &ldquo;{value}&rdquo;</p>
         )}
@@ -154,18 +150,16 @@ export function TaskRecurrenceField({ value, onChange }: {
 }) {
   const label = recurrenceLabel(value);
   const button = (
-    <button
+    <ChipButton
       type="button"
       aria-label={`Repeat: ${label ?? 'Never'}`}
-      data-slot="chip-button"
-      className={cn(
-        'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
-        !label && 'text-muted-foreground',
-      )}
+      variant="secondary"
+      size="compact"
+      className="inline-flex w-fit items-center gap-1.5"
     >
       <Repeat size={12} />
       {label ?? 'Never'}
-    </button>
+    </ChipButton>
   );
   return (
     <TaskRecurrencePicker value={value} onChange={onChange}>

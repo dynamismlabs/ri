@@ -1,4 +1,6 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+
 import { useSyncExternalStore } from 'react';
 import { DEFAULT_BROWSER_TRANSPORT, getTransportMode, getTransportStatus, getServerTransportStatus, setTransportMode, subscribeTransport } from '@/lib/trpc/transport-state';
 
@@ -9,11 +11,11 @@ export function ApiTransportSettings() {
     <section className="space-y-2">
       <h3 className="text-[12px] font-medium text-foreground">Connection transport</h3>
       <p className="text-[11px] text-muted-foreground/85">WebSocket is the default for API requests on this device. Choose HTTP to switch immediately. Terminal connections always use WebSocket. Your data and caches stay in place.</p>
-      <select aria-label="Connection transport" value={mode} onChange={event => setTransportMode(event.target.value === 'websocket' ? 'websocket' : 'http')}
-        className="rounded-md border border-border bg-background px-2 py-1.5 text-sm">
+      <NativeSelect aria-label="Connection transport" value={mode} onChange={event => setTransportMode(event.target.value === 'websocket' ? 'websocket' : 'http')}
+        className="w-auto">
         <option value="websocket">WebSocket (default)</option>
         <option value="http">HTTP</option>
-      </select>
+      </NativeSelect>
       <p role="status" className="text-[11px] text-muted-foreground">
         {mode === 'http' ? 'Using HTTP.' : status.state === 'websocket' ? 'WebSocket connected.' : status.state === 'connecting' ? 'Connecting to WebSocket.' : status.reason ?? 'Using HTTP until WebSocket connects.'}
       </p>

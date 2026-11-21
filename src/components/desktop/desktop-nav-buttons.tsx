@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { HOTKEYS } from '@/constants/commands';
 import { useDesktopApp } from '@/hooks/use-desktop-app';
@@ -44,15 +45,16 @@ function NavButton({
 }) {
   return (
     <Tip label={`${label} (${hotkey})`}>
-      <button
+      <Button
         type="button"
         onClick={onClick}
         disabled={disabled}
         aria-label={label}
-        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+        variant="secondary"
+        size="sm"
       >
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }

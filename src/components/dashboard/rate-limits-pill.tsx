@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useRef, useState } from 'react';
 import { Gauge, Loader2 } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -68,7 +69,7 @@ export function RateLimitsPill() {
   return (
     <Popover open={open} onOpenChange={(next) => { pinned.current = false; setOpen(next); }}>
       <PopoverTrigger asChild>
-        <button data-slot="chip-button"
+        <ChipButton
           ref={trigger}
           type="button"
           aria-label={label}
@@ -84,10 +85,9 @@ export function RateLimitsPill() {
               requestAnimationFrame(() => content.current?.querySelector<HTMLButtonElement>('button[aria-pressed]')?.focus());
             }
           }}
-          className={cn(
-            'flex h-7 shrink-0 items-center gap-1.5 rounded px-1.5 text-[10px] text-muted-foreground transition-colors',
-            'hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground',
-          )}
+          variant="secondary"
+          size="compact"
+          className="flex shrink-0 items-center gap-1.5"
         >
           <Gauge size={11} aria-hidden="true" />
           {warnings.map(({ harness, row }) => (
@@ -98,7 +98,7 @@ export function RateLimitsPill() {
               </span>
             </span>
           ))}
-        </button>
+        </ChipButton>
       </PopoverTrigger>
       <PopoverContent
         ref={content}

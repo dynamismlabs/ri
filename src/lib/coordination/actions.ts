@@ -58,10 +58,11 @@ export const coordinationActions = [
   defineAction({
     name: 'delegate_work',
     strictParams: true,
-    description: 'Assign work to a new chat in an agent. Use message_agent to contact an existing chat. Records the requesting chat and returns a durable request. Completion, failure, and blocked-state updates return to your chat automatically. Returns an acceptance receipt, not completed work. Finish your turn if waiting. Code work stays visible in a chat and uses the existing worktree/device/model rules. Use a stable request_id on retry.',
+    description: 'Assign work to a new chat in an agent. Pass execution_id to share an existing execution and its worktree, branch and device. Omit it to start a new execution. Use message_agent to contact an existing chat. Records the requesting chat and returns a durable request. Completion, failure, and blocked-state updates return to your chat automatically. Returns an acceptance receipt, not completed work. Finish your turn if waiting. Code work stays visible in a chat and uses the existing worktree/device/model rules. Use a stable request_id on retry.',
     params: {
       request_id: requestShape.request_id,
       workspace_id: z.string().min(1),
+      execution_id: z.string().min(1).optional().describe('Existing execution in this agent for the new chat to share. Use get_session_context session.executionId for your current execution. Cannot be combined with task_id or device_id, since the execution already owns those.'),
       prompt: requestShape.content,
       provider: z.enum(KNOWN_HARNESS_IDS).optional(), model: z.string().min(1).optional(), effort: z.enum(EFFORT_LEVELS).optional(),
       service_tier: z.string().regex(/^[a-z][a-z0-9_-]*$/).optional(),
@@ -73,7 +74,7 @@ export const coordinationActions = [
     mutating: true,
     handler: (ctx, input) => inCoordinationServer(ctx, 'delegate_work', input, async () => agentRequestReceipt(await submitAgentRequest(ctx, {
       target: `agent:${input.workspace_id}`, requestId: input.request_id, content: input.prompt, kind: 'delegation',
-      options: { workspaceId: input.workspace_id, ...(input.provider ? { provider: input.provider } : {}), ...(input.model ? { model: input.model } : {}), ...(input.effort ? { effort: input.effort } : {}), ...(input.service_tier ? { serviceTier: input.service_tier } : {}), ...(input.permission_mode ? { permissionMode: input.permission_mode } : {}), ...(input.task_id ? { taskId: input.task_id } : {}), ...(input.device_id ? { deviceId: input.device_id } : {}), ...(input.label ? { label: input.label } : {}) },
+      options: { workspaceId: input.workspace_id, ...(input.execution_id ? { executionId: input.execution_id } : {}), ...(input.provider ? { provider: input.provider } : {}), ...(input.model ? { model: input.model } : {}), ...(input.effort ? { effort: input.effort } : {}), ...(input.service_tier ? { serviceTier: input.service_tier } : {}), ...(input.permission_mode ? { permissionMode: input.permission_mode } : {}), ...(input.task_id ? { taskId: input.task_id } : {}), ...(input.device_id ? { deviceId: input.device_id } : {}), ...(input.label ? { label: input.label } : {}) },
     }))),
   }),
   defineAction({

@@ -144,6 +144,14 @@ jobs:
           NODE_OPTIONS: --max-old-space-size=4096
       - run: pnpm test
       - run: pnpm desktop:test
+      - name: Save local-page render checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ri-local-pages-${{ matrix.platform }}-${{ matrix.arch }}
+          path: ${{ runner.temp }}/ri-native-system/*.png
+          if-no-files-found: ignore
+          retention-days: 14
       - run: pnpm --filter @integrations/engine test
       # Includes a frozen helper for each native target, but never downloads a
       # model or starts speech inference without the user's installation choice.

@@ -1,5 +1,8 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, Paperclip, Send, Users } from 'lucide-react';
@@ -39,13 +42,15 @@ export function SharedPublishedResults({ task, teamName }: { task: TaskRecord; t
     <section aria-label={`Published to ${teamName}`} className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-[12px] font-semibold">Published to {teamName}</h3>
-        <button data-slot="action-button"
+        <Button
           type="button"
           onClick={() => setOpen(true)}
-          className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[11px] font-medium text-foreground hover:bg-muted"
+          variant="secondary"
+          size="sm"
+          className="inline-flex items-center gap-1.5"
         >
           <Send size={12} aria-hidden /> Publish result
-        </button>
+        </Button>
       </div>
       {results.error ? (
         <p className="text-xs text-muted-foreground">{apiErrorText(results.error)}</p>
@@ -143,28 +148,29 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
           </p>
         </div>
 
-        <label className="block space-y-1.5">
-          <span className="text-xs font-medium">Summary</span>
-          <textarea data-slot="field"
-            value={summaryValue}
-            onChange={(e) => setSummary(e.target.value)}
-            rows={6}
-            placeholder="What changed, and anything the team should know."
-            className="w-full resize-y rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-primary/60"
-          />
-          {draft && summary === null && <span className="text-[11px] text-muted-foreground">From your latest saved result. Edit it before it&apos;s shared.</span>}
-        </label>
+        <TextArea
+          value={summaryValue}
+          onChange={(e) => setSummary(e.target.value)}
+          rows={6}
+          placeholder="What changed, and anything the team should know."
+          controlClassName="w-full"
+          resize="vertical"
+          label="Summary"
+          description={
+            draft &&
+            summary === null && <>From your latest saved result. Edit it before it&apos;s shared.</>
+          }
+        />
 
-        <label className="block space-y-1.5">
-          <span className="text-xs font-medium">Pull request or link</span>
-          <input data-slot="field"
-            type="url"
-            value={urlValue}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://"
-            className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-primary/60"
-          />
-        </label>
+        <Field
+          type="url"
+          value={urlValue}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://"
+          controlClassName="w-full"
+          label="Pull request or link"
+          purpose="code"
+        />
 
         <div className="space-y-1.5">
           <span className="block text-xs font-medium">Files</span>
@@ -192,14 +198,16 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
             </p>
           ))}
           <input ref={fileInput} type="file" multiple className="hidden" onChange={(e) => void upload(e.target.files)} />
-          <button
+          <Button
             type="button"
             disabled={uploading}
             onClick={() => fileInput.current?.click()}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground disabled:opacity-60"
+            variant="ghost"
+            size="sm"
+            className="inline-flex items-center gap-1.5"
           >
             {uploading ? <Loader2 size={12} className="animate-spin" aria-hidden /> : <Paperclip size={12} aria-hidden />} Add a file
-          </button>
+          </Button>
         </div>
 
         <p className="text-[11px] text-muted-foreground">
@@ -207,17 +215,24 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
         </p>
 
         <DialogFooter>
-          <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClose} className="h-8 rounded-md px-3 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="ghost"
+            size="md"
+          >
             Cancel
-          </button>
-          <button data-slot="action-button" data-variant="primary"
+          </Button>
+          <Button
             type="button"
             disabled={nothing || publishing || uploading}
             onClick={() => void publish()}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground disabled:opacity-50"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             {publishing && <Loader2 size={12} className="animate-spin" aria-hidden />} Publish to {teamName}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -1,12 +1,15 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Search, Server } from 'lucide-react';
 import { trpcClient } from '@/lib/trpc/client';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 import { setSettingsAnchor, useSettingsStore } from '@/components/settings/settings-store';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { useMcpAuthDetection } from '@/hooks/use-mcp-auth-detection';
@@ -28,6 +31,8 @@ export function McpServersSection({ active, navigation }: {
   /** Reuse the same setup/actions in Apps, leaving Settings navigation alone. */
   navigation?: { serverId: string | null; returnTo?: string; onSelect: (id: string) => void; onBack: () => void };
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { anchor, requestId } = useSettingsStore();
   const [view, setView] = useState<View>(() => navigation
     ? navigation.serverId ? { kind: 'server', id: navigation.serverId } : { kind: 'new' }
@@ -180,7 +185,12 @@ export function McpServersSection({ active, navigation }: {
 
   return <div ref={rootRef} className="@container space-y-5">
     {pendingOAuth && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-xs"><span>Finish connecting in your browser.</span>
-      <Button size="xs" variant="outline" disabled={busy} onClick={() => run(async () => { await trpcClient.desktop.cancelOAuth.mutate({ body: { id: pendingOAuth } }); setPendingOAuth(null); setAwaitingServer(null); })}>Cancel</Button></div>}
+      <Button
+        disabled={busy}
+        onClick={() => run(async () => { await trpcClient.desktop.cancelOAuth.mutate({ body: { id: pendingOAuth } }); setPendingOAuth(null); setAwaitingServer(null); })}
+        variant="secondary"
+        size="xs"
+      >Cancel</Button></div>}
     {banner && <div role="status" className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 size={15} className="shrink-0" /><p>{banner}</p></div>}
     {error && <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"><AlertCircle size={15} className="shrink-0" /><p>{error}</p></div>}
     {view.kind === 'new' ? <McpServerForm form={form} detection={detection} busy={busy} onSubmit={add} onBack={back}
@@ -196,8 +206,15 @@ export function McpServersSection({ active, navigation }: {
       : <>
         <p className="text-xs text-muted-foreground">Connect a custom MCP server by URL, then manage its tools and permissions here.</p>
         <McpDefaultPermissions override={settings.override} busy={busy} serverCount={servers.length} onChange={policy => setDefault(policy)} onApplyToAll={() => setDefault(settings.override, true)} />
-        {servers.length > 0 && <div className="relative"><Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input aria-label="Search MCP servers" placeholder="Search MCP servers" value={query} onChange={event => setQuery(event.target.value)} className="rounded-4xl pl-9 text-xs" /></div>}
+        {servers.length > 0 && <Field
+          aria-label="Search MCP servers"
+          placeholder="Search MCP servers"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          leading={<Search />}
+          className="relative"
+          size={compactFieldSize}
+        />}
         {visible.length ? <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">{visible.map(server => { const status = mcpTone(server); return <CatalogTile key={server.id} logo={<McpLogo size={36} dim={!server.enabled} />} name={server.displayName}
           subtitle={server.url} tone={status.tone} toneLabel={status.label} onOpen={() => navigate({ kind: 'server', id: server.id })} />; })}</div>
           : <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center"><Server size={20} className="text-muted-foreground" /><p className="text-xs font-medium">{q ? 'No MCP servers match your search' : 'No MCP servers yet'}</p><p className="text-[11px] text-muted-foreground">{q ? 'Try a name or server URL.' : 'Use Add MCP server above to connect your first one.'}</p></div>}

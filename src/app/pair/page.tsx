@@ -1,4 +1,8 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Button } from '@/components/system/button';
 import { createAppTRPCClient } from '@/lib/trpc/client';
 
 import { QrScannerModal } from '@/components/auth/qr-scanner-modal';
@@ -52,6 +56,7 @@ function extractTokenFromQr(raw: string): string | null {
  */
 export default function PairPage() {
   const router = useRouter();
+  const phone = useViewportTier() === 'phone';
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [token, setToken] = useState('');
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -59,7 +64,7 @@ export default function PairPage() {
     | { kind: 'idle' }
     | { kind: 'validating' }
     | { kind: 'ok' }
-    | { kind: 'error'; message: string }
+    | { kind: 'error'; source: 'token' | 'connection' | 'scan'; message: string }
   >({ kind: 'idle' });
 
   useEffect(() => {
@@ -92,6 +97,7 @@ export default function PairPage() {
         const rejected = [401, 403].includes(apiErrorStatus(error) ?? 0);
         setStatus({
           kind: 'error',
+          source: rejected ? 'token' : 'connection',
           message: rejected ? 'That token was rejected. It may have been revoked or mistyped.' : `Couldn't reach the server. Check your connection and try again.`,
         });
       }
@@ -112,6 +118,7 @@ export default function PairPage() {
         setScannerOpen(false);
         setStatus({
           kind: 'error',
+          source: 'scan',
           message: `That QR code doesn't look like a ${APP_NAME} pairing code.`,
         });
         return;
@@ -152,37 +159,25 @@ export default function PairPage() {
         <div data-slot="callout" className="rounded-2xl border border-border/50 bg-card/60 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
           <div className="space-y-6">
             <div className="space-y-3">
-              <label htmlFor="pairing-token" className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                <KeyRound size={14} />
-                Pairing token
-              </label>
-              
-              <div className="group relative">
-                <div data-slot="pairing-decoration" className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 blur transition duration-500 group-focus-within:opacity-100" />
-                <div data-slot="input-group" className="relative flex items-center gap-2 rounded-lg bg-background/80 p-1.5 border border-border/50 shadow-inner backdrop-blur-xl transition-all hover:bg-background/90 group-focus-within:bg-background">
-                  <input
-                    id="pairing-token" aria-label="Pairing token"
-                    ref={inputRef}
-                    type="text"
-                    autoComplete="off"
-                    spellCheck={false}
-                    value={token}
-                    onChange={(e) => {
-                      setToken(e.target.value);
-                      if (status.kind !== 'idle') setStatus({ kind: 'idle' });
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') submit();
-                    }}
-                    placeholder={`${APP_SHORT_ID}_live_…`}
-                    disabled={validating}
-                    className="w-full flex-1 bg-transparent px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none disabled:opacity-50"
-                  />
-                  <button data-slot="action-button" data-variant="primary"
+              <Field
+                id="pairing-token"
+                label={
+                  <>
+                    <KeyRound />
+                    Pairing token
+                  </>
+                }
+                error={
+                  status.kind === 'error' && status.source === 'token' ? status.message : undefined
+                }
+                trailing={
+                  <Button
                     type="button"
                     onClick={submit}
                     disabled={!token.trim() || validating}
-                    className="inline-flex h-9 shrink-0 shadow-sm items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+                    variant="primary"
+                    size={phone ? 'touch' : 'sm'}
+                    className="inline-flex shrink-0 items-center gap-2"
                   >
                     {validating ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -191,29 +186,48 @@ export default function PairPage() {
                     ) : (
                       'Connect'
                     )}
-                  </button>
-                </div>
-              </div>
+                  </Button>
+                }
+                size={phone ? 'touch' : 'md'}
+                ref={inputRef}
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={token}
+                onChange={(e) => {
+                  setToken(e.target.value);
+                  if (status.kind !== 'idle') setStatus({ kind: 'idle' });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') submit();
+                }}
+                placeholder={`${APP_SHORT_ID}_live_…`}
+                disabled={validating}
+                className="w-full"
+                purpose="code"
+              />
 
-              {status.kind === 'error' && (
-                <div className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive animate-in fade-in duration-300">
+              {status.kind === 'error' && status.source !== 'token' && (
+                <div role="alert" className="flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive animate-in fade-in duration-300">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <p>{status.message}</p>
                 </div>
               )}
 
-              <button data-slot="action-button"
+              <Button
                 type="button"
                 onClick={() => {
                   if (status.kind !== 'idle') setStatus({ kind: 'idle' });
                   setScannerOpen(true);
                 }}
                 disabled={validating}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border/50 bg-background/40 px-4 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-background/70 hover:border-border active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+                variant="secondary"
+                size={phone ? 'touch' : 'md'}
+                className="w-full inline-flex items-center justify-center gap-2"
               >
                 <QrCode size={16} />
                 Scan QR code
-              </button>
+              </Button>
 
               <p className="text-xs text-muted-foreground/60">
                 You can also open a pair link directly. The token lives in the URL fragment as{' '}

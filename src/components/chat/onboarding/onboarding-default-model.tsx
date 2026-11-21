@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { DefaultSelectionEditor } from '@/components/settings/default-selection-editor';
 import { ProviderIcon } from '@/components/settings/harness-connection-ui';
@@ -43,14 +44,16 @@ export function DefaultModelLine({ found }: { found: boolean }) {
             effort: effortLabel,
           })}
         </span>
-        <button
+        <Button
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((o) => !o)}
-          className="shrink-0 rounded px-1 font-medium text-foreground underline-offset-2 hover:underline"
+          variant="link"
+          size="md"
+          className="shrink-0"
         >
           {open ? 'Close' : 'Change'}
-        </button>
+        </Button>
       </div>
       {open && (
         <Card>

@@ -1,11 +1,12 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { HarnessToolSetup } from '@/components/desktop/harness-tool-setup';
 import { CursorCredentialPanel } from '@/components/settings/cursor-credential-panel';
 import { HarnessPermissionNotice } from '@/components/settings/harness-permission-notice';
 import { HarnessPicker } from '@/components/settings/harness-picker';
 import { OpenCodeProviderPanel } from '@/components/settings/opencode-provider-panel';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { defaultModelFor } from '@/lib/harness/options';
@@ -351,7 +352,13 @@ function AuthStatus({
             Confirms the CLI is installed, authenticated, and responds to a request.
           </div>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onRecheck} disabled={busy}>
+        <Button
+          type="button"
+          onClick={onRecheck}
+          disabled={busy}
+          variant="secondary"
+          size="md"
+        >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
           {auth.phase === 'checking'
             ? 'Checking…'
@@ -452,11 +459,10 @@ function ReadyState({
         </div>
         <VerifyLine verify={auth.verify} harnessName={harness.name} />
         <label className="mt-3 flex items-start gap-2 text-sm">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={auth.acceptsApiKeyBilling}
-            onChange={(e) => onAccept(e.target.checked)}
-            className="mt-0.5 size-4"
+            onCheckedChange={(checked) => onAccept((checked === true))}
+            className="mt-0.5"
           />
           <span>Continue with API key billing (I don&apos;t have a subscription)</span>
         </label>

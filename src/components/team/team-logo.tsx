@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
 import { ImagePlus, Loader2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -51,12 +52,25 @@ export function TeamLogo() {
           const file = event.target.files?.[0]; event.target.value = '';
           if (file) void upload(file);
         }} />
-        <button data-slot="action-button" type="button" onClick={() => input.current?.click()} disabled={busy} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50">
+        <Button
+          type="button"
+          onClick={() => input.current?.click()}
+          disabled={busy}
+          variant="secondary"
+          size="sm"
+          className="inline-flex items-center gap-1.5"
+        >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <ImagePlus size={13} />}{image ? 'Change logo' : 'Upload logo'}
-        </button>
-        {image && <button data-slot="action-button" data-variant="ghost" type="button" disabled={busy} className="rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted/50 disabled:opacity-50" onClick={() => {
+        </Button>
+        {image && <Button
+          type="button"
+          disabled={busy}
+          onClick={() => {
           void save.mutateAsync(null).catch(error => toast.error('Could not remove the team logo', { description: apiErrorText(error) }));
-        }}>Remove logo</button>}
+        }}
+          variant="ghost"
+          size="sm"
+        >Remove logo</Button>}
       </div>}
     </div>
   </div>;

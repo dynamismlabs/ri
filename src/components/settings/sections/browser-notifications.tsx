@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Globe, Loader2 } from 'lucide-react';
 import type { NotificationChannelRecord } from '@/db/types';
 import { apiErrorText } from '@/lib/api/client';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { setSettingsSection } from '@/components/settings/settings-store';
 import {
   getBrowserPushStatus, subscribeToWebPush, unsubscribeFromWebPush, type BrowserPushStatus,
@@ -118,12 +118,31 @@ export function BrowserNotifications({ channel, onChanged }: Props) {
     <p className="mt-1 text-[11px] text-muted-foreground">{detail}</p>
     {(actionError || readError) && <p role="alert" className="mt-2 text-xs text-destructive">{actionError || readError}</p>}
     <div className="mt-2 flex flex-wrap gap-2">
-      {allowed && status && (!status.localSubscription || repair || status.permission !== 'granted') && <Button size="xs" disabled={busy || checking} onClick={() => void act(subscribeToWebPush)}>
+      {allowed && status && (!status.localSubscription || repair || status.permission !== 'granted') && <Button
+        disabled={busy || checking}
+        onClick={() => void act(subscribeToWebPush)}
+        variant="primary"
+        size="md"
+      >
         {repair ? 'Repair browser notifications' : 'Enable browser push'}
       </Button>}
-      {status?.localSubscription && <Button size="xs" variant="ghost" disabled={busy || checking} onClick={() => void act(unsubscribeFromWebPush)}>Turn off here</Button>}
-      {status && !status.supported && <Button size="xs" variant="ghost" onClick={() => setSettingsSection('devices')}>Phone setup</Button>}
-      <Button size="xs" variant="ghost" disabled={busy || checking} onClick={() => { setActionError(null); void refresh(); }}>Check again</Button>
+      {status?.localSubscription && <Button
+        disabled={busy || checking}
+        onClick={() => void act(unsubscribeFromWebPush)}
+        variant="ghost"
+        size="xs"
+      >Turn off here</Button>}
+      {status && !status.supported && <Button
+        onClick={() => setSettingsSection('devices')}
+        variant="ghost"
+        size="xs"
+      >Phone setup</Button>}
+      <Button
+        disabled={busy || checking}
+        onClick={() => { setActionError(null); void refresh(); }}
+        variant="ghost"
+        size="xs"
+      >Check again</Button>
     </div>
   </section>;
 }

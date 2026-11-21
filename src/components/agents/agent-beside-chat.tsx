@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { History, Loader2, Maximize2, MessageSquare } from 'lucide-react';
 import { apiErrorStatus } from '@/lib/api/client';
@@ -74,12 +75,14 @@ export function AgentBesideChat({
         <div>
           <p className="text-[13px] font-semibold text-foreground">This chat isn&apos;t here anymore.</p>
           <p className="mt-1 text-[11px] text-muted-foreground/80">It may have been deleted, or the link is wrong.</p>
-          <button
+          <Button
             onClick={onClose}
-            className="mt-3 inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+            variant="ghost"
+            size="sm"
+            className="mt-3 inline-flex items-center"
           >
             Put it away
-          </button>
+          </Button>
         </div>
       </div>
     ) : (
@@ -161,15 +164,17 @@ function BesideExecutionChat({
           notice={archived && (
             <div className="mx-3 mt-2 flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3 py-2 text-[11.5px] text-muted-foreground">
               <span className="min-w-0">This chat is archived.</span>
-              <button
+              <Button
                 type="button"
                 disabled={continueWork.isPending}
                 onClick={() => continueWork.mutate(undefined)}
-                className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
+                variant="primary"
+                size="md"
+                className="inline-flex flex-shrink-0 items-center gap-1.5"
               >
                 {continueWork.isPending && <Loader2 size={11} className="animate-spin" />}
                 Continue
-              </button>
+              </Button>
             </div>
           )}
           onSwitchProvider={newChat.start}
@@ -231,7 +236,7 @@ function BesideHeader({
             )}
             {rename.editing ? (
               // Sized and placed so the text stays where the title's was.
-              <ChatTitleInput rename={rename} className="-mx-[5px] -my-px h-[calc(1lh+2px)] flex-1 px-1" />
+              <ChatTitleInput rename={rename} className="flex-1" />
             ) : (
               <Tip label={title} onlyWhenTextHidden>
                 <button
@@ -253,14 +258,16 @@ function BesideHeader({
       <div className="ml-auto flex min-w-0 max-w-full items-center gap-1.5">
         {chat.workspace && <ExecutionActionBar session={session} workspace={chat.workspace} fit />}
         <Tip label="Open it with its files, changes, preview and terminal">
-          <button
+          <Button
             type="button"
             onClick={onOpenFull}
-            className="inline-flex h-7 flex-shrink-0 items-center gap-1.5 rounded-md px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            variant="secondary"
+            size="sm"
+            className="inline-flex flex-shrink-0 items-center gap-1.5"
           >
             <Maximize2 size={12} />
             Full view
-          </button>
+          </Button>
         </Tip>
       </div>
     </header>

@@ -43,7 +43,9 @@ update feed. On macOS it signs with the Developer ID and notarizes once the
 Apple secrets exist (docs/publishing.md, "The first release", step 3), then
 checks the result with `codesign --verify --deep --strict`, `spctl --assess`
 and `xcrun stapler validate` before uploading (`desktop/mac-signing.sh`).
-Until then it is ad-hoc signed, for free. It never packages the optional speech
+Until then it is ad-hoc signed, for free. With `signing_check` on, the run is a
+single Mac job that checks those secrets and builds nothing:
+`gh workflow run alpha.yml --ref <branch> -f signing_check=true`. It never packages the optional speech
 helper. The artifact-bound speech review process in `desktop/speech/RELEASE.md`
 remains a separate publisher responsibility.
 
@@ -54,6 +56,13 @@ job also prints every change in which processes had that volume open, under
 **Show which processes used the DMG volume**. Once a failure names the process
 holding it, stop that before packaging, as is done for Spotlight, and remove the
 watcher.
+
+The same runners drop the network now and then, which used to fail notarizing
+after Apple already had the app. Packaging now notarizes it itself
+(`desktop/notarize.mjs`): an upload that fails before Apple returns a
+submission id is sent again, the log prints that id, and the run then checks on
+that one submission for up to an hour, retrying timeouts and lost connections.
+A stuck run can be looked up with `xcrun notarytool info <id>`.
 
 ## The rolling alpha release
 

@@ -1,5 +1,8 @@
 'use client';
+import { SegmentedControl } from '@/components/system/segmented-control';
+import { TextArea } from '@/components/system/text-area';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useId, useRef, useState, type ClipboardEvent } from 'react';
 import Image from 'next/image';
 import { useMutation } from '@tanstack/react-query';
@@ -12,9 +15,9 @@ import {
   Paperclip,
   X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Tip } from '@/components/ui/tip';
 import { useOptionalDashboard } from '@/contexts/dashboard-context';
 import { useHomeDocumentScope, useOptionalHomeContext } from '@/components/home/home-context';
@@ -160,17 +163,16 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
     }
   };
   const close = (
-    <Tip label="Keep your draft and return to work">
-      <Button
+      <IconButton
         type="button"
-        variant="ghost"
-        size="icon-sm"
-        aria-label="Close feedback"
         onClick={onClose}
+        label="Close feedback"
+        tooltip="Keep your draft and return to work"
+        variant="ghost"
+        size="sm"
       >
         <X size={16} />
-      </Button>
-    </Tip>
+      </IconButton>
   );
   return (
     <div className="flex min-h-0 flex-col">
@@ -186,23 +188,17 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
       <div className="min-h-0 space-y-4 overflow-y-auto px-5 pb-4">
         <fieldset disabled={busy}>
           <legend className="sr-only">Feedback category</legend>
-          <div className="flex flex-wrap gap-1.5">
-            {kinds.map((kind) => (
-              <label key={kind.id} className="cursor-pointer">
-                <input
-                  type="radio"
-                  className="peer sr-only"
-                  name={`${id}-kind`}
-                  value={kind.id}
-                  checked={value.kind === kind.id}
-                  onChange={() => patch({ kind: kind.id })}
-                />
-                <span className="block rounded-full border border-transparent px-2.5 py-1.5 text-xs text-muted-foreground peer-checked:border-border peer-checked:bg-muted peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-disabled:opacity-60">
-                  {kind.label}
-                </span>
-              </label>
-            ))}
-          </div>
+          <SegmentedControl
+            mode="choice"
+            selection="radio"
+            name={`${id}-kind`}
+            ariaLabel="Feedback category"
+            value={value.kind}
+            onChange={(kind) => patch({ kind })}
+            options={kinds.map((kind) => ({ value: kind.id, label: kind.label }))}
+            size={viewport === 'phone' ? 'touch' : 'compact'}
+            disabled={busy}
+          />
         </fieldset>
         <div
           onDragOver={(event) => event.preventDefault()}
@@ -214,10 +210,10 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
           <label htmlFor={`${id}-message`} className="sr-only">
             Feedback details
           </label>
-          <Textarea
+          <TextArea
             id={`${id}-message`}
             autoFocus
-            rows={5}
+            rows={7}
             maxLength={MAX_FEEDBACK_MESSAGE}
             value={value.message}
             disabled={draft.opening}
@@ -236,7 +232,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                   ? 'What are you trying to figure out?'
                   : 'What would make Ri more useful for you?'
             }
-            className="h-36 min-h-24 max-h-48 overflow-y-auto [field-sizing:fixed] text-base md:text-sm"
+            autoSize
           />
         </div>
         {value.attachments.length > 0 && (
@@ -267,8 +263,14 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                   )}
                   <span className="truncate">{file.originalName}</span>
                 </a>
-                <Tip label="Save this file to add it to your GitHub issue">
-                  <Button asChild variant="ghost" size="icon-xs">
+
+                  <IconButton
+                    asChild
+                    label={`Download ${file.originalName}`}
+                    tooltip="Save this file to add it to your GitHub issue"
+                    variant="ghost"
+                    size="xs"
+                  >
                     <a
                       href={attachmentUrl(file.fileName)}
                       download={file.originalName}
@@ -276,15 +278,11 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                     >
                       <Download size={13} />
                     </a>
-                  </Button>
-                </Tip>
-                <Tip label={`Remove ${file.originalName}`}>
-                  <Button
+                  </IconButton>
+
+                  <IconButton
                     type="button"
-                    variant="ghost"
-                    size="icon-xs"
                     disabled={busy}
-                    aria-label={`Remove ${file.originalName}`}
                     onClick={() =>
                       patch({
                         attachments: value.attachments.filter(
@@ -292,10 +290,14 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                         ),
                       })
                     }
+                    label={`Remove ${file.originalName}`}
+                    tooltip={`Remove ${file.originalName}`}
+                    variant="ghost"
+                    size="xs"
                   >
                     <X size={13} />
-                  </Button>
-                </Tip>
+                  </IconButton>
+
               </div>
             ))}
           </div>
@@ -334,9 +336,8 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
             )}
             {draft.githubIssue.needsBodyPaste && (
               <div className="mt-2 flex flex-wrap gap-3">
-                <button
+                <Button
                   type="button"
-                  className="underline underline-offset-4"
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(draft.githubIssue!.body);
@@ -347,9 +348,11 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                       });
                     }
                   }}
+                  variant="link"
+                  size="sm"
                 >
                   {copiedBody === draft.githubIssue.body ? 'Copied' : 'Copy full report'}
-                </button>
+                </Button>
                 <a
                   download="ri-feedback.md"
                   href={`data:text/plain;charset=utf-8,${encodeURIComponent(draft.githubIssue.body)}`}
@@ -394,11 +397,10 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
           <Tip label="Paste an image, drop a file, or choose up to 5 files. 10 MB each, 20 MB total.">
             <Button
               type="button"
-              variant="ghost"
-              size="sm"
-              className="px-2 text-xs"
               disabled={busy || value.attachments.length >= MAX_FEEDBACK_FILES}
               onClick={() => filesRef.current?.click()}
+              variant="ghost"
+              size="sm"
             >
               {draft.uploading ? (
                 <Loader2 size={15} className="animate-spin" />
@@ -409,7 +411,11 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
             </Button>
           </Tip>
           {draft.githubIssue && !busy ? (
-            <Button asChild size="sm" className="text-xs">
+            <Button
+              asChild
+              variant="primary"
+              size="md"
+            >
               <a href={draft.githubIssue.githubIssueUrl} target="_blank" rel="noopener noreferrer">
                 <ArrowUpRight size={14} />
                 Continue on GitHub
@@ -418,10 +424,10 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
           ) : (
             <Button
               type="button"
-              size="sm"
-              className="text-xs"
               disabled={!value.message.trim() || busy}
               onClick={() => void handleContinue()}
+              variant="primary"
+              size="md"
             >
               {draft.opening ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -445,13 +451,15 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
               : 'You can close this panel. Your draft is kept on this device.'}
           </p>
           {draft.githubIssue && (
-            <button
+            <Button
               type="button"
-              className="shrink-0 underline underline-offset-4"
               onClick={() => resetFeedbackDraft(key)}
+              variant="link"
+              size="sm"
+              className="shrink-0"
             >
               Start new feedback
-            </button>
+            </Button>
           )}
         </div>
       </div>

@@ -1,11 +1,13 @@
 'use client';
 
 
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { useMemo } from 'react';
 import { FileText, Plus, UserPlus, UserRoundCheck } from 'lucide-react';
 import { useTaskCounts } from '@/hooks/use-tasks';
 import { TaskSurface } from '@/components/tasks/task-surface';
-import { ToolbarToggle, toolbarButtonClass } from '@/components/shared/list-toolbar';
+import { ToolbarToggle } from '@/components/shared/list-toolbar';
 import { Tip } from '@/components/ui/tip';
 import { DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { useTeam, useTeamNav } from './team-context';
@@ -68,10 +70,16 @@ export function TeamBoard({ fullPage = false }: { fullPage?: boolean }) {
           </>
         }
         trailing={
-          <Tip label="New task" onlyWhenTextHidden><button type="button" onClick={() => void newTask()} className={toolbarButtonClass({ className: 'w-8 px-0 @2xl/lt:w-auto @2xl/lt:px-3' })} aria-label="New task">
+          <Tip label="New task" onlyWhenTextHidden><ChipButton
+            type="button"
+            onClick={() => void newTask()}
+            aria-label="New task"
+            variant="secondary"
+            size="compact"
+          >
             <Plus className="size-3.5" />
             <span className="hidden @2xl/lt:inline">New task</span>
-          </button></Tip>
+          </ChipButton></Tip>
         }
       />
       {total === 0 && !nav.mine && <EmptyTeam onNewTask={() => void newTask()} />}
@@ -85,27 +93,38 @@ function EmptyTeam({ onNewTask }: { onNewTask: () => void }) {
   const { team } = useTeam();
   const nav = useTeamNav();
   const create = useTeamCreateRecord();
-  const action = 'inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted/50';
+
   return (
     <div className="pointer-events-none absolute inset-x-0 top-24 flex justify-center px-4">
       <div className="pointer-events-auto w-full max-w-sm rounded-xl border border-border bg-card p-5 shadow-sm">
         <p className="text-sm font-semibold">{team.name} is ready</p>
         <p className="mt-1 text-xs text-muted-foreground">Everyone in the team sees what you add here. Areas are optional.</p>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" className={action} onClick={onNewTask}>
-            <Plus size={13} /> New task
-          </button>
-          <button
+          <Button
             type="button"
-            className={action}
+            onClick={onNewTask}
+            variant="secondary"
+            size="sm"
+          >
+            <Plus size={13} /> New task
+          </Button>
+          <Button
+            type="button"
             onClick={() => void create.note()}
+            variant="secondary"
+            size="sm"
           >
             <FileText size={13} /> New note
-          </button>
+          </Button>
           {homeCapabilities.administerMembers && (
-            <button type="button" className={action} onClick={() => nav.openPanel('settings')}>
+            <Button
+              type="button"
+              onClick={() => nav.openPanel('settings')}
+              variant="secondary"
+              size="sm"
+            >
               <UserPlus size={13} /> Invite people
-            </button>
+            </Button>
           )}
         </div>
       </div>

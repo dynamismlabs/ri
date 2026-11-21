@@ -1,6 +1,7 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { cn } from "@/lib/utils";
 import type { UIMessage } from "ai";
 import { ArrowDownIcon, DownloadIcon } from "lucide-react";
@@ -83,19 +84,18 @@ export const ConversationScrollButton = ({
 
   return (
     !isAtBottom && (
-      <Button
-        className={cn(
-          "absolute bottom-4 right-4 rounded-full dark:bg-background dark:hover:bg-muted",
-          className
-        )}
+      <IconButton
         onClick={handleScrollToBottom}
-        size="icon"
         type="button"
-        variant="outline"
         {...props}
+        label={props["aria-label"] ?? "Scroll to latest"}
+        variant="secondary"
+        size="sm"
+        floating
+        className={cn("absolute bottom-4 right-4", className)}
       >
         <ArrowDownIcon className="size-4" />
-      </Button>
+      </IconButton>
     )
   );
 };
@@ -151,18 +151,16 @@ export const ConversationDownload = ({
   }, [messages, filename, formatMessage]);
 
   return (
-    <Button
-      className={cn(
-        "absolute top-4 right-4 rounded-full dark:bg-background dark:hover:bg-muted",
-        className
-      )}
+    <IconButton
       onClick={handleDownload}
-      size="icon"
       type="button"
-      variant="outline"
       {...props}
+      label={props["aria-label"] ?? "Download chat"}
+      variant="ghost"
+      size="sm"
+      className={cn("absolute top-4 right-4", className)}
     >
       {children ?? <DownloadIcon className="size-4" />}
-    </Button>
+    </IconButton>
   );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import type { McpCapabilityChanges, McpCapabilityField } from '@/lib/integrations/mcp-capabilities';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 
 const FIELD_LABELS: Record<McpCapabilityField, string> = {
   title: 'title', description: 'description', inputSchema: 'inputs', outputSchema: 'outputs', annotations: 'permissions and behavior',
@@ -18,6 +18,11 @@ export function CapabilityReview({ changes, busy, onReview }: { changes?: McpCap
       {changes.changed.map(tool => <li key={`changed-${tool.name}`}>Changed <code>{tool.name}</code>: {tool.fields.map(field => FIELD_LABELS[field]).join(', ')}</li>)}
     </ul>
     <p className="text-muted-foreground">Tools use your current permissions. Dismissing this notice does not change permissions.</p>
-    {onReview && <Button size="xs" variant="outline" disabled={busy} onClick={() => onReview(changes.revision)}>Dismiss notice</Button>}
+    {onReview && <Button
+      disabled={busy}
+      onClick={() => onReview(changes.revision)}
+      variant="secondary"
+      size="xs"
+    >Dismiss notice</Button>}
   </section>;
 }

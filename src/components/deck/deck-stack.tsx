@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState, useMemo, Fragment } from 'react';
 import { GripVertical, Check, SkipForward, ChevronDown, ChevronRight, Crosshair, EyeOff, Eye, Play } from 'lucide-react';
 import {
@@ -98,20 +100,23 @@ function Subtasks({ items, onCollapse, actions }: { items: SubtaskItem[]; onColl
   return (
     <div className="mt-2.5">
       <div className="flex items-center gap-2 mb-1">
-        <button
+        <Button
           onClick={onCollapse}
-          className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground"
+          variant="ghost"
+          size="xs"
+          className="flex items-center gap-1"
         >
           <ChevronDown className="w-3 h-3" />
           {completed}/{items.length} subtasks
-        </button>
+        </Button>
         {completed > 0 && (
-          <button
+          <Button
             onClick={() => setShowCompleted(!showCompleted)}
-            className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+            variant="ghost"
+            size="xs"
           >
             {showCompleted ? 'hide' : 'show'} completed
-          </button>
+          </Button>
         )}
       </div>
       <div className="ml-4 space-y-px">
@@ -133,34 +138,41 @@ function Subtasks({ items, onCollapse, actions }: { items: SubtaskItem[]; onColl
             {/* Desktop hover actions */}
             {!s.completed && (
               <div data-slot="row-actions" className="hidden md:flex shrink-0 opacity-0 group-hover/subtask:opacity-100 transition-opacity items-center gap-0.5">
-                <Tip label="Done" side="top">
-                  <button
-                    aria-label="Done"
+
+                  <IconButton
                     onClick={() => actions.onComplete(s.id)}
-                    className="p-1 rounded text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
+                    label="Done"
+                    tooltip="Done"
+                    tipSide="top"
+                    variant="ghost"
+                    size="xs"
                   >
                     <Check className="w-3 h-3" />
-                  </button>
-                </Tip>
-                <Tip label="Defer" side="top">
-                  <button
-                    aria-label="Defer"
+                  </IconButton>
+
+
+                  <IconButton
                     onClick={() => actions.onDefer(s.id)}
-                    className="p-1 rounded text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
+                    label="Defer"
+                    tooltip="Defer"
+                    tipSide="top"
+                    variant="ghost"
+                    size="xs"
                   >
                     <SkipForward className="w-3 h-3" />
-                  </button>
-                </Tip>
+                  </IconButton>
+
                 {actions.onFocus && (
-                  <Tip label="Focus" side="top">
-                    <button
-                      aria-label="Focus"
+                    <IconButton
                       onClick={() => actions.onFocus!(s.id)}
-                      className="p-1 rounded text-muted-foreground/50 hover:text-foreground hover:bg-muted transition-colors"
+                      label="Focus"
+                      tooltip="Focus"
+                      tipSide="top"
+                      variant="ghost"
+                      size="xs"
                     >
                       <Crosshair className="w-3 h-3" />
-                    </button>
-                  </Tip>
+                    </IconButton>
                 )}
               </div>
             )}
@@ -249,45 +261,53 @@ function SortableDeckItemCard({
 
       {/* Desktop hover actions — top right */}
       <div data-slot="row-actions" className="hidden md:flex absolute right-0 top-2 opacity-0 group-hover:opacity-100 transition-opacity items-center gap-1">
-        <Tip label="Done" side="top">
-          <button
-            aria-label="Done"
+
+          <IconButton
             onClick={() => onComplete(item.id)}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            label="Done"
+            tooltip="Done"
+            tipSide="top"
+            variant="ghost"
+            size="xs"
           >
             <Check className="w-3.5 h-3.5" />
-          </button>
-        </Tip>
+          </IconButton>
+
         {onStart && (
-          <Tip label="Start (move to In progress)" side="top">
-            <button
-              aria-label="Start (move to In progress)"
+            <IconButton
               onClick={() => onStart(item.id)}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-violet-500 hover:bg-muted transition-colors"
+              label="Start (move to In progress)"
+              tooltip="Start (move to In progress)"
+              tipSide="top"
+              variant="ghost"
+              size="xs"
             >
               <Play className="w-3.5 h-3.5" />
-            </button>
-          </Tip>
+            </IconButton>
         )}
-        <Tip label="Not today" side="top">
-          <button
-            aria-label="Not today"
+
+          <IconButton
             onClick={() => onNotToday(item.id)}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            label="Not today"
+            tooltip="Not today"
+            tipSide="top"
+            variant="ghost"
+            size="xs"
           >
             <SkipForward className="w-3.5 h-3.5" />
-          </button>
-        </Tip>
+          </IconButton>
+
         {onFocus && (
-          <Tip label="Focus" side="top">
-            <button
-              aria-label="Focus"
+            <IconButton
               onClick={() => onFocus(item.id)}
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              label="Focus"
+              tooltip="Focus"
+              tipSide="top"
+              variant="ghost"
+              size="xs"
             >
               <Crosshair className="w-3.5 h-3.5" />
-            </button>
-          </Tip>
+            </IconButton>
         )}
       </div>
 
@@ -363,13 +383,15 @@ function SortableDeckItemCard({
               }}
             />
           ) : (
-            <button
+            <Button
               onClick={() => setSubtasksExpanded(true)}
-              className="flex items-center gap-1 text-[10px] text-muted-foreground/60 hover:text-muted-foreground mt-2"
+              variant="ghost"
+              size="xs"
+              className="flex items-center gap-1 mt-2"
             >
               <ChevronRight className="w-3 h-3" />
               {item.subtasks.filter(s => s.completed).length}/{item.subtasks.length} subtasks
-            </button>
+            </Button>
           )
         )}
       </div>

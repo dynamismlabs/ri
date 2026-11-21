@@ -1,5 +1,8 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { useSpace } from '@/components/spaces/space-root';
 import { homeResourceHref } from '@/lib/home/resource-href';
@@ -404,13 +407,15 @@ export function TaskRow({
       <div data-slot="row-actions" className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="action-button" data-variant="ghost"
-              aria-label="More task actions"
-              className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
+            <IconButton
               onClick={(e) => e.stopPropagation()}
+              label="More task actions"
+              variant="ghost"
+              size="xs"
+              focus="inside"
             >
               <MoreHorizontal size={14} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40"
             // A choice in the menu reaches the row through React's portal bubbling, and the row opens the task.
@@ -519,18 +524,27 @@ export function TaskRow({
               }
               setBlockPopoverOpen(false);
             }}>
-              <input data-slot="field"
+              <Field
                 ref={blockInputRef}
                 type="text"
                 autoFocus
                 placeholder="e.g. waiting on design review"
-                className="w-full text-[11px] bg-background border border-border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
+                aria-label={'Block reason'}
               />
               <div className="flex justify-end gap-1 mt-1.5">
                 <PopoverClose asChild>
-                  <button data-slot="action-button" data-variant="ghost" type="button" className="text-[10px] px-2 py-0.5 rounded text-muted-foreground hover:bg-muted">Cancel</button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                  >Cancel</Button>
                 </PopoverClose>
-                <button data-slot="action-button" data-variant="primary" type="submit" className="text-[10px] px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90">Block</button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                >Block</Button>
               </div>
             </form>
           </PopoverContent>

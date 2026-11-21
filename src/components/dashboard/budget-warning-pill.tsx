@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 /**
  * Budget warning pill — TopHud's only spend signal. Silent until
  * `warn` (≥75%) or `block` (≥100%); at that point it's actionable and
@@ -13,7 +14,7 @@
 import { AlertTriangle } from 'lucide-react';
 import { useRunsStats } from '@/hooks/use-runs-stats';
 import { openSettings } from '@/components/settings/settings-store';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 export function BudgetWarningPill() {
@@ -22,10 +23,7 @@ export function BudgetWarningPill() {
   if (data.budgetState === 'ok') return null;
 
   const pct = Math.round((data.budgetFraction ?? 0) * 100);
-  const tone =
-    data.budgetState === 'block'
-      ? 'text-destructive border-destructive/40 bg-destructive/10'
-      : 'text-amber-600 border-amber-500/40 bg-amber-500/10 dark:text-amber-400';
+
   const message =
     data.budgetState === 'block'
       ? `Budget exceeded. Triggers auto-paused`
@@ -39,19 +37,19 @@ export function BudgetWarningPill() {
           : message
       }
     >
-      <button data-slot="chip-button" data-tone="status"
+      <ChipButton
         type="button"
         aria-label={message}
         onClick={() => openSettings('models')}
-        className={cn(
-          'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2 py-1 rounded-md border text-[11px] font-medium',
-          tone,
-        )}
+        variant="secondary"
+        size="compact"
+        tone="status"
+        status={data.budgetState === "block" ? "danger" : "warning"}
       >
         <AlertTriangle size={11} className="shrink-0" />
         <span className="hud-budget-label">{message}</span>
         <span className="hud-budget-short hidden" aria-hidden>{data.budgetState === 'block' ? 'Paused' : `${pct}%`}</span>
-      </button>
+      </ChipButton>
     </Tip>
   );
 }

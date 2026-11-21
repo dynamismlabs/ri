@@ -1,10 +1,15 @@
 "use client";
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
+
+import { IconButton } from '@/components/system/icon-button';
 
 import { useState, useRef, useCallback } from 'react';
 import {
-  Target, FileText, ChevronDown, Search, Plus, GitMerge,
+  Target, FileText, Search, Plus, GitMerge,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import {
   Popover,
   PopoverTrigger,
@@ -22,6 +27,8 @@ interface TaskActionsProps {
 }
 
 export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'menu' | 'search'>('menu');
   const [query, setQuery] = useState('');
@@ -50,12 +57,14 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          className="flex items-center gap-0.5 p-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors"
+        <IconButton
+          label="Create task"
+          variant="ghost"
+          size="xs"
+          disclosure
         >
           <Target size={12} />
-          <ChevronDown size={8} className="text-primary/50" />
-        </button>
+        </IconButton>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
         {mode === 'menu' && (
@@ -86,17 +95,18 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
 
         {mode === 'search' && (
           <div>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tasks..."
-                className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
-              />
-            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border"><Field
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tasks..."
+              className={'flex-1'}
+              purpose="embedded"
+              leading={<Search />}
+              aria-label={'Search tasks'}
+              size={compactFieldSize}
+            /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No tasks found</p>
@@ -129,6 +139,8 @@ interface NoteActionsProps {
 }
 
 export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'menu' | 'search'>('menu');
   const [query, setQuery] = useState('');
@@ -157,12 +169,14 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          className="flex items-center gap-0.5 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+        <IconButton
+          label="Create note"
+          variant="ghost"
+          size="xs"
+          disclosure
         >
           <FileText size={12} />
-          <ChevronDown size={8} className="opacity-50" />
-        </button>
+        </IconButton>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
         {mode === 'menu' && (
@@ -186,17 +200,18 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
 
         {mode === 'search' && (
           <div>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search notes..."
-                className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
-              />
-            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border"><Field
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search notes..."
+              className={'flex-1'}
+              purpose="embedded"
+              leading={<Search />}
+              aria-label={'Search notes'}
+              size={compactFieldSize}
+            /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No notes found</p>

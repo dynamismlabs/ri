@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { useCallback, useState } from 'react';
 import { CheckSquare, FileText, Layers, MessageSquarePlus, Plus, Zap } from 'lucide-react';
 import {
@@ -111,8 +112,15 @@ function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: st
 
 function SetupRow({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClick} disabled={disabled} className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm text-foreground/90 transition-colors active:bg-accent disabled:opacity-50">
+    <Button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      variant="ghost"
+      size="touch"
+      className="flex items-center gap-3 justify-start"
+    >
       <Plus size={17} className="shrink-0 text-muted-foreground" /> {label}
-    </button>
+    </Button>
   );
 }

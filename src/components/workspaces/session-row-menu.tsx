@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import {
   MoreVertical, Archive, Eye, EyeOff, Settings, Plus, Pin, PinOff,
 } from 'lucide-react';
@@ -17,7 +18,7 @@ import {
   useUnpinSession,
 } from '@/hooks/use-workspaces';
 import { useArchiveExecution } from '@/hooks/use-archive-execution';
-import { cn } from '@/lib/utils';
+
 
 interface SessionRowMenuProps {
   sessionId: string;
@@ -94,30 +95,18 @@ export function SessionRowMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
+        <IconButton
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          aria-label="Session actions"
-          className={cn(
-            'p-1 rounded transition-opacity text-muted-foreground/60 hover:text-foreground hover:bg-muted/40',
-            // Hidden until hover OR open. We use opacity + pointer-events
-            // instead of display:none so the trigger keeps a real
-            // bounding rect — Radix anchors the popover from
-            // getBoundingClientRect, and a display:none trigger collapses
-            // to (0,0,0,0), slamming the menu to the viewport's top-left.
-            // data-[state=open] is set by Radix on the trigger while
-            // the menu is open, which keeps the button visible after
-            // the mouse leaves the row.
-            revealOnRowHover && [
-              'opacity-0 pointer-events-none',
-              'group-hover:opacity-100 group-hover:pointer-events-auto',
-              'data-[state=open]:opacity-100 data-[state=open]:pointer-events-auto',
-            ],
-            className,
-          )}
+          label="Session actions"
+          variant="ghost"
+          size="xs"
+          reveal={revealOnRowHover}
+          className={className}
+          focus="inside"
         >
           <MoreVertical size={12} />
-        </button>
+        </IconButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState, type RefObject } from 'react';
 import { Command } from 'cmdk';
 import { Bot, ChevronDown, Search } from 'lucide-react';
@@ -53,20 +54,17 @@ export function AgentFilter({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button
+        <Button
           type="button"
           aria-label={label}
-          className={cn(
-            'flex min-w-0 max-w-[11rem] items-center gap-1.5 rounded-md px-1.5 py-1 text-[11px] transition-colors',
-            value
-              ? 'bg-muted/60 font-medium text-foreground hover:bg-muted'
-              : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-          )}
+          variant="secondary"
+          size="sm"
+          className="flex min-w-0 max-w-[11rem] items-center gap-1.5"
         >
           {value ? <AgentIcon agent={value} /> : <Bot size={12} className="flex-shrink-0" />}
           <span className="truncate">{value?.name ?? 'All agents'}</span>
           <ChevronDown size={11} className="flex-shrink-0 opacity-60" />
-        </button>
+        </Button>
       </PopoverTrigger>
       <Content
         align="end"

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { CircleDashed, FileText, Loader2, RefreshCw, MessageSquarePlus } from 'lucide-react';
 import { MessageResponse } from '@/components/ai-elements/message';
 import { apiErrorText } from '@/lib/api/client';
@@ -149,22 +150,27 @@ export function EntityBriefCard({
         }
         action={
           state.status === 'stale' && !isGenerating ? (
-            <button
+            <Button
               type="button"
               onClick={refresh}
-              className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+              variant="link"
+              size="sm"
+              className="inline-flex items-center gap-1"
             >
               <RefreshCw size={10} /> Refresh
-            </button>
+            </Button>
           ) : generateError ? (
             <Tip label={apiErrorText(generateError)}>
-              <button
+              <Button
                 type="button"
                 onClick={refresh}
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-destructive hover:underline"
+                variant="link"
+                size="sm"
+                tone="danger"
+                className="inline-flex items-center gap-1"
               >
                 <RefreshCw size={10} /> Refresh failed, retry
-              </button>
+              </Button>
             </Tip>
           ) : null
         }
@@ -208,19 +214,15 @@ function SmallButton({
   subtle?: boolean;
 }) {
   return (
-    <button data-slot="action-button" data-variant={subtle ? undefined : "primary"}
+    <Button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        'inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-50',
-        subtle
-          ? 'border border-border text-muted-foreground hover:bg-accent hover:text-foreground'
-          : 'bg-primary text-primary-foreground hover:bg-primary/90',
-      )}
+      variant={subtle ? "secondary" : "primary"}
+      size="xs"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -238,15 +240,17 @@ function Chips({
     <div className="mt-3 flex flex-wrap gap-1.5">
       {items.map((s) => (
         <Tip key={s} label="Send this to the agent">
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             disabled={disabled}
             onClick={() => onPick(s)}
-            className="inline-flex max-w-full items-center gap-1 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-left text-[11.5px] text-primary transition-colors hover:bg-primary/15 disabled:opacity-50"
+            variant="secondary"
+            size="md"
+            className="inline-flex max-w-full items-center gap-1"
           >
             <MessageSquarePlus size={10} className="flex-shrink-0" />
             <span className="truncate">{s}</span>
-          </button>
+          </Button>
         </Tip>
       ))}
     </div>
@@ -266,13 +270,15 @@ function Footer({
     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border/50 pt-2 text-[11px] text-muted-foreground/80">
       <span>{label}</span>
       {action}
-      <button
+      <Button
         type="button"
         onClick={onOpenDocument}
-        className="ml-auto inline-flex items-center gap-1 font-medium text-foreground/80 hover:text-foreground"
+        variant="ghost"
+        size="sm"
+        className="ml-auto inline-flex items-center gap-1"
       >
         <FileText size={11} /> Open document
-      </button>
+      </Button>
     </div>
   );
 }

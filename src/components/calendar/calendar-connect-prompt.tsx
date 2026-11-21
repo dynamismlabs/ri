@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { openSettings } from '@/components/settings/settings-store';
@@ -15,16 +16,17 @@ export function CalendarConnectPrompt({ onConnect }: { onConnect?: () => void })
           See your day here and let the deck plan around it
         </p>
       </div>
-      <button
+      <Button
         type="button"
         onClick={() => {
           onConnect?.();
           openSettings('plugins');
         }}
-        className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity"
+        variant="primary"
+        size="md"
       >
         Open {INTEGRATION_LABELS.singular.toLowerCase()} settings
-      </button>
+      </Button>
     </div>
   );
 }

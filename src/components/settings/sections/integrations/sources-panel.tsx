@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Connectors → Sources (docs/connector-service-spec.md §2): the services that hold connected
  * accounts for Ri, so apps connect without an OAuth app of your own. Composio is the first.
@@ -9,9 +11,9 @@
  */
 import { useRef, useState } from 'react';
 import { AlertCircle, ExternalLink, KeyRound, Loader2, Pencil, Plus, Trash2, Waypoints } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
@@ -69,7 +71,11 @@ export function SourcesPanel({ onBack, onChanged }: { onBack: () => void; onChan
         />
       )}
       {sources.length > 0 && !adding && (
-        <Button variant="ghost" size="xs" className="text-xs text-muted-foreground" onClick={() => setAdding(true)}>
+        <Button
+          onClick={() => setAdding(true)}
+          variant="ghost"
+          size="xs"
+        >
           <Plus size={12} /> Add another Composio project
         </Button>
       )}
@@ -161,9 +167,25 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
               className="flex items-center gap-2"
               onSubmit={e => { e.preventDefault(); void run(async () => { await m.rename.mutateAsync({ sourceId: source.id, label: name }); setRenaming(false); }); }}
             >
-              <Input value={name} onChange={e => setName(e.target.value)} maxLength={60} aria-label="Source name" className="h-7 text-xs" autoFocus />
-              <Button type="submit" size="xs" disabled={busy || !name.trim()}>Save</Button>
-              <Button type="button" variant="ghost" size="xs" onClick={() => { setRenaming(false); setName(source.label); }}>Cancel</Button>
+              <Field
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={60}
+                aria-label="Source name"
+                autoFocus
+              />
+              <Button
+                type="submit"
+                disabled={busy || !name.trim()}
+                variant="primary"
+                size="md"
+              >Save</Button>
+              <Button
+                type="button"
+                onClick={() => { setRenaming(false); setName(source.label); }}
+                variant="ghost"
+                size="xs"
+              >Cancel</Button>
             </form>
           ) : (
             <div className="flex flex-wrap items-center gap-1.5">
@@ -183,20 +205,42 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {!source.preferred && source.enabled && (
-            <Button variant="ghost" size="xs" className="text-xs" disabled={busy}
-              onClick={() => void run(() => m.setPreferred.mutateAsync({ sourceId: source.id }))}>
+            <Button
+              disabled={busy}
+              onClick={() => void run(() => m.setPreferred.mutateAsync({ sourceId: source.id }))}
+              variant="ghost"
+              size="xs"
+            >
               Make preferred
             </Button>
           )}
-          <Tip label="Rename">
-            <Button variant="ghost" size="icon-xs" aria-label={`Rename ${source.label}`} disabled={busy} onClick={() => setRenaming(true)}>
+
+            <IconButton
+              disabled={busy}
+              onClick={() => setRenaming(true)}
+              label={`Rename ${source.label}`}
+              tooltip="Rename"
+              variant="ghost"
+              size="xs"
+            >
               <Pencil size={12} />
-            </Button>
-          </Tip>
-          <Button variant="ghost" size="xs" className="text-xs" disabled={busy} onClick={() => setKeyOpen(open => !open)}>
+            </IconButton>
+
+          <Button
+            disabled={busy}
+            onClick={() => setKeyOpen(open => !open)}
+            variant="ghost"
+            size="xs"
+          >
             <KeyRound size={12} /> Update key
           </Button>
-          <Button variant="ghost" size="xs" className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive" disabled={busy} onClick={() => void remove()}>
+          <Button
+            disabled={busy}
+            onClick={() => void remove()}
+            variant="ghost"
+            size="xs"
+            tone="danger"
+          >
             <Trash2 size={12} /> Remove
           </Button>
           <Tip label={source.enabled ? `Ri uses ${source.label}` : `Ri doesn't use ${source.label}`}>
@@ -212,11 +256,23 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
           className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
           onSubmit={e => { e.preventDefault(); void run(async () => { await m.rotateKey.mutateAsync({ sourceId: source.id, apiKey: key }); setKey(''); setKeyOpen(false); }); }}
         >
-          <Input
-            type="password" autoComplete="off" spellCheck={false} value={key} onChange={e => setKey(e.target.value)}
-            placeholder="New project API key" aria-label={`New project API key for ${source.label}`} className="h-8 min-w-0 flex-1 basis-56 text-xs"
+          <Field
+            type="password"
+            autoComplete="off"
+            spellCheck={false}
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder="New project API key"
+            aria-label={`New project API key for ${source.label}`}
+            className="min-w-0 flex-1 basis-56"
+            purpose="code"
           />
-          <Button type="submit" size="sm" className="text-xs" disabled={busy || !key.trim()}>
+          <Button
+            type="submit"
+            disabled={busy || !key.trim()}
+            variant="primary"
+            size="md"
+          >
             {m.rotateKey.isPending ? <Loader2 size={12} className="animate-spin" /> : null} Save key
           </Button>
           <p className="w-full text-[11px] text-muted-foreground">
@@ -249,7 +305,11 @@ function ComposioSetup({ first, onDone, onCancel }: { first: boolean; onDone: ()
 
   return (
     <section className="space-y-2">
-      <GroupHeading action={onCancel && <Button variant="ghost" size="xs" className="text-xs" onClick={onCancel}>Cancel</Button>}>
+      <GroupHeading action={onCancel && <Button
+        onClick={onCancel}
+        variant="ghost"
+        size="xs"
+      >Cancel</Button>}>
         {first ? 'Set up Composio' : 'Another Composio project'}
       </GroupHeading>
       <div className="space-y-4 rounded-xl border border-border bg-card/20 p-4">
@@ -274,14 +334,32 @@ function ComposioSetup({ first, onDone, onCancel }: { first: boolean; onDone: ()
         </div>
         <form className="space-y-2" onSubmit={e => { e.preventDefault(); void save(); }}>
           {!first && (
-            <Input value={label} onChange={e => setLabel(e.target.value)} maxLength={60} placeholder="Name, like Composio Work" aria-label="Source name" className="h-8 text-xs" />
+            <Field
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              maxLength={60}
+              placeholder="Name, like Composio Work"
+              aria-label="Source name"
+            />
           )}
           <div className="flex flex-wrap items-center gap-2">
-            <Input
-              type="password" autoComplete="off" spellCheck={false} value={key} onChange={e => setKey(e.target.value)}
-              placeholder="Project API key" aria-label="Composio project API key" className="h-8 min-w-0 flex-1 basis-56 text-xs"
+            <Field
+              type="password"
+              autoComplete="off"
+              spellCheck={false}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="Project API key"
+              aria-label="Composio project API key"
+              className="min-w-0 flex-1 basis-56"
+              purpose="code"
             />
-            <Button type="submit" size="sm" className="text-xs font-semibold" disabled={m.addComposio.isPending || !key.trim()}>
+            <Button
+              type="submit"
+              disabled={m.addComposio.isPending || !key.trim()}
+              variant="primary"
+              size="md"
+            >
               {m.addComposio.isPending && <Loader2 size={12} className="animate-spin" />} Save key
             </Button>
           </div>

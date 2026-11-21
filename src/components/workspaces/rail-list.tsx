@@ -1,5 +1,9 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import type { CSSProperties, ReactNode } from 'react';
 import { Archive, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,7 +15,7 @@ import { cachedRailSession, useBulkArchiveSessions } from '@/hooks/use-workspace
 import { useLeaveArchivedChat, useReviewChanges } from '@/hooks/use-archive-execution';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { archiveAnywayDialog } from '@/components/executions/uncommitted-files';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 import { WorkspaceNav } from './workspace-nav';
 import { HistoryView } from './history-view';
@@ -51,7 +55,7 @@ import { WorkspaceSelectionBoundary, useWorkspaceSelection } from './workspace-s
  * at the right on both lists, then New agent on Agents. While selecting, the
  * toolbar (count, Archive, Cancel) takes the row.
  */
-export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (next: RailTab) => void }) {
+export function RailListHeader({ tab }: { tab: RailTab }) {
   const selection = useWorkspaceSelection();
   const selecting = selection?.selecting ?? false;
   const count = selection?.count ?? 0;
@@ -70,7 +74,13 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
     const rows = new Map(ids.map((id) => [id, cachedRailSession(qc, id)]));
     // On the click, as one archive does: if the chat on screen is going,
     // leave it now rather than when the requests return.
-    leaveArchivedChat(ids.map((id) => ({ id, executionId: rows.get(id)?.executionId, workspaceId: rows.get(id)?.workspaceId })));
+    leaveArchivedChat(
+      ids.map((id) => ({
+        id,
+        executionId: rows.get(id)?.executionId,
+        workspaceId: rows.get(id)?.workspaceId,
+      })),
+    );
 
     // First pass: archive everything that's clean. Worktrees with files
     // that aren't committed come back unforced, naming those files, so the
@@ -106,53 +116,58 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
         <>
           <span className="text-[10px] font-medium tabular-nums text-muted-foreground">{count} selected</span>
           <div className="flex-1" />
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => void handleConfirmArchive()}
             disabled={count === 0 || bulkArchive.isPending}
-            className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            variant="primary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             <Archive size={11} />
             Archive
-          </button>
+          </Button>
           <Tip label="Stop selecting" shortcut={HOTKEYS.cancelSelection.label}>
-            <button data-slot="action-button" data-variant="ghost"
+            <Button
               type="button"
               onClick={() => selection?.exit()}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center gap-1"
             >
               <X size={11} />
               Cancel
-            </button>
+            </Button>
           </Tip>
         </>
       ) : (
         <>
-          <ListSwitch tab={tab} onSelect={onSelect} />
+          <ListSwitch />
           <div className="flex-1" />
           {selection && (
             <div className="flex items-center gap-1">
-              <Tip label="Select chats to archive">
-                <button data-slot="action-button" data-variant="ghost"
+              <IconButton
+                type="button"
+                onClick={selection.enter}
+                label="Select chats to archive"
+                tooltip="Select chats to archive"
+                variant="ghost"
+                size="sm"
+              >
+                <Archive size={12} />
+              </IconButton>
+
+              {tab === 'workspace' && canConfigure && (
+                <IconButton
                   type="button"
-                  onClick={selection.enter}
-                  className="rounded p-1 text-muted-foreground/70 transition-colors hover:bg-muted/50 hover:text-foreground"
-                  aria-label="Select chats to archive"
-                >
-                  <Archive size={12} />
-                </button>
-              </Tip>
-              {tab === 'workspace' && canConfigure && <Tip label="New agent">
-                <button
-                  type="button"
+                  label="New agent"
+                  variant="ghost"
+                  size="sm"
                   onClick={openWorkspaceCreate}
-                  data-slot="new-agent"
-                  className="rounded bg-primary p-1 text-primary-foreground transition-opacity hover:opacity-90"
-                  aria-label="New agent"
                 >
-                  <Plus size={12} />
-                </button>
-              </Tip>}
+                  <Plus />
+                </IconButton>
+              )}
             </div>
           )}
         </>
@@ -169,36 +184,31 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
  * (New chat, Board) and small caps label a group (Pinned, Needs you), so
  * the switch can't pass for one more heading.
  */
-function ListSwitch({ tab, onSelect }: { tab: RailTab; onSelect: (next: RailTab) => void }) {
+function ListSwitch() {
   return (
-    <div role="tablist" aria-label="Rail list" data-slot="segmented" className="inline-flex items-center rounded-md bg-muted p-0.5 dark:bg-muted/50">
-      <SwitchTab active={tab === 'workspace'} onClick={() => onSelect('workspace')}>
-        Agents
-      </SwitchTab>
-      <SwitchTab active={tab === 'history'} onClick={() => onSelect('history')}>
-        Recent
-      </SwitchTab>
-    </div>
+    <SegmentedList
+      ariaLabel="Rail list"
+      options={[
+        { value: 'workspace', label: 'Agents' },
+        { value: 'history', label: 'Recent' },
+      ]}
+    />
   );
 }
 
-function SwitchTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
+export function RailListRoot({
+  tab,
+  onSelect,
+  children,
+}: {
+  tab: RailTab;
+  onSelect: (next: RailTab) => void;
+  children: ReactNode;
+}) {
   return (
-    <button data-slot="segmented-option"
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={cn(
-        'rounded-[5px] px-2.5 py-[3px] text-[11.5px] font-medium transition-[color,background-color,box-shadow] pointer-coarse:py-1.5',
-        'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-        active
-          ? 'bg-background text-foreground shadow-sm ring-1 ring-border/60 dark:bg-accent'
-          : 'text-muted-foreground hover:bg-background/60 hover:text-foreground dark:hover:bg-accent/40',
-      )}
-    >
+    <SegmentedRoot mode="tabs" value={tab} onChange={onSelect}>
       {children}
-    </button>
+    </SegmentedRoot>
   );
 }
 
@@ -218,13 +228,15 @@ export function RailListBody({ tab, stickyHeaderHeight }: { tab: RailTab; sticky
   const selecting = useWorkspaceSelection()?.selecting ?? false;
   const style = stickyHeaderHeight ? ({ '--rail-sticky-top': `${stickyHeaderHeight}px` } as CSSProperties) : undefined;
   return (
-    <div data-rail-list="" className="pt-1" style={style}>
-      {!selecting && (
-        <WorkspaceSelectionBoundary>
-          <PinnedRail />
-        </WorkspaceSelectionBoundary>
-      )}
-      {tab === 'history' ? <HistoryView /> : <WorkspaceNav />}
-    </div>
+    <SegmentedPanel value={tab} asChild aria-label={tab === 'history' ? 'Recent' : 'Agents'}>
+      <div data-rail-list="" className="pt-1" style={style}>
+        {!selecting && (
+          <WorkspaceSelectionBoundary>
+            <PinnedRail />
+          </WorkspaceSelectionBoundary>
+        )}
+        {tab === 'history' ? <HistoryView /> : <WorkspaceNav />}
+      </div>
+    </SegmentedPanel>
   );
 }

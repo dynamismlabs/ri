@@ -1,4 +1,7 @@
 "use client";
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { Search, Target, X } from 'lucide-react';
@@ -14,6 +17,8 @@ interface TaskPickerProps {
 }
 
 export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -49,18 +54,18 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
       </PopoverTrigger>
       <PopoverContent className="w-64 p-0" align="start">
         <div className="p-2 border-b border-border">
-          <div className="flex items-center gap-1.5 bg-background border border-border rounded px-2 py-1">
-            <Search size={10} className="text-muted-foreground" />
-            <input
-              autoFocus
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tasks..."
-              className="flex-1 text-[11px] bg-transparent outline-none"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          <Field
+            autoFocus
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tasks..."
+            className={'flex-1'}
+            onClick={(e) => e.stopPropagation()}
+            leading={<Search />}
+            aria-label={'Search tasks'}
+            size={compactFieldSize}
+          />
         </div>
         <div className="max-h-48 overflow-y-auto p-1">
           {value && (

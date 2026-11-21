@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { languageFor } from '@/components/executions/viewer/language-for';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
@@ -119,15 +121,17 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
         <span className="text-[12px] font-semibold text-foreground">Files</span>
         {editable && (
           <Tip label="Scripts go in scripts/, docs in references/, the rest in assets/. Up to 1 MB each.">
-            <button
+            <Button
               type="button"
               onClick={() => input.current?.click()}
               disabled={adding}
-              className="flex h-6 items-center gap-1 rounded-md px-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-1"
             >
               {adding ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
               {adding ? 'Adding…' : 'Add files'}
-            </button>
+            </Button>
           </Tip>
         )}
         <input
@@ -170,16 +174,19 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
                     <span className="ml-auto shrink-0 tabular-nums text-muted-foreground/60">{formatBytes(f.size)}</span>
                   </button>
                   {editable && (
-                    <Tip label="Remove from the skill">
-                      <button
+                      <IconButton
                         type="button"
-                        aria-label={`Remove ${f.path}`}
                         onClick={() => void remove(f.path)}
-                        className="mr-1 shrink-0 rounded p-1 text-muted-foreground/60 opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+                        label={`Remove ${f.path}`}
+                        tooltip="Remove from the skill"
+                        variant="ghost"
+                        size="sm"
+                        reveal
+                        focus="inside"
+                        className="mr-1 shrink-0"
                       >
                         <Trash2 size={12} />
-                      </button>
-                    </Tip>
+                      </IconButton>
                   )}
                 </div>
                 {isOpen && <FileContents skillRef={skill.ref} file={f} />}

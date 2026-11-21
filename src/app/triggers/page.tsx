@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * Triggers list view at /triggers.
  *
@@ -12,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import { Clock, AlertTriangle, ArrowLeft, ChevronRight, Pause, Play, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useTriggers, useUpdateTrigger } from '@/hooks/use-triggers';
-import { cn } from '@/lib/utils';
+
 import type { TriggerWithLastRun } from '@/db/types';
 import { describeFrequency } from '@/lib/scheduler/frequency';
 import { findProvider } from '@/lib/harness/options';
@@ -29,25 +31,23 @@ export default function TriggersPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           onClick={() => router.push('/')}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
-          aria-label="Back to dashboard"
+          label="Back to dashboard"
+          variant="ghost"
+          size="sm"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <div className="flex items-center gap-2">
           <Clock size={16} className="text-primary" />
           <h1 className="text-base font-semibold">Schedules and Triggers</h1>
         </div>
         <div className="flex-1" />
-        <Link
-          href="/triggers/new"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
-        >
+        <Button asChild variant="primary" size="md" className="flex items-center gap-1.5"><Link href="/triggers/new">
           <Plus size={14} />
           New trigger
-        </Link>
+        </Link></Button>
       </header>
 
       <main className="px-6 py-6 max-w-4xl mx-auto">
@@ -57,13 +57,10 @@ export default function TriggersPage() {
         {!isLoading && (!triggers || triggers.length === 0) && (
           <div className="text-center py-16 text-muted-foreground">
             <p className="mb-3">No triggers yet.</p>
-            <Link
-              href="/triggers/new"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border hover:bg-muted text-sm"
-            >
+            <Button asChild variant="secondary" size="sm" className="inline-flex items-center gap-1.5"><Link href="/triggers/new">
               <Plus size={14} />
               Create your first trigger
-            </Link>
+            </Link></Button>
           </div>
         )}
         {triggers && triggers.length > 0 && <AwakeNote lead="Schedules run" className="mb-3" />}
@@ -99,24 +96,22 @@ function TriggerRow({
       href={`/triggers/${trigger.id}`}
       className="flex items-center gap-4 p-4 rounded-lg border border-border bg-card hover:border-muted-foreground/30 transition-colors"
     >
-      <Tip label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}>
-        <button
+
+        <IconButton
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onToggle(!trigger.enabled);
           }}
-          className={cn(
-            'flex-shrink-0 p-1.5 rounded-md transition-colors',
-            trigger.enabled
-              ? 'bg-primary/10 text-primary hover:bg-primary/20'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80',
-          )}
-          aria-label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
+          label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
+          tooltip={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
+          variant="ghost"
+          size="sm"
+          className="flex-shrink-0"
         >
           {trigger.enabled ? <Play size={14} /> : <Pause size={14} />}
-        </button>
-      </Tip>
+        </IconButton>
+
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">

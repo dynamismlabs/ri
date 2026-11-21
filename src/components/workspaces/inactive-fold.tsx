@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import type { ReactNode } from 'react';
 import { Check, Timer } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,7 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 import { FoldRow } from './fold-row';
 import { useWorkspaceSelection } from './workspace-selection-context';
-import { Tip } from '@/components/ui/tip';
+
 
 /**
  * The foot of a list section: "N inactive hidden" with Show, folded by
@@ -75,14 +77,7 @@ export function InactiveFold({
           selecting && selectIds?.length ? (
             <SelectAllChats ids={selectIds} folds={[sectionId]} touch={touch} />
           ) : (
-            <InactiveAfterPopover
-              className={
-                touch
-                  ? 'p-2'
-                  : 'opacity-0 group-hover/fold:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100'
-              }
-              size={touch ? 14 : 11}
-            />
+            <InactiveAfterPopover touch={touch} reveal={!touch} />
           )
         }
       />
@@ -108,7 +103,7 @@ export function SelectAllChats({
   if (!selection) return null;
   const allSelected = ids.every((id) => selection.isSelected(id));
   return (
-    <button
+    <Button
       type="button"
       onClick={() => {
         selection.setMany(ids, !allSelected);
@@ -116,13 +111,12 @@ export function SelectAllChats({
       }}
       onPointerDown={(e) => e.stopPropagation()}
       aria-label={`${allSelected ? 'Deselect' : 'Select'} all ${ids.length} inactive chat${ids.length === 1 ? '' : 's'}`}
-      className={cn(
-        'flex-shrink-0 rounded-md font-medium text-primary transition-colors hover:bg-primary/10',
-        touch ? 'px-2 py-2 text-[12px]' : 'px-1.5 py-1 text-[10px]',
-      )}
+      variant="ghost"
+      size={touch ? "touch" : "xs"}
+      className="flex-shrink-0"
     >
       {allSelected ? 'Deselect all' : 'Select all'}
-    </button>
+    </Button>
   );
 }
 
@@ -130,25 +124,26 @@ export function SelectAllChats({
  * The timer button and its popover: when executions go inactive, for the
  * whole app, including never. Shared by every fold row.
  */
-export function InactiveAfterPopover({ className, size = 11 }: { className?: string; size?: number }) {
+export function InactiveAfterPopover({ className, touch = false, reveal = false }: { className?: string; touch?: boolean; reveal?: boolean }) {
   const { stored } = useInactivity();
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Tip label="When chats go inactive">
-          <button
+
+          <IconButton
             type="button"
             onClick={(e) => e.stopPropagation()}
             onPointerDown={(e) => e.stopPropagation()}
-            aria-label="When chats go inactive"
-            className={cn(
-              'flex-shrink-0 rounded p-1 text-muted-foreground/60 transition-opacity hover:bg-muted/40 hover:text-foreground',
-              className,
-            )}
+            label="When chats go inactive"
+            tooltip="When chats go inactive"
+            variant="ghost"
+            size={touch ? "touch" : "xs"}
+            reveal={reveal ? "fold" : false}
+            className={cn("flex-shrink-0", className)}
           >
-            <Timer size={size} />
-          </button>
-        </Tip>
+            <Timer />
+          </IconButton>
+
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={4} className="w-60 p-1" onClick={(e) => e.stopPropagation()}>
         <InactiveAfterOptions stored={stored} />

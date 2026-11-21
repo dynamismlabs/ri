@@ -1,5 +1,7 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * The digest: what triage did, rendered from applied outcomes (never from
  * plans). One block per pass, newest first. Every line is one tap from
@@ -30,7 +32,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from '@/components/ui/popover';
-import { Tip } from '@/components/ui/tip';
+
 
 function timeAgo(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
@@ -92,14 +94,16 @@ function RerouteMenu({ decision }: { decision: TriageDecisionWithItems }) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Tip label="Change what happened">
-          <button
-            className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors"
-            aria-label="Change what happened"
+
+          <IconButton
+            label="Change what happened"
+            tooltip="Change what happened"
+            variant="ghost"
+            size="sm"
           >
             <CornerUpRight size={11} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </PopoverTrigger>
       <PopoverContent align="end" className="w-44 p-0" sideOffset={4}>
         <div className="py-1">
@@ -152,15 +156,17 @@ function DigestDecisionRow({ decision }: { decision: TriageDecisionWithItems }) 
       {!isUndone && (
         <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
           <RerouteMenu decision={decision} />
-          <Tip label="Undo">
-            <button
+
+            <IconButton
               onClick={() => undo.mutate(decision.id)}
-              className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors"
-              aria-label="Undo"
+              label="Undo"
+              tooltip="Undo"
+              variant="ghost"
+              size="sm"
             >
               <Undo2 size={11} />
-            </button>
-          </Tip>
+            </IconButton>
+
         </div>
       )}
     </div>
@@ -184,18 +190,20 @@ function GraduationOffers() {
             <p className="flex-1 text-[11px] leading-snug text-foreground">{offer.line}</p>
           </div>
           <div className="flex items-center gap-2 mt-2 ml-5">
-            <button
+            <Button
               onClick={() => setAutonomy.mutate({ levels: { [offer.disposition]: offer.toLevel } })}
-              className="px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[10px] font-semibold hover:bg-primary/90 transition-colors"
+              variant="primary"
+              size="md"
             >
               Yes, go ahead
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setDismissed((prev) => new Set(prev).add(offer.disposition))}
-              className="px-2.5 py-1 rounded-md text-[10px] text-muted-foreground hover:bg-muted transition-colors"
+              variant="secondary"
+              size="sm"
             >
               Not now
-            </button>
+            </Button>
           </div>
         </div>
       ))}
@@ -265,13 +273,15 @@ function PassDigest({ passId }: { passId: string }) {
 
           {unseen && (
             <div className="flex justify-end pt-1">
-              <button
+              <Button
                 onClick={() => markSeen.mutate(pass.id)}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1"
               >
                 <Check size={10} />
                 Looks right
-              </button>
+              </Button>
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { trpcClient } from '@/lib/trpc/client';
 
 /**
@@ -135,21 +136,28 @@ export function HomeReachabilityBanner() {
           <span className="font-medium">{issue?.message ?? `Reconnecting to ${where}…`}</span>
           <span className="block text-muted-foreground">{issue && !issue.retryable ? 'Your current view and drafts are kept.' : 'Trying again automatically.'}</span>
         </p>
-        <button
+        <Button
           type="button"
           onClick={() => void (nativeNotice ? nativeAction('retry') : check())}
           disabled={checking}
-          className="flex items-center gap-1.5 rounded px-2 py-1 text-[11px] text-foreground/90 transition-colors hover:bg-foreground/5 disabled:opacity-50"
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1.5"
         >
           {checking ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />}
           Retry
-        </button>
+        </Button>
       </div>
-      {issue && !issue.retryable && <button type="button" disabled={checking}
+      {issue && !issue.retryable && <Button
+        type="button"
+        disabled={checking}
         onClick={() => void nativeAction(issue.kind === 'sign_in' ? 'connect' : 'settings')}
-        className="mt-2 text-[11px] underline disabled:opacity-50">
+        variant="link"
+        size="sm"
+        className="mt-2"
+      >
         {issue.kind === 'sign_in' ? 'Sign in again' : 'Connection settings'}
-      </button>}
+      </Button>}
       <details className="mt-1 text-[11px] text-muted-foreground">
         <summary className="cursor-pointer">Connection details</summary>
         <p className="mt-1 break-words">{issue?.detail ?? 'This view cannot reach your Ri. Its service may be restarting, or the network may be unavailable.'}</p>

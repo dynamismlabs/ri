@@ -52,6 +52,7 @@ it.each([
 describe('Mac signing', () => {
   const key = path.join(os.tmpdir(), `ri-preflight-${process.pid}.p8`);
   const notarizing = { CSC_NAME: 'Example Inc. (ABCDE12345)', APPLE_API_KEY: key, APPLE_API_KEY_ID: 'KEY123', APPLE_API_ISSUER: 'issuer-uuid' };
+  const appleId = { CSC_NAME: 'Example Inc. (ABCDE12345)', APPLE_ID: 'me@example.com', APPLE_APP_SPECIFIC_PASSWORD: 'abcd-efgh-ijkl-mnop', APPLE_TEAM_ID: 'ABCDE12345' };
   beforeAll(() => fs.writeFileSync(key, '-----BEGIN PRIVATE KEY-----\n'));
   afterAll(() => fs.rmSync(key, { force: true }));
 
@@ -62,23 +63,29 @@ describe('Mac signing', () => {
     expect(macSigning({ platform: 'win32', share: true, env: notarizing })).toEqual({ identity: null, notarize: false });
   });
 
-  it('signs and notarizes any Mac build with a Developer ID, through its own keychain in CI', () => {
-    for (const build of [{ release: true }, { share: true }]) {
-      expect(macSigning({ platform: 'darwin', ...build, env: { ...notarizing, CSC_KEYCHAIN: '/tmp/ri.keychain-db' } })).toEqual({
-        identity: 'Example Inc. (ABCDE12345)', codesignIdentity: 'Developer ID Application: Example Inc. (ABCDE12345)', notarize: true, keychain: '/tmp/ri.keychain-db',
-      });
+  it('signs and notarizes any Mac build with a Developer ID and an Apple ID or API key, through its own keychain in CI', () => {
+    for (const credentials of [appleId, notarizing, { ...notarizing, APPLE_TEAM_ID: 'ABCDE12345' }]) {
+      for (const build of [{ release: true }, { share: true }]) {
+        expect(macSigning({ platform: 'darwin', ...build, env: { ...credentials, CSC_KEYCHAIN: '/tmp/ri.keychain-db' } })).toEqual({
+          identity: 'Example Inc. (ABCDE12345)', codesignIdentity: 'Developer ID Application: Example Inc. (ABCDE12345)', notarize: true, keychain: '/tmp/ri.keychain-db',
+        });
+      }
     }
   });
 
   it('refuses a release without a Developer ID, and any setup that would sign without notarizing', () => {
     expect(() => macSigning({ platform: 'darwin', release: true, env: {} })).toThrow('A Mac release needs a Developer ID');
     expect(() => macSigning({ platform: 'darwin', share: true, env: { ...notarizing, CSC_NAME: 'Developer ID Application: Example Inc. (ABCDE12345)' } })).toThrow('without "Developer ID Application:"');
-    expect(() => macSigning({ platform: 'darwin', release: true, env: { ...notarizing, APPLE_ID: 'me@example.com', APPLE_APP_SPECIFIC_PASSWORD: 'x' } })).toThrow('not an Apple ID');
-    expect(() => macSigning({ platform: 'darwin', release: true, env: { CSC_NAME: notarizing.CSC_NAME, APPLE_API_KEY_ID: 'KEY123' } })).toThrow('needs APPLE_API_KEY, APPLE_API_ISSUER');
+    expect(() => macSigning({ platform: 'darwin', release: true, env: { CSC_NAME: notarizing.CSC_NAME } })).toThrow('needs APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID, or an App Store Connect API key');
+    expect(() => macSigning({ platform: 'darwin', release: true, env: { CSC_NAME: notarizing.CSC_NAME, APPLE_API_KEY_ID: 'KEY123' } })).toThrow('Notarizing with an App Store Connect API key needs APPLE_API_KEY, APPLE_API_ISSUER');
     expect(() => macSigning({ platform: 'darwin', release: true, env: { ...notarizing, APPLE_API_KEY: '-----BEGIN PRIVATE KEY-----' } })).toThrow('path to the App Store Connect key');
+    // Half an Apple ID is what packaging would take, so a complete API key beside it doesn't help.
+    expect(() => macSigning({ platform: 'darwin', release: true, env: { ...notarizing, APPLE_ID: 'me@example.com' } })).toThrow('Notarizing with an Apple ID needs APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID');
+    expect(() => macSigning({ platform: 'darwin', share: true, env: { ...appleId, APPLE_TEAM_ID: '' } })).toThrow('Notarizing with an Apple ID needs APPLE_TEAM_ID');
+    expect(() => macSigning({ platform: 'darwin', share: true, env: { ...appleId, APPLE_TEAM_ID: 'ZZZZZ99999' } })).toThrow('isn\'t a Developer ID in the team APPLE_TEAM_ID names');
   });
 
-  it('the real package entrypoint refuses Apple ID notarization before writing or building', () => {
+  it('the real package entrypoint refuses half an Apple ID before writing or building', () => {
     const preload = `
       import fs from 'node:fs';
       import childProcess from 'node:child_process';
@@ -92,7 +99,7 @@ describe('Mac signing', () => {
       globalThis.fetch = refuse;
       syncBuiltinESMExports();
     `;
-    const env: NodeJS.ProcessEnv = { ...process.env, ...notarizing, APPLE_ID: 'me@example.com', APPLE_APP_SPECIFIC_PASSWORD: 'x' };
+    const env: NodeJS.ProcessEnv = { ...process.env, ...notarizing, APPLE_ID: 'me@example.com', APPLE_APP_SPECIFIC_PASSWORD: '', APPLE_TEAM_ID: '' };
     delete env.NODE_OPTIONS;
     delete env.ELECTRON_RUN_AS_NODE;
     const result = spawnSync(process.execPath, ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, path.resolve(__dirname, 'package.mjs'), '--release'], {
@@ -100,7 +107,7 @@ describe('Mac signing', () => {
     });
     expect(result.error).toBeUndefined();
     expect(result.status).not.toBe(0);
-    expect(result.stderr).toContain('not an Apple ID');
+    expect(result.stderr).toContain('Notarizing with an Apple ID needs APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID');
     expect(result.stdout + result.stderr).not.toContain('PACKAGING_SIDE_EFFECT_BEFORE_PREFLIGHT');
   });
 });

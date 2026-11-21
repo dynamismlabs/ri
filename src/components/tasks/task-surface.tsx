@@ -6,7 +6,7 @@ import { TaskKanban } from './task-kanban';
 import { TASK_VIEW_KEY, TaskViewToggle, type TaskView } from './task-view';
 import { KANBAN_COLUMNS } from '@/lib/tasks/lanes';
 import { Columns3 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 
 /**
  * The task surface: List and Kanban are two views over the same records and the
@@ -60,8 +60,14 @@ export function TaskSurface({ onOpenTask, privatePlanning = true, viewKey = TASK
         privatePlanning={privatePlanning}
         initialLane={privatePlanning ? 'current' : 'all'}
         contextControls={<>
-          {onOpenBoard && <Button type="button" size="sm" aria-haspopup="dialog" onClick={onOpenBoard}
-            className="gap-1.5 rounded-lg text-xs font-semibold shadow-sm">
+          {onOpenBoard && <Button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={onOpenBoard}
+            variant="secondary"
+            size="sm"
+            className="gap-1.5"
+          >
             <Columns3 className="size-3.5" aria-hidden />
             Open board
           </Button>}

@@ -1,5 +1,8 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { SelectField } from '@/components/system/select-field';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * One application's page in Connectors (docs/connector-service-spec.md §2), for applications a
  * managed source can connect: Gmail and Google Calendar.
@@ -16,13 +19,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Bot, CalendarDays, Check, ChevronDown, ExternalLink, Loader2, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2, Unplug } from 'lucide-react';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
-import { Tip } from '@/components/ui/tip';
+
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { APPLICATIONS } from '@/lib/integrations/sources/applications';
@@ -34,7 +37,7 @@ import type { WorkspaceIntegrationScope } from '@/db/types';
 import {
   sourceErrorMessage, useConnectAttempt, useConnectionMethod, useDiscoveredAccounts, useManagedAccounts, useSourceMutations, useSourcesOverview,
 } from '@/hooks/use-integration-sources';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { BackLink, Chip, ConnectFormSection, DetailHeader, GroupHeading } from './parts';
 import { ToolList } from './provider-detail';
 import { connectionIdentity, type ApprovalMode, type Connection, type ToolkitInfo, type WritePolicyAction } from './types';
@@ -124,7 +127,11 @@ export function ApplicationDetail(props: ApplicationDetailProps) {
           <GroupHeading
             count={total}
             action={!adding && !attemptId && (
-              <Button variant="outline" size="xs" className="text-xs" onClick={() => setAdding(true)}>
+              <Button
+                onClick={() => setAdding(true)}
+                variant="secondary"
+                size="xs"
+              >
                 <Plus size={12} /> Add account
               </Button>
             )}
@@ -158,7 +165,12 @@ export function ApplicationDetail(props: ApplicationDetailProps) {
                     {connection.status !== 'active' && <Chip tone="warn">{connection.status}</Chip>}
                   </div>
                 </div>
-                <Button variant="ghost" size="xs" className="ml-auto text-xs" onClick={props.onOpenDirect}>Manage in Google</Button>
+                <Button
+                  onClick={props.onOpenDirect}
+                  variant="ghost"
+                  size="xs"
+                  className="ml-auto"
+                >Manage in Google</Button>
               </div>
             ))}
           </div>
@@ -256,7 +268,7 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
           {explanation && <p className="text-xs leading-normal text-foreground/90">{explanation}</p>}
           {chosen.kind === 'managed' && (
             <div className="flex flex-wrap items-center gap-2">
-              <Input value={label} onChange={e => setLabel(e.target.value)} maxLength={80} placeholder="Name it, like Work (optional)" aria-label={`Name for this ${app.displayName} account`} className="h-8 min-w-0 flex-1 basis-48 text-xs" />
+              <Field value={label} onChange={e => setLabel(e.target.value)} maxLength={80} placeholder="Name it, like Work (optional)" aria-label={`Name for this ${app.displayName} account`} className="min-w-0 flex-1 basis-48" />
             </div>
           )}
           {chosen.kind === 'managed' && props.applicationId === 'google_calendar' && (
@@ -267,15 +279,29 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
           )}
           {chosen.available ? (
             <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" className="text-xs font-semibold" onClick={() => void connect()} disabled={starting}>
+              <Button
+                onClick={() => void connect()}
+                disabled={starting}
+                variant="primary"
+                size="md"
+              >
                 {starting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Connect {app.displayName}
               </Button>
               {options.length > 1 && (
-                <Button variant="ghost" size="xs" className="text-xs" aria-expanded={changing} onClick={() => setChanging(open => !open)}>
+                <Button
+                  aria-expanded={changing}
+                  onClick={() => setChanging(open => !open)}
+                  variant="ghost"
+                  size="xs"
+                >
                   Change method <ChevronDown size={12} className={changing ? 'rotate-180' : undefined} />
                 </Button>
               )}
-              {props.onCancel && <Button variant="ghost" size="xs" className="text-xs" onClick={props.onCancel}>Cancel</Button>}
+              {props.onCancel && <Button
+                onClick={props.onCancel}
+                variant="ghost"
+                size="xs"
+              >Cancel</Button>}
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">{chosen.reason}</p>
@@ -285,8 +311,16 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
         <div className="space-y-2 text-xs text-foreground/90">
           <p>{app.displayName} needs a way to connect first.</p>
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" className="text-xs" onClick={props.onOpenSources}>Set up Composio</Button>
-            <Button variant="outline" size="sm" className="text-xs" onClick={props.onOpenDirect}>Use your own Google OAuth app</Button>
+            <Button
+              onClick={props.onOpenSources}
+              variant="primary"
+              size="md"
+            >Set up Composio</Button>
+            <Button
+              onClick={props.onOpenDirect}
+              variant="secondary"
+              size="sm"
+            >Use your own Google OAuth app</Button>
           </div>
         </div>
       )}
@@ -316,10 +350,14 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
             );
           })}
           {selection.basis === 'override' && (
-            <button type="button" className="px-2 pt-1 text-[11px] font-medium text-primary hover:underline"
-              onClick={() => void m.setApplicationMethod.mutateAsync({ applicationId: props.applicationId, method: null }).then(() => setChosenKey(null)).catch(e => props.onError(sourceErrorMessage(e)))}>
+            <Button
+              type="button"
+              onClick={() => void m.setApplicationMethod.mutateAsync({ applicationId: props.applicationId, method: null }).then(() => setChosenKey(null)).catch(e => props.onError(sourceErrorMessage(e)))}
+              variant="link"
+              size="sm"
+            >
               Use the overall preference for {app.displayName} again
-            </button>
+            </Button>
           )}
           {explicit && <p className="px-2 pt-1 text-[11px] text-muted-foreground">Ri remembers this choice for {app.displayName}.</p>}
         </div>
@@ -354,7 +392,11 @@ function PendingSignIn({ attemptId, appName, onDone }: { attemptId: string; appN
   return (
     <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
       <span className="flex items-center gap-2 text-xs"><Loader2 size={13} className="animate-spin text-muted-foreground" /> Finish signing in to {appName} in your browser.</span>
-      <Button variant="outline" size="sm" className="text-xs" onClick={() => void m.cancelAttempt.mutateAsync({ attemptId }).finally(() => onDone({ status: 'cancelled', error: 'Cancelled.' }))}>
+      <Button
+        onClick={() => void m.cancelAttempt.mutateAsync({ attemptId }).finally(() => onDone({ status: 'cancelled', error: 'Cancelled.' }))}
+        variant="secondary"
+        size="sm"
+      >
         Cancel
       </Button>
     </div>
@@ -424,9 +466,18 @@ function ManagedAccountRow({ account, returnTo, startOpen, onReconnect, onMessag
         <div className="min-w-0 flex-1 basis-48">
           {renaming ? (
             <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); void act(async () => { await m.renameAccount.mutateAsync({ connectionId: account.connectionId, label: name }); setRenaming(false); }); }}>
-              <Input value={name} onChange={e => setName(e.target.value)} maxLength={80} placeholder="Work" aria-label="Account name" className="h-7 text-xs" autoFocus />
-              <Button type="submit" size="xs">Save</Button>
-              <Button type="button" variant="ghost" size="xs" onClick={() => setRenaming(false)}>Cancel</Button>
+              <Field value={name} onChange={e => setName(e.target.value)} maxLength={80} placeholder="Work" aria-label="Account name"  autoFocus />
+              <Button
+                type="submit"
+                variant="primary"
+                size="md"
+              >Save</Button>
+              <Button
+                type="button"
+                onClick={() => setRenaming(false)}
+                variant="ghost"
+                size="xs"
+              >Cancel</Button>
             </form>
           ) : (
             <div className="flex flex-wrap items-center gap-1.5">
@@ -447,22 +498,36 @@ function ManagedAccountRow({ account, returnTo, startOpen, onReconnect, onMessag
         </div>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {reconnect && account.sourceEnabled && (
-            <Button variant="ghost" size="xs" className="text-xs" onClick={() => void act(async () => {
+            <Button
+              onClick={() => void act(async () => {
               const result = await m.reconnect.mutateAsync({ connectionId: account.connectionId, returnTo });
               onReconnect(result.attemptId);
               await openIntegrationAuthorization(result.authorizationUrl);
-            })}>
+            })}
+              variant="ghost"
+              size="xs"
+            >
               <RefreshCw size={12} /> Reconnect
             </Button>
           )}
-          <Button variant="ghost" size="xs" className="text-xs" aria-expanded={agentsOpen} onClick={() => setToggled(!agentsOpen)}>
+          <Button
+            aria-expanded={agentsOpen}
+            onClick={() => setToggled(!agentsOpen)}
+            variant="ghost"
+            size="xs"
+          >
             <Bot size={12} /> Agents
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Tip label="More for this account">
-                <Button variant="ghost" size="icon-xs" aria-label={`More for ${identity}`}><MoreHorizontal size={12} /></Button>
-              </Tip>
+
+                <IconButton
+                  label={`More for ${identity}`}
+                  tooltip="More for this account"
+                  variant="ghost"
+                  size="xs"
+                ><MoreHorizontal size={12} /></IconButton>
+
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuItem className="text-xs" onSelect={() => { setName(account.label ?? ''); setRenaming(true); }}><Pencil size={12} /> Rename</DropdownMenuItem>
@@ -561,7 +626,7 @@ function ExistingAccounts({ applicationId, sources, onChanged, onError }: {
         <div className="space-y-1 border-t border-border/60 p-3">
           {sources.length > 1 && (
             <Select value={sourceId} onValueChange={setPicked}>
-              <SelectTrigger size="sm" aria-label="Source" className="mb-1 h-7 w-fit text-xs"><SelectValue /></SelectTrigger>
+              <SelectField aria-label="Source" className="mb-1 w-fit"><SelectValue /></SelectField>
               <SelectContent>
                 {sources.map(source => <SelectItem key={source.id} value={source.id} className="text-xs">{source.label}</SelectItem>)}
               </SelectContent>
@@ -573,9 +638,13 @@ function ExistingAccounts({ applicationId, sources, onChanged, onError }: {
           {pending.map(account => (
             <div key={account.remoteAccountId} className="flex items-center gap-2 text-xs">
               <span className="min-w-0 flex-1 truncate">{account.alias ?? 'Unnamed account'}{account.createdAt ? `, added ${new Date(account.createdAt).toLocaleDateString()}` : ''}</span>
-              <Button size="xs" variant="outline" className="text-xs" disabled={m.importAccount.isPending}
+              <Button
+                disabled={m.importAccount.isPending}
                 onClick={() => void m.importAccount.mutateAsync({ sourceId, applicationId, remoteAccountId: account.remoteAccountId })
-                  .then(onChanged).catch(e => onError(sourceErrorMessage(e)))}>
+                  .then(onChanged).catch(e => onError(sourceErrorMessage(e)))}
+                variant="secondary"
+                size="xs"
+              >
                 Add
               </Button>
             </div>

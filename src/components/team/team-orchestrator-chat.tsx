@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { trpc } from '@/lib/trpc/client';
 import { MainChatContent } from '@/components/chat/main-chat-content';
@@ -24,6 +25,10 @@ export function TeamOrchestratorChat() {
   return <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center text-sm text-muted-foreground">
     <p className="font-medium text-foreground">Your team’s shared assistant</p>
     <p className="max-w-xs">Tasks and notes work without AI. {home.capabilities.configureAgents ? 'Turn on Team AI when you want help with shared work.' : 'The owner can turn on Team AI when your team wants it.'}</p>
-    {home.capabilities.configureAgents && <button data-slot="action-button" className="rounded-md border border-border px-3 py-2 text-foreground hover:bg-muted/50" onClick={() => nav.openSettings('ai')}>Set up Team AI</button>}
+    {home.capabilities.configureAgents && <Button
+      onClick={() => nav.openSettings('ai')}
+      variant="secondary"
+      size="sm"
+    >Set up Team AI</Button>}
   </div>;
 }

@@ -67,6 +67,31 @@ describe('normalizeGoogleEvent', () => {
     });
   });
 
+  it.each([
+    ['https://meet.google.com/abc-defg-hij', 'https://meet.google.com/abc-defg-hij?authuser=work%2Bcalendar%40example.com'],
+    ['https://meet.google.com/abc-defg-hij?authuser=0&hs=122#details', 'https://meet.google.com/abc-defg-hij?authuser=work%2Bcalendar%40example.com&hs=122#details'],
+    ['https://zoom.us/j/123?pwd=abc', 'https://zoom.us/j/123?pwd=abc'],
+    ['https://meet.google.com.example.com/abc', 'https://meet.google.com.example.com/abc'],
+    ['not a URL', 'not a URL'],
+  ])('uses the connected account only for Google Meet: %s', (joinUrl, expected) => {
+    const ev = normalizeGoogleEvent(
+      { id: 'meet', start: `${DATE}T10:00:00Z`, end: `${DATE}T11:00:00Z`, joinUrl },
+      'c1',
+      null,
+      'work+calendar@example.com',
+    )!;
+    expect(ev.joinUrl).toBe(expected);
+  });
+
+  it('keeps the supplied Meet link when the connected account email is unknown', () => {
+    const joinUrl = 'https://meet.google.com/abc-defg-hij?authuser=1';
+    const ev = normalizeGoogleEvent(
+      { id: 'meet', start: `${DATE}T10:00:00Z`, end: `${DATE}T11:00:00Z`, joinUrl },
+      'c1',
+    )!;
+    expect(ev.joinUrl).toBe(joinUrl);
+  });
+
   it('declined event survives normalization but does not count busy', () => {
     const ev = normalizeGoogleEvent(
       { id: 'g2', start: `${DATE}T10:00:00Z`, end: `${DATE}T11:00:00Z`, responseStatus: 'declined' },

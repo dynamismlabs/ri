@@ -3,7 +3,7 @@
 import { HomeLink as Link } from '@/components/home/home-link';
 import { useQuery } from '@tanstack/react-query';
 import { FileCheck2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import { usePrepareHandoff, useResultCapabilities, useSaveHandoff } from '@/hooks/use-results';
 import { workResultsApi } from '@/lib/api/results';
@@ -34,11 +34,21 @@ export function OutputHandoffActions({ event, sessionId }: { event: ChatEventRec
   const resultId = save.data?.resultId ?? handoff?.id ?? prepare.data?.resultId;
   return (
     <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-      {resultId ? <Link href={`/results/${resultId}`} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-primary hover:bg-muted"><FileCheck2 size={12} />View handoff</Link> : <>
-        <Button size="xs" variant="ghost" disabled={save.isPending || prepare.isPending} onClick={() => save.mutate({ requestId: `save-answer:${event.id}`, sourceChatSessionId: sessionId, sourceEventId: event.id, body: event.content!, attachments: event.attachments ?? [] })}>
+      {resultId ? <Button asChild variant="secondary" size="xs" className="inline-flex items-center gap-1"><Link href={`/results/${resultId}`}><FileCheck2 size={12} />View handoff</Link></Button> : <>
+        <Button
+          disabled={save.isPending || prepare.isPending}
+          onClick={() => save.mutate({ requestId: `save-answer:${event.id}`, sourceChatSessionId: sessionId, sourceEventId: event.id, body: event.content!, attachments: event.attachments ?? [] })}
+          variant="ghost"
+          size="xs"
+        >
           {save.isPending && <Loader2 className="animate-spin" />}Save as handoff
         </Button>
-        <Tip label={destination.reason}><Button size="xs" variant="ghost" disabled={prepare.isPending || save.isPending || activePreparation || !destination.available} onClick={() => prepare.mutate({ requestId: retryPreparation ? resultRequestKey('retry-preparation', { sourceEventId: event.id, previousMessageId: prepare.data?.messageId ?? previousPreparation?.event.id }) : `prepare-answer:${event.id}`, sourceChatSessionId: sessionId, sourceEventId: event.id })}>
+        <Tip label={destination.reason}><Button
+          disabled={prepare.isPending || save.isPending || activePreparation || !destination.available}
+          onClick={() => prepare.mutate({ requestId: retryPreparation ? resultRequestKey('retry-preparation', { sourceEventId: event.id, previousMessageId: prepare.data?.messageId ?? previousPreparation?.event.id }) : `prepare-answer:${event.id}`, sourceChatSessionId: sessionId, sourceEventId: event.id })}
+          variant="ghost"
+          size="xs"
+        >
           {(prepare.isPending || activePreparation) && <Loader2 className="animate-spin" />}{retryPreparation ? 'Retry preparation' : activePreparation ? 'Preparing handoff' : 'Prepare handoff'}
         </Button></Tip>
       </>}

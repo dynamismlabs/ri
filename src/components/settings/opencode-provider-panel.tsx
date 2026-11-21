@@ -1,7 +1,13 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
+
 import { apiErrorStatus } from '@/lib/api/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
@@ -12,6 +18,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function OpenCodeProviderPanel() {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const queryClient = useQueryClient();
   const providers = useQuery({
     queryKey: ['opencode-providers'],
@@ -60,10 +68,15 @@ export function OpenCodeProviderPanel() {
           OpenCode provider management is unavailable. Check the installed OpenCode version.
         </p>
       )}
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-        <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search providers" className="h-8 rounded-md pl-8 text-[11px]" />
-      </div>
+      <Field
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        placeholder="Search providers"
+        leading={<Search />}
+        className="relative"
+        aria-label={'Search providers'}
+        size={compactFieldSize}
+      />
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (
           <div key={provider.id} className="rounded-md border border-border/70">
@@ -83,7 +96,11 @@ export function OpenCodeProviderPanel() {
         ))}
       </div>
       {!needle && visibleProviders.length < ordered.length && (
-        <Button size="xs" variant="ghost" onClick={() => setViewAll(true)}>View all providers</Button>
+        <Button
+          onClick={() => setViewAll(true)}
+          variant="ghost"
+          size="xs"
+        >View all providers</Button>
       )}
     </div>
   );
@@ -162,7 +179,12 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
       <div className="flex items-center justify-between border-t border-border/70 px-2.5 py-2">
         <span className="inline-flex items-center gap-1 text-[10.5px] text-emerald-600 dark:text-emerald-400"><CheckCircle2 size={11} /> Ready</span>
         {methods.data?.canDisconnect && (
-          <Button size="xs" variant="ghost" disabled={disconnect.isPending} onClick={() => disconnect.mutate()}>
+          <Button
+            disabled={disconnect.isPending}
+            onClick={() => disconnect.mutate()}
+            variant="ghost"
+            size="xs"
+          >
             <LogOut /> Disconnect
           </Button>
         )}
@@ -175,18 +197,7 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
   return (
     <div className="space-y-2 border-t border-border/70 p-2.5">
       {(methods.data?.methods.length ?? 0) > 1 && (
-        <div data-slot="segmented" data-scroll className="flex flex-wrap gap-1">
-          {methods.data!.methods.map((entry) => (
-            <button data-slot="segmented-option" aria-pressed={entry.id === method.id}
-              key={entry.id}
-              type="button"
-              onClick={() => { setMethodId(entry.id); setInputs({}); setFlow(null); }}
-              className={cn('rounded px-2 py-1 text-[10.5px]', entry.id === method.id ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground')}
-            >
-              {entry.name}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl mode="choice" ariaLabel="Sign-in method" value={method.id} onChange={id => {setMethodId(id);setInputs({});setFlow(null);}} options={methods.data!.methods.map(entry => ({value:entry.id,label:entry.name}))} />
       )}
       {method.type === 'api_key' ? (
         <div className="space-y-2">
@@ -196,8 +207,21 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
           />
           <div className="flex gap-2">
-            <Input type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`} className="h-8 rounded-md text-[11px]" />
-            <Button size="sm" disabled={!apiKey.trim() || setKey.isPending} onClick={() => setKey.mutate()}>
+            <Field
+              type="password"
+              autoComplete="off"
+              value={apiKey}
+              onChange={(event) => setApiKey(event.target.value)}
+              placeholder={`${provider.name} API key`}
+              aria-label={`${provider.name} API key`}
+              purpose="code"
+            />
+            <Button
+              disabled={!apiKey.trim() || setKey.isPending}
+              onClick={() => setKey.mutate()}
+              variant="primary"
+              size="md"
+            >
               <KeyRound /> Save
             </Button>
           </div>
@@ -210,8 +234,18 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
               Open authorization page <ExternalLink size={10} />
             </a>
           )}
-          {flow.completion === 'code' && <Input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Authorization code" className="h-8 rounded-md text-[11px]" />}
-          <Button size="sm" disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending} onClick={() => completeOAuth.mutate()}>
+          {flow.completion === 'code' && <Field
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder="Authorization code"
+            aria-label={'Authorization code'}
+          />}
+          <Button
+            disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending}
+            onClick={() => completeOAuth.mutate()}
+            variant="primary"
+            size="md"
+          >
             {completeOAuth.isPending && <Loader2 className="animate-spin" />} Finish setup
           </Button>
         </div>
@@ -222,7 +256,12 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             inputs={inputs}
             onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
           />
-          <Button size="sm" disabled={beginOAuth.isPending} onClick={() => beginOAuth.mutate()}>
+          <Button
+            disabled={beginOAuth.isPending}
+            onClick={() => beginOAuth.mutate()}
+            variant="primary"
+            size="md"
+          >
             {beginOAuth.isPending && <Loader2 className="animate-spin" />} Connect with {method.name}
           </Button>
         </div>
@@ -244,22 +283,28 @@ function PromptFields({
   return (
     <>
       {prompts.map((prompt) => prompt.type === 'select' ? (
-        <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
-          {prompt.label}
-          <select
-            value={inputs[prompt.id] ?? ''}
-            onChange={(event) => onChange(prompt.id, event.target.value)}
-            className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-[11px] text-foreground"
-          >
-            <option value="">Select</option>
-            {prompt.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-        </label>
+        <NativeSelect
+          value={inputs[prompt.id] ?? ''}
+          onChange={(event) => onChange(prompt.id, event.target.value)}
+          controlClassName="mt-1 w-full"
+          label={prompt.label}
+          key={prompt.id}
+        >
+          <option value="">Select</option>
+          {prompt.options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </NativeSelect>
       ) : (
-        <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
-          {prompt.label}
-          <Input value={inputs[prompt.id] ?? ''} onChange={(event) => onChange(prompt.id, event.target.value)} className="mt-1 h-8 rounded-md text-[11px]" />
-        </label>
+        <Field
+          value={inputs[prompt.id] ?? ''}
+          onChange={(event) => onChange(prompt.id, event.target.value)}
+          controlClassName="mt-1"
+          label={prompt.label}
+          key={prompt.id}
+        />
       ))}
     </>
   );

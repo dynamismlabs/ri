@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
@@ -88,11 +89,9 @@ export function ModelMenuContent({
         label="Search models"
         className="h-auto min-h-0 flex-1 rounded-none bg-transparent [&_[cmdk-input-wrapper]]:shrink-0"
       >
-        <CommandInput
-          placeholder="Search models"
-          aria-label="Search models"
-          className="h-10 text-[12px]"
-        />
+        <Field asChild purpose="embedded">
+          <CommandInput placeholder="Search models" aria-label="Search models" />
+        </Field>
         <ModelMenuList>
           <CommandEmpty className="px-3 py-6 text-center text-[12px] text-muted-foreground">
             No supported models match.
@@ -242,7 +241,7 @@ export function ModelMenuLabel({
 }) {
   return (
     <>
-      <span className="max-w-40 truncate">{model}</span>
+      <span data-model-name className="min-w-0 max-w-40 truncate">{model}</span>
       {effort && <span className="text-muted-foreground/70">{effort}</span>}
       {variant && <span className="text-muted-foreground/70">{variant}</span>}
       {speed && speed !== 'default' && (

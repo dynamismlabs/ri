@@ -1,4 +1,8 @@
 'use client';
+
+import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { EntityDetailHeader, EntityActionsMenu } from '@/components/entities/entity-detail-header';
 
 import { useDocumentAutosave, usePendingDocument } from '@/hooks/use-document-autosave';
@@ -14,9 +18,6 @@ import { useDashboard } from '@/contexts/dashboard-context';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 
 import { PersonalTaskDocument } from './personal-task-document';
-
-
-
 
 import { SharedTaskBody } from '@/components/spaces/shared-task-body';
 import { removeFromMyWork } from '@/components/spaces/my-work';
@@ -48,7 +49,6 @@ import type { Attachment } from '@/db/types';
 const DEFAULT_WIDTH = 1200;
 const MIN_WIDTH = 420;
 const MAX_WIDTH = 1400;
-
 
 interface TaskSlideoutProps {
   taskId: string | null;
@@ -105,9 +105,6 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
   const handleAttachment = useCallback((attachment: Attachment) => {
     pendingAttachmentsRef.current = [...pendingAttachmentsRef.current, attachment];
   }, []);
-
-
-
 
   const handleBodyChange = useCallback(
     (markdown: string) => {
@@ -175,65 +172,89 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
   // clears it.
   const isNewTask = !!task && !task.title?.trim() && !task.body;
 
-
-
   return (
-    <EntitySheet open={isOpen} label="Task" width={width} fullWidth={Boolean(team && full)} contentRef={containerRef} resizing={isResizing} onClose={onClose} onCloseAll={onCloseAll} showCloseButton={false} onOpenAutoFocus={(event) => { event.preventDefault(); if (isNewTask) containerRef.current?.querySelector<HTMLElement>('[data-entity-title]')?.focus(); }}>
+    <SegmentedRoot mode="tabs" value={view} onChange={setView}>
+      <EntitySheet
+        open={isOpen}
+        label="Task"
+        width={width}
+        fullWidth={Boolean(team && full)}
+        contentRef={containerRef}
+        resizing={isResizing}
+        onClose={onClose}
+        onCloseAll={onCloseAll}
+        showCloseButton={false}
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          if (isNewTask) containerRef.current?.querySelector<HTMLElement>('[data-entity-title]')?.focus();
+        }}
+      >
+        {/* Resize handle — desktop only */}
+        <div
+          className={cn(
+            'hidden md:block w-1.5 cursor-col-resize flex-shrink-0 group relative',
+            'hover:bg-primary/20 active:bg-primary/30 transition-colors',
+            isResizing && 'bg-primary/30',
+          )}
+          onPointerDown={handleResizeStart}
+          style={{ touchAction: 'none' }}
+        >
+          <div className="absolute inset-y-0 -left-1 -right-1" />
+        </div>
 
-          {/* Resize handle — desktop only */}
-          <div
-            className={cn(
-              'hidden md:block w-1.5 cursor-col-resize flex-shrink-0 group relative',
-              'hover:bg-primary/20 active:bg-primary/30 transition-colors',
-              isResizing && 'bg-primary/30',
-            )}
-            onPointerDown={handleResizeStart}
-            style={{ touchAction: 'none' }}
-          >
-            <div className="absolute inset-y-0 -left-1 -right-1" />
-          </div>
-
-          {/* Panel content */}
-          <div className="flex-1 flex flex-col bg-background border-l border-border overflow-hidden">
-            {/* Header */}
-            <EntityDetailHeader>
-              <div className="flex items-center gap-1.5 group/nav">
-                <button
-                  onClick={onClose}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
-                  aria-label="Back"
+        {/* Panel content */}
+        <div className="flex-1 flex flex-col bg-background border-l border-border overflow-hidden">
+          {/* Header */}
+          <EntityDetailHeader>
+            <div className="flex items-center gap-1.5 group/nav">
+              <Button
+                onClick={onClose}
+                aria-label="Back"
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1.5"
+              >
+                <ChevronLeft size={16} />
+                <kbd className="hidden group-hover/nav:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
+                  esc
+                </kbd>
+              </Button>
+              {hasHistory && (
+                <Button
+                  onClick={onCloseAll}
+                  aria-label="Close all"
+                  reveal="nav"
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
-                  <ChevronLeft size={16} />
-                  <kbd className="hidden group-hover/nav:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
-                    esc
+                  <X size={14} />
+                  <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
+                    ⇧esc
                   </kbd>
-                </button>
-                {hasHistory && (
-                  <button
-                    onClick={onCloseAll}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-0 group-hover/nav:opacity-100 flex items-center gap-1.5"
-                    aria-label="Close all"
-                  >
-                    <X size={14} />
-                    <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
-                      ⇧esc
-                    </kbd>
-                  </button>
-                )}
-              </div>
+                </Button>
+              )}
+            </div>
 
-              <div className="flex min-w-0 items-center gap-2">
-                {agentFirst && !shared && !team && <EntityViewToggle value={view} onChange={setView} compact={width < 700} />}
-                {taskId && !shared && (team && task ? <TeamEntityHistory kind="task" id={taskId} bodyRevision={task.bodyRevision} /> : <EntityHistoryButton entityType="task" entityId={taskId} />)}
-                {taskId && <ReferencingSessionsButton entityType="task" entityId={taskId} />}
+            <div className="flex min-w-0 items-center gap-2">
+              {agentFirst && !shared && !team && <EntityViewToggle compact={width < 700} />}
+              {taskId &&
+                !shared &&
+                (team && task ? (
+                  <TeamEntityHistory kind="task" id={taskId} bodyRevision={task.bodyRevision} />
+                ) : (
+                  <EntityHistoryButton entityType="task" entityId={taskId} />
+                ))}
+              {taskId && <ReferencingSessionsButton entityType="task" entityId={taskId} />}
+              <Button asChild variant="ghost" size="sm" className="flex items-center gap-1.5">
                 <a
+                  className="group/expand"
                   href={fullPage}
                   onClick={(e) => {
                     if (e.metaKey || e.ctrlKey) return;
                     e.preventDefault();
                     if (taskId) router.push(fullPage);
                   }}
-                  className="group/expand p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
                   aria-label="Open full page"
                 >
                   <kbd className="hidden group-hover/expand:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
@@ -241,39 +262,62 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                   </kbd>
                   <Maximize2 size={14} />
                 </a>
+              </Button>
 
-                {team && task && <><SaveStatus status={sharedBody.status} /><MyWorkControl taskId={task.id} /></>}
-                {task && task.status !== 'done' && task.status !== 'archived' && (
-                  team ? <TeamTaskAgentAction task={task} /> : <StartWithAgentButton task={task} />
-                )}
-                {/* Complete/Reopen only where it is the real action (not for
+              {team && task && (
+                <>
+                  <SaveStatus status={sharedBody.status} />
+                  <MyWorkControl taskId={task.id} />
+                </>
+              )}
+              {task &&
+                task.status !== 'done' &&
+                task.status !== 'archived' &&
+                (team ? <TeamTaskAgentAction task={task} /> : <StartWithAgentButton task={task} />)}
+              {/* Complete/Reopen only where it is the real action (not for
                     Consider or Archived — change those with the status control). */}
-                {task && task.status !== 'consider' && task.status !== 'archived' && (
-                  <button
-                    onClick={handleComplete}
-                    aria-label={isDone ? 'Completed' : 'Complete'}
-                    data-slot="header-action"
-                    data-state={isDone ? 'done' : undefined}
-                    className={cn(
-                      'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                      isDone
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'border border-border text-muted-foreground hover:text-foreground hover:bg-accent',
-                    )}
+              {task && task.status !== 'consider' && task.status !== 'archived' && (
+                <Button
+                  onClick={handleComplete}
+                  aria-label={isDone ? 'Completed' : 'Complete'}
+                  variant="secondary"
+                  size="sm"
+                  pressed={isDone}
+                  className="inline-flex shrink-0 items-center gap-1.5"
+                >
+                  <Check size={12} />
+                  <span className={ENTITY_HEADER_LABEL}>{isDone ? 'Completed' : 'Complete'}</span>
+                </Button>
+              )}
+
+              <EntityActionsMenu
+                onArchive={handleArchive}
+                onDelete={
+                  shared || (team && !home?.capabilities.deletePermanently) ? undefined : handleDelete
+                }
+                deleteLabel={team ? 'Delete for everyone' : 'Delete'}
+                archiveLabel={shared ? 'Archive for the team' : 'Archive'}
+              >
+                {shared && task?.source?.addedAt && task.sourceTeamId && task.sourceTaskId && (
+                  <DropdownMenuItem
+                    onSelect={() =>
+                      void removeFromMyWork(task.sourceTeamId!, task.sourceTaskId!).then(onClose)
+                    }
                   >
-                    <Check size={12} />
-                    <span className={ENTITY_HEADER_LABEL}>{isDone ? 'Completed' : 'Complete'}</span>
-                  </button>
+                    <X size={12} /> Remove from my work
+                  </DropdownMenuItem>
                 )}
-
-                <EntityActionsMenu onArchive={handleArchive} onDelete={shared || team && !home?.capabilities.deletePermanently ? undefined : handleDelete} deleteLabel={team ? "Delete for everyone" : "Delete"} archiveLabel={shared ? 'Archive for the team' : 'Archive'}>
-                    {shared && task?.source?.addedAt && task.sourceTeamId && task.sourceTaskId && <DropdownMenuItem onSelect={() => void removeFromMyWork(task.sourceTeamId!, task.sourceTaskId!).then(onClose)}><X size={12} /> Remove from my work</DropdownMenuItem>}
-                  </EntityActionsMenu>
+              </EntityActionsMenu>
+            </div>
+            {team && (
+              <div className="basis-full">
+                <TeamAudience />
               </div>
-              {team && <div className="basis-full"><TeamAudience /></div>}
-            </EntityDetailHeader>
+            )}
+          </EntityDetailHeader>
 
-            {/* Body + Chat */}
+          {/* Body + Chat */}
+          <SegmentedPanel value={view} asChild>
             {view === 'agent' && task ? (
               <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
                 <EntityAgentView
@@ -285,46 +329,71 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                 />
               </div>
             ) : (
-            <div className="flex-1 flex overflow-hidden relative">
-              {/* Main content */}
-              <div className="flex-1 overflow-y-auto min-w-0 relative">
-                {task && team ? (
-                  <TeamTaskDocument task={task} parentTask={parentTask} openTask={openTask} save={patch => updateTask.mutate({ id: task.id, ...patch })} autosave={autosave} shared={sharedBody} />
-                ) : task && shared ? (
-                  <SharedTaskBody task={task} onOpenTask={openTask} />
-                ) : task ? (
-                  <div className="space-y-0">
-                    <EntityChangeBanner entityType="task" entityId={task.id} />
-                    <PersonalTaskDocument task={task} parentTask={parentTask} openTask={openTask}
-                      save={patch => updateTask.mutate({ id: task.id, ...patch })} autosave={autosave}
-                      bodyEditor={{ content: task.body ?? '', onChange: handleBodyChange, onAttachment: handleAttachment, editable: !aiBusy, placeholder: "Type '/' for commands, @ to link a task or note...", hideFooter: true, foldedHeadings: task.foldedHeadings ?? [], onFoldedHeadingsChange: handleFoldedHeadingsChange }} />
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                    Loading...
-                  </div>
-                )}
-                {aiBusy && (
-                  <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-auto transition-opacity duration-200">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground/80 bg-card/90 border border-border/50 rounded-full px-4 py-2 shadow-md">
-                      <Pencil size={14} className="text-primary/70 animate-pulse" />
-                      <span>AI is editing...</span>
+              <div className="flex-1 flex overflow-hidden relative">
+                {/* Main content */}
+                <div className="flex-1 overflow-y-auto min-w-0 relative">
+                  {task && team ? (
+                    <TeamTaskDocument
+                      task={task}
+                      parentTask={parentTask}
+                      openTask={openTask}
+                      save={(patch) => updateTask.mutate({ id: task.id, ...patch })}
+                      autosave={autosave}
+                      shared={sharedBody}
+                    />
+                  ) : task && shared ? (
+                    <SharedTaskBody task={task} onOpenTask={openTask} />
+                  ) : task ? (
+                    <div className="space-y-0">
+                      <EntityChangeBanner entityType="task" entityId={task.id} />
+                      <PersonalTaskDocument
+                        task={task}
+                        parentTask={parentTask}
+                        openTask={openTask}
+                        save={(patch) => updateTask.mutate({ id: task.id, ...patch })}
+                        autosave={autosave}
+                        bodyEditor={{
+                          content: task.body ?? '',
+                          onChange: handleBodyChange,
+                          onAttachment: handleAttachment,
+                          editable: !aiBusy,
+                          placeholder: "Type '/' for commands, @ to link a task or note...",
+                          hideFooter: true,
+                          foldedHeadings: task.foldedHeadings ?? [],
+                          onFoldedHeadingsChange: handleFoldedHeadingsChange,
+                        }}
+                      />
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                      Loading...
+                    </div>
+                  )}
+                  {aiBusy && (
+                    <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-auto transition-opacity duration-200">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground/80 bg-card/90 border border-border/50 rounded-full px-4 py-2 shadow-md">
+                        <Pencil size={14} className="text-primary/70 animate-pulse" />
+                        <span>AI is editing...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* AI Chat panel / bubble */}
+                {!shared && !team && (
+                  <SlideoutChat
+                    slideoutWidth={width}
+                    collapseThreshold={740}
+                    contextLabel="this task"
+                    chat={chat}
+                    disabled={!task}
+                  />
                 )}
               </div>
-
-              {/* AI Chat panel / bubble */}
-              {!shared && !team && <SlideoutChat
-                slideoutWidth={width}
-                collapseThreshold={740}
-                contextLabel="this task"
-                chat={chat}
-                disabled={!task}
-              />}
-            </div>
             )}
-          </div>
-    </EntitySheet>
+          </SegmentedPanel>
+        </div>
+      </EntitySheet>
+    </SegmentedRoot>
   );
 }

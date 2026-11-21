@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { History } from 'lucide-react';
 import { useEntityVersions, groupVersions, type VersionedEntityType } from '@/hooks/use-entity-versions';
@@ -42,21 +43,17 @@ export function EntityHistoryButton({
   return (
     <>
       <Tip label={aiLatest ? 'Review changes' : 'History'} onlyWhenTextHidden>
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => setOpen(true)}
           aria-label={aiLatest ? 'Review changes' : 'History'}
-          className={cn(
-            'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-[11px] font-medium transition-colors',
-            aiLatest
-              ? 'bg-primary/10 text-primary hover:bg-primary/20'
-              : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-            className,
-          )}
+          variant="ghost"
+          size="xs"
+          className={cn("inline-flex shrink-0 items-center gap-1.5", className)}
         >
           <History size={12} />
           <span className={ENTITY_HEADER_LABEL}>{aiLatest ? 'Review changes' : 'History'}</span>
-        </button>
+        </Button>
       </Tip>
       {open && (
         <EntityDiffModal open={open} onClose={() => setOpen(false)} entityType={entityType} entityId={entityId} expectedBodyRevision={expectedBodyRevision} describeActor={describeActor} confirmRevert={confirmRevert} />

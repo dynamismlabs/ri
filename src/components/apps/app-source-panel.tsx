@@ -1,11 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, FolderGit2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/system/button';
+
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useCatalogApp } from './app-catalog';
@@ -49,31 +50,77 @@ export function AppSourcePanel({ appId, appName, onOpenBuild }: { appId: string;
           {catalogApp && (
             <p className="text-muted-foreground">
               From {APP_NAME}&apos;s catalog, {catalogApp.installedVersion ?? 'unknown version'}.
-              {catalogApp.updateAvailable && <> {catalogApp.version} is available. <button type="button" className="underline underline-offset-2" onClick={() => onOpenBuild(data.id)}>Update</button></>}
+              {catalogApp.updateAvailable && <> {catalogApp.version} is available. <Button
+                type="button"
+                onClick={() => onOpenBuild(data.id)}
+                variant="link"
+                size="sm"
+              >Update</Button></>}
             </p>
           )}
           {data.createdByRi && (
             <div className="flex flex-wrap gap-2">
               {data.changeFolder
-                ? <Button size="xs" variant="outline" onClick={() => onOpenBuild(data.id)}>Continue the change</Button>
-                : <Button size="xs" variant="outline" disabled={change.isPending} onClick={() => change.mutate(data.id)}>Change app</Button>}
+                ? <Button
+                  onClick={() => onOpenBuild(data.id)}
+                  variant="secondary"
+                  size="xs"
+                >Continue the change</Button>
+                : <Button
+                  disabled={change.isPending}
+                  onClick={() => change.mutate(data.id)}
+                  variant="secondary"
+                  size="xs"
+                >Change app</Button>}
               <span className="self-center text-muted-foreground">An agent works on a copy. {APP_NAME} switches over only after the kit&apos;s checks pass.</span>
             </div>
           )}
         </div>
       ) : editing ? (
         <form className="space-y-2" onSubmit={(event) => { event.preventDefault(); record.mutate(); }}>
-          <Input value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Its folder, like /Users/you/apps/bloom" />
-          <Input value={gitUrl} onChange={(e) => setGitUrl(e.target.value)} placeholder="Or its git URL" />
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="How it's built and deployed" />
+          <Field
+            value={folder}
+            onChange={(e) => setFolder(e.target.value)}
+            placeholder="Its folder, like /Users/you/apps/bloom"
+            aria-label={'App folder'}
+          />
+          <Field
+            value={gitUrl}
+            onChange={(e) => setGitUrl(e.target.value)}
+            placeholder="Or its git URL"
+            aria-label={'Git URL'}
+          />
+          <TextArea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="How it's built and deployed"
+            autoSize
+            aria-label={'Build and deploy notes'}
+          />
           <div className="flex gap-2">
-            <Button size="xs" type="submit" disabled={record.isPending || (!folder.trim() && !gitUrl.trim())}>Save</Button>
-            <Button size="xs" type="button" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+            <Button
+              type="submit"
+              disabled={record.isPending || (!folder.trim() && !gitUrl.trim())}
+              variant="primary"
+              size="md"
+            >Save</Button>
+            <Button
+              type="button"
+              onClick={() => setEditing(false)}
+              variant="ghost"
+              size="xs"
+            >Cancel</Button>
           </div>
         </form>
       ) : (
         <p className="text-xs text-muted-foreground">
-          {APP_NAME} didn&apos;t make {appName}. <button type="button" className="underline underline-offset-2" onClick={() => setEditing(true)}>Say where its source is</button> so {APP_NAME} can fix it later.
+          {APP_NAME} didn&apos;t make {appName}. <Button
+            type="button"
+            onClick={() => setEditing(true)}
+            variant="link"
+            size="sm"
+          >Say where its source is</Button> so {APP_NAME} can fix it later.
         </p>
       )}
     </section>

@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { Plug, Settings } from 'lucide-react';
 import { openSettings } from '@/components/settings/settings-store';
 import { connectAccountsAnchor, reconnectLabel, useAccountsNeedingYou } from '@/components/integrations/accounts-needing-you';
@@ -81,16 +83,18 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
         {reconnect && <RailIconButton icon={Plug} label={reconnect} onClick={connectAccounts} badge={<RailDot tone="attention" />} />}
         <RailUpdateRow collapsed />
         <FeedbackRailButton collapsed />
-        <Tip label="Settings">
-          <button data-slot="action-button" data-variant="ghost"
+
+          <IconButton
             type="button"
             onClick={() => openSettings()}
-            aria-label="Settings"
-            className="p-1.5 rounded-md text-muted-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            label="Settings"
+            tooltip="Settings"
+            variant="ghost"
+            size="sm"
           >
             <Settings size={14} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </footer>
     );
   }
@@ -101,22 +105,27 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
       <RailUpdateRow collapsed={false} />
       <FeedbackRailButton collapsed={false} />
       <div className="flex items-stretch gap-1.5">
-      <Tip label="Settings">
-        <button data-slot="action-button"
+
+        <IconButton
           type="button"
           onClick={() => openSettings()}
-          aria-label="Settings"
-          className="flex w-8 flex-shrink-0 items-center justify-center rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:border-muted-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-colors"
+          label="Settings"
+          tooltip="Settings"
+          variant="ghost"
+          size="sm"
+          className="flex flex-shrink-0 items-center justify-center"
         >
           <Settings size={14} />
-        </button>
-      </Tip>
+        </IconButton>
+
       <Tip label={reconnect}>
-        <button data-slot="action-button"
+        <Button
           type="button"
           onClick={connectAccounts}
           aria-label={reconnect ? `Connect accounts, ${needingYou.length} waiting on you` : 'Connect accounts'}
-          className="group min-w-0 flex-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border/60 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-colors"
+          variant="secondary"
+          size="sm"
+          className="group min-w-0 flex-1 flex items-center gap-1.5 justify-start"
         >
           <Plug size={13} className="flex-shrink-0 text-primary" />
           <span className="truncate">Connect accounts</span>
@@ -129,7 +138,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
               ))}
             </span>
           )}
-        </button>
+        </Button>
       </Tip>
       </div>
     </footer>

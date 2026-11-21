@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * Minimal run detail view at /runs/<id>. Covers the failure-banner
  * "view last failed run" link plus a generic landing for CLI URLs. The
@@ -37,12 +39,14 @@ export default function RunDetailPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           onClick={() => router.back()}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+          label="Back to runs"
+          variant="ghost"
+          size="sm"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <div className="flex-1 min-w-0">
           <h1 className="text-base font-semibold truncate">Run {run.id.slice(0, 8)}</h1>
           <p className="text-[11px] text-muted-foreground">
@@ -50,12 +54,9 @@ export default function RunDetailPage() {
           </p>
         </div>
         {run.chatSessionId && (
-          <Link
-            href={`/?session=${run.chatSessionId}`}
-            className="px-3 py-1.5 rounded-md text-sm border border-border bg-card hover:bg-muted"
-          >
+          <Button asChild variant="secondary" size="sm"><Link href={`/?session=${run.chatSessionId}`}>
             Open chat
-          </Link>
+          </Link></Button>
         )}
       </header>
 

@@ -1,8 +1,9 @@
 'use client';
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Loader2, RotateCcw, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tip } from '@/components/ui/tip';
+import { Button } from '@/components/system/button';
+
 import { useElementWidth } from '@/hooks/use-element-width';
 import { launchConnectedApp, LaunchDeclined, type LaunchApproval } from '@/lib/client/mcp-app-launch';
 import { ConnectedView } from './view';
@@ -66,8 +67,19 @@ export function ConnectedCompanion({chatId, children}: {chatId: string; children
       <div className="flex items-center gap-2 border-b border-border px-3 py-2 text-xs">
         {(opening?.tab ?? tab) && <EntrypointIcon icons={(opening?.tab ?? tab)!.icons} size={14}/>}
         <span className="min-w-0 flex-1 truncate">{(opening?.tab ?? tab)?.title ?? 'App beside this chat'}</span>
-        {tab && !opening && <Tip label="Start this tab over"><button aria-label={`Reload ${tab.title}`} onClick={() => void openTab(tab, {fresh: true})} className="rounded p-1 hover:bg-muted"><RotateCcw size={13}/></button></Tip>}
-        <button aria-label="Close app" onClick={close} className="rounded p-1 hover:bg-muted"><X size={14}/></button>
+        {tab && !opening && <IconButton
+          onClick={() => void openTab(tab, {fresh: true})}
+          label={`Reload ${tab.title}`}
+          tooltip="Start this tab over"
+          variant="ghost"
+          size="sm"
+        ><RotateCcw size={13}/></IconButton>}
+        <IconButton
+          onClick={close}
+          label="Close app"
+          variant="ghost"
+          size="sm"
+        ><X size={14}/></IconButton>
       </div>
       {opening && <TabStatus opening={opening} onRetry={() => void openTab(opening.tab)} onClose={close}/>}
       {/* What the pane shows stays mounted, hidden, while a tab opens: declined, or the same tab returned to, it is just as the person left it. */}
@@ -83,11 +95,27 @@ function TabStatus({opening, onRetry, onClose}: {opening: Opening; onRetry: () =
     {error ? <div role="alert" className="space-y-3 text-center">
       <p className="font-medium">{tab.title} could not open</p>
       <p className="whitespace-pre-wrap text-muted-foreground [overflow-wrap:anywhere]">{error}</p>
-      <div className="flex justify-center gap-2"><Button size="xs" variant="outline" onClick={onRetry}>Try again</Button><Button size="xs" variant="ghost" onClick={onClose}>Close</Button></div>
+      <div className="flex justify-center gap-2"><Button
+        onClick={onRetry}
+        variant="secondary"
+        size="xs"
+      >Try again</Button><Button
+        onClick={onClose}
+        variant="ghost"
+        size="xs"
+      >Close</Button></div>
     </div> : approval ? <div role="group" aria-label={`Allow ${tab.title} to open`} className="w-full max-w-sm space-y-3 rounded-xl bg-amber-500/10 p-4">
       <p>Allow {tab.title} to open beside this chat?</p>
       {approval.preview != null && <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(approval.preview, null, 2)}</pre>}
-      <div className="flex gap-2"><Button size="xs" onClick={() => approval.answer(true)}>Allow once</Button><Button size="xs" variant="ghost" onClick={() => approval.answer(false)}>Decline</Button></div>
+      <div className="flex gap-2"><Button
+        onClick={() => approval.answer(true)}
+        variant="primary"
+        size="md"
+      >Allow once</Button><Button
+        onClick={() => approval.answer(false)}
+        variant="ghost"
+        size="xs"
+      >Decline</Button></div>
     </div> : <p role="status" className="flex items-center gap-2 text-muted-foreground"><Loader2 size={14} className="animate-spin"/>Opening {tab.title}…</p>}
   </div>;
 }

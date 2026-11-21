@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { useUpdateUserState } from '@/hooks/use-user-state';
 import { apiErrorText } from '@/lib/api/client';
@@ -79,7 +80,7 @@ export function AboutStep({
 
   return (
     <Card>
-      <textarea
+      <TextArea
         value={text}
         onChange={(e) => setEdited(e.target.value)}
         onKeyDown={(e) => {
@@ -91,7 +92,7 @@ export function AboutStep({
         rows={3}
         placeholder="Building a new app, running a small studio, training for a marathon…"
         aria-label="What you're working on"
-        className="w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+        className="w-full"
       />
       <div className="mt-2 flex items-center justify-end gap-1.5">
         <QuietButton onClick={() => onDone(ABOUT_SKIPPED)}>Skip</QuietButton>

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import {
   Check, Pencil, CheckCheck, ArrowRight, Clock,
@@ -34,10 +36,7 @@ const PLACEMENT_LABELS: Record<string, string> = {
   backlog: 'Backlog',
 };
 
-const ENERGY_COLORS: Record<string, string> = {
-  deep: 'text-orange-500',
-  light: 'text-sky-400',
-};
+
 
 const ENERGY_ICONS: Record<string, typeof Flame> = {
   deep: Flame,
@@ -94,20 +93,23 @@ export function CheckInTriage({ items, onAccept, onSkipItem, onArchive, onEdit, 
         </p>
         <div className="flex items-center gap-2">
           {pending.length >= 3 && (
-            <button
+            <Button
               onClick={onAcceptAll}
-              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded transition-colors"
+              variant="ghost"
+              size="xs"
+              className="flex items-center gap-1"
             >
               <CheckCheck size={10} /> Accept all
-            </button>
+            </Button>
           )}
           {pending.length > 0 && (
-            <button
+            <Button
               onClick={onSkip}
-              className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
+              variant="ghost"
+              size="xs"
             >
               Skip
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -128,12 +130,14 @@ export function CheckInTriage({ items, onAccept, onSkipItem, onArchive, onEdit, 
 
       {pending.length === 0 && (
         <div className="mt-3 flex justify-end">
-          <button
+          <Button
             onClick={onDone}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all"
+            variant="primary"
+            size="xs"
+            className="flex items-center gap-1.5"
           >
             Show my plan <ArrowRight size={10} />
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -224,44 +228,44 @@ function TriageCard({
             {/* Energy pill — cycleable (only for tasks) */}
             {showQuickActions && (
               <Tip label={`Energy: ${energy ?? 'unset'} (click to cycle)`}>
-                <button
+                <Button
                   onClick={cycleEnergy}
-                  className={cn(
-                    'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
-                    energy ? ENERGY_COLORS[energy] : 'text-muted-foreground/40',
-                  )}
+                  variant="ghost"
+                  size="xs"
+                  tone={energy === "light" ? "energy-light" : energy === "deep" ? "energy-deep" : "neutral"}
                 >
                   {EnergyIcon && <EnergyIcon size={8} />}
                   {energy ?? '~'}
-                </button>
+                </Button>
               </Tip>
             )}
 
             {/* Effort pill — cycleable (only for tasks) */}
             {showQuickActions && (
               <Tip label={`Effort: ${effort ?? 'unset'} (click to cycle)`}>
-                <button
+                <Button
                   onClick={cycleEffort}
-                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[8.5px] font-bold text-muted-foreground uppercase tracking-wider transition-colors hover:bg-muted"
+                  variant="secondary"
+                  size="xs"
+                  className="inline-flex items-center"
                 >
                   {effort ? (EFFORT_LABELS[effort] ?? effort) : '~'}
-                </button>
+                </Button>
               </Tip>
             )}
 
             {/* Placement zone pill — cycleable (only for tasks) */}
             {showQuickActions && (
               <Tip label={`Placement: ${placement ?? 'unset'} (click to cycle)`}>
-                <button
+                <Button
                   onClick={cyclePlacement}
-                  className={cn(
-                    'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted',
-                    placement ? 'text-foreground' : 'text-muted-foreground/40',
-                  )}
+                  variant="secondary"
+                  size="xs"
+                  className="inline-flex items-center gap-0.5"
                 >
                   <MapPin size={8} />
                   {placement ? PLACEMENT_LABELS[placement] : '~'}
-                </button>
+                </Button>
               </Tip>
             )}
 
@@ -275,42 +279,54 @@ function TriageCard({
         {/* Accept / Edit / Skip / Archive — always visible */}
         {!item.resolved && (
           <div className="flex items-center gap-0.5 flex-shrink-0">
-            <Tip label="Accept" side="bottom">
-              <button
-                aria-label="Accept"
+
+              <IconButton
                 onClick={onAccept}
-                className="p-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors"
+                label="Accept"
+                tooltip="Accept"
+                tipSide="bottom"
+                variant="ghost"
+                size="xs"
               >
                 <Check size={12} />
-              </button>
-            </Tip>
-            <Tip label="Edit" side="bottom">
-              <button
-                aria-label="Edit"
+              </IconButton>
+
+
+              <IconButton
                 onClick={onEdit}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                label="Edit"
+                tooltip="Edit"
+                tipSide="bottom"
+                variant="ghost"
+                size="xs"
               >
                 <Pencil size={11} />
-              </button>
-            </Tip>
-            <Tip label="Skip and handle later" side="bottom">
-              <button
-                aria-label="Skip and handle later"
+              </IconButton>
+
+
+              <IconButton
                 onClick={onSkipItem}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                label="Skip and handle later"
+                tooltip="Skip and handle later"
+                tipSide="bottom"
+                variant="ghost"
+                size="xs"
               >
                 <SkipForward size={11} />
-              </button>
-            </Tip>
-            <Tip label="Archive" side="bottom">
-              <button
-                aria-label="Archive"
+              </IconButton>
+
+
+              <IconButton
                 onClick={onArchive}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-muted-foreground/80 hover:bg-muted transition-colors"
+                label="Archive"
+                tooltip="Archive"
+                tipSide="bottom"
+                variant="ghost"
+                size="xs"
               >
                 <Archive size={11} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </div>
         )}
 
@@ -323,12 +339,14 @@ function TriageCard({
 
       {/* Rationale toggle */}
       {!item.resolved && item.recommendation.rationale && (
-        <button
+        <Button
           onClick={() => setShowRationale(!showRationale)}
-          className="text-[9px] text-muted-foreground/60 hover:text-muted-foreground mt-1 ml-0.5 transition-colors"
+          variant="ghost"
+          size="xs"
+          className="mt-1 ml-0.5"
         >
           {showRationale ? 'Hide reasoning' : 'Why?'}
-        </button>
+        </Button>
       )}
 
       {showRationale && item.recommendation.rationale && (

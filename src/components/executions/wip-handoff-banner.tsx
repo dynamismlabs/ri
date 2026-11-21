@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useApplyWip, useSessionWip } from '@/hooks/use-execution';
 import { apiErrorText } from '@/lib/api/client';
 import type { WipApplyResult } from '@/lib/api/sessions';
@@ -81,17 +83,19 @@ export function WipHandoffBanner({ sessionId, worktreeReady }: WipHandoffBannerP
             label="Copy"
             hint="leave a copy in source"
           />
-          <Tip label="Dismiss">
-            <button
+
+            <IconButton
               type="button"
               disabled={isPending}
               onClick={() => setDismissed(true)}
-              className="p-1 rounded hover:bg-foreground/5 text-muted-foreground hover:text-foreground disabled:opacity-50 transition-colors"
-              aria-label="Dismiss"
+              label="Dismiss"
+              tooltip="Dismiss"
+              variant="ghost"
+              size="sm"
             >
               <X size={12} />
-            </button>
-          </Tip>
+            </IconButton>
+
         </div>
       </div>
       {apply.isError && (
@@ -121,19 +125,16 @@ function ActionButton(props: {
   const { primary, disabled, onClick, icon, label, hint } = props;
   return (
     <Tip label={hint}>
-      <button data-slot="action-button"
+      <Button
         type="button"
         disabled={disabled}
         onClick={onClick}
-        className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-colors disabled:opacity-50 ${
-        primary
-          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-          : 'text-foreground hover:bg-foreground/5 border border-border'
-      }`}
+        variant={primary ? "primary" : "secondary"}
+        size="sm"
       >
         {icon}
         {label}
-      </button>
+      </Button>
     </Tip>
   );
 }
@@ -164,16 +165,18 @@ function ConflictNotice({
             )}
           </p>
         </div>
-        <Tip label="Dismiss">
-          <button
+
+          <IconButton
             type="button"
             onClick={onDismiss}
-            className="p-1 rounded hover:bg-foreground/5 text-muted-foreground hover:text-foreground transition-colors"
-            aria-label="Dismiss"
+            label="Dismiss"
+            tooltip="Dismiss"
+            variant="ghost"
+            size="sm"
           >
             <X size={12} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </div>
     </div>
   );

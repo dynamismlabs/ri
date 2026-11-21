@@ -1,5 +1,9 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
+import { SelectField } from '@/components/system/select-field';
+import { Field } from '@/components/system/field';
 
+import { IconButton } from '@/components/system/icon-button';
 import { trpcClient } from '@/lib/trpc/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { rpcQuery } from '@/lib/trpc/request-options';
@@ -22,9 +26,9 @@ import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { setSettingsSection } from '@/components/settings/settings-store';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/system/button';
+
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import type { NotificationChannelRecord } from '@/db/types';
 import { desktopNeedsSignedBuild, isDesktopNotificationChannel, type DesktopNotificationAction } from '@/lib/notifications/desktop-contract';
 import { EVENT_CATALOG } from '@/lib/notifications/events';
@@ -491,9 +495,10 @@ export function NotificationsSection() {
                   First connect a Telegram bot in Plugins, then come back here to pick a chat.
                 </p>
                 <Button
-                  variant="outline"
-                  className="w-full justify-center text-xs font-semibold"
                   onClick={() => setSettingsSection('plugins')}
+                  variant="secondary"
+                  size="sm"
+                  className="w-full justify-center"
                 >
                   Go to Plugins
                 </Button>
@@ -501,13 +506,10 @@ export function NotificationsSection() {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Bot connection
-                  </label>
                   <Select value={newConnId} onValueChange={setNewConnId}>
-                    <SelectTrigger className="h-9 w-full rounded-4xl border-input bg-input/30 text-xs">
+                    <SelectField className="w-full" aria-label={'Label'}>
                       <SelectValue placeholder="Select a connected bot..." />
-                    </SelectTrigger>
+                    </SelectField>
                     <SelectContent className="rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl">
                       {telegramConns.map((c) => (
                         <SelectItem key={c.id} value={c.id} className="text-xs">
@@ -523,19 +525,13 @@ export function NotificationsSection() {
                   <div className="space-y-2">
                     {botUsername ? (
                       <>
-                        <a data-slot="action-button" data-variant="primary"
-                          href={`https://t.me/${botUsername}?start=${linkToken}`}
+                        <Button asChild variant="primary" size="md"><a href={`https://t.me/${botUsername}?start=${linkToken}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={startLinking}
-                          className={cn(
-                            'flex w-full items-center justify-center gap-1.5 rounded-4xl bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90',
-                            linking ? 'pointer-events-none opacity-70' : '',
-                          )}
-                        >
+                          onClick={startLinking}>
                           {linking ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                           {linking ? 'Waiting for Telegram…' : 'Link with Telegram'}
-                        </a>
+                        </a></Button>
                         <p className="text-[10px] leading-normal text-muted-foreground">
                           Opens a chat with <span className="font-medium">@{botUsername}</span>. Tap{' '}
                           <span className="font-medium">Start</span> and this channel links itself. No chat id needed.
@@ -550,13 +546,14 @@ export function NotificationsSection() {
                 {/* Fallback: manual */}
                 {newConnId && (
                   <>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setShowManual((v) => !v)}
-                      className="text-[10px] font-semibold text-muted-foreground hover:text-foreground"
+                      variant="ghost"
+                      size="sm"
                     >
                       {showManual ? '− Hide manual entry' : '+ Enter a chat id manually'}
-                    </button>
+                    </Button>
 
                     {showManual && (
                       <div className="space-y-4 border-t border-border/40 pt-4">
@@ -565,61 +562,61 @@ export function NotificationsSection() {
                             <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                               Chat ID
                             </label>
-                            <button
+                            <Button
                               type="button"
                               onClick={discoverChats}
                               disabled={busy || !newConnId}
-                              className="text-[10px] font-semibold text-primary hover:underline disabled:opacity-40"
+                              variant="link"
+                              size="sm"
                             >
                               Discover chats
-                            </button>
+                            </Button>
                           </div>
-                          <Input
+                          <Field
                             value={newChatId}
                             onChange={(e) => setNewChatId(e.target.value)}
                             placeholder="e.g. -100123456789 or 987654321"
-                            className="rounded-4xl font-mono text-xs"
+                            purpose="code"
+                            aria-label={'Chat ID'}
                           />
                           {discoveredChats.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
                               {discoveredChats.map((ch) => (
-                                <button data-slot="action-button" aria-pressed={newChatId === ch.chatId}
+                                <Button
+                                  aria-pressed={newChatId === ch.chatId}
                                   type="button"
                                   key={ch.chatId}
                                   onClick={() => {
                                     setNewChatId(ch.chatId);
                                     if (!newLabel.trim()) setNewLabel(ch.name);
                                   }}
-                                  className={cn(
-                                    'rounded-full border px-2.5 py-1 text-[11px] transition-colors',
-                                    newChatId === ch.chatId
-                                      ? 'border-primary bg-primary/10 text-foreground'
-                                      : 'border-border bg-muted/30 text-muted-foreground hover:bg-muted/60',
-                                  )}
+                                  variant="secondary"
+                                  size="sm"
                                 >
                                   {ch.name} <span className="font-mono opacity-60">({ch.chatId})</span>
-                                </button>
+                                </Button>
                               ))}
                             </div>
                           )}
                         </div>
 
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                            Label <span className="opacity-60">(optional)</span>
-                          </label>
-                          <Input
-                            value={newLabel}
-                            onChange={(e) => setNewLabel(e.target.value)}
-                            placeholder="e.g. My phone"
-                            className="rounded-4xl text-xs"
-                          />
-                        </div>
+                        <Field
+                          value={newLabel}
+                          onChange={(e) => setNewLabel(e.target.value)}
+                          placeholder="e.g. My phone"
+                          label={
+                            <>
+                              Label <span className="opacity-60">(optional)</span>
+                            </>
+                          }
+                        />
 
                         <Button
-                          className="w-full justify-center text-xs font-semibold"
                           onClick={addTelegram}
                           disabled={busy || !newConnId || !newChatId.trim()}
+                          variant="primary"
+                          size="md"
+                          className="w-full justify-center"
                         >
                           <Plus size={14} /> Add Telegram channel
                         </Button>
@@ -669,39 +666,36 @@ export function NotificationsSection() {
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       <Button
-                        variant="outline"
-                        size="xs"
                         onClick={() => sendTest(c.id)}
                         disabled={busy || testing === c.id || (isDesktop && (c.id !== desktopStatus?.channelId || !c.enabled))}
-                        className="text-xs"
+                        variant="secondary"
+                        size="xs"
                       >
                         {testing === c.id ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
                         Test
                       </Button>
                       <Button
-                        variant={c.enabled ? 'outline' : 'secondary'}
-                        size="xs"
                         onClick={() => toggleEnabled(c)}
                         disabled={busy || (isDesktop && c.id !== desktopStatus?.channelId && !c.enabled)}
-                        className={cn(
-                          'text-xs',
-                          c.enabled &&
-                            'border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 dark:border-emerald-400/20 dark:text-emerald-400',
-                        )}
+                        variant="secondary"
+                        size="xs"
+                        tone={c.enabled ? "success" : "neutral"}
+                        pressed={c.enabled}
                       >
                         {c.enabled ? 'On' : 'Off'}
                       </Button>
-                      <Tip label="Remove channel and its delivery history">
-                        <Button
-                          variant="destructive"
-                          size="icon-xs"
+
+                        <IconButton
                           onClick={() => removeChannel(c.id)}
                           disabled={busy}
-                          aria-label={`Remove ${channelLabel(c)} and its delivery history`}
+                          label={`Remove ${channelLabel(c)} and its delivery history`}
+                          tooltip="Remove channel and its delivery history"
+                          variant="ghost" tone="danger"
+                          size="xs"
                         >
                           <Trash2 size={12} />
-                        </Button>
-                      </Tip>
+                        </IconButton>
+
                     </div>
                   </div>
 
@@ -723,7 +717,7 @@ export function NotificationsSection() {
                     <span className="w-10 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Name
                     </span>
-                    <Input
+                    <Field
                       defaultValue={c.label ?? ''}
                       placeholder={isWebPush ? 'e.g. My browsers' : 'e.g. My phone'}
                       disabled={busy}
@@ -731,7 +725,8 @@ export function NotificationsSection() {
                         const v = e.target.value.trim();
                         if (v !== (c.label ?? '')) renameChannel(c.id, v);
                       }}
-                      className="h-7 max-w-[220px] rounded-lg text-xs"
+                      className="max-w-[220px]"
+                      aria-label={'Label'}
                     />
                   </div>
                 </div>
@@ -785,13 +780,13 @@ export function NotificationsSection() {
                     </td>
                     {channels.map((c) => (
                       <td key={c.id} className={cn('p-2 text-center align-middle', !c.enabled && 'opacity-50')}>
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={(c.events ?? []).includes(e.type)}
                           disabled={busy}
-                          onChange={() => toggleEvent(c, e.type)}
+                          onCheckedChange={() => toggleEvent(c, e.type)}
                           aria-label={`${e.label} to ${channelLabel(c)}`}
-                          className="size-4 cursor-pointer rounded border-border accent-primary"
+                          className="mx-auto"
+
                         />
                       </td>
                     ))}
@@ -843,12 +838,11 @@ export function NotificationsSection() {
                               isChecked ? 'border-primary/20 bg-primary/[0.01]' : '',
                             )}
                           >
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               disabled={busy}
                               checked={isChecked}
-                              onChange={(e) => setDigestChannels(d.id, c.id, e.target.checked)}
-                              className="size-3.5 cursor-pointer rounded border-border accent-primary"
+                              onCheckedChange={(checked) => setDigestChannels(d.id, c.id, (checked === true))}
+
                             />
                             <span className="truncate font-medium text-foreground/90">{channelLabel(c)}</span>
                           </label>
@@ -889,9 +883,10 @@ export function NotificationsSection() {
             )}
           </div>
           <Button
-            variant="outline"
-            className="w-full justify-center text-xs font-semibold"
             onClick={() => setSettingsSection('devices')}
+            variant="secondary"
+            size="sm"
+            className="w-full justify-center"
           >
             <Link2 size={13} />
             {baseUrls.tunnel ? 'Change remote URL in Devices' : 'Set remote URL in Devices'}

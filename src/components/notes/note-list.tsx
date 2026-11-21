@@ -1,5 +1,8 @@
 "use client";
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { ChipButton } from '@/components/system/chip-button';
 import { useState, useCallback, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { FileText, Filter, ArrowDownAz, Gavel, Loader2, Plus } from 'lucide-react';
@@ -18,11 +21,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {
   ListToolbar,
-  SegmentedTabs,
   ToolbarActiveDot,
   ToolbarSearchButton,
-  toolbarButtonClass,
-} from '@/components/shared/list-toolbar';
+  } from '@/components/shared/list-toolbar';
 import { Tip } from '@/components/ui/tip';
 import { NoteRow } from './note-row';
 import type { NoteStatus } from '@/db/types';
@@ -101,7 +102,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
       {/* Toolbar */}
       <ListToolbar>
         {/* Status — primary segmented filter */}
-        <SegmentedTabs<NoteStatus | 'all'>
+        <SegmentedControl<NoteStatus | 'all'> mode="choice"
           ariaLabel="Note status"
           value={statusFilter}
           onChange={setStatusFilter}
@@ -110,16 +111,13 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
 
         {/* Filter — Decisions + Area */}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={filterActive ? `Filter, active: ${filterSummary}` : 'Filter notes'}
-            className={toolbarButtonClass({ active: filterActive })}
-          >
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={filterActive ? `Filter, active: ${filterSummary}` : 'Filter notes'} pressed={filterActive}>
             <Filter className="size-3.5 shrink-0" />
             <span className="hidden @sm/lt:inline max-w-[120px] truncate">
               {filterActive ? filterSummary : 'Filter'}
             </span>
             {filterActive && <ToolbarActiveDot />}
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
             {/* Notes marked as decisions */}
             <DropdownMenuCheckboxItem
@@ -144,13 +142,10 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
 
         {/* Sort — icon plus the active sort's name when there's room */}
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={`Sort by ${NOTE_SORT_LABELS[sortBy]}`}
-            className={toolbarButtonClass()}
-          >
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={`Sort by ${NOTE_SORT_LABELS[sortBy]}`}>
             <ArrowDownAz className="size-3.5 shrink-0" />
             <span className="hidden @md/lt:inline">{NOTE_SORT_LABELS[sortBy]}</span>
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-40">
             <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as NoteSortOption)}>
@@ -163,16 +158,17 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
 
         {/* Folds to its icon before the status tabs have to scroll. */}
         <Tip label={newLabel} onlyWhenTextHidden>
-          <button
+          <ChipButton
             type="button"
             onClick={handleNew}
             disabled={createNote.isPending}
             aria-label={newLabel}
-            className={toolbarButtonClass()}
+            variant="ghost"
+            size="compact"
           >
             {decisionsOnly ? <Gavel className="size-3.5 shrink-0" /> : <Plus className="size-3.5 shrink-0" />}
             <span className="hidden @2xl/lt:inline">{newLabel}</span>
-          </button>
+          </ChipButton>
         </Tip>
 
         <ToolbarSearchButton

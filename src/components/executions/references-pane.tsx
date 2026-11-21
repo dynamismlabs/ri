@@ -1,5 +1,10 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { tasksApi } from '@/lib/api/tasks';
 import { notesApi } from '@/lib/api/notes';
 
@@ -94,6 +99,8 @@ export function ReferencesPane({
   autoFocus = false,
   onInsertChip,
 }: ReferencesPaneProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [search, setSearch] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -160,33 +167,28 @@ export function ReferencesPane({
 
       {/* ─── Search ───────────────────────────────── */}
       <div className="flex-shrink-0 px-3 py-2 border-b border-border">
-        <div className="relative">
-          <Search
-            size={12}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-          />
-          <input
-            ref={searchRef}
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search all tasks &amp; notes…"
-            aria-label="Search all tasks and notes"
-            className={cn(
-              'w-full pl-7 pr-7 py-1.5 rounded-md text-[12px]',
-              'bg-muted/40 border border-transparent',
-              'focus:outline-none focus:border-primary/40 focus:bg-background',
-              'placeholder:text-muted-foreground/50',
-            )}
-          />
-          {searching && data && (
-            <Loader2
-              size={12}
-              aria-label="Searching"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground/60"
-            />
-          )}
-        </div>
+        <Field
+          ref={searchRef}
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search all tasks &amp; notes…"
+          aria-label="Search all tasks and notes"
+          className={cn('w-full', 'relative')}
+          leading={<Search />}
+          trailing={
+            <>
+              {searching && data && (
+                <Loader2
+                  size={12}
+                  aria-label="Searching"
+                  className="animate-spin text-muted-foreground/60"
+                />
+              )}
+            </>
+          }
+          size={compactFieldSize}
+        />
       </div>
 
       {/* ─── Body ─────────────────────────────────── */}
@@ -199,9 +201,14 @@ export function ReferencesPane({
           {isError && !data && (
             <div className="px-3 py-4 text-center text-[11px] text-muted-foreground/70">
               Couldn&rsquo;t load tasks and notes.{' '}
-              <button type="button" onClick={() => void refetch()} className="underline hover:text-foreground">
+              <Button
+                type="button"
+                onClick={() => void refetch()}
+                variant="link"
+                size="sm"
+              >
                 Retry
-              </button>
+              </Button>
             </div>
           )}
 
@@ -240,9 +247,14 @@ export function ReferencesPane({
         {isFetchNextPageError && !isFetchingNextPage && (
           <div className="px-3 py-2 text-[11px] text-muted-foreground/70">
             Couldn&rsquo;t load more.{' '}
-            <button type="button" onClick={() => void fetchNextPage()} className="underline hover:text-foreground">
+            <Button
+              type="button"
+              onClick={() => void fetchNextPage()}
+              variant="link"
+              size="sm"
+            >
               Retry
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -354,18 +366,20 @@ function ReferenceListRow({
         style={depth > 0 ? { paddingLeft: `${0.5 + depth * 1}rem` } : undefined}
       >
         {hasSubtasks ? (
-          <button
+          <IconButton
             type="button"
             onClick={handleToggleSubtasks}
-            className="shrink-0 p-0.5 rounded text-muted-foreground/70 hover:text-foreground hover:bg-muted/60 transition-colors"
-            aria-label={expanded ? 'Collapse subtasks' : 'Expand subtasks'}
             aria-expanded={expanded}
+            label={expanded ? 'Collapse subtasks' : 'Expand subtasks'}
+            variant="ghost"
+            size="sm"
+            className="shrink-0"
           >
             <ChevronRight
               size={11}
               className={cn('transition-transform', expanded && 'rotate-90')}
             />
-          </button>
+          </IconButton>
         ) : (
           <span className="w-[15px] shrink-0" />
         )}
@@ -379,20 +393,17 @@ function ReferenceListRow({
           </span>
         )}
         <Tip label="Insert into the composer">
-          <button
+          <Button
             type="button"
             onClick={handleInclude}
-            className={cn(
-              'shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded',
-              'text-[10.5px] font-medium',
-              'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-              'transition-colors',
-            )}
             aria-label={`Include ${row.kind} in chat`}
+            variant="secondary"
+            size="sm"
+            className="shrink-0 inline-flex items-center gap-0.5"
           >
             <Plus size={10} />
             Include
-          </button>
+          </Button>
         </Tip>
       </div>
       {expanded && row.kind === 'task' && (
@@ -504,22 +515,26 @@ function CreateRow({
   if (mode === 'idle') {
     return (
       <div className="flex items-center gap-1">
-        <button
+        <Button
           type="button"
           onClick={() => setMode('task')}
-          className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1"
         >
           <Plus size={11} />
           New task
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={() => setMode('note')}
-          className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1"
         >
           <Plus size={11} />
           New note
-        </button>
+        </Button>
         <span className="ml-auto text-[10px] text-muted-foreground/50">
           {workspaceId ? 'Scoped to this agent' : 'No agent'}
         </span>
@@ -534,7 +549,7 @@ function CreateRow({
       <span className="text-[11px] font-semibold text-muted-foreground capitalize">
         {mode}:
       </span>
-      <input
+      <Field
         autoFocus
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -550,26 +565,30 @@ function CreateRow({
           }
         }}
         placeholder={placeholder}
-        className="flex-1 min-w-0 px-2 py-1 text-[11.5px] bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary"
+        className="flex-1 min-w-0"
+        aria-label={mode === 'task' ? 'Task title' : 'Note title'}
       />
-      <button
+      <Button
         type="button"
         onClick={() => title.trim() && createMutation.mutate({ kind: mode, title: title.trim() })}
         disabled={!title.trim() || createMutation.isPending}
-        className="px-2 py-1 text-[11px] font-medium bg-primary text-primary-foreground rounded hover:opacity-90 disabled:opacity-50 transition-colors"
+        variant="primary"
+        size="md"
       >
         {createMutation.isPending ? <Loader2 size={11} className="animate-spin" /> : 'Create'}
-      </button>
-      <button
+      </Button>
+      <IconButton
         type="button"
         onClick={() => {
           setMode('idle');
           setTitle('');
         }}
-        className="p-1 rounded-md text-muted-foreground hover:text-foreground"
+        label="Cancel reference"
+        variant="ghost"
+        size="xs"
       >
         <X size={11} />
-      </button>
+      </IconButton>
     </div>
   );
 }

@@ -1,8 +1,11 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { Field } from '@/components/system/field';
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { ChevronRight, File as FileIcon, Folder, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 interface TreeInputRowProps {
@@ -41,6 +44,8 @@ export function TreeInputRow({
   onSubmit,
   onCancel,
 }: TreeInputRowProps) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [value, setValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -80,7 +85,7 @@ export function TreeInputRow({
     >
       <ChevronRight size={12} className="shrink-0 text-transparent" />
       <Icon size={13} className="shrink-0 text-muted-foreground/60" />
-      <input
+      <Field
         ref={inputRef}
         type="text"
         value={value}
@@ -94,12 +99,10 @@ export function TreeInputRow({
         disabled={isBusy}
         spellCheck={false}
         autoComplete="off"
-        className={cn(
-          'flex-1 min-w-0 rounded-sm bg-background border border-border/80 px-1 py-0.5 text-[12px] text-foreground outline-none focus:border-primary',
-          errorMessage && 'border-destructive focus:border-destructive',
-        )}
+        className="flex-1 min-w-0"
         placeholder={kind === 'dir' ? 'folder name' : 'file name'}
         aria-label={kind === 'dir' ? 'Folder name' : 'File name'}
+        size={compactFieldSize}
       />
       {isBusy && (
         <Loader2 size={11} className="shrink-0 animate-spin text-muted-foreground" />

@@ -21,7 +21,7 @@ export function RailUpdateRow({ collapsed }: { collapsed: boolean }) {
   const detail = data ? railUpdateNotice({ canUseUpdates: data.canUseUpdates, update: 'update' in data ? data.update : undefined }) : null;
   if (!detail) return null;
   const open = () => openSettings('updates');
-  if (collapsed) return <RailIconButton icon={CircleArrowUp} label={`Update ready. ${detail}`} onClick={open} className="text-primary" />;
+  if (collapsed) return <RailIconButton icon={CircleArrowUp} label={`Update ready. ${detail}`} onClick={open} />;
   return (
     <Tip label={detail} onlyWhenTextHidden>
       <button

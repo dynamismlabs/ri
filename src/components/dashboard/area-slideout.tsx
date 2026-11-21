@@ -1,5 +1,9 @@
 'use client'
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useRef, useState } from 'react'
 import { Dialog } from 'radix-ui'
 import {
@@ -77,7 +81,6 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
       setDescValue(areaFields.description ?? '')
     }
   }
-
 
   // Drag to resize
   const handleResizeStart = useCallback(
@@ -219,36 +222,45 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
             {/* Header */}
             <div className="flex items-center justify-between px-4 h-11 flex-shrink-0 border-b border-border">
               <div className="flex items-center gap-1.5 group/nav">
-                <button data-slot="action-button" data-variant="ghost"
+                <Button
                   onClick={onClose}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
                   aria-label="Back"
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <ChevronLeft size={16} />
                   <kbd className="hidden group-hover/nav:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                     esc
                   </kbd>
-                </button>
+                </Button>
                 {hasHistory && (
-                  <button data-slot="action-button" data-variant="ghost"
+                  <Button
                     onClick={onCloseAll}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-0 group-hover/nav:opacity-100 flex items-center gap-1.5"
                     aria-label="Close all"
+                  reveal="nav"
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1.5"
                   >
                     <X size={14} />
                     <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                       ⇧esc
                     </kbd>
-                  </button>
+                  </Button>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button data-slot="action-button" data-variant="ghost" className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                    <IconButton
+                      label="More area actions"
+                      variant="ghost"
+                      size="xs"
+                    >
                       <MoreHorizontal size={16} />
-                    </button>
+                    </IconButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-44">
                     {isArchived ? (
@@ -276,7 +288,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                         Area
                       </span>
                       <span className="text-muted-foreground/30">·</span>
-                      <button data-slot="action-button" data-tone="status"
+                      <Button
                         onClick={() => {
                           if (!areaId || !area) return
                           const cycle = ['active', 'inactive'] as const
@@ -284,17 +296,12 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           const next = cycle[(idx + 1) % cycle.length]
                           updateArea.mutate({ id: areaId, status: next })
                         }}
-                        className={cn(
-                          'text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md cursor-pointer transition-colors',
-                          area?.status === 'active'
-                            ? 'text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20'
-                            : area?.status === 'inactive'
-                              ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
-                              : 'text-muted-foreground bg-muted hover:bg-muted/80'
-                        )}
+                        variant="ghost"
+                        size="sm"
+                        tone={area?.status === "active" ? "success" : area?.status === "inactive" ? "warning" : "neutral"}
                       >
                         {area?.status}
-                      </button>
+                      </Button>
                     </div>
                     <div className="flex items-center gap-3">
                       {(() => {
@@ -314,20 +321,24 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                         return null
                       })()}
 
-                      <input
+                      <Field
                         value={nameValue}
                         onChange={(e) => saveName(e.target.value)}
-                        className="flex-1 text-xl font-bold bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                        className="flex-1"
                         placeholder="Area name"
+                        purpose="embedded"
+                        aria-label={'Area name'}
                       />
                     </div>
 
-                    <textarea
+                    <TextArea
                       value={descValue}
                       onChange={(e) => saveDescription(e.target.value)}
                       placeholder="What does this area cover?"
-                      className="w-full text-sm bg-transparent border-none outline-none resize-none text-foreground/70 placeholder:text-muted-foreground/30 leading-relaxed"
+                      className="w-full"
                       rows={2}
+                      purpose="embedded"
+                      aria-label={'Area description'}
                     />
                   </div>
 
@@ -389,18 +400,26 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       {addingTask ? (
                         <div className="flex items-center gap-2.5 px-3 py-1.5">
                           <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full border border-dashed border-muted-foreground/30" />
-                          <input
+                          <Field
                             ref={taskInputRef}
                             autoFocus
                             value={newTaskTitle}
                             onChange={(e) => setNewTaskTitle(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddTask()
-                              if (e.key === 'Escape') { setAddingTask(false); setNewTaskTitle('') }
+                              if (e.key === 'Enter') handleAddTask();
+                              if (e.key === 'Escape') {
+                                setAddingTask(false);
+                                setNewTaskTitle('');
+                              }
                             }}
-                            onBlur={() => { setAddingTask(false); setNewTaskTitle('') }}
+                            onBlur={() => {
+                              setAddingTask(false);
+                              setNewTaskTitle('');
+                            }}
                             placeholder="Task title..."
-                            className="flex-1 text-[12px] bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                            className="flex-1"
+                            purpose="embedded"
+                            aria-label={'Task title'}
                           />
                         </div>
                       ) : (
@@ -484,18 +503,26 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       {addingNote ? (
                         <div className="flex items-center gap-2.5 px-3 py-1.5">
                           <FileText size={13} className="text-muted-foreground/20 flex-shrink-0" />
-                          <input
+                          <Field
                             ref={noteInputRef}
                             autoFocus
                             value={newNoteTitle}
                             onChange={(e) => setNewNoteTitle(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddNote()
-                              if (e.key === 'Escape') { setAddingNote(false); setNewNoteTitle('') }
+                              if (e.key === 'Enter') handleAddNote();
+                              if (e.key === 'Escape') {
+                                setAddingNote(false);
+                                setNewNoteTitle('');
+                              }
                             }}
-                            onBlur={() => { setAddingNote(false); setNewNoteTitle('') }}
+                            onBlur={() => {
+                              setAddingNote(false);
+                              setNewNoteTitle('');
+                            }}
                             placeholder="Note title..."
-                            className="flex-1 text-[12px] bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                            className="flex-1"
+                            purpose="embedded"
+                            aria-label={'Note title'}
                           />
                         </div>
                       ) : (

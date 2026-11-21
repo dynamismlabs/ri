@@ -1,5 +1,8 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { DefaultCoordinationSetting } from '@/components/chat-ui/coordination/controls';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -145,27 +148,29 @@ export function GeneralSection() {
           Used with your working hours to plan the day in your local time.
         </p>
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-3">
-          <select
+          <NativeSelect
             value={effectiveTz}
             onChange={(e) => update.mutate({ timezone: e.target.value })}
-            className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            className="min-w-0 flex-1"
+            aria-label={'Timezone'}
           >
             {zoneOptions.map((tz) => (
               <option key={tz} value={tz}>
                 {tz.replace(/_/g, ' ')}
               </option>
             ))}
-          </select>
+          </NativeSelect>
           {usingBrowserDefault ? (
             <span className="text-[11px] text-muted-foreground/60">Browser default</span>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={() => update.mutate({ timezone: null })}
-              className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="sm"
             >
               Reset to browser ({browserTz.replace(/_/g, ' ')})
-            </button>
+            </Button>
           )}
         </div>
       </section>
@@ -215,14 +220,15 @@ export function GeneralSection() {
         <div className="space-y-2 rounded-lg border border-border bg-background p-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Show which device runs a chat</span>
-            <select
+            <NativeSelect
               value={deviceLabelMode}
               onChange={(e) => setDeviceLabelMode(e.target.value as DeviceLabelMode)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Show which device runs a chat'}
             >
               <option value="away">Only when it runs elsewhere (trial)</option>
               <option value="always">Always</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {deviceLabelMode === 'away'
@@ -268,14 +274,15 @@ export function GeneralSection() {
         <div className="space-y-2 rounded-lg border border-border bg-background p-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Transcript</span>
-            <select
+            <NativeSelect
               value={density}
               onChange={(e) => setDensity(e.target.value as TranscriptDensity)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Transcript'}
             >
               <option value="condensed">Condensed</option>
               <option value="full">Full feed</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {density === 'condensed'
@@ -291,14 +298,15 @@ export function GeneralSection() {
         <div className="space-y-2 rounded-lg border border-border bg-background p-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Open with</span>
-            <select
+            <NativeSelect
               value={entityViewMode}
               onChange={(e) => setEntityViewMode(e.target.value as EntityViewMode)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Open notes and tasks with'}
             >
               <option value="editor">Editor</option>
               <option value="agent">Agent (trial)</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {entityViewMode === 'agent'
@@ -314,14 +322,15 @@ export function GeneralSection() {
         <div className="space-y-2 rounded-lg border border-border bg-background p-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Clicking an agent</span>
-            <select
+            <NativeSelect
               value={agentViewMode}
               onChange={(e) => setAgentViewMode(e.target.value as AgentViewMode)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Agent view'}
             >
               <option value="view">Opens the agent view (trial)</option>
               <option value="fold">Folds its list</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {agentViewMode === 'view'
@@ -330,14 +339,15 @@ export function GeneralSection() {
           </p>
           <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-2">
             <span className="text-sm text-foreground">Opening a chat from an agent</span>
-            <select
+            <NativeSelect
               value={agentChatPlace}
               onChange={(e) => setAgentChatPlace(e.target.value as AgentChatPlace)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Open chats'}
             >
               <option value="beside">Beside its main chat (trial)</option>
               <option value="full">Full view</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {agentChatPlace === 'beside'
@@ -346,15 +356,16 @@ export function GeneralSection() {
           </p>
           <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-2">
             <span className="text-sm text-foreground">Agents in the rail</span>
-            <select
+            <NativeSelect
               value={railStyle}
               onChange={(e) => setRailStyle(e.target.value as RailStyle)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Sidebar style'}
             >
               <option value="agentsOnly">Agents only (trial)</option>
               <option value="agents">Agents first (trial)</option>
               <option value="classic">Classic</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {railStyle === 'agentsOnly'
@@ -376,20 +387,21 @@ export function GeneralSection() {
         <div className="space-y-2 rounded-lg border border-border bg-background p-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Open files in</span>
-            <select
+            <NativeSelect
               value={choice}
               onChange={(e) => setChoice(e.target.value as EditorChoice)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Open files in'}
             >
               {EDITOR_CHOICES.map((key) => (
                 <option key={key} value={key}>
                   {EDITOR_CHOICE_LABELS[key]}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           {choice === 'custom' && (
-            <input
+            <Field
               type="text"
               value={customCommand}
               onChange={(e) => setCustomCommand(e.target.value)}
@@ -397,7 +409,9 @@ export function GeneralSection() {
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
-              className="w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full"
+              purpose="code"
+              aria-label={'Custom editor command'}
             />
           )}
           <p className="text-[11px] text-muted-foreground/85">
@@ -413,15 +427,14 @@ export function GeneralSection() {
 
 function TimeField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">{label}</span>
-      <input
-        type="time"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-border bg-background px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
-      />
-    </label>
+    <Field
+      type="time"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      controlClassName="w-auto"
+      label={label}
+      className="flex-col w-auto"
+    />
   );
 }
 
@@ -448,19 +461,21 @@ function InactiveExecutionsSetting() {
       <div className="space-y-2 rounded-lg border border-border bg-background p-3">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm text-foreground">Go inactive after</span>
-          <select
+          <NativeSelect
             value={value}
             disabled={stored === undefined}
             onChange={(e) => choose(e.target.value)}
-            className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+            className="w-auto"
+            aria-label={'Go inactive after'}
           >
             {options.map((days) => (
               <option key={days} value={String(days)}>
-                {formatInactiveAfter(days)} with no activity{days === DEFAULT_INACTIVE_AFTER_DAYS ? ' (default)' : ''}
+                {formatInactiveAfter(days)} with no activity
+                {days === DEFAULT_INACTIVE_AFTER_DAYS ? ' (default)' : ''}
               </option>
             ))}
             <option value="0">Never</option>
-          </select>
+          </NativeSelect>
         </div>
         <p className="text-[11px] text-muted-foreground/85">
           {stored === 0

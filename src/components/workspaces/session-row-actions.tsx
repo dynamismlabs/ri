@@ -1,7 +1,8 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { Archive, Pin, PinOff } from 'lucide-react';
-import { Tip } from '@/components/ui/tip';
+
 import { useArchiveExecution } from '@/hooks/use-archive-execution';
 import { usePinSession, useUnpinSession } from '@/hooks/use-workspaces';
 import { cn } from '@/lib/utils';
@@ -97,8 +98,7 @@ export const ROW_ACTIONS_GIVE_WAY = cn(
   'group-focus-visible:hidden group-has-[:focus-visible]:hidden',
 );
 
-const BUTTON =
-  'flex items-center justify-center p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted/40';
+
 
 /**
  * Pin to top, or Unpin. A pinned row's pin is filled, the mark the row shows
@@ -110,12 +110,15 @@ function PinToggle({ sessionId, isPinned }: { sessionId: string; isPinned: boole
   const unpin = useUnpinSession();
   const action = isPinned ? 'Unpin' : 'Pin to top';
   return (
-    <Tip label={action}>
-      <button
+      <IconButton
         type="button"
-        aria-label={action}
-        className={cn(BUTTON, 'group/pin')}
         onClick={() => (isPinned ? unpin : pin).mutate(sessionId)}
+        label={action}
+        className="group/pin"
+        tooltip={action}
+        variant="ghost"
+        size="xs"
+        focus="inside"
       >
         {isPinned ? (
           <>
@@ -125,8 +128,7 @@ function PinToggle({ sessionId, isPinned }: { sessionId: string; isPinned: boole
         ) : (
           <Pin size={12} className="-rotate-45" aria-hidden />
         )}
-      </button>
-    </Tip>
+      </IconButton>
   );
 }
 
@@ -138,15 +140,16 @@ function ArchiveButton({ sessionId, executionId, workspaceId, label }: {
 }) {
   const { archive } = useArchiveExecution();
   return (
-    <Tip label="Archive">
-      <button
+      <IconButton
         type="button"
-        aria-label="Archive"
-        className={BUTTON}
         onClick={() => void archive({ id: sessionId, executionId, workspaceId, label })}
+        label="Archive"
+        tooltip="Archive"
+        variant="ghost"
+        size="xs"
+        focus="inside"
       >
         <Archive size={12} aria-hidden />
-      </button>
-    </Tip>
+      </IconButton>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 interface ActionButtonProps {
@@ -36,20 +37,13 @@ export function ActionButton({
   const isDisabled = !!disabled || !!pending;
   return (
     <Tip label={title}>
-      <button
+      <Button
         type="button"
         onClick={onClick}
         disabled={isDisabled}
-        data-slot="action-button"
-        data-variant={variant}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-          variant === 'primary'
-            ? 'border-primary/50 bg-primary text-primary-foreground hover:bg-primary/90'
-            : variant === 'ghost'
-              ? 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              : 'border-border bg-background text-foreground/85 hover:bg-muted/40',
-        )}
+        variant={variant}
+        size="sm"
+        className="min-w-0"
       >
         {pending ? <Loader2 size={11} className="animate-spin" /> : icon}
         <span className="truncate">{label}</span>
@@ -58,7 +52,7 @@ export function ActionButton({
             {count}
           </span>
         )}
-      </button>
+      </Button>
     </Tip>
   );
 }

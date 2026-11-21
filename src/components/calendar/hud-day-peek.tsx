@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * The HUD button's popover: compact day strip + today's agenda + summary.
  * Read-only glance surface over real commitments — the full experience lives
@@ -101,16 +102,13 @@ export function HudDayPeek({
                 {row.title}
               </span>
               {row.joinUrl && (
-                <a data-slot="action-button"
-                  href={row.joinUrl}
+                <Button asChild variant="secondary" size="sm" className="flex items-center gap-1"><a href={row.joinUrl}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-border text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                >
+                  onClick={(e) => e.stopPropagation()}>
                   <Video size={10} />
                   Join
-                </a>
+                </a></Button>
               )}
             </div>
           ))
@@ -124,20 +122,22 @@ export function HudDayPeek({
             : `As of ${staleAsOf}`}
         </span>
         <span className="flex items-center gap-3">
-          <button
+          <Button
             type="button"
             onClick={onOpenDay}
-            className="text-[11px] font-medium text-primary hover:underline"
+            variant="link"
+            size="sm"
           >
             Day view
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={onOpenWeek}
-            className="text-[11px] font-medium text-primary hover:underline"
+            variant="link"
+            size="sm"
           >
             Week view
-          </button>
+          </Button>
         </span>
       </div>
     </div>
