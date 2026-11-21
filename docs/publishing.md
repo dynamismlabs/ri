@@ -200,6 +200,8 @@ git push origin main v0.2.0
 
 CI builds all five platforms (Mac arm64 and x64, Linux x64 and arm64 as an AppImage and a deb, Windows x64). A Mac build with a Developer ID is signed, notarized, stapled and checked by Gatekeeper before anything uploads. Then the publish job writes `SHA256SUMS`, attests every file, signs the feed for `latest`, creates the version's release, writes `downloads-latest.json` and rebuilds the website. The notes come from the `feat:` and `fix:` commit subjects since the previous tag. Everyone on `latest` updates at their next quiet moment.
 
+Notarizing rides out the network drops GitHub's Mac runners have (`desktop/notarize.mjs`). Packaging uploads the app again if an upload fails before Apple returns a submission id, prints that id, then checks on that one submission for up to an hour, retrying timeouts and lost connections, and staples the ticket. If Apple finds the app Invalid, the build fails with the reasons from Apple's log. If a run stops anyway, `xcrun notarytool info <id>` with the same Apple credentials says what became of it.
+
 When it has proven itself, run the **Publish a release** workflow by hand with `promote` and the version, which moves `stable` to it and writes `downloads-stable.json`.
 
 To pull a bad release, run it with `withdraw` and the version. Nothing moves to it again, publishing a newer one gets everyone off it, and the website stops offering it on any channel it was the newest on.

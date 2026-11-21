@@ -121,7 +121,7 @@ describe('setup', () => {
     neverPrinted(result.out, SECRETS);
   });
 
-  it('notarizes with an API key when there is no Apple ID, writing the key for electron-builder', () => {
+  it('notarizes with an API key when there is no Apple ID, writing the key for packaging', () => {
     const secrets = { ...SECRETS, APPLE_ID: '', APPLE_APP_SPECIFIC_PASSWORD: '', ...API_KEY };
     const result = run('setup', secrets);
     expect(result.status).toBe(0);
@@ -134,7 +134,7 @@ describe('setup', () => {
     expect(fs.existsSync(path.join(dir, 'ri-signing.keychain-db'))).toBe(false);
   });
 
-  it('prefers the Apple ID when both ways to notarize are set, as electron-builder does', () => {
+  it('prefers the Apple ID when both ways to notarize are set, as packaging does', () => {
     const result = run('setup', { ...SECRETS, ...API_KEY });
     expect(result.status).toBe(0);
     expect(result.output).toContain('notary=apple-id\napi_key=\n');
