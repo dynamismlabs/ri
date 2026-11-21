@@ -18,6 +18,7 @@ import { digestFile } from '../src/lib/service/runtime-manifest';
 import { PAIRING_TOKEN_FRAGMENT_KEY } from '../src/constants/app';
 import { copyNextVectorExtension } from './package-files.mjs';
 import type { HarnessAuthResponse } from '../src/lib/server/operations/harness/auth';
+import { noteTitleField } from './renderer-locators';
 
 assert.equal(process.platform, 'win32');
 assert.equal(process.env.GITHUB_ACTIONS, 'true');
@@ -208,7 +209,7 @@ $rules = $acl.GetAccessRules($true,$true,[System.Security.Principal.SecurityIden
   assert.equal((await api<{ status: string }>(page, `/api/tasks/${task.id}`)).status, 'done');
   pass('Task create and complete, note create and read through the installed server');
   await nativeNavigate(page, `${fixture.origin}/note/${note.id}`);
-  const noteTitle = page.locator('textarea.note-title');
+  const noteTitle = noteTitleField(page);
   await noteTitle.waitFor();
   await noteTitle.fill('Windows note edited in the app');
   const editedBody = 'Written in the Windows note editor, kept across reopen and upgrade.';

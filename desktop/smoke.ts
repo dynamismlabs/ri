@@ -17,6 +17,7 @@ import { mockMcp } from './mock-mcp';
 import { installTerminalCommand, removeTerminalCommand } from './cli-install';
 import { isProcessAlive, readServerRuntime } from '../src/lib/server-runtime/record';
 import { stopService } from '../src/lib/service/client';
+import { noteTitleField } from './renderer-locators';
 
 const repo = path.resolve(__dirname, '..');
 const artifacts = path.join(repo, '.electron-demo');
@@ -214,7 +215,7 @@ try {
   await page.goto(`${origin}/api/attachments/${svg}`);
   assert.equal(await page.evaluate(() => (window as unknown as { riUntrustedScriptRan?: boolean }).riUntrustedScriptRan), undefined, 'Uploaded SVG executed as an app document');
   await page.goto(`${origin}/note/${noteId}`);
-  const title = page.locator('textarea.note-title');
+  const title = noteTitleField(page);
   if (!await title.count()) {
     const editor = page.getByRole('button', { name: /document|editor/i });
     if (await editor.count()) await editor.first().click();

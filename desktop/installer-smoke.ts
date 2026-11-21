@@ -13,6 +13,7 @@ import { hasLoginSupervision, uninstallService } from '../src/lib/service/instal
 import { digestFile } from '../src/lib/service/runtime-manifest';
 import { servicePaths } from '../src/lib/service/paths';
 import { StartupDiagnostics } from '../src/lib/service/startup-diagnostics';
+import { noteTitleField } from './renderer-locators';
 
 const mac = process.platform === 'darwin';
 assert(mac || process.platform === 'linux');
@@ -131,7 +132,7 @@ if(m.type==='user')reply();});
     const editor = page.locator('.rich-editor-body[contenteditable="true"]');
     await editor.waitFor();
     await page.waitForFunction(() => document.activeElement?.classList.contains('rich-editor-body'));
-    await page.locator('textarea.note-title').fill('Note edited in the app');
+    await noteTitleField(page).fill('Note edited in the app');
     await editor.fill(body);
     await eventually(async () => {
       const saved = await api<{ title: string; body: string }>(page, `/api/notes/${note.id}`);

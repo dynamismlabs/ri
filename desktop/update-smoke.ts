@@ -24,6 +24,7 @@ import { fileDigest } from '../src/lib/service/checkpoint';
 import { readSnapshot } from '../src/lib/service/snapshot';
 import type { UpdateRecord } from '../src/lib/service/update';
 import type { ReleasePreferences } from '../src/lib/service/update-settings';
+import { noteTitleField } from './renderer-locators';
 
 const source = path.resolve(process.argv[2] ?? `release/ri-runtime-0.1.0-${process.platform}-${process.arch}`);
 const guiPackage = process.env.RI_UPDATE_SMOKE_GUI;
@@ -249,7 +250,7 @@ try {
     const page = await gui.firstWindow();
     await exerciseMaintenanceWindow(page);
     await nativeNavigate(page, `${initial.origin}/note/${noteId}`, guiNavigation);
-    const title = page.locator('textarea.note-title');
+    const title = noteTitleField(page);
     await title.waitFor(); await title.fill('An open desktop survives this update');
     await page.evaluate(() => { (window as unknown as { riUpdateSmokeMarker?: boolean }).riUpdateSmokeMarker = true; });
   }
@@ -280,8 +281,8 @@ try {
     const page = await gui.firstWindow();
     await page.waitForFunction(() => !(window as unknown as { riUpdateSmokeMarker?: boolean }).riUpdateSmokeMarker, undefined, { timeout: 60_000 });
     await page.waitForURL(url => url.origin === current.origin && url.pathname === `/note/${noteId}`, { timeout: 60_000 });
-    await page.locator('textarea.note-title').waitFor();
-    assert.equal(await page.locator('textarea.note-title').inputValue(), note.body.title);
+    await noteTitleField(page).waitFor();
+    assert.equal(await noteTitleField(page).inputValue(), note.body.title);
     // The renderer can observe the new controller before the native helper's
     // two-second monitor refreshes its private capability. Verify that real
     // bridge recovery completes, without assuming both observers are atomic.

@@ -12,6 +12,7 @@ import type { DesktopNotificationStatus } from '../src/lib/notifications/desktop
 import { serviceStatus } from '../src/lib/service/client';
 import { acceptance, api, assertNoAlertsWithoutSignature, bounded, eventually, needsSignedBuild } from './acceptance-fixture';
 import { localPage, nativeWindowSnapshot } from './acceptance-surfaces';
+import { noteTitleField } from './renderer-locators';
 
 interface PresentationState {
   shown: { notification: Notification; hidden: boolean }[];
@@ -98,7 +99,7 @@ void acceptance('background-smoke', async fixture => {
 
   try {
     await fixture.navigate(`/note/${note.id}`);
-    const title = page.locator('textarea.note-title'); await title.waitFor();
+    const title = noteTitleField(page); await title.waitFor();
     const baseline = await page.evaluate(() => performance.timeOrigin);
     const hiddenTitle = 'Dirty note saved while the window is hidden';
     const hiddenBody = 'The real editor stays mounted and its pending document save completes in the background.';

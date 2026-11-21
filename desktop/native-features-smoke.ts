@@ -15,6 +15,7 @@ import { installedRuntime } from '../src/lib/service/runtime';
 import { serviceStatus } from '../src/lib/service/client';
 import { acceptance, api, bounded, eventually } from './acceptance-fixture';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, settledWindowSnapshot } from './acceptance-surfaces';
+import { noteTitleField } from './renderer-locators';
 
 interface NativeState {
   shortcuts: Map<string, () => void>;
@@ -116,7 +117,7 @@ void acceptance('native-features-smoke', async fixture => {
     const defaults = await settings({ type: 'status' }); assert.equal(defaults.shortcut.enabled, false);
     assert.equal(defaults.login.enabled, false);
     await fixture.navigate(`/note/${note.id}`);
-    const title = page.locator('textarea.note-title:visible'); await title.waitFor();
+    const title = noteTitleField(page); await title.waitFor();
     const url = page.url(); const timeOrigin = await page.evaluate(() => performance.timeOrigin);
     const dirtyTitle = 'My note stays open during native capture';
     const dirtyBody = 'The native capture entry point must preserve this editor and its latest words.';
@@ -288,7 +289,7 @@ void acceptance('native-features-smoke', async fixture => {
     fixture.check('Real owner activity endpoint is readable, hidden main-process polling updates native menu and Dock, disconnect clears stale counts/targets, and reconnect recovers');
 
     await menu('ri-show-window'); await foreground(); await fixture.navigate(`/note/${note.id}`);
-    const finalTitle = 'Activity navigation saved the newest edit'; await page.locator('textarea.note-title:visible').fill(finalTitle);
+    const finalTitle = 'Activity navigation saved the newest edit'; await noteTitleField(page).fill(finalTitle);
     await menu(`ri-activity-${session.id}`);
     await page.waitForURL(url => url.pathname === '/' && url.searchParams.get('session') === session.id);
     await eventually(async () => readNote().title === finalTitle, 'activity target navigation saves dirty document');

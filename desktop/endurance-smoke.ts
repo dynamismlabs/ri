@@ -9,6 +9,7 @@ import { acceptance, api, bounded, eventually } from './acceptance-fixture';
 import { serviceStatus } from '../src/lib/service/client';
 import { CONNECTION_NOTICE_DELAY_MS } from '../src/lib/connection/desktop-contract';
 import { TRANSPORT_STORAGE_KEY } from '../src/lib/trpc/transport-state';
+import { noteTitleField } from './renderer-locators';
 
 const crashOnly = process.env.RI_DESKTOP_ENDURANCE_CRASH_ONLY === '1';
 const cycles = Number(process.env.RI_DESKTOP_ENDURANCE_CYCLES ?? 3);
@@ -28,7 +29,7 @@ void acceptance('endurance-smoke', async fixture => {
     assert.equal((await serviceStatus())?.runId, initial.runId, 'Viewer relaunch replaced the background service');
     assert.equal(fixture.origin, initial.origin, 'Viewer relaunch changed the stable origin');
     await fixture.navigate(`/note/${note.id}`);
-    const title = page.locator('textarea.note-title');
+    const title = noteTitleField(page);
     await title.waitFor();
     // Keep eight real streams open throughout foreground edits and a bounded
     // read/write burst. Release every reader even when a request fails.
@@ -104,7 +105,7 @@ void acceptance('endurance-smoke', async fixture => {
 
   if (!crashOnly) page = await fixture.launch();
   await fixture.navigate(`/note/${note.id}`);
-  await page.locator('textarea.note-title').waitFor();
+  await noteTitleField(page).waitFor();
   const before = await api<{ title: string }>(page, route);
   const retainedTitle = 'Unacknowledged editor text survives renderer crash';
   // Fail only this fixture document's save, while allowing independent reads
@@ -116,7 +117,7 @@ void acceptance('endurance-smoke', async fixture => {
   await page.evaluate(key => localStorage.setItem(key, 'http'), TRANSPORT_STORAGE_KEY);
   await page.route(url => url.pathname === save, route => route.request().method() === 'POST' ? route.abort('connectionrefused') : route.continue());
   const failedWrite = page.waitForEvent('requestfailed', { predicate: request => new URL(request.url()).pathname === save && request.method() === 'POST' });
-  await page.locator('textarea.note-title').fill(retainedTitle);
+  await noteTitleField(page).fill(retainedTitle);
   await failedWrite;
   assert.equal((await api<{ title: string }>(page, route)).title, before.title);
   assert(await page.evaluate(title => Object.keys(localStorage).some(key => key.startsWith('ri:document-draft:v1:') && localStorage.getItem(key)?.includes(title)), retainedTitle));
@@ -196,7 +197,7 @@ void acceptance('endurance-smoke', async fixture => {
   assert.equal((await api<{ title: string }>(page, route)).title, before.title, 'Retained draft replayed without consent');
   await restore.click();
   await eventually(async () => (await api<{ title: string }>(page, route)).title === retainedTitle, 'explicit restoration of draft after renderer crash');
-  assert.equal(await page.locator('textarea.note-title').inputValue(), retainedTitle);
+  assert.equal(await noteTitleField(page).inputValue(), retainedTitle);
   fixture.check('Failed save, renderer crash, same daemon, retained draft, and explicit restoration');
   fixture.report.limits = ['Bounded cycles, not an overnight soak.', 'No host sleep/reboot/login, real disk exhaustion, OS resource pressure, or external provider calls.', 'Working-set samples cover Electron processes. Detached service liveness is checked separately.'];
   await page.screenshot({ path: path.join(fixture.base, 'endurance.png') });
