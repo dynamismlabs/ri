@@ -237,13 +237,23 @@ export function SegmentedList<T extends string>({
         </button>
       </Tip>
     );
-    const itemProps = { key: option.value, value: option.value, disabled: common.disabled, asChild: true };
+    const itemProps = { value: option.value, disabled: common.disabled, asChild: true };
     return context.mode === 'tabs' ? (
-      <Tabs.Trigger {...itemProps}>{button}</Tabs.Trigger>
+      <Tabs.Trigger key={option.value} {...itemProps}>
+        {button}
+      </Tabs.Trigger>
     ) : context.selection === 'radio' ? (
-      <RadioGroup.Item {...itemProps}>{button}</RadioGroup.Item>
+      <RadioGroup.Item key={option.value} {...itemProps}>
+        {button}
+      </RadioGroup.Item>
     ) : (
-      <ToggleGroup.Item {...itemProps} role="button" aria-checked={undefined} aria-pressed={selected}>
+      <ToggleGroup.Item
+        key={option.value}
+        {...itemProps}
+        role="button"
+        aria-checked={undefined}
+        aria-pressed={selected}
+      >
         {button}
       </ToggleGroup.Item>
     );
