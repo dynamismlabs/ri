@@ -1,4 +1,5 @@
 'use client';
+import { Field as SystemField } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
@@ -245,23 +246,23 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                   API key.
                 </p>
                 <Field label="Edge address">
-                  <input data-slot="field"
+                  <SystemField
                     value={server}
                     onChange={(e) => setServer(e.target.value)}
                     placeholder="your-beamd-edge.com  ·  blank = hosted beamd"
                     spellCheck={false}
-                    className="w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full" purpose="code"
                   />
                 </Field>
                 <Field label="API key">
-                  <input data-slot="field"
+                  <SystemField
                     type="password"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
                     placeholder="your edge token, or a dashboard API key"
                     spellCheck={false}
                     autoComplete="off"
-                    className="w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full" purpose="code"
                   />
                 </Field>
                 <label className="flex items-start gap-2 text-[11px] text-muted-foreground">

@@ -1,10 +1,12 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
+import { Field } from '@/components/system/field';
 
 import { RuntimeSetup } from '@/components/desktop/runtime-setup';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
 import { documentSaves } from '@/lib/client/document-saves';
@@ -55,20 +57,20 @@ function ActivationSettings({ update, disabled, onAction }: {
       <div className="space-y-2">
         <Label htmlFor={`${id}-hour`}>Start time</Label>
         <Select value={hour} onValueChange={setHour} disabled={disabled}>
-          <SelectTrigger id={`${id}-hour`}><SelectValue /></SelectTrigger>
+          <SelectField id={`${id}-hour`} className="w-fit"><SelectValue /></SelectField>
           <SelectContent>{Array.from({ length: 24 }, (_, value) => <SelectItem key={value} value={String(value)}>{String(value).padStart(2, '0')}:00</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div className="space-y-2">
         <Label htmlFor={`${id}-duration`}>Window length</Label>
         <Select value={duration} onValueChange={setDuration} disabled={disabled}>
-          <SelectTrigger id={`${id}-duration`}><SelectValue /></SelectTrigger>
+          <SelectField id={`${id}-duration`} className="w-fit"><SelectValue /></SelectField>
           <SelectContent>{Array.from({ length: 12 }, (_, index) => index + 1).map(value => <SelectItem key={value} value={String(value)}>{value} {value === 1 ? 'hour' : 'hours'}</SelectItem>)}</SelectContent>
         </Select>
       </div>
       <div className="space-y-2 sm:col-span-2">
         <Label htmlFor={`${id}-zone`}>Time zone</Label>
-        <Input id={`${id}-zone`} value={timeZone} onChange={event => setTimeZone(event.target.value)} disabled={disabled} placeholder="America/Denver" autoComplete="off" spellCheck={false} />
+        <Field id={`${id}-zone`} value={timeZone} onChange={event => setTimeZone(event.target.value)} disabled={disabled} placeholder="America/Denver" autoComplete="off" spellCheck={false} />
         <p className="text-xs text-muted-foreground">The selected time zone stays the same when you travel. If this computer is asleep or busy, Ri waits for another eligible window.</p>
       </div>
     </div>}
@@ -244,7 +246,7 @@ export function UpdatesSection() {
           <div className="flex items-center justify-between gap-4">
             <div className="space-y-1"><Label htmlFor={`${id}-channel`}>Release channel</Label><p className="text-xs text-muted-foreground">Latest gets every release as it ships.</p></div>
             <Select value={update.policy.channel} disabled={disabled} onValueChange={channel => void savePreferences({ channel: channel as 'stable' | 'latest' })}>
-              <SelectTrigger id={`${id}-channel`} className="w-32"><SelectValue /></SelectTrigger>
+              <SelectField id={`${id}-channel`} className="w-32"><SelectValue /></SelectField>
               <SelectContent><SelectItem value="stable">Stable</SelectItem><SelectItem value="latest">Latest</SelectItem></SelectContent>
             </Select>
           </div>

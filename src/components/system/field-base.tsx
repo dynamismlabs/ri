@@ -92,6 +92,7 @@ export function FieldFrame({
   );
   return (
     <PrimitiveField
+      orientation={null}
       data-slot="system-field"
       data-invalid={info['aria-invalid'] || undefined}
       className={cn('ri-field-frame min-w-0', className)}

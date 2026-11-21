@@ -1,4 +1,6 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppWindow, ArrowLeft, FileBox, Loader2, MessageCircle, PanelRightOpen, RotateCcw, Server, Settings2 } from 'lucide-react';
@@ -95,7 +97,7 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
         size="sm"
       ><RotateCcw size={14}/>Reload</Button>
     </Tip>}
-    {accounts.length > 1 && <select aria-label="Connected account" value={app.id} onChange={event => navigate(`~connected/${event.target.value}`)} className="max-w-48 rounded-md border bg-background p-1.5 text-xs">{accounts.map(account => <option key={account.id} value={account.id}>{account.account}</option>)}</select>}
+    {accounts.length > 1 && <NativeSelect aria-label="Connected account" value={app.id} onChange={event => navigate(`~connected/${event.target.value}`)} className={cn("max-w-48", 'w-auto')}>{accounts.map(account => <option key={account.id} value={account.id}>{account.account}</option>)}</NativeSelect>}
     <Button
       onClick={() => navigate(app.providerId ? `?provider=${encodeURIComponent(app.providerId)}` : `?mcp=${encodeURIComponent(app.id)}`)}
       variant="ghost"

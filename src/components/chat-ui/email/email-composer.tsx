@@ -1,4 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useId, useRef, useState } from 'react';
@@ -61,9 +64,9 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
   const field = (name: 'to' | 'cc' | 'bcc' | 'subject', label: string, placeholder: string) => (
     <label className="flex items-start gap-3 border-b border-border/60 px-4 py-2.5 text-sm">
       <span className="w-12 shrink-0 pt-0.5 text-xs text-muted-foreground">{label}</span>
-      <input aria-label={label} name={name} value={draft[name]} disabled={!editable} placeholder={placeholder} autoComplete="off" inputMode={name === 'subject' ? 'text' : 'email'} autoCapitalize={name === 'subject' ? 'sentences' : 'none'} spellCheck={name === 'subject'} maxLength={2000}
-        className="min-w-0 flex-1 rounded-sm bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/45 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-80"
-        onChange={event => { setMessage(null); editor.change({ [name]: event.target.value }); }} />
+      <Field aria-label={label} name={name} value={draft[name]} disabled={!editable} placeholder={placeholder} autoComplete="off" inputMode={name === 'subject' ? 'text' : 'email'} autoCapitalize={name === 'subject' ? 'sentences' : 'none'} spellCheck={name === 'subject'} maxLength={2000}
+        className="min-w-0 flex-1"
+        onChange={event => { setMessage(null); editor.change({ [name]: event.target.value }); }} purpose="embedded" />
     </label>
   );
 
@@ -78,11 +81,11 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
       </div>
       <div className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 text-[13px]">
         <label htmlFor={`${labelId}-from`} className="w-12 shrink-0 text-xs text-muted-foreground">From</label>
-        {editable ? <select id={`${labelId}-from`} value={draft.connectionId ?? ''} disabled={accounts.isPending || accounts.isError} className="min-w-0 flex-1 rounded-sm bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring/50" onChange={event => editor.change({ connectionId: event.target.value || null })}>
+        {editable ? <NativeSelect id={`${labelId}-from`} value={draft.connectionId ?? ''} disabled={accounts.isPending || accounts.isError} className="min-w-0 flex-1" onChange={event => editor.change({ connectionId: event.target.value || null })} purpose="embedded">
           <option value="">{accounts.isPending ? 'Loading accounts…' : 'Choose an account'}</option>
           {draft.connectionId && !accounts.data?.some(account => account.id === draft.connectionId) && <option value={draft.connectionId}>Account unavailable</option>}
           {accounts.data?.map(account => <option key={account.id} value={account.id}>{account.label} ({account.provider === 'google' ? 'Gmail' : 'Outlook'})</option>)}
-        </select> : <span>{draft.fromLabel ?? accounts.data?.find(account => account.id === draft.connectionId)?.label ?? 'Selected account'}</span>}
+        </NativeSelect> : <span>{draft.fromLabel ?? accounts.data?.find(account => account.id === draft.connectionId)?.label ?? 'Selected account'}</span>}
         {editable && <div className="flex gap-2 text-xs text-muted-foreground">
           {!showCc && !draft.cc && <Button
             type="button"
@@ -135,9 +138,9 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
           <span role="status">{copyStatus === 'copied' ? 'Copied' : copyStatus === 'error' ? 'Copy failed' : 'Copy body'}</span>
         </Button>
       </div>
-      <textarea id={`${labelId}-body`} name="body" value={draft.body} disabled={!editable} placeholder="Write your message…" rows={9} maxLength={200_000}
-        className="block min-h-48 w-full resize-y bg-transparent px-4 pb-4 pt-2.5 text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/45 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/50 disabled:opacity-80"
-        onChange={event => { setMessage(null); editor.change({ body: event.target.value }); }} />
+      <TextArea id={`${labelId}-body`} name="body" value={draft.body} disabled={!editable} placeholder="Write your message…" rows={9} maxLength={200_000}
+        className="block w-full"
+        onChange={event => { setMessage(null); editor.change({ body: event.target.value }); }} purpose="embedded" resize="vertical" />
       {(conflict || save.isError || hasEdits && !save.isPending) && editable && <div role="alert" className="space-y-2 border-t border-border bg-muted/30 px-4 py-3 text-xs">
         <p>{conflict ? 'This draft changed while you were editing. Your edits are kept here.' : save.error?.message ?? 'Your recovered edits are ready to save.'}</p>
         {conflict && <details><summary className="cursor-pointer">Review saved changes</summary><dl className="mt-2 space-y-2">{(Object.keys(edits) as (keyof EmailDraftFields)[]).map(key => <div key={key}><dt className="font-medium">{key === 'connectionId' ? 'Sending account' : key}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-muted-foreground">{key === 'connectionId' ? accounts.data?.find(account => account.id === conflict.connectionId)?.label ?? 'No available account' : conflict[key] || '(empty)'}</dd></div>)}</dl></details>}

@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -168,7 +169,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
         <Icon size={12} className="text-primary mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           {editingTitle ? (
-            <input
+            <Field
               autoFocus
               value={titleDraft}
               onChange={(e) => setTitleDraft(e.target.value)}
@@ -177,7 +178,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
                 if (e.key === 'Enter') handleSaveTitle();
                 if (e.key === 'Escape') { setTitleDraft(decision.draft?.title ?? ''); setEditingTitle(false); }
               }}
-              className="w-full text-[11.5px] font-medium bg-background border border-border rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-primary"
+              className="w-full"
             />
           ) : (
             <p className="text-[11.5px] font-medium text-foreground leading-snug">
@@ -389,7 +390,6 @@ function ManualRow({
             >
               <BookOpen size={11} />
             </IconButton>
-
 
             <IconButton
               onClick={() => onDecide('dismiss')}

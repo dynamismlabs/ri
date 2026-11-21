@@ -1,4 +1,6 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
+import { Field as SystemField } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -26,8 +28,7 @@ import { sourceErrorMessage, useConnectAttempt, useConnectionMethod } from '@/ho
 import { applicationForDirectToolkit, parseManagedToolkitId } from '@/lib/integrations/sources/applications';
 import type { ApplicationId } from '@/lib/integrations/sources/types';
 import { trpcClient } from '@/lib/trpc/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 /** The card a sign-in started from, so its result (or error) shows on it when the page returns. */
 const PENDING_SIGN_IN_KEY = 'ri.connectCard.signIn';
@@ -359,7 +360,7 @@ function ManagedConnect({ applicationId, eventId, view, busy, notice, onDecline,
         )}
         {managedOptions.length > 1 && (
           <Select value={chosen.source.id} onValueChange={setSourceId}>
-            <SelectTrigger size="sm" aria-label="Source" className="h-6 text-[10.5px]"><SelectValue /></SelectTrigger>
+            <SelectField aria-label="Source" className="w-fit"><SelectValue /></SelectField>
             <SelectContent>
               {managedOptions.map(o => <SelectItem key={o.source.id} value={o.source.id} className="text-xs">{o.source.label}</SelectItem>)}
             </SelectContent>
@@ -451,13 +452,13 @@ function Field({ label, value, onChange, secret }: { label: string; value: strin
   return (
     <label className="flex flex-col gap-0.5">
       <span className="text-[10px] text-muted-foreground">{label}</span>
-      <input data-slot="field"
+      <SystemField
         type={secret ? 'password' : 'text'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         autoComplete="off"
         spellCheck={false}
-        className="w-full rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px] focus:border-primary/50 focus:outline-none"
+        className="w-full" purpose="code"
       />
     </label>
   );

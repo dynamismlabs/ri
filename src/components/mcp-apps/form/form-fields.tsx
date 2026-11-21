@@ -1,9 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+
 import { IconButton } from '@/components/system/icon-button';
 import { useRef, useState } from 'react';
 import { Box, Eye, File as FileIcon, Folder, Plus, Upload, X } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
 import { pickMcpIcon, type McpIcon } from '@/lib/integrations/mcp-icons';
@@ -75,15 +78,15 @@ function Control(props: FormFieldsProps & {field: FormField}) {
       const type = field.format ? INPUT_TYPE[field.format] : 'text';
       const text = typeof value === 'string' ? (field.format === 'date-time' ? fromDateTime(value) : value) : '';
       return <div className="space-y-1.5">
-        <Input id={id} type={type} value={text} disabled={disabled} aria-label={field.title ?? field.name}
-          className="h-8 text-xs"
+        <Field id={id} type={type} value={text} disabled={disabled} aria-label={field.title ?? field.name}
+
           onChange={event => onChange(field.name, event.target.value === '' ? undefined : field.format === 'date-time' ? toDateTime(event.target.value) : event.target.value)} />
         <Suggestions options={field.suggestions} disabled={disabled} chosen={option => option.value === value} onPick={option => onChange(field.name, option.value)} />
       </div>;
     }
     case 'number':
-      return <Input id={id} type="number" inputMode={field.integer ? 'numeric' : 'decimal'} step={field.integer ? 1 : 'any'}
-        aria-label={field.title ?? field.name} disabled={disabled} className="h-8 w-40 text-xs" value={typeof value === 'number' ? value : ''}
+      return <Field id={id} type="number" inputMode={field.integer ? 'numeric' : 'decimal'} step={field.integer ? 1 : 'any'}
+        aria-label={field.title ?? field.name} disabled={disabled} className="w-40" value={typeof value === 'number' ? value : ''}
         onChange={event => onChange(field.name, event.target.value === '' ? undefined : Number(event.target.value))} />;
     case 'boolean':
       return <label className="flex cursor-pointer items-start gap-2.5">
@@ -182,7 +185,7 @@ function TextsControl({field, values, onChange, disabled}: FormFieldsProps & {fi
     </li>)}</ul>}
     <Suggestions options={field.suggestions.filter(option => !current.includes(option.value))} disabled={disabled} chosen={() => false} onPick={option => add(option.value)} />
     <div className="flex gap-1.5">
-      <Input value={draft} disabled={disabled} aria-label={`Add to ${field.title ?? field.name}`} placeholder="Add your own" className="h-8 text-xs"
+      <Field value={draft} disabled={disabled} aria-label={`Add to ${field.title ?? field.name}`} placeholder="Add your own"
         onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); add(draft); } }} />
       <Button
         type="button"
@@ -308,11 +311,11 @@ function AddYourOwn({field, files, disabled, onAdd}: FormFieldsProps & {field: E
       className="flex items-center gap-1"
     ><FileIcon size={11} />{file.name}</Button>)}</div>}
     {files.folders.length > 0 && <div className="flex flex-wrap items-center gap-1.5">
-      <select data-slot="field" aria-label="Agent folder" value={folder} disabled={disabled || busy} onChange={event => setFolder(event.target.value)} className="h-8 max-w-44 rounded-md border bg-background px-1.5 text-xs">
+      <NativeSelect aria-label="Agent folder" value={folder} disabled={disabled || busy} onChange={event => setFolder(event.target.value)} className={cn("max-w-44", 'w-auto')}>
         {files.folders.map(option => <option key={option.uri} value={option.uri}>{option.label}</option>)}
-      </select>
-      <Input value={relative} disabled={disabled || busy} aria-label={directory ? 'Folder inside it' : 'File path inside it'} placeholder={directory ? 'Folder inside it (optional)' : 'parts/bracket.step'}
-        className="h-8 min-w-36 flex-1 text-xs" onChange={event => setRelative(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void add({folder, path: relative}); } }} />
+      </NativeSelect>
+      <Field value={relative} disabled={disabled || busy} aria-label={directory ? 'Folder inside it' : 'File path inside it'} placeholder={directory ? 'Folder inside it (optional)' : 'parts/bracket.step'}
+        className="min-w-36 flex-1" onChange={event => setRelative(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void add({folder, path: relative}); } }} />
       <Button
         type="button"
         disabled={disabled || busy || !folder || (!directory && !relative.trim())}

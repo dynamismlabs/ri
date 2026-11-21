@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
@@ -28,7 +29,7 @@ export function ArtifactsView({ sessionId, executionId, active, previewHost }: {
           size="sm"
         ><RefreshCw className={artifacts.isFetching ? 'animate-spin' : undefined} /></IconButton>
       </div>
-      <label className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-2.5 py-2"><Search size={13} aria-hidden className="shrink-0 text-muted-foreground" /><input aria-label="Filter artifacts" value={query} onChange={event => setQuery(event.target.value)} placeholder="Filter by filename, path or chat" className="min-w-0 w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground/70" /></label>
+      <label className="flex items-center gap-2 rounded-md border border-border bg-muted/20 px-2.5 py-2"><Search size={13} aria-hidden className="shrink-0 text-muted-foreground" /><Field aria-label="Filter artifacts" value={query} onChange={event => setQuery(event.target.value)} placeholder="Filter by filename, path or chat" className="min-w-0 w-full" purpose="embedded" /></label>
     </div>
     <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
       {artifacts.isPending ? <div role="status" className="flex items-center justify-center gap-2 p-8 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading artifacts…</div>

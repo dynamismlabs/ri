@@ -1,4 +1,6 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useMemo, useRef, useState } from 'react';
@@ -148,24 +150,24 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
 
         <label className="block space-y-1.5">
           <span className="text-xs font-medium">Summary</span>
-          <textarea data-slot="field"
+          <TextArea
             value={summaryValue}
             onChange={(e) => setSummary(e.target.value)}
             rows={6}
             placeholder="What changed, and anything the team should know."
-            className="w-full resize-y rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-primary/60"
+            className="w-full" resize="vertical"
           />
           {draft && summary === null && <span className="text-[11px] text-muted-foreground">From your latest saved result. Edit it before it&apos;s shared.</span>}
         </label>
 
         <label className="block space-y-1.5">
           <span className="text-xs font-medium">Pull request or link</span>
-          <input data-slot="field"
+          <Field
             type="url"
             value={urlValue}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://"
-            className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-primary/60"
+            className="w-full"
           />
         </label>
 

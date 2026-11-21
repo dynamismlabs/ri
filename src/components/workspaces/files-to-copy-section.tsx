@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { ChevronDown, FileText, Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -110,14 +111,14 @@ export function FilesToCopySection({
           git tracks are skipped, since the worktree already has them.
         </p>
       </>}
-      <textarea
+      <TextArea
         aria-label="Files to copy"
         value={text}
         onChange={(e) => handleTextChange(e.target.value)}
         placeholder=".env*"
         rows={3}
         spellCheck={false}
-        className="w-full px-3 py-2 text-xs font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary resize-y min-h-16"
+        className="w-full" purpose="code" resize="vertical"
       />
 
       {!canConfigureAgents ? <p className="text-[10px] text-muted-foreground/70">The owner configures files copied into new worktrees.</p> : trimmedCwd.length === 0 ? (

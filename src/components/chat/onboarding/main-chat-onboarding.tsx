@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { MainChatIntroPanel, useAppMainChatIntro, useEmptyChatActions } from '@/components/chat/main-chat-intro';
@@ -561,8 +562,6 @@ function acknowledge(step: OnboardingStep, replies: Said['replies'], userName: s
   }
 }
 
-
-
 // ─── Steps ────────────────────────────────────────────────────
 
 function IdentityStep({ newHome, onDone }: { newHome: boolean; onDone: (name: string) => void }) {
@@ -610,7 +609,7 @@ function YouStep({ initial, onDone }: { initial: string; onDone: (name: string) 
   };
   return (
     <Card className="flex items-center gap-2">
-      <input data-slot="field"
+      <Field
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -622,7 +621,7 @@ function YouStep({ initial, onDone }: { initial: string; onDone: (name: string) 
         }}
         placeholder="Your name"
         aria-label="Your name"
-        className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+        className="min-w-0 flex-1"
       />
       <PrimaryButton disabled={!trimmed} busy={update.isPending} onClick={submit}>
         Continue <ArrowRight size={12} />

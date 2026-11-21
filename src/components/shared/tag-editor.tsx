@@ -1,10 +1,10 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useState, useRef } from 'react';
 import { X, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 
 interface TagEditorProps {
   tags: string[];
@@ -48,12 +48,12 @@ export function TagEditor({ tags, onChange, className }: TagEditorProps) {
         </span>
       ))}
       {adding ? (
-        <input
+        <Field
           ref={inputRef}
           autoFocus
           type="text"
           placeholder="tag"
-          className="text-[9px] bg-background border border-border rounded px-1.5 py-0.5 w-16 outline-none focus:ring-1 focus:ring-primary"
+          className="w-16"
           onBlur={(e) => handleAdd(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') handleAdd((e.target as HTMLInputElement).value);

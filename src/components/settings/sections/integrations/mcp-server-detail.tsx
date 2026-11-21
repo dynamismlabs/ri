@@ -1,4 +1,5 @@
 'use client';
+import { Field as SystemField } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -12,7 +13,7 @@ import type { FormEvent, ReactNode } from 'react';
 import { AlertCircle, Loader2, LogIn, Plus, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { BackLink, Chip, DetailHeader, GroupHeading, McpLogo, type Tone } from './parts';
 import type { McpForm, McpServerEntry } from './types';
@@ -314,22 +315,22 @@ export function McpServerForm({
       <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card/20 p-4">
         <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
           <Field label="Name" htmlFor="mcp-name">
-            <Input
+            <SystemField
               id="mcp-name"
               value={form.name}
               onChange={(e) => onChange({ name: e.target.value })}
               placeholder="Sentry"
-              className="h-8 rounded-lg text-xs"
+
               autoFocus
             />
           </Field>
           <Field label="Server URL" htmlFor="mcp-url">
-            <Input
+            <SystemField
               id="mcp-url"
               value={form.url}
               onChange={(e) => onChange({ url: e.target.value })}
               placeholder="https://mcp.example.com"
-              className="h-8 rounded-lg font-mono text-xs"
+               purpose="code"
             />
           </Field>
           <div className="pt-1 @lg:col-span-2">
@@ -337,24 +338,24 @@ export function McpServerForm({
               <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
                 {selected === 'header' && (
                   <Field label="Header name" htmlFor="mcp-header">
-                    <Input
+                    <SystemField
                       id="mcp-header"
                       value={form.header}
                       onChange={(e) => onChange({ header: e.target.value })}
                       placeholder={headerHint ?? 'X-API-Key'}
-                      className="h-8 rounded-lg font-mono text-xs"
+                       purpose="code"
                     />
                   </Field>
                 )}
                 <Field label="Secret" htmlFor="mcp-secret" wide={selected !== 'header'}>
-                  <Input
+                  <SystemField
                     id="mcp-secret"
                     type="password"
                     autoComplete="off"
                     value={form.secret}
                     onChange={(e) => onChange({ secret: e.target.value })}
                     placeholder="Token or key"
-                    className="h-8 rounded-lg font-mono text-xs"
+                     purpose="code"
                   />
                 </Field>
                 <p className="text-[11px] leading-normal text-muted-foreground @lg:col-span-2">The secret is sealed in your Ri and never shown to the model.</p>

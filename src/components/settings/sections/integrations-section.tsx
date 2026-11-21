@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { trpcClient } from '@/lib/trpc/client';
@@ -28,7 +29,7 @@ import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { setSettingsAnchor, useSettingsStore } from '@/components/settings/settings-store';
 import { APP_ANCHOR, PLUGIN_CREATE_ANCHORS } from './plugins/navigation';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 import { type HostedEndpointSelection } from '@/lib/client/integration-endpoint';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -728,13 +729,13 @@ export function IntegrationsSection({ active = true, navigation }: {
               size={14}
               className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
             />
-            <Input
+            <Field
               ref={searchRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
               aria-label={`Search ${INTEGRATION_LABELS.plural.toLowerCase()}`}
-              className="rounded-4xl pl-9 pr-9 text-xs"
+
             />
             {busy && (
               <Loader2

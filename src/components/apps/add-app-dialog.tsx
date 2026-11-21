@@ -1,11 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useAllowApp } from './allow-app';
 
@@ -58,11 +59,11 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
           <div className="space-y-3">
             <label className="block space-y-1 text-xs font-medium text-foreground">
               <span>Name</span>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Reading Log" autoFocus required maxLength={60} />
+              <Field value={name} onChange={(e) => setName(e.target.value)} placeholder="Reading Log" autoFocus required maxLength={60} />
             </label>
             <label className="block space-y-1 text-xs font-medium text-foreground">
               <span>MCP address</span>
-              <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://127.0.0.1:4310/mcp" required inputMode="url" />
+              <Field value={url} onChange={(e) => setUrl(e.target.value)} placeholder="http://127.0.0.1:4310/mcp" required inputMode="url" />
             </label>
             <p className="text-[11px] text-muted-foreground">The app asks next what Ri may see and whether it may make changes. Each agent you allow later gets its own connection and its own choice.</p>
           </div>

@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useAreas, useCreateArea } from '@/hooks/use-areas';
@@ -135,7 +136,7 @@ export function AreasStep({
         )}
       </div>
       <div className="mt-2 flex items-center gap-1.5">
-        <input data-slot="field"
+        <Field
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -146,7 +147,7 @@ export function AreasStep({
           }}
           placeholder="Add your own"
           aria-label="Add an area"
-          className="h-8 min-w-0 flex-1 rounded-lg border border-border bg-background px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+          className="min-w-0 flex-1"
         />
         <QuietButton onClick={addCustom}>
           <span className="inline-flex items-center gap-1">

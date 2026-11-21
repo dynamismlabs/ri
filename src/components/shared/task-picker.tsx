@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { Search, Target, X } from 'lucide-react';
@@ -51,14 +52,14 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
         <div className="p-2 border-b border-border">
           <div className="flex items-center gap-1.5 bg-background border border-border rounded px-2 py-1">
             <Search size={10} className="text-muted-foreground" />
-            <input
+            <Field
               autoFocus
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tasks..."
-              className="flex-1 text-[11px] bg-transparent outline-none"
-              onClick={(e) => e.stopPropagation()}
+              className="flex-1"
+              onClick={(e) => e.stopPropagation()} purpose="embedded"
             />
           </div>
         </div>

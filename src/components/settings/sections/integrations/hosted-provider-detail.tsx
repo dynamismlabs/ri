@@ -1,4 +1,6 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
 
 import dynamic from 'next/dynamic';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
@@ -6,7 +8,7 @@ import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Loader2, Plus } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { HostedEndpointFields } from '@/components/integrations/hosted-endpoint-fields';
@@ -234,8 +236,8 @@ function HostedAccountForm(props: ProviderDetailProps & { account?: HostedMcpAcc
         size="xs"
       >Use API key</Button>
     </div>}
-    {chooseApp && props.provider.configured && <div className="space-y-1"><label htmlFor={appSelectId} className="text-xs font-medium">Slack app</label><select id={appSelectId} value={authConfigId} onChange={event => setAuthConfigId(event.target.value)} disabled={props.busy} className="w-full rounded-md border border-border bg-background p-2 text-sm"><option value="">Choose a Slack app</option>{props.byoConfigs.filter(config => config.status === 'active').map(config => <option key={config.id} value={config.id}>{config.label ?? config.id}</option>)}</select></div>}
-    {showLabel && <div className="space-y-1"><label htmlFor="hosted-account-label" className="text-xs font-medium">Account label</label><Input id="hosted-account-label" value={label} onChange={event => setLabel(event.target.value)} placeholder="Work or Personal" disabled={props.busy} required /></div>}
+    {chooseApp && props.provider.configured && <div className="space-y-1"><label htmlFor={appSelectId} className="text-xs font-medium">Slack app</label><NativeSelect id={appSelectId} value={authConfigId} onChange={event => setAuthConfigId(event.target.value)} disabled={props.busy} className="w-full"><option value="">Choose a Slack app</option>{props.byoConfigs.filter(config => config.status === 'active').map(config => <option key={config.id} value={config.id}>{config.label ?? config.id}</option>)}</NativeSelect></div>}
+    {showLabel && <div className="space-y-1"><label htmlFor="hosted-account-label" className="text-xs font-medium">Account label</label><Field id="hosted-account-label" value={label} onChange={event => setLabel(event.target.value)} placeholder="Work or Personal" disabled={props.busy} required /></div>}
     {provider.mcp?.endpointConfig && <HostedEndpointFields setup={provider.mcp.endpointConfig} value={endpoint} onChange={selection => { setEndpoint(selection); setMethod('oauth'); setCreds({}); }} disabled={props.busy} />}
     <ConnectPanel {...formProps} />
     {isRegisteredMcp(provider) && provider.configured && !slack && <div className="space-y-2">

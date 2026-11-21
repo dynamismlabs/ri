@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 
@@ -597,7 +598,7 @@ function ChatTab({
       )}
     >
       {editing ? (
-        <input
+        <Field
           autoFocus
           value={draft}
           maxLength={120}
@@ -614,7 +615,7 @@ function ChatTab({
             }
           }}
           placeholder="Untitled chat"
-          className="mx-1 w-36 rounded border border-primary/40 bg-background px-1.5 py-0.5 text-[12px] font-medium text-foreground focus:outline-none"
+          className="mx-1 w-36" purpose="title" titleSize="inline"
         />
       ) : (
         <Tip label={tooltip}>

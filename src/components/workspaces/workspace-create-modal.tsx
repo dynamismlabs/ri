@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -296,7 +298,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                   </Button>
                 </EmojiPicker>
                 <span aria-hidden className="mx-1.5 h-5 w-px bg-border" />
-                <input
+                <Field
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
@@ -306,7 +308,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                   placeholder="Agent name"
                   aria-label="Agent name"
                   autoFocus
-                  className="h-11 min-w-0 flex-1 bg-transparent pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
+                  className="min-w-0 flex-1" purpose="embedded"
                 />
               </div>
 
@@ -445,11 +447,11 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
 
               <Section title="Area" hint="Where its tasks and notes belong. Optional.">
                 <div className="relative">
-                  <select
+                  <NativeSelect
                     value={areaId}
                     onChange={(e) => setAreaId(e.target.value)}
                     aria-label="Area"
-                    className="w-full appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-9 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
+                    className="w-full"
                   >
                     <option value="">None</option>
                     {areas?.map((area) => (
@@ -457,7 +459,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                         {area.emoji ? `${area.emoji} ${area.name}` : area.name}
                       </option>
                     ))}
-                  </select>
+                  </NativeSelect>
                   <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 </div>
               </Section>

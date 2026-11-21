@@ -1,14 +1,14 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { KeyRound, Loader2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
 
 export function CursorCredentialPanel() {
   const [key, setKey] = useState('');
@@ -48,13 +48,13 @@ export function CursorCredentialPanel() {
         Stored locally in Ri&apos;s protected credential store. The key is only opened when Cursor starts.
       </p>
       <div className="flex gap-2">
-        <Input
+        <Field
           type="password"
           autoComplete="off"
           value={key}
           onChange={(event) => setKey(event.target.value)}
           placeholder={status.data?.configured ? 'Replace configured key' : 'Paste API key'}
-          className="h-8 rounded-md text-[11px]"
+
         />
         <Button
           disabled={!key.trim() || save.isPending}

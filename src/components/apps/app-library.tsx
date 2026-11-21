@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 
@@ -9,7 +10,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUpRight, BookOpen, Check, ChevronDown, Hammer, LayoutGrid, Loader2, MessageCircle, Plug, Plus, Search, Server, X } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { IntegrationsSection } from '@/components/settings/sections/integrations-section';
@@ -163,7 +164,7 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
                 size={16}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
-              <Input
+              <Field
                 value={searchDraft}
                 onChange={(event) => setSearchDraft(event.target.value)}
                 onBlur={() => {
@@ -171,7 +172,7 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
                 }}
                 placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'}
                 aria-label="Search library"
-                className="h-10 rounded-lg pl-10 pr-10 text-sm"
+
               />
               {searchDraft && (
                 <IconButton

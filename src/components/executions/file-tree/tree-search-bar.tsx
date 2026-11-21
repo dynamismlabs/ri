@@ -1,9 +1,10 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Search, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 interface TreeSearchBarProps {
@@ -76,7 +77,7 @@ export function TreeSearchBar({
       >
         <Search size={12} />
       </IconButton>
-      <input
+      <Field
         ref={inputRef}
         // Go to file (⌘P) focuses this from the execution workbench.
         data-tree-search=""
@@ -88,10 +89,7 @@ export function TreeSearchBar({
         autoComplete="off"
         placeholder="Search files"
         aria-label="Search files"
-        className={cn(
-          'flex-1 min-w-0 bg-transparent text-[12px] text-foreground/90',
-          'placeholder:text-muted-foreground/60 outline-none border-none p-0',
-        )}
+        className="flex-1 min-w-0" purpose="embedded"
       />
       {shortcut && !query && (
         <kbd className="shrink-0 rounded bg-background/70 px-1 py-0.5 font-mono text-[9.5px] leading-none text-muted-foreground/80">

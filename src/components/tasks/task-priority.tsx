@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { ChipButton } from '@/components/system/chip-button';
@@ -139,7 +140,7 @@ function RankInput({
   };
 
   return (
-    <input
+    <Field
       type="number"
       inputMode="numeric"
       min={1}
@@ -162,7 +163,7 @@ function RankInput({
         }
       }}
       style={{ width: `${String(total).length + 2}ch` }}
-      className="h-5 rounded border border-border bg-card px-1 text-center text-[12px] font-medium tabular-nums outline-none focus:border-primary [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      className="w-auto" align="center"
     />
   );
 }

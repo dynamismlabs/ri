@@ -1,4 +1,6 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
+
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { SHARED_TASK_FIELDS } from '@/lib/spaces/shared-fields';
@@ -101,7 +103,7 @@ function useFollowedDraft(value: string) {
 function PrivateNotes({ task, onSave }: { task: TaskRecord; onSave: (value: string | null) => void }) {
   const { draft, setDraft, setEditing } = useFollowedDraft(task.userContext ?? '');
   return (
-    <textarea
+    <TextArea
       aria-label="Private notes"
       value={draft}
       placeholder="Private notes, like what to try first."
@@ -111,7 +113,7 @@ function PrivateNotes({ task, onSave }: { task: TaskRecord; onSave: (value: stri
         onSave(e.target.value.trim() ? e.target.value : null);
       }}
       onBlur={() => setEditing(false)}
-      className="min-h-[3.5rem] w-full resize-y rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-primary/60 field-sizing-content"
+      className="w-full" autoSize resize="vertical"
     />
   );
 }

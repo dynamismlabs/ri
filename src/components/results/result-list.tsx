@@ -1,11 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useDeferredValue, useState } from 'react';
 import { HomeLink as Link } from '@/components/home/home-link';
 import { FileCheck2, History, Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
-import { Input } from '@/components/ui/input';
+
 import { useInfiniteResults } from '@/hooks/use-results';
 import { apiErrorText } from '@/lib/api/client';
 import type { WorkResultRecord } from '@/db/types';
@@ -28,7 +29,7 @@ export function ResultList({ taskId, executionId, compact = false, initialHistor
     <div className="flex flex-wrap items-center gap-2">
       <label className="relative min-w-0 flex-1 basis-48">
         <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filter titles and content" aria-label="Filter saved results" className="pl-9" />
+        <Field value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Filter titles and content" aria-label="Filter saved results"  />
       </label>
       <Button
         aria-pressed={history}

@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -165,7 +166,6 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
           {trigger.enabled ? <Pause size={12} /> : <Play size={12} />}
         </IconButton>
 
-
         <IconButton
           type="button"
           onClick={onEdit}
@@ -238,13 +238,13 @@ function NewChatSchedule({
       <TriggerScheduleFields value={schedule} onChange={setSchedule} kinds={CHAT_KINDS} disabled={create.isPending} />
       <label className="block space-y-1 text-[12px] font-medium">
         <span>Message</span>
-        <textarea data-slot="field"
+        <TextArea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           rows={3}
           required
           placeholder={freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'}
-          className="block w-full resize-y rounded-md border border-border bg-card px-3 py-2 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="block w-full" resize="vertical"
         />
       </label>
       <div className="flex items-start gap-2">

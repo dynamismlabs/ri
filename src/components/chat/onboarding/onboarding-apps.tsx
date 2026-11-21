@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -97,12 +98,12 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
 
           <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background px-2.5">
             <Search size={12} className="flex-shrink-0 text-muted-foreground/60" />
-            <input
+            <Field
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
               aria-label="Search apps"
-              className="h-8 min-w-0 flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+              className="min-w-0 flex-1" purpose="embedded"
             />
           </div>
 

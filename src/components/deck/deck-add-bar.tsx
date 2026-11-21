@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Plus, Loader2, CornerDownLeft, ArrowUpRight } from 'lucide-react';
@@ -127,7 +128,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
         )}
       >
         <Plus className="h-4 w-4 shrink-0 text-primary" />
-        <input
+        <Field
           ref={inputRef}
           value={query}
           onChange={(e) => {
@@ -142,7 +143,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
           aria-label="Add a task, or find an existing one"
           // Typed text clears on Escape before a slideout around the deck closes.
           data-cancel-on-escape={q ? '' : undefined}
-          className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+          className="min-w-0 flex-1" purpose="embedded"
         />
         {createTask.isPending ? (
           <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />

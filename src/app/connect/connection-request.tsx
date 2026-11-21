@@ -1,10 +1,13 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
+
 import { trpcClient } from '@/lib/trpc/client';
 
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { HostedEndpointFields } from '@/components/integrations/hosted-endpoint-fields';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { apiErrorText } from '@/lib/api/client';
 import { integrationEndpointReady, type HostedEndpointSelection } from '@/lib/client/integration-endpoint';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -66,10 +69,10 @@ export function ConnectionRequest(props: ConnectionRequestProps) {
     {oauth && props.scopes.length > 0 && <details><summary>Requested access</summary><ul className="mt-2 break-all text-sm">{props.scopes.map(scope => <li key={scope}>{scope}</li>)}</ul></details>}
     {(props.accounts?.length ?? 0) > 1 && <div className="space-y-2">
       <label htmlFor="requested-account" className="text-sm font-medium">Account</label>
-      <select id="requested-account" className="w-full rounded-md border bg-background p-2 text-sm" disabled={busy} value={selectedAccountId} onChange={event => { setSelectedAccountId(event.target.value); setToken(''); setEndpointSelection({}); setMessage(''); }}>
+      <NativeSelect id="requested-account" className="w-full" disabled={busy} value={selectedAccountId} onChange={event => { setSelectedAccountId(event.target.value); setToken(''); setEndpointSelection({}); setMessage(''); }}>
         <option value="">Choose an account</option>
         {props.accounts?.map(account => <option key={account.connectionId} value={account.connectionId}>{account.label}</option>)}
-      </select>
+      </NativeSelect>
     </div>}
     {needsSetup ? <Link href="/?settings=plugins" className="text-sm font-medium underline">Set up in Settings</Link> : <form onSubmit={(event) => void connect(event)} className="space-y-4">
       {options.endpointConfig && !needsAccountChoice && <HostedEndpointFields setup={options.endpointConfig} value={endpointSelection} onChange={setEndpointSelection} disabled={busy} />}
@@ -79,7 +82,7 @@ export function ConnectionRequest(props: ConnectionRequestProps) {
         {props.helpUrl && <a href={props.helpUrl} target="_blank" rel="noopener noreferrer" className="block text-sm underline">Get your {props.displayName} token</a>}
         <div className="space-y-2">
           <label htmlFor="connection-token" className="text-sm font-medium">{props.credentialLabel ?? 'Connection token'}</label>
-          <Input id="connection-token" type="password" autoComplete="off" value={token} onChange={event => setToken(event.target.value)} disabled={busy} required />
+          <Field id="connection-token" type="password" autoComplete="off" value={token} onChange={event => setToken(event.target.value)} disabled={busy} required />
         </div>
       </>}
       <Button

@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
@@ -25,21 +26,10 @@ export function GateField({
   id,
   label,
   hint,
+  size,
   ...input
-}: React.ComponentProps<'input'> & { id: string; label: string; hint?: string }) {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-xs font-medium text-foreground">
-        {label}
-      </label>
-      <input data-slot="field"
-        id={id}
-        {...input}
-        className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus-visible:border-primary/60 focus-visible:ring-[3px] focus-visible:ring-ring/40"
-      />
-      {hint && <p className="text-xs text-muted-foreground/80">{hint}</p>}
-    </div>
-  );
+}: Omit<React.ComponentProps<'input'>, 'children'> & { id: string; label: string; hint?: string }) {
+  return <Field {...input} id={id} label={label} description={hint} htmlSize={size} />;
 }
 
 export function GateButton({ busy, children, ...button }: React.ComponentProps<'button'> & { busy?: boolean }) {

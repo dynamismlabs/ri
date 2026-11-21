@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useSavedWorkAuthor } from '@/components/chat-ui/member-attribution';
 import { useState } from 'react';
@@ -105,7 +106,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
           {aiReviews.map((review) => <ResultAiReview key={review.id} review={review} result={result} hasSuccessor={!!detail.successorId} canFeedback={canFeedback} onFeedback={setFeedback} onRetry={aiEnabled && !activeReview ? () => { void requestReview({ rerun: true, focus: review.focus ?? undefined, ...(review.selection.harness ? { harness: review.selection.harness } : {}), ...(review.selection.model ? { model: review.selection.model } : {}), ...(review.selection.variant ? { variant: review.selection.variant } : {}), ...(review.selection.effort ? { effort: review.selection.effort } : {}) }); } : undefined} />)}
           {aiEnabled && !activeReview && <div className="space-y-2">
             <ReviewerSelection value={reviewer} onChange={setReviewer} associatedWorkspace={detail.associatedWorkspace} />
-            <details><summary className="cursor-pointer text-xs text-muted-foreground">Add a review focus</summary><label className="mt-2 block space-y-1 text-xs text-muted-foreground"><span>Optional focus</span><input value={focus} onChange={(event) => setFocus(event.target.value)} placeholder="Any concern the reviewer should investigate?" className="w-full rounded-md border bg-background px-3 py-2 text-foreground" /></label></details>
+            <details><summary className="cursor-pointer text-xs text-muted-foreground">Add a review focus</summary><label className="mt-2 block space-y-1 text-xs text-muted-foreground"><span>Optional focus</span><Field value={focus} onChange={(event) => setFocus(event.target.value)} placeholder="Any concern the reviewer should investigate?" className="w-full" /></label></details>
             {!!reviewRequest.error && <p className="text-xs text-destructive" role="alert">{apiErrorText(reviewRequest.error)}</p>}
             <Button
               onClick={() => void requestReview()}

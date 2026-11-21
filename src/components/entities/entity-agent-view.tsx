@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -244,7 +245,7 @@ function EntityTitle({
   );
 
   return (
-    <textarea
+    <TextArea
       ref={ref}
       rows={1}
       defaultValue={title.trim() ? title : ''}
@@ -264,10 +265,10 @@ function EntityTitle({
         const composer = document.querySelector<HTMLElement>('[data-chat-composer] [contenteditable="true"]');
         (composer ?? document.querySelector<HTMLElement>('.ProseMirror[contenteditable="true"]'))?.focus();
       }}
-      className="mt-1 w-full resize-none overflow-hidden border-none bg-transparent text-2xl font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 disabled:opacity-70"
+      className="mt-1 w-full"
       data-gramm="false"
       data-gramm_editor="false"
-      data-enable-grammarly="false"
+      data-enable-grammarly="false" purpose="title" titleSize="entity" autoSize
     />
   );
 }

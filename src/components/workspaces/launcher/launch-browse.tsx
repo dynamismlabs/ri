@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -308,7 +309,7 @@ export function LaunchBrowse({
           size={12}
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
         />
-        <input
+        <Field
           // On touch, focusing would raise the keyboard over the list it's
           // meant to show. A tap on the field searches.
           autoFocus={!touch}
@@ -316,7 +317,7 @@ export function LaunchBrowse({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Search everything…"
-          className="w-full bg-transparent py-2 pl-8 pr-3 text-[12px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+          className="w-full" purpose="embedded"
         />
         {anyLoading && (
           <Loader2

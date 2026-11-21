@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -522,7 +523,6 @@ function LiveBadge({ branch }: { branch: string | null }) {
   );
 }
 
-
 /**
  * "Reveal in Finder" / "Open in editor" links scoped to the worktree
  * root, opened on the device it's on for a browser there (P3.5).
@@ -671,7 +671,6 @@ function resumeIdLabel(harness: string | null): string {
   return isKnownHarnessId(harness) ? `${harnessDefinition(harness).name} ID` : 'Resume ID';
 }
 
-
 interface LinkPrSectionProps {
   session: ChatSessionWithExecution;
 }
@@ -748,7 +747,7 @@ function LinkPrSection({ session }: LinkPrSectionProps) {
         </div>
       ) : (
         <div className="flex items-center gap-1.5">
-          <input
+          <Field
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -759,7 +758,7 @@ function LinkPrSection({ session }: LinkPrSectionProps) {
               }
             }}
             placeholder="PR number or URL"
-            className="flex-1 min-w-0 px-2 py-1 text-[12px] bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary"
+            className="flex-1 min-w-0"
           />
           <Button
             type="button"

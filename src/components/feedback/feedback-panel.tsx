@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useId, useRef, useState, type ClipboardEvent } from 'react';
@@ -15,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
+
 import { Tip } from '@/components/ui/tip';
 import { useOptionalDashboard } from '@/contexts/dashboard-context';
 import { useHomeDocumentScope, useOptionalHomeContext } from '@/components/home/home-context';
@@ -214,7 +215,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
           <label htmlFor={`${id}-message`} className="sr-only">
             Feedback details
           </label>
-          <Textarea
+          <TextArea
             id={`${id}-message`}
             autoFocus
             rows={5}
@@ -236,7 +237,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                   ? 'What are you trying to figure out?'
                   : 'What would make Ri more useful for you?'
             }
-            className="h-36 min-h-24 max-h-48 overflow-y-auto [field-sizing:fixed] text-base md:text-sm"
+             autoSize
           />
         </div>
         {value.attachments.length > 0 && (
@@ -283,7 +284,6 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                       <Download size={13} />
                     </a>
                   </IconButton>
-
 
                   <IconButton
                     type="button"

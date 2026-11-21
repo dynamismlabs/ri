@@ -1,4 +1,5 @@
 "use client";
+import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -237,25 +238,25 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
 
               {/* Name */}
               <div>
-                <textarea
+                <TextArea
                   value={name}
                   onInput={handleNameInput}
                   onKeyDown={handleNameKeyDown}
                   placeholder="Area name"
-                  className="w-full text-lg font-semibold bg-transparent text-foreground placeholder:text-muted-foreground/40 focus:outline-none border-b border-border pb-2 text-center resize-none overflow-hidden"
+                  className="w-full"
                   autoFocus
-                  rows={1}
+                  rows={1} purpose="title" titleSize="form" autoSize align="center"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <textarea
+                <TextArea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   onKeyDown={handleDescriptionKeyDown}
                   placeholder="Description (optional)"
-                  className="w-full h-16 resize-none bg-transparent text-xs text-muted-foreground placeholder:text-muted-foreground/40 focus:outline-none leading-relaxed"
+                  className="w-full" purpose="embedded"
                 />
               </div>
             </div>

@@ -1,4 +1,5 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
 
 /**
  * An MCP server's own settings on its connection page (OpenAI's structured
@@ -15,7 +16,7 @@ import { AlertCircle, AppWindow, Loader2, Play, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
@@ -139,7 +140,7 @@ function SettingControl({ id, field, value, invalid, onSave }: { id: string; fie
       return <Switch id={id} checked={value === true} aria-invalid={invalid || undefined} onCheckedChange={onSave} />;
     case 'string':
       if (field.enum) return <Select value={typeof value === 'string' ? value : undefined} onValueChange={onSave}>
-        <SelectTrigger id={id} aria-invalid={invalid || undefined} className="w-full min-w-0 rounded-lg text-xs @md:w-auto @md:min-w-36 [&_[data-slot=select-value]]:truncate"><SelectValue /></SelectTrigger>
+        <SelectField id={id} aria-invalid={invalid || undefined} className="w-full min-w-0 @md:w-auto @md:min-w-36"><SelectValue /></SelectField>
         <SelectContent position="popper" align="end">{field.enum.map(option => <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>)}</SelectContent>
       </Select>;
       return <DraftInput id={id} value={typeof value === 'string' ? value : ''} invalid={invalid} onCommit={draft => onSave(draft)} />;

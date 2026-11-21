@@ -1,12 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useAgentConfigurationScope } from '@/components/workspaces/agent-placement-controls';
 import { useEffect, useRef, useState } from 'react';
 import { Play, AlertCircle, Pencil, X, Check, Loader2, Settings as SettingsIcon } from 'lucide-react';
-
-
 
 interface PreviewEmptyProps {
   variant:
@@ -298,7 +297,7 @@ export function CommandEditor({
 
   return (
     <div className="flex w-full items-stretch gap-1.5">
-      <input
+      <Field
         ref={inputRef}
         type="text"
         value={draft}
@@ -317,7 +316,7 @@ export function CommandEditor({
         spellCheck={false}
         autoCorrect="off"
         autoCapitalize="off"
-        className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-60"
+        className="flex-1" purpose="code"
       />
 
         <IconButton
@@ -333,7 +332,6 @@ export function CommandEditor({
         >
           {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
         </IconButton>
-
 
         <IconButton
           type="button"

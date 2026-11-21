@@ -1,4 +1,6 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { trpcClient } from '@/lib/trpc/client';
@@ -24,8 +26,8 @@ import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { setSettingsSection } from '@/components/settings/settings-store';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import type { NotificationChannelRecord } from '@/db/types';
 import { desktopNeedsSignedBuild, isDesktopNotificationChannel, type DesktopNotificationAction } from '@/lib/notifications/desktop-contract';
 import { EVENT_CATALOG } from '@/lib/notifications/events';
@@ -507,9 +509,9 @@ export function NotificationsSection() {
                     Bot connection
                   </label>
                   <Select value={newConnId} onValueChange={setNewConnId}>
-                    <SelectTrigger className="h-9 w-full rounded-4xl border-input bg-input/30 text-xs">
+                    <SelectField className="w-full">
                       <SelectValue placeholder="Select a connected bot..." />
-                    </SelectTrigger>
+                    </SelectField>
                     <SelectContent className="rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl">
                       {telegramConns.map((c) => (
                         <SelectItem key={c.id} value={c.id} className="text-xs">
@@ -572,11 +574,11 @@ export function NotificationsSection() {
                               Discover chats
                             </Button>
                           </div>
-                          <Input
+                          <Field
                             value={newChatId}
                             onChange={(e) => setNewChatId(e.target.value)}
                             placeholder="e.g. -100123456789 or 987654321"
-                            className="rounded-4xl font-mono text-xs"
+                             purpose="code"
                           />
                           {discoveredChats.length > 0 && (
                             <div className="flex flex-wrap gap-1.5 pt-1">
@@ -603,11 +605,11 @@ export function NotificationsSection() {
                           <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                             Label <span className="opacity-60">(optional)</span>
                           </label>
-                          <Input
+                          <Field
                             value={newLabel}
                             onChange={(e) => setNewLabel(e.target.value)}
                             placeholder="e.g. My phone"
-                            className="rounded-4xl text-xs"
+
                           />
                         </div>
 
@@ -717,7 +719,7 @@ export function NotificationsSection() {
                     <span className="w-10 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       Name
                     </span>
-                    <Input
+                    <Field
                       defaultValue={c.label ?? ''}
                       placeholder={isWebPush ? 'e.g. My browsers' : 'e.g. My phone'}
                       disabled={busy}
@@ -725,7 +727,7 @@ export function NotificationsSection() {
                         const v = e.target.value.trim();
                         if (v !== (c.label ?? '')) renameChannel(c.id, v);
                       }}
-                      className="h-7 max-w-[220px] rounded-lg text-xs"
+                      className="max-w-[220px]"
                     />
                   </div>
                 </div>

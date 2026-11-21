@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -57,12 +58,12 @@ export function PermissionCard({
 
       {showDenyInput && (
         <div className="px-4 pb-2">
-          <textarea
+          <TextArea
             value={denyReason}
             onChange={(e) => setDenyReason(e.target.value)}
             placeholder="Optional: tell the agent why (e.g. 'use Read instead')"
             rows={2}
-            className="w-full text-[11.5px] bg-background border border-border rounded-md px-2 py-1.5 resize-none focus:outline-none focus:border-primary/50"
+            className="w-full"
             autoFocus
           />
         </div>

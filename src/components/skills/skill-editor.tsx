@@ -1,4 +1,6 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
+import { Field } from '@/components/system/field';
 
 import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
 
@@ -186,7 +188,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                       Agents see only this until they decide to use the skill. Say what it does and when, in
                       the words you&apos;d use to ask for it.
                     </p>
-                    <textarea
+                    <TextArea
                       id="skill-description"
                       value={draft.description}
                       onChange={(e) => saver.edit({ description: e.target.value })}
@@ -194,7 +196,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
                       readOnly={readOnly || !!recovery}
                       rows={3}
                       placeholder="Reviews pull requests the way I do. Use when I ask for a review, a second look at a diff, or whether a PR is ready to merge."
-                      className="field-sizing-content min-h-[4.5rem] w-full resize-none rounded-lg border border-border bg-card/30 px-3 py-2 text-[12.5px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground/60 focus:border-ring focus:ring-[3px] focus:ring-ring/30"
+                      className="w-full" autoSize
                     />
                   </section>
 
@@ -314,7 +316,7 @@ function NameField({ name, readOnly, onRename }: { name: string; readOnly: boole
         {note ?? 'Also its slash command. Lowercase letters, numbers and single hyphens.'}
       </p>
       <div className="relative">
-        <input
+        <Field
           id="skill-name"
           value={value}
           onChange={(e) => {
@@ -334,10 +336,7 @@ function NameField({ name, readOnly, onRename }: { name: string; readOnly: boole
           spellCheck={false}
           autoComplete="off"
           aria-invalid={note ? true : undefined}
-          className={cn(
-            'w-full rounded-lg border bg-card/30 px-3 py-2 font-mono text-[12.5px] text-foreground outline-none focus:ring-[3px]',
-            note ? 'border-destructive/60 focus:ring-destructive/20' : 'border-border focus:border-ring focus:ring-ring/30',
-          )}
+          className="w-full" purpose="code"
         />
         {renaming && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />}
       </div>

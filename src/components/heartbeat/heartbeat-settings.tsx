@@ -1,4 +1,7 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 /**
@@ -12,7 +15,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Loader2, Play } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+
 import { RunsOnPicker } from '@/components/triggers/runs-on-picker';
 import { closeSettings } from '@/components/settings/settings-store';
 import { useCheckInNow, useHeartbeat, useUpdateHeartbeat, type HeartbeatUpdate } from '@/hooks/use-heartbeat';
@@ -37,8 +40,6 @@ function browserTimezone(): string {
     return 'UTC';
   }
 }
-
-const SELECT_CLASS = 'rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring';
 
 /** The hard limits, in the words the user sees. Mirrors HEARTBEAT_GROUND_RULES. */
 const GROUND_RULES = [
@@ -152,7 +153,7 @@ function HeartbeatSettingsBody({
               can't have one above it (see LauncherPopoverContent). */}
           <div className="@container flex flex-wrap items-center gap-2">
             <span className="w-14 shrink-0 text-[12px] text-muted-foreground">Hours</span>
-            <select
+            <NativeSelect
               value={anyTime ? 'any' : 'window'}
               onChange={(e) =>
                 save(
@@ -164,12 +165,12 @@ function HeartbeatSettingsBody({
                       },
                 )
               }
-              className={SELECT_CLASS}
+              className="w-auto"
               aria-label="When it may check in"
             >
               <option value="any">24/7</option>
               <option value="window">Between</option>
-            </select>
+            </NativeSelect>
             {!anyTime && (
               // One unit, so a narrow panel wraps the pair together. Below a
               // medium container it takes its own row and the inputs share it.
@@ -340,7 +341,7 @@ function IntervalInput({ seconds, onCommit }: { seconds: number; onCommit: (seco
     <div className="space-y-1">
       <div className="flex flex-wrap items-center gap-2">
         <span className="w-14 shrink-0 text-[12px] text-muted-foreground">Every</span>
-        <input data-slot="field"
+        <Field
           type="number"
           min={1}
           step="any"
@@ -355,13 +356,13 @@ function IntervalInput({ seconds, onCommit }: { seconds: number; onCommit: (seco
           }}
           aria-label="How often it checks in"
           aria-invalid={tooShort && left}
-          className="w-16 rounded-md border border-border bg-background px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-16"
         />
-        <select value={unit} onChange={(e) => pickUnit(Number(e.target.value))} aria-label="Unit" className={SELECT_CLASS}>
+        <NativeSelect value={unit} onChange={(e) => pickUnit(Number(e.target.value))} aria-label="Unit" className="w-auto">
           {units.map((u) => (
             <option key={u.label} value={u.seconds}>{typed === 1 ? u.label.slice(0, -1) : u.label}</option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
       {tooShort && left && (
         <p role="alert" className="pl-16 text-[11px] text-destructive">
@@ -382,7 +383,7 @@ function TimeInput({ label, value, onCommit }: { label: string; value: string; o
     setDraft(value);
   }
   return (
-    <input data-slot="field"
+    <Field
       type="time"
       aria-label={label}
       value={draft}
@@ -391,7 +392,7 @@ function TimeInput({ label, value, onCommit }: { label: string; value: string; o
         if (/^\d{2}:\d{2}$/.test(draft) && draft !== value) onCommit(draft);
         else setDraft(value);
       }}
-      className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring @md:flex-none"
+      className="min-w-0 flex-1 @md:flex-none"
     />
   );
 }
@@ -469,14 +470,14 @@ function InstructionsEditor({
       <p className="text-[11px] text-muted-foreground/85">
         What to do, and when. Each check-in knows the time and what earlier ones did, so you can write things like &ldquo;once each morning&rdquo;.
       </p>
-      <Textarea
+      <TextArea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onFocus={() => setEditing(true)}
         onBlur={commit}
         rows={compact ? 6 : 9}
-        className="max-h-[50vh] overflow-y-auto font-sans text-sm"
-        aria-label="Heartbeat instructions"
+
+        aria-label="Heartbeat instructions" autoSize
       />
       <Button
         type="button"

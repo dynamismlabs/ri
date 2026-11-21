@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useReducer } from 'react';
 import { Button } from '@/components/system/button';
@@ -115,7 +116,7 @@ export function WorkResultGuidanceField() {
         Shared preferences for how agents hand work back to you and review it. An agent can add its own preferences,
         which take precedence when they conflict. These apply only to handoffs and reviews, not ordinary chat.
       </p>
-      <textarea
+      <TextArea
         id="work-result-guidance"
         aria-describedby="work-result-guidance-description work-result-guidance-status work-result-guidance-limit"
         aria-invalid={tooLong || undefined}
@@ -124,7 +125,7 @@ export function WorkResultGuidanceField() {
         maxLength={WORK_RESULT_GUIDANCE_MAX}
         disabled={!state.loaded}
         placeholder="e.g. When handing work back to me, lead with what changed and what I need to do next. Keep summaries brief and include links to the finished work."
-        className="h-48 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
+        className="w-full" resize="vertical"
       />
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p id="work-result-guidance-limit" className="text-[11px] text-muted-foreground/60">

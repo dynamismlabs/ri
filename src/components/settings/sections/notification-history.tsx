@@ -1,4 +1,6 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/system/button';
@@ -49,15 +51,15 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
       <p className="text-xs text-muted-foreground">Latest 100 deliveries across your notification channels. Filters apply to this recent list. Removing a channel also removes its history.</p>
       <div className="flex flex-wrap items-center gap-2">
         <label htmlFor={`${id}-status`} className="text-xs text-muted-foreground">Status</label>
-        <select id={`${id}-status`} value={status} onChange={event => setStatus(event.target.value as NotificationHistoryStatus | 'all')} className={filterClass}>
+        <NativeSelect id={`${id}-status`} value={status} onChange={event => setStatus(event.target.value as NotificationHistoryStatus | 'all')} className="w-auto">
           <option value="all">All statuses</option>
           {Object.entries(NOTIFICATION_HISTORY_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
+        </NativeSelect>
         <label htmlFor={`${id}-channel`} className="text-xs text-muted-foreground">Channel</label>
-        <select id={`${id}-channel`} value={selectedChannel} onChange={event => setChannelId(event.target.value)} className={`${filterClass} max-w-56`}>
+        <NativeSelect id={`${id}-channel`} value={selectedChannel} onChange={event => setChannelId(event.target.value)} className={cn("max-w-56", 'w-auto')}>
           <option value="all">All channels</option>
           {channels.map(channel => <option key={channel.id} value={channel.id}>{channel.label}</option>)}
-        </select>
+        </NativeSelect>
       </div>
       {query.isPending && <p role="status" className="text-xs text-muted-foreground">Loading delivery history…</p>}
       {query.isError && <p role="alert" className="text-xs text-destructive">Could not refresh delivery history. Try again shortly.{query.data ? ' Showing the last loaded results.' : ''}</p>}

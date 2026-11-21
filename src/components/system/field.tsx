@@ -19,11 +19,12 @@ type InputProps = Omit<ComponentProps<typeof Input>, 'size'>;
 type FieldBaseProps = Omit<InputProps, 'children'> &
   Omit<FieldInfo, 'label'> &
   FieldDrawing & {
+    /** Layout for the control when the label and messages span a wider frame. */
+    controlClassName?: string;
     /** Native character count, when the form needs it. */
     htmlSize?: number;
     leading?: ReactNode;
     trailing?: ReactNode;
-    /** Adapt an installed input engine, such as cmdk, without replacing its events. */
     /** Parser feedback stays inside date and recurrence controls. */
     inlineMessage?: boolean;
   };
@@ -56,6 +57,7 @@ export function Field(fieldProps: FieldProps) {
     asChild,
     children,
     className,
+    controlClassName,
     ...props
   } = fieldProps;
   const size = useFieldSize(requestedSize);
@@ -86,6 +88,7 @@ export function Field(fieldProps: FieldProps) {
       className={cn(
         fieldVariants({ size, purpose, titleSize, align, completed }),
         !framed && !grouped && className,
+        !grouped && controlClassName,
       )}
     >
       {child
@@ -113,7 +116,7 @@ export function Field(fieldProps: FieldProps) {
           data-slot="field-shell"
           aria-invalid={info['aria-invalid']}
           data-disabled={props.disabled || undefined}
-          className={cn('ri-field-shell', `ri-field--${size}`, !framed && className)}
+          className={cn('ri-field-shell', `ri-field--${size}`, !framed && className, controlClassName)}
         >
           {leading && (
             <InputGroupAddon className="ri-field-addon" align="inline-start">

@@ -1,3 +1,5 @@
+
+import { Field } from '@/components/system/field';
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
 /** Bundled independently for the opaque gallery iframe. Never imported by the app shell. */
@@ -307,7 +309,7 @@ function ArtifactCollection() {
     sessionId: CHAT_ID, eventId: `artifact-${index}`, createdAt: NOW, chatLabel: index ? 'Prepare the handoff' : 'Research the options',
   }));
   return <div className="rounded-lg border border-border p-2">
-    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<input data-slot="field" aria-label="Filter artifacts" placeholder="Filter by filename, path or chat" value={query} onChange={event => setQuery(event.target.value)} className="mt-2 block w-full rounded-md border border-border bg-background p-2 text-sm" /></label>
+    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<Field aria-label="Filter artifacts" placeholder="Filter by filename, path or chat" value={query} onChange={event => setQuery(event.target.value)} className="mt-2 block w-full" /></label>
     <ArtifactList items={items} query={query} />
   </div>;
 }

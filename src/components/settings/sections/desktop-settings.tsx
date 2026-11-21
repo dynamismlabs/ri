@@ -1,10 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
 import type { DesktopSettingsAction, DesktopSettingsStatus } from '@/lib/client/desktop-settings';
@@ -20,7 +21,7 @@ function ShortcutForm({ status, busy, save }: { status: DesktopSettingsStatus['s
     </div>
     <label className="block text-xs font-medium" htmlFor="desktop-capture-shortcut">Keyboard shortcut</label>
     <div className="flex gap-2">
-      <Input id="desktop-capture-shortcut" value={accelerator} onChange={event => setAccelerator(event.target.value)} disabled={busy} autoComplete="off" spellCheck={false} />
+      <Field id="desktop-capture-shortcut" value={accelerator} onChange={event => setAccelerator(event.target.value)} disabled={busy} autoComplete="off" spellCheck={false} />
       <Button
         disabled={busy}
         onClick={() => void save({ type: 'shortcut', enabled: status.enabled, accelerator })}

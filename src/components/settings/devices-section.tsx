@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
 
@@ -121,13 +123,13 @@ export function DevicesSection() {
         <div className="rounded-lg border border-border bg-background p-3 space-y-2">
           <label className="block">
             <span className="text-[11px] text-muted-foreground/70">Name</span>
-            <input
+            <Field
               autoFocus
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="iPhone 15"
-              className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="mt-1 w-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handlePair();
               }}
@@ -188,17 +190,17 @@ function KindSelect({ value, onChange }: { value: DeviceKind; onChange: (kind: D
   return (
     <label className="block">
       <span className="text-[11px] text-muted-foreground/70">Type</span>
-      <select
+      <NativeSelect
         value={value}
         onChange={(e) => onChange(e.target.value as DeviceKind)}
-        className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+        className="mt-1 w-full"
       >
         {DEVICE_KINDS.map((k) => (
           <option key={k.value} value={k.value}>
             {k.label}
           </option>
         ))}
-      </select>
+      </NativeSelect>
     </label>
   );
 }
@@ -294,11 +296,11 @@ function PairingPanel({
             <div className="flex gap-3 items-start">
               <QrCode value={t.url} size={140} />
               <div className="flex-1 min-w-0 space-y-2">
-                <input
+                <Field
                   readOnly
                   value={t.url}
-                  className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
-                  onFocus={(e) => e.currentTarget.select()}
+                  className="w-full"
+                  onFocus={(e) => e.currentTarget.select()} purpose="code"
                 />
                 <Button onClick={() => handleCopy(t.id, t.url)} variant="secondary" size="sm">
                   {copiedLabel === t.id ? <Check size={12} /> : <Copy size={12} />}
@@ -318,11 +320,11 @@ function PairingPanel({
           <code className="font-mono text-foreground/80">/#{PAIRING_TOKEN_FRAGMENT_KEY}=&lt;token&gt;</code>.
         </p>
         <div className="flex items-center gap-2">
-          <input
+          <Field
             readOnly
             value={pairing.plaintext}
-            className="flex-1 min-w-0 rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
-            onFocus={(e) => e.currentTarget.select()}
+            className="flex-1 min-w-0"
+            onFocus={(e) => e.currentTarget.select()} purpose="code"
           />
           <Button onClick={() => handleCopy('token', pairing.plaintext)} variant="secondary" size="sm">
             {copiedLabel === 'token' ? <Check size={12} /> : <Copy size={12} />}
@@ -460,12 +462,12 @@ function DeviceCard({
         <div className="space-y-2">
           <label className="block">
             <span className="text-[11px] text-muted-foreground/70">Name</span>
-            <input
+            <Field
               autoFocus
               type="text"
               value={draftName}
               onChange={(e) => setDraftName(e.target.value)}
-              className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="mt-1 w-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') commitEdit();
                 if (e.key === 'Escape') setEditing(false);

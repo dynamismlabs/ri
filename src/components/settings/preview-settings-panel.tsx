@@ -1,4 +1,5 @@
 'use client';
+import { Field as SystemField } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -79,12 +80,12 @@ export function PreviewSettingsPanel() {
         {active === 'manual' && (
           <div className="rounded-md border border-border bg-card/40 p-3 space-y-2.5">
             <Field label="Default URL template">
-              <input data-slot="field"
+              <SystemField
                 value={manualTemplate}
                 onChange={(e) => setManualTemplate(e.target.value)}
                 placeholder="https://{name}.mytunnel.com"
                 spellCheck={false}
-                className="w-full rounded border border-border bg-background px-2 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full" purpose="code"
               />
             </Field>
             <p className="text-[11px] text-muted-foreground">

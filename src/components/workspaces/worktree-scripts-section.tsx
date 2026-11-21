@@ -1,4 +1,6 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
+import { Field } from '@/components/system/field';
 
 import { useStackDetection } from '@/hooks/use-workspaces';
 
@@ -101,23 +103,23 @@ function ScriptField({
         {label}
       </label>
       {multiline ? (
-        <textarea
+        <TextArea
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
           rows={2}
-          className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full" purpose="code" resize="vertical"
         />
       ) : (
-        <input
+        <Field
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full" purpose="code"
         />
       )}
       <p className="mt-1 text-[10px] text-muted-foreground/70 leading-snug">{hint}</p>

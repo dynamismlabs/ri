@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -6,8 +8,7 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
 import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
@@ -78,22 +79,22 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
           </DialogHeader>
           <label className="block space-y-1 text-xs font-medium">
             <span>Name</span>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Baby tracker" required maxLength={60} autoFocus />
+            <Field value={name} onChange={(e) => setName(e.target.value)} placeholder="Baby tracker" required maxLength={60} autoFocus />
           </label>
           <label className="block space-y-1 text-xs font-medium">
             <span>What should it do?</span>
-            <Textarea value={ask} onChange={(e) => setAsk(e.target.value)} rows={4} placeholder="Track feeds, sleep and diapers, with a daily summary." />
+            <TextArea value={ask} onChange={(e) => setAsk(e.target.value)} rows={4} placeholder="Track feeds, sleep and diapers, with a daily summary." autoSize />
           </label>
           {showSettings ? (
             <div className="space-y-3 rounded-md border border-border p-3">
               <label className="block space-y-1 text-xs font-medium">
                 <span>Apps folder</span>
-                <Input value={appsDir} onChange={(e) => setAppsDir(e.target.value)} />
+                <Field value={appsDir} onChange={(e) => setAppsDir(e.target.value)} />
                 <span className="block font-normal text-muted-foreground">Each app gets its own folder and git repository here.</span>
               </label>
               <label className="block space-y-1 text-xs font-medium">
                 <span>{tools?.kit ? 'Kit checkout (for developers)' : 'App kit command'}</span>
-                <Input value={kit} onChange={(e) => setKit(e.target.value)} placeholder="pnpm --dir /path/to/app-kit create:app" className="font-mono text-xs" />
+                <Field value={kit} onChange={(e) => setKit(e.target.value)} placeholder="pnpm --dir /path/to/app-kit create:app"  purpose="code" />
                 <span className="block font-normal text-muted-foreground">
                   {tools?.kit
                     ? <>{APP_NAME} makes apps with the app kit {tools.kit.version} it carries. To use a kit checkout instead, give the command that runs its create. {APP_NAME} adds the new app&apos;s folder at the end.</>

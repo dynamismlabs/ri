@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -97,13 +98,13 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         {/* Search */}
         <div className="flex items-center gap-1.5 flex-1 bg-muted/50 rounded-md px-2 py-1">
           <Search className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-          <input
+          <Field
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search tasks..."
-            className="bg-transparent text-xs text-foreground placeholder:text-muted-foreground/40 outline-none w-full"
-            autoFocus
+            className="w-full"
+            autoFocus purpose="embedded"
           />
         </div>
 

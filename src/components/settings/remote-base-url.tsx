@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -352,13 +353,13 @@ export function RemoteBaseUrlSection() {
       )}
 
       <div className="flex items-center gap-2">
-        <input
+        <Field
           type="url"
           value={draft}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={`https://${APP_SHORT_ID}.example.com`}
           disabled={busy}
-          className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          className="flex-1"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && dirty && draft.trim()) {
               saveMutation.mutate(draft.trim());
@@ -488,7 +489,7 @@ export function RemoteBaseUrlSection() {
             </p>
 
             <div className="flex items-center gap-2">
-              <input
+              <Field
                 value={nameDraft}
                 onChange={(e) => {
                   setNameDraftOverride(e.target.value);
@@ -500,12 +501,12 @@ export function RemoteBaseUrlSection() {
                 autoCorrect="off"
                 maxLength={MAX_LABEL_LENGTH}
                 disabled={busy || nameLocked}
-                className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+                className="flex-1"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && nameDirty && nameValid) {
                     nameMutation.mutate(nameNormalized || null);
                   }
-                }}
+                }} purpose="code"
               />
               <Button
                 onClick={() => nameMutation.mutate(nameNormalized || null)}

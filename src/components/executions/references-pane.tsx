@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -167,19 +168,14 @@ export function ReferencesPane({
             size={12}
             className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
           />
-          <input
+          <Field
             ref={searchRef}
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search all tasks &amp; notes…"
             aria-label="Search all tasks and notes"
-            className={cn(
-              'w-full pl-7 pr-7 py-1.5 rounded-md text-[12px]',
-              'bg-muted/40 border border-transparent',
-              'focus:outline-none focus:border-primary/40 focus:bg-background',
-              'placeholder:text-muted-foreground/50',
-            )}
+            className="w-full"
           />
           {searching && data && (
             <Loader2
@@ -549,7 +545,7 @@ function CreateRow({
       <span className="text-[11px] font-semibold text-muted-foreground capitalize">
         {mode}:
       </span>
-      <input
+      <Field
         autoFocus
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -565,7 +561,7 @@ function CreateRow({
           }
         }}
         placeholder={placeholder}
-        className="flex-1 min-w-0 px-2 py-1 text-[11.5px] bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary"
+        className="flex-1 min-w-0"
       />
       <Button
         type="button"

@@ -1,4 +1,7 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
+import { cn } from '@/lib/utils';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { useState } from 'react';
@@ -73,18 +76,18 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
     <fieldset disabled={disabled} className="space-y-3">
       <label className="block space-y-1 text-[12px] font-medium">
         <span>Frequency</span>
-        <select data-slot="field" value={value.kind} onChange={(e) => patch({ kind: e.target.value as FrequencyKind })} className={inputCls}>
+        <NativeSelect value={value.kind} onChange={(e) => patch({ kind: e.target.value as FrequencyKind })} className="block w-full">
           {FREQUENCIES.filter((option) => !kinds || kinds.includes(option.kind)).map((option) => (
             <option key={option.value} value={option.value}>{option.label}</option>
           ))}
-        </select>
+        </NativeSelect>
       </label>
 
       <div className="flex flex-wrap items-end gap-3">
         {value.kind === 'once' && (
           <label className="min-w-0 flex-1 space-y-1 text-[12px] font-medium">
             <span>Date</span>
-            <input data-slot="field" type="date" value={value.date ?? ''} onChange={(e) => patch({ date: e.target.value })} required className={inputCls} />
+            <Field type="date" value={value.date ?? ''} onChange={(e) => patch({ date: e.target.value })} required className="block w-full" />
           </label>
         )}
         {value.kind === 'weekly' && (
@@ -96,13 +99,13 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
         {value.kind === 'monthly' && (
           <label className="space-y-1 text-[12px] font-medium">
             <span>Day of month</span>
-            <input data-slot="field" type="number" min={1} max={28} value={value.dayOfMonth ?? 1} onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })} required className={`${inputCls} max-w-24`} />
+            <Field type="number" min={1} max={28} value={value.dayOfMonth ?? 1} onChange={(e) => patch({ dayOfMonth: Number(e.target.value) })} required className={cn("block w-full", "max-w-24")} />
           </label>
         )}
         {needsTime && (
           <label className="space-y-1 text-[12px] font-medium">
             <span>Time</span>
-            <input data-slot="field" type="time" value={value.time ?? '09:00'} onChange={(e) => patch({ time: e.target.value })} required className={inputCls} />
+            <Field type="time" value={value.time ?? '09:00'} onChange={(e) => patch({ time: e.target.value })} required className="block w-full" />
           </label>
         )}
       </div>
@@ -113,14 +116,14 @@ export function TriggerScheduleFields({ value, onChange, kinds, disabled = false
       {value.kind === 'custom' && (
         <label className="block space-y-1 text-[12px] font-medium">
           <span>Cron expression</span>
-          <input data-slot="field" type="text" value={value.cronExpression ?? '0 9 * * *'} onChange={(e) => patch({ cronExpression: e.target.value })} placeholder="0 9 * * 1-5" required className={`${inputCls} font-mono`} />
+          <Field type="text" value={value.cronExpression ?? '0 9 * * *'} onChange={(e) => patch({ cronExpression: e.target.value })} placeholder="0 9 * * 1-5" required className="block w-full" purpose="code" />
           <span className="block text-[11px] font-normal text-muted-foreground">Minute, hour, day of month, month, day of week</span>
         </label>
       )}
       {scheduled && (
         <label className="block space-y-1 text-[12px] font-medium">
           <span>Timezone</span>
-          <input data-slot="field" type="text" value={value.timezone} onChange={(e) => patch({ timezone: e.target.value })} placeholder="America/Denver" required className={inputCls} />
+          <Field type="text" value={value.timezone} onChange={(e) => patch({ timezone: e.target.value })} placeholder="America/Denver" required className="block w-full" />
         </label>
       )}
       {value.kind === 'manual' && <p className="text-[11px] text-muted-foreground">Use Run now whenever you need it.</p>}
@@ -186,19 +189,19 @@ function IntervalField({ seconds, onChange }: { seconds: number; onChange: (seco
     <div className="flex items-end gap-2">
       <label className="min-w-0 flex-1 space-y-1 text-[12px] font-medium">
         <span>Every</span>
-        <input data-slot="field"
+        <Field
           type="number"
           min={1}
           step={1}
           value={Number.isFinite(seconds / unit) ? seconds / unit : ''}
           onChange={(e) => onChange(Math.round(Number(e.target.value) * unit))}
           required
-          className={inputCls}
+          className="block w-full"
         />
       </label>
       <label className="space-y-1 text-[12px] font-medium">
         <span className="sr-only">Unit</span>
-        <select data-slot="field"
+        <NativeSelect
           aria-label="Unit"
           value={unit}
           onChange={(e) => {
@@ -206,13 +209,11 @@ function IntervalField({ seconds, onChange }: { seconds: number; onChange: (seco
             setUnit(next);
             onChange(Math.max(1, Math.round(seconds / unit)) * next);
           }}
-          className={inputCls}
+          className="block w-full"
         >
           {units.map((u) => <option key={u.label} value={u.seconds}>{u.label}</option>)}
-        </select>
+        </NativeSelect>
       </label>
     </div>
   );
 }
-
-const inputCls = 'block w-full rounded-md border border-border bg-card px-3 py-2 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring';

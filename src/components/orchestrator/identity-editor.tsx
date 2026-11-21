@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
@@ -153,7 +154,7 @@ export function IdentityEditor({
           className="shadow-sm"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <input data-slot="field"
+          <Field
             autoFocus={autoFocusName}
             value={draft.name}
             maxLength={ORCHESTRATOR_NAME_MAX}
@@ -166,7 +167,7 @@ export function IdentityEditor({
             }}
             placeholder={APP_NAME}
             aria-label="Assistant name"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full"
           />
           <div className="flex flex-wrap items-center gap-1">
             <EmojiPicker onSelect={(emoji) => set({ emoji, image: null })}>

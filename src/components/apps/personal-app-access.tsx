@@ -1,4 +1,5 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -142,11 +143,11 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
       </ul>
       <div className="flex flex-wrap items-center gap-2">
         {others.length > 0 && (
-          <select aria-label={`Allow an agent to use ${name}`} value="" disabled={busy} className="rounded-md border bg-background p-1.5 text-xs"
+          <NativeSelect aria-label={`Allow an agent to use ${name}`} value="" disabled={busy} className="w-auto"
             onChange={(event) => { const agent = others.find((workspace) => workspace.id === event.target.value); if (agent) allow.mutate({ id: agent.id, name: agent.name }); }}>
             <option value="">Allow an agent…</option>
             {others.map((workspace) => <option key={workspace.id} value={workspace.id}>{workspace.name}</option>)}
-          </select>
+          </NativeSelect>
         )}
         <Button
           disabled={busy}

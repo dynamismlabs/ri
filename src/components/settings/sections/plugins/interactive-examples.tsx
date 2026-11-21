@@ -1,4 +1,6 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
 
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { useEffect, useRef, useState } from 'react';
@@ -82,7 +84,7 @@ export function InteractiveExamples() {
               <td className="min-w-40 py-3 pr-3 align-top text-muted-foreground">{demo.description}</td>
               <td className="min-w-44 space-y-2 py-3 align-top">
                 <p className="text-muted-foreground">{demo.access}</p>
-                {needsAccount && choices.length > 1 && <select aria-label={`${demo.name} account`} value={selectedAccounts[demo.id] ?? ''} onChange={event => setSelectedAccounts(previous => ({ ...previous, [demo.id]: event.target.value }))} className="max-w-full rounded border border-input bg-background p-1"><option value="">Choose account</option>{choices.map(value => <option key={value.serverId} value={value.serverId}>{value.label}</option>)}</select>}
+                {needsAccount && choices.length > 1 && <NativeSelect aria-label={`${demo.name} account`} value={selectedAccounts[demo.id] ?? ''} onChange={event => setSelectedAccounts(previous => ({ ...previous, [demo.id]: event.target.value }))} className={cn("max-w-full", 'w-auto')}><option value="">Choose account</option>{choices.map(value => <option key={value.serverId} value={value.serverId}>{value.label}</option>)}</NativeSelect>}
                 {needsAccount && selected && <p role="status" className="text-[11px] text-muted-foreground">{selected.label}: {selected.status}</p>}
                 <div className="flex flex-wrap gap-1">
                   {needsAccount ? <>

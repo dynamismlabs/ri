@@ -1,11 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, FolderGit2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useCatalogApp } from './app-catalog';
@@ -77,9 +78,9 @@ export function AppSourcePanel({ appId, appName, onOpenBuild }: { appId: string;
         </div>
       ) : editing ? (
         <form className="space-y-2" onSubmit={(event) => { event.preventDefault(); record.mutate(); }}>
-          <Input value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Its folder, like /Users/you/apps/bloom" />
-          <Input value={gitUrl} onChange={(e) => setGitUrl(e.target.value)} placeholder="Or its git URL" />
-          <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="How it's built and deployed" />
+          <Field value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Its folder, like /Users/you/apps/bloom" />
+          <Field value={gitUrl} onChange={(e) => setGitUrl(e.target.value)} placeholder="Or its git URL" />
+          <TextArea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="How it's built and deployed" autoSize />
           <div className="flex gap-2">
             <Button
               type="submit"

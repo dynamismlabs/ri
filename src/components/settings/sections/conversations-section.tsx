@@ -1,12 +1,15 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+
 import { apiErrorText } from '@/lib/api/client';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { openSettings } from '@/components/settings/settings-store';
@@ -33,7 +36,7 @@ function SlackTokenField({ kind, id, label, value, onChange }: {
       </>}
     </div>
     <Label htmlFor={id}>{label}</Label>
-    <Input id={id} type="password" autoComplete="off" value={value} onChange={event => onChange(event.target.value)}
+    <Field id={id} type="password" autoComplete="off" value={value} onChange={event => onChange(event.target.value)}
       placeholder={kind === 'bot' ? 'xoxb-…' : 'xapp-…'} aria-describedby={`${id}-help`} required />
   </div>;
 }
@@ -84,13 +87,13 @@ export function ConversationsSection() {
   }, [newConnectionId, savedConnectionId]);
   const disabled = create.isPending || mutate.isPending || reconnect.isPending;
   const destinationFields = <>
-    <div className="space-y-2"><Label htmlFor="conversation-name">Name</Label><Input id="conversation-name" value={name} onChange={event => setName(event.target.value)} required maxLength={provider === 'slack' ? 35 : 60} /><p className="text-xs text-muted-foreground">Use a name such as Ri Personal or Ri Team. Distinct Slack mentions require distinct Slack apps.</p></div>
-    <div className="space-y-2"><Label htmlFor="conversation-target">Ri destination</Label><select id="conversation-target" className="w-full rounded-md border bg-background p-2" value={workspaceId} onChange={event => setWorkspaceId(event.target.value)} required={query.data?.team}>
-      <option value="">{query.data?.team ? 'Select a team agent' : 'Personal orchestrator'}</option>{query.data?.agents.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select></div>
+    <div className="space-y-2"><Label htmlFor="conversation-name">Name</Label><Field id="conversation-name" value={name} onChange={event => setName(event.target.value)} required maxLength={provider === 'slack' ? 35 : 60} /><p className="text-xs text-muted-foreground">Use a name such as Ri Personal or Ri Team. Distinct Slack mentions require distinct Slack apps.</p></div>
+    <div className="space-y-2"><Label htmlFor="conversation-target">Ri destination</Label><NativeSelect id="conversation-target" className="w-full" value={workspaceId} onChange={event => setWorkspaceId(event.target.value)} required={query.data?.team}>
+      <option value="">{query.data?.team ? 'Select a team agent' : 'Personal orchestrator'}</option>{query.data?.agents.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect></div>
   </>;
   const channelField = <div className="space-y-2">
     <Label htmlFor="conversation-channels">Connected channel IDs</Label>
-    <Input id="conversation-channels" value={channels} onChange={event => setChannels(event.target.value)} placeholder={provider === 'slack' ? 'C0123456789, C0987654321' : 'Buzz channel UUID'} required={query.data?.team || provider === 'buzz'} />
+    <Field id="conversation-channels" value={channels} onChange={event => setChannels(event.target.value)} placeholder={provider === 'slack' ? 'C0123456789, C0987654321' : 'Buzz channel UUID'} required={query.data?.team || provider === 'buzz'} />
     <p className="text-xs text-muted-foreground">{query.data?.team ? 'Choose channels intended for the whole Ri team. Invite the Slack app to each channel.' : 'Separate IDs with commas. Leave empty for personal Slack DMs only.'}</p>
   </div>;
   return <div className="space-y-6">
@@ -220,7 +223,7 @@ export function ConversationsSection() {
     >Add another connection</Button>}
     {query.data?.canManage && !newConnectionId && <form aria-label="Add a conversation connection" className="space-y-4 rounded-lg border p-4" onSubmit={event => { event.preventDefault(); setNotice(''); create.mutate(); }}>
       <h3 className="font-medium">Add a conversation connection</h3>
-      <div className="space-y-2"><Label htmlFor="conversation-provider">Service</Label><select id="conversation-provider" className="w-full rounded-md border bg-background p-2" value={provider} onChange={event => setProvider(event.target.value as 'slack' | 'buzz')}><option value="slack">Slack</option><option value="buzz">Buzz by Block</option></select></div>
+      <div className="space-y-2"><Label htmlFor="conversation-provider">Service</Label><NativeSelect id="conversation-provider" className="w-full" value={provider} onChange={event => setProvider(event.target.value as 'slack' | 'buzz')}><option value="slack">Slack</option><option value="buzz">Buzz by Block</option></NativeSelect></div>
       {provider === 'slack' ? <ol className="space-y-5">
         <SetupStep number={1} label="Choose your Ri destination">{destinationFields}</SetupStep>
         <SetupStep number={2} label="Create or open your Slack app">
@@ -263,7 +266,7 @@ export function ConversationsSection() {
       </ol> : <>
         {destinationFields}
         {channelField}
-        <div className="space-y-2"><Label htmlFor="conversation-relay">Buzz relay URL</Label><Input id="conversation-relay" value={relay} onChange={event => setRelay(event.target.value)} required /></div>
+        <div className="space-y-2"><Label htmlFor="conversation-relay">Buzz relay URL</Label><Field id="conversation-relay" value={relay} onChange={event => setRelay(event.target.value)} required /></div>
         <p className="text-sm">Ri uses Buzz’s ACP harness. Configure this named Buzz identity with the owner-only author gate. This bridge acts as your current Ri sign-in. Other people need their own authorized bridge.</p>
         <Button
           type="submit"
@@ -273,7 +276,7 @@ export function ConversationsSection() {
         >{create.isPending ? 'Connecting…' : 'Connect'}</Button>
       </>}
     </form>}
-    {buzzSetup && <section className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><Textarea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} /><Button
+    {buzzSetup && <section className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><TextArea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} autoSize /><Button
       onClick={() => void navigator.clipboard.writeText(buzzSetup)}
       variant="secondary"
       size="sm"

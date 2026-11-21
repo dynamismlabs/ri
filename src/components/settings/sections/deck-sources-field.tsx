@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { trpcClient } from '@/lib/trpc/client';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -52,7 +53,7 @@ export function DeckSourcesField() {
         use (your calendar, task trackers, etc.). Just write naturally — no formatting needed.
         The deck reads this on every refresh.
       </p>
-      <textarea
+      <TextArea
         id="deck-sources"
         value={content}
         onChange={(e) => onChange(e.target.value)}
@@ -63,7 +64,7 @@ export function DeckSourcesField() {
           'When something has a hard deadline, rank it up even if it still feels early.\n' +
           "I'm heads-down shipping right now — favor momentum over starting new things."
         }
-        className="h-48 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
+        className="w-full" resize="vertical"
       />
       <p className="text-[11px] text-muted-foreground/60">
         {saving ? 'Saving…' : saved ? 'Saved' : 'Auto-saved'}

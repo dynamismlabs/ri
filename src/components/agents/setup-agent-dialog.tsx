@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 /**
  * Set an agent up on one of your devices, from the app
@@ -14,7 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+
 import { useSetUpAgent, useSetupPlan } from '@/hooks/use-workspaces';
 import { FolderField } from './folder-field';
 import { apiErrorText } from '@/lib/api/client';
@@ -146,12 +147,12 @@ function SetupAgentBody({
               {!changing && <span className="block break-all">Into {data.defaultFolder}</span>}
               {how === 'copy' &&
                 (changing ? (
-                  <Input
+                  <Field
                     autoFocus
                     value={copyTo}
                     onChange={(e) => setCopyTo(e.target.value)}
                     placeholder={data.defaultFolder}
-                    className="mt-1.5 h-8 text-[12.5px]"
+                    className="mt-1.5"
                   />
                 ) : (
                   <Button

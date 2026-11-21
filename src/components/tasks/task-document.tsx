@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useRef, type ComponentProps, type ReactNode } from 'react';
 import { TaskDateField } from './task-date-field';
@@ -7,7 +8,6 @@ import { AreaSelect } from '@/components/shared/area-select';
 import { LifecycleStatusControl } from './lifecycle-status-control';
 import { useAutosizeTextarea } from '@/hooks/use-autosize-textarea';
 import type { TaskRecord } from '@/db/types';
-import { cn } from '@/lib/utils';
 
 /** Common task document. Audiences and private planning are contextual slots. */
 export function TaskDocument({ task, onTitleChange, onAreaChange, onDeadlineChange, properties, afterProperties, breadcrumb, notice, footer, bodyEditor, bodyKey, areaControl, bodyContent }: {
@@ -50,15 +50,15 @@ export function TaskDocument({ task, onTitleChange, onAreaChange, onDeadlineChan
         {breadcrumb}
       </div>
       <div className="px-4 pt-1 md:px-12">
-        <textarea ref={attachTitle} data-entity-title aria-label="Task title" placeholder="Task title" defaultValue={empty ? '' : task.title} rows={1} disabled={bodyEditor?.editable === false}
-          className={cn('w-full resize-none overflow-hidden border-none bg-transparent text-2xl font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40', task.status === 'done' && 'text-muted-foreground line-through')}
+        <TextArea ref={attachTitle} data-entity-title aria-label="Task title" placeholder="Task title" defaultValue={empty ? '' : task.title} rows={1} disabled={bodyEditor?.editable === false}
+          className="w-full"
           onInput={(event) => { resize(); onTitleChange(event.currentTarget.value.trim() || ' '); }}
           onKeyDown={(event) => {
             if (event.key !== 'Enter') return;
             event.preventDefault();
             if (event.metaKey || event.ctrlKey) return;
             root.current?.querySelector<HTMLElement>('.rich-editor-body')?.focus();
-          }}
+          }} purpose="title" titleSize="entity" autoSize
         />
         <p className="mt-1 text-[10px] text-muted-foreground/50">Created {new Date(task.createdAt).toLocaleDateString()}{task.updatedAt !== task.createdAt && <> · Edited {new Date(task.updatedAt).toLocaleDateString()}</>}{task.completedAt && <> · Completed {new Date(task.completedAt).toLocaleDateString()}</>}</p>
       </div>

@@ -1,4 +1,6 @@
 'use client'
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -79,7 +81,6 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
       setDescValue(areaFields.description ?? '')
     }
   }
-
 
   // Drag to resize
   const handleResizeStart = useCallback(
@@ -320,20 +321,20 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                         return null
                       })()}
 
-                      <input
+                      <Field
                         value={nameValue}
                         onChange={(e) => saveName(e.target.value)}
-                        className="flex-1 text-xl font-bold bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
-                        placeholder="Area name"
+                        className="flex-1"
+                        placeholder="Area name" purpose="embedded"
                       />
                     </div>
 
-                    <textarea
+                    <TextArea
                       value={descValue}
                       onChange={(e) => saveDescription(e.target.value)}
                       placeholder="What does this area cover?"
-                      className="w-full text-sm bg-transparent border-none outline-none resize-none text-foreground/70 placeholder:text-muted-foreground/30 leading-relaxed"
-                      rows={2}
+                      className="w-full"
+                      rows={2} purpose="embedded"
                     />
                   </div>
 
@@ -395,7 +396,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       {addingTask ? (
                         <div className="flex items-center gap-2.5 px-3 py-1.5">
                           <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full border border-dashed border-muted-foreground/30" />
-                          <input
+                          <Field
                             ref={taskInputRef}
                             autoFocus
                             value={newTaskTitle}
@@ -406,7 +407,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                             }}
                             onBlur={() => { setAddingTask(false); setNewTaskTitle('') }}
                             placeholder="Task title..."
-                            className="flex-1 text-[12px] bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                            className="flex-1" purpose="embedded"
                           />
                         </div>
                       ) : (
@@ -490,7 +491,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       {addingNote ? (
                         <div className="flex items-center gap-2.5 px-3 py-1.5">
                           <FileText size={13} className="text-muted-foreground/20 flex-shrink-0" />
-                          <input
+                          <Field
                             ref={noteInputRef}
                             autoFocus
                             value={newNoteTitle}
@@ -501,7 +502,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                             }}
                             onBlur={() => { setAddingNote(false); setNewNoteTitle('') }}
                             placeholder="Note title..."
-                            className="flex-1 text-[12px] bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                            className="flex-1" purpose="embedded"
                           />
                         </div>
                       ) : (

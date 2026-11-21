@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { SelectField } from '@/components/system/select-field';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -21,7 +23,7 @@ import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -35,7 +37,7 @@ import type { WorkspaceIntegrationScope } from '@/db/types';
 import {
   sourceErrorMessage, useConnectAttempt, useConnectionMethod, useDiscoveredAccounts, useManagedAccounts, useSourceMutations, useSourcesOverview,
 } from '@/hooks/use-integration-sources';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { BackLink, Chip, ConnectFormSection, DetailHeader, GroupHeading } from './parts';
 import { ToolList } from './provider-detail';
 import { connectionIdentity, type ApprovalMode, type Connection, type ToolkitInfo, type WritePolicyAction } from './types';
@@ -266,7 +268,7 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
           {explanation && <p className="text-xs leading-normal text-foreground/90">{explanation}</p>}
           {chosen.kind === 'managed' && (
             <div className="flex flex-wrap items-center gap-2">
-              <Input value={label} onChange={e => setLabel(e.target.value)} maxLength={80} placeholder="Name it, like Work (optional)" aria-label={`Name for this ${app.displayName} account`} className="h-8 min-w-0 flex-1 basis-48 text-xs" />
+              <Field value={label} onChange={e => setLabel(e.target.value)} maxLength={80} placeholder="Name it, like Work (optional)" aria-label={`Name for this ${app.displayName} account`} className="min-w-0 flex-1 basis-48" />
             </div>
           )}
           {chosen.kind === 'managed' && props.applicationId === 'google_calendar' && (
@@ -464,7 +466,7 @@ function ManagedAccountRow({ account, returnTo, startOpen, onReconnect, onMessag
         <div className="min-w-0 flex-1 basis-48">
           {renaming ? (
             <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); void act(async () => { await m.renameAccount.mutateAsync({ connectionId: account.connectionId, label: name }); setRenaming(false); }); }}>
-              <Input value={name} onChange={e => setName(e.target.value)} maxLength={80} placeholder="Work" aria-label="Account name" className="h-7 text-xs" autoFocus />
+              <Field value={name} onChange={e => setName(e.target.value)} maxLength={80} placeholder="Work" aria-label="Account name"  autoFocus />
               <Button
                 type="submit"
                 variant="primary"
@@ -624,7 +626,7 @@ function ExistingAccounts({ applicationId, sources, onChanged, onError }: {
         <div className="space-y-1 border-t border-border/60 p-3">
           {sources.length > 1 && (
             <Select value={sourceId} onValueChange={setPicked}>
-              <SelectTrigger size="sm" aria-label="Source" className="mb-1 h-7 w-fit text-xs"><SelectValue /></SelectTrigger>
+              <SelectField aria-label="Source" className="mb-1 w-fit"><SelectValue /></SelectField>
               <SelectContent>
                 {sources.map(source => <SelectItem key={source.id} value={source.id} className="text-xs">{source.label}</SelectItem>)}
               </SelectContent>

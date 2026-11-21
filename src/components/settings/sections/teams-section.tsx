@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useConnectedTeams } from '@/components/spaces/space-selector';
 import { teamDisplayName } from '@/lib/home/team-display-name';
@@ -9,7 +10,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { apiErrorText } from '@/lib/api/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -192,7 +193,7 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
       >
         <label className="block space-y-1">
           <span className="text-xs font-medium">Team link</span>
-          <Input
+          <Field
             value={link}
             onChange={(e) => {
               setLink(e.target.value);
@@ -212,7 +213,7 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
         {joining && shown?.usable && (
           <label className="block space-y-1">
             <span className="text-xs font-medium">Your name</span>
-            <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" />
+            <Field value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" />
             <span className="block text-xs text-muted-foreground">What the team sees on your work.</span>
           </label>
         )}

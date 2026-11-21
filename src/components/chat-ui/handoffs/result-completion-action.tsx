@@ -1,4 +1,5 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { useState } from 'react';
 import { CheckCheck, Loader2 } from 'lucide-react';
@@ -18,7 +19,7 @@ export function ResultCompletionAction({ resultId, options }: { resultId: string
     : options?.staleReason === 'revision_mismatch' ? 'The work has changed since this handoff. Save a current snapshot before completing a task.' : null;
   return <div className="w-full space-y-2 rounded-md border bg-muted/20 p-3">
     {pending && !complete.isPending && <p className="text-xs text-muted-foreground">The earlier submission&apos;s outcome is uncertain. Retry that same acceptance and task completion to confirm it.</p>}
-    {!pending && choices.length > 1 && <label className="block space-y-1 text-xs"><span>Choose the task to complete</span><select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={complete.isPending} className="block w-full max-w-full rounded-md border bg-background px-2 py-2"><option value="">Select a linked task</option>{choices.map((choice) => <option key={choice.id} value={choice.id}>{choice.title || 'Untitled task'}</option>)}</select></label>}
+    {!pending && choices.length > 1 && <label className="block space-y-1 text-xs"><span>Choose the task to complete</span><NativeSelect value={selectedId} onChange={(event) => setSelectedId(event.target.value)} disabled={complete.isPending} className="block w-full max-w-full"><option value="">Select a linked task</option>{choices.map((choice) => <option key={choice.id} value={choice.id}>{choice.title || 'Untitled task'}</option>)}</NativeSelect></label>}
     {!pending && choices.length === 1 && <p className="break-words text-xs text-muted-foreground">Complete {choices[0].title || 'the linked task'}</p>}
     {!pending && reason && <p className="text-xs text-muted-foreground">{reason}</p>}
     {!pending && !reason && options?.codeFreshness === 'unknown' && <p className="text-xs text-muted-foreground">Code identity is unknown. This handoff is not confirmed to match current work.</p>}

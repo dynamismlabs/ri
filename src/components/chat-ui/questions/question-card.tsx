@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
@@ -190,7 +191,7 @@ export function QuestionCard({
         </button>
 
         {otherActive && (
-          <input data-slot="field"
+          <Field
             ref={otherInputRef}
             type="text"
             value={otherTyped}
@@ -205,12 +206,7 @@ export function QuestionCard({
             }}
             placeholder="Your answer…"
             disabled={resolve.isPending}
-            className={cn(
-              'w-full text-[12.5px] bg-background border border-primary/40 rounded-lg px-3 py-2',
-              'text-foreground placeholder:text-muted-foreground/50',
-              'focus:outline-none focus:border-primary/70',
-              'disabled:opacity-60',
-            )}
+            className="w-full"
           />
         )}
       </div>

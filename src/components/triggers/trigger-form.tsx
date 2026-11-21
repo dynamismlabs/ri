@@ -1,4 +1,7 @@
 'use client';
+import { Field as SystemField } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { Button } from '@/components/system/button';
 /**
@@ -278,25 +281,25 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <Field label="Name" required>
-        <input data-slot="field"
+        <SystemField
           type="text"
           value={values.name}
           onChange={(e) => set({ name: e.target.value })}
           placeholder="Morning briefing"
           required
           disabled={locked.has('name')}
-          className={inputCls}
+          className="w-full"
         />
       </Field>
 
       <Field label="Description">
-        <input data-slot="field"
+        <SystemField
           type="text"
           value={values.description}
           onChange={(e) => set({ description: e.target.value })}
           placeholder="Optional. What it's for, in a line"
           disabled={locked.has('description')}
-          className={inputCls}
+          className="w-full"
         />
       </Field>
 
@@ -309,7 +312,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
           <p className="text-[11px] text-muted-foreground">Sent after the app&apos;s ground rules, which it always follows.</p>
         )}
         <div data-slot="input-group" className="rounded-lg border border-border bg-card">
-          <textarea data-slot="field"
+          <TextArea
             aria-label={isHeartbeat ? 'Instructions' : 'Message'}
             value={values.prompt}
             onChange={(e) => set({ prompt: e.target.value })}
@@ -317,7 +320,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
             required
             rows={6}
             disabled={locked.has('prompt')}
-            className="w-full px-3 py-3 bg-transparent text-sm resize-y focus-visible:outline-none disabled:opacity-60"
+            className="w-full" purpose="embedded" resize="vertical"
           />
           {target !== 'session' && (
             <div className="flex flex-wrap items-center gap-2 px-2 py-2 border-t border-border/60">
@@ -453,7 +456,7 @@ function Advanced({
         <div className="space-y-4 border-l-2 border-border pl-4">
           {target !== 'session' && (
             <Field label="Time limit in seconds (optional)">
-              <input data-slot="field"
+              <SystemField
                 type="number"
                 min={60}
                 step={60}
@@ -461,7 +464,7 @@ function Advanced({
                 placeholder="No limit"
                 disabled={locked.has('timeoutSeconds')}
                 onChange={(e) => set({ timeoutSeconds: e.target.value === '' ? null : Number(e.target.value) })}
-                className={inputCls}
+                className="w-full"
               />
               <p className="text-[10px] text-muted-foreground mt-1">
                 Leave blank to let a run take as long as it needs. A run past the limit is stopped.
@@ -469,11 +472,11 @@ function Advanced({
             </Field>
           )}
           <Field label="If the last run is still going">
-            <select data-slot="field"
+            <NativeSelect
               value={values.concurrencyPolicy}
               disabled={locked.has('concurrencyPolicy')}
               onChange={(e) => set({ concurrencyPolicy: e.target.value as TriggerConcurrencyPolicy })}
-              className={inputCls}
+              className="w-full"
             >
               <option value="skip_if_running">
                 {target === 'session' && values.schedule.kind === 'once' ? 'Wait until the chat is free' : 'Skip this run'}
@@ -482,23 +485,23 @@ function Advanced({
                 {target === 'session' ? 'Add it to the turn under way' : 'Add it to the running chat'}
               </option>
               {target === 'orchestrator' && <option value="allow_concurrent">Run alongside it</option>}
-            </select>
+            </NativeSelect>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Active hours start">
-              <input data-slot="field"
+              <SystemField
                 type="time"
                 value={values.activeHoursStart}
                 onChange={(e) => set({ activeHoursStart: e.target.value })}
-                className={inputCls}
+                className="w-full"
               />
             </Field>
             <Field label="Active hours end">
-              <input data-slot="field"
+              <SystemField
                 type="time"
                 value={values.activeHoursEnd}
                 onChange={(e) => set({ activeHoursEnd: e.target.value })}
-                className={inputCls}
+                className="w-full"
               />
             </Field>
           </div>
@@ -569,8 +572,3 @@ function Field({ label, children, required = false }: { label: string; children:
     </label>
   );
 }
-
-const inputCls = cn(
-  'w-full px-3 py-2 rounded-md border border-border bg-card text-sm',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60',
-);

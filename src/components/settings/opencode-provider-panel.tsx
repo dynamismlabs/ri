@@ -1,9 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { apiErrorStatus } from '@/lib/api/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
@@ -64,7 +66,7 @@ export function OpenCodeProviderPanel() {
       )}
       <div className="relative">
         <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-        <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search providers" className="h-8 rounded-md pl-8 text-[11px]" />
+        <Field value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search providers"  />
       </div>
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (
@@ -196,7 +198,7 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
           />
           <div className="flex gap-2">
-            <Input type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`} className="h-8 rounded-md text-[11px]" />
+            <Field type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`}  />
             <Button
               disabled={!apiKey.trim() || setKey.isPending}
               onClick={() => setKey.mutate()}
@@ -215,7 +217,7 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
               Open authorization page <ExternalLink size={10} />
             </a>
           )}
-          {flow.completion === 'code' && <Input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Authorization code" className="h-8 rounded-md text-[11px]" />}
+          {flow.completion === 'code' && <Field value={code} onChange={(event) => setCode(event.target.value)} placeholder="Authorization code"  />}
           <Button
             disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending}
             onClick={() => completeOAuth.mutate()}
@@ -261,19 +263,19 @@ function PromptFields({
       {prompts.map((prompt) => prompt.type === 'select' ? (
         <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
           {prompt.label}
-          <select
+          <NativeSelect
             value={inputs[prompt.id] ?? ''}
             onChange={(event) => onChange(prompt.id, event.target.value)}
-            className="mt-1 h-8 w-full rounded-md border border-input bg-background px-2 text-[11px] text-foreground"
+            className="mt-1 w-full"
           >
             <option value="">Select</option>
             {prompt.options?.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
+          </NativeSelect>
         </label>
       ) : (
         <label key={prompt.id} className="block text-[10.5px] text-muted-foreground">
           {prompt.label}
-          <Input value={inputs[prompt.id] ?? ''} onChange={(event) => onChange(prompt.id, event.target.value)} className="mt-1 h-8 rounded-md text-[11px]" />
+          <Field value={inputs[prompt.id] ?? ''} onChange={(event) => onChange(prompt.id, event.target.value)} className="mt-1" />
         </label>
       ))}
     </>

@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 /**
  * Detail view for one integration provider. Everything the catalog tile used to
@@ -13,7 +14,7 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { ChevronDown, ExternalLink, KeyRound, Loader2, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -426,14 +427,14 @@ function ConnectPanelContent(props: ProviderDetailProps) {
             >
               {fieldLabel(f)}
             </label>
-            <Input
+            <Field
               id={`cred-${p.id}-${f}`}
               type={SECRETY.test(f) ? 'password' : 'text'}
               autoComplete="off"
               value={props.creds[f] ?? ''}
               onChange={(e) => props.onCredChange(f, e.target.value)}
               placeholder={fieldLabel(f)}
-              className="h-8 rounded-lg font-mono text-xs"
+               purpose="code"
             />
           </div>
         ))}
@@ -592,12 +593,12 @@ export function ToolList({
                 size={11}
                 className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
               />
-              <Input
+              <Field
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder="Filter tools"
                 aria-label="Filter tools"
-                className="h-7 w-44 rounded-lg pl-6 text-[11px]"
+                className="w-44"
               />
             </div>
           )

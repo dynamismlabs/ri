@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
@@ -69,7 +70,7 @@ export function SignInToContinue({ client }: { client: string | null }) {
         <span className="text-xs text-muted-foreground">
           On a device where you use Ri, open Settings → Devices, choose Add device and create its pairing link. Copy the token it shows and paste it here. This browser then stays signed in to Ri.
         </span>
-        <input
+        <Field
           ref={inputRef}
           value={pasted}
           onChange={event => { setPasted(event.target.value); if (state === 'refused') setState('idle'); }}
@@ -77,7 +78,7 @@ export function SignInToContinue({ client }: { client: string | null }) {
           spellCheck={false}
           placeholder="ri_live_…"
           aria-invalid={state === 'refused'}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-full" purpose="code"
         />
       </label>
       {state === 'refused' && <p role="alert" className="text-xs text-destructive">That token didn’t work. Make a new one with Add device.</p>}

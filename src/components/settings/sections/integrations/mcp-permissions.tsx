@@ -1,7 +1,8 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
 
 import { Button } from '@/components/system/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Globe } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { DEFAULT_MCP_APPROVAL_POLICY, MCP_APPROVAL_POLICIES, type McpApprovalPolicy } from '@/lib/integrations/mcp-approval-policy';
@@ -16,9 +17,9 @@ export function McpPermissionSelect({ value, inheritedLabel, label, busy, onChan
 }) {
   return <Select value={value ?? 'inherit'} disabled={busy}
     onValueChange={choice => onChange(choice === 'inherit' ? null : choice as McpApprovalPolicy)}>
-    <SelectTrigger aria-label={label} className="w-full min-w-0 gap-3 rounded-lg text-xs @sm:w-auto [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:truncate">
+    <SelectField aria-label={label} className="w-full min-w-0 @sm:w-auto [&_[data-slot=select-value]]:min-w-0">
       <SelectValue>{value === null ? inheritedLabel : MCP_POLICY_LABELS[value]}</SelectValue>
-    </SelectTrigger>
+    </SelectField>
     <SelectContent position="popper" align="start">
       <SelectItem value="inherit" className="text-xs">{inheritedLabel}</SelectItem>
       {MCP_APPROVAL_POLICIES.map(policy => <SelectItem key={policy} value={policy} className="text-xs">{MCP_POLICY_LABELS[policy]}</SelectItem>)}

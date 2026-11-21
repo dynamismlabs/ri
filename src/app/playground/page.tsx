@@ -1,11 +1,13 @@
 'use client'
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState, useRef, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
 import { Send, Square, FlaskConical, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import { getAuthToken } from '@/lib/api/client'
 import { APP_NAME } from '@/constants/app'
 import {
@@ -75,15 +77,15 @@ export default function PlaygroundPage() {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs text-muted-foreground">Model</label>
-          <select
+          <NativeSelect
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="text-xs rounded border border-border bg-background px-2 py-1 focus:outline-none focus:border-primary/50"
+            className="w-auto"
           >
             {MODEL_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>{opt.label}</option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </header>
 
@@ -171,16 +173,13 @@ export default function PlaygroundPage() {
       <div className="flex-shrink-0 border-t border-border p-3">
         <div className="max-w-3xl mx-auto">
           <div className="rounded-lg border border-border bg-card focus-within:border-primary/50 transition-colors">
-            <textarea
+            <TextArea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about your tasks, plan your day, add a note…"
               rows={1}
-              className={cn(
-                'w-full resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none px-3 pt-2.5 pb-1',
-                'max-h-40 min-h-[28px]',
-              )}
+              className="w-full"
               onInput={(e) => {
                 const target = e.currentTarget
                 target.style.height = 'auto'
@@ -191,7 +190,7 @@ export default function PlaygroundPage() {
                 e.preventDefault()
                 if (isStreaming) stop()
                 else handleSubmit()
-              }}
+              }} purpose="embedded"
             />
             <div className="flex items-center justify-end gap-1 px-2 pb-1.5">
               <IconButton

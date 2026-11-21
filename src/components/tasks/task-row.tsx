@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -523,12 +524,12 @@ export function TaskRow({
               }
               setBlockPopoverOpen(false);
             }}>
-              <input data-slot="field"
+              <Field
                 ref={blockInputRef}
                 type="text"
                 autoFocus
                 placeholder="e.g. waiting on design review"
-                className="w-full text-[11px] bg-background border border-border rounded px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
               <div className="flex justify-end gap-1 mt-1.5">
                 <PopoverClose asChild>

@@ -1,4 +1,5 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { Button } from '@/components/system/button';
 import { useAgentConfigurationScope } from '@/components/workspaces/agent-placement-controls';
@@ -80,10 +81,10 @@ export function AgentPreview({
       <div className="shrink-0 flex items-center gap-2 border-b border-border px-3 py-1.5">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">Chat to preview</span>
-          <select
+          <NativeSelect
             value={selected ?? ''}
             onChange={(e) => setPicked(e.target.value || null)}
-            className="w-full appearance-none rounded-md border border-border bg-background py-1 pl-2 pr-7 text-[11.5px] focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full"
           >
             {all
               .filter((s) => s.executionId)
@@ -96,7 +97,7 @@ export function AgentPreview({
                   </option>
                 );
               })}
-          </select>
+          </NativeSelect>
           <ChevronDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
         </label>
         {canConfigure && hasPinned && (

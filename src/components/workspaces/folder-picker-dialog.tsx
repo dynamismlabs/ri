@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -20,7 +21,6 @@ import {
 } from 'lucide-react';
 import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
 
 interface FolderPickerDialogProps {
   open: boolean;
@@ -302,7 +302,6 @@ export function FolderPickerDialog({
                   <ArrowLeft size={13} />
                 </IconButton>
 
-
                 <IconButton
                   type="button"
                   onClick={goHome}
@@ -313,7 +312,6 @@ export function FolderPickerDialog({
                 >
                   <HomeIcon size={13} />
                 </IconButton>
-
 
               <div className="flex items-center gap-0.5 overflow-x-auto whitespace-nowrap text-[11px] font-mono ml-1 flex-1 min-w-0">
                 {breadcrumbs.length === 0 && loading && (
@@ -420,7 +418,7 @@ export function FolderPickerDialog({
               <div className="px-3 py-2 border-t border-border bg-muted/10 space-y-1.5">
                 <div className="flex items-center gap-2">
                   <FolderIcon name="" opened={false} size={14} />
-                  <input
+                  <Field
                     ref={newFolderInputRef}
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
@@ -438,7 +436,7 @@ export function FolderPickerDialog({
                     autoCapitalize="off"
                     autoCorrect="off"
                     disabled={submittingNew}
-                    className="flex-1 px-2 py-1 text-[12px] font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex-1" purpose="code"
                   />
                   <Button
                     type="button"

@@ -1,4 +1,6 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -52,11 +54,11 @@ export function TeamAreaDefaults({ teamId, connected }: { teamId: string; connec
         return (
           <label key={s.id ?? 'team'} className="flex flex-wrap items-center justify-between gap-2">
             <span>{s.name}{s.inactive ? ' (inactive)' : ''}</span>
-            <select aria-label={`Personal Area default for ${s.name}`} className="max-w-full rounded border bg-background p-1.5" value={rule?.areaId ?? ''} disabled={save.isPending || apply.isPending} onChange={(e) => save.mutate({ sourceAreaId: s.id, areaId: e.target.value || null })}>
+            <NativeSelect aria-label={`Personal Area default for ${s.name}`} className={cn("max-w-full", 'w-auto')} value={rule?.areaId ?? ''} disabled={save.isPending || apply.isPending} onChange={(e) => save.mutate({ sourceAreaId: s.id, areaId: e.target.value || null })}>
               <option value="">No default</option>
               {unavailable && <option value={rule.areaId}>Unavailable personal Area (inactive)</option>}
               {active.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
+            </NativeSelect>
           </label>
         );
       })}

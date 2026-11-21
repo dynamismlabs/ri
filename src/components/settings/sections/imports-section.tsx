@@ -1,10 +1,11 @@
 'use client';
+import { SelectField } from '@/components/system/select-field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { invalidateWorkspaceViews } from '@/lib/query/work-view-invalidation';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import type {
 	ExternalAgentDiscovery,
 	ExternalAgentImportResult,
@@ -271,9 +272,9 @@ export function ExternalAgentImportPanel() {
         <div className="flex items-center gap-2">
           {elsewhere.length > 0 && (
             <Select value={source} onValueChange={chooseSource}>
-              <SelectTrigger size="sm" className="h-8 w-44 text-[12px]" aria-label="Whose history">
+              <SelectField className="w-44" aria-label="Whose history">
                 <SelectValue />
-              </SelectTrigger>
+              </SelectField>
               <SelectContent>
                 <SelectItem value={THIS_DEVICE}>This device</SelectItem>
                 {elsewhere.map((c) => (

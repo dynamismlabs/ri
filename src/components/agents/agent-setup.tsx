@@ -1,4 +1,7 @@
 'use client';
+import { Field as SystemField } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -263,10 +266,10 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
           {!canConfigure && <p className="text-xs text-muted-foreground">Only the team owner can change this agent&apos;s setup. Members can start chats and use its approved tools.</p>}
           <Section title="Basics">
             <Field label="Name">
-              <input data-slot="field"
+              <SystemField
                 value={form.name}
                 onChange={(e) => set('name', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full"
               />
             </Field>
             <Field label="Icon" hint="If empty and linked to an area, the area's icon shows instead.">
@@ -324,10 +327,10 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             </Field>
             <Field label="Area">
               <div className="relative">
-                <select data-slot="field"
+                <NativeSelect
                   value={form.areaId}
                   onChange={(e) => set('areaId', e.target.value)}
-                  className="w-full appearance-none pl-3 pr-9 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full"
                 >
                   <option value="">None</option>
                   {areas?.map((area) => (
@@ -335,7 +338,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                       {area.emoji ? `${area.emoji} ${area.name}` : area.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
                 <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               </div>
             </Field>
@@ -344,15 +347,12 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               hint="What this agent is for, in a sentence or two. Its main chat keeps this in mind."
               counter={{ value: form.purpose.trim().length, max: PURPOSE_MAX }}
             >
-              <textarea data-slot="field" aria-invalid={purposeOver}
+              <TextArea aria-invalid={purposeOver}
                 value={form.purpose}
                 onChange={(e) => set('purpose', e.target.value)}
                 rows={2}
                 placeholder="Ship Ri: the app, its CLI and its docs"
-                className={cn(
-                  'w-full px-3 py-2 text-sm bg-background border rounded-md focus:outline-none focus:ring-1 resize-y',
-                  purposeOver ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary',
-                )}
+                className="w-full" resize="vertical"
               />
             </Field>
           </Section>
@@ -364,15 +364,12 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             description="Standing instructions every chat in this agent receives when it starts. The agent's main chat follows them too."
           >
             <Field counter={{ value: form.instructions.trim().length, max: INSTRUCTIONS_MAX }}>
-              <textarea data-slot="field" aria-invalid={instructionsOver}
+              <TextArea aria-invalid={instructionsOver}
                 value={form.instructions}
                 onChange={(e) => set('instructions', e.target.value)}
                 rows={8}
                 placeholder="Run pnpm ts before every commit. Keep changes small."
-                className={cn(
-                  'w-full px-3 py-2 text-[12.5px] leading-relaxed font-mono bg-background border rounded-md focus:outline-none focus:ring-1 resize-y',
-                  instructionsOver ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary',
-                )}
+                className="w-full" purpose="code" resize="vertical"
               />
             </Field>
           </Section>
@@ -385,7 +382,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               htmlFor="agent-work-result-guidance"
               counter={{ value: form.workResultGuidance.length, max: WORK_RESULT_GUIDANCE_MAX }}
             >
-              <textarea data-slot="field"
+              <TextArea
                 id="agent-work-result-guidance"
                 aria-describedby="agent-work-result-guidance-description agent-work-result-guidance-status"
                 aria-invalid={guidanceOver || undefined}
@@ -394,10 +391,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                 maxLength={WORK_RESULT_GUIDANCE_MAX}
                 rows={5}
                 placeholder="e.g. Include links to the finished work and explain what needs my review."
-                className={cn(
-                  'w-full px-3 py-2 text-[12.5px] leading-relaxed bg-background border rounded-md focus:outline-none focus:ring-1 resize-y',
-                  guidanceOver ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary',
-                )}
+                className="w-full" resize="vertical"
               />
               <p id="agent-work-result-guidance-description" className="mt-1 text-[11px] leading-relaxed text-muted-foreground/70">
                 Adds to your shared preferences in Settings. This agent&apos;s preferences take precedence when they
@@ -445,27 +439,26 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             </label>
           </Section>}
 
-
           <Section title="Git">
             {workspace.isGit && (
               <>
                 <Field label="Base branch">
-                  <input data-slot="field"
+                  <SystemField
                     value={form.baseBranch}
                     onChange={(e) => set('baseBranch', e.target.value)}
                     placeholder="main"
-                    className="w-full px-3 py-2 text-sm font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full" purpose="code"
                   />
                 </Field>
                 <Field
                   label="Worktree root"
                   hint={personalTools ? `Where ${homeName} puts this agent's worktrees. Empty uses its Ri folder. Other devices always use their own.` : "Where this team's server puts this agent's worktrees. Empty uses its Ri folder."}
                 >
-                  <input data-slot="field"
+                  <SystemField
                     value={form.worktreeRoot}
                     onChange={(e) => set('worktreeRoot', e.target.value)}
                     placeholder={`Ri folder/.work/worktrees/${workspace.slug}`}
-                    className="w-full px-3 py-2 text-xs font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full" purpose="code"
                   />
                 </Field>
                 <label className="flex items-start justify-between gap-3 cursor-pointer">

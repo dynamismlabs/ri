@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useEffect, useRef, useState } from 'react';
 import { Search, type LucideIcon } from 'lucide-react';
@@ -50,12 +51,12 @@ export function SettingsNavigation<Id extends string>({
           size={13}
           className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
-        <input
+        <Field
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search"
           aria-label={`Search ${label.toLowerCase()}`}
-          className="w-full rounded-lg border border-border bg-background py-1.5 pl-7 pr-2 text-[12px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-full"
         />
       </div>
 

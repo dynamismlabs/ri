@@ -161,7 +161,9 @@ behavior. Disabled controls retain native behavior. Read-only values can still
 be focused and copied. Field invalid focus uses the danger ink. Other focus uses
 the ring token, with no second shadow or border ring.
 
-Call sites pass layout classes only. Field owns shape, type, padding, fill,
+Call sites pass layout classes only. `className` places the whole field. When a
+label or help spans a wider frame, `controlClassName` sets only the control
+layout, such as its width. Both props follow the same layout-only rule. Field owns shape, type, padding, fill,
 border, shadow and states. Width and placement utilities remain available to
 callers. Checkbox, radio and switch controls keep their separate semantics.
 Hidden and file transport inputs remain unchanged during this stage.

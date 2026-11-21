@@ -13,7 +13,7 @@ import {
   type FieldInfo,
 } from './field-base';
 
-export type SelectFieldProps = Omit<ComponentProps<typeof SelectTrigger>, 'size'> & FieldInfo & FieldDrawing;
+export type SelectFieldProps = Omit<ComponentProps<typeof SelectTrigger>, 'size'> & FieldInfo & FieldDrawing & { controlClassName?: string };
 
 /** Keep the installed Radix Select engine while owning its field drawing. */
 export function SelectField(fieldProps: SelectFieldProps) {
@@ -32,6 +32,7 @@ export function SelectField(fieldProps: SelectFieldProps) {
     align,
     completed,
     className,
+    controlClassName,
     ...props
   } = fieldProps;
   const size = useFieldSize(requestedSize);
@@ -67,6 +68,7 @@ export function SelectField(fieldProps: SelectFieldProps) {
           fieldVariants({ size, purpose, titleSize, align, completed }),
           'ri-field-select-trigger',
           !framed && className,
+          controlClassName,
         )}
       />
     </FieldFrame>

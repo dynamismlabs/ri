@@ -1,4 +1,5 @@
 "use client";
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -77,13 +78,13 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
         Anything I should know before I plan your day?
       </p>
 
-      <textarea data-slot="field"
+      <TextArea
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Energy level, trigger changes, what's top of mind..."
         rows={2}
-        className="w-full bg-card border border-border rounded-lg px-3 py-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:border-primary/30 transition-colors"
+        className="w-full"
       />
 
       {/* Quick-tap chips */}

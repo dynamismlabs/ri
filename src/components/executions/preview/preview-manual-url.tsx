@@ -1,11 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, useState } from 'react';
 import { Check, Loader2, X, Link as LinkIcon } from 'lucide-react';
 
 import type { PreviewManualUrl } from '@/lib/api/preview';
-
 
 interface PreviewManualUrlProps {
   /** Current manual URLs on the execution (default-service entry is used). */
@@ -73,7 +73,7 @@ export function PreviewManualUrl({
         {description}
       </p>
       <div className="flex w-full items-stretch gap-1.5">
-        <input
+        <Field
           type="url"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
@@ -84,7 +84,7 @@ export function PreviewManualUrl({
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
-          className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+          className="flex-1" purpose="code"
         />
 
           <IconButton

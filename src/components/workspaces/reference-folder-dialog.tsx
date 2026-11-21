@@ -1,4 +1,7 @@
 'use client';
+import { Field as SystemField } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 /**
@@ -194,12 +197,12 @@ function ReferenceFolderForm({
           editing ? null : (
             <Field label={device ? `Where it is on ${device.name}` : 'Folder'}>
               <div className="flex gap-2">
-                <input
+                <SystemField
                   value={path}
                   onChange={(e) => setPath(e.target.value)}
                   placeholder="/Users/you/code/api"
                   spellCheck={false}
-                  className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="min-w-0 flex-1" purpose="code"
                 />
                 <Tip label={browsable ? undefined : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`}>
                   <Button
@@ -224,10 +227,10 @@ function ReferenceFolderForm({
           )
         ) : (
           <Field label="Agent">
-            <select
+            <NativeSelect
               value={targetWorkspaceId}
               onChange={(e) => setTargetWorkspaceId(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="w-full"
             >
               <option value="">Choose an agent…</option>
               {selectableWorkspaces.map((w) => (
@@ -235,7 +238,7 @@ function ReferenceFolderForm({
                   {w.emoji ? `${w.emoji} ${w.name}` : w.name}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             <FieldHint>
               Its own folder on each device, so it follows that agent wherever it&apos;s set
               up. This agent reads whatever is checked out there, not any in-progress worktree.
@@ -246,14 +249,14 @@ function ReferenceFolderForm({
         <Field label="Alias">
           <div className="flex items-center gap-2">
             <span className="font-mono text-sm text-muted-foreground">@</span>
-            <input
+            <SystemField
               value={alias}
               onChange={(e) => setTypedAlias(e.target.value)}
               placeholder="backend"
               spellCheck={false}
               autoCorrect="off"
               autoCapitalize="off"
-              className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              className="min-w-0 flex-1" purpose="code"
             />
           </div>
           {normalizedAlias && !aliasValid ? (
@@ -267,12 +270,12 @@ function ReferenceFolderForm({
         </Field>
 
         <Field label="Why you'd look there">
-          <textarea
+          <TextArea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
             placeholder="Go API server this app calls. HTTP routes live in internal/http/."
-            className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full" resize="vertical"
           />
           <FieldHint>
             Optional. Worth a line when the name alone doesn&apos;t say why the agent would

@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { SelectField } from '@/components/system/select-field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { HarnessPermissionNotice } from './harness-permission-notice';
@@ -7,14 +9,8 @@ import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
+
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import type { EffortLevel } from '@/db/types';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import {
@@ -185,11 +181,11 @@ function HarnessPane({
         </div>
         <div className="relative">
           <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
+          <Field
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search models"
-            className="h-8 rounded-md pl-8 text-[11px]"
+
           />
         </div>
         {/* Pinning saves on its own (the id has to exist before anything can
@@ -325,7 +321,7 @@ function LabeledSelect({
     <label className="space-y-1 text-[10.5px] text-muted-foreground">
       {label}
       <Select value={value} onValueChange={onValue}>
-        <SelectTrigger size="sm" className="mt-1 w-full rounded-md text-[11px]"><SelectValue /></SelectTrigger>
+        <SelectField className="mt-1 w-full"><SelectValue /></SelectField>
         <SelectContent>
           {options.map((option) => <SelectItem key={option.id} value={option.id} disabled={option.disabled}>{option.label}</SelectItem>)}
         </SelectContent>

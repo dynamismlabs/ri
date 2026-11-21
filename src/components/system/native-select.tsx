@@ -14,7 +14,7 @@ import {
 
 export type NativeSelectProps = Omit<ComponentProps<'select'>, 'size'> &
   FieldInfo &
-  FieldDrawing & { htmlSize?: number };
+  FieldDrawing & { htmlSize?: number; controlClassName?: string };
 export function NativeSelect(fieldProps: NativeSelectProps) {
   const {
     label,
@@ -32,6 +32,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
     completed,
     htmlSize,
     className,
+    controlClassName,
     ...props
   } = fieldProps;
   const size = useFieldSize(requestedSize);
@@ -68,6 +69,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
           fieldVariants({ size, purpose, titleSize, align, completed }),
           'ri-field-select',
           !framed && className,
+          controlClassName,
         )}
       />
     </FieldFrame>

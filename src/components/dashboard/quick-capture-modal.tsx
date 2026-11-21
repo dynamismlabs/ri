@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -234,9 +235,9 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
               {!!images.length && <div className="flex gap-3 overflow-x-auto px-3 pt-4 pb-2">
                 {draft.previews.map(({ id, file }, index) => <ImagePreview key={id} file={file} disabled={busy || savedRemotely} remove={() => draft.edit({ files: images.filter((_, position) => position !== index) })} />)}
               </div>}
-              <textarea ref={textareaRef} value={text} onChange={event => draft.edit({ text: event.target.value })} onKeyDown={handleKeyDown}
+              <TextArea ref={textareaRef} value={text} onChange={event => draft.edit({ text: event.target.value })} onKeyDown={handleKeyDown}
                 placeholder={placeholder} maxLength={CAPTURE_MAX_TEXT_LENGTH} disabled={busy || savedRemotely} autoFocus rows={pristine ? 2 : 3}
-                className={cn('max-h-80 min-h-24 w-full resize-none rounded-t-[20px] bg-transparent px-4 py-4 text-foreground outline-none placeholder:text-muted-foreground/60 disabled:opacity-50', pristine ? 'text-xl font-light' : 'text-[15px] leading-relaxed')} />
+                className="w-full" purpose="embedded" />
               <div className="space-y-1 px-4 pb-3 text-xs">
                 {draft.save.phase === 'loading' && <p role="status" className="text-muted-foreground">Preparing capture…</p>}
                 {(hasInput || draft.save.phase === 'error') && <p role={draft.save.phase === 'error' ? 'alert' : 'status'} className={draft.save.phase === 'error' ? 'text-amber-600 dark:text-amber-500' : 'text-muted-foreground'}>
@@ -258,7 +259,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 >Keep recovered content</Button></div>}
                 {transcriptOverflow && <div role="alert" className="space-y-2 text-amber-600 dark:text-amber-500">
                   <p>This transcript does not fit. Shorten the capture to add it, or copy the transcript before discarding it. It has not been saved on this device.</p>
-                  <textarea data-slot="field" aria-label="Unadded voice transcript" readOnly value={voice.transcript} className="max-h-32 w-full rounded border bg-background p-2 text-foreground" />
+                  <TextArea aria-label="Unadded voice transcript" readOnly value={voice.transcript} className="w-full" />
                   <Button
                     type="button"
                     onClick={voice.clearTranscript}

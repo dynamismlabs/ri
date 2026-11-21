@@ -1,4 +1,6 @@
 "use client";
+import { TextArea } from '@/components/system/text-area';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -171,15 +173,15 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
             {/* Title + expand */}
             <div className="flex items-start justify-between px-5 pt-5 pb-0">
               <div className="flex-1 mr-3">
-                <textarea
+                <TextArea
                   ref={titleRef}
                   rows={1}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   onKeyDown={handleTitleKeyDown}
                   placeholder="Task name"
-                  className="w-full resize-none overflow-hidden text-lg font-semibold bg-transparent text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
-                  autoFocus
+                  className="w-full"
+                  autoFocus purpose="title" titleSize="form" autoSize
                 />
               </div>
 
@@ -232,11 +234,11 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
                         { month: "short", day: "numeric" }
                       )
                     : "Deadline"}
-                  <input
+                  <Field
                     type="date"
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    className={cn("absolute inset-0", 'w-auto')}
                   />
                 </label>
               </div>

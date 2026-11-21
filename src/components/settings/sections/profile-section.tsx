@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
 
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -109,7 +111,7 @@ export function ProfileSection() {
         <label htmlFor="profile-name" className="block text-[12px] font-medium text-foreground">
           What should your assistant call you?
         </label>
-        <input
+        <Field
           id="profile-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -118,7 +120,7 @@ export function ProfileSection() {
             if (e.key === 'Enter') e.currentTarget.blur();
           }}
           placeholder="e.g. Trey"
-          className="w-full max-w-sm rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-full max-w-sm"
         />
       </section>
 
@@ -159,12 +161,12 @@ export function ProfileSection() {
         <label htmlFor="profile-about" className="block text-[12px] font-medium text-foreground">
           About you
         </label>
-        <textarea
+        <TextArea
           id="profile-about"
           value={description}
           onChange={(e) => handleDescriptionChange(e.target.value)}
           placeholder="e.g. I'm a founder building a B2B SaaS product. I do my best deep work before noon. I tend to procrastinate on financial tasks..."
-          className="h-48 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-full" resize="vertical"
         />
         <p className="text-[11px] text-muted-foreground/60">
           {updateUserState.isPending ? 'Saving…' : lastSavedAt ? `Last saved ${timeAgo(lastSavedAt)}` : 'Auto-saved'}

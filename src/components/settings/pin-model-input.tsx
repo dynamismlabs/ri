@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -52,7 +53,7 @@ export function PinModelInput({
     // the submit to the OUTER form and create a trigger instead of a pin.
     <div className="mb-1 rounded-md border border-dashed border-border px-2 py-1.5">
       <div className="flex items-center gap-1.5">
-        <input
+        <Field
           value={value}
           disabled={disabled || add.isPending}
           onChange={(event) => setValue(event.target.value)}
@@ -67,7 +68,7 @@ export function PinModelInput({
           placeholder="Exact model ID"
           spellCheck={false}
           autoComplete="off"
-          className="min-w-0 flex-1 bg-transparent font-mono text-[11px] text-foreground outline-none placeholder:font-sans placeholder:text-muted-foreground/60 disabled:opacity-50"
+          className="min-w-0 flex-1" purpose="code"
         />
         <Tip label="Pin this model ID and use it">
           <Button

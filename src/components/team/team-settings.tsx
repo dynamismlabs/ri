@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -103,8 +104,6 @@ function Section({ title, children, hint }: { title: string; children: ReactNode
   );
 }
 
-
-
 function NameField({ id, label, value, onSave, disabled }: { id?: string; label: string; value: string; onSave: (name: string) => Promise<unknown>; disabled?: boolean }) {
   const [draft, setDraft] = useState(value);
   const [busy, setBusy] = useState(false);
@@ -127,13 +126,13 @@ function NameField({ id, label, value, onSave, disabled }: { id?: string; label:
       }}
     >
       <label className="sr-only" htmlFor={id ?? `name-${label}`}>{label}</label>
-      <input
+      <Field
         id={id ?? `name-${label}`}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         disabled={disabled}
         maxLength={80}
-        className="min-w-0 flex-1 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-sm outline-none focus-visible:border-primary/60 disabled:opacity-70"
+        className="min-w-0 flex-1"
       />
       {!disabled && (
         <Button
@@ -363,7 +362,6 @@ function PeopleSection() {
     </Section>
   );
 }
-
 
 function YouSection() {
   const { member } = useTeam();

@@ -1,4 +1,5 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
@@ -220,7 +221,7 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
           {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
         </div>
         <form className="flex items-end gap-2 border-t border-border p-3" onSubmit={event => { event.preventDefault(); void submit(); }}>
-          <textarea aria-label="Message the demo agent" rows={2} maxLength={2000} value={chat.draft} onChange={event => patch(selected, value => ({ ...value, draft: event.target.value }))} placeholder="Ask about this result…" className="min-w-0 flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+          <TextArea aria-label="Message the demo agent" rows={2} maxLength={2000} value={chat.draft} onChange={event => patch(selected, value => ({ ...value, draft: event.target.value }))} placeholder="Ask about this result…" className="min-w-0 flex-1" />
           <IconButton
             type="submit"
             disabled={busy || !context || !chat.draft.trim()}

@@ -1,4 +1,6 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -7,7 +9,6 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Copy, LayoutTemplate, Monitor, RotateCcw, Search, Smartphone } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
 
 import { cn } from '@/lib/utils';
 import { CHAT_UI_EXAMPLES, filterGalleryExamples, galleryExample, galleryPreviewUrl, GALLERY_ORIGINS, type ChatUiExample } from './catalog';
@@ -109,12 +110,12 @@ export function ChatUiGallery() {
           <aside className="min-w-0 lg:sticky lg:top-6" aria-label="Gallery examples">
             <div className="relative">
               <Search size={14} className="pointer-events-none absolute left-3 top-3 text-muted-foreground" />
-              <Input
+              <Field
                 aria-label="Search chat interfaces"
                 placeholder="Find an interface"
                 value={search}
                 onChange={(event) => filter(event.target.value, origin)}
-                className="pl-9"
+
               />
             </div>
             <p className="mt-2 text-[11px] text-muted-foreground" aria-live="polite">
@@ -123,18 +124,18 @@ export function ChatUiGallery() {
             {matches.length > 0 && (
               <label className="mt-3 block lg:hidden">
                 <span className="sr-only">Select an example</span>
-                <select
-                  data-slot="field"
+                <NativeSelect
+
                   value={selected}
                   onChange={(event) => choose(galleryExample(event.target.value))}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  className="w-full"
                 >
                   {matches.map((item) => (
                     <option value={item.id} key={item.id}>
                       {item.name}
                     </option>
                   ))}
-                </select>
+                </NativeSelect>
               </label>
             )}
             <nav className="mt-4 hidden space-y-1 lg:block" aria-label="Chat UI examples">
@@ -187,19 +188,19 @@ export function ChatUiGallery() {
                 <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/25 px-3 py-2.5">
                   <label className="flex items-center gap-2 text-xs">
                     <span className="text-muted-foreground">State</span>
-                    <select
-                      data-slot="field"
+                    <NativeSelect
+
                       aria-label="Example state"
                       value={state}
                       onChange={(event) => choose(example, event.target.value)}
-                      className="max-w-48 rounded-md border border-border bg-background px-2 py-1.5 text-xs"
+                      className={cn("max-w-48", 'w-auto')}
                     >
                       {example.states.map((state) => (
                         <option key={state.id} value={state.id}>
                           {state.label}
                         </option>
                       ))}
-                    </select>
+                    </NativeSelect>
                   </label>
                   <div className="flex items-center gap-1 sm:ml-auto" aria-label="Preview size">
                     <IconButton

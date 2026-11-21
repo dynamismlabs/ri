@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
@@ -49,7 +50,6 @@ import { cn } from '@/lib/utils';
 import { Tip } from '@/components/ui/tip';
 import { ColumnPicker, HiddenColumnsEmpty } from '@/components/board/column-picker';
 import { useBoardColumns } from '@/hooks/use-board-columns';
-
 
 /** How often the board looks for changes made elsewhere: an agent moving a
  * task in the middle of a long turn, the CLI, another device. Turn starts and
@@ -208,7 +208,7 @@ function ColumnAddTask({
   return (
     <div className="mt-1.5 flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1.5">
       <Plus size={13} className="shrink-0 text-muted-foreground" />
-      <input
+      <Field
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -219,7 +219,7 @@ function ColumnAddTask({
         onBlur={() => { if (!value.trim()) setOpen(false); }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1" purpose="embedded"
       />
     </div>
   );
@@ -379,7 +379,6 @@ export function TaskKanban({
     },
     [createTask, areaMode, lifecycle, createDefaults],
   );
-
 
   // One query per column, ordered by the shared sort contract.
   const live = { refetchInterval: BOARD_POLL_MS };

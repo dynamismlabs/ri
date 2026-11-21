@@ -29,6 +29,7 @@ beforeAll(async () => {
         <div id="toolbar" className="flex items-center gap-2"><Field size="sm" aria-label="Toolbar search" className="w-48"/><Button size="sm">Filter</Button></div>
         <Field label="Grouped" defaultValue="A value" className="w-64" trailing={<Button size="xs" onClick={()=>setClears(n=>n+1)}>Clear</Button>}/>
         <Field aria-label="Parser" inlineMessage error="Not a date" value="bad date" onChange={()=>{}} size="sm"/>
+        <Field label="Narrow control" className="w-64" controlClassName="w-24"/>
         <Field label="Phone field" size="touch"/>
         <Field aria-label="Code" purpose="code" defaultValue="pnpm dev"/>
         <TextArea aria-label="Task title" purpose="title" titleSize="entity" autoSize rows={1} defaultValue="A title"/>
@@ -255,6 +256,7 @@ for (const theme of ['light', 'dark']) {
       expect((await field.boundingBox())!.height).toBe(28);
       expect((await button.boundingBox())!.height).toBe(28);
       expect((await field.boundingBox())!.width).toBe(192);
+      expect((await page.getByLabel('Narrow control',{exact:true}).boundingBox())!.width).toBe(96);
     } finally {
       await page.close();
     }
@@ -305,6 +307,8 @@ for (const theme of ['light', 'dark']) {
       await expect.poll(async () => (await title.boundingBox())!.height).toBeGreaterThan(height);
       const embedded = page.getByRole('combobox', { name: 'Search models', exact: true });
       expect(await embedded.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+      await embedded.hover();
+      await expect.poll(() => embedded.evaluate((el) => getComputedStyle(el).borderColor)).toBe('rgba(0, 0, 0, 0)');
       await embedded.focus();
       expect(await embedded.evaluate((el) => getComputedStyle(el).outlineOffset)).toBe('-2px');
     } finally {

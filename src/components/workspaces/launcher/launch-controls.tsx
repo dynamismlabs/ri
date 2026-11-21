@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { SegmentedControl } from '@/components/system/segmented-control';
 
@@ -304,12 +305,12 @@ export function BaseControl({
                 size={11}
                 className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
               />
-              <input
+              <Field
                 autoFocus
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder="Filter branches…"
-                className="w-full bg-transparent py-1.5 pl-7 pr-2 text-[11.5px] focus:outline-none"
+                className="w-full" purpose="embedded"
               />
             </div>
             <div className="max-h-[240px] overflow-y-auto p-1">

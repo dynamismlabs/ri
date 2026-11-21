@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
@@ -10,7 +11,6 @@ import { useVoiceInput } from '@/hooks/use-voice-input';
 import { useUserState } from '@/hooks/use-user-state';
 import { LiveWaveform } from '@/components/ui/live-waveform';
 import type { FormEvent, KeyboardEvent } from 'react';
-
 
 interface CommandInputProps {
   input: string;
@@ -95,7 +95,6 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
                       <X size={18} />
                     </IconButton>
 
-
                     <IconButton
                       onClick={handleVoiceSend}
                       label="Send"
@@ -144,7 +143,6 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
               )}
             </IconButton>
 
-
           {/* Live waveform — visible when recording */}
           {voice.isRecording && (
             <div className="flex-1 min-w-0">
@@ -173,13 +171,13 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
             'relative bg-card border border-border rounded-2xl p-1.5 flex items-center gap-3',
             'shadow-[0_20px_50px_rgba(0,0,0,0.1)] focus-within:border-primary/30 transition-all'
           )}>
-            <input
+            <Field
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Tell Ri what's next..."
-              className="flex-1 bg-transparent border-none outline-none text-base py-3 pl-3 placeholder:text-muted-foreground"
+              className="flex-1" purpose="embedded"
             />
 
             {isStreaming ? (

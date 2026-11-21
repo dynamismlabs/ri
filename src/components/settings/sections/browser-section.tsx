@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
@@ -202,7 +203,7 @@ export function BrowserSection() {
             <p className="mt-1 text-[11px] text-muted-foreground/60">
               The logged-in identity actions use when none is given. Letters, digits, underscore, or hyphen.
             </p>
-            <input data-slot="field"
+            <Field
               value={profileInput}
               disabled={busy !== null}
               onChange={(e) => setProfileInput(e.target.value)}
@@ -210,7 +211,7 @@ export function BrowserSection() {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') e.currentTarget.blur();
               }}
-              className="mt-2 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm text-foreground outline-none focus:border-primary"
+              className="mt-2 w-full"
               placeholder="agent"
               aria-label="Default browser profile name"
             />

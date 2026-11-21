@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 /**
  * Skills in Plugins (docs/skills.md): the shared New skill action above the tabs,
@@ -14,7 +15,7 @@ import { useSkills } from '@/hooks/use-skills';
 import { useStartSkill } from '@/hooks/use-start-skill';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
 import { Button, type ButtonSize } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { LOCATION_GROUPS, displayPath } from '@/components/skills/location-copy';
 import { apiErrorText } from '@/lib/api/client';
 
@@ -163,12 +164,12 @@ export function SkillsTab() {
       {all > 8 && (
         <div className="relative">
           <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
+          <Field
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search skills"
             aria-label="Search skills"
-            className="rounded-4xl pl-9 text-xs"
+
           />
         </div>
       )}

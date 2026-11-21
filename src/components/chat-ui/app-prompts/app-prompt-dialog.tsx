@@ -1,10 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useState, type FormEvent } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+
 import { Label } from '@/components/ui/label';
 import type { ChatAppPrompt } from '@/lib/integrations/app-prompts';
 import { promptArgumentLabel } from '@/lib/integrations/prompt-argument-label';
@@ -59,7 +60,7 @@ function PromptForm({ prompt, onCancel, onFill }: { prompt: ChatAppPrompt; onCan
                 {promptArgumentLabel(arg)}
                 {!arg.required && <span className="font-normal text-muted-foreground"> (optional)</span>}
               </Label>
-              <Input id={id} value={values[arg.name] ?? ''} required={arg.required} autoFocus={index === 0} disabled={pending}
+              <Field id={id} value={values[arg.name] ?? ''} required={arg.required} autoFocus={index === 0} disabled={pending}
                 aria-describedby={arg.description ? `${id}-help` : undefined}
                 onChange={(event) => setValues((current) => ({ ...current, [arg.name]: event.target.value }))} />
               {arg.description && <p id={`${id}-help`} className="text-[11px] text-muted-foreground">{arg.description}</p>}

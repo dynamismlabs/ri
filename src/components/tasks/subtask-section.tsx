@@ -1,4 +1,5 @@
 'use client'
+import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { useState, useCallback, useRef } from 'react'
@@ -172,7 +173,7 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
           {isAdding && (
             <div className="flex items-center gap-2 py-1.5 px-1">
               <div className="flex-shrink-0 w-4 h-4 rounded-full border border-muted-foreground/20" />
-              <input
+              <Field
                 ref={inputRef}
                 type="text"
                 value={newTitle}
@@ -180,8 +181,8 @@ export function SubtaskSection({ parentId, onOpenTask }: SubtaskSectionProps) {
                 onKeyDown={handleKeyDown}
                 onBlur={handleAdd}
                 placeholder="Subtask title..."
-                className="flex-1 text-[12px] bg-transparent outline-none placeholder:text-muted-foreground/40"
-                autoFocus
+                className="flex-1"
+                autoFocus purpose="embedded"
               />
             </div>
           )}

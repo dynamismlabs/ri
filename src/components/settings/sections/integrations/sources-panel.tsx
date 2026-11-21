@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 /**
@@ -12,7 +13,7 @@ import { useRef, useState } from 'react';
 import { AlertCircle, ExternalLink, KeyRound, Loader2, Pencil, Plus, Trash2, Waypoints } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
@@ -166,7 +167,7 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
               className="flex items-center gap-2"
               onSubmit={e => { e.preventDefault(); void run(async () => { await m.rename.mutateAsync({ sourceId: source.id, label: name }); setRenaming(false); }); }}
             >
-              <Input value={name} onChange={e => setName(e.target.value)} maxLength={60} aria-label="Source name" className="h-7 text-xs" autoFocus />
+              <Field value={name} onChange={e => setName(e.target.value)} maxLength={60} aria-label="Source name"  autoFocus />
               <Button
                 type="submit"
                 disabled={busy || !name.trim()}
@@ -249,9 +250,9 @@ function SourceCard({ source, onChanged }: { source: SourceView; onChanged?: () 
           className="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
           onSubmit={e => { e.preventDefault(); void run(async () => { await m.rotateKey.mutateAsync({ sourceId: source.id, apiKey: key }); setKey(''); setKeyOpen(false); }); }}
         >
-          <Input
+          <Field
             type="password" autoComplete="off" spellCheck={false} value={key} onChange={e => setKey(e.target.value)}
-            placeholder="New project API key" aria-label={`New project API key for ${source.label}`} className="h-8 min-w-0 flex-1 basis-56 text-xs"
+            placeholder="New project API key" aria-label={`New project API key for ${source.label}`} className="min-w-0 flex-1 basis-56"
           />
           <Button
             type="submit"
@@ -320,12 +321,12 @@ function ComposioSetup({ first, onDone, onCancel }: { first: boolean; onDone: ()
         </div>
         <form className="space-y-2" onSubmit={e => { e.preventDefault(); void save(); }}>
           {!first && (
-            <Input value={label} onChange={e => setLabel(e.target.value)} maxLength={60} placeholder="Name, like Composio Work" aria-label="Source name" className="h-8 text-xs" />
+            <Field value={label} onChange={e => setLabel(e.target.value)} maxLength={60} placeholder="Name, like Composio Work" aria-label="Source name"  />
           )}
           <div className="flex flex-wrap items-center gap-2">
-            <Input
+            <Field
               type="password" autoComplete="off" spellCheck={false} value={key} onChange={e => setKey(e.target.value)}
-              placeholder="Project API key" aria-label="Composio project API key" className="h-8 min-w-0 flex-1 basis-56 text-xs"
+              placeholder="Project API key" aria-label="Composio project API key" className="min-w-0 flex-1 basis-56"
             />
             <Button
               type="submit"

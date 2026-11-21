@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
@@ -344,7 +345,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
 
         {/* Personal keeps its primary status selector. Team filters share one menu. */}
         {privatePlanning && <DropdownMenu>
-          <DropdownMenuTrigger asChild><ChipButton aria-label={`Status: ${laneLabel}`} className={""}>
+          <DropdownMenuTrigger asChild><ChipButton aria-label={`Status: ${laneLabel}`} className="">
             <span className="max-w-[130px] truncate">{laneLabel}</span>
             {laneCount != null && laneCount > 0 && <span className="tabular-nums opacity-60">{laneCount}</span>}
             <ChevronDown className="size-3.5 shrink-0 opacity-60" />
@@ -539,7 +540,7 @@ function QuickCreateRow({ lane, onCreate }: { lane: TaskLane; onCreate: (title: 
   return (
     <div className="flex items-center gap-2 border-t border-border px-3 py-1.5">
       <Plus size={13} className="text-muted-foreground flex-shrink-0" />
-      <input
+      <Field
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
@@ -548,7 +549,7 @@ function QuickCreateRow({ lane, onCreate }: { lane: TaskLane; onCreate: (title: 
         }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1" purpose="embedded"
       />
     </div>
   );

@@ -1,6 +1,8 @@
 'use client';
+import { Field } from '@/components/system/field';
+
 import { Button } from '@/components/system/button';
-import { Input } from '@/components/ui/input';
+
 import { apiErrorText } from '@/lib/api/client';
 import { HARNESS_IDS, HARNESS_REGISTRY } from '@/lib/harness/registry';
 import { trpcClient } from '@/lib/trpc/client';
@@ -37,7 +39,7 @@ export function RuntimeSetup() {
         const secret = name === 'GROQ_API_KEY' || name === 'OPENAI_API_KEY';
         const configured = secret && query.data?.secrets[name];
         return <label key={name} className="block space-y-1"><span>{label}{configured ? ' (configured)' : ''}</span>
-          <Input type={secret ? 'password' : 'text'} autoComplete="off" value={patch[name] ?? (secret ? '' : String((!secret ? query.data?.values[name] : undefined) ?? ''))}
+          <Field type={secret ? 'password' : 'text'} autoComplete="off" value={patch[name] ?? (secret ? '' : String((!secret ? query.data?.values[name] : undefined) ?? ''))}
             placeholder={secret && configured ? 'Leave unchanged, or enter a replacement' : undefined}
             onChange={event => setPatch(previous => ({ ...previous, [name]: event.target.value }))} />
         </label>;

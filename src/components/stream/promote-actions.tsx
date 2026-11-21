@@ -1,4 +1,5 @@
 "use client";
+import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 
@@ -6,7 +7,7 @@ import { useState, useRef, useCallback } from 'react';
 import {
   Target, FileText, Search, Plus, GitMerge,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import {
   Popover,
   PopoverTrigger,
@@ -92,13 +93,13 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
           <div>
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
               <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
+              <Field
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search tasks..."
-                className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
+                className="flex-1" purpose="embedded"
               />
             </div>
             <div className="max-h-48 overflow-y-auto py-1">
@@ -194,13 +195,13 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
           <div>
             <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
               <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
+              <Field
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search notes..."
-                className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
+                className="flex-1" purpose="embedded"
               />
             </div>
             <div className="max-h-48 overflow-y-auto py-1">

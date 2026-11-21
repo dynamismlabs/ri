@@ -23,6 +23,7 @@ const areaVariants = cva('ri-field-textarea', {
 export type TextAreaProps = Omit<ComponentProps<typeof Textarea>, 'size'> &
   FieldInfo &
   FieldDrawing & {
+    controlClassName?: string;
     autoSize?: boolean;
     resize?: 'none' | 'vertical';
     /** Keep an auto-sizing editor within a readable number of lines. */
@@ -48,6 +49,7 @@ export function TextArea(fieldProps: TextAreaProps) {
     resize = 'none',
     maxRows,
     className,
+    controlClassName,
     style,
     ...props
   } = fieldProps;
@@ -85,6 +87,7 @@ export function TextArea(fieldProps: TextAreaProps) {
           fieldVariants({ size, purpose, titleSize, align, completed }),
           areaVariants({ autoSize, resize }),
           !framed && className,
+          controlClassName,
         )}
         style={{ '--field-rows': rows, '--field-max-rows': maxRows, ...style } as CSSProperties}
       />

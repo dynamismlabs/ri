@@ -1,4 +1,5 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
 
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
@@ -92,20 +93,20 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
       {effortOptions.length > 0 && (
         <label className="inline-flex items-center gap-2 text-muted-foreground">
           Reasoning effort
-          <select aria-label="Reviewer reasoning effort" disabled={!modelId} value={effort ?? ''} onChange={(event) => onChange({ ...value, harness, model: modelId, effort: event.target.value as EffortLevel })} className="rounded border bg-background px-2 py-1">
+          <NativeSelect aria-label="Reviewer reasoning effort" disabled={!modelId} value={effort ?? ''} onChange={(event) => onChange({ ...value, harness, model: modelId, effort: event.target.value as EffortLevel })} className="w-auto">
             {effort && !effortOptions.some((option) => option.id === effort) && <option value={effort} disabled>{effort} (unavailable)</option>}
             {effortOptions.map((option) => <option key={option.id} value={option.id}>{option.label}</option>)}
-          </select>
+          </NativeSelect>
         </label>
       )}
       {variants.length > 0 && (
         <label className="ml-3 inline-flex items-center gap-2 text-muted-foreground">
           Variant
-          <select aria-label="Reviewer model variant" value={variant ?? ''} onChange={(event) => onChange({ ...value, harness, model: modelId, variant: event.target.value || null })} className="rounded border bg-background px-2 py-1">
+          <NativeSelect aria-label="Reviewer model variant" value={variant ?? ''} onChange={(event) => onChange({ ...value, harness, model: modelId, variant: event.target.value || null })} className="w-auto">
             <option value="">Default</option>
             {variant && !variants.some((option) => option.id === variant) && <option value={variant} disabled>{variant} (unavailable)</option>}
             {variants.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
-          </select>
+          </NativeSelect>
         </label>
       )}
       {associatedWorkspace && <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
