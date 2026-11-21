@@ -100,9 +100,6 @@ html:root [data-slot="task-chip"] { height: 24px; gap: 6px; padding-inline: 10px
 html:root [data-slot="task-chip"]:hover { border-color: transparent; background-color: var(--selected); }
 html:root [data-slot="task-chip"][data-status="in_progress"]::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 999px; background-color: var(--working); }
 
-/* Top bar: the page tools in one capsule, Create and the view button as capsules. */
-html:root .hud-create { height: 30px; padding-inline: 12px; gap: 5px; border-radius: 999px; font-size: 12.5px; font-weight: 500; letter-spacing: normal; box-shadow: none; }
-
 /* Rail: no boxes in the footer, a quiet New agent, sentence-case group labels. */
 html:root [data-slot="rail-foot"] button { border-color: transparent; }
 html:root [data-slot="rail-foot"] button:hover { border-color: transparent; background-color: var(--hover); }
