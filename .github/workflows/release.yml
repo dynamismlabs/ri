@@ -258,19 +258,21 @@ jobs:
       - name: Gather the files and their checksums
         run: |
           VERSION="$(node -p "require('./package.json').version")"
-          mkdir -p payloads assets
+          # Not assets/: the checkout has its own assets folder (the brand icons), and
+          # uploading assets/* would sweep it in.
+          mkdir -p payloads release-files
           find artifacts -name '*.payload.json' -exec cp {} payloads/ \;
-          find artifacts -type f \( -name 'ri-runtime-*.tar.gz' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.exe' -o -name '*.yml' -o -name '*.blockmap' \) -exec cp {} assets/ \;
+          find artifacts -type f \( -name 'ri-runtime-*.tar.gz' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' -o -name '*.exe' -o -name '*.yml' -o -name '*.blockmap' \) -exec cp {} release-files/ \;
           # SHA256SUMS for every installer and runtime, and downloads.json, this version's
           # files for the website, which promoting copies to stable.
-          node desktop/release-downloads.mjs version --artifacts artifacts --out assets \
+          node desktop/release-downloads.mjs version --artifacts artifacts --out release-files \
             --version "$VERSION" --commit "$GITHUB_SHA" \
             --base-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/v$VERSION/" \
             --notes-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/v$VERSION"
-          cat assets/SHA256SUMS
+          cat release-files/SHA256SUMS
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-checksums: assets/SHA256SUMS
+          subject-checksums: release-files/SHA256SUMS
       - name: Sign and upload
         env:
           GH_TOKEN: ${{ github.token }}
@@ -285,10 +287,10 @@ jobs:
           PREVIOUS="$(git describe --tags --abbrev=0 --match 'v[0-9]*' HEAD^ 2>/dev/null || true)"
           git log --no-merges --format='%s' ${PREVIOUS:+"$PREVIOUS"..HEAD} | grep -E '^(feat|fix)(\(|:)' > notes.txt || true
           node desktop/publish-release.mjs publish --payloads payloads --channel latest --existing feed-now --out feed-next --notes notes.txt --feed "$RI_RELEASE_FEED"
-          node desktop/release-downloads.mjs channel --record assets/downloads.json --channel latest --out feed-next
+          node desktop/release-downloads.mjs channel --record release-files/downloads.json --channel latest --out feed-next
           # The app shows notes.txt as what changed. The release page also says how to check a file.
           { cat notes.txt; printf '\nCheck a download against SHA256SUMS, or run `gh attestation verify <file> --repo %s` to see the build that made it.\n' "$GITHUB_REPOSITORY"; } > release-notes.md
-          gh release create "v$VERSION" assets/* --title "Ri $VERSION" --notes-file release-notes.md --verify-tag
+          gh release create "v$VERSION" release-files/* --title "Ri $VERSION" --notes-file release-notes.md --verify-tag
           # The keys first, so no computer meets a file signed by a key it hasn't been told about.
           gh release upload feed feed-next/keys.json --clobber
           gh release upload feed feed-next/* --clobber
