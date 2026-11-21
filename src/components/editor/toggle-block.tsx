@@ -152,6 +152,7 @@ function ToggleView(props: ReactNodeViewProps) {
       data-open={open ? 'true' : 'false'}
     >
       <IconButton
+        className="toggle-chevron"
         type="button"
         onClick={handleToggle}
         contentEditable={false}

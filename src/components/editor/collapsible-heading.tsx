@@ -198,6 +198,7 @@ function CollapsibleHeadingView(props: ReactNodeViewProps) {
       onMouseLeave={() => setIsHovered(false)}
     >
       <IconButton
+        className="collapsible-toggle"
         type="button"
         onClick={toggleCollapse}
         contentEditable={false}
