@@ -20,7 +20,7 @@ beforeAll(async () => {
           <NativeSelect label="Frequency" name="frequency" value={frequency} onChange={e=>setFrequency(e.target.value)}><option value="daily">Daily</option><option value="weekly">Weekly</option></NativeSelect>
           <Field label="Disabled group" disabled trailing={<Button onClick={()=>setClears(n=>n+1)}>Clear disabled</Button>}/><fieldset disabled className="min-w-0"><Field label="Inherited disabled group" trailing={<Button onClick={()=>setClears(n=>n+1)}>Clear inherited</Button>}/></fieldset><Field label="Disabled input" disabled name="disabled" defaultValue="Unavailable"/>
         </form>
-        <Field label="Separate error" description="Instructions first" messagePosition="before-control" error="Token rejected" errorPosition="after-control"/><Field label="Before label" description="Setup first" messagePosition="before-label"/><Field label="Before control" description="Existing note" error="Name refused" messagePosition="before-control"/><Field label="Invalid input" description="A short account name" error="Enter an account name" defaultValue=""/>
+        <Field label="Separate error" description="Instructions first" messagePosition="before-control" error="Token rejected" errorPosition="after-control"/><div id="grouped-spacing" className="space-y-3"><Field aria-label="Spaced group" leading={<span>Find</span>}/><p id="after-grouped">After grouped field</p></div><Field label="Before label" description="Setup first" messagePosition="before-label"/><Field label="Before control" description="Existing note" error="Name refused" messagePosition="before-control"/><Field label="Invalid input" description="A short account name" error="Enter an account name" defaultValue=""/>
         <TextArea label="Invalid area" error="Enter instructions" rows={2}/>
         <NativeSelect label="Invalid select" error="Choose a period"><option value="">Pick one</option><option value="weekly">Weekly</option></NativeSelect>
         <TextArea label="Disabled area" disabled value="Unavailable" readOnly/>
@@ -236,6 +236,18 @@ for (const theme of ['light', 'dark']) {
           .locator('.ri-field-label-row')
           .evaluate((el) => el.getBoundingClientRect().width),
       ).toBe(48);
+    } finally {
+      await page.close();
+    }
+  });
+  it(`preserves parent spacing around a compound field (${theme})`, async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 900, height: 1000 } });
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const input = page.getByRole('textbox', { name: 'Spaced group', exact: true });
+      const shell = (await input.locator('..').boundingBox())!;
+      const next = (await page.locator('#after-grouped').boundingBox())!;
+      expect(next.y - shell.y - shell.height).toBe(12);
     } finally {
       await page.close();
     }

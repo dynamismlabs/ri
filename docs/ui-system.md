@@ -171,7 +171,8 @@ and repeat parsers use `inlineMessage`, keeping their reading or error inside
 the group and linked to the control. Parser feedback keeps its polite live
 announcement as text becomes valid or invalid. Each trailing action keeps its own Button
 behavior. A compound disabled field disables its actions through a native
-fieldset, including when disabled by an outer form. Disabled controls retain native behavior. Read-only values can still
+fieldset, including when disabled by an outer form. That fieldset is a real
+layout box, so a parent’s spacing and the caller’s responsive classes still apply. Disabled controls retain native behavior. Read-only values can still
 be focused and copied. Field invalid focus uses the danger ink. Other focus uses
 the ring token, with no second shadow or border ring.
 

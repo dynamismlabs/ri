@@ -123,18 +123,16 @@ export function Field(fieldProps: FieldProps) {
       className={className}
     >
       {grouped ? (
-        <fieldset className="contents" disabled={props.disabled} role="presentation">
+        <fieldset
+          className={cn('min-w-0 w-full border-0 p-0', !framed && className, controlClassName)}
+          disabled={props.disabled}
+          role="presentation"
+        >
           <InputGroup
             data-slot="field-shell"
             aria-invalid={info['aria-invalid']}
             data-disabled={props.disabled || undefined}
-            className={cn(
-              'ri-field-shell',
-              `ri-field--${size}`,
-              purpose && `ri-field--${purpose}`,
-              !framed && className,
-              controlClassName,
-            )}
+            className={cn('ri-field-shell', `ri-field--${size}`, purpose && `ri-field--${purpose}`)}
           >
             {leading && (
               <InputGroupAddon className="ri-field-addon" align="inline-start">

@@ -63,7 +63,6 @@ export function TreeSearchBar({
     : '';
 
   return (
-    <>
       <Field
         ref={inputRef}
         // Go to file (⌘P) focuses this from the execution workbench.
@@ -82,6 +81,9 @@ export function TreeSearchBar({
         leading={<Search aria-hidden />}
         trailing={
           <>
+            <span id={matchDescriptionId} className="sr-only">
+              {matchSummary}
+            </span>
             {shortcut && !query && (
               <Kbd className="@max-[200px]/tree-search:hidden">{shortcut}</Kbd>
             )}
@@ -113,9 +115,5 @@ export function TreeSearchBar({
           </>
         }
       />
-      <span id={matchDescriptionId} className="sr-only">
-        {matchSummary}
-      </span>
-    </>
   );
 }
