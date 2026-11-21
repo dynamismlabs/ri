@@ -70,7 +70,7 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
               <DialogPrimitive.Close asChild>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="md"
                 >
                   Dismiss
                 </Button>

@@ -6,6 +6,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Check, Copy, Loader2, Mail, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 
+import { useTouchFirst } from '@/hooks/use-touch-first';
 import { useEmailDraft } from '@/hooks/use-email-draft';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { emailSendProblem, type EmailDraftFields } from '@/lib/email/validation';
@@ -14,6 +15,7 @@ import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 
 export function EmailComposer({ id, sessionId, initial }: { id: string; sessionId: string; initial: EmailDraft }) {
+  const touch = useTouchFirst();
   const recovery = useQuery({
     ...trpc.email.get.queryOptions({ id, sessionId }),
     enabled: initial.status === 'sending',
@@ -86,13 +88,13 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
             type="button"
             onClick={() => setShowCc(true)}
             variant="ghost"
-            size="sm"
+            size={touch ? 'touch' : 'sm'}
           >Cc</Button>}
           {!showBcc && !draft.bcc && <Button
             type="button"
             onClick={() => setShowBcc(true)}
             variant="ghost"
-            size="sm"
+            size={touch ? 'touch' : 'sm'}
           >Bcc</Button>}
         </div>}
       </div>
@@ -127,7 +129,7 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
           }
         }}
           variant="ghost"
-          size="sm"
+          size={touch ? 'touch' : 'xs'}
         >
           {copyStatus === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
           <span role="status">{copyStatus === 'copied' ? 'Copied' : copyStatus === 'error' ? 'Copy failed' : 'Copy body'}</span>
@@ -175,7 +177,7 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
           disabled={busy || hasEdits || Boolean(conflict)}
           onClick={() => { if (problem) setMessage(problem); else { setMessage(null); send.mutate(); } }}
           variant="primary"
-          size="sm"
+          size={touch ? 'touch' : 'md'}
         >
           {send.isPending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}Send
         </Button>
@@ -187,7 +189,7 @@ export function EmailComposer({ id, sessionId, initial }: { id: string; sessionI
           label="Discard email draft"
           tooltip="Discard this draft"
           variant="ghost"
-          size="sm"
+          size={touch ? 'touch' : 'md'}
         ><Trash2 size={14} /></IconButton>
       </div>}
     </section>

@@ -197,7 +197,7 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
             <Button
               onClick={() => ask?.resolve(false)}
               variant="secondary"
-              size="sm"
+              size="md"
             >
               Cancel
             </Button>
@@ -274,7 +274,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
               onClick={() => choose(null)}
               disabled={busy}
               variant="secondary"
-              size="sm"
+              size="md"
             >
               Cancel
             </Button>
@@ -282,7 +282,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
               onClick={() => choose('keep_running')}
               disabled={busy}
               variant="secondary"
-              size="sm"
+              size="md"
               className="inline-flex items-center gap-1.5"
             >
               Keep running and {verb}
@@ -291,7 +291,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
               onClick={() => choose('stop_running_agent')}
               disabled={busy}
               variant="ghost"
-              size="sm"
+              size="md"
               className="inline-flex items-center gap-1.5"
             >
               {busy && <Loader2 size={12} className="animate-spin" />}

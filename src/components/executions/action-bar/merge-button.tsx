@@ -211,7 +211,7 @@ export function MergeButton({
                   type="button"
                   onClick={() => setOpen(false)}
                   variant="secondary"
-                  size="sm"
+                  size="md"
                 >
                   Cancel
                 </Button>

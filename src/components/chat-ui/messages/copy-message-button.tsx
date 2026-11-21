@@ -5,6 +5,7 @@ import { SendToChatButton } from '@/components/chat-ui/coordination/send-to-chat
 import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTouchFirst } from '@/hooks/use-touch-first';
 
 
 interface CopyMessageButtonProps {
@@ -47,6 +48,7 @@ export function CopyMessageButton({
   className,
 }: CopyMessageButtonProps) {
   const [copied, setCopied] = useState(false);
+  const touch = useTouchFirst();
 
   const onClick = async () => {
     if (!text) return;
@@ -88,7 +90,7 @@ export function CopyMessageButton({
         label={copied ? 'Copied' : 'Copy message'}
         tooltip={copied ? 'Copied' : 'Copy message'}
         variant="ghost"
-        size="xs"
+        size={touch ? 'touch' : 'xs'}
         reveal={!alwaysVisible}
         className="inline-flex items-center justify-center"
       >
@@ -109,12 +111,12 @@ export function CopyMessageButton({
         <>
           {timeNode}
           {iconNode}
-          {eventId && sessionId && <SendToChatButton eventId={eventId} sessionId={sessionId} />}
+          {eventId && sessionId && <SendToChatButton eventId={eventId} sessionId={sessionId} size={touch ? 'touch' : 'xs'} />}
         </>
       ) : (
         <>
           {iconNode}
-          {eventId && sessionId && <SendToChatButton eventId={eventId} sessionId={sessionId} />}
+          {eventId && sessionId && <SendToChatButton eventId={eventId} sessionId={sessionId} size={touch ? 'touch' : 'xs'} />}
           {timeNode}
         </>
       )}

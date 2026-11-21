@@ -759,7 +759,7 @@ function LaunchModalInner({
                 <IconButton
                   label="Close"
                   variant="ghost"
-                  size="sm"
+                  size={touch ? 'touch' : 'sm'}
                   className="flex-shrink-0 pointer-coarse:-m-1"
                 >
                   <X size={15} />
@@ -835,7 +835,7 @@ function LaunchModalInner({
                     type="button"
                     onClick={openBrowse}
                     variant="secondary"
-                    size="sm"
+                    size={touch ? 'touch' : 'sm'}
                     className="inline-flex items-center gap-1.5"
                   >
                     <Search size={10} />
@@ -850,7 +850,7 @@ function LaunchModalInner({
                           type="button"
                           onClick={() => handlePick(item)}
                           variant="secondary"
-                          size="sm"
+                          size={touch ? 'touch' : 'sm'}
                           className="inline-flex max-w-[14rem] items-center gap-1.5"
                         >
                           <Icon size={10} className="flex-shrink-0" />
@@ -924,7 +924,7 @@ function LaunchModalInner({
                     onClick={() => void launch({ send: false })}
                     disabled={launching || !!runOnProblem || !!runtimeProblem}
                     variant="secondary"
-                    size="sm"
+                    size={touch ? 'touch' : 'md'}
                   >
                     Open only
                   </Button>
@@ -934,7 +934,7 @@ function LaunchModalInner({
                   onClick={() => void launch()}
                   disabled={!ready || launching}
                   variant="primary"
-                  size="md"
+                  size={touch ? 'touch' : 'md'}
                   className="inline-flex items-center gap-1.5"
                 >
                   {launching && <Loader2 size={12} className="animate-spin" />}

@@ -1,6 +1,6 @@
 'use client';
 import { IconButton } from '@/components/system/icon-button';
-import { Button } from '@/components/system/button';
+import { Button, type ButtonSize } from '@/components/system/button';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { useDeferredValue, useState } from 'react';
 import { Forward, Search } from 'lucide-react';
@@ -16,11 +16,12 @@ import { trpcClient } from '@/lib/trpc/client';
 import { DEFAULT_HARNESS } from '@/lib/harness/registry';
 import { toast } from 'sonner';
 
-export function SendToChatButton({ eventId, sessionId }: { eventId: string; sessionId: string }) {
+type SendToChatButtonProps = { eventId: string; sessionId: string; size?: ButtonSize };
+export function SendToChatButton({ eventId, sessionId, size = 'xs' }: SendToChatButtonProps) {
   const enabled = useChatCapabilities().coordination !== false;
-  return enabled ? <AvailableSendToChatButton {...{ eventId, sessionId }} /> : null;
+  return enabled ? <AvailableSendToChatButton {...{ eventId, sessionId, size }} /> : null;
 }
-function AvailableSendToChatButton({ eventId, sessionId }: { eventId: string; sessionId: string }) {
+function AvailableSendToChatButton({ eventId, sessionId, size }: SendToChatButtonProps) {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   return <Dialog open={open} onOpenChange={next => { if (!sending) setOpen(next); }}>
@@ -29,13 +30,13 @@ function AvailableSendToChatButton({ eventId, sessionId }: { eventId: string; se
       label="Send to chat"
       tooltip="Share this message with another chat"
       variant="ghost"
-      size="xs"
+      size={size}
       className="inline-flex items-center justify-center"
     ><Forward size={12} /></IconButton></DialogTrigger>
-    {open && <SendToChatDialog eventId={eventId} sessionId={sessionId} onClose={() => setOpen(false)} onSendingChange={setSending} />}
+    {open && <SendToChatDialog eventId={eventId} sessionId={sessionId} size={size} onClose={() => setOpen(false)} onSendingChange={setSending} />}
   </Dialog>;
 }
-function SendToChatDialog({ eventId, sessionId, onClose, onSendingChange }: { eventId: string; sessionId: string; onClose: () => void; onSendingChange: (sending: boolean) => void }) {
+function SendToChatDialog({ eventId, sessionId, size, onClose, onSendingChange }: SendToChatButtonProps & { onClose: () => void; onSendingChange: (sending: boolean) => void }) {
   const defaults = useDefaultSelection();
   const [sendId] = useState(uuidv7);
   const [search, setSearch] = useState('');
@@ -64,7 +65,7 @@ function SendToChatDialog({ eventId, sessionId, onClose, onSendingChange }: { ev
       <label className="flex items-center gap-2 rounded-md border px-2 py-1.5"><Search size={14} className="text-muted-foreground" /><input autoFocus aria-label="Search chats" placeholder="Search chats" value={search} onChange={event => setSearch(event.target.value)} className="min-w-0 flex-1 bg-transparent text-sm outline-none" /></label>
       <label className="flex items-center justify-between gap-2 text-xs">Agent<select aria-label="Filter by agent" className="min-w-0 max-w-[min(16rem,75%)] rounded-md border bg-background p-1.5" value={workspaceId} onChange={event => { setWorkspaceId(event.target.value); setTarget(''); }}><option value="">All agents</option>{agents.map(agent => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</select></label>
       <div className="flex gap-3 text-xs"><label><input type="radio" checked={!newChat} onChange={() => setNewChat(false)} /> Existing chat</label><label><input type="radio" checked={newChat} onChange={() => setNewChat(true)} /> New chat</label></div>
-      {newChat ? <div className="space-y-2 rounded-lg border p-3"><p className="text-xs text-muted-foreground">{workspaceId ? 'Start a new chat in the selected agent.' : 'Choose an agent above for the new chat.'}</p><div className="flex flex-wrap gap-2"><ModelControl selection={{ harness, model }} label={selectedModel?.label ?? (model || 'Default model')} variant={variant} effort={effort} serviceTier={serviceTier} onChange={setSelection} onEffortChange={next => setSelection({ harness, model, variant, effort: next, serviceTier })} /></div></div>
+      {newChat ? <div className="space-y-2 rounded-lg border p-3"><p className="text-xs text-muted-foreground">{workspaceId ? 'Start a new chat in the selected agent.' : 'Choose an agent above for the new chat.'}</p><div className="flex flex-wrap gap-2"><ModelControl size={size === 'touch' ? 'touch' : 'compact'} selection={{ harness, model }} label={selectedModel?.label ?? (model || 'Default model')} variant={variant} effort={effort} serviceTier={serviceTier} onChange={setSelection} onEffortChange={next => setSelection({ harness, model, variant, effort: next, serviceTier })} /></div></div>
         : <div className="min-w-0 max-h-56 overflow-x-hidden overflow-y-auto rounded-lg border" aria-label="Chats by recent activity">{isLoading ? <p className="p-3 text-xs text-muted-foreground">Loading chats…</p> : chats.length === 0 ? <p className="p-3 text-xs text-muted-foreground">No matching chats.</p> : chats.map(chat => <button key={chat.id} type="button" aria-pressed={target === chat.id} onClick={() => setTarget(chat.id)} className={`block w-full border-b px-3 py-2 text-left last:border-0 ${target === chat.id ? 'bg-primary/10' : 'hover:bg-muted/50'}`}><span className="block truncate text-sm font-medium">{chat.label ?? (chat.type === 'orchestration' ? chat.workspaceId ? 'Agent main chat' : 'Orchestrator' : 'Untitled chat')}</span><span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{chat.agentName ?? 'Orchestrator'} · {new Date(chat.lastActivityAt ?? chat.updatedAt).toLocaleString()}</span></button>)}</div>}
       <label className="block space-y-1 text-xs"><span>Your directions, optional</span><textarea value={directions} onChange={event => setDirections(event.target.value)} rows={3} className="w-full rounded-md border bg-background p-2 text-sm" placeholder="For example, review this feedback against your current changes." /></label>
       <div className="flex justify-end gap-2"><Button
@@ -72,13 +73,13 @@ function SendToChatDialog({ eventId, sessionId, onClose, onSendingChange }: { ev
         disabled={send.isPending}
         onClick={onClose}
         variant="ghost"
-        size="xs"
+        size={size === 'touch' ? 'touch' : 'md'}
       >Cancel</Button><Button
         type="button"
         disabled={send.isPending || (newChat ? !workspaceId : !target)}
         onClick={() => send.mutate()}
         variant="primary"
-        size="xs"
+        size={size === 'touch' ? 'touch' : 'md'}
       >{send.isPending ? 'Sending…' : 'Send to chat'}</Button></div>
     </div>
   </DialogContent>;

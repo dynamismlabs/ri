@@ -265,7 +265,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
               <DialogPrimitive.Close asChild>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="md"
                 >
                   Cancel
                 </Button>

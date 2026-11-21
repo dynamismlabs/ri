@@ -474,7 +474,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 <Button
                   type="button"
                   variant="ghost"
-                  size="sm"
+                  size="md"
                 >
                   Cancel
                 </Button>

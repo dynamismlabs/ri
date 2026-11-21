@@ -240,7 +240,7 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                   onClick={async () => { if (group.before && (!confirmRevert || await confirmRevert())) revert.mutate(group.before.id); }}
                   disabled={!canUndo || revert.isPending}
                   variant="primary"
-                  size="xs"
+                  size="md"
                   className="ml-auto inline-flex items-center gap-1.5"
                 >
                   {revert.isPending ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}

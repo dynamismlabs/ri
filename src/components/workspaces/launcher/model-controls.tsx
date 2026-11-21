@@ -15,7 +15,7 @@ import type { EffortLevel } from '@/db/types';
 import { useDefaultSelection } from '@/hooks/use-default-selection';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import { effortOptionsForModel, explicitEffortForModel, explicitVariantForModel, harnessSupportsEffort, type ModelOption, type ProviderId } from '@/lib/harness/options';
-import { serviceTierForModel, serviceTierOptions } from '@/lib/harness/service-tiers';
+import { serviceTierForModel, serviceTierOptions, serviceTierLabel } from '@/lib/harness/service-tiers';
 import { readProviderSpeed } from '@/lib/executions/provider-speed';
 import { LauncherPopoverContent } from './launcher-popover';
 
@@ -97,13 +97,13 @@ export function ModelControl({
         <Tip label="Choose a model and adjust its settings">
           <ChipButton
             type="button"
-            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
+            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}${speed ? `, ${serviceTierLabel(speed)}` : ''}`}
             disabled={disabled}
             variant="secondary"
             size={size}
           >
             <HarnessMark id={selection.harness} />
-            <ModelMenuLabel model={label} effort={effortLabel} variant={variantLabel} speed={speed ?? undefined} />
+            <ModelMenuLabel model={label} effort={size === 'touch' ? undefined : effortLabel} variant={size === 'touch' ? undefined : variantLabel} speed={size === 'touch' ? undefined : speed ?? undefined} />
           </ChipButton>
         </Tip>
       </PopoverTrigger>

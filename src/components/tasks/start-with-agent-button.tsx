@@ -121,7 +121,7 @@ export function StartWithAgentButton({
             <Button
               onClick={() => { setChooser(null); launchNew(); }}
               variant="secondary"
-              size="sm"
+              size="md"
               tone="mode-edits"
             >
               Start another execution
@@ -129,7 +129,7 @@ export function StartWithAgentButton({
             <Button
               onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }}
               variant="secondary"
-              size="sm"
+              size="md"
             >
               Cancel
             </Button>
