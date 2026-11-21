@@ -173,3 +173,8 @@
 .ri-card[aria-invalid='true'] { outline: 1px solid var(--danger); outline-offset: -1px; }
 .ri-card[aria-invalid='true']:focus-visible { outline-width: 2px; }
 .ri-inline-action[class*='ri-tone--'] { color: var(--control-ink); }
+.ri-inline-action--caption { color: var(--t3); font-size: 12px; font-weight: 400; line-height: 1.5; }
+.ri-inline-action--body { color: var(--t2); font-size: 12px; font-weight: 400; line-height: 1.5; }
+.ri-inline-action--label { color: var(--t1); font-size: 13px; font-weight: 500; line-height: 1.5; }
+.ri-inline-action--heading { color: var(--t1); font-size: 14px; font-weight: 500; line-height: 1.375; }
+.ri-inline-action.ri-content--code { color: var(--t3); font-size: 11px; }

@@ -368,7 +368,7 @@ export function FolderPickerDialog({
                 const isSelected = selected === entry.path;
                 const isDir = entry.kind === 'dir';
                 return (
-                  <MenuAction selected={!!((isDir) || (isSelected))} density="compact"
+                  <MenuAction selected={isSelected} density="compact"
                     key={entry.path}
                     type="button"
                     onClick={() => {
@@ -377,8 +377,8 @@ export function FolderPickerDialog({
                     }}
                     onDoubleClick={() => enterFolder(entry)}
                     disabled={!isDir}
-                    className={cn("w-full flex items-center gap-2 text-left", "", isDir
-    ? "cursor-pointer" : "opacity-50 cursor-default", isSelected && "")}
+                    className={cn("w-full flex items-center gap-2 text-left", isDir
+    ? "cursor-pointer" : "opacity-50 cursor-default")}
                   >
                     {isDir ? (
                       <FolderIcon name={entry.name} opened={false} size={14} />

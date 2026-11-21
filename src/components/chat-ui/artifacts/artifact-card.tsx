@@ -58,7 +58,7 @@ export function ArtifactCard({ name, icon, details, preview, children, ...props 
           data-artifact-card=""
           aria-current={shown || undefined}
           onClick={event => open(preview, event.currentTarget)}
-          className={cn("flex w-full items-center gap-1.5 text-left after:absolute after:inset-0 after:content-['']", shown ? "" : "")}
+          className="flex w-full items-center gap-1.5 text-left after:absolute after:inset-0 after:content-['']"
         >
           {icon}<span className="min-w-0 flex-1 truncate">{name}</span><Opens size={12} aria-hidden className={cn('shrink-0', shown ? 'text-primary' : 'text-muted-foreground')} />
         </MenuAction>

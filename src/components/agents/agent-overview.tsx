@@ -319,9 +319,9 @@ function AgentTasksSection({ workspaceId }: { workspaceId: string }) {
               onClick={() => openTask(t.id)}
 
               data-status={t.status}
-              className={cn("inline-flex max-w-[16rem] items-center gap-1", t.status === "in_progress"
-    ? "" : "")}
+              className="inline-flex max-w-[16rem] items-center gap-1"
             >
+              {t.status === 'in_progress' && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-working" />}
               <span className="truncate">{t.title || 'Untitled'}</span>
             </Button>
           </Tip>

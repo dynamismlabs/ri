@@ -143,7 +143,7 @@ function DigestDecisionRow({ decision }: { decision: TriageDecisionWithItems }) 
   return (
     <div className={cn('group flex items-center gap-2 py-1', isUndone && 'opacity-40 line-through')}>
       <Icon size={11} className="text-muted-foreground/70 flex-shrink-0" />
-      <InlineAction
+      <InlineAction purpose="body"
         className={cn("flex-1 min-w-0 text-left truncate", canOpen ? "hover:underline cursor-pointer" : "cursor-default")}
         onClick={() => {
           if (!canOpen || isUndone) return;

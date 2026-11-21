@@ -50,7 +50,7 @@ export function AgentAttentionRow({
     return (
       <MenuAction selected={!!((isActive))} density="compact"
         onClick={open}
-        className={cn("relative w-full flex items-start gap-2 text-left", isActive ? "" : "")}
+        className="relative w-full flex items-start gap-2 text-left"
       >
         <span className="flex h-4 items-center flex-shrink-0">
           <span
@@ -74,7 +74,7 @@ export function AgentAttentionRow({
     <Tip label={`${workspace.name}: ${voice.text}`} onlyWhenTextHidden>
       <MenuAction selected={!!((isActive))} density="compact"
         onClick={open}
-        className={cn("w-full flex items-start gap-1.5 text-left", isActive ? "" : "")}
+        className="w-full flex items-start gap-1.5 text-left"
       >
         <span className="relative flex-shrink-0">
           <AgentIcon workspace={workspace} size="sm" />

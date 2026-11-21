@@ -8,7 +8,7 @@ import { Field } from '@/components/system/field';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Plus, Loader2, CornerDownLeft, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+
 import { useCreateTask } from '@/hooks/use-tasks';
 import { apiErrorText } from '@/lib/api/client';
 import type { TaskRecord } from '@/db/types';
@@ -164,7 +164,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
             onMouseDown={(e) => e.preventDefault()}
             onMouseEnter={() => setHighlight(0)}
             onClick={() => choose(0)}
-            className={cn("flex w-full items-center gap-2 text-left", highlight === 0 ? "" : "")}
+            className="flex w-full items-center gap-2 text-left"
           >
             <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate">
@@ -187,7 +187,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
                     onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setHighlight(idx)}
                     onClick={() => choose(idx)}
-                    className={cn("flex w-full items-center gap-2 text-left", highlight === idx ? "" : "")}
+                    className="flex w-full items-center gap-2 text-left"
                   >
                     <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate text-foreground">{t.title}</span>

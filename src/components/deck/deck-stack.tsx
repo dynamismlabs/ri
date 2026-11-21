@@ -324,7 +324,7 @@ function SortableDeckItemCard({
 
       <div className="pl-6 pr-20 min-w-0 overflow-hidden">
         {/* Title */}
-        <InlineAction
+        <InlineAction purpose="heading"
           onClick={() => openTask(item.taskId)}
           className="text-left max-w-full break-words"
         >
@@ -352,7 +352,7 @@ function SortableDeckItemCard({
             same treatment on every card: no item gets extra text for being first. */}
         {(item.rationale || item.continuityContext) && (
           <Tip label={whyOpen ? 'Hide reasoning' : 'Show reasoning'}>
-            <InlineAction
+            <InlineAction purpose="caption"
               type="button"
               onClick={() => setWhyOpen((v) => !v)}
               className={cn("mt-2 block max-w-full break-words text-left", !whyOpen && "line-clamp-1")}

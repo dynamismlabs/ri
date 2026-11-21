@@ -126,7 +126,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
             </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
-            <MenuAction kind="menu" onClick={() => setAreaFilter(null)} className={cn("", !areaFilter && "")}>
+            <MenuAction kind="menu" onClick={() => setAreaFilter(null)} selected={!!(!areaFilter)}>
               All areas
             </MenuAction>
             <DropdownMenuSeparator />
@@ -134,7 +134,7 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
               <MenuAction kind="menu"
                 key={area.id}
                 onClick={() => setAreaFilter(area.id)}
-                className={cn("", area.id === areaFilter && "")}
+                selected={!!(area.id === areaFilter)}
               >
                 {area.name}
               </MenuAction>
@@ -155,13 +155,13 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
             </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-28">
-            <MenuAction kind="menu" onClick={() => setSortBy('default')} className={cn("", sortBy === "default" && "")}>
+            <MenuAction kind="menu" onClick={() => setSortBy('default')} selected={!!(sortBy === "default")}>
               Priority
             </MenuAction>
-            <MenuAction kind="menu" onClick={() => setSortBy('newest')} className={cn("", sortBy === "newest" && "")}>
+            <MenuAction kind="menu" onClick={() => setSortBy('newest')} selected={!!(sortBy === "newest")}>
               Newest
             </MenuAction>
-            <MenuAction kind="menu" onClick={() => setSortBy('deadline')} className={cn("", sortBy === "deadline" && "")}>
+            <MenuAction kind="menu" onClick={() => setSortBy('deadline')} selected={!!(sortBy === "deadline")}>
               Deadline
             </MenuAction>
           </DropdownMenuContent>

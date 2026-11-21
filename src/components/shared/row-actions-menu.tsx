@@ -49,13 +49,13 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
           <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto mb-3" />
           <div className="flex flex-col">
             {actions.map((action) => (
-              <MenuAction
+              <MenuAction tone={action.destructive ? "error" : "neutral"}
                 key={action.id}
                 onClick={() => {
                   setOpen(false);
                   action.onClick();
                 }}
-                className={cn("flex items-center gap-3 text-left", action.destructive ? "" : "")}
+                className="flex items-center gap-3 text-left"
               >
                 <action.icon size={18} className="flex-shrink-0" />
                 <span className="text-sm font-medium">{action.label}</span>

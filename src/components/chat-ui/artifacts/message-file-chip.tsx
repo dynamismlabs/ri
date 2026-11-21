@@ -110,7 +110,7 @@ function TextExpandChip({ url, display, variant, tone, size }: {
         <InlineAction appearance="chip" bubble={tone === "bubble"}   aria-expanded={open}
           type="button"
           onClick={handleToggle}
-          className={cn("inline-flex items-center align-baseline gap-1 mx-0.5", "", tone === "bubble" ? "" : "", "cursor-pointer")}
+          className={cn("inline-flex items-center align-baseline gap-1 mx-0.5", "cursor-pointer")}
         >
           <FileText size={11} className="opacity-70 shrink-0" />
           <span className="font-mono text-[11px] truncate max-w-[200px]">{display}</span>

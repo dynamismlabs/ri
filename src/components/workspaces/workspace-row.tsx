@@ -248,7 +248,7 @@ export function WorkspaceRow({
             onClick={open}
             onNewChat={() => onOpenLauncher(workspace.id)}
             trigger={({ ref, onClick }) => (
-              <InlineAction
+              <InlineAction purpose="label"
                 ref={ref}
                 onClick={onClick}
                 className="flex-1 min-w-0 text-left truncate"

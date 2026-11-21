@@ -3,7 +3,7 @@ import { Button } from '@/components/system/button';
 
 import { useWorkNavigation } from '@/contexts/work-context';
 import { trpc } from '@/lib/trpc/client';
-import { cn } from '@/lib/utils';
+
 import { useQuery } from '@tanstack/react-query';
 import { ListTodo } from 'lucide-react';
 import { Tip } from '@/components/ui/tip';
@@ -38,9 +38,9 @@ export function ExecutionTaskChips({ executionId }: { executionId: string }) {
             onClick={() => openTask(t.id)}
 
             data-status={t.status}
-            className={cn("inline-flex max-w-[16rem] items-center gap-1", t.status === "in_progress"
-    ? "" : "")}
+            className="inline-flex max-w-[16rem] items-center gap-1"
           >
+              {t.status === 'in_progress' && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-working" />}
             <span className="truncate">{t.title || 'Untitled'}</span>
           </Button>
         </Tip>

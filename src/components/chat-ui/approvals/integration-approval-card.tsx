@@ -2,7 +2,7 @@
 import { MenuAction } from '@/components/system/menu-action';
 import { InlineAction } from '@/components/system/inline-action';
 
-import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -100,7 +100,7 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
   const hidden = views.length - visible.length;
 
   return (
-    <Callout padding="none" shadow tone={(isPending ? "warning" : "neutral")}
+    <Card padding="none"
       className="overflow-hidden"
     >
       {/* Two lines, so the account the call acts as stays readable in a narrow panel. */}
@@ -181,7 +181,7 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
       ) : (
         <CardStatus states={states} actionLabel={head.actionLabel} toolName={head.toolName} sessionId={sessionId} isLatest={isLatest} />
       )}
-    </Callout>
+    </Card>
   );
 }
 

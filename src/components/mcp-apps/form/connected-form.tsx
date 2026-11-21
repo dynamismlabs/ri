@@ -142,5 +142,5 @@ function againLabels(again: FormContent | null | undefined): Record<string, stri
 }
 
 function Frame({bare, children}: {bare: boolean; children: React.ReactNode}) {
-  return <Card as="section" padding="md" shadow aria-label="Form" className={cn("space-y-3", !bare && "my-2")}>{children}</Card>;
+  return <Card as="section" padding={bare ? "none" : "md"} surface={bare ? "plain" : "raised"} shadow={!bare} aria-label="Form" className={cn("space-y-3", !bare && "my-2")}>{children}</Card>;
 }

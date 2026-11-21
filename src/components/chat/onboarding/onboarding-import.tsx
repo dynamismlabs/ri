@@ -1,5 +1,5 @@
 'use client';
-import { MenuAction } from '@/components/system/menu-action';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 import { Button } from '@/components/system/button';
 import { DISCOVERY_KEY } from '@/components/settings/sections/imports-section';
@@ -196,7 +196,7 @@ export function ImportStep({
           const on = selected.has(project.cwd);
           return (
             <Tip key={project.cwd} label={project.cwd}>
-              <MenuAction density="compact"
+              <ChoiceRow surface="plain" density="compact"
                 type="button"
                 role="checkbox"
                 aria-checked={on}
@@ -221,7 +221,7 @@ export function ImportStep({
                 <span className="flex-shrink-0 text-[10px] text-muted-foreground/70">
                   {formatCompactRelative(project.lastActiveAt)}
                 </span>
-              </MenuAction>
+              </ChoiceRow>
             </Tip>
           );
         })}

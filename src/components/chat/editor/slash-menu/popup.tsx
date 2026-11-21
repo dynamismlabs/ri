@@ -123,7 +123,7 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
           <MenuAction selected={!!((index === selectedIndex))} density="compact"
             key={item.command.id}
             type="button"
-            className={`flex items-baseline gap-2 w-full text-left  ${index === selectedIndex ? "" : ""}`}
+            className="flex items-baseline gap-2 w-full text-left"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => selectItem(index)}
             onMouseEnter={() => setSelectedIndex(index)}

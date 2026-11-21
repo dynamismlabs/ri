@@ -189,7 +189,7 @@ function Option({ active, onClick, children }: { active: boolean; onClick: () =>
     <MenuAction selected={!!((active))} density="compact"
       type="button"
       onClick={onClick}
-      className={cn("flex w-full items-center gap-2 text-left", active ? "" : "")}
+      className="flex w-full items-center gap-2 text-left"
     >
       <span className="flex h-3 w-3 flex-shrink-0 items-center justify-center">
         {active && <Check size={12} className="text-primary" strokeWidth={3} />}

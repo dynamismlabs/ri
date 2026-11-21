@@ -92,7 +92,7 @@ function Row({
       type="button"
       aria-current={active ? 'page' : undefined}
       {...props}
-      className={cn("flex w-full items-center gap-2", "", active ? "" : "", className)}
+      className={cn("flex w-full items-center gap-2", className)}
     >
       {icon}
       <span className="min-w-0 flex-1 truncate text-left">{children}</span>

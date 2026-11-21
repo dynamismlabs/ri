@@ -165,7 +165,7 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
             return (
               <li key={f.path}>
                 <div className="group flex items-center gap-1 rounded-md hover:bg-muted/40">
-                  <InlineAction
+                  <InlineAction purpose="caption"
                     type="button"
                     aria-expanded={isOpen}
                     onClick={() => setOpen(isOpen ? null : f.path)}

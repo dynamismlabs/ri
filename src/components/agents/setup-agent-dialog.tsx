@@ -1,4 +1,6 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
+
 import { Field } from '@/components/system/field';
 
 /**
@@ -19,7 +21,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useSetUpAgent, useSetupPlan } from '@/hooks/use-workspaces';
 import { FolderField } from './folder-field';
 import { apiErrorText } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
 
 type Missing = { alias: string; description: string | null };
 
@@ -281,20 +282,17 @@ function Choice({
   children?: React.ReactNode;
 }) {
   return (
-    <div
+    <ChoiceRow asChild density="comfortable" selected={selected}><div
       role="radio"
       aria-checked={selected}
       tabIndex={0}
       onClick={onSelect}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect()}
-      className={cn(
-        'w-full min-w-0 cursor-pointer overflow-hidden rounded-lg border px-3 py-2.5 text-left transition-colors',
-        selected ? 'border-primary/60 bg-primary/5' : 'border-border hover:bg-muted/40',
-      )}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(); } }}
+      className="w-full min-w-0 cursor-pointer overflow-hidden text-left"
     >
       <p className="text-[13px] font-medium">{title}</p>
       <div className="text-[12px] text-muted-foreground">{children}</div>
-    </div>
+    </div></ChoiceRow>
   );
 }
 

@@ -163,7 +163,7 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
           : <ul className="divide-y divide-border rounded-lg border border-border">{recent.map(item => <li key={item.id}>
             {/* A screen reopens full screen. A chat's result opens here on the page. */}
             <MenuAction type="button" aria-pressed={item.id === open} onClick={() => item.launched ? navigate(`${page}?screen=${encodeURIComponent(item.id)}`) : setOpen(item.id === open ? null : item.id)}
-              className={cn("flex w-full items-center gap-3 text-left", item.id === open && "")}>
+              className="flex w-full items-center gap-3 text-left">
               <AppWindow size={14} className="shrink-0 text-muted-foreground"/>
               <span className="min-w-0 flex-1 truncate">{item.title}</span>
               <span className="shrink-0 text-xs text-muted-foreground">{item.chatId ? 'From a chat · ' : ''}{ageLabel(new Date(item.created).toISOString())}</span>

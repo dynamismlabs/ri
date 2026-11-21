@@ -15,6 +15,7 @@ beforeAll(async () => {
     const theme=new URLSearchParams(location.search).get('theme');document.documentElement.classList.toggle('dark',theme==='dark');
     function Fixture(){const[value,setValue]=useState('read'),[clicks,setClicks]=useState(0),ref=useRef(null);useEffect(()=>{window.rowRef=ref.current},[]);return <main className="bg-pane text-t1 p-4 space-y-3">
       <div style={{fontSize:15,lineHeight:'24px'}}><InlineAction id="inline-summary" className="w-full text-left"><span className="block">A summary title</span><span className="block">The second line stays below</span></InlineAction></div>
+      <div style={{fontSize:15}}><InlineAction id="caption" purpose="caption">Supporting reasoning</InlineAction><InlineAction id="heading" purpose="heading">A content title</InlineAction></div>
       <ChoiceRow asChild><div id="nested-content" className="flex items-center"><button aria-label="Drag within content"><svg width="12" height="12"/></button><span>Content with its own controls</span></div></ChoiceRow>
       <Card id="content">A content panel</Card><Card as="button" id="card-action" onClick={()=>setClicks(c=>c+1)}>Open a summary</Card><Card as="button" disabled id="card-disabled" onClick={()=>setClicks(c=>c+1)}>Unavailable summary</Card>
       <div className="flex gap-2"><ChoiceRow ref={ref} id="row-action" title="Use this agent" description="Continue its existing work" onClick={()=>setClicks(c=>c+1)}/><ChoiceRow id="row-selected" aria-pressed={true}>Chosen agent</ChoiceRow><ChoiceRow id="row-disabled" disabled onClick={()=>setClicks(c=>c+1)}>Unavailable agent</ChoiceRow></div>
@@ -77,6 +78,19 @@ for (const theme of ['light', 'dark']) {
       expect(lines[1].top).toBeGreaterThanOrEqual(lines[0].bottom);
       expect(await page.locator('#inline-summary').evaluate(el => getComputedStyle(el).fontSize)).toBe('15px');
       expect(await page.locator('#nested-content svg').evaluate(el => el.getBoundingClientRect().width)).toBe(12);
+    } finally { await page.close(); }
+  });
+  it(`keeps caption actions quiet and content titles distinct (${theme})`, async () => {
+    const page = await open(theme);
+    try {
+      expect(await page.locator('#caption').evaluate(el => getComputedStyle(el).fontSize)).toBe('12px');
+      expect(await page.locator('#heading').evaluate(el => getComputedStyle(el).fontSize)).toBe('14px');
+      expect(await page.locator('#caption').evaluate(el => getComputedStyle(el).color)).not.toBe(await page.locator('#heading').evaluate(el => getComputedStyle(el).color));
+      expect(await contrast(page, '#caption')).toBeGreaterThanOrEqual(4.5);
+      await page.locator('#caption').hover();
+      expect(await contrast(page, '#caption')).toBeGreaterThanOrEqual(4.5);
+      await page.keyboard.press('Tab'); await page.locator('#caption').focus();
+      expect(await page.locator('#caption').evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally { await page.close(); }
   });
   it(`associates choice title/help and preserves radio form values, arrows and focus (${theme})`, async () => {

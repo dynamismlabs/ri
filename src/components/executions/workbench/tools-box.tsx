@@ -279,7 +279,7 @@ export function ToolsRow({
       <MenuAction
         type="button"
         onClick={onClick}
-        className={cn("group flex w-full items-center gap-2.5 text-left", touch ? "" : "")}
+        className="group flex w-full items-center gap-2.5 text-left"
       >
         <span className="flex-shrink-0 text-muted-foreground group-hover:text-foreground">{icon}</span>
         <span className="min-w-0 truncate">{label}</span>
@@ -301,7 +301,7 @@ export function TerminalToolsRow({ open, onToggle, touch = false }: { open: bool
       <MenuAction selected={!!((open))}
         type="button"
         onClick={onToggle}
-        className={cn("group flex w-full items-center gap-2.5 text-left", touch ? "" : "", open && "")}
+        className="group flex w-full items-center gap-2.5 text-left"
       >
         <SquareTerminal size={15} className="flex-shrink-0 text-muted-foreground group-hover:text-foreground" />
         Terminal

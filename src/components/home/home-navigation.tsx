@@ -41,14 +41,14 @@ export function RailRow({
   ...props
 }: Omit<ComponentProps<'button'>, 'children'> & { place: RailPlace; pressed?: boolean }) {
   return (
-    <MenuAction density="compact"
+    <MenuAction selected={active || pressed} density="compact"
       type="button"
       onClick={onClick}
       onPointerEnter={onIntent}
       onFocus={onIntent}
       aria-current={active ? 'page' : undefined}
       {...props}
-      className={cn("w-full flex items-center gap-2", depth === 1 ? "" : "", "", active || pressed ? "" : "", className)}
+      className={cn("w-full flex items-center gap-2", className)}
     >
       {mark ?? (Icon && <Icon size={14} className="flex-shrink-0" />)}
       <span className="truncate">{label}</span>

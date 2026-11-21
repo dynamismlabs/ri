@@ -1,5 +1,5 @@
 'use client';
-import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { SelectField } from '@/components/system/select-field';
 import { Field as SystemField } from '@/components/system/field';
@@ -139,7 +139,7 @@ export function ConnectionRequestCard({ event, sessionId }: { event: ChatEventRe
   ].filter(Boolean).join(' · ');
 
   return (
-    <Callout padding="none" shadow tone={(resolved ? "neutral" : "info")} className="overflow-hidden">
+    <Card padding="none" className="overflow-hidden">
       <div className={cn('flex items-center gap-2.5 border-b px-3 py-2', resolved ? 'border-border/60 bg-muted/20' : 'border-sky-500/20 bg-sky-500/5')}>
         <IntegrationLogo providerId={logoFor(view.providerId)} name={view.providerName} size={24} className="rounded-md" />
         <div className="min-w-0 flex-1">
@@ -233,7 +233,7 @@ export function ConnectionRequestCard({ event, sessionId }: { event: ChatEventRe
           </PrimaryButton>
         </Footer>
       )}
-    </Callout>
+    </Card>
   );
 }
 

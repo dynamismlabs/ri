@@ -34,6 +34,8 @@ import {Field} from '@/components/system/field';
 import {ChipButton} from '@/components/system/chip-button';
 import {IconButton} from '@/components/system/icon-button';
       import {ButtonGroup} from '@/components/system/button-group';
+      import {Card} from '@/components/system/card';import {ChoiceRow} from '@/components/system/choice-row';import {MenuAction} from '@/components/system/menu-action';
+      import {Callout} from '@/components/system/callout';import {StatusBadge} from '@/components/system/status-badge';import {Meta,MetaItem} from '@/components/system/meta';
       import {StatusPill} from '@/components/dashboard/status-pill';
       import {Command} from 'cmdk';
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
@@ -51,7 +53,7 @@ import {IconButton} from '@/components/system/icon-button';
         return <div className="flex flex-col items-start gap-3 p-4">
           <div data-narrow className="flex" style={{width:210}}><SegmentedControl mode="choice" grow ariaLabel="Lanes" value={lane} onChange={setLane} options={LANES}/></div>
           <ChipButton data-case="toolbar">Filter</ChipButton>
-          <button data-case="card" className="w-64 rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">A board card</button>
+          <Card as="button" data-case="card" className="w-64" shadow>A board card</Card>
           {/* The review bar's solid action, with execution-review-bar.tsx's classes. */}
           <Button data-case="solid" variant="primary" size="sm" tone="success">Accept & complete</Button>
           <span data-case="small-label" className="text-[8.5px] uppercase tracking-widest">Recent chats</span>
@@ -72,7 +74,7 @@ import {IconButton} from '@/components/system/icon-button';
               <button data-focus data-case="settings-solid" className="rounded border border-border bg-foreground px-2.5 py-1.5 text-background hover:bg-foreground/90">Connect</button>
             </section>
           </div>
-          <button data-focus data-case="choice" data-slot="choice-row" aria-pressed="true" className="w-64 rounded border border-primary/60 bg-primary/5 p-3 text-left ring-1 ring-primary/20 focus:outline-none">Continue this chat</button>
+          <ChoiceRow data-focus data-case="choice" aria-pressed="true" className="w-64">Continue this chat</ChoiceRow>
           <div data-slot="calendar-navigation" className="flex"><button data-focus data-case="previous" aria-label="Previous week" className="rounded-md p-1 text-muted-foreground hover:bg-muted/50">‹</button><button data-focus data-case="today" className="rounded-md px-1.5 py-0.5 text-muted-foreground hover:bg-muted/50">Today</button></div>
           <div data-slot="chat-tabs" className="flex h-9 w-64 items-center gap-0.5 border-b px-1.5">
             <Button data-focus data-case="all-chats" size="sm" focus="inside">≡ 3</Button>
@@ -98,10 +100,10 @@ import {IconButton} from '@/components/system/icon-button';
 <SegmentedRoot mode="tabs" value="chat" onChange={()=>{}}><div data-case="agent-pane" className="flex w-72 gap-1 px-4 pb-2"><SegmentedList ariaLabel="Agent panes" size="touch" stretch options={[{value:"chat",label:"Chat"},{value:"tools",label:"Tools"}]}/></div></SegmentedRoot>
           <div data-case="workbench-toggle"><WorkbenchToggles tools={{open:true,onToggle(){},showLabel:"Files"}} fold={{label:"",kbd:""}} /></div>
           <div data-case="tail" className="flex w-72 flex-col items-start gap-3">
-            <button data-tail-focus data-slot="content-card" className="w-full rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2">A saved reference<br/>With a description</button>
+            <Card as="button" data-tail-focus className="w-full" shadow>A saved reference<br/>With a description</Card>
             <button data-tail-focus data-slot="image-picker" aria-label="Choose image" className="size-16 rounded-xl border-2 border-dashed border-border">Image</button>
             <button data-tail-focus data-slot="calendar-event" className="w-full rounded-md border bg-muted p-2 text-left" style={{boxShadow:'inset 3px 0 0 rgb(30, 120, 200)'}}>Design review</button>
-            <button data-tail-focus data-slot="menu-action" className="w-full rounded-md border-t border-border px-2 py-1.5 text-left hover:bg-muted">Do not repeat</button>
+            <MenuAction data-tail-focus density="compact" separator className="w-full">Do not repeat</MenuAction>
             <button data-tail-focus data-slot="completion-control" aria-label="Complete task" className="size-4 rounded-full border border-border" />
             <Field data-tail-focus data-case="invalid-field" aria-invalid="true" aria-label="Invalid value" />
             <Button data-tail-focus data-case="warning-action" variant="secondary" size="sm" tone="warning">Reconnect</Button>
@@ -117,13 +119,13 @@ import {IconButton} from '@/components/system/icon-button';
             <ChipButton  variant="secondary" size="compact"><span><span data-case="usage-percent" className="font-mono text-[10px]">80%</span></span></ChipButton>
             <ChipButton data-audit-focus data-case="history" variant="secondary" size="compact">History</ChipButton>
             {[false,true].map(disabled=><Button key={String(disabled)} data-audit-focus={!disabled||undefined} data-case={disabled?'send-disabled':'send-enabled'} aria-label={disabled?'Send disabled':'Send enabled'} disabled={disabled} variant="primary" size="sm">↑</Button>)}
-            <div data-slot="meta" className="flex flex-wrap gap-2">
-              <button data-audit-focus data-case="energy-light" data-slot="meta-item" data-kind="energy" data-energy="light" className="text-sky-400">Light</button>
-              <button data-audit-focus data-case="energy-deep" data-slot="meta-item" data-kind="energy" data-energy="deep" className="text-orange-500">Deep</button>
-              <span data-slot="meta-item" data-kind="status"><button data-audit-focus data-case="progress" data-task-status="in_progress" className="text-violet-500">In progress</button></span>
-              {[['consider','text-amber-500'],['todo','text-blue-500'],['done','text-emerald-500']].map(([status,cls])=><span key={status} data-slot="meta-item" data-kind="status"><button data-case={'status-'+status} data-task-status={status} className={cls}>{status}</button></span>)}
-              <span data-case="due-today" data-slot="meta-item" data-urgency="today">Today</span>
-            </div>
+            <Meta>
+              <MetaItem as="button" data-audit-focus data-case="energy-light" kind="energy" energy="light">Light</MetaItem>
+              <MetaItem as="button" data-audit-focus data-case="energy-deep" kind="energy" energy="deep">Deep</MetaItem>
+              <MetaItem as="button" data-audit-focus data-case="progress" kind="status" tone="status-progress">In progress</MetaItem>
+              {['consider','todo','done'].map(status=><MetaItem as="button" key={status} data-case={'status-'+status} kind="status" tone={'status-'+status}>{status}</MetaItem>)}
+              <MetaItem data-case="due-today" urgency="today">Today</MetaItem>
+            </Meta>
             <Command><Command.Group heading="Recent" className="[&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest"><Command.Item>Recent chat</Command.Item></Command.Group></Command>
             <div data-slot="search-footer" className="text-[9px]">↑↓ navigate <kbd className="text-[8px]">Esc</kbd></div>
 <div data-case="plugins"><SegmentedControl mode="choice" ariaLabel="Plugins line replacement" value="installed" onChange={()=>{}} options={[{value:"installed",label:"Installed"},{value:"discover",label:"Discover"}]}/></div>
@@ -132,11 +134,10 @@ import {IconButton} from '@/components/system/icon-button';
 <div data-case="responsive-tabs"><SegmentedControl mode="choice" ariaLabel="Library" size={touch?"touch":"compact"} value="all" onChange={()=>{}} options={[{value:"all",label:"All"},{value:"apps",label:"Apps"}]}/></div>
             <div data-slot="dialog-content" data-kind="wrapped"><div data-case="wrapped-dialog" className="rounded-xl border bg-card p-2 shadow-2xl">New chat</div></div>
 <div data-case="responsive-segments"><SegmentedControl mode="choice" ariaLabel="Filter" size={touch?"touch":"compact"} value="all" onChange={()=>{}} options={[{value:"all",label:"All"},{value:"active",label:"Active"}]}/></div>
-            <a data-audit-focus data-slot="run-row" href="#" className="flex w-full items-center gap-3 rounded-md border bg-card p-3">
-              <span data-slot="status-badge" className="rounded border px-1.5 py-0.5 text-[10px]">Scheduled</span>
-              <span data-slot="status-badge" className="rounded border px-1.5 py-0.5 text-[10px]">Completed</span>
-              <span data-slot="run-summary" className="flex-1 truncate text-[12px]">Prepared the weekly operations review for the whole team</span><span className="whitespace-nowrap text-[10px]">Nov 20, 10:30 AM</span>
-            </a>
+            <Card as="a" data-audit-focus data-case="audit-run" href="#" shadow className="flex w-full flex-wrap items-center gap-3 md:flex-nowrap">
+              <StatusBadge>Scheduled</StatusBadge><StatusBadge>Completed</StatusBadge>
+              <span data-run-summary className="order-first basis-full flex-1 whitespace-normal text-[12px] md:order-none md:basis-auto md:truncate">Prepared the weekly operations review for the whole team</span><span className="whitespace-nowrap text-[11px] md:text-[10px]">Nov 20, 10:30 AM</span>
+            </Card>
             <div data-slot="calendar-toolbar" data-case="calendar-phone" className="flex w-full items-center gap-2 border p-3">
               <span className="text-sm font-semibold">Calendar</span>
               <SegmentedControl mode="choice" className="shrink-0" ariaLabel="Period" value="week" onChange={()=>{}} options={[{value:"week",label:"Week"},{value:"day",label:"Day"}]}/>
@@ -148,7 +149,7 @@ import {IconButton} from '@/components/system/icon-button';
             <dl data-slot="work-chain" className="flex w-full min-w-[min(100%,30rem)] gap-3 rounded-lg border p-3">
               {['Your time','Agent time','Human time for the same work'].map((label,i)=><React.Fragment key={label}>{i>0&&<div data-slot="work-chain-arrow" className="flex min-w-10 flex-1 flex-col pt-3.5"><span>{i===1?'0.5×':'1×'}</span><span>→</span></div>}<div data-slot="work-chain-step" className="shrink-0"><dt>{label}</dt><dd>1h 9m</dd></div></React.Fragment>)}
             </dl>
-            <div data-slot="pairing"><div data-slot="pairing-mark" className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner"/><div data-slot="callout" className="rounded-2xl bg-card/60 p-3 shadow-2xl backdrop-blur-xl"><Field data-audit-focus aria-label="Pairing token" trailing={<Button size="sm">Connect</Button>}/></div></div>
+            <div data-slot="pairing"><div data-slot="pairing-mark" className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner"/><Callout><Field data-audit-focus aria-label="Pairing token" trailing={<Button size="sm">Connect</Button>}/></Callout></div>
           </section>
           <div data-case="canvas-token" className="bg-canvas text-t1">Canvas</div>
           <div className="dark"><div data-case="nested-pane-token" className="bg-pane text-t1">Nested dark pane</div></div>
@@ -458,7 +459,7 @@ for (const theme of ['light', 'dark'] as const) {
         });
         expect(state.outline, state.slot!).toBe('solid');
         expect(state.width, state.slot!).toBe('2px');
-        if (state.slot === 'content-card' || state.slot === 'image-picker') expect(state.radius).toBe('14px');
+        if (state.slot === 'card' || state.slot === 'image-picker') expect(state.radius).toBe('14px');
         if (state.slot === 'calendar-event') {
           expect(state.radius).toBe('8px');
           expect(state.shadow).toContain('inset');
@@ -629,7 +630,7 @@ for (const theme of ['light', 'dark'] as const) {
     try {
       await page.setViewportSize({width:390,height:844});
       for (const selector of ['[data-case="responsive-segments"] button','[data-case="responsive-tabs"] button']) expect(await page.locator(selector).first().evaluate(el=>el.getBoundingClientRect().height)).toBe(36);
-      const run=await page.locator('[data-slot="run-row"]').evaluate(el=>{const summary=el.querySelector('[data-slot="run-summary"]')!;const badge=el.querySelector('[data-slot="status-badge"]')!;return {summary:summary.getBoundingClientRect().bottom,badge:badge.getBoundingClientRect().top,wrap:getComputedStyle(summary).whiteSpace};});
+      const run=await page.locator('[data-case="audit-run"]').evaluate(el=>{const summary=el.querySelector('[data-run-summary]')!;const badge=el.querySelector('.ri-status-badge')!;return {summary:summary.getBoundingClientRect().bottom,badge:badge.getBoundingClientRect().top,wrap:getComputedStyle(summary).whiteSpace};});
       expect(run.wrap).toBe('normal');expect(run.badge).toBeGreaterThanOrEqual(run.summary);
       expect(await page.locator('[data-slot="work-chain-arrow"]').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().width>0&&getComputedStyle(el).display!=='none'))).toBe(true);
       for (const selector of ['[data-case="calendar-phone"]','[data-slot="work-chain"]']) {
@@ -643,7 +644,7 @@ for (const theme of ['light', 'dark'] as const) {
   it(`default audit pairing is quiet and every new control retains keyboard focus (${theme})`, async () => {
     const { page } = await open(theme);
     try {
-      for (const selector of ['[data-slot="pairing-mark"]','[data-slot="pairing"] [data-slot="callout"]','[data-slot="pairing"] [data-slot="field-shell"]']) expect(await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backdropFilter];})).toEqual(['none','none']);
+      for (const selector of ['[data-slot="pairing-mark"]','[data-slot="pairing"] .ri-callout','[data-slot="pairing"] [data-slot="field-shell"]']) expect(await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backdropFilter];})).toEqual(['none','none']);
       expect(await page.locator('[data-slot="pairing-mark"]').evaluate(el=>getComputedStyle(el).backgroundImage)).toBe('none');
       await page.keyboard.press('Tab');
       for (const control of await page.locator('[data-audit-focus]').all()) {

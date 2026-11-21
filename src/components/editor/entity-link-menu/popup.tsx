@@ -4,7 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { Square, StickyNote } from 'lucide-react';
 import type { SuggestionKeyDownProps } from '@tiptap/suggestion';
-import { cn } from '@/lib/utils';
+
 import type { SuggestionPopupRef } from '@/components/chat/editor/suggestion/renderer';
 import type { EntityLinkItem } from './types';
 
@@ -67,7 +67,7 @@ export const EntityLinkMenuList = forwardRef<SuggestionPopupRef, Props>(
                   command(item);
                 }}
                 onMouseEnter={() => setSelected(i)}
-                className={cn("flex items-center gap-2 w-full text-left", i === selected ? "" : "")}
+                className="flex items-center gap-2 w-full text-left"
               >
                 <Icon size={13} className="shrink-0 text-muted-foreground" />
                 <span className="truncate flex-1">{label}</span>

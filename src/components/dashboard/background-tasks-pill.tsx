@@ -7,7 +7,7 @@ import { AgentIcon } from '@/components/agents/agent-icon';
 import { Tip } from '@/components/ui/tip';
 import type { RailResponse } from '@/lib/api/sessions';
 import { executionView } from '@/lib/client/active-view';
-import { cn } from '@/lib/utils';
+
 import { StatusPill } from './status-pill';
 
 /** Global visibility for detached work. The chat's existing strip owns task details. */
@@ -43,7 +43,7 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
                     setActiveView(executionView(chat.id));
                     close();
                   }}
-                  className={cn("flex w-full items-start gap-1.5 text-left", activeSessionId === chat.id ? "" : "")}
+                  className="flex w-full items-start gap-1.5 text-left"
                 >
                   <AgentIcon workspace={{ name: chat.workspaceName ?? 'Main chat', emoji: chat.workspaceEmoji, attachments: chat.workspaceAttachments, areaId: chat.workspaceAreaId }} size="sm" />
                   <span className="min-w-0 flex-1 leading-tight">

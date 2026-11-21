@@ -115,8 +115,7 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
                   <MenuAction selected={!!((isActive))} density="compact"
                     type="button"
                     onClick={() => handleOpen(entry.path)}
-                    className={cn("flex w-full items-center gap-2 text-left", isActive
-    ? "" : "")}
+                    className="flex w-full items-center gap-2 text-left"
                   >
                     <FileIcon name={entry.path} size={13} className="shrink-0" />
                     <span className="flex min-w-0 flex-1 flex-col">

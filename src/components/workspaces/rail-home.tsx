@@ -10,7 +10,7 @@ import { useOrchestratorName } from '@/hooks/use-user-state';
 import { useRailSessions } from '@/hooks/use-workspaces';
 import { isSessionUnread } from '@/lib/utils/session-sort';
 import { OrchestratorAvatar } from '@/components/shared/orchestrator-mark';
-import { cn } from '@/lib/utils';
+
 import { useOptionalTeam, useTeamNav } from '@/components/team/team-context';
 import { Tip } from '@/components/ui/tip';
 import { Users } from 'lucide-react';
@@ -70,7 +70,7 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
         onClick={home}
         aria-label={homeLabel}
         aria-current={isHome ? 'page' : undefined}
-        className={cn("flex min-w-0 flex-1 items-center gap-2 text-left", "", isHome ? "" : "")}
+        className="flex min-w-0 flex-1 items-center gap-2 text-left"
       >
         <OrchestratorAvatar size={team ? 'md' : 'sm'} />
         <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">{name}</span>

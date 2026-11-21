@@ -140,7 +140,7 @@ export function PreviewHeader({
           type="button"
           onClick={handleCopy}
           disabled={!url}
-          className={cn("mx-1 flex flex-1 items-center truncate text-left disabled:opacity-50", copied && "")}
+          className="mx-1 flex flex-1 items-center truncate text-left disabled:opacity-50"
         >
           {copied ? 'Copied URL' : url ?? '-'}
         </InlineAction>

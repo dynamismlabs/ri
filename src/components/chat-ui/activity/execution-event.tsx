@@ -205,7 +205,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const isFailed = clientStatus?.status === 'failed';
       const isSending = clientStatus?.status === 'sending';
       return (
-        <Card padding="none" className={cn("group flex flex-col", origin && "max-w-[95%]")}>
+        <Card padding="none" surface={origin ? "track" : "plain"} className={cn("group flex flex-col", origin && "max-w-[95%]")}>
           {sourceId ? <SenderChip senderSessionId={sourceId} eventId={metadata?.sourceEventId} label={origin?.label ?? 'Message from'} action={returned && <ReturnedChatArchive sessionId={returned.sessionId} />} /> : origin && <p className="px-3 py-2 text-xs text-muted-foreground">{origin.label}{metadata?.senderKind !== 'system' && ' · Source chat unavailable'}</p>}
           {metadata?.directions && <div className="border-t px-3 py-2 text-xs"><p className="mb-1 font-medium">Your directions</p><CoordinationText text={metadata.directions} /></div>}
           {metadata?.senderKind === 'human' && <p className="px-3 pt-2 text-[11px] font-medium text-muted-foreground">Quoted source material</p>}

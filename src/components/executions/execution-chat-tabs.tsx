@@ -460,7 +460,7 @@ export function ExecutionChatsMenu({
                   if (!s.isCurrent) onOpen(s.id);
                   setHistoryOpen(false);
                 }}
-                className={cn("flex w-full items-center gap-2 text-left", s.isCurrent ? "" : "")}
+                className="flex w-full items-center gap-2 text-left"
               >
                 <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
                   <span className="flex w-full items-center gap-1.5">

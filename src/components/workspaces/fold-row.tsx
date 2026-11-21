@@ -40,7 +40,7 @@ export function FoldRow({
         onClick={onToggle}
         onPointerDown={(e) => e.stopPropagation()}
         aria-expanded={shown}
-        className={cn("flex min-w-0 flex-1 items-center justify-between gap-2 text-left", touch ? "" : "", rowClassName)}
+        className={cn("flex min-w-0 flex-1 items-center justify-between gap-2 text-left", rowClassName)}
       >
         <span className="truncate text-muted-foreground/60">
           {label} {shown ? 'shown' : 'hidden'}

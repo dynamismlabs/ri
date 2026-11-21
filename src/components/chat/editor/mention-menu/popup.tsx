@@ -432,7 +432,7 @@ function MentionRow({ item, index, selected, onSelect, onHover }: MentionRowProp
       data-mention-index={index}
       data-selected={selected ? '' : undefined}
       type="button"
-      className={`flex items-center gap-2 w-full text-left  ${selected ? "" : ""}`}
+      className="flex items-center gap-2 w-full text-left"
       onMouseDown={(e) => e.preventDefault()}
       onClick={() => onSelect(index)}
       onMouseEnter={() => onHover(index)}

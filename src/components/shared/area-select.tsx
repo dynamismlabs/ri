@@ -6,7 +6,6 @@ import { Button } from '@/components/system/button';
 import { ChevronDown } from 'lucide-react';
 import { useAreas } from '@/hooks/use-areas';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
 
 interface AreaSelectProps {
   value: string | null;
@@ -37,7 +36,7 @@ export function AreaSelect({ value, onChange, className, onNewArea }: AreaSelect
       <DropdownMenuContent align="start" className="w-44">
         <MenuAction kind="menu"
           onClick={(e) => { e.stopPropagation(); onChange(null); }}
-          className={cn("", !value && "")}
+          selected={!!(!value)}
         >
           No area
         </MenuAction>
@@ -46,7 +45,7 @@ export function AreaSelect({ value, onChange, className, onNewArea }: AreaSelect
           <MenuAction kind="menu"
             key={area.id}
             onClick={(e) => { e.stopPropagation(); onChange(area.id); }}
-            className={cn("", area.id === value && "")}
+            selected={!!(area.id === value)}
           >
             {area.name}
           </MenuAction>

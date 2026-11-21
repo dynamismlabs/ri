@@ -1,5 +1,5 @@
 'use client';
-import { MenuAction } from '@/components/system/menu-action';
+import { MetaItem } from '@/components/system/meta';
 
 import { useAutosizeTextarea } from '@/hooks/use-autosize-textarea';
 import { TextArea } from '@/components/system/text-area';
@@ -22,7 +22,7 @@ import { useTask, useUpdateTask } from '@/hooks/use-tasks';
 import { apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { calendarDaysUntil, formatLocalDate, isPastDate } from '@/lib/dates';
 import { TaskDatePicker } from '@/components/tasks/task-date-field';
-import { cn } from '@/lib/utils';
+
 import { Clock, Flame, Loader2, RefreshCw, Zap } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -323,13 +323,9 @@ function TaskMetaStrip({ task }: { task: TaskRecord }) {
         value={task.hardDeadline}
         onChange={(hardDeadline) => save({ hardDeadline } as Partial<TaskRecord>)}
       >
-        <MenuAction density="compact" tone="error"
-          type="button"
-          className={cn("inline-flex items-center gap-1", isPastDate(task.hardDeadline) ? "" : "")}
-        >
-          <Clock size={10} />
-          {deadlineLabel ?? 'Deadline'}
-        </MenuAction>
+        <MetaItem as="button" type="button" kind="deadline" urgency={isPastDate(task.hardDeadline) ? "late" : undefined}>
+          <Clock size={10} />{deadlineLabel ?? 'Deadline'}
+        </MetaItem>
       </TaskDatePicker>
 
       <span className="text-muted-foreground/30">&middot;</span>

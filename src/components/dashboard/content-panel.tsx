@@ -242,8 +242,7 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
                         }
                         setMoreOpen(false);
                       }}
-                      className={cn("w-full flex items-center gap-3", activeTab === tab.id
-    ? "" : "")}
+                      className="w-full flex items-center gap-3"
                     >
                       <tab.icon size={14} />
                       <span className="font-medium">{tab.label}</span>

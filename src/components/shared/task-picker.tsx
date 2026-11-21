@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { Search, Target, X } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { useTasks } from '@/hooks/use-tasks';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 interface TaskPickerProps {
@@ -74,7 +74,7 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
             <MenuAction selected={!!((task.id === value))} density="compact"
               key={task.id}
               onClick={(e) => { e.stopPropagation(); onChange(task.id); setOpen(false); }}
-              className={cn("w-full text-left flex items-center gap-1.5 line-clamp-1", task.id === value && "")}
+              className="w-full text-left flex items-center gap-1.5 line-clamp-1"
             >
               <Target size={10} className="flex-shrink-0" />
               <span className="truncate">{task.title}</span>

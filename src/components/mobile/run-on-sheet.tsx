@@ -1,5 +1,5 @@
 'use client';
-import { InlineAction } from '@/components/system/inline-action';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 import { Button } from '@/components/system/button';
 /**
@@ -19,7 +19,6 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
 import { START_RI } from '@/lib/executions/location';
 import { useRunOn, useSetDefaultDevice } from '@/hooks/use-workspaces';
-import { cn } from '@/lib/utils';
 
 export function RunOnSheet({
   workspace,
@@ -52,11 +51,11 @@ export function RunOnSheet({
                 const canSetUp = choice.needsSetup && choice.connected;
                 return (
                   <li key={choice.deviceId} className="flex items-center gap-2">
-                    <InlineAction
+                    <ChoiceRow selected={isDefault}
                       type="button"
                       disabled={!choice.ready && !canSetUp}
                       onClick={() => (canSetUp ? setSettingUp({ id: choice.deviceId, name: choice.name }) : onPick(choice.deviceId))}
-                      className={cn("flex flex-1 items-start gap-3 text-left disabled:opacity-50", isDefault && "")}
+                      className="flex flex-1 items-start gap-3 text-left disabled:opacity-50"
                     >
                       <Laptop size={16} className="mt-0.5 flex-shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1">
@@ -79,7 +78,7 @@ export function RunOnSheet({
                         </span>
                       </span>
                       {isDefault && <Check size={15} className="mt-0.5 text-foreground/70" />}
-                    </InlineAction>
+                    </ChoiceRow>
                     {!isDefault && choice.ready && (
                       <Button
                         type="button"

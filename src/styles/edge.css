@@ -151,7 +151,7 @@ html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a):where(:not([data-slot="button"], .ri-field-control))):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a):where(:not([data-slot="button"], .ri-field-control, .ri-card, .ri-choice-row, .ri-menu-action, .ri-meta-item, .ri-inline-action))):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 html:root :is( [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }

@@ -1013,7 +1013,7 @@ function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, c
               key={m}
               type="button"
               onClick={() => onSelect(m)}
-              className={cn("w-full flex items-start gap-2.5 text-left", active ? "" : "")}
+              className="w-full flex items-start gap-2.5 text-left"
             >
               <div className="w-4 h-4 mt-0.5 flex items-center justify-center shrink-0">
                 {active ? (

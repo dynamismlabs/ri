@@ -1,5 +1,4 @@
 'use client';
-import { Card } from '@/components/system/card';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -113,7 +112,7 @@ export function ConnectedView({captureId, chatId, expanded = false, onClose, app
     const age = typeof reported === 'number' ? reported : Date.now() - data.created;
     if ((first === 'fullscreen' || !canInline) && age < FRESH_RESULT_MS) placeBeside(captureId);
   }, [query.data, expanded, placeBeside, chatId, captureId, canInline]);
-  return <Card as="section" padding="none" aria-label="Interactive app result" className={` ${expanded ? "h-full" : "my-3 overflow-hidden"}flex flex-col`}>
+  return <section aria-label="Interactive app result" className={`${expanded ? 'h-full' : 'my-3 overflow-hidden rounded-xl border border-border'} flex flex-col bg-background`}>
     <div className={`${repeatsName ? 'hidden' : 'flex'} items-center gap-2 border-b border-border/60 px-3 py-2`}>
       <span className="min-w-0 flex-1 truncate text-xs font-medium">{query.data?.title ?? 'Interactive result'}</span>
       {chatId && companion && !expanded && !moved && canExpand && <Button
@@ -147,7 +146,7 @@ export function ConnectedView({captureId, chatId, expanded = false, onClose, app
         size="xs"
       >Try again</Button></div>
       : <p role="status" className="flex items-center gap-2 p-4 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin"/>Opening app…</p>, container)}
-  </Card>;
+  </section>;
 }
 /**
  * An app operation waiting on the person. It lies over the view rather than pushing it down, so the app

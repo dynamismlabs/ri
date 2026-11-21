@@ -149,7 +149,7 @@ export function DeckToday({
       {/* ── Framing: the deck-level "why", as a glimpse ── */}
       {framing && (
         <Tip label={framingOpen ? 'Collapse' : 'Show full note'}>
-          <InlineAction
+          <InlineAction purpose="caption"
             type="button"
             onClick={() => setFramingOpen((v) => !v)}
             className={cn("mb-2.5 block w-full text-left", !framingOpen && "line-clamp-1")}

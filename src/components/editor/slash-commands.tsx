@@ -252,8 +252,7 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
             <MenuAction selected={!!((index === selectedIndex))}
               key={item.title}
               type="button"
-              className={` flex items-center gap-2.5 w-full  ${index === selectedIndex
-    ? "" : ""} `}
+              className="flex items-center gap-2.5 w-full"
               // Per-button preventDefault keeps editor focus on click so the
               // Suggestion plugin doesn't tear the popup down before click
               // fires. Scoped to the button so scrollbar drags on the

@@ -1,5 +1,5 @@
 "use client";
-import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { Button } from '@/components/system/button';
@@ -192,7 +192,7 @@ function TriageCard({
   const showQuickActions = !item.resolved && item.recommendation.action === 'promoteTask';
 
   return (
-    <Card padding="sm" density="row" shadow
+    <ChoiceRow asChild density="list" surface="plain"><div
       className={cn("group", item.resolved
     ? "opacity-50" : "")}
     >
@@ -347,6 +347,6 @@ function TriageCard({
           {item.recommendation.rationale}
         </p>
       )}
-    </Card>
+    </div></ChoiceRow>
   );
 }

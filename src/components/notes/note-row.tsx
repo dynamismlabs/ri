@@ -1,7 +1,7 @@
 'use client';
 import { MenuAction } from '@/components/system/menu-action';
 
-import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
 import { Meta, MetaItem } from '@/components/system/meta';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -66,7 +66,7 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
   const bodyPreview = rawPreview ? stripMarkdown(rawPreview) : '';
 
   return (
-    <Card padding="sm" density="row" shadow
+    <ChoiceRow asChild density="list" surface="plain"><div
       className="group flex items-start gap-1.5 cursor-pointer"
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey) {
@@ -168,6 +168,6 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </Card>
+    </div></ChoiceRow>
   );
 }

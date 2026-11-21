@@ -122,7 +122,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
               {MORE_VIEWS.map((v) => {
                 const Icon = VIEW_ICONS[v];
                 return (
-                  <MenuAction kind="menu" key={v} onClick={() => show(v)} className={cn(view === v && "")}>
+                  <MenuAction kind="menu" key={v} onClick={() => show(v)} selected={view === v}>
                     <Icon size={14} />
                     {PANEL_VIEW_LABELS[v]}
                     <span className="ml-auto pl-4 text-[11px] text-muted-foreground">

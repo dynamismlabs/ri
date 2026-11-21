@@ -507,7 +507,7 @@ export function LaunchBrowse({
                     data-active={active}
                     onMouseEnter={() => setCursor(index)}
                     onClick={() => onPick(item)}
-                    className={cn("flex w-full items-start gap-2 text-left", active ? "" : "")}
+                    className="flex w-full items-start gap-2 text-left"
                   >
                     {item.toolkitId ? (
                       <span className="mt-0.5 flex-shrink-0">

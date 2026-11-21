@@ -7,7 +7,7 @@ import { ChipButton } from '@/components/system/chip-button';
 import { IconButton } from '@/components/system/icon-button';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, RefreshCw, Clock, Check, SlidersHorizontal } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { useAreas } from '@/hooks/use-areas';
 import { useMorningDeck, useUpdateMorningDeck } from '@/hooks/use-morning-deck';
 import { openSettings } from '@/components/settings/settings-store';
@@ -100,7 +100,7 @@ export function DeckConductor({
           <DropdownMenuContent align="start" className="w-44">
             <MenuAction kind="menu"
               onClick={() => onAreaFilterChange(null)}
-              className={cn("", !areaFilter && "")}
+              selected={!!(!areaFilter)}
             >
               All areas
             </MenuAction>
@@ -109,7 +109,7 @@ export function DeckConductor({
               <MenuAction kind="menu"
                 key={area.id}
                 onClick={() => onAreaFilterChange(area.id)}
-                className={cn("", area.id === areaFilter && "")}
+                selected={!!(area.id === areaFilter)}
               >
                 {area.name}
               </MenuAction>

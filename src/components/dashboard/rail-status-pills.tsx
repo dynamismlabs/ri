@@ -146,7 +146,7 @@ function PillSessionRow({ session, onPick }: PillSessionRowProps) {
     <MenuAction selected={!!((isActive))} density="compact"
       type="button"
       onClick={handleOpen}
-      className={cn("w-full flex items-start gap-1.5 text-left", isActive ? "" : "")}
+      className="w-full flex items-start gap-1.5 text-left"
     >
       <AgentIcon workspace={{ name: wsName, attachments: session.workspaceAttachments, emoji: session.workspaceEmoji, areaId: session.workspaceAreaId }} size="sm" />
       <div className="flex-1 min-w-0 leading-tight">

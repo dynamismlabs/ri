@@ -129,7 +129,7 @@ export function StreamToolbar({
                 <MenuAction selected={!!((view === f.id))} density="compact"
                   key={f.id}
                   onClick={() => onViewChange(f.id)}
-                  className={cn("w-full text-left", view === f.id ? "" : "")}
+                  className="w-full text-left"
                 >
                   {f.label}
                 </MenuAction>

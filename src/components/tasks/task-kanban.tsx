@@ -1,5 +1,4 @@
 'use client';
-import { Callout } from '@/components/system/callout';
 import { StatusBadge } from '@/components/system/status-badge';
 import { Card } from '@/components/system/card';
 
@@ -95,7 +94,7 @@ function KanbanCard({
   const showAgentRow =
     !!signals && (signals.blocked || signals.stalled || signals.review || signals.working || !!agentSessionId);
   return (
-    <Callout padding="sm" shadow tone={(signals?.working ? "success" : 'neutral')}
+    <Card padding="sm" shadow
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn("group", "cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}
@@ -150,7 +149,7 @@ function KanbanCard({
           )}
         </div>
       )}
-    </Callout>
+    </Card>
   );
 }
 
