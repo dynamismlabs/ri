@@ -28,6 +28,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
     errorId,
     invalid,
     messagePosition,
+    errorPosition,
     counter,
     size: requestedSize,
     purpose,
@@ -64,6 +65,7 @@ export function NativeSelect(fieldProps: NativeSelectProps) {
       description={description}
       error={error}
       messagePosition={messagePosition}
+      errorPosition={errorPosition}
       className={className}
     >
       <select

@@ -108,8 +108,8 @@ html:root .border.bg-card:not(input, textarea, select, [data-slot]) { border-col
 /* Phone: the search field and the buttons beside it. */
 html:root :is([data-slot="search-field"]) { border-color: transparent; border-radius: 999px; background-color: var(--track); }
 
-/* Text fields hold content, so they're rounded rectangles, not capsules (shadcn's default here is a capsule). */
-html:root :is([data-slot="input"], [data-slot="input-group"], [data-slot="textarea"]) { border-radius: 10px; }
+/* The scheduled prompt and model toolbar are one content frame, pending stage 4. */
+html:root [data-slot="input-group"] { border-radius: 10px; }
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
@@ -164,8 +164,6 @@ html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], 
    matching text-background in both themes and on hover. */
 html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
 html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
-html:root :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border:not(.ri-field-control),
-html:root [data-slot="field"] { border-color: var(--line-2); border-radius: 10px; background-color: var(--background); }
 
 /* Choosers hold a title and description. Their selection is a soft row, with
    no outline or card shadow. This also covers hand-built dialog lists. */
@@ -178,7 +176,7 @@ html:root [data-slot="schedule-row"] > button { border-radius: 999px; }
 
 /* Every control whose focus shadow the look replaces also gets an outline.
    Inside scrolling groups it sits within the control so it cannot be clipped. */
-html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a, input, textarea, select):where(:not([data-slot="button"], .ri-field-control)), [data-slot="choice-row"], [data-slot="field"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+html:root :is([data-slot="action-button"], [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="row-actions"] button, [data-slot="calendar-navigation"] > button, [data-slot="settings-nav"] > button, [data-slot="settings-body"] :is(button, a):where(:not([data-slot="button"], .ri-field-control)), [data-slot="choice-row"], [data-slot="schedule-row"] > button):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 html:root :is( [data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button), [data-slot="settings-nav"] > button):focus-visible { outline-offset: -2px; }
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
@@ -206,7 +204,6 @@ html:root [data-slot="attachment-chip"][data-tone="bubble"]:hover { background-c
 /* A floating action stays opaque over images and the model list's edge fades. */
 html:root [data-slot="action-button"][data-variant="floating"] { background-color: var(--popover); box-shadow: var(--shadow-thumb); }
 html:root [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--raised); }
-html:root [data-slot="field"][aria-invalid="true"] { border-color: var(--destructive); }
 
 html:root :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Calendar cells and pickers can clip at their container's edge. */
@@ -214,11 +211,6 @@ html:root :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slo
 
 /* Warning actions keep amber at a readable shade on the quiet status fill. */
 html:root [data-slot="action-button"][data-tone="warning"] { color: var(--warning-ink); }
-
-/* Fields use one focus treatment. Preserve an invalid field's error border. */
-html:root [data-slot="settings-body"] :where(input, textarea, select).border:not(.ri-field-control):focus-visible,
-html:root [data-slot="field"]:focus-visible { border-color: var(--line-2); box-shadow: none; }
-html:root [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
 
 /* ── Default look audit: state, contrast and phone layout ──────────────── */
 
@@ -258,9 +250,6 @@ html:root [data-slot="run-row"] { border-color: transparent; border-radius: 14px
 html:root [data-slot="pairing-decoration"] { display: none; }
 html:root [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--raised); box-shadow: none; backdrop-filter: none; }
 html:root [data-slot="pairing"] [data-slot="callout"] { box-shadow: none; backdrop-filter: none; }
-html:root [data-slot="pairing"] [data-slot="input-group"] { min-width: 0; border-color: var(--line-2); background-color: var(--background); box-shadow: none; backdrop-filter: none; }
-html:root [data-slot="pairing"] [data-slot="input-group"] input { min-width: 0; }
-html:root [data-slot="pairing"] [data-slot="input-group"]:has(input:focus-visible) { border-color: transparent; outline: 2px solid var(--ring); outline-offset: 0; }
 html:root [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--line); }
 
 @media (max-width: 767px) {

@@ -20,7 +20,7 @@ beforeAll(async () => {
           <NativeSelect label="Frequency" name="frequency" value={frequency} onChange={e=>setFrequency(e.target.value)}><option value="daily">Daily</option><option value="weekly">Weekly</option></NativeSelect>
           <Field label="Disabled group" disabled trailing={<Button onClick={()=>setClears(n=>n+1)}>Clear disabled</Button>}/><fieldset disabled className="min-w-0"><Field label="Inherited disabled group" trailing={<Button onClick={()=>setClears(n=>n+1)}>Clear inherited</Button>}/></fieldset><Field label="Disabled input" disabled name="disabled" defaultValue="Unavailable"/>
         </form>
-        <Field label="Before label" description="Setup first" messagePosition="before-label"/><Field label="Before control" description="Existing note" error="Name refused" messagePosition="before-control"/><Field label="Invalid input" description="A short account name" error="Enter an account name" defaultValue=""/>
+        <Field label="Separate error" description="Instructions first" messagePosition="before-control" error="Token rejected" errorPosition="after-control"/><Field label="Before label" description="Setup first" messagePosition="before-label"/><Field label="Before control" description="Existing note" error="Name refused" messagePosition="before-control"/><Field label="Invalid input" description="A short account name" error="Enter an account name" defaultValue=""/>
         <TextArea label="Invalid area" error="Enter instructions" rows={2}/>
         <NativeSelect label="Invalid select" error="Choose a period"><option value="">Pick one</option><option value="weekly">Weekly</option></NativeSelect>
         <TextArea label="Disabled area" disabled value="Unavailable" readOnly/>
@@ -273,6 +273,32 @@ for (const theme of ['light', 'dark']) {
           ),
         ).toBe(true);
       }
+    } finally {
+      await page.close();
+    }
+  });
+  it(`keeps instructions before a control and its error after it (${theme})`, async () => {
+    const page = await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const input = page.getByLabel('Separate error', { exact: true });
+      expect(
+        await input
+          .locator('..')
+          .evaluate((el) =>
+            [...el.children].map((child) =>
+              child.matches('.ri-field-label-row')
+                ? 'label'
+                : child.matches('input')
+                  ? 'control'
+                  : child.matches('[role="alert"]')
+                    ? 'error'
+                    : 'help',
+            ),
+          ),
+      ).toEqual(['label', 'help', 'control', 'error']);
+      expect(await input.getAttribute('aria-describedby')).toContain('-description');
+      expect(await input.getAttribute('aria-describedby')).toContain('-error');
     } finally {
       await page.close();
     }

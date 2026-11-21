@@ -33,25 +33,43 @@ export interface SegmentOption<T extends string = string> {
 }
 
 type Selection<T extends string> =
-  | { mode: 'tabs'; value: T | null; onChange: (value: T) => void; allowEmpty?: never; selection?: never }
+  | {
+      mode: 'tabs';
+      value: T | null;
+      onChange: (value: T) => void;
+      allowEmpty?: never;
+      selection?: never;
+      name?: never;
+    }
   | {
       mode: 'choice';
       value: T | null;
       onChange: (value: T | null) => void;
       allowEmpty: true;
       selection?: 'pressed';
+      name?: never;
     }
   | {
       mode: 'choice';
       value: T | null;
       onChange: (value: T) => void;
       allowEmpty?: false;
-      selection?: 'pressed' | 'radio';
+      selection?: 'pressed';
+      name?: never;
+    }
+  | {
+      mode: 'choice';
+      value: T | null;
+      onChange: (value: T) => void;
+      allowEmpty?: false;
+      selection: 'radio';
+      name?: string;
     };
 interface SegmentContext {
   mode: 'tabs' | 'choice';
   value: string | null;
   selection?: 'pressed' | 'radio';
+  name?: string;
   change: (value: string) => void;
 }
 const Context = createContext<SegmentContext | null>(null);
@@ -112,7 +130,9 @@ export function SegmentedRoot<const T extends string>(
       props.children
     );
   return (
-    <Context.Provider value={{ mode: props.mode, value: props.value, selection: props.selection, change }}>
+    <Context.Provider
+      value={{ mode: props.mode, value: props.value, selection: props.selection, name: props.name, change }}
+    >
       {content}
     </Context.Provider>
   );
@@ -277,6 +297,7 @@ export function SegmentedList<T extends string>({
     ) : context.selection === 'radio' ? (
       <RadioGroup.Root
         {...common}
+        name={context.name}
         value={context.value ?? ''}
         onValueChange={context.change}
         orientation="horizontal"

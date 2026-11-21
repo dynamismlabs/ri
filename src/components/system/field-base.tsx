@@ -39,6 +39,7 @@ export interface FieldInfo {
   invalid?: boolean;
   counter?: { value: number; max: number; id?: string; unit?: string };
   messagePosition?: 'before-label' | 'before-control' | 'after-control';
+  errorPosition?: 'before-label' | 'before-control' | 'after-control';
 }
 // Metadata props stay present while their values change, keeping the control
 // mounted when validation messages appear or clear. Bare controls keep their DOM.
@@ -103,6 +104,7 @@ export function FieldFrame({
   children,
   className,
   messagePosition = 'after-control',
+  errorPosition = messagePosition,
   framed,
 }: FieldInfo & {
   framed: boolean;
@@ -116,10 +118,10 @@ export function FieldFrame({
       {description}
     </div>
   );
-  const messages = (
+  const messages = (position: FieldInfo['messagePosition']) => (
     <>
-      {help}
-      {error && (
+      {messagePosition === position && help}
+      {errorPosition === position && error && (
         <FieldError id={info.errorId} className="ri-field-error">
           {error}
         </FieldError>
@@ -133,7 +135,7 @@ export function FieldFrame({
       data-invalid={info['aria-invalid'] || undefined}
       className={cn(fieldFrameVariants({ orientation }), className)}
     >
-      {messagePosition === 'before-label' && messages}
+      {messages('before-label')}
       {(label || counter || labelAction) && (
         <div
           className={cn(
@@ -162,9 +164,9 @@ export function FieldFrame({
           </div>
         </div>
       )}
-      {messagePosition === 'before-control' && messages}
+      {messages('before-control')}
       {children}
-      {messagePosition === 'after-control' && messages}
+      {messages('after-control')}
     </PrimitiveField>
   );
 }

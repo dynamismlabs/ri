@@ -48,6 +48,7 @@ export function Field(fieldProps: FieldProps) {
     errorId,
     invalid,
     messagePosition,
+    errorPosition,
     counter,
     inlineMessage,
     size: requestedSize,
@@ -118,6 +119,7 @@ export function Field(fieldProps: FieldProps) {
       description={!inlineMessage && description}
       error={!inlineMessage && error}
       messagePosition={messagePosition}
+      errorPosition={errorPosition}
       className={className}
     >
       {grouped ? (

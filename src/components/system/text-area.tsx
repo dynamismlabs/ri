@@ -43,6 +43,7 @@ export function TextArea(fieldProps: TextAreaProps) {
     errorId,
     invalid,
     messagePosition,
+    errorPosition,
     counter,
     size: requestedSize,
     purpose,
@@ -106,6 +107,7 @@ export function TextArea(fieldProps: TextAreaProps) {
       description={description}
       error={error}
       messagePosition={messagePosition}
+      errorPosition={errorPosition}
       className={className}
     >
       <Textarea

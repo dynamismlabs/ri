@@ -77,6 +77,7 @@ export function SignInToContinue({ client }: { client: string | null }) {
           </>
         }
         messagePosition="before-control"
+        errorPosition="after-control"
         value={pasted}
         onChange={(event) => {
           setPasted(event.target.value);
@@ -85,11 +86,15 @@ export function SignInToContinue({ client }: { client: string | null }) {
         autoComplete="off"
         spellCheck={false}
         placeholder="ri_live_…"
-        aria-invalid={state === 'refused'}
+        aria-label="Pairing token"
+        error={
+          state === 'refused'
+            ? 'That token didn’t work. Make a new one with Add device.'
+            : undefined
+        }
         className="w-full"
         purpose="code"
       />
-      {state === 'refused' && <p role="alert" className="text-xs text-destructive">That token didn’t work. Make a new one with Add device.</p>}
       <Button
         type="submit"
         disabled={!pasted.trim() || state === 'busy'}

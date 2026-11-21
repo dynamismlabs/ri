@@ -1,4 +1,5 @@
 'use client';
+import { SegmentedControl } from '@/components/system/segmented-control';
 import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -187,23 +188,17 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
       <div className="min-h-0 space-y-4 overflow-y-auto px-5 pb-4">
         <fieldset disabled={busy}>
           <legend className="sr-only">Feedback category</legend>
-          <div className="flex flex-wrap gap-1.5">
-            {kinds.map((kind) => (
-              <label key={kind.id} className="cursor-pointer">
-                <input
-                  type="radio"
-                  className="peer sr-only"
-                  name={`${id}-kind`}
-                  value={kind.id}
-                  checked={value.kind === kind.id}
-                  onChange={() => patch({ kind: kind.id })}
-                />
-                <span className="block rounded-full border border-transparent px-2.5 py-1.5 text-xs text-muted-foreground peer-checked:border-border peer-checked:bg-muted peer-checked:text-foreground peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-disabled:opacity-60">
-                  {kind.label}
-                </span>
-              </label>
-            ))}
-          </div>
+          <SegmentedControl
+            mode="choice"
+            selection="radio"
+            name={`${id}-kind`}
+            ariaLabel="Feedback category"
+            value={value.kind}
+            onChange={(kind) => patch({ kind })}
+            options={kinds.map((kind) => ({ value: kind.id, label: kind.label }))}
+            size={viewport === 'phone' ? 'touch' : 'compact'}
+            disabled={busy}
+          />
         </fieldset>
         <div
           onDragOver={(event) => event.preventDefault()}
@@ -218,7 +213,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
           <TextArea
             id={`${id}-message`}
             autoFocus
-            rows={5}
+            rows={7}
             maxLength={MAX_FEEDBACK_MESSAGE}
             value={value.message}
             disabled={draft.opening}
@@ -237,7 +232,7 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
                   ? 'What are you trying to figure out?'
                   : 'What would make Ri more useful for you?'
             }
-             autoSize
+            autoSize
           />
         </div>
         {value.attachments.length > 0 && (

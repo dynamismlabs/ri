@@ -108,7 +108,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch, `disclosure` | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
 | `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch. Choice supports radio selection and explicit `allowEmpty` | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2, implemented |
-| `Field`, `TextArea`, `NativeSelect`, `SelectField` | Label, value, description, error, invalid and disabled state. sm, md or touch, with title, code and embedded purposes | Input adapters with 10px corners, owned ids and ARIA, consistent type and one focus treatment. SelectField retains the installed Radix picker | 3, APIs implemented, migration in progress |
+| `Field`, `TextArea`, `NativeSelect`, `SelectField` | Label, value, description, error, invalid and disabled state. sm, md or touch, with title, code and embedded purposes | Input adapters with 10px corners, owned ids and ARIA, consistent type and one focus treatment. SelectField retains the installed Radix picker | 3, implemented |
 | `Card` | Content and layout | Raised 14px content panel | 4 |
 | `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
 | `MenuAction` | Label, action, tone and disabled state | Menu row type, hover and keyboard focus | 4 |
@@ -134,7 +134,10 @@ An omitted size follows the existing viewport tier: md on a computer and touch
 on a phone. A caller choosing a compact row supplies sm on a computer and touch
 on a phone, matching its sibling buttons. The control owns its padding.
 TextArea uses rows for height, with optional `autoSize`, `maxRows` and vertical
-`resize`. It retains native value, selection, form, event and ref behavior.
+`resize`. Native field sizing grows the control where supported. The shared
+autosize hook is the fallback and composes the caller’s ref, including cleanup.
+Existing editor synchronization still uses that hook when it writes a title
+outside React. Native value, selection, form and event behavior stays intact.
 
 The three purposes are:
 
@@ -155,6 +158,8 @@ with conditional values, so their control stays mounted as validation changes.
 `messagePosition` keeps help and errors before the label, before the control,
 or after the control. The default is `after-control`. Slack instructions use
 `before-label`. Name validation and form instructions use `before-control`.
+`errorPosition` can override that slot when existing instructions precede the
+control and validation follows it, as on OAuth sign-in.
 `orientation="horizontal"` keeps inline labels and allows the row to wrap.
 `labelClassName` accepts layout only, such as the email form's shared label width.
 `labelAction` keeps a labeled action, such as Copy body, alongside the label.
@@ -165,7 +170,8 @@ It is linked as help and stays out of the control's accessible name.
 and repeat parsers use `inlineMessage`, keeping their reading or error inside
 the group and linked to the control. Parser feedback keeps its polite live
 announcement as text becomes valid or invalid. Each trailing action keeps its own Button
-behavior. Disabled controls retain native behavior. Read-only values can still
+behavior. A compound disabled field disables its actions through a native
+fieldset, including when disabled by an outer form. Disabled controls retain native behavior. Read-only values can still
 be focused and copied. Field invalid focus uses the danger ink. Other focus uses
 the ring token, with no second shadow or border ring.
 
@@ -176,6 +182,50 @@ padding, fill,
 border, shadow and states. Width and placement utilities remain available to
 callers. Checkbox, radio and switch controls keep their separate semantics.
 Hidden and file transport inputs remain unchanged during this stage.
+
+Plain browser checkboxes and the chat-target radios use the installed Checkbox
+and RadioGroup. Descriptive selection rows stay with stage 4. Feedback’s plain
+category labels use SegmentedControl with radio semantics. The server-built OAuth
+hub consent form keeps native checkboxes, so its labels, values and submission
+work before hydration. Its `consent-checkbox` hook owns token accent and focus.
+The scheduled prompt and model toolbar’s one `input-group` is a content frame,
+not a text field, and stays for the content stage. No text-control caller imports
+Input, Textarea or InputGroup directly outside ui/system.
+
+The field migration uses an external TypeScript AST codemod, followed by a role,
+metadata and event/ref audit. Titles, code, search addons, parser announcements,
+rich selects and native form values are reviewed explicitly. Unused TaskCreateModal,
+CommandInput and TagEditor have been removed after checking imports and entry points.
+The gallery preview stays because the gallery bundles it by filesystem entry.
+
+### Native inputs retained through stage 3
+
+These are explicit boundaries for the stage 6 allowlist, not new raw-field patterns.
+Descriptive radio rows move with ChoiceRow in stage 4. File and hidden inputs are
+native form or picker transports. OAuth consent checkboxes retain submission
+before hydration. The migration packet lists their original and current lines.
+
+| File | Native input | Reason |
+| --- | --- | --- |
+| `src/components/orchestrator/identity-editor.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/apps/allow-app.tsx` | radio | descriptive selection row with title and supporting text |
+| `src/components/apps/layout-review/layouts/split-library.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/chat-ui/add-menu/composer-add-menu.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/skills/skill-files.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/executions/file-tree/file-tree.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/executions/action-bar/merge-button.tsx` | radio | descriptive selection row with title and supporting text |
+| `src/components/team/team-logo.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/mcp-apps/form/form-fields.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/dashboard/area-create-modal.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/dashboard/quick-capture-modal.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/feedback/feedback-panel.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/workspaces/workspace-create-modal.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/agents/agent-setup.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/spaces/publish-result.tsx` | file | native file transport, preserving picker/drag and upload wiring |
+| `src/components/settings/sections/integrations/mcp-server-detail.tsx` | radio | descriptive selection row with title and supporting text |
+| `src/app/oauth/authorize/hub-consent.tsx` | hidden | native form transport |
+| `src/app/oauth/authorize/hub-consent.tsx` | checkbox | native server-built consent before hydration, token accent and focus |
+| `src/app/oauth/authorize/page.tsx` | hidden | native form transport |
 
 ### Segmented controls
 
@@ -205,7 +255,8 @@ transparent and inert, for previews and file trees.
 Use `mode="choice"` for filtering, sorting or setting a value on the same content.
 Pressed choices use a group and `aria-pressed`. Arrows move focus, and Space or
 Enter chooses. `selection="radio"` preserves radio semantics and arrow selection
-where a form already uses them. `allowEmpty` explicitly supports a second press
+where a form already uses them. Only radio choices accept `name`, forwarded
+to Radix RadioGroup so its native form inputs keep the existing FormData key. `allowEmpty` explicitly supports a second press
 clearing Energy or Effort. An initially unset radio value may be null without
 allowing a selected value to clear on a second press.
 
@@ -387,12 +438,13 @@ Use the implemented system components first. These hooks carry families that hav
 | `work-chain`, `work-chain-step`, `work-chain-arrow` | Calendar's leverage summary. The phone keeps three flexible columns with wrapping labels and narrower connecting arrows | |
 | `run-row`, `run-summary` | A run and its summary. Below 768px the summary wraps above the badges and time, which wrap together | |
 | `search-footer` | Search navigation hints at 12px. All cmdk group headings use sentence case at 12px, including descendant utility variants | |
-| `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content reuses `callout` and the token field reuses `input-group`, with one focus outline around the group | |
+| `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content reuses `callout` and the token field uses Field, with one focus outline around the group | |
 | `floating-tools` | The floating tools list and folded strip: 14px content corners with the shared popover shadow | |
 | `dialog-content`, `alert-dialog-content`, `dialog-overlay`, `alert-dialog-overlay` | Shared 20px centered dialog corners and an unblurred 40% black scrim. Search panels use these hooks too | `data-kind="search-page"` keeps full-page phone search square. `data-kind="wrapped"` lets an inner painted panel inherit the corners and use just the outer shadow |
 | `settings-nav`, `settings-body` | Settings' shared navigation and content boundary. Neutral bordered sections become soft panels, small bordered actions become capsules, descriptive choices stay rows, and fields stay rectangular | `aria-current="page"` on navigation |
 | `choice-row` | A descriptive option in a chooser or Settings, with a soft 8px selection fill | `aria-pressed`, `aria-selected` or `aria-checked` |
-| `field` | A hand-built text field, textarea or select outside the shared input components | |
+| `system-field`, `field-control`, `field-shell` | Private field adapter parts. Product drawing lives in field.css, not compatibility rules | Owned label, help, error and counter associations |
+| `consent-checkbox` | Native server-built OAuth consent checkboxes, retaining submission before hydration | Token accent and visible focus |
 | `status-badge` | A small capsule fact, including schedule state and Runs trigger/activity badges | |
 | `schedule-row` | A schedule's soft row | |
 | `content-card` | A reference, app or thumbnail choice containing a title and supporting content. It stays a soft 14px rectangle even when the whole card opens | `aria-pressed`, `aria-selected` or `aria-checked` |
@@ -420,8 +472,7 @@ checks a narrow lane switch still scrolls where its edge fades look. Phase 3 add
 Settings' generic bordered-action rules apply only to the remaining native
 controls. System options own their drawing, fit their track and retain the
 active thumb on hover. Independent pressed toggles in Settings' button groups use the
-soft selected fill. Settings search keeps its own field ring without a second
-outline. Other text fields clear their inherited ring when the shared outline is drawn, so focus stays a single treatment.
+soft selected fill. Settings search and the other field adapters use one owned outline without an inherited shadow ring.
 
 ### Shapes
 
@@ -505,7 +556,12 @@ becomes their drawing owner.
    track. Panels, nullable values, keyboard navigation, measured scrolling and
    named navigation exceptions follow the decisions above. Retired drawing and
    focus hooks are deleted as their callers migrate.
-3. **Fields.** Input, textarea and native select adapters.
+3. **Fields (implemented).** Input, textarea, native and rich select adapters,
+   owned labels and validation, title/code/embedded purposes, native autosize
+   fallback, search addons and form behavior. Plain selection controls use the
+   installed primitives. Retired input, textarea, field and Settings field
+   compatibility rules are removed. The remaining prompt content frame is
+   explicitly reserved for stage 4.
 4. **Content and feedback.** Cards, descriptive rows, menu actions, callouts,
    badges and metadata.
 5. **Overlays.** Dialogs, sheets, popovers and menus, by hand.

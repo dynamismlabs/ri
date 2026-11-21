@@ -30,6 +30,7 @@ beforeAll(async () => {
       import {createRoot} from 'react-dom/client';
       import {TooltipProvider} from '@/components/ui/tooltip';
       import {Button} from '@/components/system/button';
+import {Field} from '@/components/system/field';
 import {ChipButton} from '@/components/system/chip-button';
 import {IconButton} from '@/components/system/icon-button';
       import {ButtonGroup} from '@/components/system/button-group';
@@ -66,7 +67,7 @@ import {IconButton} from '@/components/system/icon-button';
           <div data-slot="settings-nav"><button data-focus data-case="settings-nav" aria-current="page" className="rounded-lg bg-background px-3 py-2 shadow-sm ring-1 ring-border">General</button></div>
           <div data-slot="settings-body" className="space-y-2">
             <section data-case="settings-section" className="rounded-lg border border-border bg-background p-3">
-              <input data-focus data-case="settings-field" aria-label="Timezone" className="rounded-md border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" defaultValue="America/Denver" />
+              <Field data-focus data-case="settings-field" aria-label="Timezone" defaultValue="America/Denver" />
               <button data-focus data-case="settings-action" className="rounded border border-border bg-background px-2.5 py-1.5 text-foreground hover:bg-muted">Save</button>
               <button data-focus data-case="settings-solid" className="rounded border border-border bg-foreground px-2.5 py-1.5 text-background hover:bg-foreground/90">Connect</button>
             </section>
@@ -90,7 +91,7 @@ import {IconButton} from '@/components/system/icon-button';
 <SegmentedControl mode="choice" selection="radio" ariaLabel="Speed" value="normal" onChange={()=>{}} options={[{value:"normal",label:"Normal"},{value:"fast",label:"Fast"}]}/>
             <ButtonGroup aria-label="Show at"><Button aria-pressed={false} variant="secondary" size="xs">&gt;0%</Button><Button data-case="usage-toggle" aria-pressed size="xs">50%</Button><Button aria-pressed size="xs">80%</Button></ButtonGroup>
           </div>
-          <div data-slot="settings-nav"><input data-case="settings-search" aria-label="Search settings" className="rounded-lg border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" /></div>
+          <div data-slot="settings-nav"><Field data-case="settings-search" aria-label="Search settings" /></div>
           {/* The agent page's chat lenses (compact) and the phone's (touch), as they render. */}
           <div data-case="lenses"><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Chats" options={LENSES}/></ChatLenses></div>
           <div data-case="lenses-touch" style={{width:360}}><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Phone chats" size="touch" options={LENSES}/></ChatLenses></div>
@@ -102,7 +103,7 @@ import {IconButton} from '@/components/system/icon-button';
             <button data-tail-focus data-slot="calendar-event" className="w-full rounded-md border bg-muted p-2 text-left" style={{boxShadow:'inset 3px 0 0 rgb(30, 120, 200)'}}>Design review</button>
             <button data-tail-focus data-slot="menu-action" className="w-full rounded-md border-t border-border px-2 py-1.5 text-left hover:bg-muted">Do not repeat</button>
             <button data-tail-focus data-slot="completion-control" aria-label="Complete task" className="size-4 rounded-full border border-border" />
-            <input data-tail-focus data-case="invalid-field" data-slot="field" aria-invalid="true" aria-label="Invalid value" className="rounded-md border border-destructive bg-background p-2 focus:outline-none focus:ring-1" />
+            <Field data-tail-focus data-case="invalid-field" aria-invalid="true" aria-label="Invalid value" />
             <Button data-tail-focus data-case="warning-action" variant="secondary" size="sm" tone="warning">Reconnect</Button>
             <div data-case="file-chip"><FileChip path="/work/review.md" /></div>
             <div data-case="bubble" className="rounded-xl p-3" style={{background:'var(--user-bubble)',color:'var(--user-bubble-foreground)'}}>
@@ -147,7 +148,7 @@ import {IconButton} from '@/components/system/icon-button';
             <dl data-slot="work-chain" className="flex w-full min-w-[min(100%,30rem)] gap-3 rounded-lg border p-3">
               {['Your time','Agent time','Human time for the same work'].map((label,i)=><React.Fragment key={label}>{i>0&&<div data-slot="work-chain-arrow" className="flex min-w-10 flex-1 flex-col pt-3.5"><span>{i===1?'0.5×':'1×'}</span><span>→</span></div>}<div data-slot="work-chain-step" className="shrink-0"><dt>{label}</dt><dd>1h 9m</dd></div></React.Fragment>)}
             </dl>
-            <div data-slot="pairing"><div data-slot="pairing-mark" className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner"/><div data-slot="callout" className="rounded-2xl bg-card/60 p-3 shadow-2xl backdrop-blur-xl"><div data-slot="input-group" className="rounded-lg border bg-background/80 p-2 shadow-inner"><input data-audit-focus aria-label="Pairing token" className="min-w-0 bg-transparent outline-none"/></div></div></div>
+            <div data-slot="pairing"><div data-slot="pairing-mark" className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-inner"/><div data-slot="callout" className="rounded-2xl bg-card/60 p-3 shadow-2xl backdrop-blur-xl"><Field data-audit-focus aria-label="Pairing token" trailing={<Button size="sm">Connect</Button>}/></div></div>
           </section>
           <div data-case="canvas-token" className="bg-canvas text-t1">Canvas</div>
           <div className="dark"><div data-case="nested-pane-token" className="bg-pane text-t1">Nested dark pane</div></div>
@@ -395,14 +396,14 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
 
-  it(`keeps the Settings search ring without a second outline (${theme})`, async () => {
+  it(`gives Settings search one field outline (${theme})`, async () => {
     const { page } = await open(theme);
     try {
       await page.keyboard.press('Tab');
       await page.locator('[data-case="settings-search"]').focus();
       const search = await page.locator('[data-case="settings-search"]').evaluate(el => ({ outline: getComputedStyle(el).outlineStyle, shadow: getComputedStyle(el).boxShadow }));
-      expect(search.outline).toBe('none');
-      expect(search.shadow).not.toBe('none');
+      expect(search.outline).toBe('solid');
+      expect(search.shadow).toBe('none');
     } finally { await page.close(); }
   });
 }
@@ -463,18 +464,19 @@ for (const theme of ['light', 'dark'] as const) {
           expect(state.shadow).toContain('inset');
           expect(state.shadow).toContain('30, 120, 200');
         }
-        if (state.slot === 'field') expect(state.shadow).toBe('none');
+        if (state.slot === 'field-control') expect(state.shadow).toBe('none');
         if (state.slot === 'completion-control') expect(parseFloat(state.radius)).toBeGreaterThan(100);
       }
+      await page.locator('[data-case="invalid-field"]').focus();
       const invalid = await page.locator('[data-case="invalid-field"]').evaluate(el => {
         const probe = document.createElement('span');
         probe.style.color = 'var(--destructive)';
         el.after(probe);
         const expected = getComputedStyle(probe).color;
         probe.remove();
-        return { border: getComputedStyle(el).borderColor, expected };
+        return { outline: getComputedStyle(el).outlineColor, expected };
       });
-      expect(invalid.border).toBe(invalid.expected);
+      expect(invalid.outline).toBe(invalid.expected);
     } finally { await page.close(); }
   });
 
@@ -641,7 +643,7 @@ for (const theme of ['light', 'dark'] as const) {
   it(`default audit pairing is quiet and every new control retains keyboard focus (${theme})`, async () => {
     const { page } = await open(theme);
     try {
-      for (const selector of ['[data-slot="pairing-mark"]','[data-slot="pairing"] [data-slot="callout"]','[data-slot="pairing"] [data-slot="input-group"]']) expect(await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backdropFilter];})).toEqual(['none','none']);
+      for (const selector of ['[data-slot="pairing-mark"]','[data-slot="pairing"] [data-slot="callout"]','[data-slot="pairing"] [data-slot="field-shell"]']) expect(await page.locator(selector).evaluate(el=>{const s=getComputedStyle(el);return [s.boxShadow,s.backdropFilter];})).toEqual(['none','none']);
       expect(await page.locator('[data-slot="pairing-mark"]').evaluate(el=>getComputedStyle(el).backgroundImage)).toBe('none');
       await page.keyboard.press('Tab');
       for (const control of await page.locator('[data-audit-focus]').all()) {

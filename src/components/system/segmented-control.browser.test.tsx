@@ -1,6 +1,14 @@
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import type { ComponentProps } from 'react';
+import type { SegmentedControl } from './segmented-control';
+import { afterAll, beforeAll, expect, expectTypeOf, it } from 'vitest';
 import type { Locator } from 'playwright-core';
 import { browserFixture } from '@/test/fixtures/browser-fixture';
+
+it('only exposes native form names on radio choices', () => {
+  type Props = ComponentProps<typeof SegmentedControl>;
+  expectTypeOf<Extract<Props, { selection: 'radio' }>['name']>().toEqualTypeOf<string | undefined>();
+  expectTypeOf<Exclude<Props, { selection: 'radio' }>['name']>().toEqualTypeOf<undefined>();
+});
 
 let fixture: Awaited<ReturnType<typeof browserFixture>>;
 beforeAll(async () => {

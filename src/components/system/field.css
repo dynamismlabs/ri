@@ -36,7 +36,7 @@
 .ri-field-shell .ri-field-control { flex: 1; align-self: stretch; height: auto; border: 0; border-radius: 10px; background: transparent; box-shadow: none; }
 .ri-field-shell .ri-field-control:focus-visible { outline: 0 solid transparent; }
 .ri-field-shell .ri-field-control:disabled { opacity: 1; }
-.ri-field-addon { opacity: 1; display: flex; flex-shrink: 0; align-items: center; gap: 6px; height: auto; padding: 0 var(--field-padding); color: var(--t3); font-size: 12px; line-height: var(--field-line); font-weight: 400; }
+.ri-field-addon { margin: 0; opacity: 1; display: flex; flex-shrink: 0; align-items: center; gap: 6px; height: auto; padding: 0 var(--field-padding); color: var(--t3); font-size: 12px; line-height: var(--field-line); font-weight: 400; }
 .ri-field-addon[data-align='inline-start'] { padding-right: 0; }
 .ri-field-addon[data-align='inline-end'] { padding-left: 0; }
 .ri-field-addon > svg { width: 14px; height: 14px; flex-shrink: 0; }
