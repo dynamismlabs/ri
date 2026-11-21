@@ -125,6 +125,16 @@ describe('release.yml', () => {
     expect(runs(release, 'build')).toContain('for candidate in release/desktop/*.zip release/desktop/*.AppImage; do');
   });
 
+  it('uploads only the files it gathered, from a folder the checkout does not have', () => {
+    // v0.1.0's first publish uploaded assets/*, which swept in the repository's own
+    // assets/brand folder and failed after the feed was signed.
+    const publish = runs(release, 'publish');
+    const created = /gh release create "v\$VERSION" (\S+)\/\* /.exec(publish);
+    expect(created?.[1]).toBe('release-files');
+    expect(fs.existsSync(path.resolve(__dirname, '..', created![1]))).toBe(false);
+    expect(publish).toContain(`mkdir -p payloads ${created![1]}`);
+  });
+
   it('checksums, attests, then publishes each version with its downloads list', () => {
     const publish = steps(release, 'publish');
     const order = (match: (step: Step) => boolean) => publish.findIndex(match);
@@ -133,8 +143,8 @@ describe('release.yml', () => {
     const upload = order(step => step.run?.includes('gh release create "v$VERSION"') ?? false);
     expect(gather).toBeGreaterThan(-1);
     expect(gather < attest && attest < upload).toBe(true);
-    expect(publish[attest].with).toEqual({ 'subject-checksums': 'assets/SHA256SUMS' });
-    expect(runs(release, 'publish')).toContain('release-downloads.mjs channel --record assets/downloads.json --channel latest --out feed-next');
+    expect(publish[attest].with).toEqual({ 'subject-checksums': 'release-files/SHA256SUMS' });
+    expect(runs(release, 'publish')).toContain('release-downloads.mjs channel --record release-files/downloads.json --channel latest --out feed-next');
     const maintain = runs(release, 'maintain');
     expect(maintain).toContain('release-downloads.mjs channel --record record/downloads.json --channel stable --out feed-next');
     expect(maintain).toContain('release-downloads.mjs withdraw --existing feed-now --version "$VERSION" > stale.txt');
