@@ -327,8 +327,8 @@ it.skipIf(!enabled)('keeps uploaded text as a readable chip in both themes and o
         return { ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05), border: parseFloat(style.borderTopWidth), radius: parseFloat(style.borderRadius), color: style.color, background: style.backgroundColor, bubble: getComputedStyle(bubble).backgroundColor, bubbleColor: getComputedStyle(bubble).color };
       });
       expect(contrast.ratio, JSON.stringify({ dark, ...contrast })).toBeGreaterThanOrEqual(4.5);
-      expect(contrast.border).toBeGreaterThan(0);
-      expect(contrast.radius).toBeGreaterThan(0);
+      expect(contrast.border).toBe(0);
+      expect(contrast.radius).toBeGreaterThan(100);
       expect(await chip.innerText()).toContain('99 B');
       if (process.env.RI_ARTIFACT_SCREENSHOTS) await chip.screenshot({ path: path.join(process.env.RI_ARTIFACT_SCREENSHOTS, `attachment-chip-${dark ? 'dark' : 'light'}.png`) });
     }
