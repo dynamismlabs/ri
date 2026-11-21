@@ -125,6 +125,10 @@ async function clear(page: Page) {
 async function expand(page: Page) {
   await page.getByRole('button', { name: 'Expand the scratchpad' }).click();
   await settle(page.getByRole('dialog', { name: 'Scratchpad' }));
+  // The slideout starts listening for presses outside it on a timer after it opens. Chrome runs
+  // input ahead of timers, so a test's keys and click could all land first and the backdrop
+  // press went unheard. A timer of our own fires after the slideout's, once it's listening.
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve)));
 }
 
 async function capture(page: Page, name: string) {
@@ -243,7 +247,8 @@ describe('scratchpad quick view and expansion', () => {
       await page.mouse.click(100, 300);
       await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
       expect(await page.getByRole('button', { name: 'Expand the scratchpad' }).count()).toBe(1);
-      expect(await editor(page).evaluate(el => el === document.activeElement)).toBe(true);
+      // Focus comes back after the slideout leaves the page: Radix hands it over on a timer.
+      await expect.poll(() => editor(page).evaluate(el => el === document.activeElement)).toBe(true);
     } finally { await page.close(); }
   });
 
