@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useRef, type ReactNode } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -98,16 +99,20 @@ export interface ChatStripProps {
 export function ChatStrip({ label, status, onRestore }: ChatStripProps) {
   return (
     <div className="flex w-11 flex-shrink-0 flex-col items-center gap-2 border-r border-border py-2">
-      <Tip label="Bring the chat back" shortcut="Esc">
-        <button
+
+        <IconButton
           type="button"
           onClick={onRestore}
-          aria-label="Bring the chat back"
-          className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+          label="Bring the chat back"
+          tooltip="Bring the chat back"
+          shortcut="Esc"
+          variant="secondary"
+          size="sm"
+          className="inline-flex items-center justify-center"
         >
           <MessageSquare size={15} />
-        </button>
-      </Tip>
+        </IconButton>
+
       {status && (
         <Tip label={status === 'needsInput' ? 'This chat needs input' : 'This chat is working'}>
           <span

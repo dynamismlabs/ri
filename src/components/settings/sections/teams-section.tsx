@@ -8,7 +8,7 @@ import { TEAM_ROLE_LABELS } from '@/lib/team/capabilities';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { apiErrorText } from '@/lib/api/client';
@@ -81,12 +81,14 @@ function ConnectedTeam({ connection }: { connection: Connection }) {
       </div>
       {connection.status === 'active' && (
         <div className="flex shrink-0 gap-2">
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            asChild
+            variant="secondary"
+            size="sm"
+          >
             <a href={`/space/${encodeURIComponent(connection.id)}`}>Open</a>
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
             disabled={disconnect.isPending}
             onClick={async () => {
               const ok = await confirm({
@@ -97,6 +99,8 @@ function ConnectedTeam({ connection }: { connection: Connection }) {
               });
               if (ok) disconnect.mutate();
             }}
+            variant="ghost"
+            size="sm"
           >
             Disconnect
           </Button>
@@ -214,7 +218,12 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
         )}
         {shown?.usable && <p className="text-xs text-muted-foreground">Your assigned tasks will appear in My Ri. Your personal work stays private.</p>}
         {problem && <p role="alert" className="text-xs text-destructive">{problem}</p>}
-        <Button type="submit" size="sm" disabled={!shown?.usable || (joining && !name.trim()) || connect.isPending}>
+        <Button
+          type="submit"
+          disabled={!shown?.usable || (joining && !name.trim()) || connect.isPending}
+          variant="primary"
+          size="md"
+        >
           {connect.isPending ? 'Connecting…' : joining ? 'Join team' : 'Connect'}
         </Button>
       </form>
@@ -239,7 +248,11 @@ function CreateTeam() {
         )}
       </p>
       {desktop && (
-        <Button variant="outline" size="sm" onClick={() => void window.riDesktop?.connection?.('create-team')}>
+        <Button
+          onClick={() => void window.riDesktop?.connection?.('create-team')}
+          variant="secondary"
+          size="sm"
+        >
           Create a team
         </Button>
       )}

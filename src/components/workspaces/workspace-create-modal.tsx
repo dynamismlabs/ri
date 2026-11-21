@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * New agent (docs/agent-folders.md): a name and the folders it works in, the
  * way ChatGPT creates a project. Folders are optional. The first one is the
@@ -31,7 +33,7 @@ import { uploadAttachment } from '@/lib/attachments/client';
 import { coverAttachmentUrl } from '@/lib/attachments/view';
 import { agentInitials } from '@/lib/client/agent-initials';
 import { folderName } from '@/lib/folders/folder-name';
-import { cn } from '@/lib/utils';
+
 import { DEFAULT_FILES_TO_COPY } from '@/lib/workspaces/defaults';
 import { useAgentConfigurationScope } from './agent-placement-controls';
 import { FilesToCopySection } from './files-to-copy-section';
@@ -225,9 +227,13 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
             <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3">
               <DialogPrimitive.Title className="text-lg font-semibold text-foreground">New agent</DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>
-                <button aria-label="Close" className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                <IconButton
+                  label="Close"
+                  variant="ghost"
+                  size="sm"
+                >
                   <X size={16} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
             <VisuallyHidden.Root>
@@ -265,11 +271,15 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                       : []),
                   ]}
                 >
-                  <button
+                  <Button
                     type="button"
                     aria-label="Agent icon"
                     disabled={uploading}
-                    className="ml-1.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    variant="ghost"
+                    size="sm"
+                    focus="inside"
+                    clip
+                  className="ml-1.5 flex w-8 shrink-0 items-center justify-center"
                   >
                     {uploading ? (
                       <Loader2 size={15} className="animate-spin" />
@@ -283,7 +293,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                     ) : (
                       <SmilePlus size={16} />
                     )}
-                  </button>
+                  </Button>
                 </EmojiPicker>
                 <span aria-hidden className="mx-1.5 h-5 w-px bg-border" />
                 <input
@@ -316,14 +326,16 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                     <p className="text-[13px] text-muted-foreground">
                       Add a folder on <span className="text-foreground">{place}</span>
                     </p>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setPicking(true)}
-                      className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-accent/70"
+                      variant="ghost"
+                      size="sm"
+                      className="flex items-center gap-1.5"
                     >
                       <FolderPlus size={14} />
                       Add
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <ul className="overflow-hidden rounded-xl border border-border">
@@ -459,19 +471,25 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
 
             <div className="flex shrink-0 items-center justify-end gap-2 px-5 pt-2 pb-4">
               <DialogPrimitive.Close asChild>
-                <button type="button" className="rounded-lg px-4 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                >
                   Cancel
-                </button>
+                </Button>
               </DialogPrimitive.Close>
-              <button
+              <Button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!trimmedName || createWs.isPending}
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                variant="primary"
+                size="md"
+                className="flex items-center gap-1.5"
               >
                 {createWs.isPending && <Loader2 size={14} className="animate-spin" />}
                 Create agent
-              </button>
+              </Button>
             </div>
           </div>
           <FolderPickerDialog
@@ -511,25 +529,27 @@ function FolderRow({
       {primary ? (
         <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-[11.5px] text-muted-foreground">Primary</span>
       ) : (
-        <button
+        <Button
           type="button"
           onClick={onMakePrimary}
-          className={cn(
-            'shrink-0 rounded-md bg-accent px-2 py-0.5 text-[11.5px] font-medium text-foreground transition-opacity hover:bg-accent/70',
-            'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100',
-          )}
+          variant="ghost"
+          size="sm"
+          reveal
+          className="shrink-0"
         >
           Make primary
-        </button>
+        </Button>
       )}
-      <button
+      <IconButton
         type="button"
         onClick={onRemove}
-        aria-label={`Remove ${label}`}
-        className="shrink-0 rounded p-1 text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground"
+        label={`Remove ${label}`}
+        variant="ghost"
+        size="sm"
+        className="shrink-0"
       >
         <X size={13} />
-      </button>
+      </IconButton>
     </li>
   );
 }

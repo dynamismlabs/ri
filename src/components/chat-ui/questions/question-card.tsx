@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
 import { HelpCircle, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { useResolvePendingInput } from '@/hooks/use-execution';
@@ -238,15 +239,13 @@ export function QuestionCard({
           <div />
         )}
 
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           type="button"
           disabled={!currentAnswered || resolve.isPending || (isLast && !allAnswered)}
           onClick={handleNext}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-1 rounded-md text-[11.5px] font-medium transition-colors',
-            'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98]',
-            'disabled:bg-muted disabled:text-muted-foreground/50 disabled:cursor-not-allowed',
-          )}
+          variant="primary"
+          size="xs"
+          className="flex items-center gap-1.5"
         >
           {resolve.isPending ? (
             <><Loader2 size={11} className="animate-spin" /> Sending</>
@@ -255,7 +254,7 @@ export function QuestionCard({
           ) : (
             <>Next <ChevronRight size={11} /></>
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

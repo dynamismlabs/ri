@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { CheckCheck, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useAcceptResultComplete } from '@/hooks/use-results';
 import type { WorkResultDetailResponse } from '@/lib/api/results';
 import { pendingResultCompletion } from './completion-retry';
@@ -23,9 +23,14 @@ export function ResultCompletionAction({ resultId, options }: { resultId: string
     {!pending && reason && <p className="text-xs text-muted-foreground">{reason}</p>}
     {!pending && !reason && options?.codeFreshness === 'unknown' && <p className="text-xs text-muted-foreground">Code identity is unknown. This handoff is not confirmed to match current work.</p>}
     {!pending && !!selected?.recurrence && <p className="text-xs text-muted-foreground">Records this occurrence and keeps the recurring task&apos;s schedule.</p>}
-    <Button size="xs" variant="outline" disabled={(!selected || !!reason) && !pending || complete.isPending} onClick={() => {
+    <Button
+      disabled={(!selected || !!reason) && !pending || complete.isPending}
+      onClick={() => {
       if (pending?.taskId) complete.mutate({ ...pending, taskId: pending.taskId });
       else if (selected) complete.mutate({ taskId: selected.id, expectedStatusChangedCount: selected.statusChangedCount });
-    }}>{complete.isPending ? <Loader2 className="animate-spin" /> : <CheckCheck />}{complete.isPending ? 'Accepting and completing' : pending ? 'Retry acceptance and completion' : 'Accept and complete'}</Button>
+    }}
+      variant="secondary"
+      size="xs"
+    >{complete.isPending ? <Loader2 className="animate-spin" /> : <CheckCheck />}{complete.isPending ? 'Accepting and completing' : pending ? 'Retry acceptance and completion' : 'Accept and complete'}</Button>
   </div>;
 }

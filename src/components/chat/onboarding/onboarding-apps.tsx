@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import type { Connection, ProviderStatus } from '@/components/settings/sections/integrations/types';
@@ -110,22 +111,25 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
               {results.length === 0 ? (
                 <p className="px-1 py-2 text-[11px] text-muted-foreground">
                   Nothing by that name.{' '}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-                    className="underline-offset-2 hover:underline"
+                    variant="link"
+                    size="md"
                   >
                     Add your own in Settings
-                  </button>
+                  </Button>
                   , any MCP server works.
                 </p>
               ) : (
                 results.slice(0, SEARCH_LIMIT).map((p) => (
-                  <button data-slot="action-button" data-variant="ghost"
+                  <Button
                     key={p.id}
                     type="button"
                     onClick={() => open(p)}
-                    className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/50"
+                    variant="ghost"
+                    size="md"
+                    className="flex items-center gap-2.5"
                   >
                     <IntegrationLogo providerId={p.id} name={p.displayName} size={26} />
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">
@@ -133,17 +137,19 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                       <span className="truncate text-[10.5px] text-muted-foreground">{integrationMeta(p.id).description}</span>
                     </span>
                     <ConnectState connected={connected.has(p.id)} />
-                  </button>
+                  </Button>
                 ))
               )}
               {results.length > SEARCH_LIMIT && (
-                <button
+                <Button
                   type="button"
                   onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-                  className="self-start px-1.5 py-1 text-[11px] text-muted-foreground underline-offset-2 hover:underline"
+                  variant="link"
+                  size="md"
+                  className="self-start"
                 >
                   {results.length - SEARCH_LIMIT} more in Settings
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -152,21 +158,24 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
 
       <div className="mt-3 flex items-center justify-end gap-1.5">
         {connectedNames.length === 0 ? (
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             type="button"
             onClick={() => onDone('Not now')}
-            className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            variant="ghost"
+            size="md"
           >
             Not now
-          </button>
+          </Button>
         ) : (
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => onDone(`Connected ${listJoin(connectedNames)}`)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             Continue <ArrowRight size={12} />
-          </button>
+          </Button>
         )}
       </div>
     </div>

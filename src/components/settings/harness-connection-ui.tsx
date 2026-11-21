@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useExecutionRuntimeScope } from '@/components/home/execution-runtime-context';
 
 import { HarnessToolSetup } from '@/components/desktop/harness-tool-setup';
@@ -206,15 +207,17 @@ export function ConnectionPanel({
         {notInstalled ? provider.installHint : provider.loginCmd}
       </code>
       <HarnessToolSetup harness={harness} installed={!notInstalled} onComplete={() => recheck.mutate(harness)} />
-      <button data-slot="action-button"
+      <Button
         type="button"
         onClick={() => recheck.mutate(harness)}
         disabled={recheck.isPending}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:bg-muted/50 disabled:opacity-50"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center gap-1.5"
       >
         {recheck.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
         Check again
-      </button>
+      </Button>
     </div>
   );
 }

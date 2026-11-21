@@ -4,7 +4,7 @@ import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { useId, useState } from 'react';
 import { PanelsTopLeft, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 import { IntegrationsSection } from './integrations-section';
 import { NewSkillButton, SkillsTab } from './plugins/skills-catalog';
@@ -35,11 +35,19 @@ export function PluginsSection() {
           so scrolled content cannot show above or beside it. */}
       <div className="sticky top-0 z-20 -mx-5 space-y-3 border-b border-border/60 bg-popover px-5 pb-1 pt-6" data-plugin-actions>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="xs" className="h-10 text-xs sm:h-8" onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService })}>
+          <Button
+            onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService })}
+            variant="secondary"
+            size="xs"
+          >
             <Plus size={12} /> Connect a service
           </Button>
           <NewSkillButton className="h-10 text-xs sm:h-8" />
-          <Button variant="outline" size="xs" className="h-10 text-xs sm:h-8" onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.mcpServer })}>
+          <Button
+            onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.mcpServer })}
+            variant="secondary"
+            size="xs"
+          >
             <Plus size={12} /> Add MCP server
           </Button>
         </div>
@@ -57,7 +65,13 @@ export function PluginsSection() {
         <McpServersSection active={tab === 'mcp'} />
       </TabsContent>}
       <div className="border-t border-border/60 pt-3">
-        <Button variant="ghost" size="xs" className="text-[11px] text-muted-foreground" aria-expanded={showExamples} aria-controls={examplesId} onClick={() => setShowExamples(value => !value)}>
+        <Button
+          aria-expanded={showExamples}
+          aria-controls={examplesId}
+          onClick={() => setShowExamples(value => !value)}
+          variant="ghost"
+          size="xs"
+        >
           <PanelsTopLeft size={12} /> Interactive examples
         </Button>
         {showExamples && <div id={examplesId} className="mt-3">

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Check,
@@ -145,17 +146,19 @@ export function ModelMenuContent({
             disabled={disabled || speed.pending}
           />
         )}
-        {onManageModels && <button data-slot="action-button" data-variant="ghost"
+        {onManageModels && <Button
           type="button"
           onClick={onManageModels}
-          className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          variant="ghost"
+          size="xs"
+          className="flex w-full items-center gap-2"
         >
           <Settings2 size={13} />
           Manage models
           <span className="ml-auto text-[10.5px] text-muted-foreground/70">
             Show or hide
           </span>
-        </button>}
+        </Button>}
       </div>
       {footer && (
         <div className="shrink-0 border-t border-border px-2.5 pb-0.5 pt-2">
@@ -299,7 +302,7 @@ function OptionRow({
   return (
     <DropdownMenu modal={false} open={open && !disabled} onOpenChange={changeOpen}>
       <DropdownMenuTrigger asChild>
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           ref={trigger}
           type="button"
           disabled={disabled}
@@ -327,7 +330,9 @@ function OptionRow({
               content.current?.querySelector<HTMLElement>('[role="menuitemradio"]:not([data-disabled])')?.focus();
             }
           }}
-          className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-[12px] transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          variant="ghost"
+          size="xs"
+          className="flex w-full items-center gap-2"
         >
           <span>{label}</span>
           <span className="ml-auto truncate text-muted-foreground">
@@ -337,7 +342,7 @@ function OptionRow({
             size={13}
             className="shrink-0 text-muted-foreground/60"
           />
-        </button>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         ref={content}

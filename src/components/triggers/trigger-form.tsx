@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * A schedule's whole form: name, description, message, where it runs, who
  * runs it, its timing and the advanced rules. Creates a schedule when given
@@ -387,34 +388,38 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
       <div className="flex items-center justify-end gap-3 pt-2">
         {trigger ? (
           dirty && (
-            <button
+            <Button
               type="button"
               onClick={() => setForm((f) => ({ ...f, values: f.base }))}
               disabled={pending}
-              className="px-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground disabled:opacity-50"
+              variant="ghost"
+              size="sm"
             >
               Discard changes
-            </button>
+            </Button>
           )
         ) : (
           onCancel && (
-            <button
+            <Button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="sm"
             >
               Cancel
-            </button>
+            </Button>
           )
         )}
-        <button
+        <Button
           type="submit"
           disabled={!canSave}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="inline-flex items-center gap-1.5"
         >
           <Save size={14} />
           {pending ? 'Saving…' : trigger ? 'Save changes' : 'Save'}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -434,14 +439,16 @@ function Advanced({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1"
       >
         {open ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
         Advanced
-      </button>
+      </Button>
       {open && (
         <div className="space-y-4 border-l-2 border-border pl-4">
           {target !== 'session' && (
@@ -515,17 +522,19 @@ function WorkspacePill({
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <button data-slot="action-button"
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Agent"
-        className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-border bg-card text-[12px] text-muted-foreground hover:text-foreground"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center gap-1.5"
       >
         <FolderOpen size={12} />
         {emoji ? <span>{emoji}</span> : null}
         <span>{label}</span>
         <ChevronDown size={10} />
-      </button>
+      </Button>
       {open && (
         <div className="absolute left-0 top-full mt-1 z-20 min-w-[180px] rounded-md border border-border bg-card shadow-md p-1">
           {workspaces.length === 0 && <p className="px-2 py-1 text-[11px] text-muted-foreground">No agents.</p>}

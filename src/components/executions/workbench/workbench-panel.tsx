@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import {
   AppWindow,
@@ -157,14 +158,16 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
       {state.from && (
         <div className="flex h-8 flex-shrink-0 items-center border-b border-border px-2">
           <Tip label={`Back to ${PANEL_VIEW_LABELS[state.from]}`}>
-            <button
+            <Button
               type="button"
               onClick={() => dispatch({ type: 'back' })}
-              className="inline-flex h-6 items-center gap-0.5 rounded-full bg-muted/70 pl-1 pr-2.5 text-[11.5px] font-medium text-foreground/85 transition-colors hover:bg-muted hover:text-foreground"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center gap-0.5"
             >
               <ChevronLeft size={13} />
               {PANEL_VIEW_LABELS[state.from]}
-            </button>
+            </Button>
           </Tip>
         </div>
       )}

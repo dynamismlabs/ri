@@ -1,7 +1,8 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { BookOpen, Check, CirclePause, LayoutGrid, MessageCircle, Server, Settings2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { AppMark } from '../app-mark';
 import { itemType, primaryLabel, type ReviewItem } from './catalog';
@@ -23,11 +24,22 @@ export function ItemStatus({ item }: { item: ReviewItem }) {
 }
 export function PrimaryButton({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <Button size="xs" variant={item.added ? 'outline' : 'default'} disabled={review.busy} onClick={() => review.primary(item)} aria-label={`${primaryLabel(item)} ${item.name}`}>{primaryLabel(item)}</Button>;
+  return <Button
+    disabled={review.busy}
+    onClick={() => review.primary(item)}
+    aria-label={`${primaryLabel(item)} ${item.name}`}
+    variant="secondary"
+    size="xs"
+  >{primaryLabel(item)}</Button>;
 }
 export function ManageButton({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <Button size="icon-xs" variant="ghost" onClick={() => review.details(item, true)} aria-label={`Manage ${item.name}`}><Settings2 size={13} /></Button>;
+  return <IconButton
+    onClick={() => review.details(item, true)}
+    label={`Manage ${item.name}`}
+    variant="ghost"
+    size="xs"
+  ><Settings2 size={13} /></IconButton>;
 }
 export function ItemCard({ item }: { item: ReviewItem }) {
   const review = useReview();

@@ -1,5 +1,6 @@
 'use client'
 
+import { IconButton } from '@/components/system/icon-button';
 import { BubbleMenu } from '@tiptap/react/menus'
 import { useEditorState, type ChainedCommands, type Editor } from '@tiptap/react'
 import {
@@ -19,7 +20,7 @@ import {
   ListChecks,
   ListCollapse,
 } from 'lucide-react'
-import { Tip } from '@/components/ui/tip'
+
 
 interface EditorBubbleMenuProps {
   editor: Editor
@@ -66,24 +67,20 @@ function MenuButton({
   shortcut?: string
 }) {
   return (
-    <Tip label={title} shortcut={shortcut}>
-      <button
+
+      <IconButton
         type="button"
-        aria-label={title}
         aria-pressed={isActive ?? false}
         onClick={onClick}
-        className={`
-        p-1.5 rounded transition-colors duration-100
-        ${
-          isActive
-            ? 'bg-primary/15 text-primary'
-            : 'text-foreground/70 hover:text-foreground hover:bg-accent'
-        }
-      `}
+        label={title}
+        tooltip={title}
+        shortcut={shortcut}
+        variant="ghost"
+        size="xs"
       >
         {children}
-      </button>
-    </Tip>
+      </IconButton>
+
   )
 }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { ChipButton } from '@/components/system/chip-button';
+import { IconButton } from '@/components/system/icon-button';
 import { TeamLabel } from '@/components/spaces/team-label';
 import { useState, useMemo } from 'react';
 import { Search, Plus, Check, Minus, X, ChevronDown } from 'lucide-react';
@@ -134,10 +136,14 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         {/* Area filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="flex items-center gap-1 shrink-0"
+            >
               {selectedArea ? selectedArea.name : 'All'}
               <ChevronDown size={8} className="text-muted-foreground/50" />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
             <DropdownMenuItem onClick={() => setAreaFilter(null)} className={cn('text-xs', !areaFilter && 'font-bold')}>
@@ -159,10 +165,14 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         {/* Sort */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="flex items-center gap-1 shrink-0"
+            >
               {sortBy === 'default' ? 'Priority' : sortBy === 'newest' ? 'Newest' : 'Deadline'}
               <ChevronDown size={8} className="text-muted-foreground/50" />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-28">
             <DropdownMenuItem onClick={() => setSortBy('default')} className={cn('text-xs', sortBy === 'default' && 'font-bold')}>
@@ -178,12 +188,15 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         </DropdownMenu>
 
         {/* Close */}
-        <button
+        <IconButton
           onClick={onClose}
-          className="p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
+          label="Close task browser"
+          variant="ghost"
+          size="xs"
+          focus="inside"
         >
           <X className="w-3.5 h-3.5" />
-        </button>
+        </IconButton>
       </div>
 
       {/* Task list */}
@@ -201,23 +214,29 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
                 )}
               >
                 {onDeck ? (
-                  <button
+                  <IconButton
                     onClick={() => onRemoveFromDeck?.(task.id)}
-                    className="shrink-0 transition-colors text-muted-foreground/30 hover:text-red-400"
-                    aria-label="Remove from deck"
+                    label="Remove from deck"
+                    variant="ghost"
+                    size="xs"
+                    focus="inside"
+                    className="shrink-0"
                   >
                     {/* Mobile: always show minus. Desktop: check that swaps to minus on hover */}
                     <Check className="w-3.5 h-3.5 hidden md:block md:group-hover/task:hidden" />
                     <Minus className="w-3.5 h-3.5 md:hidden md:group-hover/task:block" />
-                  </button>
+                  </IconButton>
                 ) : (
-                  <button
+                  <IconButton
                     onClick={() => onAddToDeck(task)}
-                    className="shrink-0 transition-colors text-muted-foreground hover:text-foreground"
-                    aria-label="Add to deck"
+                    label="Add to deck"
+                    variant="ghost"
+                    size="xs"
+                    focus="inside"
+                    className="shrink-0"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                  </button>
+                  </IconButton>
                 )}
                 <span className={cn(
                   'text-xs truncate flex-1',

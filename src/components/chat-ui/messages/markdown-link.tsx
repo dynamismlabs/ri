@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 import { Popover } from 'radix-ui';
 import { Check, Copy, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { FileSourceTip } from '@/components/chat-ui/artifacts/file-source-tip';
@@ -17,14 +17,20 @@ function CopyLink({ value }: { value: string }) {
     return () => clearTimeout(timer);
   }, [status]);
   const label = status === 'copied' ? 'Copied' : status === 'error' ? 'Could not copy' : 'Copy';
-  return <Button type="button" size="xs" variant="ghost" aria-label={label} onClick={async () => {
+  return <Button
+    type="button"
+    aria-label={label}
+    onClick={async () => {
     try {
       await navigator.clipboard.writeText(value);
       setStatus('copied');
     } catch {
       setStatus('error');
     }
-  }}>
+  }}
+    variant="ghost"
+    size="xs"
+  >
     {status === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
     <span role="status">{label}</span>
   </Button>;
@@ -43,7 +49,12 @@ export function MarkdownLink({ href: renderedHref, children, className, title, n
   return <Dialog>
     <DialogTrigger asChild>
       <FileSourceTip source={href} onlyWhenTextHidden={children === href}>
-        <button type="button" className={style}>{children}</button>
+        <Button
+          type="button"
+          variant="link"
+          size="xs"
+          className={className}
+        >{children}</Button>
       </FileSourceTip>
     </DialogTrigger>
     <DialogContent>
@@ -54,7 +65,11 @@ export function MarkdownLink({ href: renderedHref, children, className, title, n
       <p className="max-h-48 overflow-y-auto break-all font-mono text-xs select-text">{href}</p>
       <DialogFooter>
         <CopyLink value={href} />
-        <Button asChild size="sm"><a href={href} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden />Open in new tab</a></Button>
+        <Button
+          asChild
+          variant="primary"
+          size="md"
+        ><a href={href} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden />Open in new tab</a></Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>;

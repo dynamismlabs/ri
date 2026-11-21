@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { ApprovalDetails } from './approval-details';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -225,28 +227,32 @@ function ApprovalItem({
         </button>
         {onDecide && state === 'pending' && (
           <span className="flex shrink-0 items-center gap-0.5">
-            <Tip label="Approve this one">
-              <button data-slot="action-button" data-tone="status"
+
+              <IconButton
                 type="button"
                 disabled={disabled}
                 onClick={() => onDecide('approve')}
-                aria-label={`Approve ${view.summary}`}
-                className="rounded p-1 text-muted-foreground/70 hover:bg-emerald-500/10 hover:text-emerald-600 disabled:opacity-50"
+                label={`Approve ${view.summary}`}
+                tooltip="Approve this one"
+                variant="secondary"
+                size="xs"
               >
                 <Check size={11} />
-              </button>
-            </Tip>
-            <Tip label="Deny this one">
-              <button data-slot="action-button" data-tone="status"
+              </IconButton>
+
+
+              <IconButton
                 type="button"
                 disabled={disabled}
                 onClick={() => onDecide('deny')}
-                aria-label={`Deny ${view.summary}`}
-                className="rounded p-1 text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                label={`Deny ${view.summary}`}
+                tooltip="Deny this one"
+                variant="secondary"
+                size="xs"
               >
                 <X size={11} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </span>
         )}
       </div>
@@ -285,19 +291,16 @@ function FooterButton({
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <Tip label={title}>
-      <button data-slot="action-button" data-variant={tone === "primary" ? "primary" : undefined} data-tone={tone === "deny" ? "status" : undefined}
+      <Button
         type="button"
         {...props}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-          tone === 'primary' && 'bg-primary text-primary-foreground hover:opacity-90',
-          tone === 'secondary' && 'border border-border bg-background text-foreground hover:bg-muted/60',
-          tone === 'deny' && 'border border-destructive/40 text-destructive hover:bg-destructive/10',
-        )}
+        variant={tone === "primary" ? "primary" : tone === "deny" ? "destructive" : "secondary"}
+        size="xs"
+        className="inline-flex items-center gap-1.5"
       >
         {busy && <Loader2 size={11} className="animate-spin" />}
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }
@@ -365,15 +368,17 @@ function CardStatus({
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">{text}</span>
       {canRetry && (
-        <button data-slot="action-button"
+        <Button
           type="button"
           disabled={retry.isPending || retry.isSuccess}
           onClick={() => retry.mutate()}
-          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-[10.5px] font-medium text-foreground hover:bg-muted/60 disabled:opacity-50"
+          variant="secondary"
+          size="xs"
+          className="inline-flex shrink-0 items-center gap-1"
         >
           {retry.isPending ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
           {retry.isSuccess ? 'Asked' : 'Ask the agent to retry'}
-        </button>
+        </Button>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
@@ -80,13 +81,15 @@ export function SignInToContinue({ client }: { client: string | null }) {
         />
       </label>
       {state === 'refused' && <p role="alert" className="text-xs text-destructive">That token didn’t work. Make a new one with Add device.</p>}
-      <button
+      <Button
         type="submit"
         disabled={!pasted.trim() || state === 'busy'}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        variant="primary"
+        size="md"
+        className="inline-flex w-full items-center justify-center gap-2"
       >
         {state === 'busy' && <Loader2 size={14} className="animate-spin" aria-hidden />} Continue
-      </button>
+      </Button>
     </form>
   );
 }

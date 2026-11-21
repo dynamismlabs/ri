@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Switch } from '@/components/ui/switch';
 import type { ManagedSpeechStatus } from '@/lib/stt/managed/manager';
 import { trpcClient } from '@/lib/trpc/client';
@@ -36,12 +36,41 @@ export function ManagedSpeechSettings() {
     {installing && <div className="space-y-1"><progress className="h-2 w-full" value={data.downloadedBytes} max={data.totalBytes} aria-label="Model download progress" /><p className="text-xs text-muted-foreground">{(data.downloadedBytes / 1024 ** 2).toFixed(0)} / {(data.totalBytes / 1024 ** 2).toFixed(0)} MiB</p></div>}
     {!data.installed && data.helperAvailable && <p className="text-xs text-muted-foreground">Downloads a verified {(data.totalBytes / 1024 ** 2).toFixed(0)} MiB model. Allow 900 MiB of free disk space. No Python or Docker installation is needed.</p>}
     <div className="flex flex-wrap gap-2">
-      {data.installed && data.enabled && data.phase === 'error' && <Button size="sm" variant="outline" disabled={busy} onClick={() => void action({ action: 'configure', enabled: true })}>Retry local speech</Button>}
-      {!installing && data.helperAvailable && <Button size="sm" variant={data.installed ? 'outline' : 'default'} disabled={busy} onClick={() => void action({ action: 'install' })}>{data.installed ? 'Verify and repair' : data.phase === 'error' ? 'Resume or retry' : 'Install local speech'}</Button>}
-      {installing && <Button size="sm" variant="outline" disabled={pending} onClick={() => void action({ action: 'cancel' })}>Pause download</Button>}
-      {(data.installed || data.phase === 'error') && !installing && <Button size="sm" variant="outline" disabled={busy} onClick={() => setConfirmRemove(true)}>Remove model</Button>}
+      {data.installed && data.enabled && data.phase === 'error' && <Button
+        disabled={busy}
+        onClick={() => void action({ action: 'configure', enabled: true })}
+        variant="secondary"
+        size="sm"
+      >Retry local speech</Button>}
+      {!installing && data.helperAvailable && <Button
+        disabled={busy}
+        onClick={() => void action({ action: 'install' })}
+        variant={data.installed ? "secondary" : "primary"}
+        size="sm"
+      >{data.installed ? 'Verify and repair' : data.phase === 'error' ? 'Resume or retry' : 'Install local speech'}</Button>}
+      {installing && <Button
+        disabled={pending}
+        onClick={() => void action({ action: 'cancel' })}
+        variant="secondary"
+        size="sm"
+      >Pause download</Button>}
+      {(data.installed || data.phase === 'error') && !installing && <Button
+        disabled={busy}
+        onClick={() => setConfirmRemove(true)}
+        variant="secondary"
+        size="sm"
+      >Remove model</Button>}
     </div>
-    {confirmRemove && <div className="space-y-2 text-xs"><p>Remove the downloaded model and partial downloads? Your recordings, notes and tasks are kept.</p><Button size="sm" variant="destructive" disabled={busy} onClick={() => void action({ action: 'uninstall' })}>Remove downloaded model</Button> <Button size="sm" variant="outline" onClick={() => setConfirmRemove(false)}>Keep model</Button></div>}
+    {confirmRemove && <div className="space-y-2 text-xs"><p>Remove the downloaded model and partial downloads? Your recordings, notes and tasks are kept.</p><Button
+      disabled={busy}
+      onClick={() => void action({ action: 'uninstall' })}
+      variant="destructive"
+      size="sm"
+    >Remove downloaded model</Button> <Button
+      onClick={() => setConfirmRemove(false)}
+      variant="secondary"
+      size="sm"
+    >Keep model</Button></div>}
     {data.installed && <label className="flex items-center justify-between gap-3 text-xs">Use managed local speech<Switch checked={data.enabled} disabled={busy || installing} onCheckedChange={enabled => void action({ action: 'configure', enabled })} /></label>}
     <label className="flex items-center justify-between gap-3 text-xs"><span>Allow automatic Groq fallback<span className="mt-1 block text-muted-foreground">When automatic provider selection cannot use local speech, send audio to Groq if a key is configured. An explicitly selected local model never switches providers.</span></span><Switch checked={data.cloudFallback} disabled={busy || installing} onCheckedChange={cloudFallback => void action({ action: 'configure', cloudFallback })} /></label>
     <p className="text-xs text-muted-foreground">The helper starts on demand and unloads after five idle minutes. Recordings are limited to 10 minutes and one local transcription at a time. <a className="underline" href="https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3" target="_blank" rel="noreferrer">NVIDIA Parakeet, CC BY 4.0</a></p>

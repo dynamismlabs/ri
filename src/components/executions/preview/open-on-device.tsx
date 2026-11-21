@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import {
@@ -116,14 +118,16 @@ export function OpenOnDevice({
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Tip label="Open on your phone">
-          <button
+          <Button
             type="button"
-            className="flex h-7 items-center gap-1.5 rounded px-2 text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground"
             aria-label="Open on your phone"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1.5"
           >
             <Smartphone size={13} />
             <span className="hidden sm:inline">Phone</span>
-          </button>
+          </Button>
         </Tip>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
@@ -155,27 +159,26 @@ export function OpenOnDevice({
                 <span className="flex h-7 flex-1 items-center truncate rounded bg-muted/60 px-2 font-mono text-[11px] text-muted-foreground">
                   {url}
                 </span>
-                <Tip label={copied ? 'Copied!' : 'Copy link'}>
-                  <button data-slot="action-button"
+
+                  <IconButton
                     type="button"
                     onClick={() => copy(url)}
-                    className="flex h-7 w-7 items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                    aria-label={copied ? 'Copied!' : 'Copy link'}
+                    label={copied ? 'Copied!' : 'Copy link'}
+                    tooltip={copied ? 'Copied!' : 'Copy link'}
+                    variant="secondary"
+                    size="sm"
+                    className="flex items-center justify-center"
                   >
                     {copied ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
-                  </button>
-                </Tip>
-                <Tip label="Open in a new tab">
-                  <a data-slot="action-button"
-                    href={url}
+                  </IconButton>
+
+
+                  <IconButton asChild label="Open in a new tab" tooltip="Open in a new tab" variant="secondary" size="sm" className="flex items-center justify-center"><a href={url}
                     target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-7 w-7 items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
-                    aria-label="Open in a new tab"
-                  >
+                    rel="noopener noreferrer">
                     <ExternalLink size={13} />
-                  </a>
-                </Tip>
+                  </a></IconButton>
+
               </div>
               <p className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
                 <Globe size={10} />
@@ -201,16 +204,18 @@ export function OpenOnDevice({
                   beamd is already set up on this machine. Turn it on for remote previews, nothing else to configure.
                 </span>
               </div>
-              <button data-slot="action-button" data-variant="primary"
+              <Button
                 type="button"
                 onClick={useBeamdAndResolve}
                 disabled={updateSettings.isPending || resolve.isPending}
-                className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border bg-foreground px-3 py-2 text-[12px] font-medium text-background hover:bg-foreground/90 disabled:opacity-50"
+                variant="primary"
+                size="md"
+                className="flex w-full items-center justify-center gap-1.5"
               >
                 {(updateSettings.isPending || resolve.isPending) && <Loader2 size={13} className="animate-spin" />}
                 <Globe size={13} />
                 Use Beamd for remote preview
-              </button>
+              </Button>
             </div>
           )}
 
@@ -224,26 +229,30 @@ export function OpenOnDevice({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button data-slot="action-button"
+                <Button
                   type="button"
                   onClick={() => {
                     setState(null);
                     resolve.mutate();
                   }}
                   disabled={resolve.isPending}
-                  className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <RotateCw size={12} className={cn(resolve.isPending && 'animate-spin')} />
                   Retry
-                </button>
-                <button data-slot="action-button"
+                </Button>
+                <Button
                   type="button"
                   onClick={() => openSettings('remote-preview')}
-                  className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <Settings2 size={12} />
                   Settings
-                </button>
+                </Button>
               </div>
             </div>
           )}

@@ -722,7 +722,7 @@ it('narrows Unread to one agent from the flyout, and lets go when that agent has
     await listClosed();
     expect(await titles()).toEqual(['Reconcile Amex', 'Import Chase CSV']);
     const header = narrowed.locator('xpath=..');
-    expect((await header.innerText()).replace(/\s+/g, ' ').trim()).toBe('UNREAD 💵 Finances 2');
+    expect((await header.innerText()).replace(/\s+/g, ' ').trim()).toBe('Unread 💵 Finances 2');
     expect(await flyout.locator('nav').innerText()).not.toContain('· Finances');
     expect((await row.innerText()).replace(/\s+/g, ' ').trim()).toBe('Unread 3');
     expect(await flyout.locator('nav').innerText()).not.toContain('inactive');

@@ -16,6 +16,7 @@ export const BUCKET_ORDER: readonly BucketId[] = [
 
 export interface BucketConfig {
   id: BucketId;
+  tone: 'neutral' | 'attention' | 'success';
   label: string;
   accentClass: string;
   countBgClass: string;
@@ -28,6 +29,7 @@ export interface BucketConfig {
 export const BUCKET_CONFIG: Record<BucketId, BucketConfig> = {
   needsApproval: {
     id: 'needsApproval',
+    tone: 'attention',
     label: 'Needs approval',
     accentClass: 'text-amber-600 dark:text-amber-400',
     countBgClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
@@ -36,6 +38,7 @@ export const BUCKET_CONFIG: Record<BucketId, BucketConfig> = {
   },
   unread: {
     id: 'unread',
+    tone: 'attention',
     label: 'Unread',
     accentClass: 'text-amber-600 dark:text-amber-400',
     countBgClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
@@ -43,6 +46,7 @@ export const BUCKET_CONFIG: Record<BucketId, BucketConfig> = {
   },
   waiting: {
     id: 'waiting',
+    tone: 'neutral',
     label: 'Waiting response',
     accentClass: 'text-foreground',
     countBgClass: 'bg-muted text-muted-foreground',
@@ -50,6 +54,7 @@ export const BUCKET_CONFIG: Record<BucketId, BucketConfig> = {
   },
   working: {
     id: 'working',
+    tone: 'success',
     label: 'Working',
     accentClass: 'text-emerald-600 dark:text-emerald-400',
     countBgClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',

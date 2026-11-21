@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import type { ApprovalDetail } from '@/lib/integrations/approval-describe';
 import { cn } from '@/lib/utils';
@@ -32,10 +33,16 @@ function DetailValue({ value }: { value: string }) {
   return (
     <>
       <span className={cn('whitespace-pre-wrap', !open && 'line-clamp-4')}>{value}</span>
-      <button type="button" aria-expanded={open} onClick={() => setOpen((current) => !current)}
-        className="mt-0.5 block font-sans text-foreground/70 underline-offset-2 hover:underline">
+      <Button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        variant="link"
+        size="xs"
+        className="mt-0.5 block"
+      >
         {open ? 'Show less' : 'Show all'}
-      </button>
+      </Button>
     </>
   );
 }

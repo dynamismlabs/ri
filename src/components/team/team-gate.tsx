@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { APP_NAME } from '@/constants/app';
 
@@ -43,13 +44,15 @@ export function GateField({
 
 export function GateButton({ busy, children, ...button }: React.ComponentProps<'button'> & { busy?: boolean }) {
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <Button
       {...button}
       disabled={button.disabled || busy}
-      className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      variant="primary"
+      size="md"
+      className="inline-flex w-full items-center justify-center"
     >
       {busy ? 'One moment…' : children}
-    </button>
+    </Button>
   );
 }
 

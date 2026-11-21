@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { openSettings } from '@/components/settings/settings-store';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -99,18 +100,22 @@ export function SkillView({
             {apiErrorStatus(error) !== undefined && apiErrorStatus(error) === 404 ? 'It may have been renamed or archived.' : 'Try again in a moment.'}
           </p>
           <div className="mt-3 flex justify-center gap-1">
-            <button
+            <Button
               onClick={() => openSettings('plugins', { anchor: 'skills' })}
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center"
             >
               Open Plugins
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={goHome}
-              className="inline-flex items-center rounded-md px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center"
             >
               Back to Home
-            </button>
+            </Button>
           </div>
         </div>
       </div>,

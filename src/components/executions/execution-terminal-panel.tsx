@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useRunsOnSeveralDevices } from '@/hooks/use-devices';
 import { useFolderRoot, useFolderScope } from '@/hooks/use-folder';
 import { terminalsUnavailable, useCreateTerminal, useKillTerminal, useTerminals } from '@/hooks/use-terminals';
@@ -151,32 +153,39 @@ export function ExecutionTerminalPanel({
             />
           ))}
           {!collapsed && (
-            <Tip label="New terminal">
-              <button data-slot="action-button" data-variant="ghost"
+
+              <IconButton
                 type="button"
                 onClick={handleNew}
                 disabled={createTerminal.isPending || !!unavailable}
-                className="ml-0.5 inline-flex size-6 items-center justify-center rounded text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 disabled:opacity-50"
-                aria-label="New terminal"
+                label="New terminal"
+                tooltip="New terminal"
+                variant="ghost"
+                size="sm"
+                className="ml-0.5 inline-flex items-center justify-center"
               >
                 <Plus size={12} />
-              </button>
-            </Tip>
+              </IconButton>
+
           )}
         </div>
         <TerminalWhere terminal={terminals.find((t) => t.id === activeId) ?? null} showDevice={severalDevices} />
         {headerExtra}
         {onToggleCollapsed && (
-          <Tip label={collapseTitle ?? (collapsed ? 'Expand terminal' : 'Collapse terminal')} shortcut={collapseShortcut}>
-            <button data-slot="action-button" data-variant="ghost"
+
+            <IconButton
               type="button"
               onClick={onToggleCollapsed}
-              className="inline-flex size-6 items-center justify-center rounded text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100 flex-shrink-0"
-              aria-label={collapseTitle ?? (collapsed ? 'Expand terminal' : 'Collapse terminal')}
+              label={collapseTitle ?? (collapsed ? 'Expand terminal' : 'Collapse terminal')}
+              tooltip={collapseTitle ?? (collapsed ? 'Expand terminal' : 'Collapse terminal')}
+              shortcut={collapseShortcut}
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center justify-center flex-shrink-0"
             >
               {collapsed ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-            </button>
-          </Tip>
+            </IconButton>
+
         )}
       </div>
 
@@ -207,13 +216,15 @@ export function ExecutionTerminalPanel({
               <>
                 <span className="text-zinc-300">Couldn&apos;t start terminal</span>
                 <span className="max-w-md text-zinc-500">{createErrorMessage}</span>
-                <button data-slot="action-button"
+                <Button
                   type="button"
                   onClick={handleNew}
-                  className="mt-1 rounded border border-zinc-700 bg-zinc-800 px-3 py-1 text-[11px] text-zinc-100 hover:bg-zinc-700"
+                  variant="secondary"
+                  size="sm"
+                  className="mt-1"
                 >
                   Retry
-                </button>
+                </Button>
               </>
             ) : createTerminal.isPending || isLoading ? (
               <span>Starting terminal…</span>
@@ -263,27 +274,30 @@ function TerminalTab({ label, active, onActivate, onClose }: TerminalTabProps) {
         active ? 'bg-[#0b0b0c] text-zinc-100' : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100',
       )}
     >
-      <button
+      <Button
         type="button"
         onClick={onActivate}
-        className="flex items-center gap-1.5 px-2 py-1"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1.5"
       >
         <TerminalIcon size={11} />
         <span>{label}</span>
-      </button>
-      <Tip label="Close terminal">
-        <button data-slot="action-button" data-variant="ghost"
+      </Button>
+
+        <IconButton
           type="button"
           onClick={onClose}
-          className={cn(
-            'mr-1 inline-flex size-3.5 items-center justify-center rounded text-zinc-500 hover:bg-zinc-700 hover:text-zinc-100',
-            !active && 'opacity-0 group-hover:opacity-100',
-          )}
-          aria-label="Close terminal"
+          label="Close terminal"
+          tooltip="Close terminal"
+          variant="ghost"
+          size="sm"
+          reveal
+          className="mr-1 inline-flex items-center justify-center"
         >
           <X size={9} />
-        </button>
-      </Tip>
+        </IconButton>
+
     </div>
   );
 }

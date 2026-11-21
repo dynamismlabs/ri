@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import type { ReactElement, ReactNode, Ref, RefObject } from 'react';
 import { Plus } from 'lucide-react';
 import { Tip } from '@/components/ui/tip';
@@ -52,16 +53,18 @@ export function AgentChatsFlyout({
             {name} chats
           </span>
         </Tip>
-        <Tip label="New chat">
-          <button
+
+          <IconButton
             type="button"
             onClick={onNewChat}
-            aria-label={`New chat with ${name}`}
-            className="rounded bg-primary p-1 text-primary-foreground transition-opacity hover:opacity-90"
+            label={`New chat with ${name}`}
+            tooltip="New chat"
+            variant="primary"
+            size="md"
           >
             <Plus size={12} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </div>
       <SessionHoverProvider disabled={!previews}>
         <nav aria-label={`${name} chats`} className="min-h-0 flex-1 overflow-y-auto px-1 py-1.5">

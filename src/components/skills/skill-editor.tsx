@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
 import { SKILLS_KEY } from '@/hooks/use-skills';
 import { getAuthToken } from '@/lib/api/client';
@@ -97,24 +98,44 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
           )}
           {recovery && <div role="alert" className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
             <p>A retained draft is available for this skill. It has not been sent.</p>
-            <div className="flex gap-3">{!readOnly && <button className="underline" onClick={() => saver.restore()}>Restore draft</button>}<button className="underline" onClick={() => saver.discardRecovery()}>Discard draft</button></div>
+            <div className="flex gap-3">{!readOnly && <Button
+              onClick={() => saver.restore()}
+              variant="link"
+              size="xs"
+            >Restore draft</Button>}<Button
+              onClick={() => saver.discardRecovery()}
+              variant="link"
+              size="xs"
+            >Discard draft</Button></div>
           </div>}
           {conflict && (
             <div className="flex flex-wrap items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11.5px] text-amber-700 dark:text-amber-300">
               <AlertTriangle size={14} className="shrink-0" />
               <span className="flex-1">The skill changed while you were typing. Nothing was overwritten.</span>
-              <button onClick={takeTheirs} className="rounded-md px-2 py-1 font-medium hover:bg-amber-500/15">
+              <Button
+                onClick={takeTheirs}
+                variant="ghost"
+                size="xs"
+              >
                 Use the new version
-              </button>
-              <button onClick={keepMine} className="rounded-md px-2 py-1 font-medium hover:bg-amber-500/15">
+              </Button>
+              <Button
+                onClick={keepMine}
+                variant="ghost"
+                size="xs"
+              >
                 Keep mine
-              </button>
+              </Button>
             </div>
           )}
           {error && (
             <p className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-[11.5px] text-destructive">
               <AlertCircle size={14} className="mt-px shrink-0" />
-              <span>{error} <button className="underline" onClick={saveNow}>Try again</button></span>
+              <span>{error} <Button
+                onClick={saveNow}
+                variant="link"
+                size="xs"
+              >Try again</Button></span>
             </p>
           )}
           {(errors.length > 0 || warnings.length > 0) && (

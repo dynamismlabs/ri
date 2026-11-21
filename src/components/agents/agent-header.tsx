@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { ChevronLeft, GitBranch, Plus } from 'lucide-react';
 import { useAgentExecutions } from '@/hooks/use-agent';
 import { useRunOn } from '@/hooks/use-workspaces';
@@ -49,13 +51,15 @@ export function AgentHeader({
     <header className="@container flex-shrink-0 border-b border-border min-w-0">
       <div className="flex items-center gap-3 px-4 py-2 min-w-0">
       {onBack && (
-        <button
+        <IconButton
           onClick={onBack}
-          aria-label="Back"
-          className="p-1.5 -ml-2 rounded-md text-muted-foreground active:bg-muted/40 hover:text-foreground"
+          label="Back"
+          variant="secondary"
+          size="sm"
+          className="-ml-2"
         >
           <ChevronLeft size={20} />
-        </button>
+        </IconButton>
       )}
       <AgentIcon workspace={workspace} size="md" />
       <div className="min-w-0">
@@ -73,14 +77,16 @@ export function AgentHeader({
       {/* Beside the name, so it reads as this agent's action. The app-wide
           CREATE owns the top-right corner. */}
       {!archived && (
-        <button
+        <Button
           onClick={() => openLauncher(workspace.id)}
-          className="flex flex-shrink-0 items-center gap-1.5 h-7 px-2.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"
           aria-label="New chat"
+          variant="primary"
+          size="sm"
+          className="flex flex-shrink-0 items-center gap-1.5"
         >
           <Plus size={12} strokeWidth={2.5} />
           <span className="hidden @[520px]:inline">New chat</span>
-        </button>
+        </Button>
       )}
 
       <div className="flex-1" />

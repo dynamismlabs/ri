@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppViewController } from '@ri/mcp-apps-host';
 import { Loader2, PanelRightOpen, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { trpcClient } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/router';
 import { registerConnectedContext, selectConnectedContext, setConnectedContextContent, type ContextBlock } from '@/lib/client/mcp-app-context';
@@ -114,16 +114,36 @@ export function ConnectedView({captureId, chatId, expanded = false, onClose, app
   return <section aria-label="Interactive app result" className={`${expanded ? 'h-full' : 'my-3 overflow-hidden rounded-xl border border-border'} flex flex-col bg-background`}>
     <div className={`${repeatsName ? 'hidden' : 'flex'} items-center gap-2 border-b border-border/60 px-3 py-2`}>
       <span className="min-w-0 flex-1 truncate text-xs font-medium">{query.data?.title ?? 'Interactive result'}</span>
-      {chatId && companion && !expanded && !moved && canExpand && <Button size="xs" variant="ghost" onClick={() => companion.open(captureId)}><PanelRightOpen size={13}/>Open beside chat</Button>}
-      {onClose && <Button size="xs" variant="ghost" onClick={onClose}><X size={13}/>Close</Button>}
+      {chatId && companion && !expanded && !moved && canExpand && <Button
+        onClick={() => companion.open(captureId)}
+        variant="ghost"
+        size="xs"
+      ><PanelRightOpen size={13}/>Open beside chat</Button>}
+      {onClose && <Button
+        onClick={onClose}
+        variant="ghost"
+        size="xs"
+      ><X size={13}/>Close</Button>}
     </div>
-    {moved && <p className="px-3 py-4 text-xs text-muted-foreground">Open beside this chat.{canInline && <> <button className="text-primary underline" onClick={() => companion?.open(null)}>Show inline</button></>}</p>}
+    {moved && <p className="px-3 py-4 text-xs text-muted-foreground">Open beside this chat.{canInline && <> <Button
+      onClick={() => companion?.open(null)}
+      variant="link"
+      size="sm"
+    >Show inline</Button></>}</p>}
     {!moved && !expanded && !canInline && <p className="px-3 py-4 text-xs text-muted-foreground">This app shows beside the chat.</p>}
     {/* A full-screen-only view still mounts here, hidden, so opening it beside the chat keeps its state. */}
     <div ref={setInlineMount} className={moved || (!expanded && !canInline) ? 'hidden' : 'flex min-h-0 flex-1 flex-col'}/>
-    {container && createPortal(failure ? <div role="alert" className="space-y-2 p-4 text-sm text-muted-foreground"><p>{failure.message}</p><Button size="xs" variant="outline" onClick={() => {void query.refetch(); void access.refetch();}}>Try again</Button></div>
+    {container && createPortal(failure ? <div role="alert" className="space-y-2 p-4 text-sm text-muted-foreground"><p>{failure.message}</p><Button
+      onClick={() => {void query.refetch(); void access.refetch();}}
+      variant="secondary"
+      size="xs"
+    >Try again</Button></div>
       : query.data?.resource ? <MountedView key={query.data.id} view={query.data} expanded={expanded || !!moved} deepLink={deepLink} onExpand={mode => companion?.open(mode === 'inline' ? null : captureId)} />
-      : query.data ? <div className="space-y-3 p-4 text-sm"><p className="text-muted-foreground">{query.data.unsupported ?? 'This result has no available interface.'}</p>{query.data.result.content.flatMap((item, index) => item.type === 'text' ? [<p key={index} className="whitespace-pre-wrap [overflow-wrap:anywhere]">{item.text}</p>] : [])}{query.data.result.structuredContent != null && <details><summary className="cursor-pointer text-xs text-muted-foreground">Result data</summary><pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(query.data.result.structuredContent, null, 2).slice(0, 64_000)}</pre></details>}<Button size="xs" variant="outline" onClick={() => void query.refetch()}>Try again</Button></div>
+      : query.data ? <div className="space-y-3 p-4 text-sm"><p className="text-muted-foreground">{query.data.unsupported ?? 'This result has no available interface.'}</p>{query.data.result.content.flatMap((item, index) => item.type === 'text' ? [<p key={index} className="whitespace-pre-wrap [overflow-wrap:anywhere]">{item.text}</p>] : [])}{query.data.result.structuredContent != null && <details><summary className="cursor-pointer text-xs text-muted-foreground">Result data</summary><pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(query.data.result.structuredContent, null, 2).slice(0, 64_000)}</pre></details>}<Button
+        onClick={() => void query.refetch()}
+        variant="secondary"
+        size="xs"
+      >Try again</Button></div>
       : <p role="status" className="flex items-center gap-2 p-4 text-xs text-muted-foreground"><Loader2 size={14} className="animate-spin"/>Opening app…</p>, container)}
   </section>;
 }
@@ -138,7 +158,17 @@ function ApprovalCard({pending}: {pending: Pending}) {
   return <div role="alertdialog" aria-label="App operation approval" className="absolute inset-x-0 top-0 z-20 space-y-2 border-b border-amber-500/30 bg-amber-50 p-3 text-xs shadow-md dark:bg-amber-950">
     <p className="font-medium">Allow this app operation?</p>
     <pre className="max-h-32 overflow-auto whitespace-pre-wrap">{JSON.stringify(pending.preview, null, 2)}</pre>
-    <div className="flex gap-2"><Button size="xs" disabled={!armed} onClick={() => pending.finish(true)}>Allow once</Button><Button size="xs" variant="outline" disabled={!armed} onClick={() => pending.finish(false)}>Decline</Button></div>
+    <div className="flex gap-2"><Button
+      disabled={!armed}
+      onClick={() => pending.finish(true)}
+      variant="primary"
+      size="md"
+    >Allow once</Button><Button
+      disabled={!armed}
+      onClick={() => pending.finish(false)}
+      variant="secondary"
+      size="xs"
+    >Decline</Button></div>
   </div>;
 }
 /** The person decides whether a file the app handed Ri is saved (`ui/download-file`). */
@@ -147,7 +177,17 @@ function SaveCard({app, pending}: {app: string; pending: PendingSave}) {
   useEffect(() => { const timer = setTimeout(() => setArmed(true), APPROVAL_ARM_MS); return () => clearTimeout(timer); }, []);
   return <div role="alertdialog" aria-label="Save a file from this app" className="absolute inset-x-0 top-0 z-20 space-y-2 border-b border-border bg-card p-3 text-xs shadow-md">
     <p><span className="font-medium">{app}</span> wants to save <span className="break-all font-medium">{pending.file.name}</span> ({fileSizeLabel(pending.file.bytes.byteLength)}).</p>
-    <div className="flex gap-2"><Button size="xs" disabled={!armed} onClick={() => pending.finish(true)}>Save</Button><Button size="xs" variant="outline" disabled={!armed} onClick={() => pending.finish(false)}>Don’t save</Button></div>
+    <div className="flex gap-2"><Button
+      disabled={!armed}
+      onClick={() => pending.finish(true)}
+      variant="primary"
+      size="md"
+    >Save</Button><Button
+      disabled={!armed}
+      onClick={() => pending.finish(false)}
+      variant="secondary"
+      size="xs"
+    >Don’t save</Button></div>
   </div>;
 }
 function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expanded: boolean; deepLink?: string; onExpand: (mode: 'inline' | 'fullscreen' | 'pip') => void}) {
@@ -347,7 +387,13 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
     {pending && <ApprovalCard key={pending.ids.join(',')} pending={pending} />}
     {saving && !pending && <SaveCard app={view.app} pending={saving} />}
     {error && <p role="alert" className="border-b border-border p-3 text-xs text-destructive">{error}</p>}
-    {notice && <p ref={noticeRef} role="status" className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[11px] text-muted-foreground"><span className="min-w-0 flex-1">{notice}</span><button type="button" className="shrink-0 hover:text-foreground" onClick={dismissNotice}>Dismiss</button></p>}
+    {notice && <p ref={noticeRef} role="status" className="flex items-center gap-2 border-b border-border px-3 py-1.5 text-[11px] text-muted-foreground"><span className="min-w-0 flex-1">{notice}</span><Button
+      type="button"
+      onClick={dismissNotice}
+      variant="ghost"
+      size="sm"
+      className="shrink-0"
+    >Dismiss</Button></p>}
     {!ready && !error && <p role="status" className="absolute left-3 top-3 text-xs text-muted-foreground">Loading interface…</p>}
     <ConnectedViewForms viewId={view.id} />
     {/* Inline, the frame is exactly the height the view reports (the host clamps it to 160 to 900 px), capped

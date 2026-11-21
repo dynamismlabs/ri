@@ -12,7 +12,7 @@ import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type Reac
 import dynamic from 'next/dynamic';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Loader2, Play, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -81,7 +81,11 @@ function LoadedSettings({ serverId, name }: { serverId: string; name: string }) 
     {settings.isPending && <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={12} className="animate-spin" />Loading settings from {name}…</p>}
     {settings.isError && <div role="alert" className="space-y-2">
       <p className="flex items-start gap-1.5 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{errorText(settings.error, 'The settings could not load.')}</p>
-      <Button size="xs" variant="outline" onClick={() => void settings.refetch()}><RefreshCw size={12} />Try again</Button>
+      <Button
+        onClick={() => void settings.refetch()}
+        variant="secondary"
+        size="xs"
+      ><RefreshCw size={12} />Try again</Button>
     </div>}
     {data && <McpSettingsGroups serverId={serverId} view={data} saving={saving} errors={errors} entered={entered} onSave={save}
       onToolDone={() => void queryClient.invalidateQueries({ queryKey: options.queryKey })} />}
@@ -188,7 +192,13 @@ function SettingsTool({ serverId, item, onDone }: { serverId: string; item: Extr
       {!item.available && <p className="text-[11px] text-muted-foreground">This server no longer offers this tool.</p>}
       {reply && <p role={reply.ok ? 'status' : 'alert'} className={cn('whitespace-pre-wrap text-[11px] leading-normal [overflow-wrap:anywhere]', reply.ok ? 'text-foreground' : 'text-destructive')}>{reply.text}</p>}
     </div>
-    <Button size="xs" variant="outline" className="shrink-0 self-start text-xs @md:ml-auto" disabled={!item.available || run.isPending} onClick={() => void click()}>
+    <Button
+      disabled={!item.available || run.isPending}
+      onClick={() => void click()}
+      variant="secondary"
+      size="xs"
+      className="shrink-0 self-start @md:ml-auto"
+    >
       {run.isPending ? <Loader2 size={12} className="animate-spin" /> : item.app ? <AppWindow size={12} /> : <Play size={12} />}{item.title}
     </Button>
     {open && <SettingsAppDialog serverId={serverId} tool={item.tool} title={item.title} onClose={() => { setOpen(false); onDone?.(); }} />}
@@ -271,11 +281,26 @@ function SettingsAppDialog({ serverId, tool, title, onClose }: { serverId: strin
   else if (state.kind === 'approval') body = <div role="group" aria-label={`Allow ${title} to open`} className="m-4 space-y-3 rounded-xl bg-amber-500/10 p-4 text-sm">
     <p>Allow {title} to open?</p>
     {state.preview != null && <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(state.preview, null, 2)}</pre>}
-    <div className="flex gap-2"><Button size="sm" disabled={busy} onClick={() => void decide(true)}>Allow once</Button><Button size="sm" variant="ghost" disabled={busy} onClick={() => void decide(false)}>Decline</Button></div>
+    <div className="flex gap-2"><Button
+      disabled={busy}
+      onClick={() => void decide(true)}
+      variant="primary"
+      size="md"
+    >Allow once</Button><Button
+      disabled={busy}
+      onClick={() => void decide(false)}
+      variant="ghost"
+      size="sm"
+    >Decline</Button></div>
   </div>;
   else body = <div role="alert" className="space-y-3 p-6 text-sm">
     <p className="whitespace-pre-wrap text-muted-foreground [overflow-wrap:anywhere]">{state.message}</p>
-    <Button size="sm" variant="outline" disabled={busy} onClick={() => void start()}>Try again</Button>
+    <Button
+      disabled={busy}
+      onClick={() => void start()}
+      variant="secondary"
+      size="sm"
+    >Try again</Button>
   </div>;
   return <Dialog open onOpenChange={next => { if (!next) onClose(); }}>
     <DialogContent className="flex h-[min(85vh,760px)] max-w-[min(960px,calc(100%-2rem))] flex-col gap-3 p-4 sm:max-w-[min(960px,calc(100%-2rem))]">

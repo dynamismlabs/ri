@@ -16,6 +16,7 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
   return (
     <StatusPill
       label="Background tasks"
+      tone="working"
       count={count}
       icon={<Boxes aria-hidden size={13} className="text-sky-500" />}
       accentClass="text-sky-600 dark:text-sky-400"

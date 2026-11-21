@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { trpc } from '@/lib/trpc/client';
 import { useExecutionRuntimeScope } from '@/components/home/execution-runtime-context';
 
@@ -76,14 +78,16 @@ export function ModelList({
         />
       ))}
       {onManageModels && (
-        <button data-slot="action-button"
+        <Button
           type="button"
           onClick={onManageModels}
-          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-border px-2 py-1.5 text-[11px] font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          variant="secondary"
+          size="sm"
+          className="flex w-full items-center justify-center gap-1.5"
         >
           <Settings2 size={11} />
           Manage models
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -221,10 +225,12 @@ function ProviderGroup({
         {/* Always available, even with nothing hidden: this drawer is also
             where a model id gets typed in, and that has to stay reachable
             when the allowlist already shows everything the catalog knows. */}
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => setShowMore((open) => !open)}
-          className="mt-0.5 flex w-full items-center gap-1 rounded-md px-2 py-1 text-[10.5px] text-muted-foreground/70 transition-colors hover:bg-muted/40 hover:text-muted-foreground"
+          variant="ghost"
+          size="sm"
+          className="mt-0.5 flex w-full items-center gap-1"
         >
           <ChevronRight
             size={10}
@@ -235,7 +241,7 @@ function ProviderGroup({
             : hidden.length > 0
               ? selectionOnly ? `${hidden.length} more models` : `${hidden.length} more · pin a model ID`
               : selectionOnly ? 'More models' : 'Pin a model ID'}
-        </button>
+        </Button>
         {showMore && (
           <>
             {!selectionOnly && <PinModelInput
@@ -347,23 +353,20 @@ function ModelRow({
         </button>
       </Tip>
       {onRemove && (
-        <Tip label={`Unpin ${model.id}`}>
-          <button data-slot="action-button" data-variant="ghost"
+
+          <IconButton
             type="button"
             disabled={removePending}
             onClick={onRemove}
-            aria-label={`Unpin ${model.id}`}
-            // Visible without hovering: a pin is the one row here the user has to
-            // be able to undo, and hover-only affordances don't exist on touch.
-            className={cn(
-              'absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground/50 transition-opacity',
-              'hover:bg-muted hover:text-foreground group-hover/row:text-muted-foreground',
-              removePending && 'text-muted-foreground',
-            )}
+            label={`Unpin ${model.id}`}
+            tooltip={`Unpin ${model.id}`}
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 -translate-y-1/2"
           >
             {removePending ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
-          </button>
-        </Tip>
+          </IconButton>
+
       )}
     </div>
   );

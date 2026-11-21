@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { DocumentChatHandle } from '@/components/ai-elements/slideout-chat';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
 import { EntityBriefCard } from '@/components/entities/entity-brief-card';
@@ -143,12 +144,14 @@ export function EntityAgentView({
               <p className="mt-1 text-[11px] text-muted-foreground/80">
                 {apiErrorStatus(chat.error) !== undefined ? apiErrorText(chat.error) : 'The agent may not be set up yet.'}
               </p>
-              <button
+              <Button
                 onClick={() => chat.refetch()}
-                className="mt-3 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                variant="ghost"
+                size="sm"
+                className="mt-3 inline-flex items-center gap-1"
               >
                 <RefreshCw size={11} /> Retry
-              </button>
+              </Button>
             </div>
           </div>
         ) : (

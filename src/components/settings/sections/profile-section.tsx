@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
 import {
@@ -128,21 +129,23 @@ export function ProfileSection() {
           <IdentityEditor draft={identity} onChange={setAssistantDraft} onSubmit={() => void commitIdentity()} />
           {identityDirty && (
             <div className="mt-3 flex items-center justify-end gap-1.5">
-              <button data-slot="action-button" data-variant="ghost"
+              <Button
                 type="button"
                 onClick={() => setAssistantDraft(null)}
-                className="rounded-md px-2.5 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                variant="ghost"
+                size="sm"
               >
                 Reset
-              </button>
-              <button data-slot="action-button" data-variant="primary"
+              </Button>
+              <Button
                 type="button"
                 onClick={() => void commitIdentity()}
                 disabled={savingIdentity}
-                className="rounded-md bg-primary px-3 py-1 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                variant="primary"
+                size="md"
               >
                 Save
-              </button>
+              </Button>
             </div>
           )}
         </div>

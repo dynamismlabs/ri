@@ -5,7 +5,7 @@ import { AlertCircle, CheckCircle2, Search, Server } from 'lucide-react';
 import { trpcClient } from '@/lib/trpc/client';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 import { setSettingsAnchor, useSettingsStore } from '@/components/settings/settings-store';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -180,7 +180,12 @@ export function McpServersSection({ active, navigation }: {
 
   return <div ref={rootRef} className="@container space-y-5">
     {pendingOAuth && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-xs"><span>Finish connecting in your browser.</span>
-      <Button size="xs" variant="outline" disabled={busy} onClick={() => run(async () => { await trpcClient.desktop.cancelOAuth.mutate({ body: { id: pendingOAuth } }); setPendingOAuth(null); setAwaitingServer(null); })}>Cancel</Button></div>}
+      <Button
+        disabled={busy}
+        onClick={() => run(async () => { await trpcClient.desktop.cancelOAuth.mutate({ body: { id: pendingOAuth } }); setPendingOAuth(null); setAwaitingServer(null); })}
+        variant="secondary"
+        size="xs"
+      >Cancel</Button></div>}
     {banner && <div role="status" className="flex items-start gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400"><CheckCircle2 size={15} className="shrink-0" /><p>{banner}</p></div>}
     {error && <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-3 text-xs text-destructive"><AlertCircle size={15} className="shrink-0" /><p>{error}</p></div>}
     {view.kind === 'new' ? <McpServerForm form={form} detection={detection} busy={busy} onSubmit={add} onBack={back}

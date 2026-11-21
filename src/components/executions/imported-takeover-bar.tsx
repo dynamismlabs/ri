@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { Loader2, Terminal } from 'lucide-react';
 import { useTakeOverImport } from '@/hooks/use-execution';
 
@@ -52,15 +53,17 @@ export function ImportedTakeoverBar({
             </p>
           )}
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => takeOver.mutate()}
           disabled={takeOver.isPending}
-          className="shrink-0 flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1.5 text-[11.5px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
+          variant="primary"
+          size="md"
+          className="shrink-0 flex items-center gap-1.5"
         >
           {takeOver.isPending && <Loader2 size={11} className="animate-spin" />}
           {takeOver.isPending ? 'Continuing…' : 'Continue here'}
-        </button>
+        </Button>
       </div>
     </div>
   );

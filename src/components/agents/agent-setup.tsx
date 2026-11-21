@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { EmojiPicker } from '@/components/shared/emoji-picker';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
@@ -410,7 +412,12 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               inheritedDefaults={null}
               onChange={(value) => set('reviewDefaults', Object.keys(value).length ? value : null)}
             />
-            {form.reviewDefaults && <button type="button" onClick={() => set('reviewDefaults', null)} className="text-xs text-primary hover:underline">Reset reviewer to normal settings</button>}
+            {form.reviewDefaults && <Button
+              type="button"
+              onClick={() => set('reviewDefaults', null)}
+              variant="link"
+              size="md"
+            >Reset reviewer to normal settings</Button>}
             <label className="flex items-start justify-between gap-3 cursor-pointer">
               <span className="text-[12px] text-muted-foreground leading-relaxed">
                 Review before handoff
@@ -507,10 +514,16 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
 
           {workspace.status !== 'archived' && (
             <div className="pt-2 border-t border-border/60">
-              <button onClick={handleArchive} className="flex items-center gap-1.5 text-[11px] text-destructive hover:underline">
+              <Button
+                onClick={handleArchive}
+                variant="link"
+                size="md"
+                tone="danger"
+                className="flex items-center gap-1.5"
+              >
                 <Archive size={11} />
                 Archive agent
-              </button>
+              </Button>
             </div>
           )}
         </fieldset>
@@ -521,7 +534,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
           <span className="mr-auto text-[11px] text-muted-foreground" role={saveError ? 'alert' : undefined}>
             {saveError ? 'Could not save. Your changes are still here. Try again.' : saving ? 'Saving...' : 'Unsaved changes'}
           </span>
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             onClick={() => {
               setSavedWorkspace(workspace);
               setPendingWorkspace(null);
@@ -530,18 +543,21 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               setGuidanceFeedback(null);
             }}
             disabled={saving || update.isPending}
-            className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
+            variant="ghost"
+            size="md"
           >
             Discard
-          </button>
-          <button data-slot="action-button" data-variant="primary"
+          </Button>
+          <Button
             onClick={save}
             disabled={saving || update.isPending || purposeOver || instructionsOver || guidanceOver}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40"
+            variant="primary"
+            size="md"
+            className="flex items-center gap-1.5"
           >
             {(saving || update.isPending) && <Loader2 size={13} className="animate-spin" />}
             Save
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -598,14 +614,18 @@ function Field({
 
 function RemoveBadge({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <IconButton
       type="button"
       onClick={onClick}
-      aria-label={label}
-      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      label={label}
+      variant="primary"
+      size="md"
+      tone="danger"
+      reveal
+      className="absolute -top-1.5 -right-1.5 flex items-center justify-center"
     >
       <Trash2 size={10} />
-    </button>
+    </IconButton>
   );
 }
 

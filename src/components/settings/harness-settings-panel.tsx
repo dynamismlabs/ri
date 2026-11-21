@@ -1,10 +1,11 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { HarnessPermissionNotice } from './harness-permission-notice';
 
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
@@ -168,8 +169,6 @@ function HarnessPane({
           </div>
           <Button
             type="button"
-            size="xs"
-            variant="outline"
             disabled={refreshing}
             onClick={() => {
               setRefreshing(true);
@@ -177,6 +176,8 @@ function HarnessPane({
                 toast.error('Could not refresh models', { description: error instanceof Error ? error.message : String(error) });
               }).finally(() => setRefreshing(false));
             }}
+            variant="secondary"
+            size="xs"
           >
             {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />}
             Refresh
@@ -294,7 +295,13 @@ function HarnessPane({
       )}
 
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-3">
-        <Button type="button" size="sm" disabled={save.isPending || !dirty || !defaultModel} onClick={() => void persist()}>
+        <Button
+          type="button"
+          disabled={save.isPending || !dirty || !defaultModel}
+          onClick={() => void persist()}
+          variant="primary"
+          size="md"
+        >
           {save.isPending && <Loader2 className="animate-spin" />}
           Save models
         </Button>
@@ -411,19 +418,21 @@ function VirtualModelChecklist({
                 </span>
               </label>
               {model.custom && (
-                <Tip label={`Unpin ${model.id}`}>
-                  <button data-slot="action-button" data-variant="ghost"
+
+                  <IconButton
                     type="button"
                     disabled={removing === model.id}
                     onClick={() => onRemove(model.id)}
-                    aria-label={`Unpin ${model.id}`}
-                    className="rounded p-1 text-muted-foreground/60 hover:bg-muted hover:text-foreground disabled:opacity-50"
+                    label={`Unpin ${model.id}`}
+                    tooltip={`Unpin ${model.id}`}
+                    variant="ghost"
+                    size="sm"
                   >
                     {removing === model.id
                       ? <Loader2 size={11} className="animate-spin" />
                       : <X size={11} />}
-                  </button>
-                </Tip>
+                  </IconButton>
+
               )}
             </div>
           );

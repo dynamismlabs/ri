@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Loader2,
@@ -149,15 +150,17 @@ export function ConflictView({ source, path }: ConflictViewProps) {
             contents and mark it resolved, or edit it in Current mode first.
           </p>
         </div>
-        <button
+        <Button
           type="button"
           onClick={onResolve}
           disabled={resolve.isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="inline-flex items-center gap-1.5"
         >
           {resolve.isPending ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
           Mark resolved
-        </button>
+        </Button>
       </div>
     );
   }
@@ -182,30 +185,34 @@ export function ConflictView({ source, path }: ConflictViewProps) {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <button
+          <Button
             type="button"
             onClick={() => acceptAll('current')}
-            className="rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             All current
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={() => acceptAll('incoming')}
-            className="rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             All incoming
-          </button>
+          </Button>
           <Tip label={allResolved ? 'Save the resolution and mark resolved' : 'Resolve every conflict first'}>
-            <button
+            <Button
               type="button"
               onClick={onResolve}
               disabled={!allResolved || resolve.isPending}
-              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {resolve.isPending ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
               Resolve file
-            </button>
+            </Button>
           </Tip>
         </div>
       </div>
@@ -312,14 +319,16 @@ function ConflictHunk({
                   ? 'Using incoming change'
                   : 'Using both changes'}
             </span>
-            <button
+            <Button
               type="button"
               onClick={() => onChoose(null)}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center gap-1"
             >
               <Undo2 size={10} />
               Undo
-            </button>
+            </Button>
           </div>
           <LineRows lines={resolvedLines(block, resolution)} tone="resolved" />
         </div>
@@ -338,19 +347,15 @@ function ChoiceButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <Button
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={cn(
-        'rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors',
-        active
-          ? 'bg-primary text-primary-foreground'
-          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-      )}
+      variant="secondary"
+      size="sm"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { SkillLibrary } from '@/components/skills/skill-library';
 import { Loader2 } from 'lucide-react';
 import { useSkills } from '@/hooks/use-skills';
@@ -42,9 +43,13 @@ function PersonalAgentSkills({ workspace }: { workspace: WorkspaceRecord }) {
           Skills in this project&apos;s folder. Its chats and executions use them, and anyone who pulls the repo gets
           them once they&apos;re committed. It also uses {shared === 1 ? 'your 1 Ri and global skill' : `your ${shared} Ri and global skills`}
           {' '}(see{' '}
-          <button onClick={() => openSettings('plugins', { anchor: 'skills' })} className="font-medium text-primary hover:underline">
+          <Button
+            onClick={() => openSettings('plugins', { anchor: 'skills' })}
+            variant="link"
+            size="sm"
+          >
             Plugins
-          </button>
+          </Button>
           ).
         </p>
       </div>

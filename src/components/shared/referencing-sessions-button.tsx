@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useWorkNavigation } from '@/contexts/work-context';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
@@ -45,17 +46,16 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
         <Tip label={`Referenced in ${count} session${count === 1 ? '' : 's'}`}>
-          <button
+          <Button
             type="button"
-            className={cn(
-              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium',
-              'text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors',
-            )}
             aria-label={`${count} sessions reference this`}
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             <LinkIcon size={11} />
             <span>{count}</span>
-          </button>
+          </Button>
         </Tip>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>

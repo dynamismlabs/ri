@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * The TopHud next-boundary button — the calendar's ambient layer, present on
  * every surface including ExecutionView. The label IS the glance ("Standup in
@@ -56,14 +57,16 @@ export function HudDayButton() {
       <Popover open={inviteOpen} onOpenChange={setInviteOpen}>
         <PopoverTrigger asChild>
           <Tip label="Connect your calendar" onlyWhenTextHidden>
-            <button data-slot="action-button"
+            <Button
               type="button"
               aria-label="Connect your calendar"
-              className="flex min-w-0 max-w-full items-center gap-1.5 h-7 px-2 whitespace-nowrap rounded-lg border border-dashed border-border text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+              variant="secondary"
+              size="sm"
+              className="flex min-w-0 max-w-full items-center gap-1.5"
             >
               <Calendar size={12} className="shrink-0" />
               <span className="truncate">Connect <span className="hud-calendar-invite-detail">your </span>calendar</span>
-            </button>
+            </Button>
           </Tip>
         </PopoverTrigger>
         <PopoverContent align="end" sideOffset={6} className="w-72 p-3">
@@ -74,26 +77,28 @@ export function HudDayButton() {
             Read-only.
           </p>
           <div className="mt-3 flex items-center gap-3">
-            <button
+            <Button
               type="button"
               onClick={() => {
                 setInviteOpen(false);
                 openSettings('plugins');
               }}
-              className="px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-medium hover:opacity-90 transition-opacity"
+              variant="secondary"
+              size="md"
             >
               Connect
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
               onClick={() => {
                 setInviteOpen(false);
                 dismissCalendarInvite();
               }}
-              className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              variant="ghost"
+              size="sm"
             >
               Don&apos;t show this again
-            </button>
+            </Button>
           </div>
         </PopoverContent>
       </Popover>

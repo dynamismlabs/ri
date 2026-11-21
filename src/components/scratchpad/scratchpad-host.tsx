@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Editor } from '@tiptap/core';
@@ -193,20 +194,34 @@ function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
             <Layers3 size={14} className="shrink-0 text-muted-foreground" />
             <h2 className="mr-auto shrink-0 text-xs font-semibold">Deck</h2>
             {!deckExpanded && (
-              <Tip label="Open in a slideout">
-                <button type="button" ref={deckExpandButton} onClick={() => setDeckExpanded(true)}
-                  aria-label="Expand the deck"
-                  className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+
+                <IconButton
+                  type="button"
+                  ref={deckExpandButton}
+                  onClick={() => setDeckExpanded(true)}
+                  label="Expand the deck"
+                  tooltip="Open in a slideout"
+                  variant="secondary"
+                  size="sm"
+                  className="flex shrink-0 items-center justify-center"
+                >
                   <Maximize2 size={14} />
-                </button>
-              </Tip>
+                </IconButton>
+
             )}
-            <Tip label="Close">
-              <button type="button" onClick={deckExpanded ? collapseDeck : () => closeScratchpad(true)} aria-label="Close the deck beside"
-                className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+
+              <IconButton
+                type="button"
+                onClick={deckExpanded ? collapseDeck : () => closeScratchpad(true)}
+                label="Close the deck beside"
+                tooltip="Close"
+                variant="secondary"
+                size="sm"
+                className="flex shrink-0 items-center justify-center"
+              >
                 <X size={15} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </header>
           <div className="min-h-0 flex-1">{deck}</div>
         </div>, deckContainer,
@@ -280,20 +295,18 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
   const open = wide ? columnOpen && view === 'scratchpad' : sheetOpen;
   if (!available) return null;
   const button = (
-    <button
+    <IconButton
       type="button"
-      aria-label="Scratchpad"
       aria-pressed={open}
       data-slot={variant === 'phone' ? 'icon-button' : undefined}
       onClick={() => (open ? closeScratchpad(wide) : openScratchpad(wide))}
-      className={cn(
-        'flex items-center justify-center border border-border text-muted-foreground transition-colors hover:text-foreground',
-        variant === 'phone' ? 'h-10 w-10 shrink-0 rounded-lg active:bg-muted/60' : 'rounded-lg p-1.5',
-        open && 'bg-muted/60 text-foreground',
-      )}
+      label="Scratchpad"
+      variant="secondary"
+      size="sm"
+      className={cn("flex items-center justify-center", (variant === 'phone' ? "shrink-0" : ''))}
     >
       <NotebookPen size={variant === 'phone' ? 16 : 14} />
-    </button>
+    </IconButton>
   );
   if (variant === 'phone') return button;
   return <Tip label="Scratchpad" shortcut={HOTKEYS.scratchpad.label}>{button}</Tip>;
@@ -311,19 +324,19 @@ export function DeckBesideButton() {
   if (!available || tier !== 'desktop') return null;
   const open = columnOpen && view === 'deck';
   return (
-    <Tip label="Deck beside this screen">
-      <button data-slot="action-button"
+
+      <IconButton
         type="button"
-        aria-label="Deck"
         aria-pressed={open}
         onClick={() => (nextDeckBesideAction(columnOpen, view) === 'close' ? closeScratchpad(true) : showDeckBeside())}
-        className={cn(
-          'flex items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:text-foreground',
-          open && 'bg-muted/60 text-foreground',
-        )}
+        label="Deck"
+        tooltip="Deck beside this screen"
+        variant="secondary"
+        size="sm"
+        className="flex items-center justify-center"
       >
         <Layers3 size={14} />
-      </button>
-    </Tip>
+      </IconButton>
+
   );
 }

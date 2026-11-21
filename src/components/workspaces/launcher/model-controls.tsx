@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { useState } from 'react';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { MakeDefaultRow } from '@/components/settings/make-default-row';
@@ -18,7 +19,7 @@ import { serviceTierForModel, serviceTierOptions } from '@/lib/harness/service-t
 import { readProviderSpeed } from '@/lib/executions/provider-speed';
 import { LauncherPopoverContent } from './launcher-popover';
 
-const TRIGGER_CLASS = 'inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40 disabled:pointer-events-none';
+
 
 export interface LaunchHarnessSelection {
   harness: ProviderId;
@@ -34,6 +35,7 @@ export interface LaunchHarnessSelection {
  * a new chat" confirm.
  */
 export function ModelControl({
+  size = "compact",
   selection,
   label,
   rememberedEfforts,
@@ -44,6 +46,7 @@ export function ModelControl({
   serviceTier,
   onEffortChange,
 }: {
+  size?: "compact" | "touch";
   selection: ModelSelection;
   label: string;
   /** The launch's variant and effort, carried along if it's made the default. */
@@ -92,16 +95,16 @@ export function ModelControl({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Tip label="Choose a model and adjust its settings">
-          <button
+          <ChipButton
             type="button"
-            data-slot="chip-button"
             aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
             disabled={disabled}
-            className={TRIGGER_CLASS}
+            variant="secondary"
+            size={size}
           >
             <HarnessMark id={selection.harness} />
             <ModelMenuLabel model={label} effort={effortLabel} variant={variantLabel} speed={speed ?? undefined} />
-          </button>
+          </ChipButton>
         </Tip>
       </PopoverTrigger>
       {/* Scrolling + height capping live in LauncherPopoverContent, which also

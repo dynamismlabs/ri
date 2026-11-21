@@ -4,10 +4,13 @@ import { useState, type ReactNode } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tip } from '@/components/ui/tip';
 import { cn } from '@/lib/utils';
+import { ChipButton } from '@/components/system/chip-button';
+import type { ButtonTone } from '@/components/system/button';
 
 interface StatusPillProps {
   label: string;
   count: number;
+  tone?: Exclude<ButtonTone, `mode-${string}`>;
   icon: ReactNode;
   accentClass: string;
   countBgClass: string;
@@ -21,42 +24,33 @@ interface StatusPillProps {
 export function StatusPill(props: StatusPillProps) {
   if (props.count === 0) {
     return (
-      <span
-        data-slot="chip-button" data-tone="status"
-        aria-label={`${props.label}: 0`}
-        className="flex items-center gap-1 px-1.5 h-[18px] rounded text-[10px] opacity-30 select-none"
-      >
-        <span className="flex items-center justify-center [&_svg]:size-[10px]">
+      <ChipButton asChild disabled>
+        <span aria-label={`${props.label}: 0`}>
           {props.icon}
+          <span className="font-mono tabular-nums">0</span>
         </span>
-        <span className="font-mono font-semibold tabular-nums text-muted-foreground">0</span>
-      </span>
+      </ChipButton>
     );
   }
   return <ActiveStatusPill {...props} />;
 }
 
-function ActiveStatusPill({ label, count, icon, accentClass, countBgClass, headerBgClass, action, footer, children }: StatusPillProps) {
+function ActiveStatusPill({ label, count, icon, tone = 'neutral', accentClass, countBgClass, headerBgClass, action, footer, children }: StatusPillProps) {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Tip label={label}>
-          <button
+          <ChipButton
             type="button"
-            data-slot="chip-button" data-tone="status"
+            tone="status"
+            status={tone}
             aria-label={`${label}: ${count}`}
-            className={cn(
-              'flex items-center gap-1 px-1.5 h-[18px] rounded text-[10px] transition-[filter]',
-              'hover:brightness-110 dark:hover:brightness-125',
-              'data-[state=open]:brightness-110 dark:data-[state=open]:brightness-125',
-              countBgClass,
-            )}
           >
             <span className="flex items-center justify-center [&_svg]:size-[10px]">{icon}</span>
             <span className="font-mono font-semibold tabular-nums">{count}</span>
-          </button>
+          </ChipButton>
         </Tip>
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={6} className="w-72 p-0 overflow-hidden">

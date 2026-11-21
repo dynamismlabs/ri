@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { Globe, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -89,15 +90,17 @@ export function PreviewSettingsPanel() {
             <p className="text-[11px] text-muted-foreground">
               Used when no explicit URL is pasted on an execution. <code className="rounded bg-muted px-1">{'{name}'}</code> is the preview name.
             </p>
-            <button data-slot="action-button" data-variant="primary"
+            <Button
               type="button"
               onClick={() => update.mutate({ manualTemplate: manualTemplate.trim() || null })}
               disabled={update.isPending}
-              className="flex items-center gap-1.5 rounded border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90 disabled:opacity-50"
+              variant="primary"
+              size="md"
+              className="flex items-center gap-1.5"
             >
               {update.isPending && <Loader2 size={12} className="animate-spin" />}
               Save
-            </button>
+            </Button>
           </div>
         )}
 

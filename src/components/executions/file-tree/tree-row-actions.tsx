@@ -1,4 +1,5 @@
 'use client';
+import { IconButton } from '@/components/system/icon-button';
 
 import {
   MoreHorizontal,
@@ -16,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+
 
 interface TreeRowActionsProps {
   kind: 'file' | 'dir';
@@ -58,20 +59,10 @@ export function TreeRowActions({
   const hasPathActions = !!(onCopyRelativePath || onCopyAbsolutePath || onReferenceInChat);
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-        // The chevron stays in DOM so layout doesn't shift, but is
-        // visually hidden until row hover OR menu open.
-        className={cn(
-          'inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-opacity shrink-0',
-          'data-[state=open]:opacity-100',
-          visible ? 'opacity-100' : 'opacity-0',
-        )}
-        aria-label="Row actions"
-      >
-        <MoreHorizontal size={12} />
+      <DropdownMenuTrigger asChild>
+        <IconButton label="Row actions" size="xs" reveal={!visible} onClick={event => event.stopPropagation()}>
+          <MoreHorizontal />
+        </IconButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4} className="min-w-44">
         {kind === 'dir' && onCreateFile && (

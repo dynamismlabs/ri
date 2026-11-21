@@ -1,5 +1,7 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { BACKGROUND_DOT, BACKGROUND_LABEL } from '@/components/workspaces/activity-style';
 import { InactiveFold } from '@/components/workspaces/inactive-fold';
@@ -361,13 +363,15 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
         <ChatCounts {...counts} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
+            <IconButton
               type="button"
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground active:bg-muted/60 transition-colors flex-shrink-0"
-              aria-label={`More for ${workspace.name}`}
+              label={`More for ${workspace.name}`}
+              variant="secondary"
+              size="touch"
+              className="flex items-center justify-center flex-shrink-0"
             >
               <MoreHorizontal size={18} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem onSelect={() => setPickingDevice(true)} className="gap-2 py-2.5 text-[14px]">
@@ -382,21 +386,25 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <button
+        <IconButton
           type="button"
           onClick={() => handleCreateExecution()}
           disabled={creating}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-primary active:bg-primary/10 transition-colors flex-shrink-0 disabled:opacity-40"
-          aria-label="New chat"
+          label="New chat"
+          variant="ghost"
+          size="touch"
+          className="flex items-center justify-center flex-shrink-0"
         >
           <Plus size={18} />
-        </button>
-        <button
+        </IconButton>
+        <IconButton
           type="button"
           onClick={toggle}
-          className="w-6 h-8 flex items-center justify-center flex-shrink-0"
-          aria-label={expanded ? `Hide chats in ${workspace.name}` : `Show chats in ${workspace.name}`}
           aria-expanded={expanded}
+          label={expanded ? `Hide chats in ${workspace.name}` : `Show chats in ${workspace.name}`}
+          variant="ghost"
+          size="touch"
+          className="flex items-center justify-center flex-shrink-0"
         >
           <ChevronRight
             size={16}
@@ -405,7 +413,7 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
               expanded && 'rotate-90',
             )}
           />
-        </button>
+        </IconButton>
       </div>
 
       <RunOnSheet
@@ -420,14 +428,16 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
       {expanded && (
         <div className="pl-5 pr-1 pb-2 space-y-0.5">
           {sessions.length + inactive.length === 0 ? (
-            <button
+            <Button
               type="button"
               onClick={() => handleCreateExecution()}
               disabled={creating}
-              className="ml-5 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-primary active:bg-primary/10 transition-colors disabled:opacity-40"
+              variant="ghost"
+              size="touch"
+              className="ml-5 flex items-center gap-1.5"
             >
               <Plus size={13} /> New chat
-            </button>
+            </Button>
           ) : (
             <>
               {sessions.map((s) => <MobileChatRow key={s.id} session={s} inactive={isInactive(s)} />)}
@@ -597,14 +607,16 @@ function EmptyWorkspaces({ onCreate }: { onCreate?: () => void }) {
       <p className="text-[11px] text-muted-foreground/70 mt-1 leading-relaxed">
         {onCreate ? 'Add one to get started.' : 'No agents have been set up here yet.'}
       </p>
-      {onCreate && <button
+      {onCreate && <Button
         type="button"
         onClick={onCreate}
-        className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium text-primary bg-primary/10 active:bg-primary/20 transition-colors"
+        variant="ghost"
+        size="touch"
+        className="mt-3 inline-flex items-center gap-1.5"
       >
         <Plus size={13} />
         New agent
-      </button>}
+      </Button>}
     </div>
   );
 }

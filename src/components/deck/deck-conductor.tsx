@@ -1,5 +1,7 @@
 "use client";
 
+import { ChipButton } from '@/components/system/chip-button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, RefreshCw, Clock, Check, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -29,12 +31,7 @@ function getUrgency(generatedAt: string | undefined, now: number): Urgency {
   return 'low';
 }
 
-const URGENCY_STYLES: Record<Urgency, string> = {
-  low: 'text-muted-foreground hover:text-foreground hover:bg-muted',
-  medium: 'text-foreground border border-border hover:bg-muted',
-  high: 'text-primary bg-primary/5 border border-primary/20 hover:bg-primary/10',
-  critical: 'bg-primary text-primary-foreground hover:bg-primary/90',
-};
+
 
 // ─── Component ──────────────────────────────────────────────────
 
@@ -119,12 +116,16 @@ export function DeckConductor({
         {/* Area filter dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 bg-card border border-border rounded-lg cursor-pointer hover:border-muted-foreground transition-all @max-[30rem]/conductor:gap-1 @max-[30rem]/conductor:px-2">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="flex items-center gap-1.5 @max-[30rem]/conductor:gap-1"
+            >
               <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest @max-[30rem]/conductor:tracking-wide">
                 {selectedArea ? selectedArea.name : 'All areas'}
               </span>
               <ChevronDown size={9} className="text-muted-foreground" />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
             <DropdownMenuItem
@@ -153,23 +154,16 @@ export function DeckConductor({
             : `${dueTodayCount} hard deadline${dueTodayCount === 1 ? '' : 's'} today`}
           side="bottom"
         >
-          <button
+          <ChipButton
             onClick={() => dueTodayCount > 0 && onFilterDueTodayChange(!filterDueToday)}
             disabled={dueTodayCount === 0}
             aria-pressed={filterDueToday}
-            data-slot="chip-button"
-            data-tone="attention"
-            className={cn(
-              'whitespace-nowrap px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase transition-all border @max-[30rem]/conductor:px-2',
-              filterDueToday
-                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                : dueTodayCount > 0
-                  ? 'bg-card text-muted-foreground border-border hover:border-muted-foreground cursor-pointer'
-                  : 'bg-card text-muted-foreground/30 border-border cursor-not-allowed'
-            )}
+            variant="secondary"
+            size="compact"
+            tone="attention"
           >
             Due today
-          </button>
+          </ChipButton>
         </Tip>
       </div>
 
@@ -177,21 +171,18 @@ export function DeckConductor({
         {/* Morning auto-refresh toggle (opt-in cron) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Tip label="Morning auto-refresh">
-              <button
-                aria-label="Morning auto-refresh"
-                data-slot="chip-button"
+
+              <IconButton
                 data-on={morning?.enabled || undefined}
-                className={cn(
-                  'flex items-center justify-center w-7 h-7 rounded-md border transition-colors',
-                  morning?.enabled
-                    ? 'text-primary bg-primary/5 border-primary/20'
-                    : 'text-muted-foreground border-border hover:border-muted-foreground',
-                )}
+                label="Morning auto-refresh"
+                tooltip="Morning auto-refresh"
+                variant="secondary"
+                size="xs"
+                className="flex items-center justify-center"
               >
                 <Clock size={12} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem onClick={toggleMorning} className="text-xs gap-2">
@@ -213,19 +204,15 @@ export function DeckConductor({
 
         {onReplan && (
           <Tip label="Generate New Deck" onlyWhenTextHidden>
-            <button
+            <ChipButton
               onClick={onReplan}
               aria-label="Generate New Deck"
-              data-slot="chip-button"
-              data-urgency={urgency}
-              className={cn(
-                'flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 text-[9px] font-bold rounded-md transition-colors @max-[30rem]/conductor:h-7 @max-[30rem]/conductor:px-2',
-                URGENCY_STYLES[urgency],
-              )}
+              variant={urgency === "critical" ? "primary" : urgency === "low" ? "ghost" : "secondary"}
+              size="compact"
             >
               <RefreshCw size={10} />
               <span className="@max-[30rem]/conductor:hidden">Generate New Deck</span>
-            </button>
+            </ChipButton>
           </Tip>
         )}
       </div>

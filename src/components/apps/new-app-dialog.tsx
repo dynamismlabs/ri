@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -102,15 +102,30 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
               </label>
             </div>
           ) : (
-            <button type="button" className="text-[11px] text-muted-foreground underline underline-offset-2" onClick={() => setShowSettings(true)}>
+            <Button
+              type="button"
+              onClick={() => setShowSettings(true)}
+              variant="link"
+              size="sm"
+            >
               Made in {settings.data?.appsDir ?? 'your apps folder'}. Change
-            </button>
+            </Button>
           )}
           {tools && !tools.git && tools.gitHelp && <p role="status" className="flex items-start gap-2 text-xs text-muted-foreground"><AlertCircle size={13} className="mt-0.5 shrink-0" />{tools.gitHelp}</p>}
           {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{error}</p>}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={busy || !name.trim() || !kitReady || tools?.git === false}>{busy && <Loader2 size={14} className="animate-spin" />}Create</Button>
+            <Button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              variant="ghost"
+              size="md"
+            >Cancel</Button>
+            <Button
+              type="submit"
+              disabled={busy || !name.trim() || !kitReady || tools?.git === false}
+              variant="primary"
+              size="md"
+            >{busy && <Loader2 size={14} className="animate-spin" />}Create</Button>
           </DialogFooter>
         </form>
       </DialogContent>

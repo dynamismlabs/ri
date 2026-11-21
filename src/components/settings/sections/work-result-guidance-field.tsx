@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useReducer } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
 import { WORK_RESULT_GUIDANCE_MAX } from '@/lib/instructions/preferences';
 
@@ -130,7 +130,12 @@ export function WorkResultGuidanceField() {
         <p id="work-result-guidance-limit" className="text-[11px] text-muted-foreground/60">
           {state.draft.length.toLocaleString()} / {WORK_RESULT_GUIDANCE_MAX.toLocaleString()} characters
         </p>
-        <Button size="sm" onClick={save} disabled={!state.loaded || !dirty || state.saving || tooLong}>
+        <Button
+          onClick={save}
+          disabled={!state.loaded || !dirty || state.saving || tooLong}
+          variant="primary"
+          size="md"
+        >
           {state.saving ? 'Saving...' : 'Save preferences'}
         </Button>
       </div>
@@ -145,7 +150,11 @@ export function WorkResultGuidanceField() {
       {loadError && !state.loaded && (
         <div className="flex items-center gap-2">
           <p role="alert" className="text-[11px] text-destructive">Could not load preferences.</p>
-          <Button size="xs" variant="outline" onClick={() => refetch()}>Retry</Button>
+          <Button
+            onClick={() => refetch()}
+            variant="secondary"
+            size="xs"
+          >Retry</Button>
         </div>
       )}
     </section>

@@ -7,7 +7,7 @@ import { trpc } from '@/lib/trpc/client';
 import { filePreviewUrl, fileSizeLabel, type FilePreviewSource } from '@/lib/files/preview-types';
 import type { FilePreviewData } from '@/lib/files/preview';
 import { AgentResponse } from '@/components/chat-ui/messages/agent-response';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { FileSkeleton } from '@/components/executions/skeletons';
 import { useSessionCookieReady } from '@/hooks/use-session-cookie-ready';
 
@@ -57,7 +57,17 @@ function TableView({ data }: { data: Extract<FilePreviewData, { kind: 'table' }>
   return <div className="flex h-full min-h-0 flex-col">
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2 text-xs">
       {data.sheets.length > 1 && <label className="flex min-w-0 items-center gap-2">Sheet<select aria-label="Sheet" value={sheet} onChange={event => setSheet(Number(event.target.value))} className="min-w-0 max-w-48 rounded border border-border bg-background p-1">{data.sheets.map((item, index) => <option key={index} value={index}>{item.name}</option>)}</select></label>}
-      {data.source !== undefined && <div role="group" aria-label="Table view" className="flex gap-1"><Button variant="ghost" size="xs" aria-pressed={!source} onClick={() => setSource(false)}>Table</Button><Button variant="ghost" size="xs" aria-pressed={source} onClick={() => setSource(true)}>Source</Button></div>}
+      {data.source !== undefined && <div role="group" aria-label="Table view" className="flex gap-1"><Button
+        aria-pressed={!source}
+        onClick={() => setSource(false)}
+        variant="ghost"
+        size="xs"
+      >Table</Button><Button
+        aria-pressed={source}
+        onClick={() => setSource(true)}
+        variant="ghost"
+        size="xs"
+      >Source</Button></div>}
       <span className="text-muted-foreground">{current?.rows.length ?? 0} rows · {columns} columns</span>
     </div>
     <div className="min-h-0 flex-1 overflow-auto">{source ? <pre tabIndex={0} aria-label="File source" className="whitespace-pre p-4 font-mono text-xs">{data.source}</pre>
@@ -75,5 +85,15 @@ function documentHtml(html: string) {
 
 function TextView({ data, source }: { data: Extract<FilePreviewData, { kind: 'text' }>; source: FilePreviewSource }) {
   const [raw, setRaw] = useState(false);
-  return <div className="flex h-full min-h-0 flex-col">{data.markdown && <div className="flex shrink-0 gap-1 border-b border-border p-2"><Button variant="ghost" size="xs" aria-pressed={!raw} onClick={() => setRaw(false)}>Rendered</Button><Button variant="ghost" size="xs" aria-pressed={raw} onClick={() => setRaw(true)}>Source</Button></div>}<div className="min-h-0 flex-1 overflow-auto">{data.markdown && !raw ? <div className="mx-auto max-w-3xl p-6"><AgentResponse mode="static" text={data.content} sessionId={source.kind === 'session' ? source.sessionId : undefined} fileBasePath={source.kind === 'session' ? source.path : undefined} /></div> : <pre tabIndex={0} aria-label="File source" className="whitespace-pre p-4 font-mono text-xs">{data.content}</pre>}</div>{data.truncated && <p role="status" className="shrink-0 border-t border-border p-3 text-xs text-muted-foreground">Showing part of this document. Download it to read everything.</p>}</div>;
+  return <div className="flex h-full min-h-0 flex-col">{data.markdown && <div className="flex shrink-0 gap-1 border-b border-border p-2"><Button
+    aria-pressed={!raw}
+    onClick={() => setRaw(false)}
+    variant="ghost"
+    size="xs"
+  >Rendered</Button><Button
+    aria-pressed={raw}
+    onClick={() => setRaw(true)}
+    variant="ghost"
+    size="xs"
+  >Source</Button></div>}<div className="min-h-0 flex-1 overflow-auto">{data.markdown && !raw ? <div className="mx-auto max-w-3xl p-6"><AgentResponse mode="static" text={data.content} sessionId={source.kind === 'session' ? source.sessionId : undefined} fileBasePath={source.kind === 'session' ? source.path : undefined} /></div> : <pre tabIndex={0} aria-label="File source" className="whitespace-pre p-4 font-mono text-xs">{data.content}</pre>}</div>{data.truncated && <p role="status" className="shrink-0 border-t border-border p-3 text-xs text-muted-foreground">Showing part of this document. Download it to read everything.</p>}</div>;
 }

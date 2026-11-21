@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { AppWindow, ExternalLink, ListTodo, Loader2, Moon, Pin, Plus } from 'lucide-react';
 import { useWorkNavigation, useWorkActivity } from '@/contexts/work-context';
@@ -63,13 +64,15 @@ export function AgentOverview({
               : `Start a chat in ${workspace.name}, or ask its main chat to start one for you.`}
           </p>
           {!archived && (
-            <button
+            <Button
               onClick={() => openLauncher(workspace.id)}
-              className="mt-3 inline-flex items-center gap-1.5 h-7 px-3 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90"
+              variant="primary"
+              size="md"
+              className="mt-3 inline-flex items-center gap-1.5"
             >
               <Plus size={12} strokeWidth={2.5} />
               New chat
-            </button>
+            </Button>
           )}
         </div>
       </div>

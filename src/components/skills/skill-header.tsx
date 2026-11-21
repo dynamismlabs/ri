@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { documentSaves } from '@/lib/client/document-saves';
 import { Archive, ChevronLeft, Copy, GitCommitHorizontal, Loader2, MoreHorizontal, ScrollText } from 'lucide-react';
@@ -76,13 +78,15 @@ export function SkillHeader({
     <header className="@container flex-shrink-0 min-w-0 border-b border-border">
       <div className="flex min-w-0 items-center gap-3 px-4 py-2">
         {onBack && (
-          <button
+          <IconButton
             onClick={onBack}
-            aria-label="Back"
-            className="-ml-2 rounded-md p-1.5 text-muted-foreground hover:text-foreground active:bg-muted/40"
+            label="Back"
+            variant="secondary"
+            size="sm"
+            className="-ml-2"
           >
             <ChevronLeft size={20} />
-          </button>
+          </IconButton>
         )}
         <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <ScrollText size={16} />
@@ -91,7 +95,7 @@ export function SkillHeader({
 
         {showCommit && (
           <Tip label="Commit only this skill's files. Other changes in the repo are left alone.">
-            <button
+            <Button
               onClick={() =>
                 commit.mutate(undefined, {
                   onSuccess: ({ commit: done }) =>
@@ -100,11 +104,13 @@ export function SkillHeader({
                 })
               }
               disabled={commit.isPending}
-              className="flex h-7 flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-2.5 text-[11px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              variant="primary"
+              size="sm"
+              className="flex flex-shrink-0 items-center gap-1.5"
             >
               {commit.isPending ? <Loader2 size={12} className="animate-spin" /> : <GitCommitHorizontal size={12} strokeWidth={2.5} />}
               {skill.git?.branch ? `Commit to ${skill.git.branch}` : 'Commit'}
-            </button>
+            </Button>
           </Tip>
         )}
 
@@ -115,12 +121,14 @@ export function SkillHeader({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              aria-label="More"
-              className="flex-shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            <IconButton
+              label="More"
+              variant="secondary"
+              size="sm"
+              className="flex-shrink-0"
             >
               <MoreHorizontal size={15} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem

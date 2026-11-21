@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * Read-only event details: time, attribution, location, join link, and a deep
  * link into the provider's own UI. Deliberately no edit affordances — event
@@ -78,26 +79,20 @@ export function EventPopoverContent({ event }: { event: CalendarEvent }) {
       {(event.joinUrl || event.sourceUrl) && (
         <div className="flex items-center gap-2 pt-1">
           {event.joinUrl && (
-            <a
-              href={event.joinUrl}
+            <Button asChild variant="primary" size="md" className="flex items-center gap-1.5"><a href={event.joinUrl}
               target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary text-primary-foreground text-[11px] font-medium hover:opacity-90 transition-opacity"
-            >
+              rel="noreferrer">
               <Video size={11} />
               Join
-            </a>
+            </a></Button>
           )}
           {event.sourceUrl && (
-            <a data-slot="action-button"
-              href={event.sourceUrl}
+            <Button asChild variant="secondary" size="sm" className="flex items-center gap-1.5"><a href={event.sourceUrl}
               target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-border text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-            >
+              rel="noreferrer">
               <ExternalLink size={11} />
               Open in {PROVIDER_LABEL[event.providerId]}
-            </a>
+            </a></Button>
           )}
         </div>
       )}

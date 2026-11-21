@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { useState } from 'react';
 import type { TriggerRecord } from '@/db/types';
 import { validateCronExpression } from '@/lib/scheduler/cron';
@@ -153,18 +154,18 @@ function DaysField({ days, onChange }: { days: Weekday[]; onChange: (days: Weekd
         {([1, 2, 3, 4, 5, 6, 0] as Weekday[]).map((day) => {
           const on = days.includes(day);
           return (
-            <button data-slot="action-button"
+            <ChipButton
               key={day}
               type="button"
               aria-pressed={on}
               aria-label={WEEKDAYS[day]}
               onClick={() => toggle(day)}
-              className={`h-9 w-11 rounded-md border text-[12px] font-medium transition-colors ${
-                on ? 'border-primary bg-primary/15 text-foreground' : 'border-border bg-card text-muted-foreground hover:text-foreground'
-              }`}
+              variant="secondary"
+              size="compact"
+              className="w-11"
             >
               {WEEKDAYS[day].slice(0, 3)}
-            </button>
+            </ChipButton>
           );
         })}
       </div>

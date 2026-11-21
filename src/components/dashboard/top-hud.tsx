@@ -1,5 +1,9 @@
 "use client";
 
+import { ButtonGroup } from '@/components/system/button-group';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { MessageSquare, Search, X } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useLatestExecutionId } from '@/hooks/use-latest-execution';
@@ -60,36 +64,37 @@ export function TopHud() {
 
           {closeLabel ? (
             <Tip label={closeLabel} shortcut={HOTKEYS.closeView.label} onlyWhenTextHidden>
-              <button
+              <Button
                 type="button"
                 onClick={goHome}
-                data-slot="hud-view-button"
-                data-variant="close"
-                className="flex shrink-0 items-center gap-1.5 h-7 px-1.5 rounded-lg border border-border bg-secondary text-foreground hover:bg-accent transition-colors"
                 aria-label={closeLabel}
+                variant="secondary"
+                size="sm"
+                className="flex shrink-0 items-center gap-1.5"
               >
                 <X size={12} />
                 <span className="hud-view-label text-[11px] font-medium">{closeLabel}</span>
                 <Kbd aria-hidden className="hud-shortcut ml-0.5 bg-background/60">
                   {HOTKEYS.closeView.label}
                 </Kbd>
-              </button>
+              </Button>
             </Tip>
           ) : latestExecutionId ? (
             <Tip label="Open latest chat" shortcut={HOTKEYS.closeView.label} onlyWhenTextHidden>
-              <button
+              <Button
                 type="button"
                 onClick={() => openExecution(latestExecutionId)}
-                data-slot="hud-view-button"
-                className="flex shrink-0 items-center gap-1.5 h-7 px-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 aria-label="Open latest chat"
+                variant="ghost"
+                size="sm"
+                className="flex shrink-0 items-center gap-1.5"
               >
                 <MessageSquare size={12} />
                 <span className="hud-view-label text-[11px] font-medium">Open latest chat</span>
                 <Kbd aria-hidden className="hud-shortcut">
                   {HOTKEYS.closeView.label}
                 </Kbd>
-              </button>
+              </Button>
             </Tip>
           ) : null}
 
@@ -100,21 +105,22 @@ export function TopHud() {
           {!team && <><div className="hud-calendar min-w-0"><HudDayButton /></div><BudgetWarningPill /></>}
 
           <div className="flex shrink-0 items-center gap-2">
-            {/* The page tools: no box of their own in classic (contents), one capsule
-                in the new look (docs/ui-system.md). */}
-            <div data-slot="hud-tools" className="contents">
-            <Tip label="Search tasks, notes and commands" shortcut={HOTKEYS.search.label}>
-              <button data-slot="action-button"
+            <ButtonGroup variant="toolbar">
+
+              <IconButton
                 type="button"
                 onClick={() => document.dispatchEvent(new CustomEvent('open-search'))}
-                className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Search"
+                label="Search"
+                tooltip="Search tasks, notes and commands"
+                shortcut={HOTKEYS.search.label}
+                variant="secondary"
+                size="sm"
               >
                 <Search size={14} />
-              </button>
-            </Tip>
+              </IconButton>
+
             {!team && <><DeckBesideButton /><ScratchpadButton /></>}
-            </div>
+            </ButtonGroup>
             <CreateMenu />
           </div>
         </div>

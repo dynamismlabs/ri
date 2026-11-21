@@ -113,7 +113,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           {opts?.content != null && <div className="min-w-0">{opts.content}</div>}
           <AlertDialogFooter>
             {opts?.secondaryAction && (
-              <Button
+              <Button size="md"
                 variant="ghost"
                 className="sm:mr-auto"
                 onClick={() => {
@@ -130,7 +130,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               {opts?.cancelLabel ?? 'Cancel'}
             </AlertDialogCancel>
             <AlertDialogAction
-              variant={destructive ? 'destructive' : 'default'}
+              variant={destructive ? 'destructive' : 'primary'}
               onClick={() => settle(true)}
             >
               {opts?.confirmLabel ?? 'Confirm'}

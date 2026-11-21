@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { Pause, Play, MessagesSquare, ChevronDown } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -25,7 +26,12 @@ function AvailableCoordinationControls({ sessionId }: { sessionId: string }) {
     <div className="min-w-0 flex-1 space-y-0.5 leading-4">
     {data.heldAt ? <span role="status" className="text-amber-700 dark:text-amber-400">Incoming agent messages paused{data.pending > 0 ? ` · ${data.pending} waiting` : ''}</span>
       : data.active.chatIds.length === 1 ? <ChatMessageLink sessionId={data.active.chatIds[0]} label="Working with" direction="outgoing" compact />
-      : data.active.chatIds.length > 1 ? <Popover><PopoverTrigger asChild><button type="button" className="inline-flex items-center gap-1 underline underline-offset-2"><MessagesSquare size={12} />Working with {data.active.chatIds.length} chats<ChevronDown size={11} /></button></PopoverTrigger><PopoverContent align="start" className="max-h-72 w-80 space-y-2 overflow-y-auto">{data.active.chatIds.map(id => <ChatMessageLink key={id} sessionId={id} label="Active chat" direction="outgoing" />)}</PopoverContent></Popover>
+      : data.active.chatIds.length > 1 ? <Popover><PopoverTrigger asChild><Button
+        type="button"
+        variant="link"
+        size="xs"
+        className="inline-flex items-center gap-1"
+      ><MessagesSquare size={12} />Working with {data.active.chatIds.length} chats<ChevronDown size={11} /></Button></PopoverTrigger><PopoverContent align="start" className="max-h-72 w-80 space-y-2 overflow-y-auto">{data.active.chatIds.map(id => <ChatMessageLink key={id} sessionId={id} label="Active chat" direction="outgoing" />)}</PopoverContent></Popover>
       : <span role="status">{data.active.starting ? 'Starting another chat' : 'Incoming agent messages waiting'}</span>}
     {data.heldAt && data.assignmentsWaiting > 0 && <p>{data.assignmentsWaiting} assignment{data.assignmentsWaiting === 1 ? '' : 's'} waiting</p>}
     </div>
@@ -51,9 +57,17 @@ function IncomingPauseButton({ sessionId }: { sessionId: string }) {
   const { data } = useCoordinationState(sessionId);
   const hold = useCoordinationHold(sessionId);
   if (!data) return null;
-  return <Tip label="Queues incoming agent messages in this chat. Your messages still run, and work already running continues."><button data-slot="action-button" data-variant="ghost" type="button" aria-pressed={!!data.heldAt} disabled={hold.isPending} onClick={() => hold.mutate(!data.heldAt)} className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted disabled:opacity-50">
+  return <Tip label="Queues incoming agent messages in this chat. Your messages still run, and work already running continues."><Button
+    type="button"
+    aria-pressed={!!data.heldAt}
+    disabled={hold.isPending}
+    onClick={() => hold.mutate(!data.heldAt)}
+    variant="ghost"
+    size="xs"
+    className="inline-flex shrink-0 items-center gap-1"
+  >
     {data.heldAt ? <Play size={12} /> : <Pause size={12} />}{data.heldAt ? 'Resume' : 'Pause incoming'}
-  </button></Tip>;
+  </Button></Tip>;
 }
 
 /** What each policy scope is called on screen. Code says execution, people say workstream. */

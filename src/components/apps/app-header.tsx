@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -27,14 +28,16 @@ export function AppHeader({
     <header className="@container min-w-0 flex-shrink-0 border-b border-border">
       <div className="flex min-w-0 items-center gap-3 px-4 py-2">
         {onBack && (
-          <button
+          <Button
             type="button"
             onClick={onBack}
-            className="-ml-1.5 flex flex-shrink-0 items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            variant="secondary"
+            size="sm"
+            className="-ml-1.5 flex flex-shrink-0 items-center gap-1"
           >
             <ArrowLeft size={12} aria-hidden />
             Apps
-          </button>
+          </Button>
         )}
         {mark}
         <div className="min-w-0">
@@ -56,17 +59,16 @@ export function PrimaryAction({
   ...props
 }: React.ComponentProps<'button'> & { icon?: ReactNode }) {
   return (
-    <button
+    <Button
       type="button"
       {...props}
-      className={cn(
-        'flex h-7 flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-2.5 text-[11px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40',
-        className,
-      )}
+      variant="primary"
+      size="sm"
+      className={cn("flex flex-shrink-0 items-center gap-1.5", className)}
     >
       {icon}
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -79,20 +81,16 @@ export function QuietAction({
   ...props
 }: React.ComponentProps<'button'> & { icon?: ReactNode; pressed?: boolean }) {
   return (
-    <button data-slot="action-button"
+    <Button
       type="button"
       aria-pressed={pressed}
       {...props}
-      className={cn(
-        'flex h-7 flex-shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40',
-        pressed
-          ? 'border-border bg-secondary text-foreground'
-          : 'border-border/70 text-muted-foreground hover:bg-muted/40 hover:text-foreground',
-        className,
-      )}
+      variant="secondary"
+      size="sm"
+      className={cn("flex flex-shrink-0 items-center gap-1.5", className)}
     >
       {icon}
       {children}
-    </button>
+    </Button>
   );
 }

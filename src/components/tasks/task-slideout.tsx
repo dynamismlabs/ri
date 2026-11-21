@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { EntityDetailHeader, EntityActionsMenu } from '@/components/entities/entity-detail-header';
 
 import { useDocumentAutosave, usePendingDocument } from '@/hooks/use-document-autosave';
@@ -198,27 +199,32 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
             {/* Header */}
             <EntityDetailHeader>
               <div className="flex items-center gap-1.5 group/nav">
-                <button
+                <Button
                   onClick={onClose}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
                   aria-label="Back"
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <ChevronLeft size={16} />
                   <kbd className="hidden group-hover/nav:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                     esc
                   </kbd>
-                </button>
+                </Button>
                 {hasHistory && (
-                  <button
+                  <Button
                     onClick={onCloseAll}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-0 group-hover/nav:opacity-100 flex items-center gap-1.5"
                     aria-label="Close all"
+                  reveal="nav"
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1.5"
                   >
                     <X size={14} />
                     <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                       ⇧esc
                     </kbd>
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -226,21 +232,18 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                 {agentFirst && !shared && !team && <EntityViewToggle value={view} onChange={setView} compact={width < 700} />}
                 {taskId && !shared && (team && task ? <TeamEntityHistory kind="task" id={taskId} bodyRevision={task.bodyRevision} /> : <EntityHistoryButton entityType="task" entityId={taskId} />)}
                 {taskId && <ReferencingSessionsButton entityType="task" entityId={taskId} />}
-                <a
-                  href={fullPage}
+                <Button asChild variant="ghost" size="sm" className="flex items-center gap-1.5"><a className="group/expand" href={fullPage}
                   onClick={(e) => {
                     if (e.metaKey || e.ctrlKey) return;
                     e.preventDefault();
                     if (taskId) router.push(fullPage);
                   }}
-                  className="group/expand p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
-                  aria-label="Open full page"
-                >
+                  aria-label="Open full page">
                   <kbd className="hidden group-hover/expand:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                     {HOTKEYS.openFullPage.label}
                   </kbd>
                   <Maximize2 size={14} />
-                </a>
+                </a></Button>
 
                 {team && task && <><SaveStatus status={sharedBody.status} /><MyWorkControl taskId={task.id} /></>}
                 {task && task.status !== 'done' && task.status !== 'archived' && (
@@ -249,21 +252,17 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                 {/* Complete/Reopen only where it is the real action (not for
                     Consider or Archived — change those with the status control). */}
                 {task && task.status !== 'consider' && task.status !== 'archived' && (
-                  <button
+                  <Button
                     onClick={handleComplete}
                     aria-label={isDone ? 'Completed' : 'Complete'}
-                    data-slot="header-action"
-                    data-state={isDone ? 'done' : undefined}
-                    className={cn(
-                      'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                      isDone
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'border border-border text-muted-foreground hover:text-foreground hover:bg-accent',
-                    )}
+                    variant="secondary"
+                    size="sm"
+                    pressed={isDone}
+                    className="inline-flex shrink-0 items-center gap-1.5"
                   >
                     <Check size={12} />
                     <span className={ENTITY_HEADER_LABEL}>{isDone ? 'Completed' : 'Complete'}</span>
-                  </button>
+                  </Button>
                 )}
 
                 <EntityActionsMenu onArchive={handleArchive} onDelete={shared || team && !home?.capabilities.deletePermanently ? undefined : handleDelete} deleteLabel={team ? "Delete for everyone" : "Delete"} archiveLabel={shared ? 'Archive for the team' : 'Archive'}>

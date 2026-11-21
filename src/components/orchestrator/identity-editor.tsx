@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
 import { ImagePlus, Loader2, Palette, Shuffle, Smile, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -189,14 +190,16 @@ export function IdentityEditor({
               {draft.image?.kind === 'art' ? <Shuffle size={12} /> : <Palette size={12} />}
             </LookButton>
             {(draft.image || draft.emoji) && (
-              <button data-slot="action-button" data-variant="ghost"
+              <Button
                 type="button"
                 onClick={() => set(draft.image ? { image: null } : { emoji: null })}
-                className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                variant="ghost"
+                size="xs"
+                className="inline-flex items-center gap-1"
               >
                 <X size={11} />
                 {draft.image ? 'Remove picture' : 'Remove emoji'}
-              </button>
+              </Button>
             )}
             <input
               ref={fileRef}
@@ -258,18 +261,17 @@ function LookButton({
   ...rest
 }: React.ComponentProps<'button'> & { label: string; active?: boolean }) {
   return (
-    <button data-slot="action-button" aria-pressed={active}
+    <Button
+      aria-pressed={active}
       type="button"
       {...rest}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-50',
-        active ? 'border-primary/50 bg-primary/5 text-foreground' : 'border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-        className,
-      )}
+      variant="secondary"
+      size="xs"
+      className={cn("inline-flex items-center gap-1.5", className)}
     >
       {children}
       {label}
-    </button>
+    </Button>
   );
 }
 

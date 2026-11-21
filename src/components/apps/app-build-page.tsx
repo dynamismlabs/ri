@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, ArrowUpCircle, CheckCircle2, Circle, GitBranch, Loader2, MessageCircle, XCircle } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -139,7 +139,11 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
     onError: (e) => setError(e instanceof Error ? e.message : String(e)),
   });
 
-  if (!source.data) return <div className="p-6 text-sm"><Button variant="ghost" onClick={() => navigate('')}><ArrowLeft size={14} />Apps</Button><p className="mt-2 text-muted-foreground">{source.error?.message ?? 'Loading…'}</p></div>;
+  if (!source.data) return <div className="p-6 text-sm"><Button
+    onClick={() => navigate('')}
+    variant="ghost"
+    size="sm"
+  ><ArrowLeft size={14} />Apps</Button><p className="mt-2 text-muted-foreground">{source.error?.message ?? 'Loading…'}</p></div>;
   const data = source.data;
   const job = data.job;
   const running = job?.state === 'running';
@@ -149,13 +153,23 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   const progressJob = job && (job.kind === 'install' || job.kind === 'change') ? job : null;
   const allowLabel = `Allow ${APP_NAME} in ${data.name}`;
   const canAllow = installed && !!ri && !allowedIn && !running;
-  const allowButton = (variant: 'default' | 'outline' = 'default') => (
-    <Button size="sm" variant={variant} disabled={allow.isPending || allowApp.checking} onClick={() => allow.mutate({})}>
+  const allowButton = (variant: 'primary' | 'secondary' = 'primary') => (
+    <Button
+      disabled={allow.isPending || allowApp.checking}
+      onClick={() => allow.mutate({})}
+      variant={variant}
+      size="sm"
+    >
       {(allow.isPending || allowApp.checking) && <Loader2 size={14} className="animate-spin" />}{allowLabel}
     </Button>
   );
   const askButton = job?.state === 'failed' && (job.kind === 'change' || job.kind === 'install') && (
-    <Button size="sm" variant="outline" disabled={askToFix.isPending} onClick={() => askToFix.mutate()}>
+    <Button
+      disabled={askToFix.isPending}
+      onClick={() => askToFix.mutate()}
+      variant="secondary"
+      size="sm"
+    >
       {askToFix.isPending ? <Loader2 size={14} className="animate-spin" /> : <MessageCircle size={14} aria-hidden />}Ask the builder to fix it
     </Button>
   );
@@ -163,25 +177,69 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <header className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-2.5">
-        <Button variant="ghost" size="sm" onClick={() => navigate('')}><ArrowLeft size={14} />Apps</Button>
+        <Button
+          onClick={() => navigate('')}
+          variant="ghost"
+          size="sm"
+        ><ArrowLeft size={14} />Apps</Button>
         <div className="min-w-0 flex-1">
           <h1 className="truncate text-sm font-semibold">{data.name}</h1>
           <p className="truncate text-[11px] text-muted-foreground">{changing ? <><GitBranch size={11} className="mr-1 inline" aria-hidden />Changing in {data.changeFolder} on {data.changeBranch}</> : data.folder}</p>
         </div>
         {/* Open app only once Ri may use the app: before that its page has nothing to show. */}
-        {allowedIn && <Button size="sm" onClick={() => openApp(ri!.serverId)}>Open app</Button>}
+        {allowedIn && <Button
+          onClick={() => openApp(ri!.serverId)}
+          variant="primary"
+          size="md"
+        >Open app</Button>}
         {canAllow && showChat && allowButton()}
-        {data.createdByRi && !installed && showChat && <Button size="sm" disabled={busy} onClick={() => action.mutate('install')}>{job?.kind === 'install' && job.state === 'failed' ? 'Try again' : 'Install and connect'}</Button>}
-        {data.createdByRi && installed && !data.connected && !running && <Button size="sm" disabled={busy} onClick={() => reconnect.mutate()}>Reconnect</Button>}
-        {data.createdByRi && installed && !changing && <Button size="sm" variant="outline" disabled={running || action.isPending} onClick={() => action.mutate('change')}>Change app</Button>}
-        {changing && <Button size="sm" variant="ghost" disabled={running || action.isPending} onClick={() => action.mutate('discard')}>Discard change</Button>}
-        {changing && <Button size="sm" disabled={running || action.isPending} onClick={() => action.mutate('apply')}>Apply change</Button>}
+        {data.createdByRi && !installed && showChat && <Button
+          disabled={busy}
+          onClick={() => action.mutate('install')}
+          variant="primary"
+          size="md"
+        >{job?.kind === 'install' && job.state === 'failed' ? 'Try again' : 'Install and connect'}</Button>}
+        {data.createdByRi && installed && !data.connected && !running && <Button
+          disabled={busy}
+          onClick={() => reconnect.mutate()}
+          variant="primary"
+          size="md"
+        >Reconnect</Button>}
+        {data.createdByRi && installed && !changing && <Button
+          disabled={running || action.isPending}
+          onClick={() => action.mutate('change')}
+          variant="secondary"
+          size="sm"
+        >Change app</Button>}
+        {changing && <Button
+          disabled={running || action.isPending}
+          onClick={() => action.mutate('discard')}
+          variant="ghost"
+          size="sm"
+        >Discard change</Button>}
+        {changing && <Button
+          disabled={running || action.isPending}
+          onClick={() => action.mutate('apply')}
+          variant="primary"
+          size="md"
+        >Apply change</Button>}
         {installed && !changing && catalogApp?.updateAvailable && (
-          <Button size="sm" variant="outline" disabled={running || update.isPending} onClick={() => update.mutate(undefined, { onError: (e) => setError(e instanceof Error ? e.message : String(e)) })}>
+          <Button
+            disabled={running || update.isPending}
+            onClick={() => update.mutate(undefined, { onError: (e) => setError(e instanceof Error ? e.message : String(e)) })}
+            variant="secondary"
+            size="sm"
+          >
             {update.isPending ? <Loader2 size={14} className="animate-spin" /> : <ArrowUpCircle size={14} aria-hidden />}Update to {versionLabel(catalogApp.version)}
           </Button>
         )}
-        {data.createdByRi && <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => remove.mutate()}>Remove</Button>}
+        {data.createdByRi && <Button
+          disabled={busy}
+          onClick={() => remove.mutate()}
+          variant="ghost"
+          size="sm"
+          tone="danger"
+        >Remove</Button>}
       </header>
 
       {installed && <div className="border-b border-border px-5 py-2"><AppStatusLine sourceId={sourceId} name={data.name} version={data.catalogVersion} /></div>}
@@ -210,10 +268,19 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
           connected={allowedIn}
           computer={status.data?.computer ?? null}
           actions={<>
-            {allowedIn && progressJob?.state !== 'running' && progressJob?.state !== 'failed' && <Button size="sm" onClick={() => openApp(ri!.serverId)}>Open {data.name}</Button>}
+            {allowedIn && progressJob?.state !== 'running' && progressJob?.state !== 'failed' && <Button
+              onClick={() => openApp(ri!.serverId)}
+              variant="primary"
+              size="md"
+            >Open {data.name}</Button>}
             {canAllow && allowButton()}
             {askButton}
-            {data.createdByRi && !installed && !running && <Button size="sm" variant={askButton ? 'outline' : 'default'} disabled={busy} onClick={() => action.mutate('install')}>{askButton ? 'Try again' : 'Install and connect'}</Button>}
+            {data.createdByRi && !installed && !running && <Button
+              disabled={busy}
+              onClick={() => action.mutate('install')}
+              variant={askButton ? "secondary" : "primary"}
+              size="sm"
+            >{askButton ? 'Try again' : 'Install and connect'}</Button>}
           </>}
         />
       )}

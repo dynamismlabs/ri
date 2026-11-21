@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { isAppToolkitId } from '@/lib/integrations/app-ids';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { trpcClient } from '@/lib/trpc/client';
@@ -115,14 +116,16 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
     <DropdownMenu>
       <DropdownMenuTrigger asChild disabled={disabled}>
         <Tip label={dormant.length > 0 ? dormantNote : summary} onlyWhenTextHidden={dormant.length === 0}>
-          <button data-slot="action-button"
+          <Button
             aria-label={`Accounts ${serviceName} may use: ${summary}`}
-            className="flex h-7 min-w-0 max-w-[55%] shrink-0 items-center gap-1 rounded-lg border border-border bg-input/30 px-2 text-[11px] text-foreground outline-none transition-colors hover:bg-input/50 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-50 @sm:max-w-[200px]"
+            variant="secondary"
+            size="sm"
+            className="flex min-w-0 max-w-[55%] shrink-0 items-center gap-1 @sm:max-w-[200px]"
           >
             {dormant.length > 0 && <AlertCircle size={11} className="shrink-0 text-amber-600 dark:text-amber-400" />}
             <span className="truncate">{summary}</span>
             <ChevronDown size={12} className="shrink-0 text-muted-foreground" />
-          </button>
+          </Button>
         </Tip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)]">
@@ -235,9 +238,15 @@ function ManagedAccountChecks({ routes, scopes, disabled, onChange }: {
         );
       })}
       {shown.length > 1 && !allChecked && (
-        <button type="button" disabled={disabled} onClick={selectAll} className="text-[10px] font-medium text-primary hover:underline disabled:opacity-40">
+        <Button
+          type="button"
+          disabled={disabled}
+          onClick={selectAll}
+          variant="link"
+          size="sm"
+        >
           Select all connected accounts
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -364,14 +373,16 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
           <p className="text-[12px] text-muted-foreground">
             No accounts connected yet. Connect Gmail, Linear, Notion and more, then choose here which this agent can use.
           </p>
-          <button
+          <Button
             type="button"
             onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-            className="mt-3 flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[12.5px] font-medium text-foreground transition-colors hover:bg-accent/70"
+            variant="ghost"
+            size="sm"
+            className="mt-3 flex items-center gap-1.5"
           >
             <Plug size={13} />
             Connect an account
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -457,14 +468,17 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
                     {pins.length === 1 ? ` · ${pins[0]!.accountId}` : pins.length > 1 ? ` · ${pins.length} accounts` : ''}
                   </span>
                 </Tip>
-                <button
+                <Button
                   type="button"
                   onClick={() => removeDormant(s.toolkitId)}
                   disabled={disabled}
-                  className="shrink-0 text-destructive hover:underline disabled:opacity-40"
+                  variant="link"
+                  size="sm"
+                  tone="danger"
+                  className="shrink-0"
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             );
           })}

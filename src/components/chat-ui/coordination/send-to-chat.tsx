@@ -1,11 +1,13 @@
 'use client';
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { useDeferredValue, useState } from 'react';
 import { Forward, Search } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Tip } from '@/components/ui/tip';
+
 import { useWorkspaces } from '@/hooks/use-workspaces';
 import { useDefaultSelection } from '@/hooks/use-default-selection';
 import { useHarnessModels } from '@/hooks/use-harness-models';
@@ -22,7 +24,14 @@ function AvailableSendToChatButton({ eventId, sessionId }: { eventId: string; se
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   return <Dialog open={open} onOpenChange={next => { if (!sending) setOpen(next); }}>
-    <DialogTrigger asChild><Tip label="Share this message with another chat"><button data-slot="action-button" data-variant="ghost" type="button" aria-label="Send to chat" className="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-muted/60 hover:text-foreground"><Forward size={12} /></button></Tip></DialogTrigger>
+    <DialogTrigger asChild><IconButton
+      type="button"
+      label="Send to chat"
+      tooltip="Share this message with another chat"
+      variant="ghost"
+      size="xs"
+      className="inline-flex items-center justify-center"
+    ><Forward size={12} /></IconButton></DialogTrigger>
     {open && <SendToChatDialog eventId={eventId} sessionId={sessionId} onClose={() => setOpen(false)} onSendingChange={setSending} />}
   </Dialog>;
 }
@@ -58,7 +67,19 @@ function SendToChatDialog({ eventId, sessionId, onClose, onSendingChange }: { ev
       {newChat ? <div className="space-y-2 rounded-lg border p-3"><p className="text-xs text-muted-foreground">{workspaceId ? 'Start a new chat in the selected agent.' : 'Choose an agent above for the new chat.'}</p><div className="flex flex-wrap gap-2"><ModelControl selection={{ harness, model }} label={selectedModel?.label ?? (model || 'Default model')} variant={variant} effort={effort} serviceTier={serviceTier} onChange={setSelection} onEffortChange={next => setSelection({ harness, model, variant, effort: next, serviceTier })} /></div></div>
         : <div className="min-w-0 max-h-56 overflow-x-hidden overflow-y-auto rounded-lg border" aria-label="Chats by recent activity">{isLoading ? <p className="p-3 text-xs text-muted-foreground">Loading chats…</p> : chats.length === 0 ? <p className="p-3 text-xs text-muted-foreground">No matching chats.</p> : chats.map(chat => <button key={chat.id} type="button" aria-pressed={target === chat.id} onClick={() => setTarget(chat.id)} className={`block w-full border-b px-3 py-2 text-left last:border-0 ${target === chat.id ? 'bg-primary/10' : 'hover:bg-muted/50'}`}><span className="block truncate text-sm font-medium">{chat.label ?? (chat.type === 'orchestration' ? chat.workspaceId ? 'Agent main chat' : 'Orchestrator' : 'Untitled chat')}</span><span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{chat.agentName ?? 'Orchestrator'} · {new Date(chat.lastActivityAt ?? chat.updatedAt).toLocaleString()}</span></button>)}</div>}
       <label className="block space-y-1 text-xs"><span>Your directions, optional</span><textarea value={directions} onChange={event => setDirections(event.target.value)} rows={3} className="w-full rounded-md border bg-background p-2 text-sm" placeholder="For example, review this feedback against your current changes." /></label>
-      <div className="flex justify-end gap-2"><button data-slot="action-button" data-variant="ghost" type="button" disabled={send.isPending} className="rounded-md px-3 py-1.5 text-sm text-muted-foreground" onClick={onClose}>Cancel</button><button data-slot="action-button" data-variant="primary" type="button" disabled={send.isPending || (newChat ? !workspaceId : !target)} onClick={() => send.mutate()} className="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground disabled:opacity-50">{send.isPending ? 'Sending…' : 'Send to chat'}</button></div>
+      <div className="flex justify-end gap-2"><Button
+        type="button"
+        disabled={send.isPending}
+        onClick={onClose}
+        variant="ghost"
+        size="xs"
+      >Cancel</Button><Button
+        type="button"
+        disabled={send.isPending || (newChat ? !workspaceId : !target)}
+        onClick={() => send.mutate()}
+        variant="primary"
+        size="xs"
+      >{send.isPending ? 'Sending…' : 'Send to chat'}</Button></div>
     </div>
   </DialogContent>;
 }

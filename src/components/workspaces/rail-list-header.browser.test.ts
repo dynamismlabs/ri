@@ -141,8 +141,8 @@ for (const theme of ['dark', 'light'] as const) {
       expect(await tabs.evaluateAll(els => els.map(el => el.getAttribute('aria-selected')))).toEqual(['true', 'false']);
 
       const look = await looks(page);
-      // Group labels (Pinned, Needs you) are small caps. The switch isn't.
-      expect(look.groupLabel).toBe('uppercase');
+      // Labels keep sentence case. The selected option is distinguished by its thumb.
+      expect(look.groupLabel).toBe('none');
       expect(look.agents.transform).toBe('none');
       expect(look.recent.transform).toBe('none');
       // Both lists sit on one visible track, and the open one is raised on it.

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * One schedule, everything about it: the failure banner when it keeps
  * failing, Run now / Pause / Delete, the managed-by-the-app notice, the
@@ -69,58 +70,65 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
             )}
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {lastFailedRun && (
-                <Link
-                  href={`/runs/${lastFailedRun.id}`}
-                  onNavigate={onNavigateAway}
-                  className="px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
-                >
+                <Button asChild variant="secondary" size="sm"><Link href={`/runs/${lastFailedRun.id}`}
+                  onNavigate={onNavigateAway}>
                   View last failed run
-                </Link>
+                </Link></Button>
               )}
               {trigger.enabled && (
-                <button data-slot="action-button"
+                <Button
                   onClick={() => update.mutate({ id, enabled: false })}
-                  className="px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
+                  variant="secondary"
+                  size="sm"
                 >
                   Pause it
-                </button>
+                </Button>
               )}
-              <button data-slot="action-button"
+              <Button
                 onClick={() => resetFailures.mutate(id)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1"
               >
                 <RotateCcw size={11} />
                 Reset failure count
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           onClick={() => runTrigger.mutate(id)}
           disabled={runTrigger.isPending}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:opacity-90 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="flex items-center gap-1.5"
         >
           <Play size={14} />
           {runTrigger.isPending ? 'Starting…' : 'Run now'}
-        </button>
-        <button data-slot="action-button"
+        </Button>
+        <Button
           onClick={() => update.mutate({ id, enabled: !trigger.enabled })}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-sm hover:bg-muted"
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1.5"
         >
           {trigger.enabled ? <PauseCircle size={14} /> : <PlayCircle size={14} />}
           {trigger.enabled ? 'Pause' : 'Resume'}
-        </button>
+        </Button>
         {!managed && (
-          <button data-slot="action-button" data-tone="status"
+          <Button
             onClick={() => setConfirmingDelete(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-destructive/30 text-destructive text-sm hover:bg-destructive/10 ml-auto"
+            variant="secondary"
+            size="sm"
+            tone="danger"
+            className="flex items-center gap-1.5 ml-auto"
           >
             <Trash2 size={14} />
             Delete
-          </button>
+          </Button>
         )}
       </div>
 
@@ -130,12 +138,14 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
             This schedule is managed by the app. {describeLocks(lockedFieldsFor(id))} It is turned off
             rather than deleted.{isHeartbeat ? ' More options are in Settings > Heartbeat.' : ''}
           </span>
-          <button
+          <Button
             onClick={() => openSettings(isHeartbeat ? 'heartbeat' : 'general')}
-            className="flex-shrink-0 font-medium text-foreground hover:underline"
+            variant="link"
+            size="sm"
+            className="flex-shrink-0"
           >
             Open settings
-          </button>
+          </Button>
         </div>
       )}
 
@@ -174,19 +184,22 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
               Its past runs stay. Only the schedule and its future runs are removed.
             </p>
             <div className="flex items-center gap-2 justify-end">
-              <button
+              <Button
                 onClick={() => setConfirmingDelete(false)}
-                className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground"
+                variant="ghost"
+                size="sm"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => deleteTrigger.mutate(id, { onSuccess: onDeleted })}
                 disabled={deleteTrigger.isPending}
-                className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-sm hover:opacity-90"
+                variant="destructive"
+                size="sm"
+                tone="danger"
               >
                 Delete
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -202,11 +215,8 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
       ? run.status
       : undefined;
   return (
-    <Link
-      href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
-      onNavigate={onNavigateAway}
-      className="flex items-center gap-3 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
-    >
+    <Button asChild variant="secondary" size="sm" className="flex items-center gap-3"><Link href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
+      onNavigate={onNavigateAway}>
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
       <span className="flex-1 truncate text-muted-foreground text-[12px]">
         {run.status === 'failed'
@@ -224,7 +234,7 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link>
+    </Link></Button>
   );
 }
 

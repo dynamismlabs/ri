@@ -1,7 +1,8 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { invalidateWorkspaceViews } from '@/lib/query/work-view-invalidation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type {
@@ -283,7 +284,13 @@ export function ExternalAgentImportPanel() {
               </SelectContent>
             </Select>
           )}
-          <Button type="button" variant="outline" size="sm" onClick={refresh} disabled={discovery.isFetching}>
+          <Button
+            type="button"
+            onClick={refresh}
+            disabled={discovery.isFetching}
+            variant="secondary"
+            size="sm"
+          >
             <RefreshCw className={cn(discovery.isFetching && 'animate-spin')} />
             Refresh list
           </Button>
@@ -355,6 +362,8 @@ export function ExternalAgentImportPanel() {
           type="button"
           onClick={() => importMutation.mutate([...selected])}
           disabled={selected.size === 0 || importMutation.isPending}
+          variant="primary"
+          size="md"
         >
           <Download />
           {submitLabel}
@@ -419,9 +428,15 @@ function ProjectRow({
             </span>
           )}
         </button>
-        <button type="button" onClick={onToggleExpanded} aria-label={expanded ? 'Collapse chats' : 'Expand chats'}>
+        <IconButton
+          type="button"
+          onClick={onToggleExpanded}
+          label={expanded ? 'Collapse chats' : 'Expand chats'}
+          variant="ghost"
+          size="sm"
+        >
           <ChevronDown size={15} className={cn('text-muted-foreground transition-transform', expanded && 'rotate-180')} />
-        </button>
+        </IconButton>
       </div>
 
       <div className="border-t border-border/70 bg-muted/10">
@@ -467,12 +482,12 @@ function ProjectRow({
               {session.imported && session.importable !== false && (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={() => onSyncSession(session.key)}
                   disabled={syncDisabled}
-                  className="h-7 gap-1 px-2 text-[10px]"
                   aria-label={`Sync ${session.label}`}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
                 >
                   <RefreshCw className={cn('size-3', isSyncing && 'animate-spin')} />
                   {isSyncing ? 'Syncing' : session.importStatus === 'error' || session.importStatus === 'missing' ? 'Retry' : 'Sync'}
@@ -482,9 +497,15 @@ function ProjectRow({
           );
         })}
         {!expanded && project.sessions.length > 3 && (
-          <button type="button" onClick={onToggleExpanded} className="w-full px-3 py-2 text-[11px] font-medium text-primary hover:bg-muted/30">
+          <Button
+            type="button"
+            onClick={onToggleExpanded}
+            variant="secondary"
+            size="sm"
+            className="w-full"
+          >
             Show {project.sessions.length - 3} more chats
-          </button>
+          </Button>
         )}
       </div>
     </div>

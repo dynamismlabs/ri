@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -63,15 +64,18 @@ export function TreeSearchBar({
 
   return (
     <div className="flex h-7 items-center gap-1.5 rounded-md bg-muted/50 px-2 min-w-0 focus-within:bg-muted/70 focus-within:ring-1 focus-within:ring-ring/40">
-      <button
+      <IconButton
         type="button"
         onClick={() => inputRef.current?.focus()}
-        className="shrink-0 inline-flex items-center justify-center text-muted-foreground/70 hover:text-foreground transition-colors"
-        aria-label="Focus search"
         tabIndex={-1}
+        label="Focus search"
+        variant="ghost"
+        size="sm"
+        focus="inside"
+        className="shrink-0 inline-flex items-center justify-center"
       >
         <Search size={12} />
-      </button>
+      </IconButton>
       <input
         ref={inputRef}
         // Go to file (⌘P) focuses this from the execution workbench.
@@ -104,19 +108,24 @@ export function TreeSearchBar({
         </Tip>
       )}
       {query && (
-        <Tip label="Clear search" shortcut="Esc">
-          <button
+
+          <IconButton
             type="button"
             onClick={() => {
               onChange('');
               inputRef.current?.focus();
             }}
-            className="shrink-0 inline-flex items-center justify-center rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-            aria-label="Clear search"
+            label="Clear search"
+            tooltip="Clear search"
+            shortcut="Esc"
+            variant="secondary"
+            size="sm"
+            focus="inside"
+            className="shrink-0 inline-flex items-center justify-center"
           >
             <X size={11} />
-          </button>
-        </Tip>
+          </IconButton>
+
       )}
     </div>
   );

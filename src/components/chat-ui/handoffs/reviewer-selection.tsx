@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
@@ -69,12 +70,21 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
         <HarnessMark id={harness} />
         <span>{modelId ? `${findProvider(harness)?.name ?? harness} · ${model?.label ?? modelId}${effort ? ` · ${effort}` : ''}` : 'Your normal reviewer settings'}</span>
         <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild><button type="button" className="text-primary hover:underline">Change</button></PopoverTrigger>
+          <PopoverTrigger asChild><Button
+            type="button"
+            variant="link"
+            size="xs"
+          >Change</Button></PopoverTrigger>
           <PopoverContent align="start" className="w-80 max-h-[65vh] overflow-y-auto">
             <ModelList selectionOnly selected={{ harness, model: modelId }} onPick={pick} />
           </PopoverContent>
         </Popover>
-        {Object.keys(value).length > 0 && <button type="button" className="text-primary hover:underline" onClick={() => onChange({})}>Use inherited settings</button>}
+        {Object.keys(value).length > 0 && <Button
+          type="button"
+          onClick={() => onChange({})}
+          variant="link"
+          size="xs"
+        >Use inherited settings</Button>}
       </div>
       {unavailable && <p role="alert" className="text-destructive">{model?.availabilityReason ?? 'This reviewer choice is unavailable. Choose a supported model.'}</p>}
       {effortUnavailable && <p role="alert" className="text-destructive">Saved effort {effort} is unavailable for this reviewer. Choose a compatible effort.</p>}
@@ -100,8 +110,20 @@ export function ReviewerSelection({ value, onChange, associatedWorkspace, inheri
       )}
       {associatedWorkspace && <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
         <span>{Object.keys(value).length ? 'This review uses your current choice.' : associatedWorkspace.reviewDefaults ? `Inherited from ${associatedWorkspace.name}.` : 'Inherited from your normal reviewer settings.'}</span>
-        <button type="button" className="text-primary hover:underline disabled:opacity-50" onClick={saveForAgent} disabled={update.isPending || !modelId || unavailable || effortUnavailable || variantUnavailable}>Use for this agent</button>
-        {associatedWorkspace.reviewDefaults && <button type="button" className="text-primary hover:underline disabled:opacity-50" onClick={resetAgent} disabled={update.isPending}>Reset agent reviewer</button>}
+        <Button
+          type="button"
+          onClick={saveForAgent}
+          disabled={update.isPending || !modelId || unavailable || effortUnavailable || variantUnavailable}
+          variant="link"
+          size="xs"
+        >Use for this agent</Button>
+        {associatedWorkspace.reviewDefaults && <Button
+          type="button"
+          onClick={resetAgent}
+          disabled={update.isPending}
+          variant="link"
+          size="xs"
+        >Reset agent reviewer</Button>}
       </div>}
     </div>
   );

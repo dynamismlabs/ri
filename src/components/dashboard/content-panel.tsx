@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import {
   Layers, ChevronDown, Users, SquareTerminal, Maximize2, Minimize2,
 } from 'lucide-react';
@@ -191,12 +192,18 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
           <div className="flex-1" />
 
           {showExpand && <Tip label={expandedPanel === panelId ? 'Show both panels' : 'Use the full content width'}>
-            <button type="button" aria-label={expandedPanel === panelId ? 'Restore split view' : `Expand ${activeTab}`} aria-pressed={expandedPanel === panelId}
+            <Button
+              type="button"
+              aria-label={expandedPanel === panelId ? 'Restore split view' : `Expand ${activeTab}`}
+              aria-pressed={expandedPanel === panelId}
               onClick={() => setExpandedPanel(expandedPanel === panelId ? null : panelId)}
-              className="flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted/50 hover:text-foreground">
+              variant="secondary"
+              size="sm"
+              className="flex shrink-0 items-center gap-1"
+            >
               {expandedPanel === panelId ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
               {(expanded || (width ?? 0) >= (team ? 420 : 760)) && <span>{expandedPanel === panelId ? 'Restore' : 'Expand'}</span>}
-            </button>
+            </Button>
           </Tip>}
 
           {/* More button */}

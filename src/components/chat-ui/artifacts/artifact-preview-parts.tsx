@@ -1,8 +1,9 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useId } from 'react';
 import { ChevronLeft, ChevronRight, Copy, Download, Expand, File, FileArchive, FileAudio, FileCode2, FileText, FileVideo, ImageIcon, PanelLeft, PanelRight, Sheet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import { HtmlView } from '@/components/chat-ui/artifacts/html-view';
 import { HOTKEYS } from '@/constants/commands';
@@ -59,8 +60,20 @@ export function PreviewDownload({ preview, compact = false }: { preview: Artifac
       anchor.click();
     });
   }}><Download />{!compact && 'Download'}</a>;
-  if (!compact) return <Button asChild variant="ghost" size="sm" className="shrink-0">{link}</Button>;
-  return <Tip label="Download"><Button asChild variant="ghost" size="icon-sm" className="shrink-0">{link}</Button></Tip>;
+  if (!compact) return <Button
+    asChild
+    variant="ghost"
+    size="xs"
+    className="shrink-0"
+  >{link}</Button>;
+  return <IconButton
+    asChild
+    label="Download"
+    tooltip="Download"
+    variant="ghost"
+    size="xs"
+    className="shrink-0"
+  >{link}</IconButton>;
 }
 
 /** The destination and its explicit copy action stay together in both preview headers. */
@@ -89,13 +102,29 @@ export function PreviewSteps({ index, count, onStep }: { index: number; count: n
   if (count < 2 || index < 0) return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <Tip label="Previous" shortcut={HOTKEYS.previewPrevious.label}>
-        <Button variant="ghost" size="icon-sm" aria-label="Previous preview" disabled={index === 0} onClick={() => onStep(-1)}><ChevronLeft /></Button>
-      </Tip>
+
+        <IconButton
+          disabled={index === 0}
+          onClick={() => onStep(-1)}
+          label="Previous preview"
+          tooltip="Previous"
+          shortcut={HOTKEYS.previewPrevious.label}
+          variant="ghost"
+          size="xs"
+        ><ChevronLeft /></IconButton>
+
       <span className="min-w-12 text-center text-[11px] text-muted-foreground tabular-nums">{index + 1} of {count}</span>
-      <Tip label="Next" shortcut={HOTKEYS.previewNext.label}>
-        <Button variant="ghost" size="icon-sm" aria-label="Next preview" disabled={index === count - 1} onClick={() => onStep(1)}><ChevronRight /></Button>
-      </Tip>
+
+        <IconButton
+          disabled={index === count - 1}
+          onClick={() => onStep(1)}
+          label="Next preview"
+          tooltip="Next"
+          shortcut={HOTKEYS.previewNext.label}
+          variant="ghost"
+          size="xs"
+        ><ChevronRight /></IconButton>
+
     </div>
   );
 }

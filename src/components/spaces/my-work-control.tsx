@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookmarkPlus, Check, ChevronDown, ListPlus } from 'lucide-react';
 import { useState } from 'react';
@@ -32,7 +33,7 @@ export function MyWorkControl({ taskId }: { taskId: string }) {
 
   if (!inMyWork) {
     return (
-      <button data-slot="action-button"
+      <Button
         type="button"
         disabled={busy}
         onClick={async () => {
@@ -41,10 +42,12 @@ export function MyWorkControl({ taskId }: { taskId: string }) {
           setBusy(false);
           settle();
         }}
-        className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[11px] font-medium text-foreground hover:bg-muted disabled:opacity-60"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center gap-1.5"
       >
         <ListPlus size={13} aria-hidden /> Add to my work
-      </button>
+      </Button>
     );
   }
 
@@ -52,9 +55,14 @@ export function MyWorkControl({ taskId }: { taskId: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Tip label={assigned ? "It's assigned to you, so it's in My Ri." : 'You added it to your work in My Ri.'}>
-          <button data-slot="action-button" data-variant="ghost" type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/15">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="inline-flex items-center gap-1"
+          >
             <Check size={13} aria-hidden /> In my work <ChevronDown size={11} aria-hidden />
-          </button>
+          </Button>
         </Tip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
@@ -100,7 +108,7 @@ export function SaveNoteControl({ noteId }: { noteId: string }) {
 
   if (!state.data.saved) {
     return (
-      <button data-slot="action-button"
+      <Button
         type="button"
         disabled={busy}
         onClick={async () => {
@@ -109,10 +117,12 @@ export function SaveNoteControl({ noteId }: { noteId: string }) {
           setBusy(false);
           settle();
         }}
-        className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[11px] font-medium text-foreground hover:bg-muted disabled:opacity-60"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center gap-1.5"
       >
         <BookmarkPlus size={13} aria-hidden /> Save to my notes
-      </button>
+      </Button>
     );
   }
 
@@ -121,9 +131,14 @@ export function SaveNoteControl({ noteId }: { noteId: string }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Tip label="You saved it beside your notes in My Ri.">
-          <button data-slot="action-button" data-variant="ghost" type="button" className="inline-flex h-7 items-center gap-1 rounded-md bg-primary/10 px-2 text-[11px] font-medium text-primary hover:bg-primary/15">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="inline-flex items-center gap-1"
+          >
             <Check size={13} aria-hidden /> In my notes <ChevronDown size={11} aria-hidden />
-          </button>
+          </Button>
         </Tip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

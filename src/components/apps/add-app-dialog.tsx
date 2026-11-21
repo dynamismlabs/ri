@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -72,8 +72,18 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
             </div>
           )}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button type="submit" disabled={busy || !name.trim() || !url.trim()}>{busy && <Loader2 size={14} className="animate-spin" />}Continue</Button>
+            <Button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              variant="ghost"
+              size="md"
+            >Cancel</Button>
+            <Button
+              type="submit"
+              disabled={busy || !name.trim() || !url.trim()}
+              variant="primary"
+              size="md"
+            >{busy && <Loader2 size={14} className="animate-spin" />}Continue</Button>
           </DialogFooter>
         </form>
       </DialogContent>

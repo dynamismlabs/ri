@@ -1,4 +1,5 @@
 'use client';
+import { ChipButton } from '@/components/system/chip-button';
 import { Loader2, Plus } from 'lucide-react';
 import { useOrchestratorName } from '@/hooks/use-user-state';
 import { OrchestratorAvatar } from '@/components/shared/orchestrator-mark';
@@ -40,14 +41,16 @@ function ChatHeaderBar({
       <ChatMenu sessionId={currentChat?.session?.id ?? null} />
       <MainChatHistoryMenu scope={scope} onOpenChat={!enabled ? openExecution : undefined} />
       <Tip label={scope === null ? "Start a new chat (archives the current one)" : "Start a new shared chat"}>
-        <button
+        <ChipButton
           onClick={onNewChat}
           disabled={newChatPending || !enabled}
-          data-slot="chip-button" className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all disabled:opacity-50"
+          variant="secondary"
+          size="compact"
+          className="flex items-center gap-1"
         >
           {newChatPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
           New
-        </button>
+        </ChipButton>
       </Tip>
     </div>
   );

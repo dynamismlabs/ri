@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import type { CSSProperties, ReactNode } from 'react';
 import { Archive, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -106,24 +108,28 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
         <>
           <span className="text-[10px] font-medium tabular-nums text-muted-foreground">{count} selected</span>
           <div className="flex-1" />
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => void handleConfirmArchive()}
             disabled={count === 0 || bulkArchive.isPending}
-            className="inline-flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            variant="primary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             <Archive size={11} />
             Archive
-          </button>
+          </Button>
           <Tip label="Stop selecting" shortcut={HOTKEYS.cancelSelection.label}>
-            <button data-slot="action-button" data-variant="ghost"
+            <Button
               type="button"
               onClick={() => selection?.exit()}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center gap-1"
             >
               <X size={11} />
               Cancel
-            </button>
+            </Button>
           </Tip>
         </>
       ) : (
@@ -132,27 +138,19 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
           <div className="flex-1" />
           {selection && (
             <div className="flex items-center gap-1">
-              <Tip label="Select chats to archive">
-                <button data-slot="action-button" data-variant="ghost"
+
+                <IconButton
                   type="button"
                   onClick={selection.enter}
-                  className="rounded p-1 text-muted-foreground/70 transition-colors hover:bg-muted/50 hover:text-foreground"
-                  aria-label="Select chats to archive"
+                  label="Select chats to archive"
+                  tooltip="Select chats to archive"
+                  variant="ghost"
+                  size="sm"
                 >
                   <Archive size={12} />
-                </button>
-              </Tip>
-              {tab === 'workspace' && canConfigure && <Tip label="New agent">
-                <button
-                  type="button"
-                  onClick={openWorkspaceCreate}
-                  data-slot="new-agent"
-                  className="rounded bg-primary p-1 text-primary-foreground transition-opacity hover:opacity-90"
-                  aria-label="New agent"
-                >
-                  <Plus size={12} />
-                </button>
-              </Tip>}
+                </IconButton>
+
+              {tab === 'workspace' && canConfigure && <IconButton type="button" label="New agent" variant="secondary" size="sm" onClick={openWorkspaceCreate}><Plus /></IconButton>}
             </div>
           )}
         </>

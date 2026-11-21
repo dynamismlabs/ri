@@ -1,9 +1,10 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { MessageCircle, Send, Tag, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { MessageResponse } from '@/components/ai-elements/message';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { allowsEvaluationChanges, evaluationContextSchema, type EvaluationContext } from '@/lib/plugins/evaluation-contract';
@@ -159,16 +160,42 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
       {open && <section aria-label="Temporary demo chat" className="flex max-h-[72dvh] w-96 max-w-full flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div><p className="text-sm font-medium">Demo chat</p><p className="text-xs text-muted-foreground">Discuss the context you attach. Reload ends the chat.</p></div>
-          <Button size="icon" variant="ghost" aria-label="Close demo chat" onClick={() => setOpen(false)}><X className="size-4" /></Button>
+          <IconButton
+            onClick={() => setOpen(false)}
+            label="Close demo chat"
+            variant="ghost"
+            size="sm"
+          ><X className="size-4" /></IconButton>
         </div>
         <div className="flex gap-2 px-4 pt-3">
-          {[0, 1].map(index => <Button key={index} size="sm" variant={selected === index ? 'secondary' : 'ghost'} aria-pressed={selected === index} onClick={() => { setSelected(index); setError(null); }}>Chat {index + 1}</Button>)}
+          {[0, 1].map(index => <Button
+            key={index}
+            aria-pressed={selected === index}
+            onClick={() => { setSelected(index); setError(null); }}
+            variant={selected === index ? 'secondary' : 'ghost'}
+            size="sm"
+          >Chat {index + 1}</Button>)}
         </div>
         <div className="space-y-2 px-4 py-3">
           {chat.contextId ? <div className="flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1 text-xs">
             <span><Tag className="mr-1 inline size-3" />{context ? viewName(context) + ('inputs' in context ? ` · Growth ${context.inputs.monthlyGrowthRate}%` : '') : 'Attached result · View closed'}</span>
-            <Button size="icon" variant="ghost" className="size-6" aria-label={context && 'kind' in context ? 'Remove result context' : 'Remove scenario context'} onClick={() => patch(selected, value => ({ ...value, contextId: null, allowChanges: false }))}><X className="size-3" /></Button>
-          </div> : Object.keys(contexts).length > 1 ? <div className="flex flex-wrap gap-1">{Object.values(contexts).map(value => <Button key={value.invocationId} variant="outline" size="sm" onClick={() => patch(selected, chat => ({ ...chat, contextId: value.invocationId, allowChanges: false }))}><Tag className="size-3" />Attach {viewName(value)}</Button>)}</div> : <Button variant="outline" size="sm" disabled={!latest} onClick={() => patch(selected, value => ({ ...value, contextId: latest, allowChanges: false }))}><Tag className="size-3" />{latest && contexts[latest] && 'kind' in contexts[latest] ? 'Attach result' : 'Attach scenario'}</Button>}
+            <IconButton
+              onClick={() => patch(selected, value => ({ ...value, contextId: null, allowChanges: false }))}
+              label={context && 'kind' in context ? 'Remove result context' : 'Remove scenario context'}
+              variant="ghost"
+              size="sm"
+            ><X className="size-3" /></IconButton>
+          </div> : Object.keys(contexts).length > 1 ? <div className="flex flex-wrap gap-1">{Object.values(contexts).map(value => <Button
+            key={value.invocationId}
+            onClick={() => patch(selected, chat => ({ ...chat, contextId: value.invocationId, allowChanges: false }))}
+            variant="secondary"
+            size="sm"
+          ><Tag className="size-3" />Attach {viewName(value)}</Button>)}</div> : <Button
+            disabled={!latest}
+            onClick={() => patch(selected, value => ({ ...value, contextId: latest, allowChanges: false }))}
+            variant="secondary"
+            size="sm"
+          ><Tag className="size-3" />{latest && contexts[latest] && 'kind' in contexts[latest] ? 'Attach result' : 'Attach scenario'}</Button>}
           {context && !allowsEvaluationChanges(context) ? <p className="text-xs text-muted-foreground">Read only. The agent can discuss this result, but cannot change this app or its records.</p> : context && <label className="flex items-center gap-2 text-xs text-muted-foreground"><input type="checkbox" checked={chat.allowChanges} onChange={event => patch(selected, value => ({ ...value, allowChanges: event.target.checked }))} />{'kind' in context ? context.app === 'Excalidraw' ? 'Allow updates to this diagram' : context.app === 'Flint charts' ? 'Allow updates to this chart' : context.app === 'tldraw' ? 'Allow updates to this canvas' : context.kind === 'account' ? 'Allow calls on this account' : 'Allow changes to this building view' : 'Allow updates to the sample scenario'}</label>}
         </div>
         <div ref={log} role="log" aria-label={`Demo chat ${selected + 1} messages`} className="min-h-20 flex-1 space-y-3 overflow-y-auto px-4 pb-3">
@@ -176,7 +203,17 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
           {chat.messages.map((message, index) => <div key={index} className={message.role === 'user' ? 'ml-6 rounded-lg bg-muted px-3 py-2' : 'mr-2 px-1 py-1'}>
             <p className="mb-1 text-[10px] font-medium text-muted-foreground">{message.role === 'user' ? 'You' : 'Agent'}</p>
             {message.role === 'assistant' ? <MessageResponse mode="static" className="break-words text-xs">{message.text}</MessageResponse> : <p className="whitespace-pre-wrap break-words text-xs">{message.text}</p>}
-            {message.approval && <div className="mt-2 space-y-2 rounded-md border border-border p-2"><p className="text-xs font-medium">{message.approval.toolName}</p><pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-[10px]">{JSON.stringify(message.approval.arguments, null, 2).slice(0, 4000)}</pre><div className="flex gap-2"><Button size="sm" disabled={busy} onClick={() => void decide(selected, message, true)}>Approve once</Button><Button size="sm" variant="outline" disabled={busy} onClick={() => void decide(selected, message, false)}>Decline</Button></div></div>}
+            {message.approval && <div className="mt-2 space-y-2 rounded-md border border-border p-2"><p className="text-xs font-medium">{message.approval.toolName}</p><pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-[10px]">{JSON.stringify(message.approval.arguments, null, 2).slice(0, 4000)}</pre><div className="flex gap-2"><Button
+              disabled={busy}
+              onClick={() => void decide(selected, message, true)}
+              variant="primary"
+              size="md"
+            >Approve once</Button><Button
+              disabled={busy}
+              onClick={() => void decide(selected, message, false)}
+              variant="secondary"
+              size="sm"
+            >Decline</Button></div></div>}
             {message.status && <p role="status" className="mt-2 text-[10px] text-muted-foreground">{message.status}</p>}
           </div>)}
           {busy && <p role="status" className="text-xs text-muted-foreground">Reading the attached example…</p>}
@@ -184,10 +221,21 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
         </div>
         <form className="flex items-end gap-2 border-t border-border p-3" onSubmit={event => { event.preventDefault(); void submit(); }}>
           <textarea aria-label="Message the demo agent" rows={2} maxLength={2000} value={chat.draft} onChange={event => patch(selected, value => ({ ...value, draft: event.target.value }))} placeholder="Ask about this result…" className="min-w-0 flex-1 resize-none rounded-md border border-input bg-transparent px-3 py-2 text-xs outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-          <Button type="submit" size="icon" disabled={busy || !context || !chat.draft.trim()} aria-label="Send demo message"><Send className="size-4" /></Button>
+          <IconButton
+            type="submit"
+            disabled={busy || !context || !chat.draft.trim()}
+            label="Send demo message"
+            variant="primary"
+            size="md"
+          ><Send className="size-4" /></IconButton>
         </form>
       </section>}
-      <Button size="sm" onClick={show} aria-expanded={open}><MessageCircle className="size-4" />{open ? 'Hide demo chat' : latest && contexts[latest] && 'kind' in contexts[latest] ? 'Chat about result' : 'Chat about scenario'}</Button>
+      <Button
+        onClick={show}
+        aria-expanded={open}
+        variant="secondary"
+        size="md"
+      ><MessageCircle className="size-4" />{open ? 'Hide demo chat' : latest && contexts[latest] && 'kind' in contexts[latest] ? 'Chat about result' : 'Chat about scenario'}</Button>
     </div>
   );
 }

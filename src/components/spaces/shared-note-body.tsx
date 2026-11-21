@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { Lock, PencilLine, Users } from 'lucide-react';
@@ -55,9 +56,9 @@ export function SharedNoteBody({ note }: { note: NoteRecord }) {
             </span>
           )}
           {href && !gone && (
-            <a data-slot="action-button" href={href} className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-medium text-foreground hover:bg-muted">
+            <Button asChild variant="secondary" size="sm" className="ml-auto inline-flex items-center gap-1"><a href={href}>
               <PencilLine size={12} aria-hidden /> Edit in {teamName}
-            </a>
+            </a></Button>
           )}
         </div>
         <h1 className="note-title text-2xl font-semibold leading-tight">{note.title?.trim() || 'Untitled note'}</h1>

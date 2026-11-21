@@ -1,5 +1,6 @@
 'use client'
 
+import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState, useRef, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { DefaultChatTransport } from 'ai'
@@ -193,19 +194,17 @@ export default function PlaygroundPage() {
               }}
             />
             <div className="flex items-center justify-end gap-1 px-2 pb-1.5">
-              <button
+              <IconButton
                 type="button"
                 onClick={() => (isStreaming ? stop() : handleSubmit())}
                 disabled={!isStreaming && !input.trim()}
-                className={cn(
-                  'flex-shrink-0 p-1.5 rounded-md transition-colors text-primary',
-                  isStreaming ? 'hover:bg-destructive/10' : 'hover:bg-primary/10',
-                  !isStreaming && !input.trim() && 'opacity-40',
-                )}
-                aria-label={isStreaming ? 'Stop' : 'Send'}
+                label={isStreaming ? 'Stop' : 'Send'}
+                variant="ghost"
+                size="sm"
+                className="flex-shrink-0"
               >
                 {isStreaming ? <Square size={16} /> : <Send size={16} />}
-              </button>
+              </IconButton>
             </div>
           </div>
         </div>

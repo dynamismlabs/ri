@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useRef, useSyncExternalStore, type ComponentProps } from 'react';
 import { flushSync } from 'react-dom';
 import { X } from 'lucide-react';
@@ -62,10 +64,18 @@ export function BesideFileTab({ host, active, onSelect, className, selectProps, 
   return (
     <div {...{ [BESIDE_FILE]: '' }} data-active={active || undefined} className={cn('flex min-w-0 shrink items-center', className)}>
       <Tip label={name} onlyWhenTextHidden>
-        <button type="button" aria-pressed={selectProps?.role ? undefined : active} {...selectProps} onClick={select} className="flex min-w-0 items-center gap-1.5 self-stretch outline-none focus-visible:underline">
+        <Button
+          type="button"
+          aria-pressed={selectProps?.role ? undefined : active}
+          {...selectProps}
+          onClick={select}
+          variant="link"
+          size="xs"
+          className="flex min-w-0 items-center gap-1.5 self-stretch"
+        >
           <PreviewIcon preview={open.preview} size={12} className="shrink-0" />
           <span className="max-w-40 truncate">{name}</span>
-        </button>
+        </Button>
       </Tip>
       {withClose && <BesideFileClose host={host} className="ml-1" />}
     </div>
@@ -78,17 +88,20 @@ export function BesideFileClose({ host, className }: { host: string; className?:
   const close = useCloseBesideFile(host);
   if (!open) return null;
   return (
-    <Tip label="Close">
-      <button data-slot="action-button" data-variant="ghost"
+
+      <IconButton
         type="button"
         {...{ [BESIDE_FILE]: '' }}
-        aria-label={`Close ${previewName(open.preview)}`}
         onClick={close}
-        className={cn('inline-flex size-4 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground', className)}
+        label={`Close ${previewName(open.preview)}`}
+        tooltip="Close"
+        variant="ghost"
+        size="xs"
+        className={cn("inline-flex shrink-0 items-center justify-center", className)}
       >
         <X size={11} />
-      </button>
-    </Tip>
+      </IconButton>
+
   );
 }
 

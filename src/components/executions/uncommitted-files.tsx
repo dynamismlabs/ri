@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui';
 import { GitCompareArrows } from 'lucide-react';
 import { FileIcon, FolderIcon } from '@/components/file-icon';
@@ -45,13 +46,15 @@ export function archiveAnywayDialog(dirty: readonly DirtyArchive[], onReview: (i
                 {d.label?.trim() || 'Untitled'}
               </span>
               <AlertDialogPrimitive.Cancel asChild>
-                <button
+                <Button
                   type="button"
                   onClick={() => onReview(d.id)}
-                  className="inline-flex flex-shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex flex-shrink-0 items-center gap-1"
                 >
                   <GitCompareArrows size={12} /> Review
-                </button>
+                </Button>
               </AlertDialogPrimitive.Cancel>
             </div>
             <UncommittedFileList files={d.files} omitted={d.omitted} />

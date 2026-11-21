@@ -3,7 +3,7 @@ import { trpcClient } from '@/lib/trpc/client';
 
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { HostedEndpointFields } from '@/components/integrations/hosted-endpoint-fields';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { apiErrorText } from '@/lib/api/client';
 import { integrationEndpointReady, type HostedEndpointSelection } from '@/lib/client/integration-endpoint';
@@ -82,7 +82,12 @@ export function ConnectionRequest(props: ConnectionRequestProps) {
           <Input id="connection-token" type="password" autoComplete="off" value={token} onChange={event => setToken(event.target.value)} disabled={busy} required />
         </div>
       </>}
-      <Button type="submit" disabled={busy || needsAccountChoice || !props.providerId || (bearer && !token.trim()) || !integrationEndpointReady(options.endpointConfig, endpointSelection)}>
+      <Button
+        type="submit"
+        disabled={busy || needsAccountChoice || !props.providerId || (bearer && !token.trim()) || !integrationEndpointReady(options.endpointConfig, endpointSelection)}
+        variant="primary"
+        size="md"
+      >
         {busy ? oauth ? 'Preparing sign-in…' : 'Connecting…' : oauth ? 'Continue to sign-in' : `Connect ${props.displayName}`}
       </Button>
     </form>}

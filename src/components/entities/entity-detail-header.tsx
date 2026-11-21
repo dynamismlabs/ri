@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { IconButton } from '@/components/system/icon-button';
 import { Archive, MoreHorizontal, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ENTITY_HEADER } from './entity-header';
@@ -16,7 +17,7 @@ export function EntityActionsMenu({ onArchive, onDelete, archiveLabel = 'Archive
   onArchive?: () => void; onDelete?: () => void; archiveLabel?: string; deleteLabel?: string; children?: ReactNode;
 }) {
   return <DropdownMenu>
-    <DropdownMenuTrigger aria-label="More actions" className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/50 hover:text-foreground"><MoreHorizontal size={15} /></DropdownMenuTrigger>
+    <DropdownMenuTrigger asChild><IconButton label="More actions" size="sm"><MoreHorizontal /></IconButton></DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="w-48 text-xs">
       {children}
       {onArchive && <DropdownMenuItem onSelect={onArchive}><Archive size={13} /> {archiveLabel}</DropdownMenuItem>}

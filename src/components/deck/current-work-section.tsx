@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { Check, CornerUpLeft, ListTree } from 'lucide-react';
 import { useTasks, useTaskAttention } from '@/hooks/use-tasks';
 import { useTaskLifecycle } from '@/hooks/use-task-lifecycle';
@@ -106,13 +107,15 @@ function ActionButton({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <Button
         aria-label={title}
         onClick={onClick}
-        className={cn('flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground', className)}
+        variant="secondary"
+        size="xs"
+        className={cn("flex w-7 items-center justify-center", className)}
       >
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }

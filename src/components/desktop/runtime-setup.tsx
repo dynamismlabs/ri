@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { apiErrorText } from '@/lib/api/client';
 import { HARNESS_IDS, HARNESS_REGISTRY } from '@/lib/harness/registry';
@@ -43,7 +43,12 @@ export function RuntimeSetup() {
         </label>;
       })}
       <p className="text-muted-foreground">Install optional local speech in Voice settings, or configure an external Parakeet service here. The embeddings key enables semantic search. Keyword search works without it.</p>
-      <Button disabled={saving || !Object.keys(patch).length} onClick={() => void save()}>Save runtime settings</Button>
+      <Button
+        disabled={saving || !Object.keys(patch).length}
+        onClick={() => void save()}
+        variant="primary"
+        size="md"
+      >Save runtime settings</Button>
     </div>
   </details>;
 }

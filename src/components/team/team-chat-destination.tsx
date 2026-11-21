@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useState } from 'react';
 import { useMainChat } from '@/hooks/use-main-chat';
 import { useWorkspaces } from '@/hooks/use-workspaces';
@@ -47,6 +48,14 @@ function UnavailableChat({ error, retry }: { error: unknown; retry: () => void }
   return <section className="flex flex-1 flex-col items-center justify-center gap-3 p-6" aria-label="Chat unavailable">
     <h2 className="text-sm font-medium">This chat is unavailable</h2>
     <p className="max-w-sm text-center text-sm text-muted-foreground">{apiErrorText(error)}</p>
-    <div className="flex gap-3 text-sm"><button onClick={retry} className="underline">Retry</button><button onClick={() => nav.show('agents')} className="underline">Choose a chat</button></div>
+    <div className="flex gap-3 text-sm"><Button
+      onClick={retry}
+      variant="link"
+      size="sm"
+    >Retry</Button><Button
+      onClick={() => nav.show('agents')}
+      variant="link"
+      size="sm"
+    >Choose a chat</Button></div>
   </section>;
 }

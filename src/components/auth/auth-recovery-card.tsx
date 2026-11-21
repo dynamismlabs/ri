@@ -1,12 +1,14 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useClaudeAuthStatus } from '@/hooks/use-claude-login';
 import { sessionsApi } from '@/lib/api/sessions';
 import { executionView } from '@/lib/client/active-view';
 import type { StuckSession } from '@/lib/server/operations/claude-auth/stuck-sessions';
 import { trpcClient } from '@/lib/trpc/client';
-import { cn } from '@/lib/utils';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, Loader2, RefreshCw, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -97,14 +99,16 @@ function CardHeader({ count, onClose }: { count: number; onClose: () => void }) 
       <div className="text-[12px] font-medium">
         {count} session{count === 1 ? '' : 's'} paused
       </div>
-      <button
+      <IconButton
         type="button"
         onClick={onClose}
-        aria-label="Dismiss"
-        className="inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+        label="Dismiss"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center justify-center"
       >
         <X size={12} />
-      </button>
+      </IconButton>
     </div>
   );
 }
@@ -149,15 +153,13 @@ function StuckSessionRow({ session }: { session: StuckSession }) {
       </button>
       {canResend && (
         <Tip label="Resend the last message in this session">
-          <button
+          <Button
             type="button"
             onClick={() => resend.mutate()}
             disabled={resend.isPending}
-            className={cn(
-              'shrink-0 inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium',
-              'bg-foreground text-background hover:bg-foreground/90',
-              'disabled:opacity-60 disabled:cursor-not-allowed',
-            )}
+            variant="primary"
+            size="md"
+            className="shrink-0 inline-flex items-center gap-1"
           >
             {resend.isPending ? (
               <Loader2 size={10} className="animate-spin" />
@@ -165,7 +167,7 @@ function StuckSessionRow({ session }: { session: StuckSession }) {
               <RefreshCw size={10} />
             )}
             <span>Resend</span>
-          </button>
+          </Button>
         </Tip>
       )}
     </div>
@@ -202,11 +204,13 @@ function CardFooter({ sessions }: { sessions: StuckSession[] }) {
 
   return (
     <div className="border-t border-border px-3 py-2">
-      <button
+      <Button
         type="button"
         onClick={() => resendAll.mutate()}
         disabled={resendAll.isPending}
-        className="w-full inline-flex items-center justify-center gap-1.5 rounded-md bg-muted px-2.5 py-1.5 text-[11px] font-medium hover:bg-muted/70 disabled:opacity-60 disabled:cursor-not-allowed"
+        variant="secondary"
+        size="sm"
+        className="w-full inline-flex items-center justify-center gap-1.5"
       >
         {resendAll.isPending ? (
           <>
@@ -219,7 +223,7 @@ function CardFooter({ sessions }: { sessions: StuckSession[] }) {
             <span>Resend all</span>
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

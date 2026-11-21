@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useRef, useState } from 'react';
 import { History, Loader2 } from 'lucide-react';
 import {
@@ -42,18 +43,17 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
 
   return (
     <div className="relative" ref={menuRef}>
-      <button data-slot="chip-button" aria-expanded={open}
+      <ChipButton
+        aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={cn(
-          'flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] transition-all',
-          open
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-        )}
+        variant="secondary"
+        size="compact"
+        pressed={open}
+        className="flex items-center gap-1"
       >
         <History size={10} />
         History
-      </button>
+      </ChipButton>
 
       {open && (
         <div data-slot="popover-content" className="absolute right-0 top-full mt-1 w-64 max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl z-50 py-1">

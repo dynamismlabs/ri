@@ -1,7 +1,7 @@
 'use client';
 
 import { RuntimeSetup } from '@/components/desktop/runtime-setup';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -74,7 +74,12 @@ function ActivationSettings({ update, disabled, onAction }: {
     </div>}
     {update.approved && !update.now && update.window && <p className="text-muted-foreground">Scheduled {maintenanceWindowText(update.window)}.</p>}
     <div className="flex flex-wrap gap-2">
-      <Button disabled={disabled} onClick={schedule}>{scheduled ? 'Schedule update' : 'Update when idle'}</Button>
+      <Button
+        disabled={disabled}
+        onClick={schedule}
+        variant="primary"
+        size="md"
+      >{scheduled ? 'Schedule update' : 'Update when idle'}</Button>
     </div>
   </div>;
 }
@@ -91,10 +96,30 @@ function WhatIsWaiting({ update, canUse, disabled, onAction }: {
   return <div className="space-y-2">
     {update.waitingLong && <p role="status" className="text-muted-foreground">This update has been waiting for over a day.</p>}
     {canUse && <div className="flex flex-wrap gap-2">
-      {!running && <Button disabled={disabled} onClick={() => void onAction({ action: 'apply' })}>Update now</Button>}
-      {running && <Button disabled={disabled} variant="outline" onClick={() => void onAction({ action: 'apply-now' })}>Update now and end them</Button>}
-      {waiting && update.automatic && !update.heldUntil && <Button disabled={disabled} variant="ghost" onClick={() => void onAction({ action: 'later' })}>Not now</Button>}
-      {waiting && !update.automatic && <Button disabled={disabled} variant="ghost" onClick={() => void onAction({ action: 'later' })}>Don&apos;t update yet</Button>}
+      {!running && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'apply' })}
+        variant="primary"
+        size="md"
+      >Update now</Button>}
+      {running && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'apply-now' })}
+        variant="secondary"
+        size="sm"
+      >Update now and end them</Button>}
+      {waiting && update.automatic && !update.heldUntil && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'later' })}
+        variant="ghost"
+        size="sm"
+      >Not now</Button>}
+      {waiting && !update.automatic && <Button
+        disabled={disabled}
+        onClick={() => void onAction({ action: 'later' })}
+        variant="ghost"
+        size="sm"
+      >Don&apos;t update yet</Button>}
     </div>}
   </div>;
 }
@@ -110,12 +135,27 @@ function GoBack({ disabled, onConfirm }: { disabled: boolean; onConfirm: () => P
     } catch (error) { toast.error(apiErrorText(error)); }
   };
   return <div className="space-y-2">
-    {!text && <Button variant="outline" disabled={disabled} onClick={() => void look()}>Go back to the previous version…</Button>}
+    {!text && <Button
+      disabled={disabled}
+      onClick={() => void look()}
+      variant="secondary"
+      size="sm"
+    >Go back to the previous version…</Button>}
     {text && <>
       <p className="whitespace-pre-wrap text-muted-foreground">{text}</p>
       <div className="flex gap-2">
-        {available && <Button variant="destructive" disabled={disabled} onClick={() => void onConfirm().then(() => setText(''))}>Roll back</Button>}
-        <Button variant="ghost" disabled={disabled} onClick={() => setText('')}>{available ? 'Cancel' : 'Close'}</Button>
+        {available && <Button
+          disabled={disabled}
+          onClick={() => void onConfirm().then(() => setText(''))}
+          variant="destructive"
+          size="sm"
+        >Roll back</Button>}
+        <Button
+          disabled={disabled}
+          onClick={() => setText('')}
+          variant="ghost"
+          size="sm"
+        >{available ? 'Cancel' : 'Close'}</Button>
       </div>
     </>}
   </div>;
@@ -187,8 +227,18 @@ export function UpdatesSection() {
       <summary className="cursor-pointer font-medium">Advanced</summary>
       <div className="mt-4 space-y-4">
         {update.configured && !fromCheckout && <div className="flex flex-wrap gap-2">
-          <Button variant="outline" disabled={disabled || update.phase === 'recovery-required'} onClick={() => void action({ action: 'check' })}>Check for updates</Button>
-          {update.release && ['available', 'failed'].includes(update.phase) && <Button disabled={disabled} onClick={() => void action({ action: 'download' })}>{update.phase === 'failed' ? 'Retry download' : 'Download update'}</Button>}
+          <Button
+            disabled={disabled || update.phase === 'recovery-required'}
+            onClick={() => void action({ action: 'check' })}
+            variant="secondary"
+            size="sm"
+          >Check for updates</Button>
+          {update.release && ['available', 'failed'].includes(update.phase) && <Button
+            disabled={disabled}
+            onClick={() => void action({ action: 'download' })}
+            variant="primary"
+            size="md"
+          >{update.phase === 'failed' ? 'Retry download' : 'Download update'}</Button>}
         </div>}
         {update.policy && !fromCheckout && <>
           <div className="flex items-center justify-between gap-4">

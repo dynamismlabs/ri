@@ -2,7 +2,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ClipboardList, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import type { ChatEventDTO } from '@/lib/api/dto/chat-event';
 import { api } from '@/lib/api/client';
@@ -112,8 +112,18 @@ export function ConnectedForm({formId, bare = false}: {formId: string; bare?: bo
             onPreview={setPreview} />}
           {failure && <p role="alert" className="text-xs text-destructive">{failure}</p>}
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" className="h-8 text-xs" disabled={busy} onClick={() => void send({action: 'accept'})}>{busy && <Loader2 size={12} className="animate-spin" />}{parsed.form.fields.length ? 'Submit' : 'OK'}</Button>
-            <Button size="sm" variant="ghost" className="h-8 text-xs" disabled={busy} onClick={() => void send({action: 'decline'})}>Decline</Button>
+            <Button
+              disabled={busy}
+              onClick={() => void send({action: 'accept'})}
+              variant="primary"
+              size="md"
+            >{busy && <Loader2 size={12} className="animate-spin" />}{parsed.form.fields.length ? 'Submit' : 'OK'}</Button>
+            <Button
+              disabled={busy}
+              onClick={() => void send({action: 'decline'})}
+              variant="ghost"
+              size="sm"
+            >Decline</Button>
           </div>
         </>}
     {preview && <FormPreview formId={formId} chatId={form.chatId} option={preview} onClose={() => setPreview(null)} />}

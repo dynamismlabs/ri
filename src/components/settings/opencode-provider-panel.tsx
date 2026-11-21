@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { apiErrorStatus } from '@/lib/api/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -83,7 +83,11 @@ export function OpenCodeProviderPanel() {
         ))}
       </div>
       {!needle && visibleProviders.length < ordered.length && (
-        <Button size="xs" variant="ghost" onClick={() => setViewAll(true)}>View all providers</Button>
+        <Button
+          onClick={() => setViewAll(true)}
+          variant="ghost"
+          size="xs"
+        >View all providers</Button>
       )}
     </div>
   );
@@ -162,7 +166,12 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
       <div className="flex items-center justify-between border-t border-border/70 px-2.5 py-2">
         <span className="inline-flex items-center gap-1 text-[10.5px] text-emerald-600 dark:text-emerald-400"><CheckCircle2 size={11} /> Ready</span>
         {methods.data?.canDisconnect && (
-          <Button size="xs" variant="ghost" disabled={disconnect.isPending} onClick={() => disconnect.mutate()}>
+          <Button
+            disabled={disconnect.isPending}
+            onClick={() => disconnect.mutate()}
+            variant="ghost"
+            size="xs"
+          >
             <LogOut /> Disconnect
           </Button>
         )}
@@ -197,7 +206,12 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
           />
           <div className="flex gap-2">
             <Input type="password" autoComplete="off" value={apiKey} onChange={(event) => setApiKey(event.target.value)} placeholder={`${provider.name} API key`} className="h-8 rounded-md text-[11px]" />
-            <Button size="sm" disabled={!apiKey.trim() || setKey.isPending} onClick={() => setKey.mutate()}>
+            <Button
+              disabled={!apiKey.trim() || setKey.isPending}
+              onClick={() => setKey.mutate()}
+              variant="primary"
+              size="md"
+            >
               <KeyRound /> Save
             </Button>
           </div>
@@ -211,7 +225,12 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             </a>
           )}
           {flow.completion === 'code' && <Input value={code} onChange={(event) => setCode(event.target.value)} placeholder="Authorization code" className="h-8 rounded-md text-[11px]" />}
-          <Button size="sm" disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending} onClick={() => completeOAuth.mutate()}>
+          <Button
+            disabled={(flow.completion === 'code' && !code.trim()) || completeOAuth.isPending}
+            onClick={() => completeOAuth.mutate()}
+            variant="primary"
+            size="md"
+          >
             {completeOAuth.isPending && <Loader2 className="animate-spin" />} Finish setup
           </Button>
         </div>
@@ -222,7 +241,12 @@ function ProviderSetup({ provider, onChanged }: { provider: UpstreamProvider; on
             inputs={inputs}
             onChange={(id, value) => setInputs((current) => ({ ...current, [id]: value }))}
           />
-          <Button size="sm" disabled={beginOAuth.isPending} onClick={() => beginOAuth.mutate()}>
+          <Button
+            disabled={beginOAuth.isPending}
+            onClick={() => beginOAuth.mutate()}
+            variant="primary"
+            size="md"
+          >
             {beginOAuth.isPending && <Loader2 className="animate-spin" />} Connect with {method.name}
           </Button>
         </div>

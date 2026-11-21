@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
 import { USAGE_WARNING_THRESHOLDS } from '@/lib/harness/rate-limit-display';
@@ -29,13 +29,12 @@ export function UsageWarningsSetting({ compact = false }: { compact?: boolean })
             <Button
               key={threshold.percent}
               type="button"
-              size="xs"
-              variant={on ? 'default' : 'outline'}
-              className="px-2 text-[11px] tabular-nums"
               disabled={!preference.isSuccess}
               aria-label={aboveZero ? 'Above 0%' : undefined}
               aria-pressed={on}
               onClick={() => update.mutate({ [threshold.field]: !on })}
+              variant="secondary"
+              size="xs"
             >
               {aboveZero ? '>0%' : `${threshold.percent}%`}
             </Button>

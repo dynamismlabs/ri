@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * Where a new execution starts, when it isn't the usual place (spec §3.3,
  * P3.1 on the phone). A plain + starts on the agent's default, the home
@@ -82,14 +83,16 @@ export function RunOnSheet({
                       {isDefault && <Check size={15} className="mt-0.5 text-foreground/70" />}
                     </button>
                     {!isDefault && choice.ready && (
-                      <button
+                      <Button
                         type="button"
                         disabled={setDefault.isPending}
                         onClick={() => setDefault.mutate(choice.deviceId)}
-                        className="flex-shrink-0 rounded-lg px-2 py-1.5 text-[12px] text-primary active:bg-primary/10 disabled:opacity-50"
+                        variant="ghost"
+                        size="touch"
+                        className="flex-shrink-0"
                       >
                         Make default
-                      </button>
+                      </Button>
                     )}
                   </li>
                 );

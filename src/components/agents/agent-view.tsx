@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { apiErrorStatus } from '@/lib/api/client';
 import { ChatLookupState, ChatRefreshBoundary } from '@/components/chat/chat-lookup-state';
@@ -313,12 +314,14 @@ export function AgentView({
         <div>
           <p className="text-[13px] font-semibold text-foreground">This agent isn&apos;t here anymore.</p>
           <p className="text-[11px] text-muted-foreground/80 mt-1">It may have been deleted, or the link is wrong.</p>
-          <button
+          <Button
             onClick={goHome}
-            className="mt-3 inline-flex items-center px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10"
+            variant="ghost"
+            size="sm"
+            className="mt-3 inline-flex items-center"
           >
             Back to Home
-          </button>
+          </Button>
         </div>
       </div>,
     );

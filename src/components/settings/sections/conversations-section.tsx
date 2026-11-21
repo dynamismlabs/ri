@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { trpc, trpcClient } from '@/lib/trpc/client';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -97,11 +97,19 @@ export function ConversationsSection() {
     <div className="space-y-2 text-sm">
       <p>Talk to your Ri agent from Slack or Buzz. Each connection has its own name and a fixed Ri destination. Conversations are saved in Ri and replies return to their originating thread.</p>
       <p className="text-muted-foreground">{`This connection lets people talk to Ri in Slack. The Slack account ${INTEGRATION_LABELS.singular} lets Ri search, read and send messages as you. One Slack app can support both, with separate permissions. Connect either capability on its own, or enable both.`}</p>
-      {query.data && !query.data.team && <Button variant="outline" size="sm" onClick={() => openSettings('plugins', { anchor: 'integrations:slack' })}>Connect Slack account tools</Button>}
+      {query.data && !query.data.team && <Button
+        onClick={() => openSettings('plugins', { anchor: 'integrations:slack' })}
+        variant="secondary"
+        size="sm"
+      >Connect Slack account tools</Button>}
       {query.data?.team && <p>Connected channel conversations are visible to this Ri team. Private DMs are not accepted. Each Slack participant must link their own Ri sign-in.</p>}
     </div>
     {query.isPending && <p role="status">Loading connections…</p>}
-    {query.error && <p role="alert">{apiErrorText(query.error)} <Button variant="outline" onClick={() => void query.refetch()}>Retry</Button></p>}
+    {query.error && <p role="alert">{apiErrorText(query.error)} <Button
+      onClick={() => void query.refetch()}
+      variant="secondary"
+      size="sm"
+    >Retry</Button></p>}
     {connections.map(connection => <section key={connection.id} id={`conversation-${connection.id}`} ref={connection.id === newConnectionId ? savedConnectionRef : undefined} tabIndex={-1} className="scroll-mt-4 space-y-3 rounded-lg border p-4 focus:outline-none focus:ring-2 focus:ring-ring" aria-label={connection.name}>
       {connection.id === newConnectionId && <div role="status" className="space-y-1 rounded-md bg-muted p-3">
         <p className="font-medium">{connection.provider === 'slack' ? 'Slack app saved' : 'Buzz connection saved'}</p>
@@ -110,19 +118,43 @@ export function ConversationsSection() {
       </div>}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div><h3 className="font-medium">{connection.name}</h3><p className="text-xs text-muted-foreground">{connection.provider === 'slack' ? 'Slack' : 'Buzz'} · {connection.enabled ? 'Enabled' : 'Paused'} · {query.data?.agents.find(agent => agent.id === connection.workspaceId)?.name ?? 'Personal orchestrator'}</p></div>
-        {query.data?.canManage && <div className="flex gap-2"><Button variant="outline" size="sm" disabled={disabled} onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.setEnabled.mutate({ id: connection.id, enabled: !connection.enabled }))}>{connection.enabled ? 'Pause' : 'Enable'}</Button>
-          <Button variant="outline" size="sm" disabled={disabled} onClick={() => mutate.mutate(async () => { await trpcClient.conversationIntegrations.remove.mutate({ id: connection.id }); if (connection.id === newConnectionId) { setNewConnectionId(null); setBuzzSetup(null); } })}>Disconnect</Button></div>}
+        {query.data?.canManage && <div className="flex gap-2"><Button
+          disabled={disabled}
+          onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.setEnabled.mutate({ id: connection.id, enabled: !connection.enabled }))}
+          variant="secondary"
+          size="sm"
+        >{connection.enabled ? 'Pause' : 'Enable'}</Button>
+          <Button
+            disabled={disabled}
+            onClick={() => mutate.mutate(async () => { await trpcClient.conversationIntegrations.remove.mutate({ id: connection.id }); if (connection.id === newConnectionId) { setNewConnectionId(null); setBuzzSetup(null); } })}
+            variant="secondary"
+            size="sm"
+          >Disconnect</Button></div>}
       </div>
       {connection.error && <p role="alert" className="text-sm text-destructive">{connection.error}</p>}
       {query.data?.canManage && connection.provider === 'slack' && <div className="flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" disabled={disabled} onClick={() => setEditing(editing === connection.id ? null : connection.id)}>Update Slack tokens</Button>
-        <Button variant="outline" size="sm" disabled={disabled} onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.retryDelivery.mutate({ id: connection.id }))}>Retry delivery</Button>
+        <Button
+          disabled={disabled}
+          onClick={() => setEditing(editing === connection.id ? null : connection.id)}
+          variant="secondary"
+          size="sm"
+        >Update Slack tokens</Button>
+        <Button
+          disabled={disabled}
+          onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.retryDelivery.mutate({ id: connection.id }))}
+          variant="secondary"
+          size="sm"
+        >Retry delivery</Button>
       </div>}
       {editing === connection.id && <form aria-label={`${connection.name} Slack tokens`} className="space-y-2 rounded border p-3" onSubmit={event => { event.preventDefault(); reconnect.mutate(connection.id); }}>
         <a className="inline-block text-sm underline" href="https://api.slack.com/apps" target="_blank" rel="noreferrer">Open Slack app settings</a>
         <SlackTokenField kind="app" id={`app-${connection.id}`} label="New app-level token" value={newAppToken} onChange={setNewAppToken} />
         <SlackTokenField kind="bot" id={`bot-${connection.id}`} label="New bot token" value={newBotToken} onChange={setNewBotToken} />
-        <p className="text-xs text-muted-foreground">Use tokens for this same app and workspace. Saved chats and pending replies are kept.</p><Button disabled={disabled}>Reconnect</Button>
+        <p className="text-xs text-muted-foreground">Use tokens for this same app and workspace. Saved chats and pending replies are kept.</p><Button
+          disabled={disabled}
+          variant="primary"
+          size="md"
+        >Reconnect</Button>
       </form>}
       <p className="break-words text-xs text-muted-foreground">{connection.channels.length ? `Channels: ${connection.channels.join(', ')}` : 'Personal DMs only'}</p>
       {connection.provider === 'slack' && <div className="space-y-3 border-t pt-3 text-sm">
@@ -135,22 +167,42 @@ export function ConversationsSection() {
           <a className="inline-block underline" href="https://api.slack.com/apps" target="_blank" rel="noreferrer">Open Slack app settings</a>
         </details>}
       </div>}
-      {(connection.provider === 'buzz' || !connection.identities.some(identity => identity.mine)) && <Button variant="outline" size="sm" disabled={disabled || !connection.enabled} onClick={() => mutate.mutate(async () => { const result = await trpcClient.conversationIntegrations.link.mutate({ id: connection.id }); setLink({ id: connection.id, command: result.bridgeCommand ?? result.command, buzz: connection.provider === 'buzz', expiresAt: Date.now() + result.expiresInMinutes * 60_000 }); })}>{connection.provider === 'buzz' ? 'Authorize my Buzz bridge' : link?.id === connection.id ? 'Generate new link code' : 'Link my Slack identity'}</Button>}
+      {(connection.provider === 'buzz' || !connection.identities.some(identity => identity.mine)) && <Button
+        disabled={disabled || !connection.enabled}
+        onClick={() => mutate.mutate(async () => { const result = await trpcClient.conversationIntegrations.link.mutate({ id: connection.id }); setLink({ id: connection.id, command: result.bridgeCommand ?? result.command, buzz: connection.provider === 'buzz', expiresAt: Date.now() + result.expiresInMinutes * 60_000 }); })}
+        variant="secondary"
+        size="sm"
+      >{connection.provider === 'buzz' ? 'Authorize my Buzz bridge' : link?.id === connection.id ? 'Generate new link code' : 'Link my Slack identity'}</Button>}
       {link?.id === connection.id && (link.buzz || !connection.identities.some(identity => identity.mine)) && <div className="space-y-3 text-sm">
         {link.buzz ? <p>Run this on the bridge computer with RI_CONVERSATION_TOKEN loaded. It binds that bridge to your current Ri sign-in. Its Buzz identity must use you as its registered owner and the owner-only gate.</p> : <>
           <p><strong>In Slack:</strong> {query.data?.team || connection.channels.length ? <>Open one of the connected channels above. Type <strong>@</strong> and select this Slack app, then paste the command below after the mention. Send it as one message.</> : <>Open a DM with this Slack app and send the command below.</>}</p>
           {!query.data?.team && connection.channels.length > 0 && <p>You can also send the command in a DM with this Slack app.</p>}
         </>}
         <code className="block break-all rounded bg-muted p-2">{link.command}</code>
-        <Button variant="outline" size="sm" onClick={() => void navigator.clipboard.writeText(link.command).then(() => setCopiedLinkCommand(link.command)).catch(error => setNotice(apiErrorText(error)))}>{copiedLinkCommand === link.command ? 'Link command copied' : 'Copy link command'}</Button>
+        <Button
+          onClick={() => void navigator.clipboard.writeText(link.command).then(() => setCopiedLinkCommand(link.command)).catch(error => setNotice(apiErrorText(error)))}
+          variant="secondary"
+          size="sm"
+        >{copiedLinkCommand === link.command ? 'Link command copied' : 'Copy link command'}</Button>
         <p className="text-muted-foreground">The code expires in 10 minutes. Generate a new link code if it expires.</p>
         {!link.buzz && <>
           <p>Slack should reply: “Your identity is linked. Send your message again to begin.” Ri checks for that link automatically until the code expires.</p>
           <p role="status">Waiting for your Slack message…</p>
-          <Button variant="outline" size="sm" disabled={query.isFetching} onClick={() => void query.refetch()}>{query.isFetching ? 'Checking…' : 'Check link'}</Button>
+          <Button
+            disabled={query.isFetching}
+            onClick={() => void query.refetch()}
+            variant="secondary"
+            size="sm"
+          >{query.isFetching ? 'Checking…' : 'Check link'}</Button>
         </>}
       </div>}
-      {connection.identities.map(identity => <p key={identity.id} className="flex items-center gap-2 text-xs">{identity.externalUserId}{identity.mine ? ' (you)' : ''}{identity.mine && <button type="button" className="underline" disabled={disabled} onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.unlink.mutate({ id: identity.id }))}>Unlink</button>}</p>)}
+      {connection.identities.map(identity => <p key={identity.id} className="flex items-center gap-2 text-xs">{identity.externalUserId}{identity.mine ? ' (you)' : ''}{identity.mine && <Button
+        type="button"
+        disabled={disabled}
+        onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.unlink.mutate({ id: identity.id }))}
+        variant="link"
+        size="sm"
+      >Unlink</Button>}</p>)}
       {connection.provider === 'slack' && connection.identities.some(identity => identity.mine) && <div className="space-y-2 border-t pt-3 text-sm">
         <h4 className="font-medium">7. Test a two-way conversation</h4>
         <ol className="list-decimal space-y-2 pl-5">
@@ -161,7 +213,11 @@ export function ConversationsSection() {
         <p className="text-muted-foreground">A reply confirms the conversation works in both directions. The same chat appears in Ri, where you can continue it too.</p>
       </div>}
     </section>)}
-    {query.data?.canManage && newConnectionId && <Button variant="outline" onClick={() => setNewConnectionId(null)}>Add another connection</Button>}
+    {query.data?.canManage && newConnectionId && <Button
+      onClick={() => setNewConnectionId(null)}
+      variant="secondary"
+      size="sm"
+    >Add another connection</Button>}
     {query.data?.canManage && !newConnectionId && <form aria-label="Add a conversation connection" className="space-y-4 rounded-lg border p-4" onSubmit={event => { event.preventDefault(); setNotice(''); create.mutate(); }}>
       <h3 className="font-medium">Add a conversation connection</h3>
       <div className="space-y-2"><Label htmlFor="conversation-provider">Service</Label><select id="conversation-provider" className="w-full rounded-md border bg-background p-2" value={provider} onChange={event => setProvider(event.target.value as 'slack' | 'buzz')}><option value="slack">Slack</option><option value="buzz">Buzz by Block</option></select></div>
@@ -170,7 +226,13 @@ export function ConversationsSection() {
         <SetupStep number={2} label="Create or open your Slack app">
           <p className="text-sm text-muted-foreground">Already created the app from Ri’s agent manifest? Open its settings and continue with step 3.</p>
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="button" variant="outline" disabled={disabled} onClick={() => mutate.mutate(async () => { const manifest = await trpcClient.conversationIntegrations.manifest.query({ name }); await navigator.clipboard.writeText(JSON.stringify(manifest, null, 2)); setCopiedManifestName(name); })}>{copiedManifestName === name ? 'Manifest copied' : 'Copy Slack app manifest'}</Button>
+            <Button
+              type="button"
+              disabled={disabled}
+              onClick={() => mutate.mutate(async () => { const manifest = await trpcClient.conversationIntegrations.manifest.query({ name }); await navigator.clipboard.writeText(JSON.stringify(manifest, null, 2)); setCopiedManifestName(name); })}
+              variant="secondary"
+              size="sm"
+            >{copiedManifestName === name ? 'Manifest copied' : 'Copy Slack app manifest'}</Button>
             <a className="text-sm underline" href="https://api.slack.com/apps" target="_blank" rel="noreferrer">Open Slack apps</a>
           </div>
           <p className="text-sm text-muted-foreground">To create an app, choose <strong>Create New App → From a manifest</strong> in Slack, select your Slack workspace, and paste the copied manifest. If you use Slack’s AI agent wizard instead, choose <strong>Starter agent</strong>.</p>
@@ -190,7 +252,12 @@ export function ConversationsSection() {
         <SetupStep number={5} label="Choose conversations and connect">
           <p className="text-sm text-muted-foreground">For channels, open each channel’s details in Slack, copy its <strong>Channel ID</strong>, and add this app to the channel.</p>
           {channelField}
-          <Button type="submit" disabled={disabled}>{create.isPending ? 'Connecting…' : 'Connect'}</Button>
+          <Button
+            type="submit"
+            disabled={disabled}
+            variant="primary"
+            size="md"
+          >{create.isPending ? 'Connecting…' : 'Connect'}</Button>
           <p className="text-xs text-muted-foreground">Next, link your Slack identity on the saved connection and try a message.</p>
         </SetupStep>
       </ol> : <>
@@ -198,10 +265,23 @@ export function ConversationsSection() {
         {channelField}
         <div className="space-y-2"><Label htmlFor="conversation-relay">Buzz relay URL</Label><Input id="conversation-relay" value={relay} onChange={event => setRelay(event.target.value)} required /></div>
         <p className="text-sm">Ri uses Buzz’s ACP harness. Configure this named Buzz identity with the owner-only author gate. This bridge acts as your current Ri sign-in. Other people need their own authorized bridge.</p>
-        <Button type="submit" disabled={disabled}>{create.isPending ? 'Connecting…' : 'Connect'}</Button>
+        <Button
+          type="submit"
+          disabled={disabled}
+          variant="primary"
+          size="md"
+        >{create.isPending ? 'Connecting…' : 'Connect'}</Button>
       </>}
     </form>}
-    {buzzSetup && <section className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><Textarea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} /><Button variant="outline" onClick={() => void navigator.clipboard.writeText(buzzSetup)}>Copy environment</Button><Button variant="outline" onClick={() => setBuzzSetup(null)}>Hide credentials</Button></section>}
+    {buzzSetup && <section className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><Textarea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} /><Button
+      onClick={() => void navigator.clipboard.writeText(buzzSetup)}
+      variant="secondary"
+      size="sm"
+    >Copy environment</Button><Button
+      onClick={() => setBuzzSetup(null)}
+      variant="secondary"
+      size="sm"
+    >Hide credentials</Button></section>}
     {notice && <p role="status" className="text-sm">{notice}</p>}
   </div>;
 }

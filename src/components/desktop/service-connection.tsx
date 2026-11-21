@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { api } from '@/lib/api/client';
 import { reportNetworkFailure } from '@/lib/api/connectivity';
 import { getApiCompatibilityIssue, reportApiCompatibility, subscribeApiCompatibility } from '@/lib/client/api-compatibility';
@@ -123,13 +124,34 @@ export function ServiceConnection() {
   const box = 'fixed bottom-4 left-1/2 z-[100] max-w-[90vw] -translate-x-1/2 rounded-lg border bg-background px-4 py-2 text-sm shadow-lg';
   if (message) {
     return <div role="status" className={box}>
-      {message}{refresh && <button type="button" disabled={reloading} className="ml-3 underline" onClick={() => void reload()}>Refresh</button>}
+      {message}{refresh && <Button
+        type="button"
+        disabled={reloading}
+        onClick={() => void reload()}
+        variant="link"
+        size="sm"
+        className="ml-3"
+      >Refresh</Button>}
     </div>;
   }
   if (!headsUp) return null;
   return <div role="status" className={box}>
     Ri will update in 1 minute.
-    <button type="button" disabled={answering} className="ml-3 underline" onClick={() => void answer('later')}>Not now</button>
-    <button type="button" disabled={answering} className="ml-3 underline" onClick={() => void answer('apply')}>Update now</button>
+    <Button
+      type="button"
+      disabled={answering}
+      onClick={() => void answer('later')}
+      variant="link"
+      size="sm"
+      className="ml-3"
+    >Not now</Button>
+    <Button
+      type="button"
+      disabled={answering}
+      onClick={() => void answer('apply')}
+      variant="link"
+      size="sm"
+      className="ml-3"
+    >Update now</Button>
   </div>;
 }

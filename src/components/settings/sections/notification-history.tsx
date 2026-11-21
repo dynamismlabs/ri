@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { NOTIFICATION_HISTORY_CHANNEL_LABELS, NOTIFICATION_HISTORY_STATUS_LABELS, type NotificationHistoryStatus } from '@/lib/notifications/history';
 import { trpcClient } from '@/lib/trpc/client';
 import { rpcOptions } from '@/lib/trpc/request-options';
@@ -36,7 +36,13 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
     <section className="space-y-3" aria-labelledby={`${id}-heading`}>
       <div className="flex items-center justify-between gap-3">
         <h2 id={`${id}-heading`} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent delivery history</h2>
-        <Button type="button" variant="ghost" size="sm" disabled={query.isFetching} onClick={() => void query.refetch()}>
+        <Button
+          type="button"
+          disabled={query.isFetching}
+          onClick={() => void query.refetch()}
+          variant="ghost"
+          size="sm"
+        >
           {query.isFetching ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />} Refresh history
         </Button>
       </div>

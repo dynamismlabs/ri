@@ -1,12 +1,13 @@
 'use client';
+import { IconButton } from '@/components/system/icon-button';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Editor } from '@tiptap/core';
 import { MessageCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Tip } from '@/components/ui/tip';
+import { Button } from '@/components/system/button';
+
 import { openSettings } from '@/components/settings/settings-store';
 import { trpcClient } from '@/lib/trpc/client';
 import { SOURCE_STATUS_LABELS, type SourceDescriptor } from '@/lib/chat-sources/types';
@@ -113,11 +114,17 @@ export function SourceChip({ sourceRef, onRemove, tone = 'surface' }: { sourceRe
   )} contentEditable={false}>
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" className="inline-flex min-w-0 items-center gap-1 py-px pr-1.5 pl-1" aria-label={`${label}, ${SOURCE_STATUS_LABELS[status]}`}>
+        <Button
+          type="button"
+          aria-label={`${label}, ${SOURCE_STATUS_LABELS[status]}`}
+          variant="ghost"
+          size="xs"
+          className="inline-flex min-w-0 items-center gap-1"
+        >
           <SourceMark mark={source?.mark} name={source?.service ?? chipLabel} size={13} />
           <span className="max-w-[230px] truncate">{chipLabel}</span>
           {attention && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-amber-500" />}
-        </button>
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72 space-y-3 text-xs" align="start">
         <div className="flex items-start gap-2">
@@ -129,17 +136,56 @@ export function SourceChip({ sourceRef, onRemove, tone = 'surface' }: { sourceRe
         {source && <div className="flex gap-2 text-muted-foreground">{source.chat && <span className="inline-flex items-center gap-1"><MessageCircle size={12} />Ask Ri</span>}{source.view !== 'none' && <span>{source.view === 'available' ? 'Has a view' : 'View not available here yet'}</span>}</div>}
         {status === 'needs_access' && <p>Access applies to this agent. Selecting a mention does not grant access.</p>}
         <div className="flex flex-wrap gap-2">
-          {source?.openPath && chatId && status !== 'unavailable' && <Button size="xs" variant="outline" disabled={busy} onClick={() => void open()}>Open {source.service}</Button>}
-          {source?.openPath && (!chatId || status === 'unavailable') && <Button size="xs" variant="outline" asChild><a href={source.openPath}>Manage app</a></Button>}
-          {source?.managePath && <Button size="xs" variant="outline" asChild><a href={source.managePath}>Manage access</a></Button>}
-          {!source?.openPath && attention && <Button size="xs" disabled={busy} onClick={() => void request()}>{status === 'reconnect' ? 'Reconnect' : 'Allow access'}</Button>}
-          {!source?.openPath && <Button size="xs" variant="outline" onClick={() => openSettings('plugins', { anchor: 'integrations' })}>Manage accounts</Button>}
-          <Button size="xs" variant="ghost" onClick={() => void queryClient.invalidateQueries({ queryKey: ['chat-sources'] })}>Check again</Button>
-          {onRemove && <Button size="xs" variant="ghost" onClick={onRemove}>Remove reference</Button>}
+          {source?.openPath && chatId && status !== 'unavailable' && <Button
+            disabled={busy}
+            onClick={() => void open()}
+            variant="secondary"
+            size="xs"
+          >Open {source.service}</Button>}
+          {source?.openPath && (!chatId || status === 'unavailable') && <Button
+            asChild
+            variant="secondary"
+            size="xs"
+          ><a href={source.openPath}>Manage app</a></Button>}
+          {source?.managePath && <Button
+            asChild
+            variant="secondary"
+            size="xs"
+          ><a href={source.managePath}>Manage access</a></Button>}
+          {!source?.openPath && attention && <Button
+            disabled={busy}
+            onClick={() => void request()}
+            variant="primary"
+            size="xs"
+          >{status === 'reconnect' ? 'Reconnect' : 'Allow access'}</Button>}
+          {!source?.openPath && <Button
+            onClick={() => openSettings('plugins', { anchor: 'integrations' })}
+            variant="secondary"
+            size="xs"
+          >Manage accounts</Button>}
+          <Button
+            onClick={() => void queryClient.invalidateQueries({ queryKey: ['chat-sources'] })}
+            variant="ghost"
+            size="xs"
+          >Check again</Button>
+          {onRemove && <Button
+            onClick={onRemove}
+            variant="ghost"
+            size="xs"
+          >Remove reference</Button>}
         </div>
       </PopoverContent>
     </Popover>
-    {onRemove && <Tip label="Keep the app connected and remove this reference"><button data-slot="action-button" data-variant="ghost" type="button" aria-label={`Remove ${label} reference`} className="-ml-0.5 rounded py-0.5 pr-1 pl-0.5 opacity-70 hover:opacity-100" onClick={onRemove}><X size={11} /></button></Tip>}
+    {onRemove && <IconButton
+      type="button"
+      onClick={onRemove}
+      label={`Remove ${label} reference`}
+      tooltip="Keep the app connected and remove this reference"
+      variant="ghost"
+      size="xs"
+      focus="inside"
+      className="-ml-0.5"
+    ><X size={11} /></IconButton>}
   </span>;
 }
 export function SourceText({ text, chatId, resolve = true, tone }: { text: string; chatId?: string; resolve?: boolean; tone?: SourceChipTone }) {

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState, type ReactNode } from 'react';
 import { Check, ClipboardCopy, Copy, ExternalLink, KeyRound, Loader2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
@@ -24,8 +25,8 @@ import { Tip } from '@/components/ui/tip';
 import { cn } from '@/lib/utils';
 import { AiClientLogo } from './ai-client-logo';
 
-const buttonClass = 'inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted/50 disabled:opacity-50';
-const primaryClass = 'inline-flex shrink-0 items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50';
+
+
 
 function ago(iso: string): string {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60_000);
@@ -310,16 +311,28 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                   <div className="flex flex-wrap items-center gap-1.5">
                     {linkPreview && (
                       <Tip label={`Opens ${client.label}, which asks before adding Ri`}>
-                        <button type="button" className={buttonClass} disabled={!ready || makeKey.isPending} onClick={() => void openLink()}>
+                        <Button
+                          type="button"
+                          disabled={!ready || makeKey.isPending}
+                          onClick={() => void openLink()}
+                          variant="secondary"
+                          size="sm"
+                        >
                           <ExternalLink size={12} aria-hidden /> {linkPreview.label}
-                        </button>
+                        </Button>
                       </Tip>
                     )}
                     {client.kind !== 'ri' && !client.signsIn && (
                       <Tip label="A prompt with a new key that an agent on another computer follows to set itself up">
-                        <button type="button" className={buttonClass} disabled={!ready || makeKey.isPending} onClick={() => void copyPrompt()}>
+                        <Button
+                          type="button"
+                          disabled={!ready || makeKey.isPending}
+                          onClick={() => void copyPrompt()}
+                          variant="secondary"
+                          size="sm"
+                        >
                           <ClipboardCopy size={12} aria-hidden /> Copy setup prompt
-                        </button>
+                        </Button>
                       </Tip>
                     )}
                   </div>
@@ -374,9 +387,16 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
                       <KeyRound size={12} className="shrink-0 text-muted-foreground" aria-hidden />
                       <span className="min-w-0 flex-1 truncate">{key.name}</span>
                       <span className="shrink-0 text-muted-foreground">{used(key)}</span>
-                      <button type="button" className="shrink-0 text-muted-foreground underline" disabled={revoke.isPending} onClick={() => void askDisconnect(key)}>
+                      <Button
+                        type="button"
+                        disabled={revoke.isPending}
+                        onClick={() => void askDisconnect(key)}
+                        variant="link"
+                        size="sm"
+                        className="shrink-0"
+                      >
                         Disconnect
-                      </button>
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -417,13 +437,25 @@ function LocalRow({ client, device, state, usedAt, result, busy, disabled, onSet
           )}
         </span>
         {connection ? (
-          <button type="button" className={buttonClass} disabled={busy || disabled} onClick={onDisconnect}>
+          <Button
+            type="button"
+            disabled={busy || disabled}
+            onClick={onDisconnect}
+            variant="secondary"
+            size="sm"
+          >
             {busy && <Loader2 size={12} className="animate-spin" aria-hidden />} Disconnect
-          </button>
+          </Button>
         ) : (
-          <button type="button" className={primaryClass} disabled={busy || disabled} onClick={onSetUp}>
+          <Button
+            type="button"
+            disabled={busy || disabled}
+            onClick={onSetUp}
+            variant="primary"
+            size="md"
+          >
             {busy && <Loader2 size={12} className="animate-spin" aria-hidden />} Set up
-          </button>
+          </Button>
         )}
       </div>
       {connection && result && result.skills.state !== 'none' && (
@@ -443,9 +475,15 @@ function PendingKeyBlock({ label, text, busy, disabled, onCreate }: { label: str
       <p className="text-xs text-muted-foreground">{label}</p>
       <div className="flex items-start gap-2 rounded-md border border-dashed border-border bg-muted/20 p-2">
         <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] text-muted-foreground">{text}</pre>
-        <button type="button" className={primaryClass} disabled={busy || disabled} onClick={onCreate}>
+        <Button
+          type="button"
+          disabled={busy || disabled}
+          onClick={onCreate}
+          variant="primary"
+          size="md"
+        >
           {busy ? <Loader2 size={12} className="animate-spin" aria-hidden /> : <KeyRound size={12} aria-hidden />} Create key
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -458,18 +496,19 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
       <p className="text-xs text-muted-foreground">{label}</p>
       <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-2">
         <pre className="min-w-0 flex-1 overflow-x-auto whitespace-pre-wrap break-all font-mono text-[11px] select-all">{text}</pre>
-        <button
+        <Button
           type="button"
-          className={buttonClass}
           onClick={async () => {
             try { await navigator.clipboard.writeText(text); }
             catch { toast.error('Could not copy. Select the text and copy it yourself.'); return; }
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}
+          variant="secondary"
+          size="sm"
         >
           {copied ? <Check size={12} aria-hidden /> : <Copy size={12} aria-hidden />} {copied ? 'Copied' : 'Copy'}
-        </button>
+        </Button>
       </div>
     </div>
   );

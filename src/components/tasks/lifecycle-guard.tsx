@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { trpc } from '@/lib/trpc/client';
 
 import { entityKeys } from '@/lib/query/entity-keys';
@@ -193,15 +194,21 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
             </ul>
           </div>
           <div className="mt-4 flex justify-end gap-2">
-            <button onClick={() => ask?.resolve(false)} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Button
+              onClick={() => ask?.resolve(false)}
+              variant="secondary"
+              size="sm"
+            >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => ask?.resolve(true)}
-              className="inline-flex items-center gap-1.5 rounded bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {verb === 'complete' ? 'Complete anyway' : verb === 'archive' ? 'Archive anyway' : 'Return anyway'}
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -263,24 +270,33 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
           </div>
 
           <div className="mt-4 flex flex-wrap justify-end gap-2">
-            <button onClick={() => choose(null)} disabled={busy} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Button
+              onClick={() => choose(null)}
+              disabled={busy}
+              variant="secondary"
+              size="sm"
+            >
               Cancel
-            </button>
-            <button data-slot="action-button"
+            </Button>
+            <Button
               onClick={() => choose('keep_running')}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center gap-1.5"
             >
               Keep running and {verb}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => choose('stop_running_agent')}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center gap-1.5"
             >
               {busy && <Loader2 size={12} className="animate-spin" />}
               Stop agent and {verb}
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

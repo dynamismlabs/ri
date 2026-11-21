@@ -1,5 +1,7 @@
 'use client'
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { Node, mergeAttributes, textblockTypeInputRule } from '@tiptap/core'
 import {
   ReactNodeViewRenderer,
@@ -195,12 +197,13 @@ function CollapsibleHeadingView(props: ReactNodeViewProps) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <button
+      <IconButton
         type="button"
-        className="collapsible-toggle text-muted-foreground/60 hover:text-foreground hover:bg-accent"
         onClick={toggleCollapse}
         contentEditable={false}
-        aria-label={collapsed ? 'Expand section' : 'Collapse section'}
+        label={collapsed ? 'Expand section' : 'Collapse section'}
+        variant="ghost"
+        size="xs"
       >
         <ChevronRight
           className={`transition-transform duration-200 ${
@@ -208,22 +211,24 @@ function CollapsibleHeadingView(props: ReactNodeViewProps) {
           }`}
           size={level === 1 ? 16 : level === 2 ? 15 : 14}
         />
-      </button>
+      </IconButton>
       <NodeViewContent<HeadingTag>
         as={TAG_MAP[level]}
         className="collapsible-heading-content"
       />
       {collapsed && hiddenCount > 0 && (
         <Tip label="Click to expand">
-          <button
+          <Button
             type="button"
-            className="collapsed-indicator text-sky-400/80 hover:text-sky-300"
             onClick={toggleCollapse}
             contentEditable={false}
             aria-label={`Expand section (${hiddenCount} ${hiddenCount === 1 ? 'line' : 'lines'} hidden)`}
+            variant="ghost"
+            size="xs"
+            tone="working"
           >
             <span aria-hidden="true">···</span> {hiddenCount} {hiddenCount === 1 ? 'line' : 'lines'}
-          </button>
+          </Button>
         </Tip>
       )}
     </NodeViewWrapper>

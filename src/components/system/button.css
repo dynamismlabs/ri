@@ -1,0 +1,115 @@
+@layer components {
+/* Drawing belongs to the Button family. These are product components, not
+   compatibility selectors for call-site utilities. Keep the palette in theme.css. */
+.ri-button {
+  --control-opacity: 1;
+  --control-size: 28px;
+  --control-icon: 14px;
+  --control-ink: var(--t2);
+  --control-fill: var(--track);
+  --control-on-solid: var(--pane);
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-size);
+  padding: 0 11px;
+  border: 0 solid transparent;
+  border-radius: 999px;
+  background: var(--control-fill);
+  color: var(--control-ink);
+  box-shadow: none;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  outline: 0 solid transparent;
+  outline-offset: 2px;
+  transition: background-color 120ms, color 120ms, opacity 120ms;
+}
+.ri-button--xs { --control-size: 24px; --control-icon: 12px; gap: 4px; padding-inline: 8px; font-size: 12px; }
+.ri-button--md { --control-size: 32px; --control-icon: 14px; padding-inline: 13px; font-size: 13px; }
+.ri-button--touch { --control-size: 40px; --control-icon: 18px; gap: 8px; padding-inline: 16px; font-size: 15px; }
+.ri-button--icon { width: var(--control-size); min-width: var(--control-size); padding: 0; }
+.ri-button :where(svg) { width: var(--control-icon); height: var(--control-icon); flex-shrink: 0; pointer-events: none; }
+.ri-button :where(span) { font-size: inherit; font-weight: inherit; letter-spacing: normal; }
+.ri-button:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--selected); color: var(--t1); }
+.ri-button:where([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']), .ri-button--pressed { background-color: var(--selected); color: var(--t1); }
+.ri-button--primary { --control-ink: var(--primary-foreground); --control-fill: var(--primary); background-color: var(--control-fill); color: var(--control-ink); }
+.ri-button--primary:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: color-mix(in oklch, var(--control-fill) 90%, var(--pane)); color: var(--control-ink); }
+.ri-button--ghost { background-color: transparent; color: var(--t3); }
+.ri-button--ghost:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--hover); }
+.ri-button--ghost:where([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']) { background-color: var(--selected); color: var(--t1); }
+.ri-button--link { height: auto; padding: 0; gap: 3px; background: transparent; color: inherit; font: inherit; line-height: inherit; white-space: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.ri-button--link:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: transparent; color: inherit; text-decoration-thickness: 2px; }
+.ri-tone--attention { --control-ink: var(--attention); --control-fill: var(--attention-fill); }
+.ri-tone--warning { --control-ink: var(--warning-ink); --control-fill: var(--warning-fill); }
+.ri-tone--danger, .ri-button--destructive { --control-ink: var(--danger); --control-fill: var(--danger-fill); }
+.ri-tone--success { --control-ink: var(--success); --control-fill: var(--success-fill); }
+.ri-tone--working, .ri-tone--info { --control-ink: var(--working); --control-fill: var(--working-fill); }
+.ri-tone--energy-light { --control-ink: var(--energy-light); --control-fill: var(--energy-light-fill); }
+.ri-tone--energy-deep { --control-ink: var(--energy-deep); --control-fill: var(--energy-deep-fill); }
+.ri-tone--mode-auto { --control-ink: var(--mode-auto); --control-fill: var(--mode-auto-fill); }
+.ri-tone--mode-edits { --control-ink: var(--mode-edits); --control-fill: var(--mode-edits-fill); }
+.ri-tone--mode-ask { --control-ink: var(--mode-ask); --control-fill: var(--mode-ask-fill); }
+.ri-tone--mode-plan { --control-ink: var(--mode-plan); --control-fill: var(--mode-plan-fill); }
+.ri-tone--status-consider { --control-ink: var(--status-consider); --control-fill: var(--attention-fill); }
+.ri-tone--status-todo { --control-ink: var(--status-todo); --control-fill: var(--mode-ask-fill); }
+.ri-tone--status-progress { --control-ink: var(--status-progress); --control-fill: var(--mode-edits-fill); }
+.ri-tone--status-done { --control-ink: var(--status-done); --control-fill: var(--success-fill); }
+.ri-button:is([class*='ri-tone--'], .ri-button--destructive) { background-color: var(--control-fill); color: var(--control-ink); }
+.ri-button:is([class*='ri-tone--'], .ri-button--destructive):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: color-mix(in oklch, var(--control-fill) 50%, var(--pane)); color: var(--control-ink); }
+.ri-button--ghost[class*='ri-tone--'] { background-color: transparent; }
+.ri-button--ghost[class*='ri-tone--']:where([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']) { background-color: var(--control-fill); color: var(--control-ink); }
+.ri-button--primary[class*='ri-tone--'] { background-color: var(--control-ink); color: var(--control-on-solid); }
+.ri-button--primary[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: color-mix(in oklch, var(--control-ink) 90%, var(--t1)); color: var(--control-on-solid); }
+.ri-button--clip { overflow: hidden; }
+.ri-button--floating { background-color: var(--popover); box-shadow: var(--shadow-thumb); }
+.ri-button--floating:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--raised); }
+.ri-button:where(:disabled, [aria-disabled='true']) { --control-opacity: 0.5; opacity: var(--control-opacity); cursor: not-allowed; }
+.ri-button[aria-invalid='true'] { outline: 1px solid var(--danger); outline-offset: 0; }
+.ri-button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+.ri-button--focus-inside:focus-visible { outline-offset: -2px; }
+.ri-button[aria-invalid='true']:focus-visible { outline-color: var(--danger); }
+.ri-chip { min-width: var(--control-size); font-size: 12px; }
+.ri-chip--touch { font-size: 15px; }
+
+.ri-button--link[class*='ri-tone--'] { background-color: transparent; color: var(--control-ink); }
+.ri-button--link[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: transparent; color: var(--control-ink); }
+.ri-button:is(.ri-button--reveal, .ri-button--reveal-nav, .ri-button--reveal-tag, .ri-button--reveal-fold) { opacity: 0; pointer-events: none; }
+:is(.group:hover, .group:focus-within) .ri-button--reveal,
+:is([class~="group/nav"]:hover, [class~="group/nav"]:focus-within) .ri-button--reveal-nav,
+:is([class~="group/tag"]:hover, [class~="group/tag"]:focus-within) .ri-button--reveal-tag,
+:is([class~="group/fold"]:hover, [class~="group/fold"]:focus-within) .ri-button--reveal-fold,
+.ri-button:is(.ri-button--reveal, .ri-button--reveal-nav, .ri-button--reveal-tag, .ri-button--reveal-fold):is(:focus-visible, [aria-expanded="true"]) { opacity: var(--control-opacity); pointer-events: auto; }
+@media (hover: none), (pointer: coarse) {
+  .ri-button:is(.ri-button--reveal, .ri-button--reveal-nav, .ri-button--reveal-tag, .ri-button--reveal-fold) { opacity: var(--control-opacity); pointer-events: auto; }
+}
+.ri-button-group { display: inline-flex; width: fit-content; align-items: stretch; gap: 2px; }
+.ri-button-group--vertical { flex-direction: column; }
+.ri-button-group--toolbar { align-items: center; gap: 0; padding: 2px; border-radius: 999px; background-color: var(--track); }
+.ri-button-group--toolbar .ri-button { background-color: transparent; }
+.ri-button-group--toolbar .ri-button:focus-visible { outline-offset: -2px; }
+.ri-button-group--toolbar .ri-button:is([aria-pressed='true'], .ri-button--pressed) { background-color: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
+
+.ri-button-group--joined { gap: 0; border-radius: 999px; background-color: var(--track); }
+.ri-button-group--joined > .ri-button { border-radius: 999px 0 0 999px; background-color: transparent; }
+.ri-button-group--joined > .ri-button + .ri-button { border-left: 1px solid var(--line-2); border-radius: 0 999px 999px 0; }
+.ri-button-group--joined > .ri-button:hover:not(:disabled) { background-color: var(--selected); color: var(--t1); }
+.ri-button-group--joined > .ri-button:focus-visible { outline-offset: -2px; }
+
+}
+
+/* Old call sites still put type classes on their label spans. The family owns
+   the label's type, just as it owns the button's type. */
+.ri-button span:not(.sr-only) { font-size: inherit; font-weight: inherit; letter-spacing: normal; color: inherit; }
+
+.ri-button svg.lucide { color: inherit; width: var(--control-icon); height: var(--control-icon); }

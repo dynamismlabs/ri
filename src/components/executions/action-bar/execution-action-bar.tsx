@@ -1,12 +1,13 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { WorkspaceRecord } from '@/db/types';
 import { useArchiveExecution } from '@/hooks/use-archive-execution';
 import { useExecutionActions, useHelpWithError, useSessionPr, type ActionState, type BaseInfo, type OpenablePr } from '@/hooks/use-execution-actions';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
 import type { PrChecks, PrReviewDecision } from '@/lib/github/pr-status-types';
-import { cn } from '@/lib/utils';
+
 import { AlertCircle, Archive, ArrowDownToLine, ArrowUpRight, ArrowUpToLine, CheckCircle2, Clock, GitMerge, RotateCw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { ErrorModal } from '../error-modal';
@@ -287,23 +288,13 @@ function PrChip({ sessionId, prNumber, prUrl, closed }: PrChipProps) {
 function PrRef({ pr }: { pr: OpenablePr }) {
   return (
     <Tip label={pr.closed ? `Closed PR #${pr.number}. Open on GitHub` : `Open PR #${pr.number} on GitHub`}>
-      <a
-        href={pr.url}
+      <Button asChild variant="secondary" size="sm" tone={pr.closed ? "danger" : "neutral"}><a href={pr.url}
         target="_blank"
         rel="noreferrer"
-        aria-label={`${pr.closed ? 'Closed pull request' : 'Pull request'} #${pr.number} on GitHub`}
-        data-slot="action-button"
-        data-tone="status"
-        className={cn(
-          'inline-flex h-6 flex-shrink-0 items-center gap-1 rounded-[4px] border pl-1.5 pr-1 font-mono text-[12px] font-medium leading-none tabular-nums transition-colors',
-          pr.closed
-            ? 'border-rose-500/45 text-rose-600 hover:bg-rose-500/10 dark:text-rose-400'
-            : 'border-foreground/25 text-foreground/85 hover:border-foreground/40 hover:bg-muted/40 hover:text-foreground',
-        )}
-      >
+        aria-label={`${pr.closed ? 'Closed pull request' : 'Pull request'} #${pr.number} on GitHub`}>
         #{pr.number}
         <ArrowUpRight size={12} className="opacity-60" />
-      </a>
+      </a></Button>
     </Tip>
   );
 }
@@ -546,7 +537,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Try again"
             onClick={retrySetup.onClick}
             pending={retrySetup.pending}
-            variant="primary"
+            variant="secondary"
             title={`${state.error}\nClick to fetch and retry.`}
           />
         </>
@@ -564,7 +555,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
               uncommitted
             </NarrativeText>
           </NarrativeLeft>
-          <CommitButton sessionId={sessionId} variant="primary" andPush />
+          <CommitButton sessionId={sessionId} variant="secondary" andPush />
         </>
       );
 
@@ -582,7 +573,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Pull"
             onClick={pullBase.onClick}
             pending={pullBase.pending}
-            variant="primary"
+            variant="secondary"
             title={`Bring in ${baseName}'s new commits`}
           />
         </>
@@ -602,7 +593,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Pull"
             onClick={pullUpstream.onClick}
             pending={pullUpstream.pending}
-            variant="primary"
+            variant="secondary"
             title={`Bring in ${state.behind === 1 ? 'a commit' : 'commits'} pushed to this branch from elsewhere`}
           />
         </>
@@ -626,7 +617,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Push"
             onClick={push.onClick}
             pending={push.pending}
-            variant="primary"
+            variant="secondary"
           />
         </>
       );
@@ -662,7 +653,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             prNumber={state.prNumber}
             prUrl={state.prUrl}
             enabled={true}
-            variant="primary"
+            variant="secondary"
           />
         </>
       );
@@ -682,7 +673,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Push"
             onClick={push.onClick}
             pending={push.pending}
-            variant="primary"
+            variant="secondary"
             title="Push new commits to update the PR"
           />
         </>
@@ -706,7 +697,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Pull"
             onClick={pullBase.onClick}
             pending={pullBase.pending}
-            variant="primary"
+            variant="secondary"
             title={`GitHub won't merge it until it has ${baseName}'s latest commits. Bring them in, then push.`}
           />
         </>
@@ -727,7 +718,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Resolve conflicts"
             onClick={() => resolveConflicts.onClick('pr_vs_base')}
             pending={resolveConflicts.pending}
-            variant="primary"
+            variant="secondary"
             title="Ask the agent to pull base, resolve, and push"
           />
         </>
@@ -750,7 +741,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Pull"
             onClick={pullUpstream.onClick}
             pending={pullUpstream.pending || resolveConflicts.pending}
-            variant="primary"
+            variant="secondary"
             title="Bring in what was pushed to this branch elsewhere, then push. A conflict goes to the agent."
           />
         </>
@@ -771,7 +762,7 @@ function NarrativeBody({ state, base, hasPr, badges, theme, sessionId, push, pul
             label="Archive"
             onClick={archive.onClick}
             pending={archive.pending}
-            variant="primary"
+            variant="secondary"
             />
         </>
       );

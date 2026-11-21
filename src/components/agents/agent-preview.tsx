@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useAgentConfigurationScope } from '@/components/workspaces/agent-placement-controls';
 import { useMemo, useState } from 'react';
 import { ChevronDown, Loader2, RotateCw } from 'lucide-react';
@@ -100,14 +101,16 @@ export function AgentPreview({
         </label>
         {canConfigure && hasPinned && (
           <Tip label="Bring up every pinned preview in this agent">
-            <button
+            <Button
               onClick={() => restore.mutate()}
               disabled={restore.isPending}
-              className="flex flex-shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="flex flex-shrink-0 items-center gap-1"
             >
               {restore.isPending ? <Loader2 size={11} className="animate-spin" /> : <RotateCw size={11} />}
               Restore pinned
-            </button>
+            </Button>
           </Tip>
         )}
       </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * Add or edit one linked folder (docs/reference-folders-spec.md §9,
  * docs/homes-spec.md §4.2).
@@ -201,15 +202,17 @@ function ReferenceFolderForm({
                   className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <Tip label={browsable ? undefined : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`}>
-                  <button data-slot="action-button"
+                  <Button
                     type="button"
                     onClick={() => setPickerOpen(true)}
                     disabled={!browsable}
-                    className="flex shrink-0 items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+                    variant="secondary"
+                    size="sm"
+                    className="flex shrink-0 items-center gap-1.5"
                   >
                     <FolderOpen size={13} />
                     Browse
-                  </button>
+                  </Button>
                 </Tip>
               </div>
               <FieldHint>
@@ -331,31 +334,37 @@ function ReferenceFolderForm({
 
       <DialogFooter>
         {editing && onRemove && (
-          <button
+          <Button
             type="button"
             onClick={onRemove}
-            className="mr-auto flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+            variant="ghost"
+            size="md"
+            tone="danger"
+            className="mr-auto flex items-center gap-1.5"
           >
             <Trash2 size={12} />
             Remove
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="rounded-lg px-4 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          variant="ghost"
+          size="md"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-40"
+          variant="primary"
+          size="md"
+          className="flex items-center gap-1.5"
         >
           {saving && <Loader2 size={13} className="animate-spin" />}
           {editing ? 'Save' : 'Add'}
-        </button>
+        </Button>
       </DialogFooter>
 
       <FolderPickerDialog
@@ -382,18 +391,16 @@ function ModeTab({
   children: React.ReactNode;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className={cn(
-        'flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-        active
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground',
-      )}
+      variant="secondary"
+      size="sm"
+      pressed={active}
+      className="flex-1"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

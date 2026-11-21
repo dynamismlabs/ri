@@ -1,4 +1,5 @@
 'use client'
+import { Button } from '@/components/system/button';
 import { EntityDetailHeader, EntityActionsMenu } from '@/components/entities/entity-detail-header';
 
 import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
@@ -191,27 +192,32 @@ export function NoteSlideout({ noteId, onClose, onCloseAll, hasHistory }: NoteSl
           {/* Header */}
           <EntityDetailHeader>
             <div className="flex items-center gap-1.5 group/nav">
-              <button
+              <Button
                 onClick={onClose}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
                 aria-label="Back"
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1.5"
               >
                 <ChevronLeft size={16} />
                 <kbd className="hidden group-hover/nav:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                   esc
                 </kbd>
-              </button>
+              </Button>
               {hasHistory && (
-                <button
+                <Button
                   onClick={onCloseAll}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-0 group-hover/nav:opacity-100 flex items-center gap-1.5"
                   aria-label="Close all"
+                  reveal="nav"
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <X size={14} />
                   <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                     ⇧esc
                   </kbd>
-                </button>
+                </Button>
               )}
             </div>
 
@@ -219,21 +225,18 @@ export function NoteSlideout({ noteId, onClose, onCloseAll, hasHistory }: NoteSl
               {agentFirst && !shared && !team && <EntityViewToggle value={view} onChange={setView} compact={width < 700} />}
               {noteId && !shared && (team && note ? <TeamEntityHistory kind="note" id={noteId} bodyRevision={note.bodyRevision} /> : <EntityHistoryButton entityType="note" entityId={noteId} />)}
               {noteId && <ReferencingSessionsButton entityType="note" entityId={noteId} />}
-              <a
-                href={fullPage}
+              <Button asChild variant="ghost" size="sm" className="flex items-center gap-1.5"><a className="group/expand" href={fullPage}
                 onClick={(e) => {
                   if (e.metaKey || e.ctrlKey) return
                   e.preventDefault()
                   if (noteId) router.push(fullPage)
                 }}
-                className="group/expand p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
-                aria-label="Open full page"
-              >
+                aria-label="Open full page">
                 <kbd className="hidden group-hover/expand:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                   {HOTKEYS.openFullPage.label}
                 </kbd>
                 <Maximize2 size={14} />
-              </a>
+              </a></Button>
 
               {team && note && <><SaveStatus status={sharedBody.status} /><SaveNoteControl noteId={note.id} /></>}
               <EntityActionsMenu deleteLabel={team ? "Delete for everyone" : "Delete"} onArchive={shared ? undefined : handleArchive} onDelete={shared || team && !home?.capabilities.deletePermanently ? undefined : handleDelete}>

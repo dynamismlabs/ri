@@ -1,8 +1,9 @@
 'use client';
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, BookOpen, LayoutGrid, MoreHorizontal, Plug, Plus, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -85,11 +86,34 @@ function LibraryHeader() {
   return <header className={s.libraryHeader}>
     <div className={s.libraryHeading}><span className={s.mark}><LayoutGrid size={18} /></span><div><h1>Apps</h1><p>Apps, {INTEGRATION_LABELS.plural.toLowerCase()}, and skills for your work.</p></div></div>
     <div className={s.creationActions} aria-label="Create and connect">
-      <Button size="sm" variant="outline" onClick={() => setNewApp(true)}><Plus size={13} />New app</Button>
-      <Button size="sm" variant="outline" onClick={() => setAddingApp(true)}><Plus size={13} />Add app</Button>
-      <Button size="sm" variant="outline" disabled={review.busy} onClick={review.buildSkill}><Plus size={13} />New skill</Button>
-      <Button size="sm" variant="outline" onClick={newServer}><Plus size={13} />Add MCP server</Button>
-      <DropdownMenu><DropdownMenuTrigger asChild><Tip label="Import a skill"><Button className={s.importButton} size="icon-sm" variant="ghost" aria-label="Import options"><MoreHorizontal size={16} /></Button></Tip></DropdownMenuTrigger>
+      <Button
+        onClick={() => setNewApp(true)}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />New app</Button>
+      <Button
+        onClick={() => setAddingApp(true)}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />Add app</Button>
+      <Button
+        disabled={review.busy}
+        onClick={review.buildSkill}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />New skill</Button>
+      <Button
+        onClick={newServer}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />Add MCP server</Button>
+      <DropdownMenu><DropdownMenuTrigger asChild><IconButton
+        label="Import options"
+        tooltip="Import a skill"
+        variant="ghost"
+        size="sm"
+        className={s.importButton}
+      ><MoreHorizontal size={16} /></IconButton></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem disabled={review.busy} onSelect={() => skillInput.current?.click()}><Upload size={14} />Import SKILL.md</DropdownMenuItem>
         </DropdownMenuContent>
@@ -169,7 +193,11 @@ function GoalBundle() {
   const added = items.filter(item => item.added && !item.draft).length;
   const back = () => review.patch({ collection: undefined, item: undefined, panel: undefined });
   return <div className={s.goalContents}>
-    <Button size="xs" variant="ghost" onClick={back}><ArrowLeft size={13} />Back to Discover</Button>
+    <Button
+      onClick={back}
+      variant="ghost"
+      size="xs"
+    ><ArrowLeft size={13} />Back to Discover</Button>
     <div className={s.goalHeading}><h2>{collection.name}</h2><p>{collection.description}</p><span>{added} of {items.length} in your library</span></div>
     <p className={`${s.muted} mb-4`}>Choose the pieces that help. Each has its own setup and access.</p>
     {items.map(item => <div className={s.bundleItem} key={item.key}>
@@ -178,6 +206,11 @@ function GoalBundle() {
     </div>)}
     {!items.length && <Empty>No additions in this bundle are available yet.</Empty>}
     {added === items.length && !!items.length && <p className={`${s.muted} mt-5`}>Everything in this bundle is already in your library.</p>}
-    <Button className="mt-5" size="xs" variant="ghost" onClick={back}>Browse all additions<ArrowRight size={12} /></Button>
+    <Button
+      onClick={back}
+      variant="ghost"
+      size="xs"
+      className="mt-5"
+    >Browse all additions<ArrowRight size={12} /></Button>
   </div>;
 }

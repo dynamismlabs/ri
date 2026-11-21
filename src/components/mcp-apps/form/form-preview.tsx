@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import type { ResourceOption } from '@/lib/mcp-apps/form-schema';
@@ -91,6 +91,14 @@ function AppPreview({formId, chatId, name, args, title}: {formId: string; chatId
   return <div role="group" aria-label="Allow this preview to open" className="space-y-3 rounded-xl bg-amber-500/10 p-4 text-sm">
     <p>Allow this app to open the preview?</p>
     {step.preview != null && <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(step.preview, null, 2)}</pre>}
-    <div className="flex gap-2"><Button size="sm" onClick={() => void decide(true)}>Allow once</Button><Button size="sm" variant="ghost" onClick={() => void decide(false)}>Decline</Button></div>
+    <div className="flex gap-2"><Button
+      onClick={() => void decide(true)}
+      variant="primary"
+      size="md"
+    >Allow once</Button><Button
+      onClick={() => void decide(false)}
+      variant="ghost"
+      size="sm"
+    >Decline</Button></div>
   </div>;
 }

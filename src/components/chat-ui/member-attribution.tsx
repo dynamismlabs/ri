@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMutation, useQueryClient, useQueries } from '@tanstack/react-query';
 import { useRuntimeStatus, useSendMessage } from '@/hooks/use-execution';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -77,7 +78,17 @@ export function TeamTurnControls({ sessionId, turn, message }: { sessionId: stri
   if (turn.status === 'done' || turn.status === 'running') return null;
   return <div className="mb-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground" role="status">
     <span>{turn.status === 'queued' ? 'Queued' : turn.error ?? turn.status}</span>
-    {turn.status === 'queued' ? <button className="underline" disabled={cancel.isPending} onClick={() => cancel.mutate()}>Cancel queued message</button>
-      : <button className="underline" disabled={send.isPending} onClick={() => send.mutate({ content: message.content ?? '', attachments: message.attachments ?? [] })}>Send again</button>}
+    {turn.status === 'queued' ? <Button
+      disabled={cancel.isPending}
+      onClick={() => cancel.mutate()}
+      variant="link"
+      size="xs"
+    >Cancel queued message</Button>
+      : <Button
+        disabled={send.isPending}
+        onClick={() => send.mutate({ content: message.content ?? '', attachments: message.attachments ?? [] })}
+        variant="link"
+        size="xs"
+      >Send again</Button>}
   </div>;
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import { APP_SHORT_ID } from '@/constants/app';
@@ -285,16 +286,20 @@ export function RemoteBaseUrlSection() {
         )}
         <div className="ml-auto flex items-center gap-1.5">
           {!beamdConnected && !checkingBeamd && (
-            <Button size="xs" variant="outline" onClick={() => setSettingsSection('remote-preview')}>
+            <Button
+              onClick={() => setSettingsSection('remote-preview')}
+              variant="secondary"
+              size="xs"
+            >
               Connect Beamd
             </Button>
           )}
           <Tip label="Check whether this machine already has a Beamd login from the terminal">
             <Button
-              size="xs"
-              variant="ghost"
               onClick={() => refetchPreviewSettings()}
               disabled={checkingBeamd}
+              variant="ghost"
+              size="xs"
             >
               <RefreshCw size={11} className={checkingBeamd ? 'animate-spin' : ''} />
               Re-check
@@ -361,10 +366,10 @@ export function RemoteBaseUrlSection() {
           }}
         />
         <Button
-          size="sm"
-          variant="outline"
           onClick={() => saveMutation.mutate(draft.trim() || null)}
           disabled={!dirty || busy}
+          variant="secondary"
+          size="sm"
         >
           {saveMutation.isPending ? (
             <Loader2 size={12} className="animate-spin" />
@@ -374,15 +379,15 @@ export function RemoteBaseUrlSection() {
           {justSaved ? 'Saved' : 'Save'}
         </Button>
         {saved && (
-          <Button
-            size="sm"
-            variant="ghost"
+          <IconButton
             onClick={() => saveMutation.mutate(null)}
             disabled={busy}
-            aria-label="Clear remote base URL"
+            label="Clear remote base URL"
+            variant="ghost"
+            size="sm"
           >
             <Trash2 size={12} />
-          </Button>
+          </IconButton>
         )}
       </div>
 
@@ -395,8 +400,6 @@ export function RemoteBaseUrlSection() {
           }
         >
           <Button
-            size="xs"
-            variant="outline"
             onClick={() => {
               if (beamdConnected) {
                 beamdMutation.mutate();
@@ -405,6 +408,8 @@ export function RemoteBaseUrlSection() {
               }
             }}
             disabled={busy || checkingBeamd}
+            variant="secondary"
+            size="xs"
           >
             {beamdMutation.isPending ? (
               <Loader2 size={11} className="animate-spin" />
@@ -415,10 +420,10 @@ export function RemoteBaseUrlSection() {
           </Button>
         </Tip>
         <Button
-          size="xs"
-          variant="outline"
           onClick={handleTest}
           disabled={!canTest || busy}
+          variant="secondary"
+          size="xs"
         >
           {testResult.status === 'testing' ? (
             <Loader2 size={11} className="animate-spin" />
@@ -459,17 +464,19 @@ export function RemoteBaseUrlSection() {
           when Beamd rejects the name as taken — which is exactly what happens
           when a second machine on the same account uses the default. */}
       <div className="border-t border-border/60 pt-2">
-        <button
+        <Button
           type="button"
           onClick={() => setAdvancedOpen((v) => !v)}
-          className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1"
         >
           <ChevronRight size={11} className={cn('transition-transform', advancedOpen && 'rotate-90')} />
           Advanced: Beamd tunnel name
           {!advancedOpen && data?.effectiveTunnelName && (
             <span className="font-mono text-foreground/70">({data.effectiveTunnelName})</span>
           )}
-        </button>
+        </Button>
 
         {advancedOpen && (
           <div className="mt-2 space-y-2">
@@ -501,26 +508,27 @@ export function RemoteBaseUrlSection() {
                 }}
               />
               <Button
-                size="sm"
-                variant="outline"
                 onClick={() => nameMutation.mutate(nameNormalized || null)}
                 disabled={!nameDirty || !nameValid || busy || nameLocked}
+                variant="secondary"
+                size="sm"
               >
                 {nameMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
                 Save name
               </Button>
               {nameSaved && !nameLocked && (
-                <Tip label={`Revert to the default name (${data?.defaultTunnelName ?? APP_SHORT_ID})`}>
-                  <Button
-                    size="sm"
-                    variant="ghost"
+
+                  <IconButton
                     onClick={() => nameMutation.mutate(null)}
                     disabled={busy}
-                    aria-label="Revert to the default tunnel name"
+                    label="Revert to the default tunnel name"
+                    tooltip={`Revert to the default name (${data?.defaultTunnelName ?? APP_SHORT_ID})`}
+                    variant="ghost"
+                    size="sm"
                   >
                     <Trash2 size={12} />
-                  </Button>
-                </Tip>
+                  </IconButton>
+
               )}
             </div>
 

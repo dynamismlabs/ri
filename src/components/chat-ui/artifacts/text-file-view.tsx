@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useFolderFile } from '@/hooks/use-folder';
 import { sessionFolder } from '@/lib/folders/source';
 import { AgentResponse } from '@/components/chat-ui/messages/agent-response';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { FileSkeleton } from '@/components/executions/skeletons';
 
 /** Read only. Markdown starts rendered, and source remains available for every text format. */
@@ -20,8 +20,18 @@ export function TextFileView({ sessionId, path }: { sessionId: string; path: str
   if (!data) return null;
   return <div className="flex h-full min-h-0 flex-col bg-background">
     {markdown && <div role="group" aria-label="Document view" className="flex shrink-0 gap-1 border-b border-border px-3 py-1.5">
-      <Button size="xs" variant="ghost" aria-pressed={!source} onClick={() => setSource(false)}>Rendered</Button>
-      <Button size="xs" variant="ghost" aria-pressed={source} onClick={() => setSource(true)}>Source</Button>
+      <Button
+        aria-pressed={!source}
+        onClick={() => setSource(false)}
+        variant="ghost"
+        size="xs"
+      >Rendered</Button>
+      <Button
+        aria-pressed={source}
+        onClick={() => setSource(true)}
+        variant="ghost"
+        size="xs"
+      >Source</Button>
     </div>}
     <div className="min-h-0 flex-1 overflow-auto">
       {markdown && !source

@@ -1,12 +1,13 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, KeyRound, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tip } from '@/components/ui/tip';
+
 import { ApprovalDetails } from '@/components/chat-ui/approvals/approval-details';
 import { APP_NAME } from '@/constants/app';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
@@ -106,13 +107,26 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
             <li key={`${account.connectionId}:${account.toolkitId}`} className="rounded-md border border-border p-2">
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-sm">{account.service} <span className="text-muted-foreground">· {account.account}</span></span>
-                <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId })}>Remove</Button>
+                <Button
+                  disabled={narrow.isPending}
+                  onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId })}
+                  variant="ghost"
+                  size="xs"
+                >Remove</Button>
               </div>
               <ul className="mt-1 flex flex-wrap gap-1">
                 {account.tools.map((tool) => (
                   <li key={tool} className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
                     {tool}
-                    <Tip label="Take this tool back"><button type="button" aria-label={`Remove ${tool}`} disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId, tool })}><X size={11} /></button></Tip>
+                    <IconButton
+                      type="button"
+                      disabled={narrow.isPending}
+                      onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId, tool })}
+                      label={`Remove ${tool}`}
+                      tooltip="Take this tool back"
+                      variant="ghost"
+                      size="sm"
+                    ><X size={11} /></IconButton>
                   </li>
                 ))}
               </ul>
@@ -121,7 +135,12 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
           {data.services.map((service) => (
             <li key={service} className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
               <span className="min-w-0 flex-1">{APP_NAME}&apos;s {service.replace(/_/g, ' ')}</span>
-              <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ service })}>Remove</Button>
+              <Button
+                disabled={narrow.isPending}
+                onClick={() => narrow.mutate({ service })}
+                variant="ghost"
+                size="xs"
+              >Remove</Button>
             </li>
           ))}
           {!data.accounts.length && !data.services.length && <li className="text-xs text-muted-foreground">Nothing. It can connect again from the app to ask for more.</li>}
@@ -143,8 +162,18 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
                     {approval.hubApp ? `${STARTED_BY[approval.hubApp.startedBy.kind] ?? ''}${approval.hubApp.startedBy.label ? ` (${approval.hubApp.startedBy.label})` : ''}` : ''}
                   </span>
                 </span>
-                <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}>Deny</Button>
-                <Button size="xs" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}>Approve</Button>
+                <Button
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}
+                  variant="secondary"
+                  size="xs"
+                >Deny</Button>
+                <Button
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}
+                  variant="primary"
+                  size="md"
+                >Approve</Button>
               </div>
               {view.details.length > 0 && <ApprovalDetails details={view.details} />}
             </div>
@@ -168,7 +197,13 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
         )}
       </section>
 
-      {!data.off && <Button size="sm" variant="outline" className="text-destructive" disabled={turnOff.isPending} onClick={() => turnOff.mutate()}>Turn off {data.name}&apos;s access</Button>}
+      {!data.off && <Button
+        disabled={turnOff.isPending}
+        onClick={() => turnOff.mutate()}
+        variant="secondary"
+        size="sm"
+        tone="danger"
+      >Turn off {data.name}&apos;s access</Button>}
     </div>
   );
 }

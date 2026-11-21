@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { openSettings } from '@/components/settings/settings-store';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { Bot, Check, Copy, ExternalLink, KeyRound, Loader2, Plug, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { Tip } from '@/components/ui/tip';
+
 import { sourceErrorMessage, useConnectAttempt, useConnectionMethod } from '@/hooks/use-integration-sources';
 import { applicationForDirectToolkit, parseManagedToolkitId } from '@/lib/integrations/sources/applications';
 import type { ApplicationId } from '@/lib/integrations/sources/types';
@@ -287,9 +289,14 @@ function ManagedConnect({ applicationId, eventId, view, busy, notice, onDecline,
         {chosen && (
           <div className="flex flex-wrap items-center gap-x-2 border-t border-border px-3 pt-2 text-[10.5px] text-muted-foreground">
             <span>Using a direct sign-in with your Google OAuth app.</span>
-            <button type="button" onClick={() => setMode('managed')} className="underline underline-offset-2 hover:text-foreground">
+            <Button
+              type="button"
+              onClick={() => setMode('managed')}
+              variant="link"
+              size="xs"
+            >
               Use {chosen.source.label} instead
-            </button>
+            </Button>
           </div>
         )}
         {renderDirect(beforeSignIn)}
@@ -331,13 +338,24 @@ function ManagedConnect({ applicationId, eventId, view, busy, notice, onDecline,
       {attemptId && attemptState?.status === 'pending' && <p className="mb-1.5 flex items-center gap-1.5 text-[10.5px] text-muted-foreground"><Loader2 size={10} className="animate-spin" /> Finish signing in in your browser.</p>}
       {(failed || message || notice) && <p className="mb-1.5 text-[10.5px] text-amber-600 dark:text-amber-400">{failed ?? message ?? notice}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        <button data-slot="action-button" type="button" disabled={busy || starting} onClick={onDecline} className="rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted/60 disabled:opacity-50">
+        <Button
+          type="button"
+          disabled={busy || starting}
+          onClick={onDecline}
+          variant="secondary"
+          size="xs"
+        >
           Not now
-        </button>
+        </Button>
         {directOption && (
-          <button type="button" onClick={() => setMode('direct')} className="text-[10.5px] text-muted-foreground underline underline-offset-2 hover:text-foreground">
+          <Button
+            type="button"
+            onClick={() => setMode('direct')}
+            variant="link"
+            size="xs"
+          >
             Change method
-          </button>
+          </Button>
         )}
         {managedOptions.length > 1 && (
           <Select value={chosen.source.id} onValueChange={setSourceId}>
@@ -394,15 +412,17 @@ function KindIcon({ kind }: { kind: ConnectionRequestView['kind'] }) {
 
 function PrimaryButton({ busy, onClick, children, type = 'button', disabled }: { busy: boolean; onClick?: () => void; children: ReactNode; type?: 'button' | 'submit'; disabled?: boolean }) {
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <Button
       type={type}
       disabled={busy || disabled}
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      variant="primary"
+      size="xs"
+      className="inline-flex items-center gap-1.5"
     >
       {busy && <Loader2 size={11} className="animate-spin" />}
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -411,14 +431,15 @@ function Footer({ busy, onDecline, notice, children }: { busy: boolean; onDeclin
     <div className="border-t border-border bg-muted/20 px-3 py-2">
       {notice && <p className="mb-1.5 text-[10.5px] text-amber-600 dark:text-amber-400">{notice}</p>}
       <div className="flex flex-wrap items-center gap-2">
-        <button data-slot="action-button"
+        <Button
           type="button"
           disabled={busy}
           onClick={onDecline}
-          className="rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted/60 disabled:opacity-50"
+          variant="secondary"
+          size="xs"
         >
           Not now
-        </button>
+        </Button>
         <div className="flex-1" />
         {children}
       </div>
@@ -560,16 +581,18 @@ function SetupForm({
             Add this redirect URI:
             <span className="mt-0.5 flex items-center gap-1">
               <code className="min-w-0 flex-1 truncate rounded bg-muted/60 px-1.5 py-0.5 font-mono text-[10.5px] text-foreground">{shown}</code>
-              <Tip label="Copy redirect URI">
-                <button data-slot="action-button" data-variant="ghost"
+
+                <IconButton
                   type="button"
-                  aria-label="Copy redirect URI"
                   onClick={() => void navigator.clipboard.writeText(shown).then(() => toast.success('Copied'))}
-                  className="rounded p-1 text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  label="Copy redirect URI"
+                  tooltip="Copy redirect URI"
+                  variant="ghost"
+                  size="xs"
                 >
                   <Copy size={11} />
-                </button>
-              </Tip>
+                </IconButton>
+
             </span>
           </li>
           <li>Paste its client ID and secret:</li>
@@ -578,9 +601,14 @@ function SetupForm({
         <Field label="Client secret" value={clientSecret} onChange={setClientSecret} secret />
         <p className="flex items-center gap-1 text-[10px] text-muted-foreground/80">
           <KeyRound size={10} /> Saved encrypted on this computer. The agent never sees it.{' '}
-          <button type="button" onClick={() => openSettings('plugins')} className="underline underline-offset-2">
+          <Button
+            type="button"
+            onClick={() => openSettings('plugins')}
+            variant="link"
+            size="xs"
+          >
             More options in Settings
-          </button>
+          </Button>
         </p>
       </div>
       <Footer busy={working} onDecline={onDecline} notice={notice}>

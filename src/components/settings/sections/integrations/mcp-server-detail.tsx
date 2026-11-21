@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Detail + add views for remote MCP servers. An ingested server's tools become
  * integrations behind the same approval gate, so they get the same drill-in
@@ -9,7 +10,7 @@
 import dynamic from 'next/dynamic';
 import type { FormEvent, ReactNode } from 'react';
 import { AlertCircle, Loader2, LogIn, Plus, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -126,19 +127,29 @@ export function McpServerDetail({
         {s.lastCheckedAt && <p className="text-[11px] text-muted-foreground">Last checked <time dateTime={s.lastCheckedAt} suppressHydrationWarning>{new Date(s.lastCheckedAt).toLocaleString()}</time></p>}
         <div className="flex flex-wrap items-center gap-1.5">
           {needsSignIn && (
-            <Button size="xs" onClick={onAuthorize} disabled={busy} className="text-xs font-semibold">
+            <Button
+              onClick={onAuthorize}
+              disabled={busy}
+              variant="primary"
+              size="md"
+            >
               <LogIn size={12} /> Sign in
             </Button>
           )}
-          <Button variant="outline" size="xs" onClick={onRetest} disabled={busy} className="text-xs">
+          <Button
+            onClick={onRetest}
+            disabled={busy}
+            variant="secondary"
+            size="xs"
+          >
             <RefreshCw size={12} /> Re-test
           </Button>
           <Button
-            variant="ghost"
-            size="xs"
             onClick={onRemove}
             disabled={busy}
-            className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+            variant="ghost"
+            size="xs"
+            tone="danger"
           >
             <Trash2 size={12} /> Remove server
           </Button>
@@ -153,7 +164,12 @@ export function McpServerDetail({
           <McpPermissionSelect value={s.approvalPolicy ?? null} inheritedLabel="Use global default"
             label={`Permissions for ${s.displayName}`} busy={busy} onChange={onSetPolicy} />
           {Object.values(s.toolOverrides ?? {}).some(override => mcpToolApprovalOverride(override) !== undefined) &&
-            <Button variant="outline" size="sm" className="h-9 text-xs" disabled={busy} onClick={() => onSetPolicy(s.approvalPolicy ?? null)}>Apply to all tools</Button>}
+            <Button
+              disabled={busy}
+              onClick={() => onSetPolicy(s.approvalPolicy ?? null)}
+              variant="secondary"
+              size="sm"
+            >Apply to all tools</Button>}
         </McpPermissionControls>
         <p className="text-[11px] leading-normal text-muted-foreground">
           {s.approvalPolicy == null && <>Global default: {MCP_POLICY_LABELS[defaultPolicy]}. </>}
@@ -219,11 +235,17 @@ export function McpServerDetail({
                     aria-label={`Ask before ${t.name} runs`}
                     className="justify-self-center"
                   />
-                  {mcpToolApprovalOverride(ov) !== undefined && <Tip label="Use server permissions">
-                    <button type="button" aria-label={`Use server permissions for ${t.name}`} disabled={busy}
+                  {mcpToolApprovalOverride(ov) !== undefined &&
+                    <IconButton
+                      type="button"
+                      disabled={busy}
                       onClick={() => onToolOverride(t.name, { approvalMode: null })}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-50"><RotateCcw size={12} /></button>
-                  </Tip>}
+                      label={`Use server permissions for ${t.name}`}
+                      tooltip="Use server permissions"
+                      variant="ghost"
+                      size="sm"
+                    ><RotateCcw size={12} /></IconButton>
+                  }
                 </div>
               );
             })}
@@ -343,7 +365,12 @@ export function McpServerForm({
         <p className="text-[11px] leading-normal text-muted-foreground">
           If an agent session is already running, restart it to use newly added tools.
         </p>
-        <Button type="submit" size="sm" disabled={busy || !ready} className="text-xs font-semibold">
+        <Button
+          type="submit"
+          disabled={busy || !ready}
+          variant="primary"
+          size="md"
+        >
           <Plus size={14} /> {selected === 'oauth' ? 'Add and sign in' : 'Add and connect'}
         </Button>
       </form>

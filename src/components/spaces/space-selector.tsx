@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown, House, Plus, Settings, User, UserPlus } from 'lucide-react';
 import {
@@ -9,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Tip } from '@/components/ui/tip';
+
 import { currentSpaceId, spacePath, spaceApiBase, spacePlaceKey } from '@/lib/spaces/document';
 import { myRiClient } from '@/lib/spaces/my-ri-client';
 import { teamDisplayName } from '@/lib/home/team-display-name';
@@ -116,28 +118,29 @@ export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { vari
 
   const trigger =
     variant === 'collapsed' ? (
-      <Tip label={`Space: ${label}`}>
-        <button data-slot="action-button" data-variant="ghost"
+
+        <IconButton
           type="button"
-          aria-label={`Space: ${label}. Switch space`}
-          className="rounded-md p-1 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          label={`Space: ${label}. Switch space`}
+          tooltip={`Space: ${label}`}
+          variant="ghost"
+          size="sm"
         >
           <Mark name={currentName} imageUrl={currentLogo} />
-        </button>
-      </Tip>
+        </IconButton>
+
     ) : (
-      <button data-slot="action-button"
+      <Button
         type="button"
         aria-label={`Space: ${label}. Switch space`}
-        className={cn(
-          'flex min-w-0 items-center gap-2 rounded-lg text-[12px] font-medium text-foreground transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          variant === 'wide' ? 'w-full border border-border/60 px-2 py-1.5' : 'max-w-[11rem] px-1.5 py-1',
-        )}
+        variant="secondary"
+        size="sm"
+        className={cn("flex min-w-0 items-center gap-2", (variant === 'wide' ? "w-full" : "max-w-[11rem]"))}
       >
         <Mark name={currentName} imageUrl={currentLogo} />
         <span className="min-w-0 flex-1 truncate text-left">{label}</span>
         <ChevronsUpDown size={12} className="flex-shrink-0 text-muted-foreground" />
-      </button>
+      </Button>
     );
 
   return (

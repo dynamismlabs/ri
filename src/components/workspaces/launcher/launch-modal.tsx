@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { invalidateWorkspaceViews } from '@/lib/query/work-view-invalidation';
 import { WorkspacePicker } from '@/components/workspaces/workspace-picker';
 
@@ -754,12 +756,14 @@ function LaunchModalInner({
                 )}
               </div>
               <DialogPrimitive.Close asChild>
-                <button
-                  className="flex-shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground pointer-coarse:-m-1 pointer-coarse:p-2"
-                  aria-label="Close"
+                <IconButton
+                  label="Close"
+                  variant="ghost"
+                  size="sm"
+                  className="flex-shrink-0 pointer-coarse:-m-1"
                 >
                   <X size={15} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
 
@@ -827,30 +831,34 @@ function LaunchModalInner({
                   <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
                     Start from
                   </span>
-                  <button data-slot="action-button"
+                  <Button
                     type="button"
                     onClick={openBrowse}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:border-solid hover:bg-muted/50 hover:text-foreground"
+                    variant="secondary"
+                    size="sm"
+                    className="inline-flex items-center gap-1.5"
                   >
                     <Search size={10} />
                     Browse
                     {!touch && <kbd className="font-mono text-[9px] opacity-60">⌥⏎</kbd>}
-                  </button>
+                  </Button>
                   {suggestions.map((item) => {
                     const Icon = CHIP_ICON[item.kind];
                     return (
                       <Tip key={`${item.kind}:${item.key}`} label={item.title} onlyWhenTextHidden>
-                        <button data-slot="action-button"
+                        <Button
                           type="button"
                           onClick={() => handlePick(item)}
-                          className="inline-flex max-w-[14rem] items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                          variant="secondary"
+                          size="sm"
+                          className="inline-flex max-w-[14rem] items-center gap-1.5"
                         >
                           <Icon size={10} className="flex-shrink-0" />
                           <span className="truncate">
                             {item.number != null ? `#${item.number} ` : ''}
                             {item.title}
                           </span>
-                        </button>
+                        </Button>
                       </Tip>
                     );
                   })}
@@ -891,6 +899,7 @@ function LaunchModalInner({
               ) : (
                 <>
                   <ModelControl
+                    size={touch ? "touch" : "compact"}
                     selection={selection}
                     label={modelLabel}
                     variant={harnessPick?.variant ?? null}
@@ -910,25 +919,28 @@ function LaunchModalInner({
                     front of you before you've decided what to ask. Enabled
                     with an empty prompt, which is the whole point. */}
                 <Tip label="Create the session and open it without sending a message">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => void launch({ send: false })}
                     disabled={launching || !!runOnProblem || !!runtimeProblem}
-                    className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-40 pointer-coarse:py-2 pointer-coarse:text-[13px]"
+                    variant="secondary"
+                    size="sm"
                   >
                     Open only
-                  </button>
+                  </Button>
                 </Tip>
-                <button
+                <Button
                   type="button"
                   onClick={() => void launch()}
                   disabled={!ready || launching}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40 pointer-coarse:px-4 pointer-coarse:py-2 pointer-coarse:text-[13px]"
+                  variant="primary"
+                  size="md"
+                  className="inline-flex items-center gap-1.5"
                 >
                   {launching && <Loader2 size={12} className="animate-spin" />}
                   Start
                   {!touch && <kbd className="font-mono text-[9.5px] opacity-70">⏎</kbd>}
-                </button>
+                </Button>
               </div>
             </div>
           </ChatDropZone>
@@ -969,14 +981,16 @@ function Chip({ chip, onRemove }: { chip: LaunchChip; onRemove: () => void }) {
         {chip.detail && (
           <span className="flex-shrink-0 truncate text-muted-foreground/60">{chip.detail}</span>
         )}
-        <button
+        <IconButton
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${chip.label}`}
-          className="ml-0.5 flex-shrink-0 rounded text-muted-foreground/60 transition-colors hover:text-foreground"
+          label={`Remove ${chip.label}`}
+          variant="ghost"
+          size="sm"
+          className="ml-0.5 flex-shrink-0"
         >
           <X size={10} />
-        </button>
+        </IconButton>
       </span>
     </Tip>
   );

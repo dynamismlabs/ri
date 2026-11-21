@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 /**
  * The Schedules window. Opened from the rail and from a chat's Schedule
  * button (src/lib/client/schedules-window.ts), mounted once in the
@@ -187,9 +189,14 @@ function EditBody({ id, onGone }: { id: string; onGone: () => void }) {
       ) : (
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>{error ? 'This schedule could not be loaded.' : 'This schedule no longer exists.'}</p>
-          <button type="button" onClick={onGone} className="font-medium text-foreground hover:underline">
+          <Button
+            type="button"
+            onClick={onGone}
+            variant="link"
+            size="sm"
+          >
             Back to all schedules
-          </button>
+          </Button>
         </div>
       )}
     </WithChat>
@@ -217,15 +224,17 @@ function Header({ view, onBack, backButton }: {
   return (
     <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
       {view.kind !== 'list' ? (
-        <button
+        <Button
           ref={backButton}
           type="button"
           onClick={onBack}
-          className="flex shrink-0 items-center gap-1.5 p-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+          variant="secondary"
+          size="sm"
+          className="flex shrink-0 items-center gap-1.5"
         >
           <ArrowLeft size={16} />
           All schedules
-        </button>
+        </Button>
       ) : (
         <Clock size={16} className="text-primary mx-1.5" />
       )}
@@ -237,14 +246,15 @@ function Header({ view, onBack, backButton }: {
         </span>
       )}
       <div className="flex-1" />
-      <button
+      <IconButton
         type="button"
         onClick={closeSchedulesWindow}
-        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-        aria-label="Close"
+        label="Close"
+        variant="secondary"
+        size="sm"
       >
         <X size={16} />
-      </button>
+      </IconButton>
     </div>
   );
 }
@@ -319,16 +329,16 @@ function ListBody({
 
 function NewTriggerButton({ onClick }: { onClick: MouseEventHandler<HTMLButtonElement> }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      data-slot="action-button"
-      data-variant="primary"
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+      variant="primary"
+      size="md"
+      className="inline-flex items-center gap-1.5"
     >
       <Plus size={14} />
       New scheduled task
-    </button>
+    </Button>
   );
 }
 
@@ -370,24 +380,22 @@ function Row({
   const overdue = overdueLabel(trigger);
   return (
     <div data-slot="schedule-row" className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted/40 transition-colors">
-      <Tip label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}>
-        <button
+
+        <IconButton
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggle(!trigger.enabled);
           }}
-          className={cn(
-            'flex-shrink-0 p-1.5 rounded-md transition-colors',
-            trigger.enabled
-              ? 'bg-primary/10 text-primary hover:bg-primary/20'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80',
-          )}
-          aria-label={trigger.enabled ? 'Pause' : 'Resume'}
+          label={trigger.enabled ? 'Pause' : 'Resume'}
+          tooltip={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
+          variant="secondary"
+          size="sm"
+          className="flex-shrink-0"
         >
           {trigger.enabled ? <Play size={12} /> : <Pause size={12} />}
-        </button>
-      </Tip>
+        </IconButton>
+
 
       <button
         type="button"

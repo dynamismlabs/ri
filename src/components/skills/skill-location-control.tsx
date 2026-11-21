@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { documentSaves } from '@/lib/client/document-saves';
 import { AlertCircle, Check, ChevronDown, Copy, FileClock, FolderGit2, Globe, Loader2, ScrollText, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -62,24 +63,28 @@ export function SkillLocationControl({ skill }: { skill: SkillView }) {
 
   const trigger = draft ? (
     <Tip label="A draft. No agent uses it until it's installed.">
-      <button
-        className="flex h-7 flex-shrink-0 items-center gap-1 rounded-lg bg-primary px-2.5 text-[11px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+      <Button
+        variant="primary"
+        size="md"
+        className="flex flex-shrink-0 items-center gap-1"
       >
         {move.isPending && <Loader2 size={11} className="animate-spin" />}
         Install
         <ChevronDown size={11} strokeWidth={2.5} />
-      </button>
+      </Button>
     </Tip>
   ) : (
     <Tip label={`Installed in ${locationLabel(here)}: ${displayPath(skill.dir)}`}>
-      <button data-slot="action-button"
-        className="flex h-7 max-w-48 flex-shrink-0 items-center gap-1 rounded-lg border border-border px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
+      <Button
         aria-label={`Installed in ${locationLabel(here)}`}
+        variant="secondary"
+        size="sm"
+        className="flex max-w-48 flex-shrink-0 items-center gap-1"
       >
         {move.isPending ? <Loader2 size={11} className="animate-spin" /> : <PlaceIcon kind={here.kind} />}
         <span className="truncate">{locationLabel(here)}</span>
         <ChevronDown size={11} />
-      </button>
+      </Button>
     </Tip>
   );
 

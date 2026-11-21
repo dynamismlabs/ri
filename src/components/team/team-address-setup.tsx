@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { CircleAlert, CircleCheck, LoaderCircle } from 'lucide-react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -45,7 +46,12 @@ export function TeamAddressSetup({ onSaved, onDone }: { onSaved?: () => void; on
   const busy = prefix.isPending || beamd.isPending || custom.isPending;
 
   if (address.isLoading) return <p className="text-sm text-muted-foreground">Checking the team address…</p>;
-  if (!data) return <GateNotice tone="error">Could not load the team address. <button type="button" className="underline" onClick={() => void address.refetch()}>Retry</button></GateNotice>;
+  if (!data) return <GateNotice tone="error">Could not load the team address. <Button
+    type="button"
+    onClick={() => void address.refetch()}
+    variant="link"
+    size="md"
+  >Retry</Button></GateNotice>;
   const prefixField = (
     <>
       <GateField
@@ -81,7 +87,14 @@ export function TeamAddressSetup({ onSaved, onDone }: { onSaved?: () => void; on
               {prefix.error && <GateNotice tone="error">{apiErrorText(prefix.error)}</GateNotice>}
               <GateButton type="submit" busy={prefix.isPending} disabled={busy || !isValidPreviewLabel(normalizedName)}>Save and continue</GateButton>
             </form>
-            <button data-slot="action-button" type="button" className="w-full rounded-md border border-border px-3 py-2 text-sm" disabled={busy} onClick={onDone}>Decide later</button>
+            <Button
+              type="button"
+              disabled={busy}
+              onClick={onDone}
+              variant="secondary"
+              size="md"
+              className="w-full"
+            >Decide later</Button>
           </>
         )}
       </div>
@@ -114,9 +127,27 @@ export function TeamAddressSetup({ onSaved, onDone }: { onSaved?: () => void; on
           </> : <p className="text-xs text-muted-foreground">Choose an address to invite people, sign in on another device or connect to My Ri. A localhost address only works on the hosting computer.</p>}
         </div>
         {data.address && <div className="flex flex-wrap gap-2">
-          <button data-slot="action-button" type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy || checking} onClick={() => void check()}>Check connection</button>
-          {data.autoTunnel && <button data-slot="action-button" type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy} onClick={() => beamd.mutate(data.tunnelName)}>{beamd.isPending ? 'Reconnecting…' : 'Reconnect Beamd'}</button>}
-          <button data-slot="action-button" type="button" className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-muted/50 disabled:opacity-50" disabled={busy} onClick={() => { setEditing(!editing); setMethod(null); }}>{editing ? 'Cancel change' : 'Change address'}</button>
+          <Button
+            type="button"
+            disabled={busy || checking}
+            onClick={() => void check()}
+            variant="secondary"
+            size="md"
+          >Check connection</Button>
+          {data.autoTunnel && <Button
+            type="button"
+            disabled={busy}
+            onClick={() => beamd.mutate(data.tunnelName)}
+            variant="secondary"
+            size="md"
+          >{beamd.isPending ? 'Reconnecting…' : 'Reconnect Beamd'}</Button>}
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => { setEditing(!editing); setMethod(null); }}
+            variant="secondary"
+            size="md"
+          >{editing ? 'Cancel change' : 'Change address'}</Button>
         </div>}
         {beamd.error && !showMethods && <GateNotice tone="error">{apiErrorText(beamd.error)}</GateNotice>}
       </div>}

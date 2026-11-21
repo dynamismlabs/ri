@@ -1,5 +1,6 @@
 'use client'
 
+import { IconButton } from '@/components/system/icon-button';
 import { Node, mergeAttributes, InputRule } from '@tiptap/core'
 import {
   ReactNodeViewRenderer,
@@ -150,18 +151,19 @@ function ToggleView(props: ReactNodeViewProps) {
       className={`toggle-block${open ? ' is-open' : ' is-closed'}`}
       data-open={open ? 'true' : 'false'}
     >
-      <button
+      <IconButton
         type="button"
-        className="toggle-chevron text-muted-foreground/60 hover:text-foreground hover:bg-accent"
         onClick={handleToggle}
         contentEditable={false}
-        aria-label={open ? 'Collapse toggle' : 'Expand toggle'}
+        label={open ? 'Collapse toggle' : 'Expand toggle'}
+        variant="ghost"
+        size="xs"
       >
         <ChevronRight
           className={`transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
           size={16}
         />
-      </button>
+      </IconButton>
       <NodeViewContent className="toggle-inner" />
     </NodeViewWrapper>
   )

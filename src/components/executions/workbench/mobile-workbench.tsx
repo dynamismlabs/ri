@@ -1,5 +1,8 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+
+import { Button } from '@/components/system/button';
 import { ChevronLeft, MoreHorizontal } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -59,14 +62,16 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
   return (
     <div className="relative flex h-full min-h-0 w-full flex-col bg-background">
       <div className="flex flex-shrink-0 items-center gap-1 border-b border-border px-1.5 py-2">
-        <button
+        <Button
           type="button"
           onClick={onBack}
-          className="flex h-9 flex-shrink-0 items-center gap-0.5 rounded-md pl-1 pr-2 text-[14px] text-foreground/90 active:bg-muted/50"
+          variant="secondary"
+          size="sm"
+          className="flex flex-shrink-0 items-center gap-0.5"
         >
           <ChevronLeft size={18} />
           Chat
-        </button>
+        </Button>
         <div data-slot="segmented" data-size="touch" className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-lg bg-muted/60 p-0.5">
           {PRIMARY_VIEWS.map((v) => (
             <button
@@ -89,11 +94,8 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
           )}
         </div>
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label="Notes & tasks, Scratchpad"
-            className="flex size-9 flex-shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none active:bg-muted/50"
-          >
-            <MoreHorizontal size={17} />
+          <DropdownMenuTrigger asChild>
+            <IconButton label="Notes & tasks, Scratchpad" size="touch"><MoreHorizontal /></IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={6} className="min-w-48">
             {MORE_VIEWS.map((v) => {
@@ -120,13 +122,16 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
             <div className="text-[12.5px] font-semibold text-amber-300">Needs input</div>
             <div className="truncate text-[12.5px] text-amber-50/85">This chat is waiting on your answer.</div>
           </div>
-          <button
+          <Button
             type="button"
             onClick={onBack}
-            className="flex-shrink-0 rounded-lg bg-amber-50 px-3 py-1.5 text-[13px] font-semibold text-amber-950 active:bg-amber-100"
+            variant="ghost"
+            size="sm"
+            tone="warning"
+            className="flex-shrink-0"
           >
             Answer
-          </button>
+          </Button>
         </div>
       )}
     </div>

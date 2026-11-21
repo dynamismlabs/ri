@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import {
   AppWindow,
   ChevronDown,
@@ -347,18 +348,18 @@ export function ToolsMini({
 }) {
   return (
     <Tip label={label}>
-      <button
+      <Button
         type="button"
         onClick={onClick}
         aria-label={label}
-        className={cn(
-          'relative inline-flex size-9 items-center justify-center rounded-lg text-foreground/80 transition-colors hover:bg-muted/70 hover:text-foreground',
-          active && 'bg-muted/70 text-foreground',
-        )}
+        variant="secondary"
+        size="sm"
+        pressed={active}
+        className="relative inline-flex items-center justify-center"
       >
         {icon}
         {badge && <span aria-hidden className={cn('absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full', badge)} />}
-      </button>
+      </Button>
     </Tip>
   );
 }
@@ -409,7 +410,7 @@ function ActionButton({
 }) {
   return (
     <Tip label={title}>
-      <button data-slot="action-button"
+      <Button
         type="button"
         disabled={disabled}
         onClick={(e) => {
@@ -418,10 +419,12 @@ function ActionButton({
           onClick();
         }}
         onKeyDown={(e) => e.stopPropagation()}
-        className="inline-flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+        variant="secondary"
+        size="sm"
+        className="inline-flex flex-shrink-0 items-center gap-1.5"
       >
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { createAppTRPCClient } from '@/lib/trpc/client';
 
 import { QrScannerModal } from '@/components/auth/qr-scanner-modal';
@@ -156,7 +157,7 @@ export default function PairPage() {
                 <KeyRound size={14} />
                 Pairing token
               </label>
-              
+
               <div className="group relative">
                 <div data-slot="pairing-decoration" className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 blur transition duration-500 group-focus-within:opacity-100" />
                 <div data-slot="input-group" className="relative flex items-center gap-2 rounded-lg bg-background/80 p-1.5 border border-border/50 shadow-inner backdrop-blur-xl transition-all hover:bg-background/90 group-focus-within:bg-background">
@@ -178,11 +179,13 @@ export default function PairPage() {
                     disabled={validating}
                     className="w-full flex-1 bg-transparent px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none disabled:opacity-50"
                   />
-                  <button data-slot="action-button" data-variant="primary"
+                  <Button
                     type="button"
                     onClick={submit}
                     disabled={!token.trim() || validating}
-                    className="inline-flex h-9 shrink-0 shadow-sm items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+                    variant="primary"
+                    size="md"
+                    className="inline-flex shrink-0 items-center gap-2"
                   >
                     {validating ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -191,7 +194,7 @@ export default function PairPage() {
                     ) : (
                       'Connect'
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -202,18 +205,20 @@ export default function PairPage() {
                 </div>
               )}
 
-              <button data-slot="action-button"
+              <Button
                 type="button"
                 onClick={() => {
                   if (status.kind !== 'idle') setStatus({ kind: 'idle' });
                   setScannerOpen(true);
                 }}
                 disabled={validating}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-md border border-border/50 bg-background/40 px-4 py-2.5 text-sm font-medium text-foreground transition-all hover:bg-background/70 hover:border-border active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
+                variant="secondary"
+                size="sm"
+                className="w-full inline-flex items-center justify-center gap-2"
               >
                 <QrCode size={16} />
                 Scan QR code
-              </button>
+              </Button>
 
               <p className="text-xs text-muted-foreground/60">
                 You can also open a pair link directly. The token lives in the URL fragment as{' '}

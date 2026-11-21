@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Command } from 'cmdk';
 import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
@@ -146,14 +148,16 @@ function ChatSearchPanel() {
             label={agent ? `Searching chats in ${agent.name}. Change agent` : 'Search chats in one agent'}
             dialogInput={inputRef}
           />
-          <button
+          <IconButton
             type="button"
             onClick={closeChatSearch}
-            aria-label="Close search"
-            className="-mr-1.5 p-2 text-muted-foreground hover:text-foreground md:mr-0 md:p-1"
+            label="Close search"
+            variant="ghost"
+            size="sm"
+            className="-mr-1.5 md:mr-0"
           >
             <X size={14} className="size-[18px] md:size-3.5" />
-          </button>
+          </IconButton>
         </div>
 
         {/* The rail's controls, shown while there's a query to narrow. */}
@@ -343,22 +347,18 @@ function Segmented<T extends string>({
   return (
     <div role="group" aria-label={label} className="flex items-center gap-0.5 rounded-md bg-muted/40 p-0.5">
       {options.map((opt) => (
-        <button
+        <Button
           key={opt.value}
           type="button"
           aria-pressed={value === opt.value}
           // Keep focus in the query, so arrows and Enter still drive the list.
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onChange(opt.value)}
-          className={cn(
-            'rounded px-2 py-0.5 text-[10px] font-medium transition-colors',
-            value === opt.value
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground/70 hover:text-foreground',
-          )}
+          variant="secondary"
+          size="sm"
         >
           {opt.label}
-        </button>
+        </Button>
       ))}
     </div>
   );

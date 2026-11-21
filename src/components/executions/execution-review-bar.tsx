@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 
@@ -128,15 +129,16 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
           {eligible.length > 1 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
+                <Button
                   disabled={pending}
-                  data-slot="review-action"
-                  data-tone="emerald-solid"
-                  className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded bg-emerald-600 px-2 py-1 text-[11px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:opacity-60"
+                  variant="primary"
+                  size="sm"
+                  tone="success"
+                  className="inline-flex shrink-0 items-center gap-1"
                 >
                   <CheckCheck size={12} />
                   Accept & complete…
-                </button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-xs">
                 <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">Complete which task?</div>
@@ -175,25 +177,20 @@ function ReviewButton({
   tone: 'amber' | 'muted' | 'emerald' | 'emerald-solid';
   title?: string;
 }) {
-  const tones: Record<string, string> = {
-    amber: active ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300' : 'text-muted-foreground hover:bg-amber-500/10 hover:text-amber-700 dark:hover:text-amber-300',
-    muted: active ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-    emerald: active ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300',
-    'emerald-solid': 'bg-emerald-600 text-white hover:bg-emerald-700',
-  };
+
   return (
     <Tip label={title}>
-      <button
+      <Button
         onClick={onClick}
         disabled={disabled}
-        data-slot="review-action"
-        data-tone={tone}
-        data-active={active || undefined}
-        className={cn('inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-60', tones[tone])}
+        variant={tone === "emerald-solid" ? "primary" : tone === "emerald" ? "secondary" : "ghost"}
+        size="sm"
+        tone={tone === "emerald-solid" ? "success" : "neutral"}
+        pressed={active}
       >
         {icon}
         {label}
-      </button>
+      </Button>
     </Tip>
   );
 }

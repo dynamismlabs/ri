@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState, type ReactNode } from 'react';
 import { AppWindow, FolderTree, MessagesSquare, Settings2, X, type LucideIcon } from 'lucide-react';
 import type { WorkspaceRecord } from '@/db/types';
@@ -127,24 +129,29 @@ export function AgentTools({
         )}
         {chat && (
           <div className={cn('flex min-w-0 shrink items-center gap-0.5', panelTabClass(chatActive))}>
-            <button
+            <Button
               type="button"
               aria-pressed={chatActive}
               onClick={chat.onShow}
-              className="flex min-w-0 items-center gap-1.5 self-stretch outline-none focus-visible:underline"
+              variant="link"
+              size="sm"
+              className="flex min-w-0 items-center gap-1.5 self-stretch"
             >
               <BesideChatTabLabel chatId={chat.id} />
-            </button>
-            <Tip label="Put it away. The chat keeps going.">
-              <button
+            </Button>
+
+              <IconButton
                 type="button"
-                aria-label="Put away the chat beside"
                 onClick={chat.onClose}
-                className="ml-1 inline-flex size-4 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                label="Put away the chat beside"
+                tooltip="Put it away. The chat keeps going."
+                variant="secondary"
+                size="sm"
+                className="ml-1 inline-flex shrink-0 items-center justify-center"
               >
                 <X size={11} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </div>
         )}
         <span className="flex-1" />

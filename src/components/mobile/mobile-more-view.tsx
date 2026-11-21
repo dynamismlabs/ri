@@ -1,5 +1,6 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import {
   CheckSquare, FileText, Activity, Layers, LayoutGrid, Calendar, Sun, Moon, Settings, ChevronLeft, FileCheck2, MessageSquarePlus,
@@ -31,9 +32,15 @@ export function MobileMoreView() {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0">
-          <button onClick={() => setSubView('menu')} className="p-1 -ml-1 rounded-lg hover:bg-muted/50 transition-colors">
+          <IconButton
+            onClick={() => setSubView('menu')}
+            label="Back"
+            variant="ghost"
+            size="touch"
+            className="-ml-1"
+          >
             <ChevronLeft size={18} className="text-muted-foreground" />
-          </button>
+          </IconButton>
           <span className="text-sm font-bold">{labels[subView]}</span>
         </div>
         <div className="flex-1 min-h-0 overflow-hidden">

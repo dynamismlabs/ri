@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useRankTask, useTasks } from '@/hooks/use-tasks';
@@ -69,21 +71,27 @@ export function TaskPriority({ taskId, status }: { taskId: string; status: TaskS
           </span>
         ) : (
           <Tip label="Type an exact rank">
-            <button
+            <Button
               ref={rankButton}
               onClick={() => setEditing(true)}
-              className="inline-flex items-center px-2 py-0.5 rounded text-foreground/80 text-[12px] font-medium tabular-nums hover:bg-muted transition-colors"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center"
             >
               {position.ranked ? `Ranked #${position.rank} of ${position.total}` : 'Not yet ranked'}
-            </button>
+            </Button>
           </Tip>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted border border-border transition-colors">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="inline-flex items-center gap-1"
+            >
               {position.ranked ? 'Move' : 'Place'}
               <ChevronDown size={10} />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-32">
             {BUCKET_OPTIONS.map((opt) => (

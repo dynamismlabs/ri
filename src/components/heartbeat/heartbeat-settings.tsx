@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * The heartbeat's settings and status. One component in two places: Settings
  * > Heartbeat (full) and the deck chip's sheet (compact), so they can't drift.
@@ -122,11 +123,13 @@ function HeartbeatSettingsBody({
         </label>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={() => checkIn.mutate(config.triggerId)}
             disabled={config.running || checkIn.isPending}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[12px] hover:bg-muted disabled:opacity-50"
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1.5"
           >
             {config.running || checkIn.isPending ? (
               <Loader2 size={12} className="animate-spin" />
@@ -134,7 +137,7 @@ function HeartbeatSettingsBody({
               <Play size={12} />
             )}
             {config.running || checkIn.isPending ? 'Checking in…' : 'Check in now'}
-          </button>
+          </Button>
         </div>
       </section>
 
@@ -188,13 +191,14 @@ function HeartbeatSettingsBody({
           {!anyTime && config.timezone && config.timezone !== userTz && (
             <p className="text-[11px] text-muted-foreground/85">
               These hours are in {config.timezone.replace(/_/g, ' ')}.{' '}
-              <button
+              <Button
                 type="button"
                 onClick={() => update.mutate({ timezone: userTz })}
-                className="font-medium text-foreground hover:underline"
+                variant="link"
+                size="sm"
               >
                 Use {userTz.replace(/_/g, ' ')}
-              </button>
+              </Button>
             </p>
           )}
           <div className="flex flex-wrap items-center gap-2">
@@ -266,25 +270,19 @@ function CheckInRow({ checkIn, onNavigate }: { checkIn: HeartbeatCheckIn; onNavi
   return (
     <li className="flex items-center gap-2 pr-2">
       {checkIn.chatSessionId ? (
-        <Link
-          href={`/?session=${checkIn.chatSessionId}`}
+        <Button asChild variant="secondary" size="sm" className="flex min-w-0 flex-1 items-center gap-2"><Link href={`/?session=${checkIn.chatSessionId}`}
           onClick={onNavigate}
-          aria-label={`Open the check-in from ${formatCheckInTime(checkIn.at)}: ${text}`}
-          className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5 hover:bg-muted/50"
-        >
+          aria-label={`Open the check-in from ${formatCheckInTime(checkIn.at)}: ${text}`}>
           {body}
-        </Link>
+        </Link></Button>
       ) : (
         <span className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5">{body}</span>
       )}
       {checkIn.changedCount > 0 && (
-        <Link
-          href={`/runs/${checkIn.runId}`}
-          onClick={onNavigate}
-          className="shrink-0 rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
+        <Button asChild variant="secondary" size="sm" className="shrink-0"><Link href={`/runs/${checkIn.runId}`}
+          onClick={onNavigate}>
           Changes ({checkIn.changedCount})
-        </Link>
+        </Link></Button>
       )}
     </li>
   );
@@ -440,13 +438,14 @@ function InstructionsEditor({
 
   if (!open) {
     return (
-      <button
+      <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-[12px] font-medium text-muted-foreground hover:text-foreground"
+        variant="ghost"
+        size="sm"
       >
         Edit instructions
-      </button>
+      </Button>
     );
   }
 
@@ -476,7 +475,7 @@ function InstructionsEditor({
         className="max-h-[50vh] overflow-y-auto font-sans text-sm"
         aria-label="Heartbeat instructions"
       />
-      <button
+      <Button
         type="button"
         onClick={() => {
           setDraft(DEFAULT_HEARTBEAT_INSTRUCTIONS);
@@ -484,10 +483,11 @@ function InstructionsEditor({
           setSavedAt(Date.now());
         }}
         disabled={config.instructionsAreDefault}
-        className="text-[11px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
+        variant="ghost"
+        size="sm"
       >
         Reset to default
-      </button>
+      </Button>
     </section>
   );
 }

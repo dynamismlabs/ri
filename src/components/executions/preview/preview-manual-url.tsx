@@ -1,10 +1,11 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, useState } from 'react';
 import { Check, Loader2, X, Link as LinkIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import type { PreviewManualUrl } from '@/lib/api/preview';
-import { Tip } from '@/components/ui/tip';
+
 
 interface PreviewManualUrlProps {
   /** Current manual URLs on the execution (default-service entry is used). */
@@ -85,31 +86,35 @@ export function PreviewManualUrl({
           autoCapitalize="off"
           className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
         />
-        <Tip label="Save URL">
-          <button data-slot="action-button" data-variant="primary"
+
+          <IconButton
             type="button"
             onClick={() => save(draft)}
             disabled={!dirty || isSaving}
-            aria-label="Save URL"
-            className={cn(
-              'inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-foreground text-background transition-opacity hover:bg-foreground/90 disabled:opacity-40',
-            )}
+            label="Save URL"
+            tooltip="Save URL"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center justify-center"
           >
             {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-          </button>
-        </Tip>
+          </IconButton>
+
         {current && (
-          <Tip label="Clear URL">
-            <button data-slot="action-button"
+
+            <IconButton
               type="button"
               onClick={() => { setDraft(''); save(''); }}
               disabled={isSaving}
-              aria-label="Clear URL"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-40"
+              label="Clear URL"
+              tooltip="Clear URL"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center justify-center"
             >
               <X size={13} />
-            </button>
-          </Tip>
+            </IconButton>
+
         )}
       </div>
     </div>

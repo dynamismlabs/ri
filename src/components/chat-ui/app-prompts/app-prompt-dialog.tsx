@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -69,8 +69,19 @@ function PromptForm({ prompt, onCancel, onFill }: { prompt: ChatAppPrompt; onCan
       </div>
       {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" aria-hidden />{error}</p>}
       <DialogFooter>
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={pending}>Cancel</Button>
-        <Button type="submit" disabled={pending}>
+        <Button
+          type="button"
+          onClick={onCancel}
+          disabled={pending}
+          variant="ghost"
+          size="md"
+        >Cancel</Button>
+        <Button
+          type="submit"
+          disabled={pending}
+          variant="primary"
+          size="md"
+        >
           {pending && <Loader2 size={13} className="animate-spin" aria-hidden />}
           Add to draft
         </Button>

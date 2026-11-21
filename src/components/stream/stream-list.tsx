@@ -1,5 +1,8 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 /**
  * The stream tab: a calm ledger of captures, not a work queue (spec §3.12).
  *
@@ -164,12 +167,18 @@ export function StreamList() {
         {/* Power filters: full history, tucked away */}
         <Popover>
           <PopoverTrigger asChild>
-            <Tip label="History">
-              <button data-slot="chip-button" className="flex items-center gap-1 px-1.5 py-1 rounded text-muted-foreground/70 hover:text-foreground hover:bg-muted transition-colors" aria-label="History">
+
+              <IconButton
+                label="History"
+                tooltip="History"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1"
+              >
                 <ListFilter size={11} />
                 <ChevronDown size={8} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </PopoverTrigger>
           <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
             <div className="py-1">
@@ -196,24 +205,26 @@ export function StreamList() {
         )}
 
         {proposalCount > 0 && (
-          <button
+          <ChipButton
             onClick={() => setTriageOpen(true)}
-            data-slot="chip-button"
-            className="flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded-md transition-colors"
+            variant="secondary"
+            size="compact"
+            className="flex items-center gap-1.5"
           >
             Review
-          </button>
+          </ChipButton>
         )}
         <Tip label="Have the assistant triage waiting captures">
-          <button
+          <ChipButton
             onClick={handleSweep}
             disabled={sweep.isPending}
-            data-slot="chip-button"
-            className="flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded-md transition-colors disabled:opacity-50"
+            variant="secondary"
+            size="compact"
+            className="flex items-center gap-1.5"
           >
             <ListChecks size={10} />
             Triage
-          </button>
+          </ChipButton>
         </Tip>
       </div>
 
@@ -350,9 +361,13 @@ function StreamRow({
             )}
 
             {isProposed && (
-              <button onClick={onReview} className="text-[8.5px] font-bold text-primary hover:underline">
+              <Button
+                onClick={onReview}
+                variant="link"
+                size="sm"
+              >
                 {STATUS_LABELS.proposed}
-              </button>
+              </Button>
             )}
 
             {label && !isProposed && item.status !== 'pending' && (
@@ -362,14 +377,17 @@ function StreamRow({
             {/* Consequences: where this capture went. */}
             {item.outcomes.map((o) => (
               <Tip key={`${o.entityType}:${o.entityId}:${o.relation}`} label={o.relation === 'created' ? 'Created from this capture' : 'This capture was added to it'}>
-                <button
+                <Button
                   onClick={() => onOpenEntity(o.entityType, o.entityId)}
-                  className="inline-flex items-center gap-1 text-[8.5px] font-semibold text-emerald-600 dark:text-emerald-500 hover:underline"
+                  variant="link"
+                  size="sm"
+                  tone="success"
+                  className="inline-flex items-center gap-1"
                 >
                   {o.entityType === 'task' ? <Target size={8} /> : <FileText size={8} />}
                   {o.relation === 'merged_into' ? 'Added to ' : ''}
                   {o.entityTitle ?? o.entityType}
-                </button>
+                </Button>
               </Tip>
             ))}
 
@@ -385,34 +403,62 @@ function StreamRow({
         {/* Row actions */}
         <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
           {needsRetry && (
-            <Tip label="Try reading it again" side="bottom">
-              <button aria-label="Try reading it again" onClick={onRetry} className="p-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors">
+
+              <IconButton
+                onClick={onRetry}
+                label="Try reading it again"
+                tooltip="Try reading it again"
+                tipSide="bottom"
+                variant="ghost"
+                size="sm"
+              >
                 <RefreshCw size={12} />
-              </button>
-            </Tip>
+              </IconButton>
+
           )}
           {isPending && !needsRetry && (
             <>
               <TaskActions onPromote={onPromoteTask} onMerge={onMergeTask} />
               <NoteActions onPromote={onPromoteNote} onMerge={onMergeNote} />
-              <Tip label="Keep as a thought" side="bottom">
-                <button aria-label="Keep as a thought" onClick={onKeepAsThought} className="p-1.5 rounded-md text-muted-foreground hover:text-violet-500 hover:bg-muted transition-colors">
+
+                <IconButton
+                  onClick={onKeepAsThought}
+                  label="Keep as a thought"
+                  tooltip="Keep as a thought"
+                  tipSide="bottom"
+                  variant="secondary"
+                  size="sm"
+                >
                   <BookOpen size={12} />
-                </button>
-              </Tip>
-              <Tip label="Set aside" side="bottom">
-                <button aria-label="Set aside" onClick={onDismiss} className="p-1.5 rounded-md text-muted-foreground hover:text-muted-foreground/80 hover:bg-muted transition-colors">
+                </IconButton>
+
+
+                <IconButton
+                  onClick={onDismiss}
+                  label="Set aside"
+                  tooltip="Set aside"
+                  tipSide="bottom"
+                  variant="secondary"
+                  size="sm"
+                >
                   <Archive size={12} />
-                </button>
-              </Tip>
+                </IconButton>
+
             </>
           )}
           {isSettled && (
-            <Tip label="Bring it back" side="bottom">
-              <button aria-label="Bring it back" onClick={onReopen} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+
+              <IconButton
+                onClick={onReopen}
+                label="Bring it back"
+                tooltip="Bring it back"
+                tipSide="bottom"
+                variant="secondary"
+                size="sm"
+              >
                 <RotateCcw size={12} />
-              </button>
-            </Tip>
+              </IconButton>
+
           )}
         </div>
       </div>

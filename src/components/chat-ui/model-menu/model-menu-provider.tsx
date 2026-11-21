@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useId, useState } from 'react';
 import { useCommandState } from 'cmdk';
 import { ChevronRight, Loader2 } from 'lucide-react';
@@ -116,13 +117,14 @@ export function ModelMenuProvider({
           {expanded && !loading && error && (
             <div className="px-4 pb-2 text-[11px] text-muted-foreground">
               Could not load models.{' '}
-              <button
+              <Button
                 type="button"
                 onClick={onRetry}
-                className="underline underline-offset-2"
+                variant="link"
+                size="xs"
               >
                 Try again
-              </button>
+              </Button>
             </div>
           )}
           {expanded && !loading && !error && additionalModels.length === 0 && (

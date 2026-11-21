@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { z } from 'zod/v4';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { accountRpcSchema } from '@/lib/plugins/evaluation-contract';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -93,7 +93,17 @@ export function AccountEvaluationBridge({ handle, url, account, frame }: {
       <p className="text-sm font-medium">Review app action</p>
       <p className="text-xs text-muted-foreground">{value.input.name} on {account}</p>
       <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-2 text-xs">{JSON.stringify(value.input.arguments, null, 2).slice(0, 4000)}</pre>
-      <div className="flex gap-2"><Button size="sm" disabled={busy !== null} onClick={() => void decide(value, true)}>Approve once</Button><Button size="sm" variant="outline" disabled={busy !== null} onClick={() => void decide(value, false)}>Decline</Button></div>
+      <div className="flex gap-2"><Button
+        disabled={busy !== null}
+        onClick={() => void decide(value, true)}
+        variant="primary"
+        size="md"
+      >Approve once</Button><Button
+        disabled={busy !== null}
+        onClick={() => void decide(value, false)}
+        variant="secondary"
+        size="sm"
+      >Decline</Button></div>
     </div>)}
     {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
   </div>;

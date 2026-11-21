@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { Check, Repeat } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
@@ -154,18 +155,16 @@ export function TaskRecurrenceField({ value, onChange }: {
 }) {
   const label = recurrenceLabel(value);
   const button = (
-    <button
+    <ChipButton
       type="button"
       aria-label={`Repeat: ${label ?? 'Never'}`}
-      data-slot="chip-button"
-      className={cn(
-        'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
-        !label && 'text-muted-foreground',
-      )}
+      variant="secondary"
+      size="compact"
+      className="inline-flex w-fit items-center gap-1.5"
     >
       <Repeat size={12} />
       {label ?? 'Never'}
-    </button>
+    </ChipButton>
   );
   return (
     <TaskRecurrencePicker value={value} onChange={onChange}>

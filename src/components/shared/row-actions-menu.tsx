@@ -1,5 +1,6 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { MoreHorizontal, type LucideIcon } from 'lucide-react';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
@@ -27,19 +28,19 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
 
   return (
     <>
-      <button
+      <IconButton
         onClick={(e) => {
           e.stopPropagation();
           setOpen(true);
         }}
-        className={cn(
-          'md:hidden p-1.5 rounded-md text-muted-foreground active:bg-muted transition-colors',
-          className,
-        )}
-        aria-label={title}
+        label={title}
+        variant="secondary"
+        size="xs"
+        focus="inside"
+        className={cn("md:hidden", className)}
       >
         <MoreHorizontal size={iconSize} />
-      </button>
+      </IconButton>
 
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="bottom" showCloseButton={false} className="rounded-t-2xl px-3 pb-6 pt-3">

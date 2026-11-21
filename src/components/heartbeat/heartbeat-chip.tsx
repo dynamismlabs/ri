@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 /**
  * The heartbeat on the deck. It appears only when the heartbeat needs the
  * user (never set up, paused by the app, failed, or left an unread report),
@@ -14,21 +15,12 @@ import { HeartPulse } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useHeartbeat } from '@/hooks/use-heartbeat';
 import { useOrchestratorName } from '@/hooks/use-user-state';
-import {
-  describeHeartbeat,
-  heartbeatDeckSignal,
-  type HeartbeatDeckSignal,
-  type HeartbeatDeckSignalKind,
-} from '@/lib/heartbeat/status';
-import { cn } from '@/lib/utils';
+import { describeHeartbeat, heartbeatDeckSignal, type HeartbeatDeckSignal } from '@/lib/heartbeat/status';
+
 import { HeartbeatSettings } from './heartbeat-settings';
 import { Tip } from '@/components/ui/tip';
 
-const KIND_CLASS: Record<HeartbeatDeckSignalKind, string> = {
-  setup: 'border-border text-muted-foreground hover:bg-muted hover:text-foreground',
-  paused: 'border-amber-500/30 text-amber-700 hover:bg-amber-500/10 dark:text-amber-400',
-  failed: 'border-destructive/30 text-destructive hover:bg-destructive/10',
-};
+
 
 /** The deck signal for the current heartbeat, or null when it should stay quiet. */
 export function useHeartbeatDeckSignal(): HeartbeatDeckSignal | null {
@@ -49,22 +41,20 @@ export function HeartbeatChip() {
   return (
     <>
       <Tip label={detail}>
-        <button
+        <ChipButton
           type="button"
           onClick={() => setOpen(true)}
           aria-label={`${signal.label}. ${detail}`}
-          data-slot="chip-button"
-          data-tone={signal.kind === 'setup' ? undefined : 'status'}
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors',
-            KIND_CLASS[signal.kind],
-          )}
+          variant="secondary"
+          size="compact"
+          tone="status"
+          status={signal.kind === "failed" ? "danger" : signal.kind === "paused" ? "warning" : "neutral"}
         >
           <span className="relative flex shrink-0">
             <HeartPulse size={12} />
           </span>
           {signal.label}
-        </button>
+        </ChipButton>
       </Tip>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-md">

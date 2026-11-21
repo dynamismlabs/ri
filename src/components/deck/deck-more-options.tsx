@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { TeamLabel } from '@/components/spaces/team-label';
 import { ChevronUp, ChevronDown, Plus, RotateCcw } from 'lucide-react';
 import type { AlternativeItem, RadarItem, DeckChangeView } from '@/types/dashboard';
@@ -147,12 +148,13 @@ export function DeckMoreOptions({
           {/* View all tasks */}
           {onViewAllTasks && (
             <div className="pt-2 pb-1">
-              <button
+              <Button
                 onClick={onViewAllTasks}
-                className="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                variant="ghost"
+                size="xs"
               >
                 View all tasks →
-              </button>
+              </Button>
             </div>
           )}
         </div>

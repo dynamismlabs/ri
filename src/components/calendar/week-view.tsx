@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * The dense week: seven real columns of facts. Per day — a slim capacity
  * header (from actual busy time), all-day chips, deadline markers (tasks
@@ -106,14 +107,17 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
             {/* Deadline markers — obligations landing on this day */}
             {deadlines.map((d) => (
               <Tip key={d.taskId} label={`Due: ${d.title}`}>
-                <button data-slot="action-button" data-tone="warning"
+                <Button
                   type="button"
                   onClick={() => onOpenTask(d.taskId)}
-                  className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[10px] font-medium text-amber-600 dark:text-amber-400 text-left shrink-0"
+                  variant="secondary"
+                  size="sm"
+                  tone="warning"
+                  className="flex items-center gap-1 shrink-0"
                 >
                   <Flag size={9} className="shrink-0" />
                   <span className="truncate">{d.title}</span>
-                </button>
+                </Button>
               </Tip>
             ))}
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Compact proportional day strip: commitments, gaps, and a now line across
  * workday bounds, with a one-line summary — plus the pairing line, the one
@@ -77,21 +79,25 @@ export function DayShapeStrip({
         <span className="flex-1 truncate text-[10px] text-muted-foreground">
           Connect your calendar to see your day here
         </span>
-        <button
+        <Button
           type="button"
           onClick={() => openSettings('plugins')}
-          className="shrink-0 text-[10px] font-medium text-primary hover:underline"
+          variant="link"
+          size="sm"
+          className="shrink-0"
         >
           Connect
-        </button>
-        <button
+        </Button>
+        <IconButton
           type="button"
-          aria-label="Dismiss"
           onClick={dismissCalendarInvite}
-          className="shrink-0 text-muted-foreground/50 hover:text-foreground transition-colors"
+          label="Dismiss"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
         >
           <X className="size-3" />
-        </button>
+        </IconButton>
       </div>
     );
   }
@@ -140,11 +146,13 @@ export function DayShapeStrip({
   return (
     <TooltipProvider delayDuration={200}>
       <div className={cn('border-b border-border/50', className)}>
-        <button
+        <Button
           type="button"
           onClick={openCalendar}
           aria-label="Open calendar"
-          className="w-full flex items-center gap-3 px-4 py-1.5 group"
+          variant="ghost"
+          size="sm"
+          className="group w-full flex items-center gap-3"
         >
           <div className="relative flex-1 h-4 rounded-[3px] bg-muted/40 overflow-hidden">
             {gapLabels.map((g, i) => (
@@ -183,7 +191,7 @@ export function DayShapeStrip({
               {summaryParts.join(' · ')}
             </span>
           )}
-        </button>
+        </Button>
 
         {pairing && (
           <p className="px-4 pb-1.5 text-[10px] text-muted-foreground">

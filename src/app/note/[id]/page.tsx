@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { EntityPageBoundary } from '@/components/home/entity-page-boundary';
 import { HomeBoundary } from '@/components/home/home-context';
 
@@ -144,23 +146,29 @@ function NotePageContent({ params }: { params: Promise<{ id: string }> }) {
 
   const header = (
         <div className={cn('flex items-center justify-between gap-2 h-11 sticky top-0 z-10 bg-background/80 backdrop-blur-sm', ENTITY_HEADER)}>
-          <button
+          <Button
             onClick={goBack}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5 shrink-0"
             aria-label="Back"
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1.5 shrink-0"
           >
             <ChevronLeft size={16} />
             <span className="text-xs">Back</span>
-          </button>
+          </Button>
 
           <div className="flex items-center gap-3 min-w-0 overflow-x-auto no-scrollbar [&>*]:shrink-0">
             {agentFirst && !shared && <EntityViewToggle value={view} onChange={setView} />}
             {note && !shared && <EntityHistoryButton entityType="note" entityId={note.id} />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <IconButton
+                  label="More note actions"
+                  variant="ghost"
+                  size="xs"
+                >
                   <MoreHorizontal size={16} />
-                </button>
+                </IconButton>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 {note?.url && (

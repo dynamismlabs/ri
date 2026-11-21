@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { Loader2, Plus, RefreshCw } from 'lucide-react';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
@@ -86,14 +87,16 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
           ))}
         </div>
         <Tip label={tab === 'build' ? 'Start a new builder chat (archives this one)' : 'Start a new try (archives this one)'}>
-          <button
+          <Button
             onClick={() => active.newChat.mutate()}
             disabled={active.newChat.isPending || !active.sessionId}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1"
           >
             {active.newChat.isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
             New
-          </button>
+          </Button>
         </Tip>
       </div>
 
@@ -104,12 +107,13 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
             {kind === 'try' && tryStale && (
               <div className="flex shrink-0 items-center gap-2 border-b border-border/50 bg-muted/40 px-3 py-1.5 text-[11px] text-muted-foreground">
                 <span className="flex-1">The skill changed since this try started.</span>
-                <button
+                <Button
                   onClick={() => tryChat.newChat.mutate()}
-                  className="rounded-md px-1.5 py-0.5 font-medium text-foreground hover:bg-muted"
+                  variant="secondary"
+                  size="sm"
                 >
                   Try the latest
-                </button>
+                </Button>
               </div>
             )}
             {chat.sessionId ? (
@@ -134,12 +138,14 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
               <div className="flex flex-1 items-center justify-center px-8 text-center">
                 <div>
                   <p className="text-[12px] font-semibold text-foreground">Couldn&apos;t open this chat.</p>
-                  <button
+                  <Button
                     onClick={() => void chat.refetch()}
-                    className="mt-3 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-3 inline-flex items-center gap-1"
                   >
                     <RefreshCw size={11} /> Retry
-                  </button>
+                  </Button>
                 </div>
               </div>
             ) : (

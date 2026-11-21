@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { useAllowApp } from '@/components/apps/allow-app';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
@@ -93,13 +93,28 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
                   </p>
                 </div>
                 {mine && mine.status !== 'connected' && (
-                  <Button size="xs" variant="outline" disabled={busy || allowApp.checking} onClick={() => allow.mutate({ id: app.id, name: app.name, serverId: mine.serverId })}>
+                  <Button
+                    disabled={busy || allowApp.checking}
+                    onClick={() => allow.mutate({ id: app.id, name: app.name, serverId: mine.serverId })}
+                    variant="secondary"
+                    size="xs"
+                  >
                     {mine.status === 'sign_in' ? 'Continue' : 'Reconnect'}
                   </Button>
                 )}
                 {mine
-                  ? <Button size="xs" variant="ghost" disabled={busy} onClick={() => remove.mutate({ id: app.id, name: app.name })}>Remove</Button>
-                  : <Button size="xs" variant="outline" disabled={busy} onClick={() => allow.mutate({ id: app.id, name: app.name })}>Allow</Button>}
+                  ? <Button
+                    disabled={busy}
+                    onClick={() => remove.mutate({ id: app.id, name: app.name })}
+                    variant="ghost"
+                    size="xs"
+                  >Remove</Button>
+                  : <Button
+                    disabled={busy}
+                    onClick={() => allow.mutate({ id: app.id, name: app.name })}
+                    variant="secondary"
+                    size="xs"
+                  >Allow</Button>}
               </li>
             );
           })}

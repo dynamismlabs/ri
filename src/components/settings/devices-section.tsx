@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, KeyRound, Link2, Pencil, Plus, Trash2, Check, Loader2 } from 'lucide-react';
@@ -9,7 +10,7 @@ import { useDevices } from '@/hooks/use-devices';
 import { PAIRING_TOKEN_FRAGMENT_KEY, APP_NAME, APP_SHORT_ID } from '@/constants/app';
 import type { DeviceKind } from '@/db/types';
 import { tokenDisplay } from '@/lib/auth/token-display';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { QrCode } from '@/components/settings/qr-code';
@@ -103,12 +104,12 @@ export function DevicesSection() {
           <h3 className="text-sm font-medium text-foreground">Devices</h3>
         </div>
         <Button
-          size="xs"
-          variant="outline"
           onClick={() => {
             setFormOpen((v) => !v);
             setPairing(null);
           }}
+          variant="secondary"
+          size="xs"
         >
           <Plus size={12} />
           Add device
@@ -133,11 +134,20 @@ export function DevicesSection() {
           </label>
           <KindSelect value={kind} onChange={setKind} />
           <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" onClick={handlePair} disabled={!name.trim() || pairMutation.isPending}>
+            <Button
+              onClick={handlePair}
+              disabled={!name.trim() || pairMutation.isPending}
+              variant="primary"
+              size="md"
+            >
               {pairMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
               Create pairing link
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setFormOpen(false)}>
+            <Button
+              onClick={() => setFormOpen(false)}
+              variant="ghost"
+              size="sm"
+            >
               Cancel
             </Button>
           </div>
@@ -261,7 +271,11 @@ function PairingPanel({
             <code className="font-mono text-foreground/80">{APP_SHORT_ID} connect</code> to use this {APP_NAME} there.
           </p>
         </div>
-        <Button size="xs" variant="ghost" onClick={onDone}>
+        <Button
+          onClick={onDone}
+          variant="ghost"
+          size="xs"
+        >
           Done
         </Button>
       </div>
@@ -285,7 +299,11 @@ function PairingPanel({
                   className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
                   onFocus={(e) => e.currentTarget.select()}
                 />
-                <Button size="sm" variant="outline" onClick={() => handleCopy(t.id, t.url)}>
+                <Button
+                  onClick={() => handleCopy(t.id, t.url)}
+                  variant="secondary"
+                  size="sm"
+                >
                   {copiedLabel === t.id ? <Check size={12} /> : <Copy size={12} />}
                   {copiedLabel === t.id ? 'Copied' : 'Copy URL'}
                 </Button>
@@ -309,7 +327,11 @@ function PairingPanel({
             className="flex-1 min-w-0 rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
             onFocus={(e) => e.currentTarget.select()}
           />
-          <Button size="sm" variant="outline" onClick={() => handleCopy('token', pairing.plaintext)}>
+          <Button
+            onClick={() => handleCopy('token', pairing.plaintext)}
+            variant="secondary"
+            size="sm"
+          >
             {copiedLabel === 'token' ? <Check size={12} /> : <Copy size={12} />}
             {copiedLabel === 'token' ? 'Copied' : 'Copy token'}
           </Button>
@@ -459,11 +481,21 @@ function DeviceCard({
           </label>
           <KindSelect value={draftKind} onChange={setDraftKind} />
           <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" onClick={commitEdit} disabled={updateMutation.isPending || !draftName.trim()}>
+            <Button
+              onClick={commitEdit}
+              disabled={updateMutation.isPending || !draftName.trim()}
+              variant="primary"
+              size="md"
+            >
               {updateMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
               Save
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={updateMutation.isPending}>
+            <Button
+              onClick={() => setEditing(false)}
+              disabled={updateMutation.isPending}
+              variant="ghost"
+              size="sm"
+            >
               Cancel
             </Button>
           </div>
@@ -488,22 +520,42 @@ function DeviceCard({
             )}
           </div>
           <div className="flex items-center gap-1">
-            <Tip label="New pairing link">
-              <Button size="xs" variant="ghost" onClick={onPairAgain} disabled={pairingAgain} aria-label={`New pairing link for ${device.name}`}>
+
+              <IconButton
+                onClick={onPairAgain}
+                disabled={pairingAgain}
+                label={`New pairing link for ${device.name}`}
+                tooltip="New pairing link"
+                variant="ghost"
+                size="xs"
+              >
                 {pairingAgain ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
-              </Button>
-            </Tip>
-            <Tip label="Edit">
-              <Button size="xs" variant="ghost" onClick={beginEdit} aria-label={`Edit ${device.name}`}>
+              </IconButton>
+
+
+              <IconButton
+                onClick={beginEdit}
+                label={`Edit ${device.name}`}
+                tooltip="Edit"
+                variant="ghost"
+                size="xs"
+              >
                 <Pencil size={12} />
-              </Button>
-            </Tip>
+              </IconButton>
+
             {!device.isHome && (
-              <Tip label="Remove">
-                <Button size="xs" variant="ghost" onClick={remove} disabled={removeMutation.isPending} aria-label={`Remove ${device.name}`}>
+
+                <IconButton
+                  onClick={remove}
+                  disabled={removeMutation.isPending}
+                  label={`Remove ${device.name}`}
+                  tooltip="Remove"
+                  variant="ghost"
+                  size="xs"
+                >
                   {removeMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                </Button>
-              </Tip>
+                </IconButton>
+
             )}
           </div>
         </div>
@@ -555,11 +607,18 @@ function KeyRow({ keyView, onRevoke, revoking }: { keyView: DeviceKeyView; onRev
         </p>
       </div>
       {keyView.role !== 'home' && (
-        <Tip label="Revoke">
-          <Button size="xs" variant="ghost" onClick={onRevoke} disabled={revoking} aria-label={`Revoke ${keyView.name}`}>
+
+          <IconButton
+            onClick={onRevoke}
+            disabled={revoking}
+            label={`Revoke ${keyView.name}`}
+            tooltip="Revoke"
+            variant="ghost"
+            size="xs"
+          >
             {revoking ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={12} />}
-          </Button>
-        </Tip>
+          </IconButton>
+
       )}
     </li>
   );

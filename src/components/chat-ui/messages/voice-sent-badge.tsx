@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
 import { AudioLines, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -37,15 +38,17 @@ export function VoiceSentBadge() {
 
   return (
     <div className="flex justify-end relative" ref={popoverRef}>
-      <button data-slot="action-button" data-variant="ghost"
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/40 rounded-full px-2 py-0.5 transition-all"
+        variant="ghost"
+        size="xs"
+        className="flex items-center gap-1.5"
       >
         <AudioLines size={10} />
         <span>Sent with voice</span>
         <ChevronDown size={8} className={cn('transition-transform', open && 'rotate-180')} />
-      </button>
+      </Button>
 
       {open && (
         <div className="absolute top-full right-0 mt-1 w-56 rounded-lg border border-border bg-card shadow-xl z-50 p-3 space-y-2">

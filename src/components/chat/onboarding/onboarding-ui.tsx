@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ai-elements/message';
@@ -85,27 +86,30 @@ export function PrimaryButton({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       disabled={disabled || busy}
-      className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+      variant="primary"
+      size="md"
+      className="inline-flex items-center gap-1.5"
     >
       {busy && <Loader2 size={12} className="animate-spin" />}
       {children}
-    </button>
+    </Button>
   );
 }
 
 export function QuietButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+      variant="secondary"
+      size="md"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

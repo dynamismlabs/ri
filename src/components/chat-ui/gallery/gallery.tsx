@@ -1,11 +1,12 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Copy, LayoutTemplate, Monitor, RotateCcw, Search, Smartphone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
-import { Tip } from '@/components/ui/tip';
+
 import { cn } from '@/lib/utils';
 import { CHAT_UI_EXAMPLES, filterGalleryExamples, galleryExample, galleryPreviewUrl, GALLERY_ORIGINS, type ChatUiExample } from './catalog';
 
@@ -86,7 +87,12 @@ export function ChatUiGallery() {
           </button>)}</nav>
         </aside>
 
-        {matches.length === 0 ? <section className="rounded-xl border border-dashed border-border p-8"><h2 className="text-sm font-medium">No matching interfaces</h2><p className="mt-2 text-xs text-muted-foreground">Try another search or source.</p><Button variant="outline" size="sm" className="mt-4" onClick={() => filter('', 'all')}>Clear filters</Button></section> : <article className="min-w-0 space-y-5" aria-labelledby="example-name">
+        {matches.length === 0 ? <section className="rounded-xl border border-dashed border-border p-8"><h2 className="text-sm font-medium">No matching interfaces</h2><p className="mt-2 text-xs text-muted-foreground">Try another search or source.</p><Button
+          onClick={() => filter('', 'all')}
+          variant="secondary"
+          size="xs"
+          className="mt-4"
+        >Clear filters</Button></section> : <article className="min-w-0 space-y-5" aria-labelledby="example-name">
           <div>
             <span className="inline-flex rounded border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{GALLERY_ORIGINS[example.origin].label}</span>
             <h2 id="example-name" className="mt-2 text-xl font-semibold">{example.name}</h2>
@@ -98,11 +104,31 @@ export function ChatUiGallery() {
             <div className="flex flex-wrap items-center gap-2 border-b border-border bg-muted/25 px-3 py-2.5">
               <label className="flex items-center gap-2 text-xs"><span className="text-muted-foreground">State</span><select data-slot="field" aria-label="Example state" value={state} onChange={event => choose(example, event.target.value)} className="max-w-48 rounded-md border border-border bg-background px-2 py-1.5 text-xs">{example.states.map(state => <option key={state.id} value={state.id}>{state.label}</option>)}</select></label>
               <div className="flex items-center gap-1 sm:ml-auto" aria-label="Preview size">
-                <Tip label="Preview at full width"><Button size="icon-sm" variant={phone ? 'ghost' : 'secondary'} aria-label="Desktop preview" aria-pressed={!phone} onClick={() => setPhone(false)}><Monitor size={14} /></Button></Tip>
-                <Tip label="Preview at phone width"><Button size="icon-sm" variant={phone ? 'secondary' : 'ghost'} aria-label="Phone preview" aria-pressed={phone} onClick={() => setPhone(true)}><Smartphone size={14} /></Button></Tip>
+                <IconButton
+                  aria-pressed={!phone}
+                  onClick={() => setPhone(false)}
+                  label="Desktop preview"
+                  tooltip="Preview at full width"
+                  variant={phone ? 'ghost' : 'secondary'}
+                  size="xs"
+                ><Monitor size={14} /></IconButton>
+                <IconButton
+                  aria-pressed={phone}
+                  onClick={() => setPhone(true)}
+                  label="Phone preview"
+                  tooltip="Preview at phone width"
+                  variant={phone ? 'secondary' : 'ghost'}
+                  size="xs"
+                ><Smartphone size={14} /></IconButton>
               </div>
               <div data-slot="segmented" className="flex rounded-md border border-border p-0.5" aria-label="Preview theme">{(['light', 'dark'] as const).map(value => <button data-slot="segmented-option" type="button" key={value} aria-pressed={theme === value} onClick={() => { if (theme !== value) { setTheme(value); setLoaded(false); } }} className={cn('rounded px-2 py-1 text-[11px] capitalize focus-visible:outline-2 focus-visible:outline-ring', theme === value ? 'bg-muted text-foreground' : 'text-muted-foreground')}>{value}</button>)}</div>
-              <Tip label="Start this example again"><Button size="icon-sm" variant="ghost" aria-label="Reset example" onClick={() => { setGeneration(value => value + 1); setLoaded(false); }}><RotateCcw size={14} /></Button></Tip>
+              <IconButton
+                onClick={() => { setGeneration(value => value + 1); setLoaded(false); }}
+                label="Reset example"
+                tooltip="Start this example again"
+                variant="ghost"
+                size="xs"
+              ><RotateCcw size={14} /></IconButton>
             </div>
             <div className="overflow-hidden bg-muted/15 p-2 sm:p-4">
               {!loaded && <p role="status" className="px-2 py-1 text-xs text-muted-foreground">Opening example…</p>}
@@ -116,7 +142,15 @@ export function ChatUiGallery() {
           <dl className="grid gap-4 rounded-xl border border-border bg-muted/10 p-4 text-xs sm:grid-cols-2"><div><dt className="font-medium">How it appears</dt><dd className="mt-1.5 leading-relaxed text-muted-foreground">{example.trigger}</dd></div><div><dt className="font-medium">What is saved</dt><dd className="mt-1.5 leading-relaxed text-muted-foreground">{example.persistence}</dd></div></dl>
           <details className="rounded-xl border border-border px-4 py-3"><summary className="cursor-pointer text-xs font-medium">Where this UI lives</summary>
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{GALLERY_ORIGINS[example.origin].description}</p>
-            <ul className="mt-3 space-y-2">{example.sources.map(source => <li key={source} className="flex min-w-0 items-start gap-2 rounded-md bg-muted/40 p-2"><code className="min-w-0 flex-1 break-all text-[10px] leading-relaxed">{source}</code><Tip label="Copy the repository path"><button data-slot="action-button" data-variant="ghost" type="button" aria-label={`Copy ${source}`} className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground" onClick={() => void copy(source)}>{copied === source ? <Check size={12} /> : <Copy size={12} />}</button></Tip></li>)}</ul>
+            <ul className="mt-3 space-y-2">{example.sources.map(source => <li key={source} className="flex min-w-0 items-start gap-2 rounded-md bg-muted/40 p-2"><code className="min-w-0 flex-1 break-all text-[10px] leading-relaxed">{source}</code><IconButton
+              type="button"
+              onClick={() => void copy(source)}
+              label={`Copy ${source}`}
+              tooltip="Copy the repository path"
+              variant="ghost"
+              size="xs"
+              className="shrink-0"
+            >{copied === source ? <Check size={12} /> : <Copy size={12} />}</IconButton></li>)}</ul>
             <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">The catalog and preview fixtures live in <code>src/components/chat-ui/gallery/</code>. Built-in interfaces live together in src/components/chat-ui/ and are reused here. Connected-app hosts keep their own modules.</p>
           </details>
         </article>}

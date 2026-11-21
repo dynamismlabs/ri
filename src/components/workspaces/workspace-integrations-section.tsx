@@ -9,7 +9,7 @@ import { trpcClient } from '@/lib/trpc/client';
  * always has every connected service. The grouped picker UI is shared with the create modal via
  * IntegrationScopePicker; this wrapper adds the load-current / dirty / save (PUT + recycle) behavior.
  */
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import type { WorkspaceIntegrationScope } from '@/db/types';
 import { pinKey, scopePins } from '@/lib/integrations/scope-pins';
 import { AlertCircle, Loader2 } from 'lucide-react';
@@ -89,7 +89,12 @@ export function WorkspaceIntegrationsSection({ workspaceId }: { workspaceId: str
       )}
 
       <div className="flex items-center gap-2">
-        <Button size="sm" onClick={save} disabled={busy || loading || !dirty} className="text-xs font-semibold">
+        <Button
+          onClick={save}
+          disabled={busy || loading || !dirty}
+          variant="primary"
+          size="md"
+        >
           {busy ? <Loader2 size={14} className="animate-spin" /> : null} Save {INTEGRATION_LABELS.plural.toLowerCase()}
         </Button>
         {dirty && !busy && <span className="text-[11px] text-muted-foreground">Unsaved changes</span>}

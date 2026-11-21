@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiErrorCode, apiErrorDetails, apiErrorStatus, apiErrorText } from '@/lib/api/client';
@@ -197,7 +198,12 @@ export function SharedBodyState({ shared }: { shared: ReturnType<typeof useShare
   if (status.status === 'failed') {
     return (
       <p role="alert" className="text-xs text-red-600 dark:text-red-300">
-        {status.message} <button type="button" className="underline" onClick={shared.retry}>Try again</button>
+        {status.message} <Button
+          type="button"
+          onClick={shared.retry}
+          variant="link"
+          size="xs"
+        >Try again</Button>
       </p>
     );
   }
@@ -225,13 +231,14 @@ export function SaveStatus({ status }: { status: SharedBodyStatus }) {
 
 function ConflictButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button data-slot="action-button"
+    <Button
       type="button"
       onClick={onClick}
-      className="rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted/60"
+      variant="secondary"
+      size="xs"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 

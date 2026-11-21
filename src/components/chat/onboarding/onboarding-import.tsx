@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { DISCOVERY_KEY } from '@/components/settings/sections/imports-section';
 import { openSettings } from '@/components/settings/settings-store';
 import type { ExternalAgentDiscovery, ExternalAgentSource } from '@/lib/import/types';
@@ -225,13 +226,14 @@ export function ImportStep({
         })}
       </div>
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
-        <button
+        <Button
           type="button"
           onClick={() => openSettings('imports')}
-          className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          variant="link"
+          size="md"
         >
           Everything else, in Settings
-        </button>
+        </Button>
         <div className="flex items-center gap-1.5">
           <QuietButton onClick={() => onDone('Not now')}>Not now</QuietButton>
           <PrimaryButton disabled={chosen.length === 0} onClick={bringIn}>

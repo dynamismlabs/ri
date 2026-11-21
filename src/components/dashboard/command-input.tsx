@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { Mic, MicOff, Send, Square, X, Loader2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -8,7 +10,7 @@ import { useVoiceInput } from '@/hooks/use-voice-input';
 import { useUserState } from '@/hooks/use-user-state';
 import { LiveWaveform } from '@/components/ui/live-waveform';
 import type { FormEvent, KeyboardEvent } from 'react';
-import { Tip } from '@/components/ui/tip';
+
 
 interface CommandInputProps {
   input: string;
@@ -20,8 +22,7 @@ interface CommandInputProps {
 }
 
 export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStreaming, onStop }: CommandInputProps) {
-  const { theme, isFocusMode } = useDashboard();
-  const isDark = theme === 'dark';
+  const { isFocusMode } = useDashboard();
   const { data: userState } = useUserState();
   const voiceAutoSend = userState?.voiceAutoSend ?? true;
 
@@ -66,9 +67,15 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
                 <span className="text-sm text-primary font-medium">
                   Transcribing{voice.provider === 'local' ? ' via Parakeet' : ''}...
                 </span>
-                <button type="button" onClick={voice.cancelRecording} className="ml-auto text-xs text-muted-foreground underline hover:text-foreground">
+                <Button
+                  type="button"
+                  onClick={voice.cancelRecording}
+                  variant="link"
+                  size="sm"
+                  className="ml-auto"
+                >
                   Cancel transcription
-                </button>
+                </Button>
               </div>
             )}
 
@@ -76,24 +83,30 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
               <div className="flex items-start gap-3">
                 <p className="flex-1 text-base text-foreground leading-relaxed">{voice.transcript}</p>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <Tip label="Discard">
-                    <button
+
+                    <IconButton
                       onClick={voice.clearTranscript}
-                      className="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
-                      aria-label="Discard"
+                      label="Discard"
+                      tooltip="Discard"
+                      variant="secondary"
+                      size="sm"
+                      className="flex items-center justify-center"
                     >
                       <X size={18} />
-                    </button>
-                  </Tip>
-                  <Tip label="Send">
-                    <button
+                    </IconButton>
+
+
+                    <IconButton
                       onClick={handleVoiceSend}
-                      className="w-9 h-9 rounded-lg flex items-center justify-center bg-primary text-primary-foreground shadow-lg active:scale-95 transition-all"
-                      aria-label="Send"
+                      label="Send"
+                      tooltip="Send"
+                      variant="primary"
+                      size="md"
+                      className="flex items-center justify-center"
                     >
                       <Send size={18} />
-                    </button>
-                  </Tip>
+                    </IconButton>
+
                 </div>
               </div>
             )}
@@ -106,19 +119,18 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
 
         {/* Floating mic button + waveform */}
         <div className="flex items-center gap-3">
-          <Tip label={voice.isRecording ? 'Stop recording' : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}>
-            <button
+
+            <IconButton
               type="button"
               onClick={voice.toggleRecording}
               disabled={!voice.isSupported || voice.isTranscribing}
-              className={cn(
-                'relative w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-all active:scale-95 shrink-0 overflow-hidden',
-                voice.isRecording
-                  ? 'bg-destructive text-destructive-foreground shadow-destructive/30'
-                  : 'bg-primary text-primary-foreground shadow-primary/30 hover:opacity-90 hover:scale-105 group/mic',
-                (!voice.isSupported || voice.isTranscribing) && 'opacity-50 cursor-not-allowed'
-              )}
-              aria-label={voice.isRecording ? 'Stop recording' : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
+              label={voice.isRecording ? 'Stop recording' : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
+              tooltip={voice.isRecording ? 'Stop recording' : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
+              variant={voice.isRecording ? "destructive" : "ghost"}
+              size="md"
+              focus="inside"
+              clip
+              className="relative group/mic"
             >
               {voice.isRecording ? (
                 <Square size={20} className="relative z-10" />
@@ -129,8 +141,8 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
                   <div className="absolute inset-0 rounded-xl border border-white/20 animate-pulse" />
                 </>
               )}
-            </button>
-          </Tip>
+            </IconButton>
+
 
           {/* Live waveform — visible when recording */}
           {voice.isRecording && (
@@ -170,26 +182,26 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
             />
 
             {isStreaming ? (
-              <button
+              <IconButton
                 type="button"
                 onClick={onStop}
-                className="w-12 h-12 rounded-xl flex items-center justify-center bg-destructive text-destructive-foreground shadow-xl transition-all active:scale-95"
+                label="Stop agent"
+                variant="destructive"
+                size="xs"
+                tone="danger"
               >
                 <Square size={18} />
-              </button>
+              </IconButton>
             ) : (
-              <button
+              <IconButton
                 type="submit"
                 disabled={!input.trim()}
-                className={cn(
-                  'w-12 h-12 rounded-xl flex items-center justify-center transition-all',
-                  input.trim()
-                    ? 'bg-primary text-primary-foreground shadow-xl active:scale-95'
-                    : isDark ? 'bg-secondary text-muted-foreground' : 'bg-muted text-muted-foreground'
-                )}
+                label="Send message"
+                variant="primary"
+                size="md"
               >
                 <Send size={20} />
-              </button>
+              </IconButton>
             )}
           </div>
         </form>

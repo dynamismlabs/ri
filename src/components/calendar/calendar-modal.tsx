@@ -1,5 +1,7 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * The calendar, nearly full screen, over whatever is on screen: the rail's
  * Calendar, the header's next-event peek, the deck's day strip and "Open
@@ -291,30 +293,33 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
             />
 
             <div data-slot="calendar-navigation" className="flex items-center">
-              <button
+              <IconButton
                 type="button"
                 onClick={() => step(-1)}
-                aria-label={view === 'day' ? 'Previous day' : 'Previous week'}
-                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                label={view === 'day' ? 'Previous day' : 'Previous week'}
+                variant="secondary"
+                size="sm"
               >
                 <ChevronLeft size={15} />
-              </button>
-              <button
+              </IconButton>
+              <Button
                 type="button"
                 onClick={() => setAnchor(today)}
                 disabled={showingToday}
-                className="rounded-md px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-default disabled:text-muted-foreground/50 disabled:hover:bg-transparent"
+                variant="secondary"
+                size="sm"
               >
                 Today
-              </button>
-              <button
+              </Button>
+              <IconButton
                 type="button"
                 onClick={() => step(1)}
-                aria-label={view === 'day' ? 'Next day' : 'Next week'}
-                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                label={view === 'day' ? 'Next day' : 'Next week'}
+                variant="secondary"
+                size="sm"
               >
                 <ChevronRight size={15} />
-              </button>
+              </IconButton>
             </div>
 
             <span data-slot="calendar-date" className="truncate text-sm font-medium text-foreground">
@@ -326,16 +331,17 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
         <div data-slot="calendar-spacer" className="flex-1" />
 
         {noCalendar && workOn && (
-          <button
+          <Button
             type="button"
             onClick={() => {
               closeCalendarModal();
               openSettings('plugins');
             }}
-            className="text-[11px] text-muted-foreground hover:text-foreground"
+            variant="ghost"
+            size="sm"
           >
             Connect your calendar
-          </button>
+          </Button>
         )}
 
         {!showConnect && <Segmented label="Show" value={tab} options={tabs} onChange={setTab} />}
@@ -358,31 +364,28 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
                   : 'Refresh'
               }
             >
-              <button
+              <Button
                 type="button"
                 onClick={handleRefresh}
-                data-slot="icon-button"
                 aria-label="Refresh calendar"
-                className="relative flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                variant="secondary"
+                size="sm"
+                className="relative flex items-center justify-center"
               >
                 <RefreshCw size={14} className={cn(refreshing && 'animate-spin')} />
                 {(stale || degraded) && (
                   <span className="absolute top-1 right-1 size-1.5 rounded-full bg-amber-500/80" aria-hidden />
                 )}
-              </button>
+              </Button>
             </Tip>
           </>
         )}
 
-        <Tip label="Close calendar" shortcut="Esc">
-          <DialogPrimitive.Close
-            data-slot="icon-button" data-kind="close"
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Close calendar"
-          >
-            <X className="size-4" />
-          </DialogPrimitive.Close>
-        </Tip>
+        <DialogPrimitive.Close asChild>
+          <IconButton label="Close calendar" shortcut="Esc" data-kind="close" size="sm">
+            <X />
+          </IconButton>
+        </DialogPrimitive.Close>
       </header>
 
       <div className={cn('flex min-h-0 flex-1 flex-col', !showConnect && 'px-4 pt-3')}>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Popover as PopoverPrimitive } from 'radix-ui';
@@ -394,20 +395,19 @@ export function ExecutionChatsMenu({
     <PopoverPrimitive.Root open={historyOpen} onOpenChange={setHistoryOpen}>
       <PopoverPrimitive.Trigger asChild>
         <Tip label={`All chats on this execution (${entries.length})`}>
-          <button
+          <Button
             type="button"
             aria-label="All chats"
-            className={cn(
-              'relative flex h-7 flex-shrink-0 items-center gap-1.5 rounded px-1.5 text-[11.5px] font-medium tabular-nums transition-colors',
-              historyOpen ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-            )}
+            variant="secondary"
+            size="sm"
+            className="relative flex flex-shrink-0 items-center gap-1.5"
           >
             <List size={12} />
             <span>{entries.length}</span>
             {unreadElsewhere && (
               <span aria-hidden className="absolute right-0.5 top-1 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
             )}
-          </button>
+          </Button>
         </Tip>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>

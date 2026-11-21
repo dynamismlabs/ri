@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Globe } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -47,7 +47,12 @@ export function McpDefaultPermissions({ override, busy, serverCount, onChange, o
       <McpPermissionControls label="Global MCP default and bulk action">
         <McpPermissionSelect value={override} inheritedLabel="App default"
           label="Default MCP permissions" busy={busy} onChange={onChange} />
-        {serverCount > 0 && <Button variant="outline" size="sm" className="h-9 text-xs" disabled={busy} onClick={onApplyToAll}>Apply to all servers</Button>}
+        {serverCount > 0 && <Button
+          disabled={busy}
+          onClick={onApplyToAll}
+          variant="secondary"
+          size="sm"
+        >Apply to all servers</Button>}
       </McpPermissionControls>
     </div>
     <p className="text-[11px] leading-normal text-muted-foreground">

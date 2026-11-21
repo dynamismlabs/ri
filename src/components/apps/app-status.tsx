@@ -1,9 +1,10 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowUpCircle, Info, Loader2, MoreHorizontal, RotateCcw, ScrollText, Server } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
@@ -93,11 +94,20 @@ export function AppStatusLine({ sourceId, name, version, compact = false }: { so
         {controls.canControl && (
           <span className="ml-auto flex gap-1.5">
             <Tip label={`Stop ${name} and start it again`}>
-              <Button size="xs" variant="outline" disabled={restarting || restart.isPending} onClick={() => restart.mutate()}>
+              <Button
+                disabled={restarting || restart.isPending}
+                onClick={() => restart.mutate()}
+                variant="secondary"
+                size="xs"
+              >
                 {restarting ? <Loader2 size={12} className="animate-spin" /> : <RotateCcw size={12} aria-hidden />}Restart
               </Button>
             </Tip>
-            <Button size="xs" variant="outline" onClick={() => controls.setLogsOpen(true)}><ScrollText size={12} aria-hidden />Logs</Button>
+            <Button
+              onClick={() => controls.setLogsOpen(true)}
+              variant="secondary"
+              size="xs"
+            ><ScrollText size={12} aria-hidden />Logs</Button>
           </span>
         )}
       </div>
@@ -205,10 +215,19 @@ function YourAppCard({ source, serverId, update, onOpen, onDetails }: { source: 
           <AppMark name={source.name} size="lg" />
           <span className="min-w-0 flex-1 truncate text-sm font-medium">{source.name}</span>
         </button>
-        <Button size="xs" variant={serverId ? 'default' : 'outline'} onClick={open}>{action}</Button>
+        <Button
+          onClick={open}
+          variant="secondary"
+          size="xs"
+        >{action}</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Tip label="Restart, logs and details"><Button size="icon-xs" variant="ghost" aria-label={`More for ${source.name}`}><MoreHorizontal size={14} /></Button></Tip>
+            <IconButton
+              label={`More for ${source.name}`}
+              tooltip="Restart, logs and details"
+              variant="ghost"
+              size="xs"
+            ><MoreHorizontal size={14} /></IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {controls.canControl && <DropdownMenuItem disabled={restarting || restart.isPending} onSelect={() => restart.mutate()}><RotateCcw size={14} />Restart</DropdownMenuItem>}
@@ -223,7 +242,11 @@ function YourAppCard({ source, serverId, update, onOpen, onDetails }: { source: 
       </div>
       {update && (
         <div className="pb-3 pl-15 pr-3">
-          <Button size="xs" variant="outline" onClick={() => onDetails(source.id)}><ArrowUpCircle size={12} aria-hidden />Update to {versionLabel(update)}</Button>
+          <Button
+            onClick={() => onDetails(source.id)}
+            variant="secondary"
+            size="xs"
+          ><ArrowUpCircle size={12} aria-hidden />Update to {versionLabel(update)}</Button>
         </div>
       )}
       {(data?.lastError || controls.failure || controls.restarted || data?.problem === 'kit_too_old') && <div className="space-y-1 pb-3 pl-15 pr-3"><StatusNotes controls={controls} compact /></div>}

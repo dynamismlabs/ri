@@ -1,5 +1,6 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
 import { Search } from 'lucide-react';
 import { SpaceSelector } from '@/components/spaces/space-selector';
 import { useOptionalHomeContext } from '@/components/home/home-context';
@@ -34,7 +35,14 @@ export function MobileTopBar({ onSearch = () => document.dispatchEvent(new Custo
         <Search size={15} className="flex-shrink-0" />
         <span className="truncate text-sm text-muted-foreground/70">{searchLabel}</span>
       </button>
-      {team ? <button type="button" aria-label="Settings" data-slot="icon-button" onClick={onOpenSettings ?? settings ?? undefined} className="flex size-10 items-center justify-center rounded-lg border border-border text-muted-foreground"><Settings size={16} /></button> : <ScratchpadButton variant="phone" />}
+      {team ? <IconButton
+        type="button"
+        onClick={onOpenSettings ?? settings ?? undefined}
+        label="Settings"
+        variant="secondary"
+        size="touch"
+        className="flex items-center justify-center"
+      ><Settings size={16} /></IconButton> : <ScratchpadButton variant="phone" />}
     </header>
   );
 }

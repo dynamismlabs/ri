@@ -5,7 +5,7 @@ import { CursorCredentialPanel } from '@/components/settings/cursor-credential-p
 import { HarnessPermissionNotice } from '@/components/settings/harness-permission-notice';
 import { HarnessPicker } from '@/components/settings/harness-picker';
 import { OpenCodeProviderPanel } from '@/components/settings/opencode-provider-panel';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { defaultModelFor } from '@/lib/harness/options';
@@ -351,7 +351,13 @@ function AuthStatus({
             Confirms the CLI is installed, authenticated, and responds to a request.
           </div>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onRecheck} disabled={busy}>
+        <Button
+          type="button"
+          onClick={onRecheck}
+          disabled={busy}
+          variant="secondary"
+          size="md"
+        >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
           {auth.phase === 'checking'
             ? 'Checking…'

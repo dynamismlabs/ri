@@ -64,12 +64,30 @@ for (const theme of ['light', 'dark']) {
     try {
       const button = page.locator('#choose-connect');
       await button.waitFor({ state: 'visible' }); await button.hover(); await page.waitForTimeout(200);
+      expect(await button.evaluate(el => {
+        const style = getComputedStyle(el);
+        return [el.getBoundingClientRect().height, style.fontSize, style.fontWeight];
+      })).toEqual([40, '15px', '500']);
       expect(await button.evaluate(el => getComputedStyle(el).borderRadius)).toBe('999px');
       expect(await contrast(page, '#choose-connect')).toBeGreaterThanOrEqual(4.5);
       await page.keyboard.press('Tab'); await button.focus();
       expect(await button.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
       await button.evaluate(el => { (el as HTMLButtonElement).disabled = true; });
       expect(await button.evaluate(el => [getComputedStyle(el).borderRadius, getComputedStyle(el).opacity])).toEqual(['999px', '0.5']);
+    } finally { await page.close(); }
+  });
+  it(`uses the role scale for local main and secondary actions (${theme})`, async () => {
+    const page = await open('maintenance', theme);
+    try {
+      const main = page.locator('button:not(.secondary, .link)').first();
+      const secondary = page.locator('#refresh');
+      for (const [button, height, font] of [[main, 40, '15px'], [secondary, 32, '13px']] as const) {
+        await button.waitFor({ state: 'visible' });
+        expect(await button.evaluate(el => {
+          const style = getComputedStyle(el);
+          return [el.getBoundingClientRect().height, style.fontSize, style.borderRadius];
+        })).toEqual([height, font, '999px']);
+      }
     } finally { await page.close(); }
   });
   it(`uses 10px fields, invalid ink and one clear field focus treatment (${theme})`, async () => {

@@ -29,13 +29,15 @@ beforeAll(async () => {
       import React, {useState} from 'react';
       import {createRoot} from 'react-dom/client';
       import {TooltipProvider} from '@/components/ui/tooltip';
-      import {Button} from '@/components/ui/button';
-      import {ButtonGroup} from '@/components/ui/button-group';
+      import {Button} from '@/components/system/button';
+import {ChipButton} from '@/components/system/chip-button';
+import {IconButton} from '@/components/system/icon-button';
+      import {ButtonGroup} from '@/components/system/button-group';
       import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
       import {StatusPill} from '@/components/dashboard/status-pill';
       import {Command} from 'cmdk';
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
-      import {SegmentedTabs, toolbarButtonClass} from '@/components/shared/list-toolbar';
+      import {SegmentedTabs} from '@/components/shared/list-toolbar';
       import {ChatLenses, ChatLensBar} from '@/components/workspaces/chat-lens-bar';
       import {WorkbenchToggles} from '@/components/executions/workbench/workbench-toggles';
       import {FileChip} from '@/components/chat-ui/artifacts/file-chip';
@@ -46,19 +48,19 @@ beforeAll(async () => {
         const [lane,setLane]=useState('progress');
         return <div className="flex flex-col items-start gap-3 p-4">
           <div data-narrow className="flex" style={{width:210}}><SegmentedTabs ariaLabel="Lanes" value={lane} onChange={setLane} options={LANES}/></div>
-          <button data-case="toolbar" className={toolbarButtonClass()}>Filter</button>
+          <ChipButton data-case="toolbar">Filter</ChipButton>
           <button data-case="card" className="w-64 rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">A board card</button>
           {/* The review bar's solid action, with execution-review-bar.tsx's classes. */}
-          <button data-case="solid" data-slot="review-action" data-tone="emerald-solid" className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-60 bg-emerald-600 text-white hover:bg-emerald-700">Accept & complete</button>
+          <Button data-case="solid" variant="primary" size="sm" tone="success">Accept & complete</Button>
           <span data-case="small-label" className="text-[8.5px] uppercase tracking-widest">Recent chats</span>
           <div data-slot="status-strip" className="inline-flex items-center gap-3 rounded-lg border border-blue-500/40 bg-blue-500/10 p-1">
-            <span>2 commits ahead</span><button data-focus data-case="git-action" data-slot="action-button" data-variant="primary" className="rounded-md border bg-primary px-2 py-1 text-primary-foreground hover:bg-primary/90 focus-visible:outline-none">Push</button>
+            <span>2 commits ahead</span><Button data-focus data-case="git-action" variant="primary" size="sm">Push</Button>
           </div>
-          <button data-focus data-case="mode" data-slot="chip-button" data-mode="auto_all" className={["rounded-md border px-2 py-1 hover:brightness-110",...Object.values(PERMISSION_MODE_META.auto_all.classes)].join(" ")}>Auto</button>
-          <div data-slot="split-button" className="inline-flex items-stretch">
-            <button data-focus data-case="finder" className="rounded-l-md border border-r-0 bg-background px-2 py-1 text-muted-foreground hover:bg-muted/40">Finder</button>
-            <button data-focus data-case="finder-more" aria-label="More open options" className="rounded-r-md border bg-background px-2 text-muted-foreground hover:bg-muted/40">⌄</button>
-          </div>
+          <ChipButton data-focus data-case="mode" variant="secondary" size="compact" tone="mode" mode="auto_all">Auto</ChipButton>
+          <ButtonGroup variant="joined">
+            <Button data-focus data-case="finder" variant="secondary" size="sm">Finder</Button>
+            <Button data-focus data-case="finder-more" aria-label="More open options" variant="secondary" size="sm">⌄</Button>
+          </ButtonGroup>
           <div data-slot="row-actions" className="opacity-0"><button data-focus data-case="row-action" aria-label="More task actions" className="rounded p-1 text-muted-foreground hover:bg-muted">…</button></div>
           <div data-slot="settings-nav"><button data-focus data-case="settings-nav" aria-current="page" className="rounded-lg bg-background px-3 py-2 shadow-sm ring-1 ring-border">General</button></div>
           <div data-slot="settings-body" className="space-y-2">
@@ -81,7 +83,7 @@ beforeAll(async () => {
             <span className="w-32 min-w-0 truncate">November 16 to 22</span>
             <div data-slot="segmented" className="flex overflow-hidden rounded-md border"><button>Calendar</button><button>List</button><button>Report</button></div>
           </div>
-          {['auto_edits','ask','plan'].map(mode=><button key={mode} data-case={'mode-'+mode} data-slot="chip-button" data-mode={mode} className={['rounded-md border px-2 py-1 hover:brightness-110',...Object.values(PERMISSION_MODE_META[mode].classes)].join(' ')}>{PERMISSION_MODE_META[mode].shortTitle}</button>)}
+          {['auto_edits','ask','plan'].map(mode=><ChipButton key={mode} data-case={'mode-'+mode} variant="secondary" size="compact" tone="mode" mode={mode}>{PERMISSION_MODE_META[mode].shortTitle}</ChipButton>)}
           <div data-slot="settings-body" data-case="settings-segments" style={{width:360}}>
             <div data-slot="segmented" className="flex gap-1">
               {['All','Local','Cloud','Browser'].map((label,i)=><button key={label} aria-pressed={i===0} className={'rounded-full border px-3 py-1 text-[11px] font-medium transition-all '+(i===0?'border-primary bg-primary/5 text-primary':'border-border text-muted-foreground hover:text-foreground')}>{label}</button>)}
@@ -90,7 +92,7 @@ beforeAll(async () => {
               <button role="radio" aria-checked="true" className="rounded-full border border-primary/60 bg-primary/10 px-2.5 py-1">Normal</button>
               <button role="radio" aria-checked="false" className="rounded-full border border-border px-2.5 py-1">Fast</button>
             </div>
-            <ButtonGroup aria-label="Show at"><Button aria-pressed={false} variant="outline" size="xs">&gt;0%</Button><Button data-case="usage-toggle" aria-pressed size="xs">50%</Button><Button aria-pressed size="xs">80%</Button></ButtonGroup>
+            <ButtonGroup aria-label="Show at"><Button aria-pressed={false} variant="secondary" size="xs">&gt;0%</Button><Button data-case="usage-toggle" aria-pressed size="xs">50%</Button><Button aria-pressed size="xs">80%</Button></ButtonGroup>
           </div>
           <div data-slot="settings-nav"><input data-case="settings-search" aria-label="Search settings" className="rounded-lg border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" /></div>
           {/* The agent page's chat lenses (compact) and the phone's (touch), as they render. */}
@@ -105,21 +107,21 @@ beforeAll(async () => {
             <button data-tail-focus data-slot="menu-action" className="w-full rounded-md border-t border-border px-2 py-1.5 text-left hover:bg-muted">Do not repeat</button>
             <button data-tail-focus data-slot="completion-control" aria-label="Complete task" className="size-4 rounded-full border border-border" />
             <input data-tail-focus data-case="invalid-field" data-slot="field" aria-invalid="true" aria-label="Invalid value" className="rounded-md border border-destructive bg-background p-2 focus:outline-none focus:ring-1" />
-            <button data-tail-focus data-case="warning-action" data-slot="action-button" data-tone="warning" className="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-600 dark:text-amber-400">Reconnect</button>
+            <Button data-tail-focus data-case="warning-action" variant="secondary" size="sm" tone="warning">Reconnect</Button>
             <div data-case="file-chip"><FileChip path="/work/review.md" /></div>
             <div data-case="bubble" className="rounded-xl p-3" style={{background:'var(--user-bubble)',color:'var(--user-bubble-foreground)'}}>
               <MessageFileChip tone="bubble" attachment={{fileName:'example.bin',originalName:'Design archive.zip',mimeType:'application/octet-stream',size:2048,uploadedAt:'2026-11-20'}} />
             </div>
-            <button data-tail-focus data-case="floating-action" data-slot="action-button" data-variant="floating" className="rounded-full border bg-background px-3 py-1 text-muted-foreground shadow-sm">More models below</button>
+            <Button data-tail-focus data-case="floating-action" variant="secondary" size="sm" floating>More models below</Button>
             <div data-case="filter-scroll" data-slot="segmented" data-scroll className="grid gap-2 sm:grid-cols-2">
               {['All sources','Built into Ri','Connected apps','Installed skills'].map((label,i)=><button key={label} aria-pressed={i===0} className="rounded-full border px-3 py-1">{label}</button>)}
             </div>
           </div>
           <section data-case="default-audit" className="flex w-full flex-col items-start gap-3">
-            <StatusPill label="Working" count={2} icon={<svg/>} accentClass="text-blue-500" countBgClass="bg-blue-500/10 text-blue-500">{()=> <span>Working chats</span>}</StatusPill>
-            <button data-slot="chip-button"><span><span data-case="usage-percent" className="font-mono text-[10px]">80%</span></span></button>
-            <button data-audit-focus data-case="history" data-slot="chip-button" className="rounded-md px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-widest">History</button>
-            {[false,true].map(disabled=><button key={String(disabled)} data-audit-focus={!disabled||undefined} data-case={disabled?'send-disabled':'send-enabled'} data-slot="send-button" aria-label={disabled?'Send disabled':'Send enabled'} disabled={disabled} className={'flex h-7 w-7 items-center justify-center rounded-md '+(disabled?'bg-muted text-muted-foreground/40':'bg-primary text-primary-foreground')}>↑</button>)}
+            <StatusPill label="Working" tone="success" count={2} icon={<svg/>} accentClass="text-blue-500" countBgClass="bg-blue-500/10 text-blue-500">{()=> <span>Working chats</span>}</StatusPill>
+            <ChipButton  variant="secondary" size="compact"><span><span data-case="usage-percent" className="font-mono text-[10px]">80%</span></span></ChipButton>
+            <ChipButton data-audit-focus data-case="history" variant="secondary" size="compact">History</ChipButton>
+            {[false,true].map(disabled=><Button key={String(disabled)} data-audit-focus={!disabled||undefined} data-case={disabled?'send-disabled':'send-enabled'} aria-label={disabled?'Send disabled':'Send enabled'} disabled={disabled} variant="primary" size="sm">↑</Button>)}
             <div data-slot="meta" className="flex flex-wrap gap-2">
               <button data-audit-focus data-case="energy-light" data-slot="meta-item" data-kind="energy" data-energy="light" className="text-sky-400">Light</button>
               <button data-audit-focus data-case="energy-deep" data-slot="meta-item" data-kind="energy" data-energy="deep" className="text-orange-500">Deep</button>
@@ -146,7 +148,7 @@ beforeAll(async () => {
               <div data-slot="calendar-navigation" className="flex"><button>‹</button><button>Today</button><button>›</button></div>
               <span data-slot="calendar-date" className="truncate">November 16 to 22</span><div data-slot="calendar-spacer" className="flex-1"/>
               <div data-slot="segmented" className="flex"><button>Calendar</button><button>List</button><button>Report</button></div>
-              <label data-slot="calendar-work-toggle">Agent work</label><button data-slot="icon-button" aria-label="Refresh">↻</button><button data-slot="icon-button" data-kind="close" aria-label="Close calendar">×</button>
+              <label data-slot="calendar-work-toggle">Agent work</label><IconButton aria-label="Refresh" variant="secondary" size="sm" label="Refresh">↻</IconButton><IconButton data-kind="close" aria-label="Close calendar" variant="secondary" size="sm" label="Close calendar">×</IconButton>
             </div>
             <dl data-slot="work-chain" className="flex w-full min-w-[min(100%,30rem)] gap-3 rounded-lg border p-3">
               {['Your time','Agent time','Human time for the same work'].map((label,i)=><React.Fragment key={label}>{i>0&&<div data-slot="work-chain-arrow" className="flex min-w-10 flex-1 flex-col pt-3.5"><span>{i===1?'0.5×':'1×'}</span><span>→</span></div>}<div data-slot="work-chain-step" className="shrink-0"><dt>{label}</dt><dd>1h 9m</dd></div></React.Fragment>)}
@@ -308,12 +310,12 @@ it('keeps split controls joined, content rectangular and chat tabs on their exis
   try {
     const state = await page.evaluate(() => {
       const style = (selector: string) => getComputedStyle(document.querySelector(selector)!);
-      const split = document.querySelector('[data-slot="split-button"]')!.getBoundingClientRect();
+      const split = document.querySelector('[data-slot="button-group"].ri-button-group--joined')!.getBoundingClientRect();
       const first = document.querySelector('[data-case="finder"]')!.getBoundingClientRect();
       const second = document.querySelector('[data-case="finder-more"]')!.getBoundingClientRect();
       const scroller = document.querySelector('[data-slot="chat-tabs-scroll"]')!;
       return {
-        splitRadius: parseFloat(style('[data-slot="split-button"]').borderRadius),
+        splitRadius: parseFloat(style('[data-slot="button-group"].ri-button-group--joined').borderRadius),
         contiguous: first.right === second.left && first.left === split.left && second.right === split.right,
         divider: parseFloat(style('[data-case="finder-more"]').borderLeftWidth),
         fieldRadius: style('[data-case="settings-field"]').borderRadius,

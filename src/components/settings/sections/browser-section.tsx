@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
 import { trpcClient } from '@/lib/trpc/client';
@@ -225,36 +227,42 @@ export function BrowserSection() {
                   {open ? 'Running' : 'Not running'}
                 </p>
               </div>
-              <button
+              <IconButton
                 onClick={() => void load()}
-                className="text-muted-foreground/50 hover:text-foreground"
-                aria-label="Refresh status"
+                label="Refresh status"
+                variant="ghost"
+                size="sm"
+                focus="inside"
               >
                 <RefreshCw size={13} />
-              </button>
+              </IconButton>
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground/60">
               Open the browser to sign into a site once. The session is saved to a dedicated agent
               profile, separate from your personal browser, and reused later.
             </p>
             <div className="mt-2.5 flex gap-2">
-              <button data-slot="action-button" data-variant="primary"
+              <Button
                 onClick={() => void control('open')}
                 disabled={busy !== null || detected.length === 0}
-                className="flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                variant="primary"
+                size="md"
+                className="flex items-center gap-1.5"
               >
                 <LogIn size={13} />
                 {busy === 'open' ? 'Opening…' : 'Open to sign in'}
-              </button>
+              </Button>
               {open && (
-                <button data-slot="action-button"
+                <Button
                   onClick={() => void control('stop')}
                   disabled={busy !== null}
-                  className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-[12px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <Power size={13} />
                   {busy === 'stop' ? 'Stopping…' : 'Stop'}
-                </button>
+                </Button>
               )}
             </div>
           </div>

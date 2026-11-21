@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FileText,
@@ -311,15 +313,17 @@ function FileViewerHeader({
         </span>
       ) : (
         dirty && onDiscard && (
-          <button
+          <Button
             type="button"
             onClick={onDiscard}
             data-skip-autosave
-            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors shrink-0"
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1 shrink-0"
           >
             <RotateCcw size={10} />
             Discard
-          </button>
+          </Button>
         )
       )}
       {(isChanged || isMarkdown || isHtml) && (
@@ -402,16 +406,20 @@ function FileViewerHeader({
         onReferenceInChat={onReferenceInChat}
       />
       {onClose && (
-        <Tip label="Close file">
-          <button
+
+          <IconButton
             type="button"
             onClick={onClose}
-            className="inline-flex items-center justify-center p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors shrink-0"
-            aria-label="Close file"
+            label="Close file"
+            tooltip="Close file"
+            variant="secondary"
+            size="sm"
+            focus="inside"
+            className="inline-flex items-center justify-center shrink-0"
           >
             <X size={12} />
-          </button>
-        </Tip>
+          </IconButton>
+
       )}
     </div>
   );
@@ -442,14 +450,18 @@ function FileHeaderMoreMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Tip label="More actions">
-          <button
-            className="inline-flex items-center justify-center p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors shrink-0"
-            aria-label="File actions"
+
+          <IconButton
+            label="File actions"
+            tooltip="More actions"
+            variant="secondary"
+            size="sm"
+            focus="inside"
+            className="inline-flex items-center justify-center shrink-0"
           >
             <MoreHorizontal size={12} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={4} className="min-w-44">
         {onReferenceInChat && referencePath && (
@@ -562,32 +574,40 @@ function RevealButton({ source, root, path, outside }: RevealButtonProps) {
 
   return (
     <>
-      <Tip label={revealLabel(platform)}>
-        <button
+
+        <IconButton
           type="button"
           onClick={handleReveal}
           disabled={revealing}
-          aria-label={revealLabel(platform)}
-          className="inline-flex items-center justify-center p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors shrink-0 disabled:opacity-50"
+          label={revealLabel(platform)}
+          tooltip={revealLabel(platform)}
+          variant="secondary"
+          size="sm"
+          focus="inside"
+          className="inline-flex items-center justify-center shrink-0"
         >
           {revealing ? <Loader2 size={12} className="animate-spin" /> : <FolderOpen size={12} />}
-        </button>
-      </Tip>
-      <Tip label={`Open in ${label}`}>
-        <button
+        </IconButton>
+
+
+        <IconButton
           type="button"
           onClick={handleOpenInEditor}
           disabled={opening}
-          aria-label={`Open in ${label}`}
-          className="inline-flex items-center justify-center p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors shrink-0 disabled:opacity-50"
+          label={`Open in ${label}`}
+          tooltip={`Open in ${label}`}
+          variant="secondary"
+          size="sm"
+          focus="inside"
+          className="inline-flex items-center justify-center shrink-0"
         >
           {opening ? (
             <Loader2 size={12} className="animate-spin" />
           ) : (
             <SquareArrowOutUpRight size={12} />
           )}
-        </button>
-      </Tip>
+        </IconButton>
+
     </>
   );
 }

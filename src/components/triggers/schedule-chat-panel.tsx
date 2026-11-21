@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { Loader2, MessageCircleMore, Plus, RefreshCw } from 'lucide-react';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
 import type { MainChatIntro } from '@/components/chat/main-chat-intro';
@@ -44,15 +45,17 @@ export function ScheduleChatPanel({ chat, scheduleRef }: { chat: ReturnType<type
           {chat.isActive && <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />}
         </span>
         <Tip label="Start over in a new chat (archives this one)">
-          <button
+          <Button
             type="button"
             onClick={() => chat.newChat.mutate()}
             disabled={chat.newChat.isPending || !chat.sessionId}
-            className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1"
           >
             {chat.newChat.isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
             New
-          </button>
+          </Button>
         </Tip>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">
@@ -76,13 +79,15 @@ export function ScheduleChatPanel({ chat, scheduleRef }: { chat: ReturnType<type
           <div className="flex flex-1 items-center justify-center px-8 text-center">
             <div>
               <p className="text-[12px] font-semibold text-foreground">Couldn&apos;t open this chat.</p>
-              <button
+              <Button
                 type="button"
                 onClick={() => void chat.refetch()}
-                className="mt-3 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                variant="ghost"
+                size="sm"
+                className="mt-3 inline-flex items-center gap-1"
               >
                 <RefreshCw size={11} /> Retry
-              </button>
+              </Button>
             </div>
           </div>
         ) : (

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { DefaultCoordinationSetting } from '@/components/chat-ui/coordination/controls';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -159,13 +160,14 @@ export function GeneralSection() {
           {usingBrowserDefault ? (
             <span className="text-[11px] text-muted-foreground/60">Browser default</span>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={() => update.mutate({ timezone: null })}
-              className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="sm"
             >
               Reset to browser ({browserTz.replace(/_/g, ' ')})
-            </button>
+            </Button>
           )}
         </div>
       </section>

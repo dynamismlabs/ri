@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useOrchestratorName } from '@/hooks/use-user-state';
@@ -41,20 +42,19 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
     return (
       <div className="flex justify-center pt-2 pb-1">
         <Tip label={`${team ? 'Team: ' : ''}${name} (Home)`}>
-          <button
+          <Button
             type="button"
             onClick={home}
             aria-label={homeLabel}
             aria-current={isHome ? 'page' : undefined}
-            className={cn(
-              'relative rounded-lg p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-              isHome ? 'ring-1 ring-primary/40' : 'hover:bg-muted/50',
-            )}
+            variant="secondary"
+            size="sm"
+            className="relative"
           >
             <OrchestratorAvatar size="md" />
             {unread && <span aria-hidden className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-amber-500 ring-2 ring-background" />}
             {team && <span className="absolute -bottom-1 -right-1 rounded bg-primary p-0.5 text-primary-foreground ring-2 ring-background"><Users size={9} aria-hidden /></span>}
-          </button>
+          </Button>
         </Tip>
       </div>
     );

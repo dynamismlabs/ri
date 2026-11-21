@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * The week as an hour-by-day grid — the familiar calendar encoding, for
  * reading the SHAPE of the week: when things cluster, which mornings are
@@ -130,14 +131,17 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
               ))}
               {deadlines.map((d) => (
                 <Tip key={d.taskId} label={`Due: ${d.title}`}>
-                  <button data-slot="action-button" data-tone="warning"
+                  <Button
                     type="button"
                     onClick={() => onOpenTask(d.taskId)}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[10px] font-medium text-amber-600 dark:text-amber-400 text-left"
+                    variant="secondary"
+                    size="sm"
+                    tone="warning"
+                    className="flex items-center gap-1"
                   >
                     <Flag size={9} className="shrink-0" />
                     <span className="truncate">{d.title}</span>
-                  </button>
+                  </Button>
                 </Tip>
               ))}
             </div>

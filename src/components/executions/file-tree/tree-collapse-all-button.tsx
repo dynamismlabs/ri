@@ -1,7 +1,8 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { ListChevronsDownUp, ListChevronsUpDown } from 'lucide-react';
-import { Tip } from '@/components/ui/tip';
+
 
 interface TreeCollapseAllButtonProps {
   /** Whether the tree shows any folder open: the button collapses them all, else expands every folder. */
@@ -20,16 +21,20 @@ interface TreeCollapseAllButtonProps {
 export function TreeCollapseAllButton({ anyOpen, onClick, disabledReason }: TreeCollapseAllButtonProps) {
   const action = anyOpen ? 'Collapse all folders' : 'Expand all folders';
   return (
-    <Tip label={disabledReason ?? action}>
-      <button
+
+      <IconButton
         type="button"
         onClick={onClick}
         disabled={!!disabledReason}
-        aria-label={action}
-        className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+        label={action}
+        tooltip={disabledReason ?? action}
+        variant="secondary"
+        size="sm"
+        focus="inside"
+        className="inline-flex shrink-0 items-center justify-center"
       >
         {anyOpen ? <ListChevronsDownUp size={14} /> : <ListChevronsUpDown size={14} />}
-      </button>
-    </Tip>
+      </IconButton>
+
   );
 }

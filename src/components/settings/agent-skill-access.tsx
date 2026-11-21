@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -49,8 +50,7 @@ export function useAgentSkillAccess(enabled = true) {
   };
 }
 
-const buttonClass =
-  'inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted/50 disabled:opacity-50';
+
 
 /** "Codex, Claude Code, Cursor, OpenCode and Antigravity": every harness this build offers. */
 const HARNESS_NAMES = listJoin(HARNESS_IDS.map((id) => HARNESS_REGISTRY[id].name));
@@ -77,7 +77,12 @@ export function AgentSkillFooter() {
         {skill.failed ? (
           <>
             <span className="min-w-0 flex-1 text-destructive">Could not check the skills.</span>
-            <button type="button" className={buttonClass} onClick={skill.retry}>Retry</button>
+            <Button
+              type="button"
+              onClick={skill.retry}
+              variant="secondary"
+              size="sm"
+            >Retry</Button>
           </>
         ) : state === null ? (
           <span className="flex flex-1 items-center gap-2 text-muted-foreground">
@@ -97,15 +102,16 @@ export function AgentSkillFooter() {
                 <>Installed <span className="text-muted-foreground">in {listJoin(skill.status?.folders ?? [])}</span></>
               ) : 'Not installed'}
             </span>
-            <button
+            <Button
               type="button"
-              className={buttonClass}
               disabled={skill.busy}
               onClick={state === 'on' ? skill.uninstall : skill.install}
+              variant={state === "on" ? "destructive" : "secondary"}
+              size="sm"
             >
               {skill.busy && <Loader2 size={12} className="animate-spin" aria-hidden />}
               {state === 'on' ? 'Uninstall' : 'Install'}
-            </button>
+            </Button>
           </>
         )}
       </div>

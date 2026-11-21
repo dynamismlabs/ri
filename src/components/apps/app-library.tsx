@@ -1,9 +1,10 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUpRight, BookOpen, Check, ChevronDown, Hammer, LayoutGrid, Loader2, MessageCircle, Plug, Plus, Search, Server, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -129,7 +130,14 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input value={searchDraft} onChange={event => setSearchDraft(event.target.value)} onBlur={() => { if (searchDraft !== search) patch({}); }}
                 placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'} aria-label="Search library" className="h-10 rounded-lg pl-10 pr-10 text-sm" />
-              {searchDraft && <button data-slot="action-button" data-variant="ghost" type="button" aria-label="Clear search" onClick={() => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); }} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:bg-muted"><X size={15} /></button>}
+              {searchDraft && <IconButton
+                type="button"
+                onClick={() => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); }}
+                label="Clear search"
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 -translate-y-1/2"
+              ><X size={15} /></IconButton>}
             </div>
             <div data-slot="segmented" data-size="responsive" data-scroll aria-label="Filter library" className="flex flex-wrap gap-1.5">
               {FILTERS.map(option => <button data-slot="segmented-option" key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => patch({ filter: option.value === 'all' ? undefined : option.value })}
@@ -138,24 +146,44 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
               </button>)}
             </div>
           </div>
-          {failures.map(failure => <div key={failure.name} role="alert" className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 px-3 py-2 text-xs"><span className="flex-1 text-destructive">{failure.name} could not load. {failure.error?.message}</span><Button variant="ghost" size="xs" onClick={failure.retry}>Retry</Button></div>)}
+          {failures.map(failure => <div key={failure.name} role="alert" className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 px-3 py-2 text-xs"><span className="flex-1 text-destructive">{failure.name} could not load. {failure.error?.message}</span><Button
+            onClick={failure.retry}
+            variant="ghost"
+            size="xs"
+          >Retry</Button></div>)}
           {loading && <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={13} className="animate-spin" />Loading your library…</p>}
           {groups.filter(group => group.items.length).map(group => <section key={group.name} aria-label={group.name} className="space-y-3">
             <div className="flex items-center gap-2"><h2 className="text-xs font-semibold text-foreground">{group.name}</h2><span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span></div>
             <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">
               {(filter === 'all' && mode === 'yours' && group.name !== 'In progress' ? group.items.slice(0, 6) : group.items).map(item => <LibraryCard key={item.key} item={item} open={() => open(item)} chat={() => setChatItem(item)} />)}
             </div>
-            {filter === 'all' && mode === 'yours' && group.name !== 'In progress' && group.items.length > 6 && <button type="button" onClick={() => patch({ filter: group.items[0].kind })} className="text-xs font-medium text-muted-foreground hover:text-foreground">Show all {group.items.length} {group.name.toLowerCase()}</button>}
+            {filter === 'all' && mode === 'yours' && group.name !== 'In progress' && group.items.length > 6 && <Button
+              type="button"
+              onClick={() => patch({ filter: group.items[0].kind })}
+              variant="ghost"
+              size="sm"
+            >Show all {group.items.length} {group.name.toLowerCase()}</Button>}
           </section>)}
           {!loading && !visible.length && (mode === 'yours' || filter === 'connectors' || filter === 'skills') && <div className="flex flex-col items-center rounded-xl border border-dashed px-6 py-10 text-center">
             {filter === 'skills' ? <BookOpen size={24} className="mb-3 text-muted-foreground" /> : <LayoutGrid size={24} className="mb-3 text-muted-foreground" />}
             <h2 className="text-sm font-medium">{searchDraft ? 'Nothing matches your search' : filter === 'skills' ? 'Teach your agent a way of working' : 'Make room for the tools you need'}</h2>
             <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">{searchDraft ? 'Try a different name, account, or workflow.' : filter === 'skills' ? 'Create a skill for a workflow you repeat. It will appear here alongside your apps and connections.' : 'Connect a service, or create a skill for a workflow you repeat.'}</p>
-            <Button className="mt-4" size="sm" variant="outline" onClick={searchDraft ? () => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); } : filter === 'skills' ? createSkill.start : () => patch({ browse: 'discover' })}>
+            <Button
+              onClick={searchDraft ? () => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); } : filter === 'skills' ? createSkill.start : () => patch({ browse: 'discover' })}
+              variant="secondary"
+              size="sm"
+              className="mt-4"
+            >
               {searchDraft ? 'Clear search' : filter === 'skills' ? 'Create a skill' : 'Discover apps'}
             </Button>
           </div>}
-          {mode === 'yours' && installed.length > 0 && <button type="button" onClick={() => patch({ browse: 'discover', filter: undefined })} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"><Plus size={14} />Find something else for your work<ArrowUpRight size={12} /></button>}
+          {mode === 'yours' && installed.length > 0 && <Button
+            type="button"
+            onClick={() => patch({ browse: 'discover', filter: undefined })}
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-2"
+          ><Plus size={14} />Find something else for your work<ArrowUpRight size={12} /></Button>}
         </div>
       </div>
       <LibraryChat item={chatItem} onClose={() => setChatItem(null)} />
@@ -182,8 +210,17 @@ function LibraryCard({ item, open, chat }: { item: LibraryItem; open: () => void
         {item.added && !item.attention && !item.draft && <Check size={11} className="mr-1 inline" />}{item.status}
       </span>
       <div className="flex shrink-0 items-center gap-1">
-        {item.chat && item.added && item.usable !== false && !item.draft && !item.attention && item.kind !== 'skills' && <Button variant="ghost" size="xs" onClick={chat} aria-label={`Use ${item.name} in chat`}>Use in chat</Button>}
-        <Button variant="outline" size="xs" onClick={open}>{item.draft ? 'Continue' : item.kind === 'skills' ? 'Edit skill' : item.view && item.usable !== false ? 'Open' : item.added ? 'Manage' : 'Connect'}</Button>
+        {item.chat && item.added && item.usable !== false && !item.draft && !item.attention && item.kind !== 'skills' && <Button
+          onClick={chat}
+          aria-label={`Use ${item.name} in chat`}
+          variant="ghost"
+          size="xs"
+        >Use in chat</Button>}
+        <Button
+          onClick={open}
+          variant="secondary"
+          size="xs"
+        >{item.draft ? 'Continue' : item.kind === 'skills' ? 'Edit skill' : item.view && item.usable !== false ? 'Open' : item.added ? 'Manage' : 'Connect'}</Button>
       </div>
     </div>
   </article>;

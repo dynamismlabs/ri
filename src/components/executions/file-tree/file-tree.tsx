@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -10,7 +11,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -56,7 +57,7 @@ import { TreeCollapseAllButton } from './tree-collapse-all-button';
 import { TreeList, type PendingCreate, type PendingError } from './tree-list';
 import { TreeSearchBar } from './tree-search-bar';
 import { TreeViewToggle, type TreeViewMode } from './tree-view-toggle';
-import { Tip } from '@/components/ui/tip';
+
 
 interface FileTreeProps {
   /**
@@ -681,14 +682,18 @@ export function FileTree({
             // Non-modal so the new-name field can take focus as it closes.
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <Tip label="Create or upload files">
-                  <button
-                    className="inline-flex items-center justify-center p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                    aria-label="Create new"
+
+                  <IconButton
+                    label="Create new"
+                    tooltip="Create or upload files"
+                    variant="secondary"
+                    size="sm"
+                    focus="inside"
+                    className="inline-flex items-center justify-center"
                   >
                     <Plus size={13} />
-                  </button>
-                </Tip>
+                  </IconButton>
+
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
@@ -763,7 +768,11 @@ export function FileTree({
           <div className="flex flex-col items-start gap-2 p-3 text-[12px] min-w-0">
             <p className="font-medium text-foreground">Couldn&apos;t list these files</p>
             <p className="break-words text-muted-foreground min-w-0 max-w-full">{errorMessage(error)}</p>
-            <Button variant="outline" size="sm" className="h-7 text-[12px]" onClick={() => void refetch()}>
+            <Button
+              onClick={() => void refetch()}
+              variant="secondary"
+              size="sm"
+            >
               Try again
             </Button>
           </div>

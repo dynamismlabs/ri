@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
 import { Loader2, CheckCircle2, XCircle, ChevronRight, RefreshCw, AlertTriangle, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -134,25 +135,29 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
           {bin && <BinLine bin={bin} />}
           <div className="flex items-center gap-2 pt-0.5">
             <Tip label="Authenticate against the edge (beamd check)">
-              <button data-slot="action-button"
+              <Button
                 type="button"
                 onClick={runTest}
                 disabled={test.isPending}
-                className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1.5"
               >
                 {test.isPending && <Loader2 size={12} className="animate-spin" />}
                 Test connection
-              </button>
+              </Button>
             </Tip>
-            <button data-slot="action-button"
+            <Button
               type="button"
               onClick={disconnect}
               disabled={update.isPending}
-              className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-1.5"
             >
               {update.isPending && <Loader2 size={12} className="animate-spin" />}
               Disconnect
-            </button>
+            </Button>
           </div>
         </>
       ) : device.status === 'pending' ? (
@@ -167,22 +172,20 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
             </p>
           )}
           <div className="flex items-center gap-2">
-            <a data-slot="action-button" data-variant="primary"
-              href={device.pending?.verificationUriComplete || device.pending?.verificationUri || '#'}
+            <Button asChild variant="primary" size="md" className="flex items-center gap-1.5"><a href={device.pending?.verificationUriComplete || device.pending?.verificationUri || '#'}
               target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-1.5 rounded border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90"
-            >
+              rel="noreferrer">
               <ExternalLink size={12} />
               Approve in browser
-            </a>
-            <button data-slot="action-button"
+            </a></Button>
+            <Button
               type="button"
               onClick={device.cancel}
-              className="rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              variant="secondary"
+              size="sm"
             >
               Cancel
-            </button>
+            </Button>
           </div>
           <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
@@ -197,15 +200,17 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
           </p>
 
           {/* Primary path: browser approval against hosted beamd — no inputs. */}
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={startApprove}
             disabled={device.status === 'starting'}
-            className="flex w-full items-center justify-center gap-1.5 rounded border border-border bg-foreground px-2.5 py-2 text-[12px] font-medium text-background hover:bg-foreground/90 disabled:opacity-50"
+            variant="primary"
+            size="md"
+            className="flex w-full items-center justify-center gap-1.5"
           >
             {device.status === 'starting' ? <Loader2 size={13} className="animate-spin" /> : <ExternalLink size={13} />}
             Connect with Beamd
-          </button>
+          </Button>
           {device.status === 'error' && device.error && (
             <p className="flex items-start gap-1.5 text-[12px] text-amber-600 dark:text-amber-400">
               <XCircle size={13} className="mt-0.5 shrink-0" />
@@ -216,14 +221,16 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
           {/* Advanced: self-hosted edge / API key. Auto-opens when an edge
               can't do browser approval. */}
           <div className="border-t border-border/60 pt-2">
-            <button
+            <Button
               type="button"
               onClick={() => setShowAdvanced((v) => !v)}
-              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1"
             >
               <ChevronRight size={11} className={cn('transition-transform', advancedVisible && 'rotate-90')} />
               Self-hosted edge or API key
-            </button>
+            </Button>
 
             {advancedVisible && (
               <div className="mt-2 space-y-2.5">
@@ -269,29 +276,33 @@ export function BeamdConnect({ onConnected }: { onConnected?: () => void }) {
                     <span className="block text-muted-foreground/70">Only for a self-hosted edge with a self-signed cert.</span>
                   </span>
                 </label>
-                <button data-slot="action-button"
+                <Button
                   type="button"
                   onClick={connect}
                   disabled={update.isPending || !server.trim() || !token.trim()}
-                  className="flex items-center gap-1.5 rounded border border-border bg-background px-2.5 py-1.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                  variant="secondary"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   {update.isPending && <Loader2 size={12} className="animate-spin" />}
                   {update.isPending ? 'Verifying…' : 'Log in with API key'}
-                </button>
+                </Button>
               </div>
             )}
           </div>
 
           <Tip label="Check whether this machine already has a beamd login (e.g. from `beamd login` in a terminal)">
-            <button
+            <Button
               type="button"
               onClick={() => refetch()}
               disabled={isFetching}
-              className="flex items-center gap-1.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1.5"
             >
               <RefreshCw size={11} className={cn(isFetching && 'animate-spin')} />
               Already logged in? Re-check
-            </button>
+            </Button>
           </Tip>
         </>
       )}

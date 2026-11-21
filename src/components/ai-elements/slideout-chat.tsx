@@ -1,5 +1,7 @@
 'use client'
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { apiErrorStatus } from '@/lib/api/client';
 
 import { entityKeys } from '@/lib/query/entity-keys';
@@ -17,7 +19,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2, MessageSquare, MessageSquarePlus, RefreshCw, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { Tip } from '@/components/ui/tip';
+
 
 const CHAT_PANEL_MIN_WIDTH = 420
 
@@ -174,18 +176,17 @@ function ChatBubble({
         </div>
       )}
 
-      <button
+      <IconButton
         onClick={() => setBubbleOpen((o) => !o)}
-        className={cn(
-          'absolute bottom-4 right-4 z-40 flex items-center justify-center w-10 h-10 rounded-full shadow-lg transition-all',
-          'bg-primary text-primary-foreground hover:bg-primary/90',
-          bubbleOpen && 'bg-muted text-muted-foreground hover:bg-muted/80',
-          active && !bubbleOpen && 'ring-2 ring-primary/30',
-        )}
-        aria-label="Toggle AI chat"
+        label="Toggle AI chat"
+        variant="secondary"
+          tone={active ? "working" : "neutral"}
+          floating
+        size="md"
+        className="absolute bottom-4 right-4 z-40 flex items-center justify-center"
       >
         {bubbleOpen ? <X size={18} /> : <MessageSquare size={18} />}
-      </button>
+      </IconButton>
     </>
   )
 }
@@ -218,24 +219,27 @@ function ChatPanel({
         <MessageSquare size={12} className="text-primary" />
         <span className="text-xs font-medium text-foreground">AI Assistant</span>
         <div className="ml-auto flex items-center gap-0.5">
-          <Tip label="New chat">
-            <button
+
+            <IconButton
               onClick={() => chat.newChat.mutate()}
               disabled={disabled || !chat.sessionId || chat.newChat.isPending}
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-40"
-              aria-label="New chat"
+              label="New chat"
+              tooltip="New chat"
+              variant="ghost"
+              size="sm"
             >
               <MessageSquarePlus size={14} />
-            </button>
-          </Tip>
+            </IconButton>
+
           {onClose && (
-            <button
+            <IconButton
               onClick={onClose}
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              aria-label="Close chat"
+              label="Close chat"
+              variant="ghost"
+              size="sm"
             >
               <X size={14} />
-            </button>
+            </IconButton>
           )}
         </div>
       </div>
@@ -270,12 +274,14 @@ function ChatBody({
           <p className="text-[11px] text-muted-foreground/80 mt-1">
             {apiErrorStatus(chat.error) !== undefined ? apiErrorText(chat.error) : 'The agent may not be set up yet.'}
           </p>
-          <button
+          <Button
             onClick={() => chat.refetch()}
-            className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10"
+            variant="ghost"
+            size="sm"
+            className="mt-3 inline-flex items-center gap-1"
           >
             <RefreshCw size={11} /> Retry
-          </button>
+          </Button>
         </div>
       </div>
     )

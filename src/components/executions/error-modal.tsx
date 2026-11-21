@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
 import { X, Loader2, AlertCircle, Wrench } from 'lucide-react';
 
@@ -45,9 +47,13 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
                 {title}
               </span>
               <DialogPrimitive.Close asChild>
-                <button className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <IconButton
+                  label="Close error details"
+                  variant="ghost"
+                  size="xs"
+                >
                   <X size={16} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
 
@@ -62,17 +68,22 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
 
             <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
               <DialogPrimitive.Close asChild>
-                <button className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                >
                   Dismiss
-                </button>
+                </Button>
               </DialogPrimitive.Close>
               {action && (
-                <button
+                <Button
                   onClick={() => {
                     action.onClick();
                   }}
                   disabled={action.pending}
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  variant="primary"
+                  size="md"
+                  className="flex items-center gap-1.5"
                 >
                   {action.pending ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -80,7 +91,7 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
                     <Wrench size={14} />
                   )}
                   {action.label}
-                </button>
+                </Button>
               )}
             </div>
           </div>

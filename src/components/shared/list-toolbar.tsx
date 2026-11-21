@@ -6,7 +6,7 @@
  * Both lists used to hand-roll their own toolbar with one-off pixel sizes
  * (`text-[8.5px]`, `p-1.5`, `text-xs`), so the two drifted and every control
  * was a slightly different size. This module is the single source of truth for
- * that row: consistent sizing off the design-system `buttonVariants`, and a
+ * that row: consistent sizing from the Button family, and a
  * primary segmented control that stays usable as the panel narrows.
  *
  * Responsiveness keys off the PANEL, not the viewport. The lists render inside
@@ -18,7 +18,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { ChipButton } from '@/components/system/chip-button';
+import { IconButton } from '@/components/system/icon-button';
 import { cn } from '@/lib/utils';
 import { Tip } from '@/components/ui/tip';
 
@@ -37,21 +38,6 @@ export function ListToolbar({ className, children }: { className?: string; child
   );
 }
 
-/**
- * Shared trigger/toggle sizing. Every non-segmented control in the row (filter
- * menu, sort menu, decisions/archived toggles) uses this so heights, radius and
- * icon sizes match. `active` gives the accented, "this is doing something" look.
- */
-export function toolbarButtonClass({ active, className }: { active?: boolean; className?: string } = {}) {
-  return cn(
-    buttonVariants({ variant: 'outline', size: 'sm' }),
-    // toolbar-button(-active) are style hooks for the new look (src/styles/edge.css).
-    'toolbar-button gap-1.5 rounded-lg text-xs font-medium',
-    active && 'toolbar-button-active border-primary/50 bg-primary/10 text-primary hover:bg-primary/15',
-    className,
-  );
-}
-
 /** Small dot that flags a filter as active when its label is hidden for space. */
 export function ToolbarActiveDot({ className }: { className?: string }) {
   return (
@@ -64,18 +50,7 @@ export function ToolbarActiveDot({ className }: { className?: string }) {
 
 /** Icon-only search button, right-pinned by convention. */
 export function ToolbarSearchButton({ onClick, label }: { onClick: () => void; label: string }) {
-  return (
-    <Tip label={label}>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        className={cn(buttonVariants({ variant: 'outline', size: 'icon-sm' }), 'toolbar-button rounded-lg')}
-      >
-        <Search className="size-3.5" />
-      </button>
-    </Tip>
-  );
+  return <IconButton type="button" label={label} onClick={onClick} variant="secondary" size="sm"><Search /></IconButton>;
 }
 
 /** A pressable filter toggle (Decisions, Archived) with the shared sizing. */
@@ -92,14 +67,9 @@ export function ToolbarToggle({
 }) {
   return (
     <Tip label={title}>
-      <button
-        type="button"
-        onClick={onClick}
-        aria-pressed={active}
-        className={toolbarButtonClass({ active, className: 'uppercase tracking-wide' })}
-      >
+      <ChipButton type="button" onClick={onClick} pressed={active}>
         {children}
-      </button>
+      </ChipButton>
     </Tip>
   );
 }

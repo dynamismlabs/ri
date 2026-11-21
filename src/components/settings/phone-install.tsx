@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Download, Smartphone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { APP_NAME } from '@/constants/app';
 import { promptWebAppInstall, startWebAppInstall, useWebAppInstall } from '@/lib/client/web-app-install';
 import { setSettingsSection } from './settings-store';
@@ -66,7 +66,12 @@ export function PhoneInstall() {
             </p>
           </div>
           {install.canPrompt && install.secure && !install.desktop && (
-            <Button variant="outline" size="sm" onClick={() => void prompt()} disabled={busy}>
+            <Button
+              onClick={() => void prompt()}
+              disabled={busy}
+              variant="secondary"
+              size="sm"
+            >
               <Download size={14} /> {busy ? 'Opening installation…' : 'Install Ri on this device'}
             </Button>
           )}
@@ -82,7 +87,11 @@ export function PhoneInstall() {
         If the installed app asks to pair again, create a device pairing link on your Ri computer.
         Browser and installed-app storage can be separate.
       </p>
-      <Button size="sm" variant="outline" onClick={() => setSettingsSection('notifications')}>Set up notifications</Button>
+      <Button
+        onClick={() => setSettingsSection('notifications')}
+        variant="secondary"
+        size="sm"
+      >Set up notifications</Button>
     </section>
   );
 }

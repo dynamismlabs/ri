@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * Runs list at /runs.
  *
@@ -40,12 +42,14 @@ export default function RunsPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           onClick={() => router.push('/')}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+          label="Back to home"
+          variant="ghost"
+          size="xs"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <Activity size={16} className="text-primary" />
         <h1 className="text-base font-semibold">Runs</h1>
         <div className="flex-1" />
@@ -108,11 +112,8 @@ function RunRow({ run }: { run: RunRecord }) {
       ? run.status
       : undefined;
   return (
-    <Link
-      data-slot="run-row"
-      href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
-      className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted text-sm"
-    >
+    <Button asChild variant="secondary" size="sm" className="flex items-center gap-3"><Link data-slot="run-row"
+      href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}>
       <TriggerBadge trigger={run.triggerKind} />
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
       <span data-slot="run-summary" className="flex-1 truncate text-muted-foreground text-[12px]">
@@ -126,7 +127,7 @@ function RunRow({ run }: { run: RunRecord }) {
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link>
+    </Link></Button>
   );
 }
 

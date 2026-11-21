@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { GroupHeading } from './parts';
 import { connectionIdentity, type Connection } from './types';
 
@@ -18,7 +18,12 @@ export function PreviousConnections({ connections, busy, onDisconnect }: {
           <p className="font-medium">{connection.providerId === 'jira' ? 'Jira' : 'Confluence'}</p>
           <p className="truncate text-muted-foreground">{connectionIdentity(connection)}</p>
         </div>
-        <Button variant="ghost" size="xs" disabled={busy} onClick={() => onDisconnect(connection)}>Disconnect</Button>
+        <Button
+          disabled={busy}
+          onClick={() => onDisconnect(connection)}
+          variant="ghost"
+          size="xs"
+        >Disconnect</Button>
       </div>)}
     </div>
   </section>;

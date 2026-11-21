@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { EntityDetailHeader, EntityActionsMenu } from '@/components/entities/entity-detail-header';
 import { EntityPageBoundary } from '@/components/home/entity-page-boundary';
 import { HomeBoundary } from '@/components/home/home-context';
@@ -26,7 +27,7 @@ import { SharedTaskBody } from '@/components/spaces/shared-task-body';
 import { removeFromMyWork } from '@/components/spaces/my-work';
 
 import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+
 import type { Attachment } from '@/db/types';
 
 function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
@@ -128,14 +129,16 @@ function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
 
   const header = (
         <EntityDetailHeader className="h-11 sticky top-0 z-10 bg-background/80 px-0 py-0 backdrop-blur-sm">
-          <button
+          <Button
             onClick={goBack}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5 shrink-0"
             aria-label="Back"
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1.5 shrink-0"
           >
             <ChevronLeft size={16} />
             <span className="text-xs">Back</span>
-          </button>
+          </Button>
 
           <div className="flex items-center gap-2 min-w-0 overflow-x-auto no-scrollbar [&>*]:shrink-0">
             {agentFirst && !shared && <EntityViewToggle value={view} onChange={setView} />}
@@ -148,19 +151,17 @@ function TaskPageContent({ params }: { params: Promise<{ id: string }> }) {
                 the status control, so no button mislabels a no-op or a
                 restore as "Complete". */}
             {task && task.status !== 'consider' && task.status !== 'archived' && (
-              <button data-slot="header-action" data-state={isDone ? "done" : undefined}
+              <Button
                 onClick={handleComplete}
                 aria-label={isDone ? 'Completed' : 'Complete'}
-                className={cn(
-                  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors',
-                  isDone
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'border border-border text-muted-foreground hover:text-foreground hover:bg-accent',
-                )}
+                variant="secondary"
+                size="sm"
+                pressed={isDone}
+                className="inline-flex shrink-0 items-center gap-1.5"
               >
                 <Check size={12} />
                 <span className={ENTITY_HEADER_LABEL}>{isDone ? 'Completed' : 'Complete'}</span>
-              </button>
+              </Button>
             )}
 
             <EntityActionsMenu onArchive={handleArchive} archiveLabel={shared ? 'Archive for the team' : 'Archive'} onDelete={shared ? undefined : handleDelete}>

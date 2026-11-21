@@ -9,7 +9,7 @@
 
 import { useState } from 'react';
 import { FolderOpen } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { FolderPickerDialog } from '@/components/workspaces/folder-picker-dialog';
 import { Tip } from '@/components/ui/tip';
@@ -46,14 +46,14 @@ export function FolderField({
         <Tip label={browsable ? undefined : `${device.name} isn't running Ri right now. Type the path instead.`}>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               setPicking(true);
             }}
             disabled={!browsable}
-            className="h-8 shrink-0 gap-1.5 text-[12px]"
+            variant="secondary"
+            size="sm"
+            className="shrink-0 gap-1.5"
           >
             <FolderOpen size={13} />
             Browse

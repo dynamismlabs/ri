@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * Move to MacBook (docs/homes-model.md, spec §8.2, P4.2): what the move does,
  * what it takes, and the one choice it asks for. Tracked changes always go,
@@ -109,22 +110,25 @@ export function ContinueDialog({
         </div>
 
         <DialogFooter>
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="rounded-md border border-border px-3 py-1.5 text-[12.5px] hover:bg-muted/60"
+            variant="secondary"
+            size="md"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={go}
             disabled={start.isPending || isLoading || !!error || !!state?.problem}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             {start.isPending && <Loader2 size={12} className="animate-spin" />}
             Move to {to.name}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

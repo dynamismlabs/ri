@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { ComponentProps, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -36,22 +37,19 @@ export function RailIconButton({
 }) {
   return (
     <Tip label={hideTip ? undefined : label} shortcut={shortcut}>
-      <button
+      <Button
         type="button"
         aria-label={ariaLabel ?? label}
         aria-current={active ? 'page' : undefined}
         {...props}
-        className={cn(
-          'relative flex-shrink-0 p-1.5 rounded-md transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          active
-            ? 'bg-muted/60 text-foreground'
-            : 'text-muted-foreground/80 hover:text-foreground hover:bg-muted/50',
-          className,
-        )}
+        variant="secondary"
+        size="sm"
+        pressed={active}
+        className={cn("relative flex-shrink-0", className)}
       >
         {mark ?? (Icon && <Icon size={14} />)}
         {badge}
-      </button>
+      </Button>
     </Tip>
   );
 }

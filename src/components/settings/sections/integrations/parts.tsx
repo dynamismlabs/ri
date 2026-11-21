@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * Shared building blocks for the Integrations pane: the catalog tile, the
  * drill-in chrome (back link + detail header), and the small labels both views
@@ -140,13 +141,15 @@ export function BackLink({ onBack, busy = false, label = `All ${INTEGRATION_LABE
   return (
     <div className="flex min-h-6 items-center justify-between gap-2">
       <Tip label={`Back to ${label.toLowerCase()}`} shortcut={HOTKEYS.slideoutBack.label}>
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={onBack}
-          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          size="sm"
+          className="-ml-1 inline-flex items-center gap-1"
         >
           <ArrowLeft size={12} /> {label}
-        </button>
+        </Button>
       </Tip>
       {busy && (
         <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">

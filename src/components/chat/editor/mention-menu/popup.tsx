@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { SOURCE_STATUS_LABELS } from '@/lib/chat-sources/types'
 
 import { cn } from '@/lib/utils'
@@ -354,25 +355,21 @@ function KindChips({
       className="relative mb-0.5 flex shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border/60 px-0.5 pt-0.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {KIND_CHIPS.map((filter, index) => (
-        <button
+        <Button
           key={filter ?? 'all'}
           type="button"
           data-kind-index={index}
           data-kind-chip={filter ?? 'all'}
           data-focused={index === focused ? '' : undefined}
           aria-pressed={index === active}
-          className={cn(
-            'shrink-0 rounded-full px-2 py-0.5 text-[11px] leading-4 transition-colors',
-            index === active
-              ? 'bg-accent font-medium text-foreground'
-              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-            index === focused && 'ring-1 ring-inset ring-ring',
-          )}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onPick(index)}
+          variant="ghost"
+          size="xs"
+          className="shrink-0"
         >
           {filter ? mentionKind(filter).label : 'All'}
-        </button>
+        </Button>
       ))}
     </div>
   )

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -180,14 +181,16 @@ export function RunOnControl({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Tip label="Where this chat runs">
-            <button
+            <Button
               type="button"
               disabled={disabled}
-              className={cn(TRIGGER_CLASS, oneOff && 'border-primary/40 text-foreground', !selected.ready && 'border-amber-500/40 text-amber-600 dark:text-amber-400')}
+              variant={oneOff ? "secondary" : "ghost"}
+              size="sm"
+              tone={!selected.ready ? "warning" : "neutral"}
             >
               <Laptop size={11} />
               <span className="max-w-[9rem] truncate">{selected.name}</span>
-            </button>
+            </Button>
           </Tip>
         </PopoverTrigger>
         <LauncherPopoverContent align="start" className="w-[280px] p-1">
@@ -303,14 +306,15 @@ export function BaseControl({
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setFilter(''); }}>
       <PopoverTrigger asChild>
         <Tip label={fromPr ? `Forking from pull request #${base.prNumber}` : 'Fork point'}>
-          <button
+          <Button
             type="button"
             disabled={disabled}
-            className={cn(TRIGGER_CLASS, explicit && 'border-primary/40 text-foreground')}
+            variant={explicit ? "secondary" : "ghost"}
+            size="sm"
           >
             <GitBranch size={11} />
             <span className="max-w-[11rem] truncate font-mono">from {label}</span>
-          </button>
+          </Button>
         </Tip>
       </PopoverTrigger>
       <LauncherPopoverContent align="start" className="w-[300px] p-0">
@@ -321,14 +325,16 @@ export function BaseControl({
               <span className="font-mono text-foreground">#{base.prNumber}</span>. Resolved on the
               server, so it works for forks and PRs you have never checked out.
             </p>
-            <button data-slot="action-button" data-variant="ghost"
+            <Button
               type="button"
               onClick={() => { onClear(); setOpen(false); }}
-              className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center gap-1.5"
             >
               <X size={11} />
               Use the agent&apos;s default instead
-            </button>
+            </Button>
           </div>
         ) : (
           <>
@@ -452,15 +458,13 @@ export function LiveFreshnessControl({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
+        <Button
           type="button"
           disabled={disabled || status.isLoading || pull.isPending || current || blocked}
           onClick={() => pull.mutate()}
-          className={cn(
-            TRIGGER_CLASS,
-            behind > 0 && !blocked && 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-            blocked && 'border-border',
-          )}
+          variant="secondary"
+          size="xs"
+          tone={behind > 0 && !blocked ? "warning" : "neutral"}
         >
           {pull.isPending || status.isLoading ? (
             <Loader2 size={11} className="animate-spin" />
@@ -470,7 +474,7 @@ export function LiveFreshnessControl({
             <RefreshCw size={11} />
           )}
           <span className="max-w-[13rem] truncate">{label}</span>
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={4} className="max-w-[280px]">
         {error

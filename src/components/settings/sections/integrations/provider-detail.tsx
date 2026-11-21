@@ -11,7 +11,7 @@
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { ChevronDown, ExternalLink, KeyRound, Loader2, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -125,7 +125,11 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       <GroupHeading
         action={
           opened && (
-            <Button variant="ghost" size="xs" onClick={() => setAddOpen(false)} className="text-xs">
+            <Button
+              onClick={() => setAddOpen(false)}
+              variant="ghost"
+              size="xs"
+            >
               Cancel
             </Button>
           )
@@ -137,7 +141,12 @@ function SingleProviderDetail(props: ProviderDetailProps) {
         {hosted && p.mcp?.endpointConfig && <HostedEndpointFields setup={p.mcp.endpointConfig} value={props.endpointSelection} disabled={busy} onChange={props.onEndpointChange} />}
         <ConnectPanel {...props} />
         {!connected && (p.mcp?.endpointConfig?.locked || registered) && p.mcp?.serverId && props.onCancelSetup && (
-          <Button variant="ghost" size="xs" onClick={() => props.onCancelSetup?.()} disabled={busy}>Cancel setup</Button>
+          <Button
+            onClick={() => props.onCancelSetup?.()}
+            disabled={busy}
+            variant="ghost"
+            size="xs"
+          >Cancel setup</Button>
         )}
       </div>
     </ConnectFormSection>
@@ -185,7 +194,12 @@ function SingleProviderDetail(props: ProviderDetailProps) {
               canConnect &&
               !hosted &&
               !addOpen && (
-                <Button variant="outline" size="xs" onClick={() => setAddOpen(true)} disabled={busy} className="text-xs">
+                <Button
+                  onClick={() => setAddOpen(true)}
+                  disabled={busy}
+                  variant="secondary"
+                  size="xs"
+                >
                   <Plus size={12} /> Add account
                 </Button>
               )
@@ -293,7 +307,12 @@ function ConnectPanelContent(props: ProviderDetailProps) {
           {meta.helpLinks?.map(link => <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{link.label} <ExternalLink size={11} /></a>)}
         </div>
       </div> : selfHosted ? <div className="space-y-2 text-xs text-muted-foreground"><p>{meta.setup?.[0]}</p><a href={meta.docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Setup guide <ExternalLink size={11} /></a></div> : <p className="text-xs text-muted-foreground">{p.displayName} does not require an account or a token.</p>}
-      <Button size="sm" onClick={() => props.onConnectDirect()} disabled={busy || !endpointReady || props.connectDisabled} className="text-xs font-semibold">
+      <Button
+        onClick={() => props.onConnectDirect()}
+        disabled={busy || !endpointReady || props.connectDisabled}
+        variant="primary"
+        size="md"
+      >
         <Plus size={14} /> {again ? 'Reconnect' : `Connect ${p.displayName}`}
       </Button>
     </div>;
@@ -348,10 +367,10 @@ function ConnectPanelContent(props: ProviderDetailProps) {
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <Button
-            size="sm"
             onClick={() => props.onConnectOAuth()}
             disabled={busy || !endpointReady || props.connectDisabled || (multi && selected.length === 0)}
-            className="text-xs font-semibold"
+            variant="primary"
+            size="md"
           >
             <ExternalLink size={13} /> {again ? hosted ? 'Sign in to reconnect' : 'Sign in to another account' : `Connect ${p.displayName}`}
           </Button>
@@ -422,7 +441,12 @@ function ConnectPanelContent(props: ProviderDetailProps) {
       <p className="text-[11px] leading-normal text-muted-foreground">
         Your credentials are stored encrypted and never shown to agents.
       </p>
-      <Button type="submit" size="sm" disabled={busy || !filled || !endpointReady || props.connectDisabled} className="text-xs font-semibold">
+      <Button
+        type="submit"
+        disabled={busy || !filled || !endpointReady || props.connectDisabled}
+        variant="primary"
+        size="md"
+      >
         <Plus size={14} /> {hosted && again ? 'Update token' : `Connect ${p.displayName}`}
       </Button>
     </form>
@@ -497,20 +521,30 @@ function AccountRow({
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1">
         {onReconnect && (
-          <Button variant="ghost" size="xs" onClick={onReconnect} disabled={busy} className="text-xs">
+          <Button
+            onClick={onReconnect}
+            disabled={busy}
+            variant="ghost"
+            size="xs"
+          >
             <ExternalLink size={12} /> Reconnect
           </Button>
         )}
-        <Button variant="ghost" size="xs" onClick={onTest} disabled={busy || testing} className="text-xs">
+        <Button
+          onClick={onTest}
+          disabled={busy || testing}
+          variant="ghost"
+          size="xs"
+        >
           {testing ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
           Test
         </Button>
         <Button
-          variant="ghost"
-          size="xs"
           onClick={onDisconnect}
           disabled={busy}
-          className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+          variant="ghost"
+          size="xs"
+          tone="danger"
         >
           <Trash2 size={12} /> Disconnect
         </Button>

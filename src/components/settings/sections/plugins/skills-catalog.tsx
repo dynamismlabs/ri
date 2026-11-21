@@ -13,11 +13,11 @@ import type { SkillSummary } from '@/lib/api/skills';
 import { useSkills } from '@/hooks/use-skills';
 import { useStartSkill } from '@/hooks/use-start-skill';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { LOCATION_GROUPS, displayPath } from '@/components/skills/location-copy';
 import { apiErrorText } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
+
 import { CatalogTile, Chip, GroupHeading } from '../integrations/parts';
 
 function SkillLogo() {
@@ -38,11 +38,11 @@ export function NewSkillButton({ className }: { className?: string }) {
   const create = useStartSkill();
   return (
     <Button
-      variant="outline"
-      size="xs"
-      className={cn('text-[11.5px]', className)}
       disabled={create.isPending}
       onClick={create.start}
+      variant="secondary"
+      size="xs"
+      className={className}
     >
       {create.isPending ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
       New skill
@@ -177,7 +177,11 @@ export function SkillsTab() {
           <Loader2 size={14} className="animate-spin" /> Loading skills…
         </div>
       ) : error ? (
-        <p role="alert" className="text-xs text-destructive">{apiErrorText(error)} <button className="underline" onClick={() => void refetch()}>Retry</button></p>
+        <p role="alert" className="text-xs text-destructive">{apiErrorText(error)} <Button
+          onClick={() => void refetch()}
+          variant="link"
+          size="sm"
+        >Retry</Button></p>
       ) : all === 0 ? (
         <p className="py-6 text-center text-[12px] text-muted-foreground">
           No skills yet. A skill teaches your agents one way of working, like how you review a pull request. Start

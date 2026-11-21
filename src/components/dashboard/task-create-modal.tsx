@@ -1,5 +1,7 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { RichEditor } from "@/components/editor/rich-editor";
 import { useDashboard } from "@/contexts/dashboard-context";
 import type { Attachment, Effort, Energy } from '@/db/types';
@@ -180,15 +182,18 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
                   autoFocus
                 />
               </div>
-              <Tip label="Expand to full editor">
-                <button
+
+                <IconButton
                   onClick={handleExpand}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex-shrink-0"
-                  aria-label="Expand to full editor"
+                  label="Expand to full editor"
+                  tooltip="Expand to full editor"
+                  variant="ghost"
+                  size="sm"
+                  className="flex-shrink-0"
                 >
                   <Expand size={16} />
-                </button>
-              </Tip>
+                </IconButton>
+
             </div>
 
             {/* Description — TipTap rich editor */}
@@ -238,24 +243,21 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               {/* Effort */}
               <div className="relative">
-                <button data-slot="action-button"
+                <Button
                   onClick={() => {
                     setShowEffortPicker(!showEffortPicker);
                     setShowEnergyPicker(false);
                     setShowAreaPicker(false);
                   }}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-colors",
-                    effort
-                      ? "border-primary/30 bg-primary/5 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent"
-                  )}
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex items-center gap-1.5"
                 >
                   <Gauge size={13} />
                   {effort
                     ? EFFORT_OPTIONS.find((o) => o.value === effort)?.label
                     : "Effort"}
-                </button>
+                </Button>
                 {showEffortPicker && (
                   <div className="absolute top-full left-0 mt-1 z-10 bg-card border border-border rounded-lg shadow-xl py-1 min-w-[120px]">
                     {EFFORT_OPTIONS.map((opt) => (
@@ -281,24 +283,21 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               {/* Energy */}
               <div className="relative">
-                <button data-slot="action-button"
+                <Button
                   onClick={() => {
                     setShowEnergyPicker(!showEnergyPicker);
                     setShowEffortPicker(false);
                     setShowAreaPicker(false);
                   }}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition-colors",
-                    energy
-                      ? "border-primary/30 bg-primary/5 text-primary"
-                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent"
-                  )}
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex items-center gap-1.5"
                 >
                   <Zap size={13} />
                   {energy
                     ? ENERGY_OPTIONS.find((o) => o.value === energy)?.label
                     : "Energy"}
-                </button>
+                </Button>
                 {showEnergyPicker && (
                   <div className="absolute top-full left-0 mt-1 z-10 bg-card border border-border rounded-lg shadow-xl py-1 min-w-[140px]">
                     {ENERGY_OPTIONS.map((opt) => (
@@ -324,12 +323,14 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               {/* Attachments placeholder */}
               <Tip label="Attachments (coming soon)">
-                <button data-slot="action-button"
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex items-center gap-1.5"
                 >
                   <Paperclip size={13} />
                   Attach
-                </button>
+                </Button>
               </Tip>
             </div>
 
@@ -337,22 +338,19 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
             <div className="flex items-center justify-between px-5 py-3 border-t border-border">
               {/* Area selector */}
               <div className="relative">
-                <button
+                <Button
                   onClick={() => {
                     setShowAreaPicker(!showAreaPicker);
                     setShowEffortPicker(false);
                     setShowEnergyPicker(false);
                   }}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-colors",
-                    selectedArea
-                      ? "text-primary/80"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
+                  variant="ghost"
+                  size="sm"
+                  className="inline-flex items-center gap-1.5"
                 >
                   <FolderOpen size={13} />
                   {selectedArea ? selectedArea.name : "No area"}
-                </button>
+                </Button>
                 {showAreaPicker && (
                   <div className="absolute bottom-full left-0 mb-1 z-10 bg-card border border-border rounded-lg shadow-xl py-1 min-w-[160px]">
                     <button
@@ -388,20 +386,25 @@ export function TaskCreateModal({ open, onOpenChange }: TaskCreateModalProps) {
 
               <div className="flex items-center gap-2">
                 <DialogPrimitive.Close asChild>
-                  <button className="px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                  >
                     Cancel
-                  </button>
+                  </Button>
                 </DialogPrimitive.Close>
-                <button
+                <Button
                   onClick={handleSubmit}
                   disabled={!title.trim() || createTask.isPending}
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  variant="primary"
+                  size="md"
+                  className="flex items-center gap-1.5"
                 >
                   {createTask.isPending && (
                     <Loader2 size={14} className="animate-spin" />
                   )}
                   Add task
-                </button>
+                </Button>
               </div>
             </div>
           </div>

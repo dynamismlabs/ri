@@ -1,10 +1,11 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { SendToChatButton } from '@/components/chat-ui/coordination/send-to-chat';
 import { useState } from 'react';
 import { Check, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
+
 
 interface CopyMessageButtonProps {
   text: string;
@@ -80,22 +81,20 @@ export function CopyMessageButton({
   ) : null;
 
   const iconNode = (
-    <Tip label={copied ? 'Copied' : 'Copy message'}>
-      <button data-slot="action-button" data-variant="ghost"
+
+      <IconButton
         type="button"
         onClick={onClick}
-        aria-label={copied ? 'Copied' : 'Copy message'}
-        className={cn(
-          'inline-flex items-center justify-center w-5 h-5 rounded',
-          'pointer-coarse:size-11 pointer-coarse:[&_svg]:size-4',
-          'text-muted-foreground hover:text-foreground hover:bg-muted/60',
-          'transition-all',
-          alwaysVisible ? '' : 'opacity-0 group-hover:opacity-100 focus:opacity-100 pointer-coarse:opacity-100 [@media(hover:none)]:opacity-100',
-        )}
+        label={copied ? 'Copied' : 'Copy message'}
+        tooltip={copied ? 'Copied' : 'Copy message'}
+        variant="ghost"
+        size="xs"
+        reveal={!alwaysVisible}
+        className="inline-flex items-center justify-center"
       >
         {copied ? <Check size={11} /> : <Copy size={11} />}
-      </button>
-    </Tip>
+      </IconButton>
+
   );
 
   return (

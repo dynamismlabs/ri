@@ -1,13 +1,14 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { Input } from '@/components/ui/input';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { KeyRound, Loader2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Tip } from '@/components/ui/tip';
+
 
 export function CursorCredentialPanel() {
   const [key, setKey] = useState('');
@@ -55,15 +56,27 @@ export function CursorCredentialPanel() {
           placeholder={status.data?.configured ? 'Replace configured key' : 'Paste API key'}
           className="h-8 rounded-md text-[11px]"
         />
-        <Button size="sm" disabled={!key.trim() || save.isPending} onClick={() => save.mutate()}>
+        <Button
+          disabled={!key.trim() || save.isPending}
+          onClick={() => save.mutate()}
+          variant="primary"
+          size="md"
+        >
           {save.isPending && <Loader2 className="animate-spin" />} Save
         </Button>
         {status.data?.source === 'ri_store' && (
-          <Tip label="Remove stored key">
-            <Button size="icon-sm" variant="outline" aria-label="Remove stored key" disabled={clear.isPending} onClick={() => clear.mutate()}>
+
+            <IconButton
+              disabled={clear.isPending}
+              onClick={() => clear.mutate()}
+              label="Remove stored key"
+              tooltip="Remove stored key"
+              variant="secondary"
+              size="sm"
+            >
               <Trash2 />
-            </Button>
-          </Tip>
+            </IconButton>
+
         )}
       </div>
       {status.data?.configured && (

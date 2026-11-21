@@ -1,5 +1,7 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+
 import { useState, useRef, useCallback } from 'react';
 import {
   Target, FileText, ChevronDown, Search, Plus, GitMerge,
@@ -50,12 +52,14 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          className="flex items-center gap-0.5 p-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors"
+        <IconButton
+          label="Create task"
+          variant="ghost"
+          size="xs"
         >
           <Target size={12} />
           <ChevronDown size={8} className="text-primary/50" />
-        </button>
+        </IconButton>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
         {mode === 'menu' && (
@@ -157,12 +161,14 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          className="flex items-center gap-0.5 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+        <IconButton
+          label="Create note"
+          variant="ghost"
+          size="xs"
         >
           <FileText size={12} />
           <ChevronDown size={8} className="opacity-50" />
-        </button>
+        </IconButton>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
         {mode === 'menu' && (

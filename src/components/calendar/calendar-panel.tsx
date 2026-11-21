@@ -1,5 +1,7 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * The phone's calendar (More, Calendar) — purely a calendar, and purely a
  * DAY: an hour axis fits a phone's width, seven columns never will. Every
@@ -70,34 +72,32 @@ export function CalendarPanel() {
         {/* Header */}
         <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border shrink-0">
           <div className="flex items-center">
-            <button
+            <IconButton
               type="button"
               onClick={() => step(-1)}
-              aria-label="Previous day"
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              label="Previous day"
+              variant="secondary"
+              size="sm"
             >
               <ChevronLeft size={14} />
-            </button>
-            <button
+            </IconButton>
+            <Button
               type="button"
               onClick={() => setAnchor(today)}
-              className={cn(
-                'px-1.5 py-0.5 rounded-md text-[11px] font-medium transition-colors',
-                anchor === today
-                  ? 'text-muted-foreground/50 cursor-default'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-              )}
+              variant="secondary"
+              size="sm"
             >
               Today
-            </button>
-            <button
+            </Button>
+            <IconButton
               type="button"
               onClick={() => step(1)}
-              aria-label="Next day"
-              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+              label="Next day"
+              variant="secondary"
+              size="sm"
             >
               <ChevronRight size={14} />
-            </button>
+            </IconButton>
           </div>
 
           <span className="text-xs font-medium text-foreground truncate">
@@ -107,28 +107,32 @@ export function CalendarPanel() {
           <div className="flex-1" />
 
           {/* Week look-ahead — opens the full-screen calendar (needs width) */}
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={() => openCalendarModal({ view: 'week', date: anchor })}
-            className="hidden md:flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-border text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+            variant="secondary"
+            size="sm"
+            className="hidden md:flex items-center gap-1.5"
           >
             <Columns3 size={11} />
             Week
-          </button>
+          </Button>
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <Button
                 type="button"
                 onClick={handleRefresh}
                 aria-label="Refresh calendar"
-                className="relative p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                variant="secondary"
+                size="sm"
+                className="relative"
               >
                 <RefreshCw size={13} className={cn(refreshing && 'animate-spin')} />
                 {(stale || degraded) && (
                   <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-amber-500/80" />
                 )}
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-[11px]">
               {data ? `Updated ${formatAsOf(data.asOf)}${degraded ? ' · some calendars unreachable' : ''}` : 'Refresh'}

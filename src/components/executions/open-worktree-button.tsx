@@ -1,5 +1,9 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+
+import { Button } from '@/components/system/button';
+import { ButtonGroup } from '@/components/system/button-group';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -24,7 +28,7 @@ import { useEditorPreference } from '@/lib/client/editor-preference';
 import { useOpener } from '@/hooks/use-opener';
 import type { FolderSource } from '@/lib/folders/source';
 import { isEditorTarget } from '@/lib/fs/known-apps';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 interface OpenWorktreeButtonProps {
@@ -218,17 +222,13 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
   if (isRemote) {
     return (
       <div className="relative inline-flex items-center gap-1.5">
-        <button
+        <Button
           type="button"
           onClick={copyPath}
-          data-slot="action-button"
           disabled={busy === 'copy'}
-          className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium',
-            'rounded-md border border-border bg-background',
-            'text-foreground/80 hover:text-foreground hover:bg-muted/40',
-            'transition-colors disabled:opacity-50',
-          )}
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1.5"
         >
           {busy === 'copy' ? (
             <Loader2 size={12} className="animate-spin" />
@@ -238,7 +238,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
             <Copy size={12} />
           )}
           {copied ? 'Copied' : 'Copy path'}
-        </button>
+        </Button>
         <Tip
           label={
             filesOn
@@ -262,19 +262,9 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
   const isBusyPrimary = busy === primaryTarget;
 
   return (
-    <div data-slot="split-button" className="relative inline-flex items-stretch">
-      <Tip label={primaryLabel}>
-        <button data-slot="split-button-action"
-          type="button"
-          onClick={() => open(primaryTarget)}
-          disabled={isBusyPrimary}
-          className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium',
-            'rounded-l-md border border-r-0 border-border bg-background',
-            'text-foreground/80 hover:text-foreground hover:bg-muted/40',
-            'transition-colors disabled:opacity-50',
-          )}
-        >
+    <ButtonGroup variant="joined" className="relative">
+      <Tip label={primaryLabel} onlyWhenTextHidden>
+        <Button type="button" onClick={() => open(primaryTarget)} disabled={isBusyPrimary} size="sm" variant="secondary">
           {isBusyPrimary ? (
             <Loader2 size={12} className="animate-spin" />
           ) : primaryApp ? (
@@ -283,24 +273,11 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
             <FallbackIcon target={primaryTarget} />
           )}
           <span className="truncate max-w-[120px]">{shortLabel(primaryLabel)}</span>
-        </button>
+        </Button>
       </Tip>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Tip label="More open options">
-            <button data-slot="split-button-action"
-              type="button"
-              className={cn(
-                'flex items-center justify-center px-1.5',
-                'rounded-r-md border border-border bg-background',
-                'text-muted-foreground hover:text-foreground hover:bg-muted/40',
-                'transition-colors',
-              )}
-              aria-label="More open options"
-            >
-              <ChevronDown size={11} />
-            </button>
-          </Tip>
+          <IconButton type="button" label="More open options" size="sm" variant="secondary"><ChevronDown /></IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[220px] w-auto">
           {installed.map((app) => (
@@ -331,7 +308,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
           {error}
         </div>
       )}
-    </div>
+    </ButtonGroup>
   );
 }
 

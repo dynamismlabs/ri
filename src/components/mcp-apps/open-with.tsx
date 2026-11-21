@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AppWindow, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tip } from '@/components/ui/tip';
 import { useOptionalDashboard } from '@/contexts/dashboard-context';
@@ -86,13 +86,26 @@ export function OpenWithApp({file, className}: {file: OpenWithFile; className?: 
   return <span className={className}>
     {apps.length === 1
       ? <Tip label={`Opens ${file.name} in ${apps[0].title}`} onlyWhenTextHidden>
-          <Button type="button" size="xs" variant="ghost" disabled={busy} onClick={() => void open(apps[0])} className="h-6 gap-1 px-1.5 text-[11px]">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void open(apps[0])}
+            variant="ghost"
+            size="xs"
+            className="gap-1"
+          >
             {icon}<span className="truncate">Open with {apps[0].label}</span>
           </Button>
         </Tip>
       : <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" size="xs" variant="ghost" disabled={busy} className="h-6 gap-1 px-1.5 text-[11px]">{icon}Open with<ChevronDown size={11}/></Button>
+            <Button
+              type="button"
+              disabled={busy}
+              variant="ghost"
+              size="xs"
+              className="gap-1"
+            >{icon}Open with<ChevronDown size={11}/></Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             {apps.map(choice => <DropdownMenuItem key={`${choice.app.id}:${choice.tool}`} onSelect={() => void open(choice)}>{choice.label}</DropdownMenuItem>)}
@@ -102,8 +115,18 @@ export function OpenWithApp({file, className}: {file: OpenWithFile; className?: 
       <span className="block">Allow {approval.app.label} to open {file.name}?</span>
       {approval.preview != null && <pre className="max-h-32 overflow-auto whitespace-pre-wrap text-[11px]">{JSON.stringify(approval.preview, null, 2)}</pre>}
       <span className="flex gap-2">
-        <Button type="button" size="xs" onClick={() => approval.answer(true)}>Allow once</Button>
-        <Button type="button" size="xs" variant="ghost" onClick={() => approval.answer(false)}>Decline</Button>
+        <Button
+          type="button"
+          onClick={() => approval.answer(true)}
+          variant="primary"
+          size="md"
+        >Allow once</Button>
+        <Button
+          type="button"
+          onClick={() => approval.answer(false)}
+          variant="ghost"
+          size="xs"
+        >Decline</Button>
       </span>
     </span>}
   </span>;

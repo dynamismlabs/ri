@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -152,25 +154,27 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
             <span className="text-sm font-semibold text-foreground">Changes to this {noun}</span>
             {groups.length > 1 && (
               <div className="ml-2 flex items-center gap-1 text-[11px] text-muted-foreground">
-                <button data-slot="action-button" data-variant="ghost"
+                <IconButton
                   onClick={() => setGroupIndex((i) => Math.min(i + 1, groups.length - 1))}
                   disabled={idx >= groups.length - 1}
-                  className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
-                  aria-label="Older change"
+                  label="Older change"
+                  variant="ghost"
+                  size="xs"
                 >
                   <ChevronLeft size={13} />
-                </button>
+                </IconButton>
                 <span className="tabular-nums">
                   {idx + 1} / {groups.length}
                 </span>
-                <button data-slot="action-button" data-variant="ghost"
+                <IconButton
                   onClick={() => setGroupIndex((i) => Math.max(i - 1, 0))}
                   disabled={idx <= 0}
-                  className="rounded p-0.5 hover:bg-accent disabled:opacity-30"
-                  aria-label="Newer change"
+                  label="Newer change"
+                  variant="ghost"
+                  size="xs"
                 >
                   <ChevronRight size={13} />
-                </button>
+                </IconButton>
               </div>
             )}
             <div className="ml-auto flex items-center gap-1.5">
@@ -189,13 +193,14 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                   </button>
                 ))}
               </div>
-              <button data-slot="action-button" data-variant="ghost"
+              <IconButton
                 onClick={onClose}
-                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
-                aria-label="Close"
+                label="Close"
+                variant="ghost"
+                size="xs"
               >
                 <X size={15} />
-              </button>
+              </IconButton>
             </div>
           </div>
 
@@ -231,14 +236,16 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
                 {formatWhen(group.after.createdAt)}
               </div>
               <Tip label={canUndo ? 'Restore the version from before this change' : 'Nothing earlier to restore'}>
-                <button data-slot="action-button" data-variant="primary"
+                <Button
                   onClick={async () => { if (group.before && (!confirmRevert || await confirmRevert())) revert.mutate(group.before.id); }}
                   disabled={!canUndo || revert.isPending}
-                  className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  variant="primary"
+                  size="xs"
+                  className="ml-auto inline-flex items-center gap-1.5"
                 >
                   {revert.isPending ? <Loader2 size={13} className="animate-spin" /> : <Undo2 size={13} />}
                   Undo this change
-                </button>
+                </Button>
               </Tip>
             </div>
           )}

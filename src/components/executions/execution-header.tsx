@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useWorkNavigation } from '@/contexts/work-context';
 import type { WorkspaceRecord } from '@/db/types';
@@ -202,11 +204,17 @@ export function ExecutionHeader({
   const menu = (align: 'start' | 'end', triggerClass: string, iconSize: number) => (
     <PopoverPrimitive.Root>
       <PopoverPrimitive.Trigger asChild>
-        <Tip label="Chat menu">
-          <button type="button" aria-label="Chat menu" className={triggerClass}>
+
+          <IconButton
+            type="button"
+            label="Chat menu"
+            tooltip="Chat menu"
+            variant="ghost"
+            size={iconSize === 16 ? "touch" : "sm"}
+          >
             <MoreHorizontal size={iconSize} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
@@ -305,13 +313,15 @@ export function ExecutionHeader({
     <div className="flex-shrink-0 border-b border-border bg-background">
       {/* ─── Phone header (under lg) ────────────────────────── */}
       <div className="lg:hidden flex items-center gap-1 px-2 py-2">
-        <button
+        <IconButton
           onClick={onClose}
-          aria-label="Back"
-          className="p-2 -ml-1 rounded-md text-muted-foreground active:bg-muted/40"
+          label="Back"
+          variant="secondary"
+          size="touch"
+          className="-ml-1"
         >
           <ChevronLeft size={20} />
-        </button>
+        </IconButton>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 min-w-0">
@@ -341,17 +351,19 @@ export function ExecutionHeader({
           </div>
         </div>
 
-        <ScheduleChatButton sessionId={session.id} compact className="p-2" />
-        {session.executionId && <ExecutionResultsShortcut executionId={session.executionId} />}
+        <ScheduleChatButton sessionId={session.id} compact size="touch" />
+        {session.executionId && <ExecutionResultsShortcut size="touch" executionId={session.executionId} />}
         {onOpenTools && (
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={onOpenTools}
-            className="relative flex h-9 flex-shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 text-[13px] font-medium text-foreground/90 active:bg-muted/50"
+            variant="secondary"
+            size="touch"
+            className="relative flex flex-shrink-0 items-center gap-1.5"
           >
             Tools
             {toolsBadgeClass && <span aria-hidden className={cn('h-1.5 w-1.5 rounded-full', toolsBadgeClass)} />}
-          </button>
+          </Button>
         )}
         {menu('end', 'p-2 rounded-md text-muted-foreground active:bg-muted/40', 16)}
       </div>
@@ -363,14 +375,16 @@ export function ExecutionHeader({
               the workbench to the oversight surface. */}
           {workspace ? (
             <Tip label={workspace.name} onlyWhenTextHidden>
-              <button
+              <Button
                 type="button"
                 onClick={() => openAgent(workspace.id)}
-                className="flex items-center gap-1.5 min-w-0 flex-shrink-0 rounded px-0.5 -mx-0.5 hover:text-foreground hover:bg-muted/50 transition-colors"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1.5 min-w-0 flex-shrink-0 -mx-0.5"
               >
                 {workspace.emoji && <span className="flex-shrink-0">{workspace.emoji}</span>}
                 <span className="font-medium truncate max-w-[14rem] @max-[1120px]/exec:hidden">{workspace.name}</span>
-              </button>
+              </Button>
             </Tip>
           ) : (
             <span className="font-medium truncate">Agent</span>
@@ -722,14 +736,15 @@ function LinkPrSection({ session }: LinkPrSectionProps) {
               <span className="font-mono">#{linkedNumber}</span>
             )}
           </span>
-          <button
+          <Button
             type="button"
             onClick={handleUnlink}
             disabled={update.isPending}
-            className="text-[11px] text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+            variant="ghost"
+            size="sm"
           >
             Unlink
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="flex items-center gap-1.5">
@@ -746,14 +761,15 @@ function LinkPrSection({ session }: LinkPrSectionProps) {
             placeholder="PR number or URL"
             className="flex-1 min-w-0 px-2 py-1 text-[12px] bg-background border border-border rounded focus:outline-none focus:ring-1 focus:ring-primary"
           />
-          <button
+          <Button
             type="button"
             onClick={handleLink}
             disabled={!input.trim() || update.isPending}
-            className="px-2 py-1 text-[11px] font-medium bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            variant="secondary"
+            size="sm"
           >
             Link
-          </button>
+          </Button>
         </div>
       )}
       {error && (

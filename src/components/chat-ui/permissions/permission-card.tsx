@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { ShieldCheck, Wrench, Loader2 } from 'lucide-react';
 import { useResolvePendingInput } from '@/hooks/use-execution';
@@ -68,23 +69,28 @@ export function PermissionCard({
       )}
 
       <div className="flex items-center gap-2 px-4 py-2.5 border-t border-border bg-muted/20">
-        <button data-slot="action-button" data-tone="status"
+        <Button
           type="button"
           disabled={resolve.isPending}
           onClick={() => (showDenyInput ? deny() : setShowDenyInput(true))}
-          className="flex-1 px-3 py-1.5 rounded-md text-[11.5px] font-medium text-destructive border border-destructive/40 hover:bg-destructive/10 transition-colors disabled:opacity-50"
+          variant="secondary"
+          size="xs"
+          tone="danger"
+          className="flex-1"
         >
           {resolve.isPending && !showDenyInput
             ? 'Denying…'
             : showDenyInput
               ? denyReason.trim() ? 'Send deny' : 'Deny'
               : 'Deny'}
-        </button>
-        <button data-slot="action-button" data-variant="primary"
+        </Button>
+        <Button
           type="button"
           disabled={resolve.isPending}
           onClick={allow}
-          className="flex-1 px-3 py-1.5 rounded-md text-[11.5px] font-medium bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50"
+          variant="primary"
+          size="xs"
+          className="flex-1"
         >
           {resolve.isPending && !showDenyInput ? (
             <span className="inline-flex items-center gap-1.5">
@@ -93,7 +99,7 @@ export function PermissionCard({
           ) : (
             'Allow'
           )}
-        </button>
+        </Button>
       </div>
     </div>
   );

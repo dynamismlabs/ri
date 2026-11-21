@@ -1,3 +1,4 @@
+import { Button } from '@/components/system/button';
 /** Bundled independently for the opaque gallery iframe. Never imported by the app shell. */
 import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -155,12 +156,26 @@ function SharedConversation() {
         <ChatInputEditor ref={editor} ariaLabel="Example shared message" placeholder="Write an example message" disabled={off} attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
         <div className="flex items-center gap-2 px-1.5 pb-1.5">
           <Popover open={modelMenuOpen} onOpenChange={setModelMenuOpen}>
-            <PopoverTrigger asChild><Tip label="Choose an example model"><button data-slot="action-button" type="button" disabled={off} aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs disabled:opacity-50"><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></button></Tip></PopoverTrigger>
+            <PopoverTrigger asChild><Tip label="Choose an example model"><Button
+              type="button"
+              disabled={off}
+              aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`}
+              variant="secondary"
+              size="xs"
+              className="inline-flex items-center gap-1.5"
+            ><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></Button></Tip></PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="start"><ModelMenuContent disabled={off}>
               <ModelMenuProvider harness="claude" models={models} additionalModels={[]} selectedModel={model} disabled={off} onSelect={option => { setModel(option.id); setModelMenuOpen(false); }} />
             </ModelMenuContent></PopoverContent>
           </Popover>
-          <button data-slot="action-button" data-variant="primary" type="button" className="ml-auto rounded bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50" onClick={send} disabled={off || !hasContent}>Send example</button>
+          <Button
+            type="button"
+            onClick={send}
+            disabled={off || !hasContent}
+            variant="primary"
+            size="xs"
+            className="ml-auto"
+          >Send example</Button>
         </div>
       </ChatComposer>
     </div>
@@ -277,7 +292,13 @@ function CoordinationComposer() {
   return <ChatComposer hint="⇧⇥ to cycle modes">
     <CoordinationControls sessionId={CHAT_ID} />
     <ChatInputEditor ref={editor} ariaLabel="Example message" placeholder="Message your agent" attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
-    <div className="flex justify-end px-2 pb-2"><button data-slot="action-button" data-variant="primary" type="button" onClick={send} disabled={!hasContent} className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50">Send example</button></div>
+    <div className="flex justify-end px-2 pb-2"><Button
+      type="button"
+      onClick={send}
+      disabled={!hasContent}
+      variant="primary"
+      size="xs"
+    >Send example</Button></div>
   </ChatComposer>;
 }
 

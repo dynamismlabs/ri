@@ -1,4 +1,6 @@
 'use client';
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { openLauncher } from '@/components/workspaces/launcher/launcher-store';
@@ -116,12 +118,21 @@ export function StartWithAgentButton({
             ))}
           </div>
           <div className="mt-4 flex justify-between">
-            <button data-slot="action-button" onClick={() => { setChooser(null); launchNew(); }} className="rounded px-3 py-1.5 text-xs font-medium text-violet-600 hover:bg-violet-500/10 dark:text-violet-400">
+            <Button
+              onClick={() => { setChooser(null); launchNew(); }}
+              variant="secondary"
+              size="sm"
+              tone="mode-edits"
+            >
               Start another execution
-            </button>
-            <button data-slot="action-button" onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            </Button>
+            <Button
+              onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }}
+              variant="secondary"
+              size="sm"
+            >
               Cancel
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -131,16 +142,20 @@ export function StartWithAgentButton({
   if (variant === 'icon') {
     return (
       <>
-        <Tip label={label}>
-          <button
-            aria-label={label}
+
+          <IconButton
             onClick={onClick}
             disabled={busy}
-            className={cn('flex h-7 w-7 items-center justify-center rounded text-violet-600 hover:bg-violet-500/10 disabled:opacity-60 dark:text-violet-400', className)}
+            label={label}
+            tooltip={label}
+            variant="ghost"
+            size="sm"
+            tone="mode-edits"
+            className={cn("flex items-center justify-center", className)}
           >
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
-          </button>
-        </Tip>
+          </IconButton>
+
         {chooserDialog}
       </>
     );
@@ -165,20 +180,18 @@ export function StartWithAgentButton({
   return (
     <>
       <Tip label={label} onlyWhenTextHidden>
-        <button
+        <Button
           onClick={onClick}
           disabled={busy}
           aria-label={label}
-          data-slot="header-action"
-          data-tone="agent"
-          className={cn(
-            'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-violet-500/30 bg-violet-500/5 px-2 py-1 text-[11px] font-medium text-violet-600 transition-colors hover:bg-violet-500/10 disabled:opacity-60 dark:text-violet-400',
-            className,
-          )}
+          variant="secondary"
+          size="sm"
+          tone="mode-edits"
+          className={cn("inline-flex shrink-0 items-center gap-1.5", className)}
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <Bot size={13} />}
           <span className={ENTITY_HEADER_LABEL}>{label}</span>
-        </button>
+        </Button>
       </Tip>
       {chooserDialog}
     </>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import { ModelList } from '@/components/settings/model-list';
 import { useHarnessModels } from '@/hooks/use-harness-models';
@@ -139,10 +139,21 @@ export function DefaultSelectionEditor({
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
         <span className="min-w-0 text-[10.5px] text-muted-foreground">{note}</span>
         <div className="flex shrink-0 items-center gap-1.5">
-          <Button type="button" size="sm" variant="ghost" onClick={onClose}>
+          <Button
+            type="button"
+            onClick={onClose}
+            variant="ghost"
+            size="xs"
+          >
             Cancel
           </Button>
-          <Button type="button" size="sm" disabled={!changed || saving} onClick={() => void save()}>
+          <Button
+            type="button"
+            disabled={!changed || saving}
+            onClick={() => void save()}
+            variant="primary"
+            size="md"
+          >
             {saving && <Loader2 className="animate-spin" />}
             Save
           </Button>

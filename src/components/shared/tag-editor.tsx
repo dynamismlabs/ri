@@ -1,9 +1,10 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
 import { useState, useRef } from 'react';
 import { X, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
+
 
 interface TagEditorProps {
   tags: string[];
@@ -35,12 +36,15 @@ export function TagEditor({ tags, onChange, className }: TagEditorProps) {
           className="group/tag inline-flex items-center gap-0.5 text-[8px] font-bold text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded hover:bg-primary/10 transition-colors"
         >
           {tag}
-          <button
+          <IconButton
             onClick={(e) => { e.stopPropagation(); handleRemove(tag); }}
-            className="opacity-0 group-hover/tag:opacity-100 text-primary/40 hover:text-destructive transition-opacity"
+            label={`Remove tag ${tag}`}
+            reveal="tag"
+            variant="ghost"
+            size="xs"
           >
             <X size={7} />
-          </button>
+          </IconButton>
         </span>
       ))}
       {adding ? (
@@ -58,15 +62,18 @@ export function TagEditor({ tags, onChange, className }: TagEditorProps) {
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <Tip label="Add tag">
-          <button
+
+          <IconButton
             onClick={(e) => { e.stopPropagation(); setAdding(true); }}
-            className="inline-flex items-center text-[8px] text-muted-foreground/40 hover:text-muted-foreground px-0.5 py-0.5 rounded hover:bg-muted transition-colors"
-            aria-label="Add tag"
+            label="Add tag"
+            tooltip="Add tag"
+            variant="secondary"
+            size="xs"
+            className="inline-flex items-center"
           >
             <Plus size={8} />
-          </button>
-        </Tip>
+          </IconButton>
+
       )}
     </div>
   );

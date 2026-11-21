@@ -3,6 +3,7 @@
 @import 'shadcn/tailwind.css';
 @import '../styles/theme.css';
 @import '../styles/edge.css';
+@import '../components/system/button.css';
 
 @source "../../node_modules/streamdown/dist/*.js";
 

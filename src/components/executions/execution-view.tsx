@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useSearchParams } from 'next/navigation';
 import { LinkedChatView } from '@/components/chat-ui/messages/linked-chat-view';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -353,12 +354,14 @@ function ExecutionWorkbenchView({ sessionId }: ExecutionViewProps) {
           <p className="text-[11px] text-muted-foreground/80 mt-1">
             It may have been archived or deleted.
           </p>
-          <button
+          <Button
             onClick={handleClose}
-            className="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10 transition-colors"
+            variant="ghost"
+            size="sm"
+            className="mt-3 inline-flex items-center gap-1"
           >
             ← Back
-          </button>
+          </Button>
         </div>
       </div>
     );

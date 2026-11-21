@@ -1,8 +1,9 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { ArrowRight, ArrowLeft, Zap, Calendar, Target, History } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { matchesSendKey } from '@/constants/commands';
 import { useTouchFirst } from '@/hooks/use-touch-first';
 import type { ContextChip } from '@/types/dashboard';
@@ -88,36 +89,36 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
       {/* Quick-tap chips */}
       <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
         {chips.map((chip) => (
-          <button data-slot="action-button" aria-pressed={chip.selected}
+          <Button
+            aria-pressed={chip.selected}
             key={chip.id}
             onClick={() => toggleChip(chip.id)}
-            className={cn(
-              'px-2.5 py-1 rounded-md text-[10px] font-medium transition-all border',
-              chip.selected
-                ? 'bg-primary/10 border-primary/30 text-primary'
-                : 'bg-card border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground'
-            )}
+            variant="secondary"
+            size="xs"
           >
             {CHIP_ICONS[chip.id]}
             {chip.label}
-          </button>
+          </Button>
         ))}
       </div>
 
       {/* Actions */}
       <div className="flex items-center justify-between mt-3">
-        <button
+        <Button
           onClick={onSkip}
-          className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+          variant="ghost"
+          size="xs"
         >
           Skip, just show me the plan
-        </button>
-        <button data-slot="action-button" data-variant="primary"
+        </Button>
+        <Button
           onClick={handleSubmit}
-          className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all"
+          variant="primary"
+          size="xs"
+          className="flex items-center gap-1.5"
         >
           Continue <ArrowRight size={10} />
-        </button>
+        </Button>
       </div>
     </div>
   );

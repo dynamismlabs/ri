@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ExternalLink, Globe, Loader2, MessageSquare } from 'lucide-react';
 import { MessageFileChip } from '@/components/chat-ui/artifacts/message-file-chip';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { workResultsApi, type WorkResultFeedbackContext } from '@/lib/api/results';
 import { apiErrorText } from '@/lib/api/client';
 import { pickReachability, resolvePreviewSrc } from '@/lib/preview/resolve-iframe-src';
@@ -22,9 +22,14 @@ export function ResultArtifacts({ result, onFeedback }: { result: WorkResultReco
             <div key={attachment.fileName} className="min-w-0 max-w-full">
               <MessageFileChip attachment={attachment} />
               {onFeedback && (
-                <button className="block px-1 text-[10.5px] text-muted-foreground hover:text-foreground" onClick={() => onFeedback({ attachmentFileName: attachment.fileName })}>
+                <Button
+                  onClick={() => onFeedback({ attachmentFileName: attachment.fileName })}
+                  variant="ghost"
+                  size="xs"
+                  className="block"
+                >
                   Discuss this file
-                </button>
+                </Button>
               )}
             </div>
           ))}
@@ -35,9 +40,12 @@ export function ResultArtifacts({ result, onFeedback }: { result: WorkResultReco
           <ResultPreview key={`${link.previewTargetId}-${index}`} resultId={result.id} targetId={link.previewTargetId} label={link.label} onFeedback={onFeedback} />
         ) : (
           resultLinkUrl(link.url) ? (
-            <a data-slot="action-button" key={`${link.url}-${index}`} href={resultLinkUrl(link.url)!} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs hover:bg-muted">
+            <Button asChild variant="secondary" size="xs" className="inline-flex items-center gap-1.5"><a key={`${link.url}-${index}`}
+              href={resultLinkUrl(link.url)!}
+              target="_blank"
+              rel="noopener noreferrer">
               <ExternalLink size={12} />{link.label}
-            </a>
+            </a></Button>
           ) : <span key={index} className="text-xs text-muted-foreground">{link.label}: unavailable link</span>
         ))}
       </div>
@@ -64,11 +72,22 @@ function ResultPreview({ resultId, targetId, label, onFeedback }: { resultId: st
   return (
     <div id={`preview-${targetId}`} className="w-full rounded-lg border text-xs">
       <div className="flex flex-wrap items-center gap-2 px-3 py-2">
-        <button className="flex items-center gap-1.5 font-medium" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+        <Button
+          onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          variant="ghost"
+          size="xs"
+          className="flex items-center gap-1.5"
+        >
           <Globe size={13} />{label}
-        </button>
+        </Button>
         {expanded && <span className="text-muted-foreground">{current?.serverStatus ?? (state.isLoading ? 'Loading' : 'Unavailable')}</span>}
-        {onFeedback && <button className="ml-auto flex items-center gap-1 text-muted-foreground hover:text-foreground" onClick={() => onFeedback({ previewTargetId: targetId })}><MessageSquare size={11} />Discuss preview</button>}
+        {onFeedback && <Button
+          onClick={() => onFeedback({ previewTargetId: targetId })}
+          variant="ghost"
+          size="xs"
+          className="ml-auto flex items-center gap-1"
+        ><MessageSquare size={11} />Discuss preview</Button>}
       </div>
       {expanded && (
         <div className="space-y-2 border-t p-3">
@@ -82,7 +101,12 @@ function ResultPreview({ resultId, targetId, label, onFeedback }: { resultId: st
               <iframe sandbox="allow-scripts allow-forms allow-popups allow-downloads" src={preview.url} title={label} className="h-80 w-full rounded border bg-white" />
             </>
           ) : !state.error && (
-            <Button size="xs" variant="outline" onClick={() => open.mutate()} disabled={open.isPending || current?.serverStatus === 'starting' || current?.setupStatus === 'running'}>
+            <Button
+              onClick={() => open.mutate()}
+              disabled={open.isPending || current?.serverStatus === 'starting' || current?.setupStatus === 'running'}
+              variant="secondary"
+              size="xs"
+            >
               {open.isPending && <Loader2 className="animate-spin" />}
               {current?.serverStatus === 'running' ? 'Open on this device' : current?.serverStatus === 'starting' ? 'Starting preview' : 'Start preview'}
             </Button>

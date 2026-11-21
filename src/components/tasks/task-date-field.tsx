@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { Calendar } from '@/components/ui/calendar';
@@ -120,13 +122,14 @@ function DatePanel({ label, value, onChange, onClose }: {
           className="p-0"
         />
         {saved && (
-          <button
+          <Button
             type="button"
             onClick={() => finish(null)}
-            className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             Clear date
-          </button>
+          </Button>
         )}
       </div>
     </PopoverContent>
@@ -140,20 +143,18 @@ export function TaskDateField({ label, value, onChange, highlightOverdue = false
   const shown = formatLocalDate(value, FULL_DATE);
   return (
     <TaskDatePicker label={label} value={value} onChange={onChange}>
-      <button
+      <ChipButton
         type="button"
         aria-label={`${label}: ${shown ?? emptyLabel?.toLowerCase() ?? 'not set'}`}
-        data-slot="chip-button"
-        data-urgency={highlightOverdue && isPastDate(value) ? 'late' : undefined}
-        className={cn(
-          'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
-          !shown && 'text-muted-foreground',
-          highlightOverdue && isPastDate(value) && 'border-red-500/50 text-red-500',
-        )}
+        variant="secondary"
+        size="compact"
+        tone="status"
+        status={highlightOverdue && isPastDate(value) ? "danger" : "neutral"}
+        className="inline-flex w-fit items-center gap-1.5"
       >
         <CalendarIcon size={12} />
         {shown ?? emptyLabel ?? 'Set date'}
-      </button>
+      </ChipButton>
     </TaskDatePicker>
   );
 }

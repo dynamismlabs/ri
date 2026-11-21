@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { AlertCircle, Loader2, RotateCw } from 'lucide-react';
 
 /**
@@ -51,24 +52,28 @@ export function SetupRecovery({
           )}
           {isConfigure ? (
             onOpenSettings && (
-              <button data-slot="action-button" data-variant="primary"
+              <Button
                 type="button"
                 onClick={onOpenSettings}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90"
+                variant="primary"
+                size="md"
+                className="inline-flex items-center gap-1.5"
               >
                 Set a setup command
-              </button>
+              </Button>
             )
           ) : (
-            <button data-slot="action-button" data-variant="primary"
+            <Button
               type="button"
               onClick={onRetry}
               disabled={isRetrying}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90 disabled:opacity-50"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {isRetrying ? <Loader2 size={12} className="animate-spin" /> : <RotateCw size={12} />}
               Re-run setup
-            </button>
+            </Button>
           )}
         </div>
       </div>

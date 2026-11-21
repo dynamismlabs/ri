@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import { useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import { Inbox, Activity, History, Check, ListChecks } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -122,14 +124,16 @@ export function DeckToday({
         {changeLine && <span className="truncate text-[10px] text-muted-foreground/70">{changeLine}</span>}
         <div className="ml-1 h-px min-w-4 flex-1 bg-border" />
         {hasHistory && (
-          <button
+          <Button
             type="button"
             onClick={() => setVersionsOpen((o) => !o)}
-            className="inline-flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground/70 transition-colors hover:text-foreground"
+            variant="ghost"
+            size="xs"
+            className="inline-flex shrink-0 items-center gap-1"
           >
             <History className="h-2.5 w-2.5" />
             {versionsOpen ? 'Hide versions' : 'Versions'}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -248,21 +252,17 @@ function StatusChip({
   ...rest
 }: ComponentProps<'button'> & { icon: ReactNode; active?: boolean }) {
   return (
-    <button
+    <ChipButton
       type="button"
       {...rest}
-      data-slot="chip-button"
       data-on={active || undefined}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors',
-        active
-          ? 'border-border bg-muted text-foreground'
-          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground',
-        className,
-      )}
+      variant="secondary"
+      size="compact"
+      pressed={active}
+      className={cn("inline-flex items-center gap-1.5", className)}
     >
       <span className="shrink-0 text-muted-foreground">{icon}</span>
       <span>{children}</span>
-    </button>
+    </ChipButton>
   );
 }

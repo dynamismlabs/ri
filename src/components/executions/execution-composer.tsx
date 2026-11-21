@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { ChipButton } from '@/components/system/chip-button';
 import { useHomeStorageScope } from '@/components/home/home-context';
 
 import {
@@ -818,6 +820,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   {leadingActions}
 
                   <ModePicker
+                    size={touchFirst ? "touch" : "compact"}
                     open={modeMenuOpen}
                     onOpenChange={setModeMenuOpen}
                     current={permissionMode}
@@ -831,6 +834,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
 
                   {/* Model, effort and variant share one searchable menu. */}
                   <ComposerProviderMenu
+                    size={touchFirst ? "touch" : "compact"}
                     open={modelMenuOpen}
                     onOpenChange={setModelMenuOpen}
                     currentProvider={providerId ?? DEFAULT_HARNESS}
@@ -869,41 +873,34 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
               )}
 
               {showVoiceButton && (voice.isRecording || voice.isTranscribing) && (
-                <Tip label={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording (discard)'}>
-                  <button
+
+                  <IconButton
                     type="button"
                     onClick={voice.cancelRecording}
-                    className={cn(
-                      'w-7 h-7 rounded-md flex items-center justify-center transition-colors',
-                      'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                    )}
-                    aria-label={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording'}
+                    label={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording'}
+                    tooltip={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording (discard)'}
+                    variant="secondary"
+                    size={touchFirst ? "touch" : "sm"}
+                    className="flex items-center justify-center"
                   >
                     <X size={13} />
-                  </button>
-                </Tip>
+                  </IconButton>
+
               )}
 
               {showVoiceButton && (
-                <Tip
-                  label={
-                    voice.isRecording
-                      ? 'Stop recording (transcribe)'
-                      : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`
-                  }
-                >
-                  <button
+
+                  <IconButton
                     type="button"
                     onClick={voice.toggleRecording}
                     disabled={voice.isTranscribing || disabled}
-                    className={cn(
-                      'w-7 h-7 rounded-md flex items-center justify-center transition-colors',
-                      voice.isRecording
-                        ? 'text-destructive bg-destructive/10 hover:bg-destructive/20'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                      'disabled:opacity-40 disabled:cursor-not-allowed',
-                    )}
-                    aria-label={voice.isRecording ? 'Stop recording' : 'Voice input'}
+                    label={voice.isRecording ? 'Stop recording' : 'Voice input'}
+                    tooltip={voice.isRecording
+                      ? 'Stop recording (transcribe)'
+                      : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
+                    variant={voice.isRecording ? "destructive" : "ghost"}
+                    size={touchFirst ? "touch" : "sm"}
+                    tone="danger"
                   >
                     {voice.isTranscribing ? (
                       <Loader2 size={13} className="animate-spin" />
@@ -912,62 +909,51 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                     ) : (
                       <Mic size={13} />
                     )}
-                  </button>
-                </Tip>
+                  </IconButton>
+
               )}
 
               {/* Send hides while recording — nothing to send until
                 transcription completes. Stop owns the slot during a
                 turn-in-flight via showStopButton (unchanged). */}
               {showStopButton ? (
-                <Tip label="Stop agent">
-                  <button
+
+                  <IconButton
                     type="button"
                     onClick={handleStop}
-                    data-slot="icon-button"
                     disabled={stopping}
-                    className={cn(
-                      'w-7 h-7 rounded-md flex items-center justify-center transition-colors',
-                      'border border-border bg-background text-muted-foreground',
-                      'hover:text-foreground hover:bg-muted/40 active:scale-95',
-                      'disabled:opacity-60 disabled:cursor-not-allowed',
-                    )}
-                    aria-label="Stop agent"
+                    label="Stop agent"
+                    tooltip="Stop agent"
+                    variant="secondary"
+                    size={touchFirst ? "touch" : "sm"}
+                    className="flex items-center justify-center"
                   >
                     {stopping ? (
                       <Loader2 size={13} className="animate-spin" />
                     ) : (
                       <Square size={10} className="fill-current" />
                     )}
-                  </button>
-                </Tip>
+                  </IconButton>
+
               ) : !voice.isRecording ? (
-                <Tip
-                  label={hasPendingUploads ? 'Waiting for upload to finish…' : 'Send'}
-                  shortcut={
-                    hasPendingUploads
-                      ? undefined
-                      : touchFirst
-                        ? HOTKEYS.sendMessageAnywhere.label
-                        : HOTKEYS.sendMessage.label
-                  }
-                >
-                  <button
+
+                  <IconButton
                     type="button"
                     onClick={() => handleSend()}
                     disabled={!canSend}
-                    className={cn(
-                      'w-7 h-7 rounded-md flex items-center justify-center transition-colors',
-                      canSend
-                        ? 'bg-primary text-primary-foreground hover:opacity-90 active:scale-95'
-                        : 'bg-muted text-muted-foreground/40 cursor-not-allowed',
-                    )}
-                    data-slot="send-button"
-                    aria-label="Send message"
+                    label="Send message"
+                    tooltip={hasPendingUploads ? 'Waiting for upload to finish…' : 'Send'}
+                    shortcut={hasPendingUploads
+                      ? undefined
+                      : touchFirst
+                        ? HOTKEYS.sendMessageAnywhere.label
+                        : HOTKEYS.sendMessage.label}
+                    variant="primary"
+                    size={touchFirst ? "touch" : "sm"}
                   >
                     {sending ? <Loader2 size={13} className="animate-spin" /> : <ArrowUp size={13} />}
-                  </button>
-                </Tip>
+                  </IconButton>
+
               ) : null}
             </div>
         </ChatComposer>
@@ -979,6 +965,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
 // ─── ModePicker ───────────────────────────────────────────────
 
 interface ModePickerProps {
+  size?: "compact" | "touch";
   harness: ProviderId | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -988,7 +975,7 @@ interface ModePickerProps {
   disabled?: boolean;
 }
 
-function ModePicker({ harness, open, onOpenChange, current, options, onSelect, disabled }: ModePickerProps) {
+function ModePicker({ size = "compact", harness, open, onOpenChange, current, options, onSelect, disabled }: ModePickerProps) {
   const descriptionFor = (mode: PermissionMode) => harness === 'antigravity' && mode === 'plan'
     ? 'Ask the CLI to plan before making changes. Uses its configured tool policies.'
     : PERMISSION_MODE_META[mode].description;
@@ -998,22 +985,17 @@ function ModePicker({ harness, open, onOpenChange, current, options, onSelect, d
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
         <Tip label={`${meta.title}: ${descriptionFor(current)}`}>
-          <button
+          <ChipButton
             type="button"
             disabled={disabled}
-            data-slot="chip-button"
-            data-mode={current}
-            className={cn(
-              'inline-flex items-center gap-1.5 text-[11px] font-medium rounded-md px-2 py-1 border transition-colors',
-              meta.classes.text,
-              meta.classes.border,
-              meta.classes.bg,
-              'hover:brightness-110 disabled:opacity-50',
-            )}
+            variant="secondary"
+            size={size}
+            tone="mode"
+            mode={current}
           >
             <Icon size={11} />
             <span>{meta.shortTitle}</span>
-          </button>
+          </ChipButton>
         </Tip>
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={6} className="w-72 p-1">

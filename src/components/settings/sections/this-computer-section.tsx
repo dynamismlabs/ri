@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
@@ -73,7 +73,12 @@ function HomeComputerSection() {
     </div>}
     {!desktop && !supervised && <p className="text-muted-foreground">To keep this Ri running after crashes and restarts, run <code>ri start</code> on this computer.</p>}
     {desktop && desktop.platform !== 'win32' && <div className="space-y-2">
-      <Button variant="outline" disabled={working} onClick={() => void act({ type: 'add-to-terminal' })}>Add <code className="mx-1">ri</code> to Terminal</Button>
+      <Button
+        disabled={working}
+        onClick={() => void act({ type: 'add-to-terminal' })}
+        variant="secondary"
+        size="sm"
+      >Add <code className="mx-1">ri</code> to Terminal</Button>
       <p className="text-xs text-muted-foreground">Installs the <code>ri</code> command and adds it to your shell&apos;s PATH if needed.</p>
     </div>}
     {told && <p role="status">{told}</p>}

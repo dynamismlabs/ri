@@ -1,7 +1,8 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { BriefcaseBusiness, House, PencilRuler, Search, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { COLLECTIONS, collectionItems, type ReviewItem } from './catalog';
@@ -16,7 +17,14 @@ export function SearchBox({ placeholder = 'Search a name or something you want t
   const review = useReview();
   return <form role="search" className={s.search} onSubmit={event => { event.preventDefault(); review.commitSearch(); }}><Search size={15} />
     <Input type="search" aria-label="Search additions" value={review.search} onChange={event => review.setSearch(event.target.value)} onBlur={review.commitSearch} placeholder={placeholder} />
-    {review.search && <Button className={s.searchClear} type="button" variant="ghost" size="icon-xs" aria-label="Clear search" onClick={review.clearSearch}><X size={12} /></Button>}
+    {review.search && <IconButton
+      type="button"
+      onClick={review.clearSearch}
+      label="Clear search"
+      variant="ghost"
+      size="xs"
+      className={s.searchClear}
+    ><X size={12} /></IconButton>}
   </form>;
 }
 export function Empty({ children = 'No matches. Try another name or a different filter.' }: { children?: React.ReactNode }) { return <div className={s.empty}>{children}</div>; }
