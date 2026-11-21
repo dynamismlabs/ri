@@ -245,7 +245,7 @@ export function ModelMenuLabel({
 }) {
   return (
     <>
-      <span className="max-w-40 truncate">{model}</span>
+      <span data-model-name className="min-w-0 max-w-40 truncate">{model}</span>
       {effort && <span className="text-muted-foreground/70">{effort}</span>}
       {variant && <span className="text-muted-foreground/70">{variant}</span>}
       {speed && speed !== 'default' && (

@@ -34,7 +34,7 @@ import { HarnessMark, ProviderIcon } from '@/components/settings/harness-connect
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { readProviderEffort } from '@/lib/executions/provider-effort';
 import { readProviderSpeed } from '@/lib/executions/provider-speed';
-import { serviceTierForModel, serviceTierOptions } from '@/lib/harness/service-tiers';
+import { serviceTierForModel, serviceTierOptions, serviceTierLabel } from '@/lib/harness/service-tiers';
 
 import { Tip } from '@/components/ui/tip';
 
@@ -180,14 +180,15 @@ export function ComposerProviderMenu({
         <Tip label="Choose a model and adjust its settings">
           <ChipButton
             type="button"
-            aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
+            data-composer-model
+            aria-label={`Model and settings: ${fallbackLabel}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}${serviceTier ? `, ${serviceTierLabel(serviceTier)}` : ''}`}
             disabled={disabled || switching}
             variant="secondary"
             size={size}
-            className="inline-flex items-center gap-1.5"
+            className="inline-flex min-w-0 shrink items-center gap-1.5"
           >
             <HarnessMark id={currentProvider} />
-            <ModelMenuLabel model={fallbackLabel} effort={effortLabel} variant={variantLabel} speed={serviceTier ?? undefined} />
+            <ModelMenuLabel model={fallbackLabel} effort={size === 'touch' ? undefined : effortLabel} variant={size === 'touch' ? undefined : variantLabel} speed={size === 'touch' ? undefined : serviceTier ?? undefined} />
           </ChipButton>
         </Tip>
       </PopoverTrigger>

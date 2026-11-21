@@ -1,6 +1,7 @@
 'use client';
 
 import { IconButton } from '@/components/system/icon-button';
+import { ComposerControls } from './composer-controls';
 import { ChipButton } from '@/components/system/chip-button';
 import { useHomeStorageScope } from '@/components/home/home-context';
 
@@ -798,7 +799,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
               (you can't change model mid-record meaningfully), so we
               hide them and surface auto-send labeled clearly so the
               user knows what hitting Stop will do. */}
-            <div className="flex items-center gap-1 px-1.5 pb-1.5 flex-wrap">
+            <ComposerControls touch={touchFirst}>{modeIconOnly => <>
               {voice.isRecording ? (
                 // Push everything to the right so the recording cluster
                 // (Auto-send + X + stop) reads as one unit. Auto-send sits
@@ -820,6 +821,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   {leadingActions}
 
                   <ModePicker
+                    iconOnly={modeIconOnly}
                     size={touchFirst ? "touch" : "compact"}
                     open={modeMenuOpen}
                     onOpenChange={setModeMenuOpen}
@@ -900,7 +902,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
                     variant={voice.isRecording ? "destructive" : "ghost"}
                     size={touchFirst ? "touch" : "sm"}
-                    tone="danger"
+                    tone={voice.isRecording ? "danger" : "neutral"}
                   >
                     {voice.isTranscribing ? (
                       <Loader2 size={13} className="animate-spin" />
@@ -955,7 +957,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   </IconButton>
 
               ) : null}
-            </div>
+            </>}</ComposerControls>
         </ChatComposer>
       </div>
     );
@@ -965,6 +967,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
 // ─── ModePicker ───────────────────────────────────────────────
 
 interface ModePickerProps {
+  iconOnly?: boolean;
   size?: "compact" | "touch";
   harness: ProviderId | null;
   open: boolean;
@@ -975,7 +978,7 @@ interface ModePickerProps {
   disabled?: boolean;
 }
 
-function ModePicker({ size = "compact", harness, open, onOpenChange, current, options, onSelect, disabled }: ModePickerProps) {
+function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, current, options, onSelect, disabled }: ModePickerProps) {
   const descriptionFor = (mode: PermissionMode) => harness === 'antigravity' && mode === 'plan'
     ? 'Ask the CLI to plan before making changes. Uses its configured tool policies.'
     : PERMISSION_MODE_META[mode].description;
@@ -992,9 +995,11 @@ function ModePicker({ size = "compact", harness, open, onOpenChange, current, op
             size={size}
             tone="mode"
             mode={current}
+            label={meta.shortTitle}
+            iconOnly={iconOnly}
+            data-composer-mode
           >
             <Icon size={11} />
-            <span>{meta.shortTitle}</span>
           </ChipButton>
         </Tip>
       </PopoverTrigger>

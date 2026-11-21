@@ -618,8 +618,8 @@ function RemoveBadge({ onClick, label }: { onClick: () => void; label: string })
       type="button"
       onClick={onClick}
       label={label}
-      variant="primary"
-      size="md"
+      variant="destructive"
+      size="xs"
       tone="danger"
       reveal
       className="absolute -top-1.5 -right-1.5 flex items-center justify-center"

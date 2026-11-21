@@ -7,7 +7,6 @@ import type { Editor } from '@tiptap/core';
 import { Layers3, Maximize2, NotebookPen, X } from 'lucide-react';
 import { EntitySheet } from '@/components/entities/entity-sheet';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { Tip } from '@/components/ui/tip';
 import { useHomeStorageScope, useOptionalHomeContext } from '@/components/home/home-context';
 import { composerTarget } from '@/components/chat/editor/composer-focus';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
@@ -298,18 +297,17 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
     <IconButton
       type="button"
       aria-pressed={open}
-      data-slot={variant === 'phone' ? 'icon-button' : undefined}
       onClick={() => (open ? closeScratchpad(wide) : openScratchpad(wide))}
       label="Scratchpad"
+      shortcut={variant === 'phone' ? undefined : HOTKEYS.scratchpad.label}
       variant="secondary"
-      size="sm"
+      size={variant === 'phone' ? "touch" : "sm"}
       className={cn("flex items-center justify-center", (variant === 'phone' ? "shrink-0" : ''))}
     >
       <NotebookPen size={variant === 'phone' ? 16 : 14} />
     </IconButton>
   );
-  if (variant === 'phone') return button;
-  return <Tip label="Scratchpad" shortcut={HOTKEYS.scratchpad.label}>{button}</Tip>;
+  return button;
 }
 
 /**

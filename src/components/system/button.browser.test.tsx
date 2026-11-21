@@ -35,7 +35,7 @@ beforeAll(async () => {
         useEffect(()=>{window.refButton=ref.current},[]);
         return <>
           <div id="sizes">{['xs','sm','md','touch'].map(size=><React.Fragment key={size}><Button data-size-case={size} size={size}>Save</Button><IconButton label={'Close '+size} size={size}><X/></IconButton></React.Fragment>)}</div>
-          <div id="chips"><ChipButton>Filter</ChipButton><ChipButton pressed>Selected filter</ChipButton><ChipButton disabled>Disabled filter</ChipButton><ChipButton size="touch">Phone filter</ChipButton><ChipButton tone="attention" pressed>Unread</ChipButton>{['success','working','danger','warning'].map(status=><ChipButton key={status} tone="status" status={status}>{status}</ChipButton>)}{['auto_all','auto_edits','ask','plan'].map(mode=><ChipButton key={mode} tone="mode" mode={mode}>{mode}</ChipButton>)}</div>
+          <ChipButton asChild disabled id="chip-fact"><span>0 waiting</span></ChipButton><div id="chips"><ChipButton>Filter</ChipButton><ChipButton pressed>Selected filter</ChipButton><ChipButton disabled>Disabled filter</ChipButton><ChipButton size="touch">Phone filter</ChipButton><ChipButton tone="attention" pressed>Unread</ChipButton>{['success','working','danger','warning'].map(status=><ChipButton key={status} tone="status" status={status}>{status}</ChipButton>)}{['auto_all','auto_edits','ask','plan'].map(mode=><ChipButton key={mode} tone="mode" mode={mode}>{mode}</ChipButton>)}</div>
           <Button ref={ref} id="ref-button" onClick={()=>setClicks(c=>c+1)}>Ref and event</Button>
           <Button id="disabled-link" asChild disabled><a href="#wrong" onClick={()=>setClicks(c=>c+1)}>Unavailable link</a></Button>
           <Button id="invalid" aria-invalid="true">Invalid</Button><output id="clicks">{clicks}</output>
@@ -148,6 +148,7 @@ for (const theme of ['light', 'dark']) {
         await chip.evaluate(el=>el.removeAttribute('id'));
       }
       expect(await page.getByRole('button',{name:'Selected filter'}).getAttribute('aria-pressed')).toBe('true');
+      expect(await page.locator('#chip-fact').getAttribute('aria-disabled')).toBe('true');
       const disabled=page.getByRole('button',{name:'Disabled filter'});
       await disabled.hover();expect(await disabled.evaluate(el=>getComputedStyle(el).opacity)).toBe('0.5');
     } finally { await page.close(); }

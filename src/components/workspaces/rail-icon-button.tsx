@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import type { ComponentProps, ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
 
 /**
  * An icon button in the collapsed strip (and the wide rail's collapse
@@ -36,10 +35,11 @@ export function RailIconButton({
   badge?: ReactNode;
 }) {
   return (
-    <Tip label={hideTip ? undefined : label} shortcut={shortcut}>
-      <Button
+      <IconButton
         type="button"
-        aria-label={ariaLabel ?? label}
+        label={ariaLabel ?? label}
+        tooltip={hideTip ? false : label}
+        shortcut={shortcut}
         aria-current={active ? 'page' : undefined}
         {...props}
         variant="secondary"
@@ -49,7 +49,6 @@ export function RailIconButton({
       >
         {mark ?? (Icon && <Icon size={14} />)}
         {badge}
-      </Button>
-    </Tip>
+      </IconButton>
   );
 }

@@ -68,7 +68,7 @@ design, and each stage stops for review before the next one starts.
   being migrated. Its unconditional `html:root` anchor preserves selector
   specificity against CSS modules. It has no look switch or look scoping. These
   rules stay unlayered so they keep beating the old Tailwind drawing utilities.
-  Each migration stage deletes the rules and hooks its components replace.
+  Each migration stage deletes the rules and hooks its components replace. Stage 1 retires the chip, toolbar, header, review-action, HUD tools, Send, New agent and split-button drawing hooks. A few action-button hooks remain on later-stage radio choices, calendar event groups and the pairing details summary.
 - Labels are written in sentence case. The compatibility stylesheet neutralizes
   old `uppercase` utilities and cmdk descendant variants until they are removed.
 
@@ -85,9 +85,8 @@ screen matrix must remain visually unchanged during the token move.
 ## Components
 
 Product components live in `src/components/system/`, built on installed shadcn
-and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens.
-The APIs below are the migration contracts, not a claim that those components
-have shipped already. Missing installed primitives are added through the shadcn
+and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens. Stage 1 implements the Button family.
+The other APIs below are the remaining migration contracts. Missing installed primitives are added through the shadcn
 CLI, with its files and dependency changes checked afterward.
 
 Each component owns shape, size, typography, fill, border, shadow, hover,
@@ -100,9 +99,10 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 
 | API | Named inputs and state | Drawing and accessibility it owns | Stage |
 | --- | --- | --- | --- |
-| `Button` | primary, secondary, ghost, destructive, link. xs, sm, md, touch and icon sizes | Capsule in every state, including Send when disabled. Based on the installed Button | 1 |
-| `IconButton` | Required `label`, tone, pressed state, size | Button with an accessible name and `Tip`. Focus outline included | 1 |
-| `ChipButton` | neutral, attention, status or mode tone. Pressed state. Compact or touch | Toolbar, filter, status and header/action capsules | 1 |
+| `Button` | primary, secondary, ghost, destructive, link. xs, sm, md, touch. `icon`, `pressed`, semantic `tone`, `floating`, `focus`, `reveal`, `clip` | Capsule in every state, including Send when disabled. Based on the installed Button. Disabled links cannot activate their child handler | 1, implemented |
+| `IconButton` | Required string `label`, tone, pressed state, size. Optional fuller `tooltip`, `shortcut`, `tipSide`, `tipAlign` | Square Button with an accessible name and `Tip`. Uses the label for both by default. Focus outline included | 1, implemented |
+| `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. Pressed state. Compact or touch | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
+| `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
 | `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
 | `Field`, `TextArea`, `NativeSelect` | Label, value, help text, invalid and disabled state | Input adapters with 10px corners, consistent type and one focus treatment | 3 |
 | `Card` | Content and layout | Raised 14px content panel | 4 |
@@ -112,6 +112,61 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4 |
 | `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
 | `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
+
+### Button size and role
+
+Sizes are chosen by role, with no legacy density variants. These control type,
+height, square icon size and horizontal padding. All text uses weight 500.
+
+| Size | Height and square icon button | Text | Horizontal padding | Role |
+| --- | --- | --- | --- | --- |
+| xs | 24px | 12px | 8px | Inline and row actions, hover actions, actions inside chips and cards, dense metadata controls |
+| sm | 28px | 12.5px | 11px | Default for headers, toolbars, filters, the HUD, review bar and composer, including Send |
+| md | 32px | 13px | 13px | Page main action, dialog footer, empty-state action, onboarding and setup |
+| touch | 40px | 15px | 16px | A phone tier the caller already knows, or pointer-coarse controls. Desktop local pages use this for main buttons |
+
+Chip compact is 28px with 12px text, and touch is 40px with 15px text. Icon buttons
+use zero horizontal padding and match their size's height. Prose link actions
+inherit their surrounding type and line height. The next stage's compact
+segmented track is 28px with 24px options, and its touch track is 40px with 36px
+options.
+
+Normalizing control dimensions, type and padding is an intentional stage 1
+visual change. Placement and layout stay. A new wrap or clipped control is a
+regression, including in a 340px pane, at 900px desktop width and on the phone.
+
+Primary is reserved for the one main action in a view, such as Send, Create,
+Accept & complete or Start. Git toolbar actions, navigation and auxiliary preview
+or export actions use secondary or ghost. Selected filters and independent toggles
+use `pressed`, rather than changing to primary. Destructive actions have their own
+quiet danger variant.
+
+The Button family owns its cva classes and drawing in
+`src/components/system/button.css`. `Button` is the installed primitive's one
+implementation, re-exported by the system entry point. Refs, events, children and
+ARIA stay intact. `IconButton` takes its label from the caller's existing accessible
+name or tooltip. Missing names are reviewed by hand from the action, with sentence
+case copy. A tooltip that adds context goes in `tooltip`, and a shortcut goes in
+`shortcut`. It does not need a surrounding Tip.
+
+`clip` contains a preview or an overlay within the capsule. `focus="inside"`
+keeps its outline visible inside that clipping. `floating` gives an
+action an opaque floating surface. `reveal` owns hover-only actions, including
+keyboard focus, an open menu and devices without hover. The named nav, tag and
+fold groups preserve the existing reveal boundaries. Domain wrappers pass their
+actual state instead of forwarding opacity, size or palette class strings.
+
+`ToolbarSearchButton` and `ToolbarToggle` are thin uses of IconButton and
+ChipButton. The class-returning `toolbarButtonClass` helper is removed. Toolbar
+menu triggers render ChipButton with Radix `asChild`, preserving one button.
+
+The stage 1 AST codemod and review ledger live under
+`/tmp/ri-ui-codemods/stage1` and `/tmp/ri-ui-components/stage1`. The codemod preserves
+refs, events, ARIA and content. The manual audit records labels, conditional tones,
+non-main solid actions, inline content, drag handles, menu rows and later-stage
+choices. Codemod scripts are kept outside the repository. Component browser checks
+cover each variant and semantic tone in both themes, including hover contrast,
+pressed and disabled states, focus, touch size, refs and disabled links.
 
 Until a family migrates, its existing shared hooks below remain the drawing
 contract. Do not add a parallel hand-built variant.
@@ -123,25 +178,20 @@ These carry the system across screens. Use them before inventing a new one.
 | Slot | What it is | State it reads |
 | --- | --- | --- |
 | `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex. `data-size="responsive"` uses the same 36px option height below 768px, with compact desktop options. `data-scroll` lets an unmeasured filter track scroll in place |
-| `chip-button`, class `toolbar-button` | A capsule control in a toolbar or filter row, and the deck's status chips. `toolbarButtonClass` adds the class | `aria-pressed`, `data-on`, `toolbar-button-active`, `data-tone="attention"` or `"status"` (keeps its own color), `data-urgency` (Generate New Deck), `data-mode` (the permission chip) |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-energy` and `data-task-status` select theme-aware inks, `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
 | `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
-| `review-bar`, `review-bar-title`, `review-action` | The review bar above the chat input, drawn like a second, smaller input | `data-state`, `data-tone`, `data-active` |
+| `review-bar`, `review-bar-title` | The review bar above the chat input, drawn like a second, smaller input | `data-state`, `data-tone`, `data-active` |
 | `task-chip`, `task-chip-label` | The task a chat works on, in its header | `data-status` |
-| `send-button` | The composer's Send control, the same capsule when enabled, sending or disabled. Its component keeps each state's fill | `disabled` |
-| `hud-tools`, `hud-view-button` | The top bar's page tools in one capsule, and Close chat or Open latest chat | `aria-pressed`, `data-variant="close"` |
-| `rail-foot`, `new-agent` | The rail's footer rows and its New agent button | |
+| `rail-foot` | The rail's footer rows | |
 | `entity-kind`, `entity-kind-label` | "Task · Money" or "Note · Tidewater Coffee" above a task or note title | |
 | `properties` | The label and value grid on a task (Status, Deadline, Energy, Effort...) | |
-| `header-action` | Continue with agent and Complete at the top of a task | `data-tone="agent"`, `data-state="done"` |
 | `task-picker` | The task a note links to, in the note's `meta` line | |
 | `callout` | A notice or summary inside a pane (Stream's triage digest): a soft raised panel, no outline | |
 | `stream-meta` | The line under a Stream capture | |
-| `search-field`, `icon-button` | The phone's search field and the bordered icon buttons beside it | |
+| `search-field` | The phone's search field | |
 | `action-button` | Small hand-built actions. Their size and placement come from the component, their shape and fill from the system | `data-variant="primary"`, `"ghost"` or `"floating"`, `data-tone="status"` or `"warning"`, `aria-pressed`, `aria-selected` or `aria-checked` |
 | `status-strip` | A chat header's git summary and next action, in one quiet capsule | |
-| `split-button` | Finder and its menu, one capsule with a divider between the two buttons | |
 | `chat-tabs`, `chat-tabs-scroll`, `chat-tab` | The chat strip, its existing measured scroller, and each tab with its close control | `data-current="true"`, `aria-current="page"` on its activation button |
 | `row-actions` | Hover actions on task, note and deck rows, also revealed by keyboard focus | `:focus-within` |
 | `calendar-toolbar`, `calendar-navigation`, `calendar-date`, `calendar-spacer`, `calendar-work-toggle` | Calendar's header and date navigation. Below 768px the controls wrap, the date gets its own line and the close action stays at the top right | `data-kind="close"` on the close icon button |
@@ -163,7 +213,7 @@ These carry the system across screens. Use them before inventing a new one.
 | `image-picker` | An image or emoji preview tile, with its placeholder and upload affordance. It keeps a 14px content shape | |
 | `completion-control` | A task's completion mark or a routine's checkbox. These retain their circle or checkbox shape and state, with a visible focus outline | |
 | `menu-action` | A descriptive menu or list row, with an 8px hover shape. Separators stay on the row | |
-| `segmented-option`, `split-button-action`, `settings-nav-item` | Explicit hooks for controls whose parent slot owns their drawing. Use only inside the matching parent | The parent's state contract |
+| `segmented-option`, `settings-nav-item` | Explicit hooks for controls whose parent slot owns their drawing. Use only inside the matching parent | The parent's state contract |
 | class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside, More). `panelTabClass` adds it | `panel-tab-on` |
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:

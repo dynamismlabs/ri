@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { RichEditor } from '@/components/editor/rich-editor';
 import { Tip } from '@/components/ui/tip';
 import { useScratchpad } from '@/hooks/use-scratchpad';
+import { useTouchFirst } from '@/hooks/use-touch-first';
 import type { ScratchpadSaver } from '@/lib/client/scratchpad-saver';
 import { useCreateTask } from '@/hooks/use-tasks';
 import { useCreateNote } from '@/hooks/use-notes';
@@ -265,6 +266,7 @@ function MoveButton({ label, tip, icon: Icon, busy = false, disabled, onClick }:
   disabled: boolean;
   onClick: () => void;
 }) {
+  const touchFirst = useTouchFirst();
   return (
     <Tip label={tip}>
       {/* Keep the editor's caret where it is, so the line stays the target. */}
@@ -274,7 +276,7 @@ function MoveButton({ label, tip, icon: Icon, busy = false, disabled, onClick }:
         onMouseDown={(e) => e.preventDefault()}
         onClick={onClick}
         variant="secondary"
-        size="sm"
+        size={touchFirst ? "touch" : "sm"}
         className="inline-flex min-w-0 items-center justify-center gap-1.5"
       >
         {busy ? <Loader2 size={13} className="shrink-0 animate-spin" /> : <Icon size={13} className="shrink-0" />}

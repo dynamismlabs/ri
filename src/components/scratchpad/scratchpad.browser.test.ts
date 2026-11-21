@@ -146,7 +146,7 @@ describe('scratchpad quick view and expansion', () => {
       for (const name of ['Task', 'Note', 'Stream', 'Chat']) {
         const button = page.getByRole('button', { name, exact: true });
         const action = await button.boundingBox();
-        expect(action!.height).toBeGreaterThanOrEqual(32);
+        expect(action!.height).toBe(28);
         expect(action!.y + action!.height).toBeLessThanOrEqual(900);
         expect(action!.x).toBeGreaterThanOrEqual(box!.x);
         expect(action!.x + action!.width).toBeLessThanOrEqual(box!.x + box!.width);

@@ -18,8 +18,10 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 - Labels in normal sentence case instead of small capitals.
 - Every either-or choice, like the tabs at the top of each panel, in one rounded switch.
 - Task and note details as plain words, and deadlines as a colored date instead of a colored box.
-- Rounded buttons wherever you press something, and a clear outline when you move by keyboard.
+- Rounded buttons in consistent sizes, with larger controls on a phone and a clear outline when you move by keyboard.
 - A white message box that stands out from the page.
+
+Icon buttons show their action when you hover or move to them by keyboard.
 
 Search, Settings and Schedules share the same quiet backdrop.
 

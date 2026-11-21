@@ -81,6 +81,8 @@
 .ri-button[aria-invalid='true']:focus-visible { outline-color: var(--danger); }
 .ri-chip { min-width: var(--control-size); font-size: 12px; }
 .ri-chip--touch { font-size: 15px; }
+.ri-chip--icon-only { position: relative; }
+.ri-chip--icon-only .ri-chip-label { position: absolute; visibility: hidden; white-space: nowrap; }
 
 .ri-button--link[class*='ri-tone--'] { background-color: transparent; color: var(--control-ink); }
 .ri-button--link[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: transparent; color: var(--control-ink); }
