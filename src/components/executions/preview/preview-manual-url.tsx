@@ -93,7 +93,7 @@ export function PreviewManualUrl({
             disabled={!dirty || isSaving}
             label="Save URL"
             tooltip="Save URL"
-            variant="primary"
+            variant="ghost"
             size="md"
             className="inline-flex items-center justify-center"
           >
@@ -101,20 +101,18 @@ export function PreviewManualUrl({
           </IconButton>
 
         {current && (
-
             <IconButton
               type="button"
               onClick={() => { setDraft(''); save(''); }}
               disabled={isSaving}
               label="Clear URL"
               tooltip="Clear URL"
-              variant="secondary"
+              variant="ghost"
               size="sm"
               className="inline-flex items-center justify-center"
             >
               <X size={13} />
             </IconButton>
-
         )}
       </div>
     </div>

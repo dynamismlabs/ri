@@ -153,7 +153,6 @@ export function ExecutionTerminalPanel({
             />
           ))}
           {!collapsed && (
-
               <IconButton
                 type="button"
                 onClick={handleNew}
@@ -166,13 +165,11 @@ export function ExecutionTerminalPanel({
               >
                 <Plus size={12} />
               </IconButton>
-
           )}
         </div>
         <TerminalWhere terminal={terminals.find((t) => t.id === activeId) ?? null} showDevice={severalDevices} />
         {headerExtra}
         {onToggleCollapsed && (
-
             <IconButton
               type="button"
               onClick={onToggleCollapsed}
@@ -185,7 +182,6 @@ export function ExecutionTerminalPanel({
             >
               {collapsed ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
             </IconButton>
-
         )}
       </div>
 

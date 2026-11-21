@@ -98,7 +98,7 @@ function RerouteMenu({ decision }: { decision: TriageDecisionWithItems }) {
           <IconButton
             label="Change what happened"
             tooltip="Change what happened"
-            variant="secondary"
+            variant="ghost"
             size="sm"
           >
             <CornerUpRight size={11} />
@@ -161,7 +161,7 @@ function DigestDecisionRow({ decision }: { decision: TriageDecisionWithItems }) 
               onClick={() => undo.mutate(decision.id)}
               label="Undo"
               tooltip="Undo"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <Undo2 size={11} />

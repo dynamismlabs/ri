@@ -544,7 +544,6 @@ function DeviceCard({
               </IconButton>
 
             {!device.isHome && (
-
                 <IconButton
                   onClick={remove}
                   disabled={removeMutation.isPending}
@@ -555,7 +554,6 @@ function DeviceCard({
                 >
                   {removeMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                 </IconButton>
-
             )}
           </div>
         </div>
@@ -607,7 +605,6 @@ function KeyRow({ keyView, onRevoke, revoking }: { keyView: DeviceKeyView; onRev
         </p>
       </div>
       {keyView.role !== 'home' && (
-
           <IconButton
             onClick={onRevoke}
             disabled={revoking}
@@ -618,7 +615,6 @@ function KeyRow({ keyView, onRevoke, revoking }: { keyView: DeviceKeyView; onRev
           >
             {revoking ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={12} />}
           </IconButton>
-
       )}
     </li>
   );

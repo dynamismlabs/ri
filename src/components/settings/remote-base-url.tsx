@@ -517,7 +517,6 @@ export function RemoteBaseUrlSection() {
                 Save name
               </Button>
               {nameSaved && !nameLocked && (
-
                   <IconButton
                     onClick={() => nameMutation.mutate(null)}
                     disabled={busy}
@@ -528,7 +527,6 @@ export function RemoteBaseUrlSection() {
                   >
                     <Trash2 size={12} />
                   </IconButton>
-
               )}
             </div>
 

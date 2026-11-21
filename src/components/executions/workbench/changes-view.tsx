@@ -80,7 +80,7 @@ export function ChangesView({ sessionId, baseBranch, onOpenFile }: ChangesViewPr
             disabled={diff.isFetching}
             label="Refresh changes"
             tooltip="Refresh"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="inline-flex flex-shrink-0 items-center justify-center"
           >
@@ -156,20 +156,18 @@ function ChangeRow({
           {deletions > 0 && <span className="text-rose-600 dark:text-rose-400">−{deletions}</span>}
         </span>
         {onOpenFile ? (
-
             <IconButton
               type="button"
               onClick={onOpenFile}
               label={`Open ${name} in Files`}
               tooltip="Open in Files"
-              variant="secondary"
+              variant="ghost"
               size="sm"
               reveal
               className="inline-flex flex-shrink-0 items-center justify-center"
             >
               <FileSearch size={13} />
             </IconButton>
-
         ) : (
           <span className="w-6 flex-shrink-0" />
         )}

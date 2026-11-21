@@ -165,7 +165,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                     <IconButton
                       onClick={handleRemoveImage}
                       label="Remove area image"
-                      variant="destructive"
+                      variant="ghost"
                       size="xs"
                       tone="danger"
                       reveal
@@ -202,7 +202,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                         <IconButton
                           onClick={() => setEmoji(null)}
                           label="Remove area emoji"
-                          variant="destructive"
+                          variant="ghost"
                           size="xs"
                           tone="danger"
                           reveal

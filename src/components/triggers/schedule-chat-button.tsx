@@ -77,9 +77,9 @@ export function ScheduleChatButton({
           <Button
             type="button"
             aria-label={chip ? `Scheduled: ${chip}` : 'Schedule'}
-            variant="secondary"
+            variant={chip && !compact ? "secondary" : "ghost"}
             size={size}
-            icon={compact}
+            icon={compact || !chip}
             className={cn("flex min-w-0 flex-shrink-0 items-center gap-1", className)}
           >
             <Clock size={compact ? 16 : 13} className={chip ? 'text-primary' : undefined} />
@@ -159,7 +159,7 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
           disabled={update.isPending}
           label={trigger.enabled ? 'Pause schedule' : 'Resume schedule'}
           tooltip={trigger.enabled ? 'Pause' : 'Resume'}
-          variant="secondary"
+          variant="ghost"
           size="sm"
         >
           {trigger.enabled ? <Pause size={12} /> : <Play size={12} />}
@@ -171,7 +171,7 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
           onClick={onEdit}
           label="Edit schedule"
           tooltip="Change everything about it in Schedules"
-          variant="secondary"
+          variant="ghost"
           size="sm"
         >
           <Pencil size={12} />

@@ -103,7 +103,7 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | API | Named inputs and state | Drawing and accessibility it owns | Stage |
 | --- | --- | --- | --- |
 | `Button` | primary, secondary, ghost, destructive, link. xs, sm, md, touch. `icon`, `pressed`, semantic `tone`, `floating`, `focus`, `reveal`, `clip` | Capsule in every state, including Send when disabled. Based on the installed Button. Disabled links cannot activate their child handler | 1, implemented |
-| `IconButton` | Required string `label`, tone, pressed state, size. Optional fuller `tooltip`, `shortcut`, `tipSide`, `tipAlign` | Square Button with an accessible name and `Tip`. Uses the label for both by default. Focus outline included | 1, implemented |
+| `IconButton` | Required string `label`, tone, pressed state, size. Optional fuller `tooltip`, `shortcut`, `tipSide`, `tipAlign`, `disclosure` | Square Button with an accessible name and `Tip`. `disclosure` adds an owned chevron with enough width for both icons. Uses the label for both by default. Focus outline included | 1, implemented |
 | `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
 | `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
@@ -143,12 +143,17 @@ Accept & complete or Start. Git toolbar actions, navigation and auxiliary previe
 or export actions use secondary or ghost. Selected filters and independent toggles
 use `pressed`, rather than changing to primary. Destructive actions have their own
 quiet danger variant.
+Icon-only buttons among siblings in a header, toolbar or row are ghost at rest.
+A resting fill means pressed or open (`aria-pressed`, `aria-expanded`).
+A labeled standalone action may be secondary. Main Send actions retain primary,
+and standalone floating controls retain their floating surface.
 
 The Button family owns its cva classes and drawing in
 `src/components/system/button.css`. `Button` is the installed primitive's one
 implementation, re-exported by the system entry point. Refs, events, children and
 ARIA stay intact. `IconButton` takes its label from the caller's existing accessible
-name or tooltip. Missing names are reviewed by hand from the action, with sentence
+name or tooltip. The phone navigation Create control retains its 48px navigation
+drawing until that API migrates. Missing names are reviewed by hand from the action, with sentence
 case copy. A tooltip that adds context goes in `tooltip`, and a shortcut goes in
 `shortcut`. It does not need a surrounding Tip.
 Tip does not open when focus first enters a dialog, sheet or popover from outside.
@@ -197,7 +202,7 @@ choices retain their natural height and hierarchy. The phone Create sheet keeps
 its two-line choices and vertical icon tiles. These are not fixed-height action
 buttons. Completion marks, drag handles and interactive timeline drawings also
 retain their existing structure until their own migration. The final native
-inventory has 323 button declarations, down from 1,097, with a per-declaration
+inventory has 324 button declarations, down from 1,097, with a per-declaration
 decision in the review ledger. This includes diagnostic and fixture surfaces.
 
 Until a family migrates, its existing shared hooks below remain the drawing

@@ -195,20 +195,18 @@ function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
             <Layers3 size={14} className="shrink-0 text-muted-foreground" />
             <h2 className="mr-auto shrink-0 text-xs font-semibold">Deck</h2>
             {!deckExpanded && (
-
                 <IconButton
                   type="button"
                   ref={deckExpandButton}
                   onClick={() => setDeckExpanded(true)}
                   label="Expand the deck"
                   tooltip="Open in a slideout"
-                  variant="secondary"
+                  variant="ghost"
                   size="sm"
                   className="flex shrink-0 items-center justify-center"
                 >
                   <Maximize2 size={14} />
                 </IconButton>
-
             )}
 
               <IconButton
@@ -216,7 +214,7 @@ function OpenScratchpadColumn({ deck }: { deck?: ReactNode }) {
                 onClick={deckExpanded ? collapseDeck : () => closeScratchpad(true)}
                 label="Close the deck beside"
                 tooltip="Close"
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 className="flex shrink-0 items-center justify-center"
               >
@@ -302,7 +300,7 @@ export function ScratchpadButton({ variant = 'hud' }: { variant?: 'hud' | 'phone
       onClick={() => (open ? closeScratchpad(wide) : openScratchpad(wide))}
       label="Scratchpad"
       shortcut={variant === 'phone' ? undefined : HOTKEYS.scratchpad.label}
-      variant="secondary"
+      variant="ghost"
       size={variant === 'phone' ? "touch" : "sm"}
       className={cn("flex items-center justify-center", (variant === 'phone' ? "shrink-0" : ''))}
     >
@@ -324,19 +322,17 @@ export function DeckBesideButton() {
   if (!available || tier !== 'desktop') return null;
   const open = columnOpen && view === 'deck';
   return (
-
       <IconButton
         type="button"
         aria-pressed={open}
         onClick={() => (nextDeckBesideAction(columnOpen, view) === 'close' ? closeScratchpad(true) : showDeckBeside())}
         label="Deck"
         tooltip="Deck beside this screen"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         className="flex items-center justify-center"
       >
         <Layers3 size={14} />
       </IconButton>
-
   );
 }

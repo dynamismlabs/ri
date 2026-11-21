@@ -65,18 +65,16 @@ export function CursorCredentialPanel() {
           {save.isPending && <Loader2 className="animate-spin" />} Save
         </Button>
         {status.data?.source === 'ri_store' && (
-
             <IconButton
               disabled={clear.isPending}
               onClick={() => clear.mutate()}
               label="Remove stored key"
               tooltip="Remove stored key"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <Trash2 />
             </IconButton>
-
         )}
       </div>
       {status.data?.configured && (

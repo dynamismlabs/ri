@@ -71,13 +71,13 @@ export function ConnectedCompanion({chatId, children}: {chatId: string; children
           onClick={() => void openTab(tab, {fresh: true})}
           label={`Reload ${tab.title}`}
           tooltip="Start this tab over"
-          variant="secondary"
+          variant="ghost"
           size="sm"
         ><RotateCcw size={13}/></IconButton>}
         <IconButton
           onClick={close}
           label="Close app"
-          variant="secondary"
+          variant="ghost"
           size="sm"
         ><X size={14}/></IconButton>
       </div>

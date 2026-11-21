@@ -250,7 +250,7 @@ function Header({ view, onBack, backButton }: {
         type="button"
         onClick={closeSchedulesWindow}
         label="Close"
-        variant="secondary"
+        variant="ghost"
         size="sm"
       >
         <X size={16} />
@@ -389,7 +389,7 @@ function Row({
           }}
           label={trigger.enabled ? 'Pause' : 'Resume'}
           tooltip={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="flex-shrink-0"
         >

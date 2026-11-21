@@ -150,7 +150,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
                   <Archive size={12} />
                 </IconButton>
 
-              {tab === 'workspace' && canConfigure && <IconButton type="button" label="New agent" variant="secondary" size="sm" onClick={openWorkspaceCreate}><Plus /></IconButton>}
+              {tab === 'workspace' && canConfigure && <IconButton type="button" label="New agent" variant="ghost" size="sm" onClick={openWorkspaceCreate}><Plus /></IconButton>}
             </div>
           )}
         </>

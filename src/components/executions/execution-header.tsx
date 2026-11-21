@@ -316,7 +316,7 @@ export function ExecutionHeader({
         <IconButton
           onClick={onClose}
           label="Back"
-          variant="secondary"
+          variant="ghost"
           size="touch"
           className="-ml-1"
         >

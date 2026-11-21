@@ -67,7 +67,6 @@ function MenuButton({
   shortcut?: string
 }) {
   return (
-
       <IconButton
         type="button"
         aria-pressed={isActive ?? false}
@@ -80,7 +79,6 @@ function MenuButton({
       >
         {children}
       </IconButton>
-
   )
 }
 

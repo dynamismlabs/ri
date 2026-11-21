@@ -371,7 +371,7 @@ function ReferenceListRow({
             onClick={handleToggleSubtasks}
             aria-expanded={expanded}
             label={expanded ? 'Collapse subtasks' : 'Expand subtasks'}
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="shrink-0"
           >

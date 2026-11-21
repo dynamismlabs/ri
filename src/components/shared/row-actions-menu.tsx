@@ -34,7 +34,7 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
           setOpen(true);
         }}
         label={title}
-        variant="secondary"
+        variant="ghost"
         size="xs"
         focus="inside"
         className={cn("md:hidden", className)}

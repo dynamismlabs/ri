@@ -277,7 +277,7 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
       </Tip>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <IconButton type="button" label="More open options" size="sm" variant="secondary"><ChevronDown /></IconButton>
+          <IconButton type="button" label="More open options" size="sm" variant="ghost"><ChevronDown /></IconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="min-w-[220px] w-auto">
           {installed.map((app) => (

@@ -145,7 +145,7 @@ export function AgentTools({
                 onClick={chat.onClose}
                 label="Put away the chat beside"
                 tooltip="Put it away. The chat keeps going."
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 className="ml-1 inline-flex shrink-0 items-center justify-center"
               >

@@ -234,7 +234,7 @@ function ApprovalItem({
                 onClick={() => onDecide('approve')}
                 label={`Approve ${view.summary}`}
                 tooltip="Approve this one"
-                variant="secondary"
+                variant="ghost"
                 size="xs"
               >
                 <Check size={11} />
@@ -247,7 +247,7 @@ function ApprovalItem({
                 onClick={() => onDecide('deny')}
                 label={`Deny ${view.summary}`}
                 tooltip="Deny this one"
-                variant="secondary"
+                variant="ghost"
                 size="xs"
               >
                 <X size={11} />

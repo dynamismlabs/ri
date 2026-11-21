@@ -418,7 +418,6 @@ function VirtualModelChecklist({
                 </span>
               </label>
               {model.custom && (
-
                   <IconButton
                     type="button"
                     disabled={removing === model.id}
@@ -432,7 +431,6 @@ function VirtualModelChecklist({
                       ? <Loader2 size={11} className="animate-spin" />
                       : <X size={11} />}
                   </IconButton>
-
               )}
             </div>
           );

@@ -105,7 +105,7 @@ export function ReviewBar({ session, workspace }: { session: ChatSessionWithExec
               onClick={() => void navigator.clipboard?.writeText(ownBranch).then(() => toast.success('Copied'))}
               label="Copy"
               tooltip="Copy"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <Copy size={10} />

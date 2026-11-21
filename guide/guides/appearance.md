@@ -21,8 +21,7 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 - Rounded buttons in consistent sizes, with larger controls on a phone and a clear outline when you move by keyboard.
 - A white message box that stands out from the page.
 
-Icon buttons show their action when you hover or move to them by keyboard.
-Opening a dialog keeps its first tooltip quiet, so Escape closes the dialog in one press. Tab inside it to see each button's action.
+Hover over an icon button, or move to it with the keyboard, to see what it does.
 
 Search, Settings and Schedules share the same quiet backdrop.
 

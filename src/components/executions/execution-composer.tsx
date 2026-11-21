@@ -875,23 +875,20 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
               )}
 
               {showVoiceButton && (voice.isRecording || voice.isTranscribing) && (
-
                   <IconButton
                     type="button"
                     onClick={voice.cancelRecording}
                     label={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording'}
                     tooltip={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording (discard)'}
-                    variant="secondary"
+                    variant="ghost"
                     size={touchFirst ? "touch" : "sm"}
                     className="flex items-center justify-center"
                   >
                     <X size={13} />
                   </IconButton>
-
               )}
 
               {showVoiceButton && (
-
                   <IconButton
                     type="button"
                     onClick={voice.toggleRecording}
@@ -901,6 +898,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       ? 'Stop recording (transcribe)'
                       : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
                     variant={voice.isRecording ? "destructive" : "ghost"}
+                    pressed={voice.isRecording}
                     size={touchFirst ? "touch" : "sm"}
                     tone={voice.isRecording ? "danger" : "neutral"}
                   >
@@ -912,21 +910,19 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       <Mic size={13} />
                     )}
                   </IconButton>
-
               )}
 
               {/* Send hides while recording — nothing to send until
                 transcription completes. Stop owns the slot during a
                 turn-in-flight via showStopButton (unchanged). */}
               {showStopButton ? (
-
                   <IconButton
                     type="button"
                     onClick={handleStop}
                     disabled={stopping}
                     label="Stop agent"
                     tooltip="Stop agent"
-                    variant="secondary"
+                    variant="ghost"
                     size={touchFirst ? "touch" : "sm"}
                     className="flex items-center justify-center"
                   >
@@ -936,9 +932,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       <Square size={10} className="fill-current" />
                     )}
                   </IconButton>
-
               ) : !voice.isRecording ? (
-
                   <IconButton
                     type="button"
                     onClick={() => handleSend()}
@@ -955,7 +949,6 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   >
                     {sending ? <Loader2 size={13} className="animate-spin" /> : <ArrowUp size={13} />}
                   </IconButton>
-
               ) : null}
             </>}</ComposerControls>
         </ChatComposer>

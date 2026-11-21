@@ -111,7 +111,7 @@ function PersonalRailFooter({ collapsed }: { collapsed: boolean }) {
           onClick={() => openSettings()}
           label="Settings"
           tooltip="Settings"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="flex flex-shrink-0 items-center justify-center"
         >

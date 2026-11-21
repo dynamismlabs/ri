@@ -70,7 +70,7 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
             type="button"
             label="Recently opened files"
             tooltip="Recently opened files"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             focus="inside"
             className="flex items-center justify-center"

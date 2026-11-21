@@ -4,7 +4,7 @@ import { IconButton } from '@/components/system/icon-button';
 
 import { useState, useRef, useCallback } from 'react';
 import {
-  Target, FileText, ChevronDown, Search, Plus, GitMerge,
+  Target, FileText, Search, Plus, GitMerge,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -56,9 +56,9 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
           label="Create task"
           variant="ghost"
           size="xs"
+          disclosure
         >
           <Target size={12} />
-          <ChevronDown size={8} className="text-primary/50" />
         </IconButton>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
@@ -165,9 +165,9 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
           label="Create note"
           variant="ghost"
           size="xs"
+          disclosure
         >
           <FileText size={12} />
-          <ChevronDown size={8} className="opacity-50" />
         </IconButton>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>

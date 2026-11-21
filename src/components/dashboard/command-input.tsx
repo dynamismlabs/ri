@@ -88,7 +88,7 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
                       onClick={voice.clearTranscript}
                       label="Discard"
                       tooltip="Discard"
-                      variant="secondary"
+                      variant="ghost"
                       size="sm"
                       className="flex items-center justify-center"
                     >
@@ -127,6 +127,7 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
               label={voice.isRecording ? 'Stop recording' : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
               tooltip={voice.isRecording ? 'Stop recording' : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
               variant={voice.isRecording ? "destructive" : "ghost"}
+              pressed={voice.isRecording}
               size="md"
               focus="inside"
               clip
@@ -186,7 +187,7 @@ export function CommandInput({ input, setInput, onSubmit, onSendMessage, isStrea
                 type="button"
                 onClick={onStop}
                 label="Stop agent"
-                variant="destructive"
+                variant="ghost"
                 size="xs"
                 tone="danger"
               >

@@ -44,7 +44,7 @@ export function PanelWindowControls({
           label={maximized ? 'Restore the chat' : 'Expand the panel'}
           tooltip={maximized ? 'Bring the chat back' : 'Expand to the whole view (or double-click a tab)'}
           shortcut={maximized ? 'Esc' : undefined}
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="my-1 inline-flex flex-shrink-0 items-center justify-center"
         >
@@ -58,7 +58,7 @@ export function PanelWindowControls({
           label="Close the panel"
           tooltip="Close the panel"
           shortcut="Esc"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="my-1 inline-flex flex-shrink-0 items-center justify-center"
         >

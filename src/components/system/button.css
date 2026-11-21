@@ -39,6 +39,7 @@
 .ri-button--md { --control-size: 32px; --control-icon: 14px; padding-inline: 13px; font-size: 13px; }
 .ri-button--touch { --control-size: 40px; --control-icon: 18px; gap: 8px; padding-inline: 16px; font-size: 15px; }
 .ri-button--icon { width: var(--control-size); min-width: var(--control-size); padding: 0; }
+.ri-button--disclosure { width: auto; padding-inline: 6px; gap: 2px; }
 .ri-button :where(svg) { width: var(--control-icon); height: var(--control-icon); flex-shrink: 0; pointer-events: none; }
 .ri-button :where(span) { font-size: inherit; font-weight: inherit; letter-spacing: normal; }
 .ri-button:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--selected); color: var(--t1); }
@@ -115,3 +116,4 @@
 .ri-button span:not(.sr-only) { font-size: inherit; font-weight: inherit; letter-spacing: normal; color: inherit; }
 
 .ri-button svg.lucide { color: inherit; width: var(--control-icon); height: var(--control-icon); }
+.ri-button svg.ri-disclosure-chevron { width: calc(var(--control-icon) * 2 / 3); height: calc(var(--control-icon) * 2 / 3); opacity: 0.5; }

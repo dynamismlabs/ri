@@ -136,7 +136,7 @@ export function InactiveAfterPopover({ className, touch = false, reveal = false 
             onPointerDown={(e) => e.stopPropagation()}
             label="When chats go inactive"
             tooltip="When chats go inactive"
-            variant="secondary"
+            variant="ghost"
             size={touch ? "touch" : "xs"}
             reveal={reveal ? "fold" : false}
             className={cn("flex-shrink-0", className)}

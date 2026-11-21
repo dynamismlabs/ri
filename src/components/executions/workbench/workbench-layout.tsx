@@ -106,7 +106,7 @@ export function ChatStrip({ label, status, onRestore }: ChatStripProps) {
           label="Bring the chat back"
           tooltip="Bring the chat back"
           shortcut="Esc"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="inline-flex items-center justify-center"
         >

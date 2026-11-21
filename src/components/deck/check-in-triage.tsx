@@ -297,7 +297,7 @@ function TriageCard({
                 label="Edit"
                 tooltip="Edit"
                 tipSide="bottom"
-                variant="secondary"
+                variant="ghost"
                 size="xs"
               >
                 <Pencil size={11} />
@@ -309,7 +309,7 @@ function TriageCard({
                 label="Skip and handle later"
                 tooltip="Skip and handle later"
                 tipSide="bottom"
-                variant="secondary"
+                variant="ghost"
                 size="xs"
               >
                 <SkipForward size={11} />
@@ -321,7 +321,7 @@ function TriageCard({
                 label="Archive"
                 tooltip="Archive"
                 tipSide="bottom"
-                variant="secondary"
+                variant="ghost"
                 size="xs"
               >
                 <Archive size={11} />

@@ -536,7 +536,7 @@ export function TaskKanban({
         {leading}
         <div className="flex-1" />
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><ChipButton aria-label={areaMode !== 'all' ? `Filter, active: ${areaLabel}` : 'Filter tasks'} pressed={areaMode !== 'all'}>
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={areaMode !== 'all' ? `Filter, active: ${areaLabel}` : 'Filter tasks'} pressed={areaMode !== 'all'}>
             <Filter className="size-3.5 shrink-0" />
             <span className="hidden @sm/lt:inline max-w-[140px] truncate">
               {areaMode !== 'all' ? areaLabel : 'Filter'}

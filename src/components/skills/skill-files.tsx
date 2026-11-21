@@ -174,7 +174,6 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
                     <span className="ml-auto shrink-0 tabular-nums text-muted-foreground/60">{formatBytes(f.size)}</span>
                   </button>
                   {editable && (
-
                       <IconButton
                         type="button"
                         onClick={() => void remove(f.path)}
@@ -188,7 +187,6 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
                       >
                         <Trash2 size={12} />
                       </IconButton>
-
                   )}
                 </div>
                 {isOpen && <FileContents skillRef={skill.ref} file={f} />}

@@ -118,7 +118,6 @@ export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { vari
 
   const trigger =
     variant === 'collapsed' ? (
-
         <IconButton
           type="button"
           label={`Space: ${label}. Switch space`}
@@ -128,7 +127,6 @@ export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { vari
         >
           <Mark name={currentName} imageUrl={currentLogo} />
         </IconButton>
-
     ) : (
       <Button
         type="button"

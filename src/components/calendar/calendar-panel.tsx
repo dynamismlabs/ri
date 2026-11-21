@@ -76,7 +76,7 @@ export function CalendarPanel() {
               type="button"
               onClick={() => step(-1)}
               label="Previous day"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <ChevronLeft size={14} />
@@ -93,7 +93,7 @@ export function CalendarPanel() {
               type="button"
               onClick={() => step(1)}
               label="Next day"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <ChevronRight size={14} />

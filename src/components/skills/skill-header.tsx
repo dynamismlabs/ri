@@ -81,7 +81,7 @@ export function SkillHeader({
           <IconButton
             onClick={onBack}
             label="Back"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="-ml-2"
           >
@@ -123,7 +123,7 @@ export function SkillHeader({
           <DropdownMenuTrigger asChild>
             <IconButton
               label="More"
-              variant="secondary"
+              variant="ghost"
               size="sm"
               className="flex-shrink-0"
             >

@@ -109,7 +109,7 @@ export function ChatUiGallery() {
                   onClick={() => setPhone(false)}
                   label="Desktop preview"
                   tooltip="Preview at full width"
-                  variant={phone ? 'ghost' : 'secondary'}
+                  variant="ghost"
                   size="xs"
                 ><Monitor size={14} /></IconButton>
                 <IconButton
@@ -117,7 +117,7 @@ export function ChatUiGallery() {
                   onClick={() => setPhone(true)}
                   label="Phone preview"
                   tooltip="Preview at phone width"
-                  variant={phone ? 'secondary' : 'ghost'}
+                  variant="ghost"
                   size="xs"
                 ><Smartphone size={14} /></IconButton>
               </div>

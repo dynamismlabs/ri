@@ -297,7 +297,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
                 type="button"
                 onClick={() => step(-1)}
                 label={view === 'day' ? 'Previous day' : 'Previous week'}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
               >
                 <ChevronLeft size={15} />
@@ -315,7 +315,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
                 type="button"
                 onClick={() => step(1)}
                 label={view === 'day' ? 'Next day' : 'Next week'}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
               >
                 <ChevronRight size={15} />

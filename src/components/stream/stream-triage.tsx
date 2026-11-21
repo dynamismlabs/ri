@@ -183,7 +183,6 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
             <p className="text-[11.5px] font-medium text-foreground leading-snug">
               {headline.text}
               {canEditTitle && (
-
                   <IconButton
                     onClick={() => setEditingTitle(true)}
                     label="Edit the title"
@@ -194,7 +193,6 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
                   >
                     <Pencil size={9} />
                   </IconButton>
-
               )}
             </p>
           )}
@@ -386,7 +384,7 @@ function ManualRow({
               label="Keep as a thought"
               tooltip="Keep as a thought"
               tipSide="bottom"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <BookOpen size={11} />
@@ -398,7 +396,7 @@ function ManualRow({
               label="Set aside"
               tooltip="Set aside"
               tipSide="bottom"
-              variant="secondary"
+              variant="ghost"
               size="sm"
             >
               <Archive size={11} />

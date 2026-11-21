@@ -103,7 +103,7 @@ function CardHeader({ count, onClose }: { count: number; onClose: () => void }) 
         type="button"
         onClick={onClose}
         label="Dismiss"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         className="inline-flex items-center justify-center"
       >

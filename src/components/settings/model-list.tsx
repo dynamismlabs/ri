@@ -353,7 +353,6 @@ function ModelRow({
         </button>
       </Tip>
       {onRemove && (
-
           <IconButton
             type="button"
             disabled={removePending}
@@ -366,7 +365,6 @@ function ModelRow({
           >
             {removePending ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
           </IconButton>
-
       )}
     </div>
   );

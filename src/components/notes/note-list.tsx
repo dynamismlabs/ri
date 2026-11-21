@@ -110,7 +110,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
 
         {/* Filter — Decisions + Area */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><ChipButton aria-label={filterActive ? `Filter, active: ${filterSummary}` : 'Filter notes'} pressed={filterActive}>
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={filterActive ? `Filter, active: ${filterSummary}` : 'Filter notes'} pressed={filterActive}>
             <Filter className="size-3.5 shrink-0" />
             <span className="hidden @sm/lt:inline max-w-[120px] truncate">
               {filterActive ? filterSummary : 'Filter'}
@@ -141,7 +141,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
 
         {/* Sort — icon plus the active sort's name when there's room */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><ChipButton aria-label={`Sort by ${NOTE_SORT_LABELS[sortBy]}`}>
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={`Sort by ${NOTE_SORT_LABELS[sortBy]}`}>
             <ArrowDownAz className="size-3.5 shrink-0" />
             <span className="hidden @md/lt:inline">{NOTE_SORT_LABELS[sortBy]}</span>
           </ChipButton></DropdownMenuTrigger>
@@ -162,7 +162,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
             onClick={handleNew}
             disabled={createNote.isPending}
             aria-label={newLabel}
-            variant="secondary"
+            variant="ghost"
             size="compact"
           >
             {decisionsOnly ? <Gavel className="size-3.5 shrink-0" /> : <Plus className="size-3.5 shrink-0" />}

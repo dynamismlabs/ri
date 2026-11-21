@@ -307,7 +307,7 @@ function PeopleSection() {
                   }
                 }}
                 label={`Remove ${m.name}`}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
               >
                 <UserMinus size={14} />

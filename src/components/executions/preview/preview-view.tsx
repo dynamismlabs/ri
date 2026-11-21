@@ -563,7 +563,7 @@ function OpenOnDeviceNudge({ onShow }: { onShow: () => void }) {
         type="button"
         onClick={close}
         label="Dismiss"
-        variant="secondary"
+        variant="ghost"
         size="sm"
         className="flex items-center justify-center"
       >

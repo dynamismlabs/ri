@@ -113,7 +113,7 @@ export function TopHud() {
                 label="Search"
                 tooltip="Search tasks, notes and commands"
                 shortcut={HOTKEYS.search.label}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
               >
                 <Search size={14} />

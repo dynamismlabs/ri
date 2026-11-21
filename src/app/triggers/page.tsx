@@ -34,7 +34,7 @@ export default function TriggersPage() {
         <IconButton
           onClick={() => router.push('/')}
           label="Back to dashboard"
-          variant="secondary"
+          variant="ghost"
           size="sm"
         >
           <ArrowLeft size={16} />
@@ -105,7 +105,7 @@ function TriggerRow({
           }}
           label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
           tooltip={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="flex-shrink-0"
         >

@@ -59,7 +59,7 @@ export function AgentChatsFlyout({
             onClick={onNewChat}
             label={`New chat with ${name}`}
             tooltip="New chat"
-            variant="primary"
+            variant="ghost"
             size="sm"
           >
             <Plus size={12} />

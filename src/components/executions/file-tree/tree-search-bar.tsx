@@ -108,7 +108,6 @@ export function TreeSearchBar({
         </Tip>
       )}
       {query && (
-
           <IconButton
             type="button"
             onClick={() => {
@@ -118,14 +117,13 @@ export function TreeSearchBar({
             label="Clear search"
             tooltip="Clear search"
             shortcut="Esc"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             focus="inside"
             className="shrink-0 inline-flex items-center justify-center"
           >
             <X size={11} />
           </IconButton>
-
       )}
     </div>
   );

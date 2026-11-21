@@ -104,7 +104,7 @@ export function PreviewHeader({
           disabled={!isLive}
           label="Reload"
           tooltip="Reload"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="flex items-center justify-center"
         >
@@ -151,7 +151,7 @@ export function PreviewHeader({
       </Tip>
 
 
-        <IconButton asChild label="Open in new tab" tooltip="Open in new tab" variant="secondary" size="sm" className="flex items-center justify-center"><a href={url ?? '#'}
+        <IconButton asChild label="Open in new tab" tooltip="Open in new tab" variant="ghost" size="sm" className="flex items-center justify-center"><a href={url ?? '#'}
           target="_blank"
           rel="noopener noreferrer"
           aria-disabled={!url}

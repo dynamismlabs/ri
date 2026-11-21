@@ -361,7 +361,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
               <ChipButton
                 type="button"
                 aria-label={filterActive ? `Filter, active: ${privatePlanning ? filterSummary : teamFilterSummary}` : 'Filter tasks'}
-                variant="secondary"
+                variant="ghost"
                 size="compact"
                 pressed={filterActive}
               >
@@ -418,7 +418,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
         </DropdownMenu>
 
         {privatePlanning ? <DropdownMenu>
-          <DropdownMenuTrigger asChild><ChipButton aria-label={`Sort by ${SORT_LABELS[sortBy]}`}>
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={`Sort by ${SORT_LABELS[sortBy]}`}>
             <ArrowDownAz className="size-3.5 shrink-0" />
             <span className="hidden @md/lt:inline">{SORT_LABELS[sortBy]}</span>
           </ChipButton></DropdownMenuTrigger>
@@ -432,7 +432,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
               <ChipButton
                 type="button"
                 aria-label="Task view options"
-                variant="secondary"
+                variant="ghost"
                 size="compact"
               >
                 <SlidersHorizontal className="size-3.5" />

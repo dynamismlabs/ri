@@ -83,7 +83,6 @@ export function CopyMessageButton({
   ) : null;
 
   const iconNode = (
-
       <IconButton
         type="button"
         onClick={onClick}
@@ -96,7 +95,6 @@ export function CopyMessageButton({
       >
         {copied ? <Check size={11} /> : <Copy size={11} />}
       </IconButton>
-
   );
 
   return (

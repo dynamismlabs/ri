@@ -37,7 +37,7 @@ export default function TriggerDetailPage() {
         <IconButton
           onClick={() => router.push('/triggers')}
           label="Back to schedules"
-          variant="secondary"
+          variant="ghost"
           size="sm"
         >
           <ArrowLeft size={16} />

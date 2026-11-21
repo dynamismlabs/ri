@@ -42,7 +42,7 @@ export function RailIconButton({
         shortcut={shortcut}
         aria-current={active ? 'page' : undefined}
         {...props}
-        variant="secondary"
+        variant="ghost"
         size="sm"
         pressed={active}
         className={cn("relative flex-shrink-0", className)}

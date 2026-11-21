@@ -134,7 +134,7 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
             <IconButton
               onClick={(e) => e.stopPropagation()}
               label="More note actions"
-              variant="secondary"
+              variant="ghost"
               size="xs"
               focus="inside"
             >

@@ -110,7 +110,6 @@ function PinToggle({ sessionId, isPinned }: { sessionId: string; isPinned: boole
   const unpin = useUnpinSession();
   const action = isPinned ? 'Unpin' : 'Pin to top';
   return (
-
       <IconButton
         type="button"
         onClick={() => (isPinned ? unpin : pin).mutate(sessionId)}
@@ -130,7 +129,6 @@ function PinToggle({ sessionId, isPinned }: { sessionId: string; isPinned: boole
           <Pin size={12} className="-rotate-45" aria-hidden />
         )}
       </IconButton>
-
   );
 }
 
@@ -142,7 +140,6 @@ function ArchiveButton({ sessionId, executionId, workspaceId, label }: {
 }) {
   const { archive } = useArchiveExecution();
   return (
-
       <IconButton
         type="button"
         onClick={() => void archive({ id: sessionId, executionId, workspaceId, label })}
@@ -154,6 +151,5 @@ function ArchiveButton({ sessionId, executionId, workspaceId, label }: {
       >
         <Archive size={12} aria-hidden />
       </IconButton>
-
   );
 }

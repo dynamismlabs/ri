@@ -50,7 +50,7 @@ export function ToolbarActiveDot({ className }: { className?: string }) {
 
 /** Icon-only search button, right-pinned by convention. */
 export function ToolbarSearchButton({ onClick, label }: { onClick: () => void; label: string }) {
-  return <IconButton type="button" label={label} onClick={onClick} variant="secondary" size="sm"><Search /></IconButton>;
+  return <IconButton type="button" label={label} onClick={onClick} variant="ghost" size="sm"><Search /></IconButton>;
 }
 
 /** A pressable filter toggle (Decisions, Archived) with the shared sizing. */
@@ -67,7 +67,7 @@ export function ToolbarToggle({
 }) {
   return (
     <Tip label={title}>
-      <ChipButton type="button" onClick={onClick} pressed={active}>
+      <ChipButton type="button" onClick={onClick} pressed={active} variant="ghost">
         {children}
       </ChipButton>
     </Tip>

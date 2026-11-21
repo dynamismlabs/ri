@@ -686,7 +686,7 @@ export function FileTree({
                   <IconButton
                     label="Create new"
                     tooltip="Create or upload files"
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                     focus="inside"
                     className="inline-flex items-center justify-center"

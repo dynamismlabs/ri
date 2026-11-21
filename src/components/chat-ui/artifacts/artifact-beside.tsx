@@ -88,7 +88,6 @@ export function BesideFileClose({ host, className }: { host: string; className?:
   const close = useCloseBesideFile(host);
   if (!open) return null;
   return (
-
       <IconButton
         type="button"
         {...{ [BESIDE_FILE]: '' }}
@@ -101,7 +100,6 @@ export function BesideFileClose({ host, className }: { host: string; className?:
       >
         <X size={11} />
       </IconButton>
-
   );
 }
 

@@ -285,7 +285,7 @@ export function CommandEditor({
             }}
             label="Edit command"
             tooltip="Edit command"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center"
           >
@@ -327,7 +327,7 @@ export function CommandEditor({
           label="Save"
           tooltip="Save"
           shortcut="Enter"
-          variant="primary"
+          variant="ghost"
           size="md"
           className="inline-flex items-center justify-center"
         >
@@ -342,7 +342,7 @@ export function CommandEditor({
           label="Cancel"
           tooltip="Cancel"
           shortcut="Esc"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="inline-flex items-center justify-center"
         >

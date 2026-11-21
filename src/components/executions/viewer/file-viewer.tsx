@@ -406,20 +406,18 @@ function FileViewerHeader({
         onReferenceInChat={onReferenceInChat}
       />
       {onClose && (
-
           <IconButton
             type="button"
             onClick={onClose}
             label="Close file"
             tooltip="Close file"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             focus="inside"
             className="inline-flex items-center justify-center shrink-0"
           >
             <X size={12} />
           </IconButton>
-
       )}
     </div>
   );
@@ -454,7 +452,7 @@ function FileHeaderMoreMenu({
           <IconButton
             label="File actions"
             tooltip="More actions"
-            variant="secondary"
+            variant="ghost"
             size="sm"
             focus="inside"
             className="inline-flex items-center justify-center shrink-0"
@@ -581,7 +579,7 @@ function RevealButton({ source, root, path, outside }: RevealButtonProps) {
           disabled={revealing}
           label={revealLabel(platform)}
           tooltip={revealLabel(platform)}
-          variant="secondary"
+          variant="ghost"
           size="sm"
           focus="inside"
           className="inline-flex items-center justify-center shrink-0"
@@ -596,7 +594,7 @@ function RevealButton({ source, root, path, outside }: RevealButtonProps) {
           disabled={opening}
           label={`Open in ${label}`}
           tooltip={`Open in ${label}`}
-          variant="secondary"
+          variant="ghost"
           size="sm"
           focus="inside"
           className="inline-flex items-center justify-center shrink-0"

@@ -54,7 +54,7 @@ export function AgentHeader({
         <IconButton
           onClick={onBack}
           label="Back"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="-ml-2"
         >

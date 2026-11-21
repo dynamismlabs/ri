@@ -161,7 +161,6 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
     }
   };
   const close = (
-
       <IconButton
         type="button"
         onClick={onClose}
@@ -172,7 +171,6 @@ export function FeedbackPanel({ onClose }: { onClose: () => void }) {
       >
         <X size={16} />
       </IconButton>
-
   );
   return (
     <div className="flex min-h-0 flex-col">

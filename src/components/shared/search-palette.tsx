@@ -40,7 +40,7 @@ export function SearchPalette({ open, onOpenChange, query, onQueryChange, search
       <div className="flex items-center gap-3 border-b px-4 py-3"><Search size={16} className="shrink-0 text-muted-foreground"/><Command.Input ref={inputRef} value={query} onValueChange={onQueryChange} placeholder={placeholder} className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none"/>{hasQuery && fetching && <Loader2 size={14} className="animate-spin"/>}{typeFilter && <span className="text-[9px] uppercase text-primary">{typeFilter}</span>}<IconButton
         onClick={() => onOpenChange(false)}
         label="Close search"
-        variant="secondary"
+        variant="ghost"
         size="sm"
       ><X size={14}/></IconButton></div>
       <Command.List ref={list} className="max-h-[60vh] overflow-y-auto">

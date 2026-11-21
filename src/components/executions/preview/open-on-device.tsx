@@ -165,7 +165,7 @@ export function OpenOnDevice({
                     onClick={() => copy(url)}
                     label={copied ? 'Copied!' : 'Copy link'}
                     tooltip={copied ? 'Copied!' : 'Copy link'}
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                     className="flex items-center justify-center"
                   >
@@ -173,7 +173,7 @@ export function OpenOnDevice({
                   </IconButton>
 
 
-                  <IconButton asChild label="Open in a new tab" tooltip="Open in a new tab" variant="secondary" size="sm" className="flex items-center justify-center"><a href={url}
+                  <IconButton asChild label="Open in a new tab" tooltip="Open in a new tab" variant="ghost" size="sm" className="flex items-center justify-center"><a href={url}
                     target="_blank"
                     rel="noopener noreferrer">
                     <ExternalLink size={13} />

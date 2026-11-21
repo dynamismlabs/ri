@@ -314,7 +314,6 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
             get the full width. Stays while its menu is open. */}
         <div className="hidden group-hover:flex group-focus-within:flex has-[[data-state=open]]:flex items-center gap-0.5 flex-shrink-0">
           {hasThreads && !agentsOnly && (
-
               <IconButton
                 onPointerDown={stop}
                 onClick={(e) => {
@@ -323,13 +322,12 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                 }}
                 label={expanded ? 'Hide chats' : 'Show chats'}
                 tooltip={expanded ? 'Hide chats' : 'Show chats'}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 focus="inside"
               >
                 {expanded ? <ChevronsDownUp size={13} /> : <ChevronsUpDown size={13} />}
               </IconButton>
-
           )}
           {hasThreads && agentsOnly && (
             // A click, never a rest, slides its chats out beside the rail.
@@ -340,19 +338,17 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
               previews
               onNewChat={() => onOpenLauncher(workspace.id)}
               trigger={({ ref, open: chatsOpen }) => (
-
                   <IconButton
                     ref={ref}
                     onPointerDown={stop}
                     label={`${workspace.name} chats`}
                     tooltip={chatsOpen ? undefined : "View agent's chats"}
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                     focus="inside"
                   >
                     <MessagesSquare size={13} />
                   </IconButton>
-
               )}
             >
               {threads}
@@ -368,7 +364,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
               }}
               label="New chat"
               tooltip="New chat (shift-click to start one right away on the last settings)"
-              variant="secondary"
+              variant="ghost"
               size="sm"
               focus="inside"
             >
@@ -381,7 +377,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                 onPointerDown={stop}
                 onClick={stop}
                 label={`${workspace.name} actions`}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 focus="inside"
               >

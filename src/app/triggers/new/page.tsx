@@ -50,7 +50,7 @@ export default function NewTriggerPage() {
           type="button"
           onClick={() => router.push('/triggers')}
           label="Back"
-          variant="secondary"
+          variant="ghost"
           size="sm"
         >
           <ArrowLeft size={16} />

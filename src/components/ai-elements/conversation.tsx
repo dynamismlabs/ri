@@ -156,7 +156,7 @@ export const ConversationDownload = ({
       type="button"
       {...props}
       label={props["aria-label"] ?? "Download chat"}
-      variant="secondary"
+      variant="ghost"
       size="sm"
       className={cn("absolute top-4 right-4", className)}
     >

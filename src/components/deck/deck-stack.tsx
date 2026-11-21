@@ -144,7 +144,7 @@ function Subtasks({ items, onCollapse, actions }: { items: SubtaskItem[]; onColl
                     label="Done"
                     tooltip="Done"
                     tipSide="top"
-                    variant="secondary"
+                    variant="ghost"
                     size="xs"
                   >
                     <Check className="w-3 h-3" />
@@ -156,25 +156,23 @@ function Subtasks({ items, onCollapse, actions }: { items: SubtaskItem[]; onColl
                     label="Defer"
                     tooltip="Defer"
                     tipSide="top"
-                    variant="secondary"
+                    variant="ghost"
                     size="xs"
                   >
                     <SkipForward className="w-3 h-3" />
                   </IconButton>
 
                 {actions.onFocus && (
-
                     <IconButton
                       onClick={() => actions.onFocus!(s.id)}
                       label="Focus"
                       tooltip="Focus"
                       tipSide="top"
-                      variant="secondary"
+                      variant="ghost"
                       size="xs"
                     >
                       <Crosshair className="w-3 h-3" />
                     </IconButton>
-
                 )}
               </div>
             )}
@@ -269,25 +267,23 @@ function SortableDeckItemCard({
             label="Done"
             tooltip="Done"
             tipSide="top"
-            variant="secondary"
+            variant="ghost"
             size="xs"
           >
             <Check className="w-3.5 h-3.5" />
           </IconButton>
 
         {onStart && (
-
             <IconButton
               onClick={() => onStart(item.id)}
               label="Start (move to In progress)"
               tooltip="Start (move to In progress)"
               tipSide="top"
-              variant="secondary"
+              variant="ghost"
               size="xs"
             >
               <Play className="w-3.5 h-3.5" />
             </IconButton>
-
         )}
 
           <IconButton
@@ -295,25 +291,23 @@ function SortableDeckItemCard({
             label="Not today"
             tooltip="Not today"
             tipSide="top"
-            variant="secondary"
+            variant="ghost"
             size="xs"
           >
             <SkipForward className="w-3.5 h-3.5" />
           </IconButton>
 
         {onFocus && (
-
             <IconButton
               onClick={() => onFocus(item.id)}
               label="Focus"
               tooltip="Focus"
               tipSide="top"
-              variant="secondary"
+              variant="ghost"
               size="xs"
             >
               <Crosshair className="w-3.5 h-3.5" />
             </IconButton>
-
         )}
       </div>
 

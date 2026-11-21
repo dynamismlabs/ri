@@ -112,7 +112,7 @@ export function PanelLayout() {
           onClick={resetLayout}
           label="Reset layout to default"
           tooltip="Reset layout to default"
-          variant="secondary"
+          variant="ghost"
           size="sm"
           className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40"
         >

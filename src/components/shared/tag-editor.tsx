@@ -62,18 +62,16 @@ export function TagEditor({ tags, onChange, className }: TagEditorProps) {
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-
           <IconButton
             onClick={(e) => { e.stopPropagation(); setAdding(true); }}
             label="Add tag"
             tooltip="Add tag"
-            variant="secondary"
+            variant="ghost"
             size="xs"
             className="inline-flex items-center"
           >
             <Plus size={8} />
           </IconButton>
-
       )}
     </div>
   );

@@ -690,7 +690,7 @@ export function NotificationsSection() {
                           disabled={busy}
                           label={`Remove ${channelLabel(c)} and its delivery history`}
                           tooltip="Remove channel and its delivery history"
-                          variant="destructive"
+                          variant="ghost" tone="danger"
                           size="xs"
                         >
                           <Trash2 size={12} />

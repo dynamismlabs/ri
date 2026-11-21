@@ -21,20 +21,18 @@ interface TreeCollapseAllButtonProps {
 export function TreeCollapseAllButton({ anyOpen, onClick, disabledReason }: TreeCollapseAllButtonProps) {
   const action = anyOpen ? 'Collapse all folders' : 'Expand all folders';
   return (
-
       <IconButton
         type="button"
         onClick={onClick}
         disabled={!!disabledReason}
         label={action}
         tooltip={disabledReason ?? action}
-        variant="secondary"
+        variant="ghost"
         size="sm"
         focus="inside"
         className="inline-flex shrink-0 items-center justify-center"
       >
         {anyOpen ? <ListChevronsDownUp size={14} /> : <ListChevronsUpDown size={14} />}
       </IconButton>
-
   );
 }

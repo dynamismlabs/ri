@@ -14,6 +14,7 @@ beforeAll(async () => {
     import {createRoot} from 'react-dom/client';
     import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
     import {DeckBesideButton, ScratchpadButton, ScratchpadColumn, ScratchpadSheet, ScratchpadShortcut} from '@/components/scratchpad/scratchpad-host';
+    import {ButtonGroup} from '@/components/system/button-group';
     import {registerComposer} from '@/components/chat/editor/composer-focus';
     function App() {
       const message=useRef(null);
@@ -23,7 +24,7 @@ beforeAll(async () => {
       }}),[]);
       return <QueryClientProvider client={new QueryClient()}>
         <div className="flex h-dvh flex-col">
-          <header className="flex h-12 shrink-0 items-center justify-end gap-2 border-b p-2"><DeckBesideButton /><ScratchpadButton /></header>
+          <header className="flex h-12 shrink-0 items-center justify-end gap-2 border-b p-2"><ButtonGroup variant="toolbar"><DeckBesideButton /><ScratchpadButton /></ButtonGroup></header>
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <main className="flex min-w-0 flex-1 flex-col">
               <header className="border-b px-6 py-4 text-sm font-semibold">Launch review <span className="ml-2 font-normal text-muted-foreground">Sample chat</span></header>
@@ -346,6 +347,36 @@ describe('scratchpad quick view and expansion', () => {
 describe('the deck beside', () => {
   const pressed = (page: Page, name: string) => page.getByRole('button', { name, exact: true }).getAttribute('aria-pressed');
   const deck = (page: Page) => page.locator('[data-deck-stub]');
+
+  for (const theme of ['light', 'dark']) it(`shows the actual HUD pressed thumb against its track (${theme})`, async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
+    try {
+      await page.goto(fixture.url);
+      await page.evaluate(dark => document.documentElement.classList.toggle('dark', dark), theme === 'dark');
+      const button = page.getByRole('button', { name: 'Deck', exact: true });
+      await button.click();
+      await deck(page).waitFor();
+      expect(await button.getAttribute('aria-pressed')).toBe('true');
+      await page.mouse.move(10, 100);
+      // Measure the pressed state after its fill and ink transitions finish.
+      await button.evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
+      const state = await button.evaluate(el => {
+        const style = getComputedStyle(el), track = getComputedStyle(el.closest('.ri-button-group')!);
+        const canvas = document.createElement('canvas'), context = canvas.getContext('2d')!;
+        const rgb = (...layers: string[]) => { context.clearRect(0, 0, 1, 1); for (const layer of layers) { context.fillStyle = layer; context.fillRect(0, 0, 1, 1); } return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3); };
+        const luminance = (color: number[]) => { const [r, g, b] = color.map(value => { const s = value / 255; return s <= .03928 ? s / 12.92 : ((s + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+        const ratio = (a: number[], b: number[]) => { const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (high + .05) / (low + .05); };
+        const pane = style.getPropertyValue('--pane');
+        return { fill: style.backgroundColor, track: track.backgroundColor, shadow: style.boxShadow, textContrast: ratio(rgb(style.backgroundColor), rgb(style.color)), fillContrast: ratio(rgb(pane, style.backgroundColor), rgb(pane, track.backgroundColor)) };
+      });
+      expect(state.fill).not.toBe(state.track);
+      expect(state.shadow).not.toBe('none');
+      expect(state.textContrast).toBeGreaterThanOrEqual(4.5);
+      expect(state.fillContrast).toBeGreaterThan(1.05);
+      await page.keyboard.press('Tab');await button.focus();
+      expect(await button.evaluate(el => getComputedStyle(el).outlineOffset)).toBe('-2px');
+    } finally { await page.close(); }
+  });
 
   it('shares the column with the pad and keeps both as they were left', async () => {
     const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });

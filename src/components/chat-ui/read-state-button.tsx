@@ -45,7 +45,6 @@ export function ReadStateButton({ sessionId, className }: { sessionId: string | 
   }
 
   return (
-
       <IconButton
         type="button"
         onClick={() => markUnread.mutate(chat.id)}
@@ -57,6 +56,5 @@ export function ReadStateButton({ sessionId, className }: { sessionId: string | 
       >
         <EyeOff size={13} />
       </IconButton>
-
   );
 }

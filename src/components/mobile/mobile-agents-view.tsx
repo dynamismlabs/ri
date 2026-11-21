@@ -366,7 +366,7 @@ function WorkspaceBlock({ workspace }: { workspace: WorkspaceWithCounts }) {
             <IconButton
               type="button"
               label={`More for ${workspace.name}`}
-              variant="secondary"
+              variant="ghost"
               size="touch"
               className="flex items-center justify-center flex-shrink-0"
             >

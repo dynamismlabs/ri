@@ -176,7 +176,7 @@ export function DeckConductor({
                 data-on={morning?.enabled || undefined}
                 label="Morning auto-refresh"
                 tooltip="Morning auto-refresh"
-                variant="secondary"
+                variant="ghost"
                 size="xs"
                 className="flex items-center justify-center"
               >

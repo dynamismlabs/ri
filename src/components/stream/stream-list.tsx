@@ -171,7 +171,7 @@ export function StreamList() {
               <IconButton
                 label="History"
                 tooltip="History"
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 className="flex items-center gap-1"
               >
@@ -403,7 +403,6 @@ function StreamRow({
         {/* Row actions */}
         <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
           {needsRetry && (
-
               <IconButton
                 onClick={onRetry}
                 label="Try reading it again"
@@ -414,7 +413,6 @@ function StreamRow({
               >
                 <RefreshCw size={12} />
               </IconButton>
-
           )}
           {isPending && !needsRetry && (
             <>
@@ -426,7 +424,7 @@ function StreamRow({
                   label="Keep as a thought"
                   tooltip="Keep as a thought"
                   tipSide="bottom"
-                  variant="secondary"
+                  variant="ghost"
                   size="sm"
                 >
                   <BookOpen size={12} />
@@ -438,7 +436,7 @@ function StreamRow({
                   label="Set aside"
                   tooltip="Set aside"
                   tipSide="bottom"
-                  variant="secondary"
+                  variant="ghost"
                   size="sm"
                 >
                   <Archive size={12} />
@@ -447,18 +445,16 @@ function StreamRow({
             </>
           )}
           {isSettled && (
-
               <IconButton
                 onClick={onReopen}
                 label="Bring it back"
                 tooltip="Bring it back"
                 tipSide="bottom"
-                variant="secondary"
+                variant="ghost"
                 size="sm"
               >
                 <RotateCcw size={12} />
               </IconButton>
-
           )}
         </div>
       </div>

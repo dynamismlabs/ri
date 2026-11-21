@@ -42,20 +42,18 @@ export function ScratchpadPad({ onClose, closeShortcut, expanded = false, onExpa
         <h2 className="mr-auto shrink-0 text-xs font-semibold">Scratchpad</h2>
         <SaveState saving={snapshot.saving} error={snapshot.error} updatedAt={snapshot.updatedAt} />
         {onExpand && (
-
             <IconButton
               type="button"
               onClick={onExpand}
               onMouseDown={(e) => e.preventDefault()}
               label="Expand the scratchpad"
               tooltip="Open in a slideout"
-              variant="secondary"
+              variant="ghost"
               size="sm"
               className="flex shrink-0 items-center justify-center"
             >
               <Maximize2 size={14} />
             </IconButton>
-
         )}
 
           <IconButton
@@ -64,7 +62,7 @@ export function ScratchpadPad({ onClose, closeShortcut, expanded = false, onExpa
             label="Close the scratchpad"
             tooltip="Close"
             shortcut={closeShortcut}
-            variant="secondary"
+            variant="ghost"
             size="sm"
             className="flex shrink-0 items-center justify-center"
           >
