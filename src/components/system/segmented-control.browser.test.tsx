@@ -130,6 +130,25 @@ for (const theme of ['light','dark']) {
       await page.keyboard.press('Tab');await live.focus();expect(await live.evaluate(el=>getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally { await page.close(); }
   });
+  it(`keeps the selected option visible after its track narrows or labels grow (${theme})`, async () => {
+    const page=await fixture.browser.newPage({viewport:{width:900,height:700}});
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const group=page.getByRole('group',{name:'Scrolling'}),last=group.getByRole('button',{name:'Option 9'});
+      await last.click();
+      await page.locator('#resize').evaluate(el=>{el.style.width='1500px'});
+      await expect.poll(()=>group.locator('xpath=..').evaluate(el=>el.scrollLeft)).toBe(0);
+      await page.locator('#resize').evaluate(el=>{el.style.width='160px'});
+      const visible=()=>last.evaluate(el=>{
+        const box=el.getBoundingClientRect(),viewport=el.closest('.ri-segment-scroller')!.getBoundingClientRect();
+        return box.left>=viewport.left-1 && box.right<=viewport.right+1;
+      });
+      await expect.poll(visible).toBe(true);
+      await page.getByRole('button',{name:'Long label'}).click();
+      await expect.poll(visible).toBe(true);
+      expect(await page.evaluate(()=>window.scrollY)).toBe(0);
+    }finally{await page.close();}
+  });
   it(`measures scrolling, resizing and changed labels without moving the page (${theme})`, async () => {
     const page=await fixture.browser.newPage({viewport:{width:900,height:700}});
     try {

@@ -145,22 +145,6 @@ export function SegmentedList<T extends string>({
   const scroller = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ left: false, right: false });
-  useEffect(() => {
-    const el = scroller.current;
-    const content = track.current;
-    if (!el || !content) return;
-    const measure = () =>
-      setEdges({ left: el.scrollLeft > 1, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1 });
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    observer.observe(content);
-    el.addEventListener('scroll', measure, { passive: true });
-    return () => {
-      observer.disconnect();
-      el.removeEventListener('scroll', measure);
-    };
-  }, []);
   const reveal = (item: Element | null) => {
     const el = scroller.current;
     if (!el || !item) return;
@@ -170,6 +154,33 @@ export function SegmentedList<T extends string>({
     if (bounds.left < viewport.left) el.scrollLeft -= viewport.left - bounds.left;
     else if (bounds.right > viewport.right) el.scrollLeft += bounds.right - viewport.right;
   };
+  useEffect(() => {
+    const el = scroller.current;
+    const content = track.current;
+    if (!el || !content) return;
+    const measure = () =>
+      setEdges({ left: el.scrollLeft > 1, right: el.scrollLeft + el.clientWidth < el.scrollWidth - 1 });
+    const resize = () => {
+      const focused = document.activeElement;
+      // Resizing or changing labels can move the selected option offscreen.
+      // Respect roving keyboard focus before falling back to selection.
+      reveal(
+        focused instanceof HTMLElement && content.contains(focused)
+          ? focused
+          : content.querySelector('[aria-selected="true"], [aria-pressed="true"], [aria-checked="true"]'),
+      );
+      measure();
+    };
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(el);
+    observer.observe(content);
+    el.addEventListener('scroll', measure, { passive: true });
+    return () => {
+      observer.disconnect();
+      el.removeEventListener('scroll', measure);
+    };
+  }, []);
   useEffect(() => {
     reveal(
       track.current?.querySelector('[aria-selected="true"], [aria-pressed="true"], [aria-checked="true"]') ??

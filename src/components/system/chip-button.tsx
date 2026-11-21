@@ -18,24 +18,75 @@ type ChipTone =
   | { tone: 'status'; status: StatusTone; mode?: never }
   | { tone: 'mode'; mode: PermissionMode; status?: never };
 
-export type ChipButtonProps = Omit<ButtonProps, 'size' | 'tone'> & ChipTone & {
-  size?: 'compact' | 'touch';
-  label?: string;
-  /** Keep the label accessible while showing only the icon. */
-  iconOnly?: boolean;
-  /** A trailing menu affordance, including when the label folds away. */
-  disclosure?: boolean;
-};
+export type ChipButtonProps = Omit<ButtonProps, 'size' | 'tone'> &
+  ChipTone & {
+    size?: 'compact' | 'touch';
+    label?: string;
+    /** Keep the label accessible while showing only the icon. */
+    iconOnly?: boolean;
+    /** A trailing menu affordance, including when the label folds away. */
+    disclosure?: boolean;
+  };
 
 const MODE_TONES: Record<PermissionMode, ButtonTone> = {
-  auto_all: 'mode-auto', auto_edits: 'mode-edits', ask: 'mode-ask', plan: 'mode-plan',
+  auto_all: 'mode-auto',
+  auto_edits: 'mode-edits',
+  ask: 'mode-ask',
+  plan: 'mode-plan',
 };
 
 /** A toolbar, filter or status action. Facts without an action use StatusBadge. */
-export function ChipButton({ size = 'compact', tone = 'neutral', status, mode, label, iconOnly, disclosure, children, className, variant = 'secondary', ...props }: ChipButtonProps) {
-  const ink = tone === 'mode' ? MODE_TONES[mode!] : tone === 'status' ? status! : tone === 'attention' && !props.pressed && props['aria-pressed'] !== true ? 'neutral' : tone;
-  return <Button {...props} aria-label={props['aria-label'] ?? label} variant={variant} icon={iconOnly || props.icon} size={size === 'touch' ? 'touch' : 'sm'} tone={ink} className={cn(chipVariants({ size, iconOnly }), disclosure && iconOnly && 'ri-button--disclosure', className)}>
-    {label ? <>{children}<span className="ri-chip-label">{label}</span></> : children}
-    {disclosure && <ChevronDown className="ri-disclosure-chevron" />}
-  </Button>;
+export function ChipButton({
+  size = 'compact',
+  tone = 'neutral',
+  status,
+  mode,
+  label,
+  iconOnly,
+  disclosure,
+  children,
+  className,
+  variant = 'secondary',
+  ...props
+}: ChipButtonProps) {
+  const ink =
+    tone === 'mode'
+      ? MODE_TONES[mode!]
+      : tone === 'status'
+        ? status!
+        : tone === 'attention' && !props.pressed && props['aria-pressed'] !== true
+          ? 'neutral'
+          : tone;
+  const content = label ? (
+    <>
+      {children}
+      <span className="ri-chip-label">{label}</span>
+    </>
+  ) : (
+    children
+  );
+  return (
+    <Button
+      {...props}
+      aria-label={props['aria-label'] ?? label}
+      variant={variant}
+      icon={iconOnly || props.icon}
+      size={size === 'touch' ? 'touch' : 'sm'}
+      tone={ink}
+      className={cn(
+        chipVariants({ size, iconOnly }),
+        disclosure && iconOnly && 'ri-button--disclosure',
+        className,
+      )}
+    >
+      {disclosure ? (
+        <>
+          {content}
+          <ChevronDown className="ri-disclosure-chevron" />
+        </>
+      ) : (
+        content
+      )}
+    </Button>
+  );
 }
