@@ -66,6 +66,7 @@ export function SplitLibrary() {
               <SegmentedControl
                 mode="choice"
                 stretch
+                distribution="natural"
                 ariaLabel="Filter your library"
                 size={tier === 'phone' ? 'touch' : 'compact'}
                 value={libraryFilter}

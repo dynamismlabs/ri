@@ -170,7 +170,7 @@ it('shows one grouped library, visible creation buttons and discovery at desktop
     for (const label of ['Apps', 'Connectors', 'Skills']) await library.getByRole('heading', { name: label, exact: true }).waitFor();
     await library.getByRole('region', { name: 'Your connectors', exact: true }).getByRole('button', { name: 'Manage connection Company data', exact: true }).waitFor();
     await library.getByRole('region', { name: 'Your skills', exact: true }).getByRole('button', { name: 'Edit skill Private workflow', exact: true }).waitFor();
-    for (const width of [1440, 900, 390, 320]) {
+    for (const width of [1440, 900, 390, 360, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       for (const label of ['New skill', 'Add MCP server']) expect(await page.getByRole('button', { name: label, exact: true }).isVisible()).toBe(true);
       const tabs = library.getByRole('group', { name: 'Filter your library' });
@@ -178,6 +178,7 @@ it('shows one grouped library, visible creation buttons and discovery at desktop
         const tab = tabs.getByRole('button', { name: label, exact: true });
         expect(await tab.isVisible()).toBe(true);
         expect(await tab.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+        expect(await tab.locator('.ri-segment-label').evaluate(element => element.scrollWidth <= element.clientWidth + 1), `${label} must stay readable at ${width}px`).toBe(true);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Apps at ${width}px`).toBe(true);
       if (width === 1440 || width === 390) await page.screenshot({ path: `/tmp/ri-apps-library-filters-${width}.png` });

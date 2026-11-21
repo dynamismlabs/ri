@@ -67,6 +67,7 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
 
   return (
     <SegmentedRoot
+      asChild
       mode="tabs"
       value={tab}
       onChange={(kind) => {

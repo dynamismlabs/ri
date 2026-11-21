@@ -30,6 +30,9 @@ beforeAll(async () => {
         <SegmentedControl mode="choice" selection="radio" value="live" onChange={()=>{}} ariaLabel="Isolation" options={[{value:'worktree',label:'Worktree',disabled:true},{value:'live',label:'Live',selectedTone:'warning'}]}/>
         <div id="resize" style={{width:240}}><SegmentedControl mode="choice" value={scroll} onChange={setScroll} options={Array.from({length:10},(_,i)=>({value:String(i),label:i===0&&long?'A very long changed label':'Option '+i}))} ariaLabel="Scrolling"/></div>
         <button onClick={()=>setLong(true)}>Long label</button>
+        <div id="choice-spacing" className="space-y-3"><SegmentedControl mode="choice" value="a" onChange={()=>{}} ariaLabel="Spaced choice" options={options}/><p id="after-choice">After choice</p></div>
+        <div id="tabs-spacing" className="space-y-3"><SegmentedRoot mode="tabs" value="a" onChange={()=>{}} asChild><section id="existing-container"><SegmentedList ariaLabel="Spaced tabs" options={options}/><SegmentedPanel value="a">Existing panel</SegmentedPanel></section></SegmentedRoot><p id="after-tabs">After tabs</p></div>
+
       </main>;
     }
     createRoot(document.getElementById('root')).render(<TipProvider><App/></TipProvider>);
@@ -147,6 +150,17 @@ for (const theme of ['light','dark']) {
       await page.getByRole('button',{name:'Long label'}).click();
       await expect.poll(visible).toBe(true);
       expect(await page.evaluate(()=>window.scrollY)).toBe(0);
+    }finally{await page.close();}
+  });
+  it(`preserves sibling spacing and the host container's DOM (${theme})`, async () => {
+    const page=await fixture.browser.newPage();
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}`);
+      const choice=await page.getByRole('group',{name:'Spaced choice'}).boundingBox(),afterChoice=await page.locator('#after-choice').boundingBox();
+      expect(afterChoice!.y-(choice!.y+choice!.height)).toBe(12);
+      const tabs=await page.locator('#existing-container').boundingBox(),afterTabs=await page.locator('#after-tabs').boundingBox();
+      expect(afterTabs!.y-(tabs!.y+tabs!.height)).toBe(12);
+      expect(await page.locator('#existing-container').evaluate(el=>el.parentElement!.id)).toBe('tabs-spacing');
     }finally{await page.close();}
   });
   it(`measures scrolling, resizing and changed labels without moving the page (${theme})`, async () => {

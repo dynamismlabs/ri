@@ -67,7 +67,7 @@ export function AgentFoldersSection({ workspace }: { workspace: WorkspaceRecord 
   const selected = devices.find((c) => c.deviceId === chosenId) ?? devices[0] ?? null;
 
   return (
-    <SegmentedRoot mode="tabs" value={selected?.deviceId ?? null} onChange={setChosenId}>
+    <SegmentedRoot asChild mode="tabs" value={selected?.deviceId ?? null} onChange={setChosenId}>
       <section className="space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground">Folders</h3>

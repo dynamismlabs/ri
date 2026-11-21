@@ -37,13 +37,7 @@
     mask-image: linear-gradient(to left, transparent, #000 24px);
   }
   .ri-segmented[data-edge-left][data-edge-right] .ri-segment-scroller {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 24px,
-      #000 calc(100% - 24px),
-      transparent
-    );
+    mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
   }
   .ri-segment-track {
     display: inline-flex;
@@ -65,6 +59,9 @@
   }
   .ri-segmented--stretch .ri-segment-option {
     flex: 1;
+  }
+  .ri-segmented--stretch.ri-segmented--natural .ri-segment-option {
+    flex: 1 0 auto;
   }
   .ri-segment-option {
     display: inline-flex;
@@ -112,19 +109,12 @@
   .ri-segment-option:hover:not(:disabled) {
     color: var(--t1);
   }
-  .ri-segment-option:is(
-    [aria-pressed="true"],
-    [aria-selected="true"],
-    [aria-checked="true"]
-  ) {
+  .ri-segment-option:is([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']) {
     background: var(--thumb);
     color: var(--t1);
     box-shadow: var(--shadow-thumb);
   }
-  .ri-segment-option[data-selected-tone="warning"]:is(
-      [aria-pressed="true"],
-      [aria-checked="true"]
-    ) {
+  .ri-segment-option[data-selected-tone='warning']:is([aria-pressed='true'], [aria-checked='true']) {
     background: var(--warning-fill);
     color: var(--warning-ink);
   }

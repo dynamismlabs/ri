@@ -62,7 +62,7 @@ interface MobileDestinationProps {
 export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: MobileDestinationProps) {
   const moreActive = MORE_VIEWS.includes(view);
   return (
-    <SegmentedRoot mode="tabs" value={view} onChange={onShow}>
+    <SegmentedRoot asChild mode="tabs" value={view} onChange={onShow}>
       <div className="relative flex h-full min-h-0 w-full flex-col bg-background">
         <div className="flex flex-shrink-0 items-center gap-1 border-b border-border px-1.5 py-2">
           <Button

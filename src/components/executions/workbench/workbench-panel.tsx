@@ -102,7 +102,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
   });
 
   return (
-    <SegmentedRoot mode="tabs" value={view} onChange={show}>
+    <SegmentedRoot asChild mode="tabs" value={view} onChange={show}>
       <div ref={measure} className="@container/panel flex h-full min-w-0 flex-col bg-background">
         <div className="flex h-9 flex-shrink-0 items-stretch gap-0.5 border-b border-border pl-1 pr-1.5">
           <SegmentedList ariaLabel="Chat tools" iconOnly={(width ?? 0) < 720} options={options} />

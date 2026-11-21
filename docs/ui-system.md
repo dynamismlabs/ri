@@ -88,7 +88,8 @@ screen matrix must remain visually unchanged during the token move.
 ## Components
 
 Product components live in `src/components/system/`, built on installed shadcn
-and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens. Stage 1 implements the Button family. Stage 2 implements SegmentedControl.
+and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens. Stage 1 implements the Button family. Stage 2
+implements SegmentedControl.
 The other APIs below are the remaining migration contracts. Missing installed primitives are added through the shadcn
 CLI, with its files and dependency changes checked afterward.
 
@@ -125,10 +126,17 @@ hint or disabled state. Working chat badges keep their existing green ink and fi
 Compact tracks are 28px with 24px options. Touch tracks are 40px with 36px options.
 Call sites pass layout classes and their existing phone or container state.
 `grow` takes available space. `stretch` also distributes options across the track.
+Its default is equal widths. `distribution="natural"` keeps each label's intrinsic
+width before sharing the extra space, so Apps' library filters keep full labels
+on a phone.
 `iconOnly` folds labels while preserving names and tooltips.
 
 Use `mode="tabs"` for distinct panels. `SegmentedRoot`, `SegmentedList` and
 `SegmentedPanel` let a header and its content keep their existing layout.
+A root with one existing native container uses `asChild`, preserving that
+container and its parent's child selectors. Choices add no layout wrapper unless
+one is explicitly requested with root layout classes. This preserves existing
+`space-y` margins and grid boundaries.
 Radix owns tab associations, automatic arrow activation, Home and End, and
 roving focus. Panels unmount by default. `keepMounted` hides an inactive panel
 while retaining its state. `preserveLayout` instead keeps its measured box,
@@ -254,7 +262,9 @@ applying the filter. Stream, list lanes, List and Board, file representation,
 preview destination and theme, Runs and other filters preserve pressed choices.
 Calendar's Show switch changes from pressed buttons to tabs because Calendar,
 List and Report each render the whole range as a separate panel. Week and Day
-remain a choice. The saved preference keys and setters are unchanged.
+remain a choice. The saved preference keys and setters are unchanged. Calendar's
+Refresh action is a ghost icon beside its siblings, using the existing timestamp
+tooltip and the shared 28px size.
 Settings effort and speed, app permissions and launch isolation preserve radio
 semantics and gain radio keyboard behavior. Task Energy and Effort, and Deck
 energy, explicitly allow clearing on the second press.
@@ -277,6 +287,9 @@ entries for the file-specific stage 6 lint allowlist:
 | `phone-tab-bar-navigation` | `src/components/mobile/mobile-tab-bar.tsx` | Navigation drawing, including the approved 48px Create |
 | `question-progress-visualization` | `src/components/chat-ui/questions/question-card.tsx` | Visualization marks that also navigate between questions |
 | `draggable-chat-navigation` | `src/components/executions/execution-chat-tabs.tsx`, chat label only | Browser-style chat navigation preserves drag, rename and measured scrolling |
+
+Identity choices and connection-method rows contain descriptions, so they stay
+with ChoiceRow in stage 4. They are not tracks.
 
 These names must be carried into the strict stage 6 allowlist. They do not grant
 blanket exceptions to the files, and they do not use bare lint disables.
@@ -330,16 +343,16 @@ a hand-built `button` or `a` with `bg-primary` is a capsule, and a hand-built
 
 ### Focus
 
-The look draws its own fills and shadows, and the components' focus rings are box
-shadows too, so every control it restyles gets an explicit `:focus-visible` outline
-in `edge.css` (inset inside a segmented track, which may scroll and clip). A new
-restyled slot joins that list. `src/styles/edge.browser.test.ts` tabs through the
+System components own their focus outline in their own stylesheet. Compatibility
+hooks still drawn by `edge.css` join its explicit `:focus-visible` list, because
+the shared fills and shadows replace inherited box-shadow focus rings. Focus
+sits inside a scrolling track so its outline stays visible. `src/styles/edge.browser.test.ts` tabs through the
 shared controls in both themes, checks the solid review action's hover contrast, and
 checks a narrow lane switch still scrolls where its edge fades look. Phase 3 adds keyboard checks for git actions, split buttons, row actions, Settings fields and choices, Calendar navigation and chat tabs, plus hover contrast and split-button geometry checks in both themes.
 
-Settings' generic bordered-action rules exclude the direct options of a
-segmented control. Those tracks fit their options, and the active thumb keeps its
-fill on hover. Independent pressed toggles in Settings' button groups use the
+Settings' generic bordered-action rules apply only to the remaining native
+controls. System options own their drawing, fit their track and retain the
+active thumb on hover. Independent pressed toggles in Settings' button groups use the
 soft selected fill. Settings search keeps its own field ring without a second
 outline. Other text fields clear their inherited ring when the shared outline is drawn, so focus stays a single treatment.
 
@@ -405,8 +418,8 @@ becomes their drawing owner.
    gain phone touch sizes. Run badges share `status-badge`, and phone runs and
    the full Calendar keep their text and controls inside the panel. Pairing uses
    quiet opaque panels and fields. Floating tools share 14px content corners.
-   The Effort track keeps its existing scrolling behavior. A permanent edge
-   fade would obscure the final option and its focus outline.
+   The audit kept Effort's existing scrolling behavior. Stage 2 replaces it with
+   measured fades that clear at either edge and keep the focused option visible.
 7. **Live with it.** Revert while it's young if it isn't right: new code adopts the
    hooks and the lint ratchet, so a revert gets harder with time.
 8. **Component migration (separate cut).** Stage 0 moves the one palette into
@@ -457,7 +470,7 @@ Small actions around those pieces are capsules. File chips inherit the ink of an
 inverted bubble. Floating model-list and image actions stay opaque over their
 content. Warning actions keep amber in a readable shade in both themes. Focus
 outlines sit inside clipped event cells, menu rows, image pickers and segmented
-options. `SegmentedTabs` still owns its measured scroller.
+options. `SegmentedControl` owns its measured scroller and edge fades.
 
 ## Lint ratchet
 

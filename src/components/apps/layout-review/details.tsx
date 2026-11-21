@@ -28,6 +28,7 @@ export function ItemDetails({ item }: { item: ReviewItem }) {
   }, [item.key, review.query.item]);
   return (
     <SegmentedRoot
+      asChild
       mode="tabs"
       value={settings ? 'settings' : 'overview'}
       onChange={(value) => review.details(item, value === 'settings')}

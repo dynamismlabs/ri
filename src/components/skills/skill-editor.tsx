@@ -64,7 +64,7 @@ export function SkillEditor({ skill, aiWriting }: { skill: SkillView; aiWriting:
   const descriptionLength = draft.description.trim().length;
 
   return (
-    <SegmentedRoot mode="tabs" value={effectiveMode} onChange={switchMode}>
+    <SegmentedRoot asChild mode="tabs" value={effectiveMode} onChange={switchMode}>
       <div className="flex h-full min-h-0 flex-col">
         <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/50 px-3 py-1">
           <SegmentedList

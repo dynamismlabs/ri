@@ -10,7 +10,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from 'react';
-import { RadioGroup, Tabs, ToggleGroup } from 'radix-ui';
+import { RadioGroup, Slot, Tabs, ToggleGroup } from 'radix-ui';
 import { cva } from 'class-variance-authority';
 import { Tip } from '@/components/ui/tip';
 import { cn } from '@/lib/utils';
@@ -62,7 +62,7 @@ function useSegment() {
 
 /** Separate Root/List/Panel parts let a header and its panels keep their layout. */
 export function SegmentedRoot<const T extends string>(
-  props: Selection<T> & { children: ReactNode; className?: string },
+  props: Selection<T> & { children: ReactNode; className?: string; asChild?: boolean },
 ) {
   const root = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -92,16 +92,23 @@ export function SegmentedRoot<const T extends string>(
     props.mode === 'tabs' ? (
       <Tabs.Root
         ref={root}
+        asChild={props.asChild}
         value={props.value ?? ''}
         onValueChange={change}
-        className={cn('contents', props.className)}
+        className={props.asChild ? props.className : cn('contents', props.className)}
       >
         {props.children}
       </Tabs.Root>
-    ) : (
-      <div ref={root} className={cn('contents', props.className)}>
+    ) : props.asChild ? (
+      <Slot.Root ref={root} className={props.className}>
+        {props.children}
+      </Slot.Root>
+    ) : props.className ? (
+      <div ref={root} className={props.className}>
         {props.children}
       </div>
+    ) : (
+      props.children
     );
   return (
     <Context.Provider value={{ mode: props.mode, value: props.value, selection: props.selection, change }}>
@@ -115,6 +122,7 @@ const listVariants = cva('ri-segmented', {
     size: { compact: '', touch: 'ri-segmented--touch' },
     grow: { true: 'ri-segmented--grow' },
     stretch: { true: 'ri-segmented--stretch' },
+    distribution: { equal: '', natural: 'ri-segmented--natural' },
     iconOnly: { true: 'ri-segmented--icons' },
   },
   defaultVariants: { size: 'compact' },
@@ -125,6 +133,8 @@ export interface SegmentedListProps<T extends string> {
   size?: 'compact' | 'touch';
   grow?: boolean;
   stretch?: boolean;
+  /** Preserve intrinsic label widths while distributing the remaining space. */
+  distribution?: 'equal' | 'natural';
   iconOnly?: boolean;
   disabled?: boolean;
   className?: string;
@@ -137,6 +147,7 @@ export function SegmentedList<T extends string>({
   size,
   grow,
   stretch,
+  distribution,
   iconOnly,
   disabled,
   className,
@@ -288,7 +299,7 @@ export function SegmentedList<T extends string>({
     );
   return (
     <div
-      className={cn(listVariants({ size, grow, stretch, iconOnly }), className)}
+      className={cn(listVariants({ size, grow, stretch, distribution, iconOnly }), className)}
       data-edge-left={edges.left || undefined}
       data-edge-right={edges.right || undefined}
     >

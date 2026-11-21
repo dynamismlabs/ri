@@ -100,7 +100,7 @@ export function AgentTools({
   };
 
   return (
-    <SegmentedRoot mode="tabs" value={toolActive ? tab : null} onChange={onSelectTab}>
+    <SegmentedRoot asChild mode="tabs" value={toolActive ? tab : null} onChange={onSelectTab}>
       <div ref={measure} className="@container/panel flex h-full min-h-0 min-w-0 flex-col bg-background">
         <div
           className={cn(

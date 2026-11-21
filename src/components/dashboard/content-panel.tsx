@@ -144,6 +144,7 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
 
   return (
     <SegmentedRoot
+      asChild
       mode="tabs"
       value={fileShown ? null : activeTab}
       onChange={(tab) => setPanelTab(panelId, tab)}
