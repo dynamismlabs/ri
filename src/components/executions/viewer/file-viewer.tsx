@@ -327,6 +327,7 @@ function FileViewerHeader({
       )}
       {(isChanged || isMarkdown || isHtml) && (
         <SegmentedControl<Mode>
+          className="shrink-0"
           mode="choice"
           ariaLabel="File view"
           value={mode}

@@ -276,7 +276,9 @@ boundary. Rich file and chat tabs beside a primary track retain their current
 content containers until the content migration. Add and Close use IconButton xs,
 and Close includes the chat name. All, Add and Close own their inset focus and
 ink, with no chat-strip action overrides. More menus use the Button family outside the
-tablist. A folded menu chip uses `disclosure` to keep room for its chevron.
+tablist. The file header keeps its mode track at its original width beside fixed
+actions. The surrounding one-row toolbar keeps its existing layout. A folded menu
+chip uses `disclosure` to keep room for its chevron.
 
 The original 54 native declarations were reviewed individually. Task creation's
 Energy and Effort dropdown rows and Stream's history menu are MenuAction work in
