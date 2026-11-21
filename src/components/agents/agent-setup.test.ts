@@ -113,7 +113,8 @@ async function edit(value: string, element: HTMLTextAreaElement = guidance()) {
 }
 
 async function save() {
-  await act(async () => mountedProps<{ onClick: () => void }>(saveButton()!).onClick());
+  await act(async () => mountedProps<{ onClick: (event: Event) => void }>(saveButton()!)
+    .onClick(new window.Event('click', { cancelable: true })));
 }
 
 async function acknowledge(overrides: Partial<WorkspaceRecord> = {}) {

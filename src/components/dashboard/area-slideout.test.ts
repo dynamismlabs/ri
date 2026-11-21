@@ -20,6 +20,7 @@ vi.mock('@/contexts/dashboard-context', () => ({ useDashboard: () => ({}) }));
 vi.mock('@/components/tasks/lifecycle-status-control', () => ({ LifecycleStatusControl: () => null }));
 vi.mock('@/components/shared/note-icon', () => ({ NoteIcon: () => null }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), warning: vi.fn() } }));
+vi.mock('@/components/ui/tip', () => ({ Tip: ({ children }: { children: ReactNode }) => children }));
 vi.mock('radix-ui', () => {
   const wrapper = ({ children }: { children?: ReactNode }) => children;
   return { Dialog: { Root: wrapper, Portal: wrapper, Content: wrapper, Title: wrapper, Overlay: () => null } };

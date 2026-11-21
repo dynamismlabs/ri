@@ -69,7 +69,8 @@ async function edit(value: string) {
 
 async function save() {
   await act(async () => {
-    await mountedProps<{ onClick: () => Promise<void> }>(saveButton()).onClick();
+    await mountedProps<{ onClick: (event: Event) => void }>(saveButton())
+      .onClick(new window.Event('click', { cancelable: true }));
   });
 }
 
