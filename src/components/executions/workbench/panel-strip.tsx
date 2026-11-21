@@ -12,10 +12,10 @@ import { cn } from '@/lib/utils';
  * itself, which brings every execution view with it.
  */
 
-/** A tab in a tools panel's strip, the execution view's and the agent view's: underlined while it's in front. */
+/** Rich file/chat containers beside the primary track, retained until the content migration. */
 export function panelTabClass(on: boolean): string {
   return cn(
-    // panel-tab(-on) are style hooks for the new look (src/styles/edge.css).
+    // Compatibility drawing for content containers, not SegmentedControl options.
     'panel-tab -mb-px whitespace-nowrap border-b-2 px-2.5 text-[12.5px] font-medium transition-colors',
     on ? 'panel-tab-on border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
   );

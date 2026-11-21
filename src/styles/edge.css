@@ -13,16 +13,8 @@ html:root .uppercase { text-transform: none; letter-spacing: normal; }
 html:root [data-slot="rail"],
 html:root [data-slot="top-hud"] { background-color: var(--canvas); }
 
-/* ── Pane tabs: one segmented control ──────────────────────────────────── */
+/* Pane header frame. SegmentedControl owns its track and options. */
 html:root [data-slot="pane-tabs"] { background-color: var(--background); min-height: 44px; padding-inline: 8px; gap: 4px; }
-html:root [data-slot="pane-tab-group"] { display: inline-flex; align-items: center; padding: 2px; border-radius: 999px; background-color: var(--track); }
-html:root [data-slot="pane-tab"] { display: inline-flex; align-items: center; height: 24px; padding-inline: 12px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--t3); }
-html:root [data-slot="pane-tab"]:hover { color: var(--t1); }
-html:root [data-slot="pane-tab"][data-active] { background-color: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
-html:root [data-slot="pane-tab"] [aria-label="Something needs your call"] { background-color: var(--attention); }
-html:root [data-slot="pane-tab-more"] { height: 26px; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; font-size: 12.5px; font-weight: 500; color: var(--t3); }
-html:root [data-slot="pane-tab-more"]:hover,
-html:root [data-slot="pane-tab-more"][data-active] { background-color: var(--hover); color: var(--t1); }
 
 /* ── Chat input: white, a fine outline, a soft lift ────────────────────── */
 html:root [data-slot="chat-composer-card"] { border-color: transparent; border-radius: 22px; background-color: var(--composer); box-shadow: var(--composer-shadow); }
@@ -32,28 +24,8 @@ html:root [data-slot="chat-composer-card"]:focus-within { border-color: transpar
 /* Menus and popovers lift off the page by shadow, not a heavy border. */
 html:root :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="popover-content"], [data-slot="select-content"], [data-slot="combobox-content"]) { border-color: transparent; border-radius: 12px; box-shadow: var(--shadow-pop); }
 html:root :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-color: transparent; box-shadow: var(--shadow-pop); }
-/* Tabs (shadcn) share the pane tabs' segmented shape. */
-html:root [data-slot="tabs-list"] { border-radius: 999px; background-color: var(--track); padding: 2px; }
-html:root [data-slot="tabs-trigger"] { border-radius: 999px; }
-html:root [data-slot="tabs-trigger"][data-state="active"] { background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
 
 /* ── Phase 2: the daily screens ─────────────────────────────────────────── */
-
-
-/* Segmented control: one soft track, the chosen option a raised thumb. Any hand-built
-   switch joins it with data-slot="segmented" on the track and aria-pressed or
-   aria-selected on its options. */
-html:root [data-slot="segmented"] { flex-wrap: nowrap; gap: 0; padding: 2px; border: 0; border-radius: 999px; background-color: var(--track); }
-html:root [data-slot="segmented"].contents { display: flex; }
-html:root [data-slot="segmented"] { align-self: center; align-items: center; }
-html:root [data-slot="segmented"] > button { flex: none; white-space: nowrap; margin: 0; border: 0; }
-html:root [data-slot="segmented"] > button { display: inline-flex; align-items: center; height: 24px; padding-inline: 11px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: normal; color: var(--t3); background-color: transparent; box-shadow: none; }
-html:root [data-slot="segmented"] > button:hover:not([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { color: var(--t1); background-color: transparent; }
-html:root [data-slot="segmented"] > :is([aria-pressed="true"], [aria-selected="true"]) { color: var(--t1); background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
-/* A label shown in the track for a choice made elsewhere (the phone's More view) reads as the chosen option. */
-html:root [data-slot="segmented"] > span { border-radius: 999px; color: var(--t1); background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
-/* Phone-sized switches keep their touch height and their own flex (full-width lenses, scrolling tool tabs). */
-html:root [data-slot="segmented"][data-size="touch"] > button { flex: revert-layer; height: 36px; padding-inline: 12px; font-size: 13px; }
 
 html:root [data-slot="list-toolbar"] { background-color: var(--background); }
 
@@ -116,15 +88,11 @@ html:root [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-s
 html:root [data-slot="entity-kind"] [data-slot="area-select"]:is(:hover, [data-state="open"])::after { opacity: 0.85; }
 html:root [data-slot="properties"] { row-gap: 8px; font-size: 13px; }
 html:root [data-slot="properties"] > span { font-weight: 400; color: var(--t3); }
-/* Effort's five options can outrun a narrow slideout: that track scrolls. (SegmentedTabs scrolls its own wrapper.) */
-html:root [data-slot="properties"] [data-slot="segmented"] { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 
-/* Header actions on a task or note: capsules on a quiet fill. Working with an agent keeps its violet. */
-
-/* Tool panel tabs outside a segmented control (a file or chat opened beside, More): capsules. */
-html:root .panel-tab:not([data-slot="segmented"] > *) { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--t3); }
-html:root .panel-tab:not([data-slot="segmented"] > *):hover { color: var(--t1); }
-html:root .panel-tab.panel-tab-on:not([data-slot="segmented"] > *) { background-color: var(--selected); color: var(--t1); }
+/* Tool panel tabs outside a segmented control (a file or chat opened beside): capsules. */
+html:root .panel-tab { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--t3); }
+html:root .panel-tab:hover { color: var(--t1); }
+html:root .panel-tab.panel-tab-on { background-color: var(--selected); color: var(--t1); }
 
 /* Stream: the line under a capture in plain type, and its notices as soft panels. */
 html:root [data-slot="stream-meta"] > :is(p, span, button, a) { font-family: inherit; font-size: 12px; letter-spacing: normal; text-transform: none; }
@@ -134,7 +102,7 @@ html:root [data-slot="stream-meta"] > svg { width: 12px; height: 12px; }
 html:root [data-slot="callout"] { border-color: transparent; border-radius: 14px; background-color: var(--raised); }
 
 /* Hand-built buttons and cards across the app, until each one moves onto the shared components. */
-html:root :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-radius: 999px; }
+html:root :is(button, a).bg-primary:not([role="tab"], [role="checkbox"], [role="switch"], [role="radio"], [role="option"]) { border-radius: 999px; }
 html:root .border.bg-card:not(input, textarea, select, [data-slot]) { border-color: transparent; box-shadow: var(--shadow-card); }
 
 /* Phone: the search field and the buttons beside it. */
@@ -145,9 +113,7 @@ html:root :is([data-slot="input"], [data-slot="input-group"], [data-slot="textar
 
 /* Keyboard focus stays visible wherever the look draws its own fill or shadow, which
    replaces the components' focus rings (they're box-shadows too). */
-html:root :is([data-slot="segmented"] > button, [data-slot="pane-tab"], [data-slot="pane-tab-more"], [data-slot="tabs-trigger"], [data-slot="task-chip"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-/* Inside a track (which may scroll and clip), the ring sits just inside the option. */
-html:root :is([data-slot="segmented"] > button, [data-slot="pane-tab"]):focus-visible { outline-offset: -2px; }
+html:root :is([data-slot="task-chip"], .panel-tab, :where(.border.bg-card), [data-slot="area-select"], [data-slot="search-field"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
 /* ── Phase 3: daily controls and the long tail ─────────────────────────── */
 /* These labels were sized for capitals. Sentence case needs a readable size.
@@ -166,7 +132,6 @@ html:root [data-slot="action-button"]:is([data-tone="status"], [data-tone="warni
 /* The git summary is a quiet group, with its next action nested inside. */
 html:root [data-slot="status-strip"] { border-color: transparent; border-radius: 999px; background-color: var(--track); }
 html:root [data-slot="status-strip"] [data-slot="action-button"] { min-height: 24px; }
-
 
 /* Chat tabs keep their measured scroller. Each tab includes its close button. */
 html:root [data-slot="chat-tabs"] { gap: 4px; }
@@ -189,23 +154,20 @@ html:root [data-slot="calendar-navigation"] > button { min-height: 26px; border-
    lets hand-built controls follow the system during the component migration.
    Explicit slots (choices, switches, editor controls) keep their own rules. */
 /* A switch keeps its own track and thumb, including inside Settings. */
-html:root [data-slot="settings-body"] [data-slot="segmented"] { width: fit-content; }
 html:root [data-slot="settings-nav"] { background-color: var(--canvas); }
 html:root [data-slot="settings-nav"] > button { border-radius: 8px; box-shadow: none; }
 html:root [data-slot="settings-nav"] > button[aria-current="page"] { background-color: var(--selected); }
 html:root [data-slot="settings-nav"] > button:not([aria-current="page"]):hover { background-color: var(--hover); }
 html:root [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:not([data-slot], .rounded-full) { border-color: transparent; border-radius: 14px; }
 html:root [data-slot="settings-body"] :where(div, section, label, form, details, ul, ol).border:is(.border-border, :not([class*="border-"])):not([data-slot], .rounded-full, [role="alert"], [role="status"]) { background-color: var(--raised); }
-html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *) { border-color: transparent; border-radius: 999px; background-color: var(--track); box-shadow: none; }
-html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"], [data-slot="segmented"] > *):hover:not(:disabled) { background-color: var(--selected); }
+html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"]) { border-color: transparent; border-radius: 999px; background-color: var(--track); box-shadow: none; }
+html:root [data-slot="settings-body"] :where(button, a).border:not([data-slot], [role="switch"], [role="checkbox"], [role="radio"], [role="option"]):hover:not(:disabled) { background-color: var(--selected); }
 /* Some Settings actions use bg-foreground for their solid fill. Preserve its
    matching text-background in both themes and on hover. */
 html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]) { background-color: revert-layer; color: revert-layer; }
 html:root [data-slot="settings-body"] :where(button, a).border:is(.bg-foreground, .bg-primary):not([data-slot]):hover:not(:disabled) { background-color: revert-layer; color: revert-layer; }
 html:root :is([data-slot="settings-body"], [data-slot="settings-nav"]) :where(input:not([type="checkbox"], [type="radio"]), textarea, select).border,
 html:root [data-slot="field"] { border-color: var(--line-2); border-radius: 10px; background-color: var(--background); }
-html:root [data-slot="segmented"][role="radiogroup"] { max-width: 100%; overflow-x: auto; }
-html:root [data-slot="segmented"] > [aria-checked="true"] { color: var(--t1); background-color: var(--thumb); box-shadow: var(--shadow-thumb); }
 
 /* Choosers hold a title and description. Their selection is a soft row, with
    no outline or card shadow. This also covers hand-built dialog lists. */
@@ -223,12 +185,6 @@ html:root :is( [data-slot="chat-tabs"] > button, [data-slot="chat-tab"], [data-s
 /* Descriptive Settings choices are rows even when they have no shared component. */
 html:root [data-slot="settings-body"] :where(button, a).border.text-left:not([data-slot]) { border-radius: 8px; }
 html:root [data-slot="action-button"]:is([aria-pressed="true"], [aria-selected="true"], [aria-checked="true"]) { background-color: var(--selected); }
-
-
-/* Keep every Calendar view label visible. The date text already truncates to
-   make room, so the control track must not shrink and clip its last option. */
-html:root [data-slot="calendar-toolbar"] > [data-slot="segmented"] { flex-shrink: 0; }
-
 
 /* Content remains rectangular even when the whole card opens something. Image
    pickers and calendar events keep their content geometry and color marks. */
@@ -254,9 +210,6 @@ html:root [data-slot="action-button"][data-variant="floating"] { background-colo
 html:root [data-slot="action-button"][data-variant="floating"]:hover:not(:disabled) { background-color: var(--raised); }
 html:root [data-slot="field"][aria-invalid="true"] { border-color: var(--destructive); }
 
-/* Only these unmeasured tracks scroll here. SegmentedTabs keeps its own measured
-   scroller and edge fades. Focus sits inside the clipped option. */
-html:root [data-slot="segmented"][data-scroll] { width: fit-content; max-width: 100%; overflow-x: auto; }
 html:root :is([data-slot="content-card"], [data-slot="image-picker"], [data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="attachment-chip"], [data-slot="completion-control"]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 /* Calendar cells and pickers can clip at their container's edge. */
 html:root :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slot="image-picker"]):focus-visible { outline-offset: -2px; }
@@ -264,19 +217,12 @@ html:root :is([data-slot="calendar-event"], [data-slot="menu-action"], [data-slo
 /* Warning actions keep amber at a readable shade on the quiet status fill. */
 html:root [data-slot="action-button"][data-tone="warning"] { color: var(--warning-ink); }
 
-/* A hand-built grid choice becomes one track while its source still describes a grid. */
-html:root [data-slot="segmented"].grid { display: flex; }
 /* Fields use one focus treatment. Preserve an invalid field's error border. */
 html:root [data-slot="settings-body"] :where(input, textarea, select).border:focus-visible,
 html:root [data-slot="field"]:focus-visible { border-color: var(--line-2); box-shadow: none; }
 html:root [data-slot="field"][aria-invalid="true"]:focus-visible { border-color: var(--destructive); }
-/* A touch track inside a contents wrapper fills its existing padded row. */
-html:root [data-slot="segmented"][data-size="touch"].contents { flex: 1; }
-
 
 /* ── Default look audit: state, contrast and phone layout ──────────────── */
-
-
 
 html:root :is( [data-slot="run-row"], [data-slot="meta-item"], [data-task-status]):focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; box-shadow: none; }
 
@@ -297,7 +243,6 @@ html:root [data-slot="meta"] [data-kind="status"] > [data-task-status="done"] { 
 html:root [cmdk-group-heading] { font-size: 12px; font-weight: 500; letter-spacing: normal; text-transform: none; color: var(--t3); }
 html:root [data-slot="search-footer"] { font-size: 12px; color: var(--t3); }
 html:root [data-slot="search-footer"] kbd { font-size: 11px; }
-html:root [data-slot="tabs-list"][data-variant="line"] [data-slot="tabs-trigger"]::after { display: none; }
 
 /* Centered dialogs share corners and one scrim, without blur. Full-page phone
    search is a page, so it keeps square corners and the full viewport. */
@@ -321,10 +266,6 @@ html:root [data-slot="pairing"] [data-slot="input-group"]:has(input:focus-visibl
 html:root [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--line); }
 
 @media (max-width: 767px) {
-  html:root :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] { height: auto; min-height: 40px; }
-  html:root :is([data-slot="segmented"], [data-slot="tabs-list"])[data-size="responsive"] > button { height: 36px; min-width: 36px; padding-inline: 12px; font-size: 13px; }
-  html:root [data-slot="tool-tab-bar"] { height: 44px; align-items: center; }
-  html:root [data-slot="tool-tab-label"] { display: inline; }
   html:root [data-slot="run-row"] { flex-wrap: wrap; column-gap: 8px; row-gap: 6px; }
   html:root [data-slot="run-summary"] { order: -1; flex: 0 0 100%; white-space: normal; overflow-wrap: anywhere; }
   html:root [data-slot="run-row"] > :not([data-slot]) { font-size: 11px; }

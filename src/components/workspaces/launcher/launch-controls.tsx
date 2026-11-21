@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
@@ -43,70 +45,29 @@ export function ModeControl({
   disabled?: boolean;
 }) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="Isolation mode"
-      className="inline-flex items-center gap-0.5 rounded-md border border-border p-0.5"
-    >
-      <ModeSegment
-        selected={mode === 'worktree'}
-        disabled={disabled}
-        onSelect={() => onChange('worktree')}
-        icon={<GitBranch size={11} />}
-        label="Worktree"
-        title="Isolated copy on its own branch"
-      />
-      <ModeSegment
-        selected={mode === 'live'}
-        disabled={disabled}
-        onSelect={() => onChange('live')}
-        icon={<Zap size={11} />}
-        label="Live"
-        title="Runs in the agent's own folder, no isolation"
-        tone="warning"
-      />
-    </div>
-  );
-}
-
-function ModeSegment({
-  selected,
-  disabled,
-  onSelect,
-  icon,
-  label,
-  title,
-  tone,
-}: {
-  selected: boolean;
-  disabled?: boolean;
-  onSelect: () => void;
-  icon: React.ReactNode;
-  label: string;
-  title: string;
-  tone?: 'warning';
-}) {
-  return (
-    <Tip label={title}>
-      <button data-slot="action-button" data-variant="ghost"
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        disabled={disabled}
-        onClick={onSelect}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-40',
-          selected
-            ? tone === 'warning'
-              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-              : 'bg-muted text-foreground'
-            : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-        )}
-      >
-        {icon}
-        {label}
-      </button>
-    </Tip>
+    <SegmentedControl
+      mode="choice"
+      selection="radio"
+      ariaLabel="Isolation mode"
+      value={mode}
+      onChange={onChange}
+      disabled={disabled}
+      options={[
+        {
+          value: 'worktree',
+          label: 'Worktree',
+          icon: <GitBranch />,
+          hint: 'Isolated copy on its own branch',
+        },
+        {
+          value: 'live',
+          label: 'Live',
+          icon: <Zap />,
+          hint: "Runs in the agent's own folder, no isolation",
+          selectedTone: 'warning',
+        },
+      ]}
+    />
   );
 }
 

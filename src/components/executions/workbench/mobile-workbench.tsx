@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
 import { IconButton } from '@/components/system/icon-button';
 
 import { Button } from '@/components/system/button';
@@ -12,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { sessionFolder } from '@/lib/folders/source';
-import { cn } from '@/lib/utils';
+
 import { FileTree } from '../file-tree/file-tree';
 import { FileViewer } from '../viewer/file-viewer';
 import { ToolsList, type ToolsListProps } from './tools-box';
@@ -60,81 +62,81 @@ interface MobileDestinationProps {
 export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: MobileDestinationProps) {
   const moreActive = MORE_VIEWS.includes(view);
   return (
-    <div className="relative flex h-full min-h-0 w-full flex-col bg-background">
-      <div className="flex flex-shrink-0 items-center gap-1 border-b border-border px-1.5 py-2">
-        <Button
-          type="button"
-          onClick={onBack}
-          variant="secondary"
-          size="sm"
-          className="flex flex-shrink-0 items-center gap-0.5"
-        >
-          <ChevronLeft size={18} />
-          Chat
-        </Button>
-        <div data-slot="segmented" data-size="touch" className="no-scrollbar flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto rounded-lg bg-muted/60 p-0.5">
-          {PRIMARY_VIEWS.map((v) => (
-            <button
-              key={v}
-              type="button"
-              aria-pressed={view === v}
-              onClick={() => onShow(v)}
-              className={cn(
-                'flex-shrink-0 whitespace-nowrap rounded-md px-2.5 py-1.5 text-[13px] font-medium transition-colors',
-                view === v ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground',
-              )}
-            >
-              {PANEL_VIEW_LABELS[v]}
-            </button>
-          ))}
-          {moreActive && (
-            <span className="flex-shrink-0 whitespace-nowrap rounded-md bg-background px-2.5 py-1.5 text-[13px] font-medium text-foreground shadow-sm">
-              {PANEL_VIEW_LABELS[view]}
-            </span>
-          )}
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <IconButton label="Notes & tasks, Scratchpad" size="touch"><MoreHorizontal /></IconButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={6} className="min-w-48">
-            {MORE_VIEWS.map((v) => {
-              const Icon = VIEW_ICONS[v];
-              return (
-                <DropdownMenuItem key={v} onClick={() => onShow(v)}>
-                  <Icon size={14} />
-                  {PANEL_VIEW_LABELS[v]}
-                </DropdownMenuItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <div className="relative min-h-0 flex-1">
-        {view === 'files' && !ctx.settingUp ? <PhoneFiles ctx={ctx} /> : <WorkbenchViewBody view={view} ctx={ctx} />}
-      </div>
-
-      {needsInput && (
-        <div className="absolute inset-x-2.5 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-center gap-3 rounded-2xl bg-amber-950/95 py-2.5 pl-4 pr-2.5 text-amber-50 shadow-lg ring-1 ring-amber-500/40">
-          <span aria-hidden className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-amber-400" />
-          <div className="min-w-0 flex-1">
-            <div className="text-[12.5px] font-semibold text-amber-300">Needs input</div>
-            <div className="truncate text-[12.5px] text-amber-50/85">This chat is waiting on your answer.</div>
-          </div>
+    <SegmentedRoot mode="tabs" value={view} onChange={onShow}>
+      <div className="relative flex h-full min-h-0 w-full flex-col bg-background">
+        <div className="flex flex-shrink-0 items-center gap-1 border-b border-border px-1.5 py-2">
           <Button
             type="button"
             onClick={onBack}
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            tone="warning"
-            className="flex-shrink-0"
+            className="flex flex-shrink-0 items-center gap-0.5"
           >
-            Answer
+            <ChevronLeft size={18} />
+            Chat
           </Button>
+          <SegmentedList
+            ariaLabel="Chat tools"
+            size="touch"
+            grow
+            options={[
+              ...PRIMARY_VIEWS.map((value) => ({ value, label: PANEL_VIEW_LABELS[value] })),
+              ...(moreActive ? [{ value: view, label: PANEL_VIEW_LABELS[view] }] : []),
+            ]}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <IconButton label="Notes & tasks, Scratchpad" size="touch">
+                <MoreHorizontal />
+              </IconButton>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={6} className="min-w-48">
+              {MORE_VIEWS.map((v) => {
+                const Icon = VIEW_ICONS[v];
+                return (
+                  <DropdownMenuItem key={v} onClick={() => onShow(v)}>
+                    <Icon size={14} />
+                    {PANEL_VIEW_LABELS[v]}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-      )}
-    </div>
+
+        <SegmentedPanel value={view} asChild>
+          <div className="relative min-h-0 flex-1">
+            {view === 'files' && !ctx.settingUp ? (
+              <PhoneFiles ctx={ctx} />
+            ) : (
+              <WorkbenchViewBody view={view} ctx={ctx} />
+            )}
+          </div>
+        </SegmentedPanel>
+
+        {needsInput && (
+          <div className="absolute inset-x-2.5 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-center gap-3 rounded-2xl bg-amber-950/95 py-2.5 pl-4 pr-2.5 text-amber-50 shadow-lg ring-1 ring-amber-500/40">
+            <span aria-hidden className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-amber-400" />
+            <div className="min-w-0 flex-1">
+              <div className="text-[12.5px] font-semibold text-amber-300">Needs input</div>
+              <div className="truncate text-[12.5px] text-amber-50/85">
+                This chat is waiting on your answer.
+              </div>
+            </div>
+            <Button
+              type="button"
+              onClick={onBack}
+              variant="ghost"
+              size="sm"
+              tone="warning"
+              className="flex-shrink-0"
+            >
+              Answer
+            </Button>
+          </div>
+        )}
+      </div>
+    </SegmentedRoot>
   );
 }
 

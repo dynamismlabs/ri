@@ -1,3 +1,4 @@
+import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
 /** Bundled independently for the opaque gallery iframe. Never imported by the app shell. */
 import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
@@ -215,19 +216,51 @@ function FilesBeside({ children }: { children?: ReactNode } = {}) {
   const file = useBesidePreview(host);
   const shown = fileShown && !!file;
   useBesideRegion(host, { available: true, side: 'right', showing: shown, show: () => setFileShown(true) });
-  return <div className="flex h-[580px] overflow-hidden rounded-lg border border-border">
-    <div {...{ [PREVIEW_HOST_ATTRIBUTE]: host }} role="log" aria-label="Chat" className="min-w-0 flex-1 overflow-y-auto p-4">{children ?? <FileChips />}</div>
-    <aside aria-label="Beside the chat" className="flex w-[55%] min-w-0 flex-col border-l border-border">
-      <div className="flex h-9 shrink-0 items-stretch border-b border-border">
-        <button type="button" aria-pressed={!shown} onClick={() => setFileShown(false)} className={`border-b-2 px-3 text-[11px] font-medium ${shown ? 'border-transparent text-muted-foreground' : 'border-primary text-primary'}`}>Deck</button>
-        <BesideFileTab host={host} active={shown} onSelect={() => setFileShown(true)} className={`border-b-2 px-3 text-[11px] font-medium ${shown ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`} />
+  return (
+    <div className="flex h-[580px] overflow-hidden rounded-lg border border-border">
+      <div
+        {...{ [PREVIEW_HOST_ATTRIBUTE]: host }}
+        role="log"
+        aria-label="Chat"
+        className="min-w-0 flex-1 overflow-y-auto p-4"
+      >
+        {children ?? <FileChips />}
       </div>
-      <div className="relative min-h-0 flex-1">
-        <div inert={shown} className="space-y-2 p-4 text-sm text-muted-foreground"><p className="font-medium text-foreground">Today</p><p>Prepare the Friday review</p><p>Reply to Alex about the agenda</p></div>
-        {file && <div inert={!shown} className={`absolute inset-0 ${shown ? '' : 'pointer-events-none opacity-0'}`}><BesideFileView host={host} /></div>}
-      </div>
-    </aside>
-  </div>;
+      <aside aria-label="Beside the chat" className="flex w-[55%] min-w-0 flex-col border-l border-border">
+        <div className="flex h-9 shrink-0 items-stretch border-b border-border">
+          <ChipButton
+            variant="ghost"
+            className="self-center"
+            pressed={!shown}
+            onClick={() => setFileShown(false)}
+          >
+            Deck
+          </ChipButton>
+          <BesideFileTab
+            host={host}
+            active={shown}
+            onSelect={() => setFileShown(true)}
+            className={`border-b-2 px-3 text-[11px] font-medium ${shown ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          />
+        </div>
+        <div className="relative min-h-0 flex-1">
+          <div inert={shown} className="space-y-2 p-4 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Today</p>
+            <p>Prepare the Friday review</p>
+            <p>Reply to Alex about the agenda</p>
+          </div>
+          {file && (
+            <div
+              inert={!shown}
+              className={`absolute inset-0 ${shown ? '' : 'pointer-events-none opacity-0'}`}
+            >
+              <BesideFileView host={host} />
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
 }
 
 /** Where a chat link or Archive chat would go in the app. The example stays on the receiving chat. */

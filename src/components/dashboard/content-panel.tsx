@@ -1,5 +1,9 @@
 "use client";
 
+import { ChipButton } from "@/components/system/chip-button";
+
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from "@/components/system/segmented-control";
+
 import { Button } from '@/components/system/button';
 import {
   Layers, ChevronDown, Users, SquareTerminal, Maximize2, Minimize2,
@@ -139,147 +143,180 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
   }, [moreOpen]);
 
   return (
-    <div
-      ref={measureRef}
-      {...(besideOf ? { [PREVIEW_HOST_ATTRIBUTE]: homeHost(panelId) } : {})}
-      className="flex flex-col h-full min-w-0 bg-background"
-      onMouseDown={() => setFocusedPanel(panelId)}
+    <SegmentedRoot
+      mode="tabs"
+      value={fileShown ? null : activeTab}
+      onChange={(tab) => setPanelTab(panelId, tab)}
     >
-      {/* Tab bar — hidden on mobile when mobileTab is set */}
-      {!mobileTab && (
-        <div data-slot="pane-tabs" className={cn(
-          'flex items-center border-b border-border shrink-0',
-          isDark ? 'bg-card/30' : 'bg-muted/30'
-        )}>
-          {/* `contents` keeps the classic bar flat. The new look draws this group as one segmented control. */}
-          <div data-slot="pane-tab-group" className="contents">
-          {coreTabs.map((tab) => (
-            <button
-              key={tab.id}
-              data-slot="pane-tab"
-              data-active={(activeTab === tab.id && !isMoreTab && !fileShown) || undefined}
-              onClick={() => setPanelTab(panelId, tab.id)}
-              className={cn(
-                'px-3 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.08em] transition-all border-b-2',
-                activeTab === tab.id && !isMoreTab && !fileShown
-                  ? 'text-primary border-primary'
-                  : 'text-muted-foreground border-transparent hover:text-foreground'
-              )}
-            >
-              {tab.label}
-              {tab.id === 'stream' && needsYourCall && (
-                <span
-                  className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-primary/70 align-middle"
-                  aria-label="Something needs your call"
-                />
-              )}
-            </button>
-          ))}
-          </div>
-
-          {fileHost && fileHere && (
-            <BesideFileTab
-              host={fileHost}
-              active={fileShown}
-              onSelect={() => setFileInFront(panelId, true)}
-              className={cn(
-                'self-stretch border-b-2 px-3 text-[11px] font-medium transition-all',
-                fileShown ? 'text-primary border-primary' : 'text-muted-foreground border-transparent hover:text-foreground',
-              )}
-            />
-          )}
-
-          <div className="flex-1" />
-
-          {showExpand && <Tip label={expandedPanel === panelId ? 'Show both panels' : 'Use the full content width'}>
-            <Button
-              type="button"
-              aria-label={expandedPanel === panelId ? 'Restore split view' : `Expand ${activeTab}`}
-              aria-pressed={expandedPanel === panelId}
-              onClick={() => setExpandedPanel(expandedPanel === panelId ? null : panelId)}
-              variant="secondary"
-              size="sm"
-              className="flex shrink-0 items-center gap-1"
-            >
-              {expandedPanel === panelId ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-              {(expanded || (width ?? 0) >= (team ? 420 : 760)) && <span>{expandedPanel === panelId ? 'Restore' : 'Expand'}</span>}
-            </Button>
-          </Tip>}
-
-          {/* More button */}
-          <div className="relative" ref={moreRef}>
-            <button
-              data-slot="pane-tab-more"
-              data-active={(isMoreTab && !fileShown) || undefined}
-              onClick={() => setMoreOpen(!moreOpen)}
-              className={cn(
-                'px-3 py-2.5 text-[9.5px] font-bold uppercase tracking-[0.08em] transition-all border-b-2 flex items-center gap-1',
-                isMoreTab && !fileShown
-                  ? 'text-primary border-primary'
-                  : 'text-muted-foreground border-transparent hover:text-foreground'
-              )}
-            >
-              More
-              <ChevronDown size={10} className={cn('transition-transform', moreOpen && 'rotate-180')} />
-            </button>
-
-            {moreOpen && (
-              <div className={cn(
-                'absolute right-0 top-full mt-1 w-52 rounded-lg border border-border shadow-xl z-50 py-1',
-                isDark ? 'bg-card' : 'bg-background'
-              )}>
-                {moreTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      if (tab.id === 'areas') {
-                        openAreasList();
-                      } else {
-                        setPanelTab(panelId, tab.id);
-                      }
-                      setMoreOpen(false);
-                    }}
-                    className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all',
-                      activeTab === tab.id
-                        ? 'text-primary bg-primary/5'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    )}
-                  >
-                    <tab.icon size={14} />
-                    <span className="font-medium">{tab.label}</span>
-                  </button>
-                ))}
-                {!showExpand && <button type="button"
-                  onClick={() => { setExpandedPanel(panelId); setMoreOpen(false); }}
-                  className="flex w-full items-center gap-3 border-t border-border px-3 py-2 text-[11px] text-muted-foreground hover:bg-muted/50 hover:text-foreground">
-                  <Maximize2 size={14} /><span className="font-medium">Expand panel</span>
-                </button>}
-              </div>
+      <div
+        ref={measureRef}
+        {...(besideOf ? { [PREVIEW_HOST_ATTRIBUTE]: homeHost(panelId) } : {})}
+        className="flex flex-col h-full min-w-0 bg-background"
+        onMouseDown={() => setFocusedPanel(panelId)}
+      >
+        {/* Tab bar — hidden on mobile when mobileTab is set */}
+        {!mobileTab && (
+          <div
+            data-slot="pane-tabs"
+            className={cn(
+              "flex items-center border-b border-border shrink-0",
+              isDark ? "bg-card/30" : "bg-muted/30",
             )}
-          </div>
-        </div>
-      )}
+          >
+            <SegmentedList
+              ariaLabel="Pane views"
+              options={coreTabs.map((tab) => ({
+                value: tab.id,
+                label: tab.label,
+                dot: tab.id === "stream" && needsYourCall ? "attention" : undefined,
+                ariaLabel:
+                  tab.id === "stream" && needsYourCall ? "Stream, something needs your call" : undefined,
+              }))}
+            />
 
-      {/* Tab content. The panel's own tab stays mounted under the file, and
-          the file under the panel's tab, so each is as left when the other
-          comes forward (a PDF keeps its page, an HTML file its state). */}
-      <div className="relative flex-1 min-h-0 overflow-hidden">
-        <div inert={fileShown} aria-hidden={fileShown || undefined} className="h-full">
-          {activeTab === 'deck' && <DeckContainer />}
-          {activeTab === 'chat' && (team ? <TeamOrchestratorChat /> : <PersonalMainChatContent />)}
-          {activeTab === 'tasks' && (team ? <TeamBoard /> : <TaskSurface onOpenBoard={openTaskBoard} onOpenTask={openTask} privatePlanning={home.capabilities.privatePlanning} viewKey={`${TASK_VIEW_KEY}:${home.home.id}:${home.viewer.id}`} legacyViewKey={TASK_VIEW_KEY} />)}
-          {activeTab === 'stream' && <StreamList />}
-          {activeTab === 'notes' && (team ? <TeamNotes /> : <NoteList onOpenNote={openNote} />)}
-          {isMoreTab && <MoreTabContent tab={activeTab as MorePanelTab} />}
-        </div>
-        {fileHere && fileHost && (
-          <div inert={!fileShown} aria-hidden={!fileShown || undefined} className={cn('absolute inset-0 z-10', !fileShown && 'pointer-events-none opacity-0')}>
-            <BesideFileView host={fileHost} />
+            {fileHost && fileHere && (
+              <BesideFileTab
+                host={fileHost}
+                active={fileShown}
+                onSelect={() => setFileInFront(panelId, true)}
+                className={cn(
+                  "self-stretch border-b-2 px-3 text-[11px] font-medium transition-all",
+                  fileShown
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-foreground",
+                )}
+              />
+            )}
+
+            <div className="flex-1" />
+
+            {showExpand && (
+              <Tip label={expandedPanel === panelId ? "Show both panels" : "Use the full content width"}>
+                <Button
+                  type="button"
+                  aria-label={expandedPanel === panelId ? "Restore split view" : `Expand ${activeTab}`}
+                  aria-pressed={expandedPanel === panelId}
+                  onClick={() => setExpandedPanel(expandedPanel === panelId ? null : panelId)}
+                  variant="secondary"
+                  size="sm"
+                  className="flex shrink-0 items-center gap-1"
+                >
+                  {expandedPanel === panelId ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                  {(expanded || (width ?? 0) >= (team ? 420 : 760)) && (
+                    <span>{expandedPanel === panelId ? "Restore" : "Expand"}</span>
+                  )}
+                </Button>
+              </Tip>
+            )}
+
+            {/* More button */}
+            <div className="relative" ref={moreRef}>
+              <ChipButton
+                variant="ghost"
+                pressed={isMoreTab && !fileShown}
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen(!moreOpen)}
+              >
+                More
+                <ChevronDown />
+              </ChipButton>
+
+              {moreOpen && (
+                <div
+                  className={cn(
+                    "absolute right-0 top-full mt-1 w-52 rounded-lg border border-border shadow-xl z-50 py-1",
+                    isDark ? "bg-card" : "bg-background",
+                  )}
+                >
+                  {moreTabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        if (tab.id === "areas") {
+                          openAreasList();
+                        } else {
+                          setPanelTab(panelId, tab.id);
+                        }
+                        setMoreOpen(false);
+                      }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all",
+                        activeTab === tab.id
+                          ? "text-primary bg-primary/5"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                      )}
+                    >
+                      <tab.icon size={14} />
+                      <span className="font-medium">{tab.label}</span>
+                    </button>
+                  ))}
+                  {!showExpand && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpandedPanel(panelId);
+                        setMoreOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 border-t border-border px-3 py-2 text-[11px] text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    >
+                      <Maximize2 size={14} />
+                      <span className="font-medium">Expand panel</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
-      </div>
 
-    </div>
+        {/* Tab content. The panel's own tab stays mounted under the file, and
+          the file under the panel's tab, so each is as left when the other
+          comes forward (a PDF keeps its page, an HTML file its state). */}
+        <div className="relative flex-1 min-h-0 overflow-hidden">
+          <SegmentedPanel
+            value={activeTab}
+            keepMounted
+            preserveLayout
+            asChild
+            {...(isMoreTab
+              ? {
+                  role: "region",
+                  "aria-labelledby": undefined,
+                  "aria-label": moreTabs.find((tab) => tab.id === activeTab)?.label ?? activeTab,
+                }
+              : {})}
+          >
+            <div inert={fileShown} aria-hidden={fileShown || undefined} className="h-full">
+              {activeTab === "deck" && <DeckContainer />}
+              {activeTab === "chat" && (team ? <TeamOrchestratorChat /> : <PersonalMainChatContent />)}
+              {activeTab === "tasks" &&
+                (team ? (
+                  <TeamBoard />
+                ) : (
+                  <TaskSurface
+                    onOpenBoard={openTaskBoard}
+                    onOpenTask={openTask}
+                    privatePlanning={home.capabilities.privatePlanning}
+                    viewKey={`${TASK_VIEW_KEY}:${home.home.id}:${home.viewer.id}`}
+                    legacyViewKey={TASK_VIEW_KEY}
+                  />
+                ))}
+              {activeTab === "stream" && <StreamList />}
+              {activeTab === "notes" && (team ? <TeamNotes /> : <NoteList onOpenNote={openNote} />)}
+              {isMoreTab && <MoreTabContent tab={activeTab as MorePanelTab} />}
+            </div>
+          </SegmentedPanel>
+          {fileHere && fileHost && (
+            <div
+              inert={!fileShown}
+              aria-hidden={!fileShown || undefined}
+              className={cn("absolute inset-0 z-10", !fileShown && "pointer-events-none opacity-0")}
+            >
+              <BesideFileView host={fileHost} />
+            </div>
+          )}
+        </div>
+      </div>
+    </SegmentedRoot>
   );
 }

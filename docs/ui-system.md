@@ -104,9 +104,9 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | --- | --- | --- | --- |
 | `Button` | primary, secondary, ghost, destructive, link. xs, sm, md, touch. `icon`, `pressed`, semantic `tone`, `floating`, `focus`, `reveal`, `clip` | Capsule in every state, including Send when disabled. Based on the installed Button. Disabled links cannot activate their child handler | 1, implemented |
 | `IconButton` | Required string `label`, tone, pressed state, size. Optional fuller `tooltip`, `shortcut`, `tipSide`, `tipAlign`, `disclosure` | Square Button with an accessible name and `Tip`. `disclosure` adds an owned chevron with enough width for both icons. Uses the label for both by default. Focus outline included | 1, implemented |
-| `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
+| `ChipButton` | neutral, attention, status or mode tone. Status uses a semantic `status` ink, mode uses `PermissionMode`. `label`, optional `iconOnly`, pressed state. Compact or touch, `disclosure` | Toolbar, filter, status and header/action capsules. An attention filter colors its pressed state | 1, implemented |
 | `ButtonGroup` | plain, toolbar or joined. Horizontal or vertical | Layout for related actions. Toolbar adds a quiet track and pressed thumb. Joined makes one capsule with a single divider and inset focus for Finder and its menu | 1, implemented |
-| `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch. Choice supports radio selection and explicit `allowEmpty` | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2 |
+| `SegmentedControl` | options, value, onChange, tabs or choice mode, compact or touch. Choice supports radio selection and explicit `allowEmpty` | Tabs use tablist, aria-selected and associated panels. Choices use pressed or radio semantics. Keyboard support, measured scrolling and edge fades | 2, implemented |
 | `Field`, `TextArea`, `NativeSelect` | Label, value, help text, invalid and disabled state | Input adapters with 10px corners, consistent type and one focus treatment | 3 |
 | `Card` | Content and layout | Raised 14px content panel | 4 |
 | `ChoiceRow` | Title, description and selection | Descriptive 8px row with soft hover and selection | 4 |
@@ -120,7 +120,8 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 
 `SegmentedControl` takes `mode`, `value`, `onChange`, `options` and a required
 `ariaLabel`. Each option supplies its value and sentence case label, with optional
-icon, count, semantic count tone, status dot, pulse, hint or disabled state.
+icon, count, plain or badge count style, semantic count tone, status dot, pulse,
+hint or disabled state. Working chat badges keep their existing green ink and fill.
 Compact tracks are 28px with 24px options. Touch tracks are 40px with 36px options.
 Call sites pass layout classes and their existing phone or container state.
 `grow` takes available space. `stretch` also distributes options across the track.
@@ -159,7 +160,7 @@ height, square icon size and horizontal padding. All text uses weight 500.
 
 Chip compact is 28px with 12px text, and touch is 40px with 15px text. Icon buttons
 use zero horizontal padding and match their size's height. Prose link actions
-inherit their surrounding type and line height. The next stage's compact
+inherit their surrounding type and line height. The compact
 segmented track is 28px with 24px options, and its touch track is 40px with 36px
 options.
 
@@ -238,13 +239,54 @@ decision in the review ledger. This includes diagnostic and fixture surfaces.
 Until a family migrates, its existing shared hooks below remain the drawing
 contract. Do not add a parallel hand-built variant.
 
+### Segmented migration decisions
+
+Core pane tabs, Agents and Recent, agent tools, narrow Chat and Tools or Skill
+panes, entity views, skill panels, addition details, pairing addresses, Calendar renderings and app
+log sources use tabs with associated panels. Previously hand-built tablists now
+have Radix keyboard behavior and one tab stop. Visited preview and chat panels
+retain their existing mounting and measured layout.
+
+Chat lenses and the Apps library filters use choice semantics because they
+filter one list. They previously used tabs, which announced separate panels and
+changed the filter on arrow movement. Arrows now move focus, with Space or Enter
+applying the filter. Stream, list lanes, List and Board, file representation,
+preview destination and theme, Runs and other filters preserve pressed choices.
+Calendar's Show switch changes from pressed buttons to tabs because Calendar,
+List and Report each render the whole range as a separate panel. Week and Day
+remain a choice. The saved preference keys and setters are unchanged.
+Settings effort and speed, app permissions and launch isolation preserve radio
+semantics and gain radio keyboard behavior. Task Energy and Effort, and Deck
+energy, explicitly allow clearing on the second press.
+
+The `segmented`, `segmented-option`, `pane-tab-group`, `pane-tab`, `pane-tab-more`, shadcn tab and
+`tool-tab-bar` or `tool-tab-label` compatibility rules are retired. The system
+owns their drawing, focus and scrolling. The pane header's frame remains a layout
+boundary. Rich file and chat tabs beside a primary track retain their current
+content containers until the content migration. Add and Close use IconButton xs,
+and Close includes the chat name. More menus use the Button family outside the
+tablist. A folded menu chip uses `disclosure` to keep room for its chevron.
+
+The original 54 native declarations were reviewed individually. Task creation's
+Energy and Effort dropdown rows and Stream's history menu are MenuAction work in
+stage 4. They are not segmented options. These intentional exceptions have named
+entries for the file-specific stage 6 lint allowlist:
+
+| Allowlist entry | File | Reason |
+| --- | --- | --- |
+| `phone-tab-bar-navigation` | `src/components/mobile/mobile-tab-bar.tsx` | Navigation drawing, including the approved 48px Create |
+| `question-progress-visualization` | `src/components/chat-ui/questions/question-card.tsx` | Visualization marks that also navigate between questions |
+| `draggable-chat-navigation` | `src/components/executions/execution-chat-tabs.tsx`, chat label only | Browser-style chat navigation preserves drag, rename and measured scrolling |
+
+These names must be carried into the strict stage 6 allowlist. They do not grant
+blanket exceptions to the files, and they do not use bare lint disables.
+
 ### Shared slots
 
-These carry the system across screens. Use them before inventing a new one.
+Use the implemented system components first. These hooks carry families that have not migrated yet. Reuse them before inventing another compatibility rule.
 
 | Slot | What it is | State it reads |
 | --- | --- | --- |
-| `segmented` | A switch with one track and a raised thumb (pane tabs, Agents and Recent, Light and Deep, list lanes, the chat lenses on an agent's page and the phone, the file viewer's modes, where files open, conflict choices, diff layout) | `aria-pressed`, `aria-selected` or `aria-checked` on each option. `data-size="touch"` keeps the phone's height and the options' own flex. `data-size="responsive"` uses the same 36px option height below 768px, with compact desktop options. `data-scroll` lets an unmeasured filter track scroll in place |
 | `meta`, `meta-item` | The line of facts under a title: plain words with dots between them, no boxes | `data-kind` (status, area, energy, effort, deadline...), `data-energy` and `data-task-status` select theme-aware inks, `data-urgency="late"` or `"today"` |
 | `area-select`, `task-badges`, `task-badge` | Components that join a `meta` line as they are | |
 | `deadline-band`, `deadline-head`, `deadline-row`, `deadline-when` | The deck's deadlines: a colored date on a plain row | `data-urgency` (late, today, soon) |
@@ -263,7 +305,6 @@ These carry the system across screens. Use them before inventing a new one.
 | `row-actions` | Hover actions on task, note and deck rows, also revealed by keyboard focus | `:focus-within` |
 | `calendar-toolbar`, `calendar-navigation`, `calendar-date`, `calendar-spacer`, `calendar-work-toggle` | Calendar's header and date navigation. Below 768px the controls wrap, the date gets its own line and the close action stays at the top right | `data-kind="close"` on the close icon button |
 | `work-chain`, `work-chain-step`, `work-chain-arrow` | Calendar's leverage summary. The phone keeps three flexible columns with wrapping labels and narrower connecting arrows | |
-| `tool-tab-bar`, `tool-tab-label` | The agent tools header grows to fit touch options on a phone and shows their text labels. Compact desktop panels keep icon-only tabs | |
 | `run-row`, `run-summary` | A run and its summary. Below 768px the summary wraps above the badges and time, which wrap together | |
 | `search-footer` | Search navigation hints at 12px. All cmdk group headings use sentence case at 12px, including descendant utility variants | |
 | `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content reuses `callout` and the token field reuses `input-group`, with one focus outline around the group | |
@@ -280,8 +321,8 @@ These carry the system across screens. Use them before inventing a new one.
 | `image-picker` | An image or emoji preview tile, with its placeholder and upload affordance. It keeps a 14px content shape | |
 | `completion-control` | A task's completion mark or a routine's checkbox. These retain their circle or checkbox shape and state, with a visible focus outline | |
 | `menu-action` | A descriptive menu or list row, with an 8px hover shape. Separators stay on the row | |
-| `segmented-option`, `settings-nav-item` | Explicit hooks for controls whose parent slot owns their drawing. Use only inside the matching parent | The parent's state contract |
-| class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside, More). `panelTabClass` adds it | `panel-tab-on` |
+| `settings-nav-item` | Settings navigation items whose parent owns their drawing | The parent's state contract |
+| class `panel-tab` | A tool panel tab outside the segmented control (a file or chat opened beside). `panelTabClass` adds it | `panel-tab-on` |
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:
 a hand-built `button` or `a` with `bg-primary` is a capsule, and a hand-built

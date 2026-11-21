@@ -25,6 +25,9 @@ beforeEach(() => {
   const { window, document } = parseHTML('<!doctype html><html><body></body></html>');
   vi.stubGlobal('window', window);
   vi.stubGlobal('document', document);
+  vi.stubGlobal('HTMLElement', window.HTMLElement);
+  // Domain checks use a synthetic DOM. Measured scrolling is covered in Chromium.
+  vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   container = document.createElement('div');
   root = createRoot(container);

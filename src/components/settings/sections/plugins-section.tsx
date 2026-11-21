@@ -1,9 +1,10 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { useId, useState } from 'react';
 import { PanelsTopLeft, Plus } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/system/button';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 import { IntegrationsSection } from './integrations-section';
@@ -32,10 +33,18 @@ export function PluginsSection() {
   const examplesId = useId();
 
   return (
-    <Tabs value={tab} onValueChange={value => openSettings('plugins', { anchor: value })} className="gap-5">
+    <SegmentedRoot
+      mode="tabs"
+      value={tab}
+      onChange={(value) => openSettings('plugins', { anchor: value })}
+      className="flex flex-col gap-5"
+    >
       {/* The sticky surface owns its top spacing and spans the pane's padding,
           so scrolled content cannot show above or beside it. */}
-      <div className="sticky top-0 z-20 -mx-5 space-y-3 border-b border-border/60 bg-popover px-5 pb-1 pt-6" data-plugin-actions>
+      <div
+        className="sticky top-0 z-20 -mx-5 space-y-3 border-b border-border/60 bg-popover px-5 pb-1 pt-6"
+        data-plugin-actions
+      >
         <div className="flex flex-wrap gap-2">
           <Button
             onClick={() => openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService })}
@@ -53,33 +62,43 @@ export function PluginsSection() {
             <Plus size={12} /> Add MCP server
           </Button>
         </div>
-        <TabsList variant="line" className="h-8 w-full justify-start gap-4 px-0">
-          {TABS.map(t => <TabsTrigger key={t.value} value={t.value} className="h-full flex-none px-0.5 text-[12.5px]">{t.label}</TabsTrigger>)}
-        </TabsList>
+        <SegmentedList
+          options={TABS}
+          ariaLabel="Plugins"
+          size={actionSize === 'touch' ? 'touch' : 'compact'}
+        />
       </div>
-      {visited.includes('integrations') && <TabsContent forceMount hidden={tab !== 'integrations'} value="integrations">
-        <IntegrationsSection active={tab === 'integrations'} />
-      </TabsContent>}
-      {visited.includes('skills') && <TabsContent forceMount hidden={tab !== 'skills'} value="skills">
-        <SkillsTab />
-      </TabsContent>}
-      {visited.includes('mcp') && <TabsContent forceMount hidden={tab !== 'mcp'} value="mcp">
-        <McpServersSection active={tab === 'mcp'} />
-      </TabsContent>}
+      {visited.includes('integrations') && (
+        <SegmentedPanel keepMounted hidden={tab !== 'integrations'} value="integrations">
+          <IntegrationsSection active={tab === 'integrations'} />
+        </SegmentedPanel>
+      )}
+      {visited.includes('skills') && (
+        <SegmentedPanel keepMounted hidden={tab !== 'skills'} value="skills">
+          <SkillsTab />
+        </SegmentedPanel>
+      )}
+      {visited.includes('mcp') && (
+        <SegmentedPanel keepMounted hidden={tab !== 'mcp'} value="mcp">
+          <McpServersSection active={tab === 'mcp'} />
+        </SegmentedPanel>
+      )}
       <div className="border-t border-border/60 pt-3">
         <Button
           aria-expanded={showExamples}
           aria-controls={examplesId}
-          onClick={() => setShowExamples(value => !value)}
+          onClick={() => setShowExamples((value) => !value)}
           variant="ghost"
           size="xs"
         >
           <PanelsTopLeft size={12} /> Interactive examples
         </Button>
-        {showExamples && <div id={examplesId} className="mt-3">
-          <InteractiveExamples />
-        </div>}
+        {showExamples && (
+          <div id={examplesId} className="mt-3">
+            <InteractiveExamples />
+          </div>
+        )}
       </div>
-    </Tabs>
+    </SegmentedRoot>
   );
 }

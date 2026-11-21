@@ -23,6 +23,8 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 
 Hover over an icon button, or move to it with the keyboard, to see what it does.
 
+Use the arrow keys, Home or End to move along a rounded switch. Tabs open their panel as you move. Filters such as Unread and Working apply the focused choice when you press Space or Enter. On a task, press the selected Energy or Effort again to clear it.
+
 Search, Settings and Schedules share the same quiet backdrop.
 
 On a phone, filters have more room to tap. The message controls stay together. The model shows its name, with its settings in the model menu. On a narrow screen, the mode uses its icon. Run summaries sit above their smaller details, and the full calendar wraps its controls so you can reach them all.

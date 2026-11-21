@@ -96,7 +96,7 @@ beforeAll(async () => {
       import {TipProvider} from '@/components/ui/tip';
       import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {WorkContext} from '@/contexts/work-context';
-      import {RailListBody,RailListHeader} from '@/components/workspaces/rail-list';
+      import {RailListBody,RailListHeader,RailListRoot} from '@/components/workspaces/rail-list';
       import {WorkspaceSelectionProvider} from '@/components/workspaces/workspace-selection-context';
       import {SessionHoverProvider} from '@/components/workspaces/session-hover-context';
       import {ReadStateButton} from '@/components/chat-ui/read-state-button';
@@ -181,20 +181,20 @@ beforeAll(async () => {
       // The tab lives where the real rail keeps it, so an agent's Show chats can switch it.
       function Rail(){
         const {tab,setTab}=useRailTab();
-        return <WorkspaceSelectionProvider>
-          <RailListHeader tab={tab} onSelect={setTab}/>
+        return <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}>
+          <RailListHeader tab={tab}/>
           <RailListBody tab={tab}/>
-        </WorkspaceSelectionProvider>;
+        </RailListRoot></WorkspaceSelectionProvider>;
       }
       // The wide rail's scroller as the rail lays it out: the header sticks in
       // the same scroller as the list.
       function ScrollingRail(){
         const [tab,setTab]=useState('workspace');
-        return <WorkspaceSelectionProvider>
+        return <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}>
           <div className="h-32">Places</div>
-          <div className="sticky top-0 z-30 bg-background"><RailListHeader tab={tab} onSelect={setTab}/></div>
+          <div className="sticky top-0 z-30 bg-background"><RailListHeader tab={tab}/></div>
           <RailListBody tab={tab} stickyHeaderHeight={32}/>
-        </WorkspaceSelectionProvider>;
+        </RailListRoot></WorkspaceSelectionProvider>;
       }
       // The wide rail's list, or the collapsed strip's Agents button.
       const railKind=new URLSearchParams(location.search).get('rail');

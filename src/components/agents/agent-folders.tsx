@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
 import { IconButton } from '@/components/system/icon-button';
 /**
  * An agent's folders on each of the person's devices (docs/homes-spec.md
@@ -65,68 +67,65 @@ export function AgentFoldersSection({ workspace }: { workspace: WorkspaceRecord 
   const selected = devices.find((c) => c.deviceId === chosenId) ?? devices[0] ?? null;
 
   return (
-    <section className="space-y-3">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">Folders</h3>
-        <p className="mt-0.5 text-[11px] text-muted-foreground/75">
-          {workspace.name}&apos;s chats start in its primary folder and follow that folder&apos;s instructions. They can read and
-          change every folder here, except ones marked read only.
-        </p>
-      </div>
-
-      {isLoading && (
-        <p className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
-          <Loader2 size={14} className="animate-spin" /> Loading folders…
-        </p>
-      )}
-      {error && <p className="text-[12px] text-destructive">{apiErrorText(error)}</p>}
-
-      {devices.length > 1 && (
-        <div data-slot="segmented" data-scroll role="tablist" aria-label="Devices" className="flex flex-wrap gap-1.5">
-          {devices.map((c) => {
-            const s = standing(c);
-            const active = c.deviceId === selected?.deviceId;
-            return (
-              <button data-slot="segmented-option"
-                key={c.deviceId}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setChosenId(c.deviceId)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] transition-colors',
-                  active ? 'border-primary/60 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground',
-                )}
-              >
-                <span
-                  aria-hidden
-                  className={cn(
-                    'h-1.5 w-1.5 shrink-0 rounded-full',
-                    s === 'ready' && 'bg-emerald-500',
-                    s === 'unchecked' && 'bg-muted-foreground/50',
-                    s === 'problem' && 'bg-amber-500',
-                    s === 'none' && 'border border-muted-foreground/50',
-                  )}
-                />
-                {c.isHome && <HomeIcon size={11} className="shrink-0" aria-label="Hosts your Ri" />}
-                {c.name}
-                {s === 'none' && <span className="text-muted-foreground/70">· not set up</span>}
-              </button>
-            );
-          })}
+    <SegmentedRoot mode="tabs" value={selected?.deviceId ?? null} onChange={setChosenId}>
+      <section className="space-y-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Folders</h3>
+          <p className="mt-0.5 text-[11px] text-muted-foreground/75">
+            {workspace.name}&apos;s chats start in its primary folder and follow that folder&apos;s
+            instructions. They can read and change every folder here, except ones marked read only.
+          </p>
         </div>
-      )}
 
-      {selected && <OnDevice key={selected.deviceId} workspace={workspace} on={selected} />}
+        {isLoading && (
+          <p className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
+            <Loader2 size={14} className="animate-spin" /> Loading folders…
+          </p>
+        )}
+        {error && <p className="text-[12px] text-destructive">{apiErrorText(error)}</p>}
 
-      {devices.length === 1 && (
-        <p className="text-[10.5px] text-muted-foreground/60">
-          Your other devices show here once Ri runs on them, connected to this one.
-        </p>
-      )}
+        {devices.length > 1 && (
+          <SegmentedList
+            ariaLabel="Devices"
+            options={devices.map((c) => {
+              const status = standing(c);
+              return {
+                value: c.deviceId,
+                label: c.name + (status === 'none' ? ' · not set up' : ''),
+                icon: c.isHome ? <HomeIcon aria-label="Hosts your Ri" /> : undefined,
+                dot:
+                  status === 'ready'
+                    ? 'working'
+                    : status === 'problem'
+                      ? 'attention'
+                      : status === 'none'
+                        ? 'unavailable'
+                        : 'neutral',
+              };
+            })}
+          />
+        )}
 
-      <ReferencedBy workspaceId={workspace.id} />
-    </section>
+        {selected && (
+          <SegmentedPanel
+            value={selected.deviceId}
+            {...(devices.length === 1
+              ? { role: 'region', 'aria-labelledby': undefined, 'aria-label': selected.name }
+              : {})}
+          >
+            <OnDevice key={selected.deviceId} workspace={workspace} on={selected} />
+          </SegmentedPanel>
+        )}
+
+        {devices.length === 1 && (
+          <p className="text-[10.5px] text-muted-foreground/60">
+            Your other devices show here once Ri runs on them, connected to this one.
+          </p>
+        )}
+
+        <ReferencedBy workspaceId={workspace.id} />
+      </section>
+    </SegmentedRoot>
   );
 }
 

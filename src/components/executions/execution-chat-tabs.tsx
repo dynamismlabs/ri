@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -289,7 +291,10 @@ export function ExecutionChatTabs({
   const hiddenUnread = entries.some((s) => !s.isCurrent && isSessionUnread(s) && !tabs.some((t) => t.id === s.id));
 
   return (
-    <div data-slot="chat-tabs" className="flex h-9 flex-shrink-0 items-center gap-0.5 border-b border-border bg-background px-1.5">
+    <div
+      data-slot="chat-tabs"
+      className="flex h-9 flex-shrink-0 items-center gap-0.5 border-b border-border bg-background px-1.5"
+    >
       {/* All chats leads the strip and never scrolls: overview first, then
           the open tabs, then + for a new one. New chat is also its first row,
           since the list is where you look for a chat before starting one. */}
@@ -344,17 +349,18 @@ export function ExecutionChatTabs({
         </DndContext>
       </div>
       {onNewChat && (
-        <Tip label="New chat on this worktree">
-          <button
-            type="button"
-            onClick={onNewChat}
-            disabled={newChatPending}
-            aria-label="New chat"
-            className="ml-0.5 inline-flex size-6 flex-shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
-          >
-            {newChatPending ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
-          </button>
-        </Tip>
+        <IconButton
+          type="button"
+          label="New chat"
+          tooltip="New chat on this worktree"
+          size="xs"
+          variant="ghost"
+          onClick={onNewChat}
+          disabled={newChatPending}
+          className="ml-0.5"
+        >
+          {newChatPending ? <Loader2 className="animate-spin" /> : <Plus />}
+        </IconButton>
       )}
     </div>
   );
@@ -627,9 +633,7 @@ function ChatTab({
               dragEnabled && 'cursor-grab active:cursor-grabbing',
             )}
           >
-            {unread && (
-              <span aria-hidden className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />
-            )}
+            {unread && <span aria-hidden className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary" />}
             <span className={cn('max-w-[9rem] truncate', unread && 'font-semibold')}>{label}</span>
             {entry.running ? (
               <span
@@ -643,20 +647,18 @@ function ChatTab({
         </Tip>
       )}
       {canClose && !editing && (
-        <Tip label="Close chat">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={closing}
-            aria-label="Close chat"
-            className={cn(
-              'mr-1 inline-flex size-4 flex-shrink-0 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50',
-              !entry.isCurrent && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
-            )}
-          >
-            <X size={10} />
-          </button>
-        </Tip>
+        <IconButton
+          type="button"
+          label={'Close ' + label}
+          size="xs"
+          variant="ghost"
+          onClick={onClose}
+          disabled={closing}
+          reveal={!entry.isCurrent}
+          className="mr-1"
+        >
+          <X />
+        </IconButton>
       )}
     </div>
   );

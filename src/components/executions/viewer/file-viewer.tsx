@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -28,7 +30,7 @@ import { useOpener } from '@/hooks/use-opener';
 import { useOpenInPreferredEditor } from '@/lib/client/editor-preference';
 import { revealLabel, detectClientPlatform } from '@/lib/client/deep-links';
 import { copyText } from '@/lib/clipboard';
-import { cn } from '@/lib/utils';
+
 import { FileIcon } from '@/components/file-icon';
 import type { TreeEntry } from '@/lib/api/sessions';
 import {
@@ -289,11 +291,7 @@ function FileViewerHeader({
     <div className="flex items-center gap-2 border-b border-border px-3 py-1.5 min-w-0">
       <FileIcon name={displayPath} />
       <Tip label={displayPath} onlyWhenTextHidden>
-        <span
-          className="truncate text-[11px] font-medium text-foreground/85 flex-1"
-        >
-          {displayPath}
-        </span>
+        <span className="truncate text-[11px] font-medium text-foreground/85 flex-1">{displayPath}</span>
       </Tip>
       {outside && (
         <Tip label="Outside this chat's folder. The agent shared or used this file.">
@@ -312,7 +310,8 @@ function FileViewerHeader({
           Saving…
         </span>
       ) : (
-        dirty && onDiscard && (
+        dirty &&
+        onDiscard && (
           <Button
             type="button"
             onClick={onDiscard}
@@ -327,77 +326,44 @@ function FileViewerHeader({
         )
       )}
       {(isChanged || isMarkdown || isHtml) && (
-        <div data-slot="segmented" className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5 text-[10px] font-medium shrink-0">
-          {isConflict ? (
-            <button
-              type="button"
-              aria-pressed={mode === 'conflict'}
-              onClick={() => onModeChange('conflict')}
-              className={cn(
-                'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
-                mode === 'conflict'
-                  ? 'bg-background text-orange-600 dark:text-orange-400 shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <GitMerge size={10} />
-              Conflicts
-            </button>
-          ) : (
-            isChanged && (
-              <button
-                type="button"
-                aria-pressed={mode === 'diff'}
-              onClick={() => onModeChange('diff')}
-                className={cn(
-                  'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
-                  mode === 'diff'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <GitCompareArrows size={10} />
-                Diff
-              </button>
-            )
-          )}
-          <button
-            type="button"
-            aria-pressed={mode === 'current'}
-              onClick={() => onModeChange('current')}
-            className={cn(
-              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
-              mode === 'current'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <FileText size={10} />
-            {isHtml ? 'Source' : 'Current'}
-          </button>
-          {(isMarkdown || isHtml) && (
-            <button
-              type="button"
-              aria-pressed={mode === 'render'}
-              onClick={() => onModeChange('render')}
-              className={cn(
-                'inline-flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors',
-                mode === 'render'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <BookOpen size={10} />
-              {isHtml ? 'Preview' : 'Render'}
-            </button>
-          )}
-        </div>
+        <SegmentedControl<Mode>
+          mode="choice"
+          ariaLabel="File view"
+          value={mode}
+          onChange={onModeChange}
+          options={[
+            ...(isConflict
+              ? [{ value: 'conflict' as const, label: 'Conflicts', icon: <GitMerge /> }]
+              : isChanged
+                ? [{ value: 'diff' as const, label: 'Diff', icon: <GitCompareArrows /> }]
+                : []),
+            { value: 'current', label: isHtml ? 'Source' : 'Current', icon: <FileText /> },
+            ...(isMarkdown || isHtml
+              ? [{ value: 'render' as const, label: isHtml ? 'Preview' : 'Render', icon: <BookOpen /> }]
+              : []),
+          ]}
+        />
       )}
       {/* A connected app that opens this kind of file (OpenAI's file entrypoint), in an agent's folder or a chat's. */}
       {!outside && (
-        <OpenWithApp file={source.kind === 'workspace'
-          ? { kind: 'agent-file', workspaceId: source.workspaceId, path: displayPath, name: displayPath.split('/').pop() ?? displayPath }
-          : { kind: 'session-file', sessionId: source.sessionId, path: displayPath, name: displayPath.split('/').pop() ?? displayPath }} className="shrink-0" />
+        <OpenWithApp
+          file={
+            source.kind === 'workspace'
+              ? {
+                  kind: 'agent-file',
+                  workspaceId: source.workspaceId,
+                  path: displayPath,
+                  name: displayPath.split('/').pop() ?? displayPath,
+                }
+              : {
+                  kind: 'session-file',
+                  sessionId: source.sessionId,
+                  path: displayPath,
+                  name: displayPath.split('/').pop() ?? displayPath,
+                }
+          }
+          className="shrink-0"
+        />
       )}
       <RevealButton source={source} root={root} path={path} outside={outside} />
       <FileHeaderMoreMenu
@@ -406,18 +372,18 @@ function FileViewerHeader({
         onReferenceInChat={onReferenceInChat}
       />
       {onClose && (
-          <IconButton
-            type="button"
-            onClick={onClose}
-            label="Close file"
-            tooltip="Close file"
-            variant="ghost"
-            size="sm"
-            focus="inside"
-            className="inline-flex items-center justify-center shrink-0"
-          >
-            <X size={12} />
-          </IconButton>
+        <IconButton
+          type="button"
+          onClick={onClose}
+          label="Close file"
+          tooltip="Close file"
+          variant="ghost"
+          size="sm"
+          focus="inside"
+          className="inline-flex items-center justify-center shrink-0"
+        >
+          <X size={12} />
+        </IconButton>
       )}
     </div>
   );
@@ -586,7 +552,6 @@ function RevealButton({ source, root, path, outside }: RevealButtonProps) {
         >
           {revealing ? <Loader2 size={12} className="animate-spin" /> : <FolderOpen size={12} />}
         </IconButton>
-
 
         <IconButton
           type="button"

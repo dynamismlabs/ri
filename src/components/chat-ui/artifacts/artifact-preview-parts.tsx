@@ -1,15 +1,17 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { IconButton } from '@/components/system/icon-button';
 import { useId } from 'react';
 import { ChevronLeft, ChevronRight, Copy, Download, Expand, File, FileArchive, FileAudio, FileCode2, FileText, FileVideo, ImageIcon, PanelLeft, PanelRight, Sheet } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Tip } from '@/components/ui/tip';
+
 import { HtmlView } from '@/components/chat-ui/artifacts/html-view';
 import { HOTKEYS } from '@/constants/commands';
 import { sessionFolder } from '@/lib/folders/source';
 import type { PreviewPlace } from '@/lib/client/preview-place';
-import { cn } from '@/lib/utils';
+
 import { previewCopySource, previewDownload, type ArtifactPreview } from './artifact-previews';
 import { PreviewImage } from './preview-image';
 import { PdfView } from './pdf-view';
@@ -136,26 +138,19 @@ export function PreviewSteps({ index, count, onStep }: { index: number; count: n
  */
 export function PlaceSwitch({ place, side, onMove }: { place: PreviewPlace; side: 'left' | 'right'; onMove: () => void }) {
   const Beside = side === 'left' ? PanelLeft : PanelRight;
-  const option = (value: PreviewPlace, label: string, icon: React.ReactNode) => (
-    <Tip label={label}>
-      <button data-slot="segmented-option"
-        type="button"
-        aria-label={label}
-        aria-pressed={place === value}
-        onClick={place === value ? undefined : onMove}
-        className={cn(
-          'inline-flex size-6 items-center justify-center rounded transition-colors',
-          place === value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-        )}
-      >
-        {icon}
-      </button>
-    </Tip>
-  );
   return (
-    <div role="group" aria-label="Where files open" data-slot="segmented" className="flex shrink-0 items-center gap-0.5 rounded-md border border-border p-0.5">
-      {option('large', 'Show large', <Expand size={13} />)}
-      {option('beside', 'Show beside the chat', <Beside size={13} />)}
-    </div>
+    <SegmentedControl
+      mode="choice"
+      ariaLabel="Where files open"
+      value={place}
+      onChange={(next) => {
+        if (next !== place) onMove();
+      }}
+      iconOnly
+      options={[
+        { value: 'large', label: 'Show large', icon: <Expand /> },
+        { value: 'beside', label: 'Show beside the chat', icon: <Beside /> },
+      ]}
+    />
   );
 }

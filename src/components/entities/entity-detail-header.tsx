@@ -9,7 +9,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 /** Shared task/note chrome. Audience, navigation and contextual controls are slots. */
 export function EntityDetailHeader({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn('flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2', ENTITY_HEADER, className)}>{children}</div>;
+  return (
+    <div
+      data-entity-header
+      className={cn(
+        'flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2',
+        ENTITY_HEADER,
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 /** Archive/delete keep the same menu and accessibility in every document surface. */

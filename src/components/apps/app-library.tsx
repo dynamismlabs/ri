@@ -1,5 +1,9 @@
 'use client';
 
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -59,6 +63,7 @@ export function AppLibrary({ query, navigate }: {
 }
 
 function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) {
+  const tier = useViewportTier();
   const sources = useLibrary();
   const connected = useQuery(connectedAppsQuery());
   const { openSkill } = useDashboard();
@@ -98,92 +103,212 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
       <AppHeader mark={<LibraryMark />} title="Apps" subtitle="Apps, connections, and skills for your work.">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><QuietAction icon={<Hammer size={13} />}>Build <ChevronDown size={11} /></QuietAction></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <QuietAction icon={<Hammer size={13} />}>
+              Build <ChevronDown size={11} />
+            </QuietAction>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuItem disabled={createSkill.isPending} onSelect={createSkill.start}><BookOpen size={15} /><MenuCopy label="Create a skill" detail="Teach your agent a repeatable workflow." /></DropdownMenuItem>
+            <DropdownMenuItem disabled={createSkill.isPending} onSelect={createSkill.start}>
+              <BookOpen size={15} />
+              <MenuCopy label="Create a skill" detail="Teach your agent a repeatable workflow." />
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild><PrimaryAction icon={<Plus size={13} />}>Add <ChevronDown size={11} /></PrimaryAction></DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild>
+            <PrimaryAction icon={<Plus size={13} />}>
+              Add <ChevronDown size={11} />
+            </PrimaryAction>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuItem onSelect={() => patch({ browse: 'discover', filter: undefined })}><Search size={15} /><MenuCopy label="Browse catalog" detail="Find something to add to your library." /></DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => patch({ browse: 'discover', filter: 'connectors' })}><Plug size={15} /><MenuCopy label="Connect a service" detail="Bring an account and its tools into Ri." /></DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => patch({ mcp: 'new' })}><Server size={15} /><MenuCopy label="Add custom MCP" detail="Connect a server and its tools." /></DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => patch({ browse: 'discover', filter: undefined })}>
+              <Search size={15} />
+              <MenuCopy label="Browse catalog" detail="Find something to add to your library." />
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => patch({ browse: 'discover', filter: 'connectors' })}>
+              <Plug size={15} />
+              <MenuCopy label="Connect a service" detail="Bring an account and its tools into Ri." />
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => patch({ mcp: 'new' })}>
+              <Server size={15} />
+              <MenuCopy label="Add custom MCP" detail="Connect a server and its tools." />
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </AppHeader>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="@container mx-auto w-full max-w-5xl space-y-6 px-5 py-5 sm:px-8 sm:py-7">
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-border">
-            <nav data-slot="segmented" data-size="responsive" aria-label="Library views" className="flex gap-6">
-              {([{ value: 'yours', label: 'Your library' }, { value: 'discover', label: 'Discover' }] as const).map(tab => (
-                <button data-slot="segmented-option" aria-pressed={mode === tab.value} key={tab.value} type="button" aria-current={mode === tab.value ? 'page' : undefined} onClick={() => patch({ browse: tab.value === 'discover' ? 'discover' : undefined })}
-                  className={cn('border-b-2 pb-3 text-sm font-medium transition-colors', mode === tab.value ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground')}>
-                  {tab.label}{tab.value === 'yours' && installed.length > 0 && <span className="ml-2 text-xs tabular-nums text-muted-foreground">{installed.length}</span>}
-                </button>
-              ))}
-            </nav>
-            <p className="pb-3 text-xs text-muted-foreground">{mode === 'yours' ? 'Added once, available where you work.' : 'Connect an account and choose what Ri can use.'}</p>
+            <SegmentedControl
+              mode="choice"
+              ariaLabel="Library views"
+              size={tier === 'phone' ? 'touch' : 'compact'}
+              value={mode}
+              onChange={(value) => patch({ browse: value === 'discover' ? 'discover' : undefined })}
+              options={[
+                { value: 'yours', label: 'Your library', count: installed.length },
+                { value: 'discover', label: 'Discover' },
+              ]}
+            />
+            <p className="pb-3 text-xs text-muted-foreground">
+              {mode === 'yours'
+                ? 'Added once, available where you work.'
+                : 'Connect an account and choose what Ri can use.'}
+            </p>
           </div>
           <div className="space-y-3">
             <div className="relative">
-              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input value={searchDraft} onChange={event => setSearchDraft(event.target.value)} onBlur={() => { if (searchDraft !== search) patch({}); }}
-                placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'} aria-label="Search library" className="h-10 rounded-lg pl-10 pr-10 text-sm" />
-              {searchDraft && <IconButton
-                type="button"
-                onClick={() => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); }}
-                label="Clear search"
-                variant="ghost"
-                size="sm"
-                className="absolute right-2 top-1/2 -translate-y-1/2"
-              ><X size={15} /></IconButton>}
+              <Search
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                value={searchDraft}
+                onChange={(event) => setSearchDraft(event.target.value)}
+                onBlur={() => {
+                  if (searchDraft !== search) patch({});
+                }}
+                placeholder={mode === 'yours' ? 'Search apps, connections, and skills' : 'Search the catalog'}
+                aria-label="Search library"
+                className="h-10 rounded-lg pl-10 pr-10 text-sm"
+              />
+              {searchDraft && (
+                <IconButton
+                  type="button"
+                  onClick={() => {
+                    setSearchDraft('');
+                    navigate(libraryRoute(query, { q: undefined }));
+                  }}
+                  label="Clear search"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                >
+                  <X size={15} />
+                </IconButton>
+              )}
             </div>
-            <div data-slot="segmented" data-size="responsive" data-scroll aria-label="Filter library" className="flex flex-wrap gap-1.5">
-              {FILTERS.map(option => <button data-slot="segmented-option" key={option.value} type="button" aria-pressed={filter === option.value} onClick={() => patch({ filter: option.value === 'all' ? undefined : option.value })}
-                className={cn('rounded-full border px-3 py-1 text-xs transition-colors', filter === option.value ? 'border-foreground/15 bg-secondary font-medium text-foreground' : 'border-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground')}>
-                {option.label}
-              </button>)}
-            </div>
+            <SegmentedControl
+              mode="choice"
+              ariaLabel="Filter library"
+              size={tier === 'phone' ? 'touch' : 'compact'}
+              value={filter}
+              onChange={(value) => patch({ filter: value === 'all' ? undefined : value })}
+              options={FILTERS}
+            />
           </div>
-          {failures.map(failure => <div key={failure.name} role="alert" className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 px-3 py-2 text-xs"><span className="flex-1 text-destructive">{failure.name} could not load. {failure.error?.message}</span><Button
-            onClick={failure.retry}
-            variant="ghost"
-            size="xs"
-          >Retry</Button></div>)}
-          {loading && <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 size={13} className="animate-spin" />Loading your library…</p>}
-          {groups.filter(group => group.items.length).map(group => <section key={group.name} aria-label={group.name} className="space-y-3">
-            <div className="flex items-center gap-2"><h2 className="text-xs font-semibold text-foreground">{group.name}</h2><span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span></div>
-            <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">
-              {(filter === 'all' && mode === 'yours' && group.name !== 'In progress' ? group.items.slice(0, 6) : group.items).map(item => <LibraryCard key={item.key} item={item} open={() => open(item)} chat={() => setChatItem(item)} />)}
+          {failures.map((failure) => (
+            <div
+              key={failure.name}
+              role="alert"
+              className="flex flex-wrap items-center gap-2 rounded-lg border border-destructive/20 px-3 py-2 text-xs"
+            >
+              <span className="flex-1 text-destructive">
+                {failure.name} could not load. {failure.error?.message}
+              </span>
+              <Button onClick={failure.retry} variant="ghost" size="xs">
+                Retry
+              </Button>
             </div>
-            {filter === 'all' && mode === 'yours' && group.name !== 'In progress' && group.items.length > 6 && <Button
+          ))}
+          {loading && (
+            <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Loader2 size={13} className="animate-spin" />
+              Loading your library…
+            </p>
+          )}
+          {groups
+            .filter((group) => group.items.length)
+            .map((group) => (
+              <section key={group.name} aria-label={group.name} className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xs font-semibold text-foreground">{group.name}</h2>
+                  <span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 @xl:grid-cols-2 @4xl:grid-cols-3">
+                  {(filter === 'all' && mode === 'yours' && group.name !== 'In progress'
+                    ? group.items.slice(0, 6)
+                    : group.items
+                  ).map((item) => (
+                    <LibraryCard
+                      key={item.key}
+                      item={item}
+                      open={() => open(item)}
+                      chat={() => setChatItem(item)}
+                    />
+                  ))}
+                </div>
+                {filter === 'all' &&
+                  mode === 'yours' &&
+                  group.name !== 'In progress' &&
+                  group.items.length > 6 && (
+                    <Button
+                      type="button"
+                      onClick={() => patch({ filter: group.items[0].kind })}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      Show all {group.items.length} {group.name.toLowerCase()}
+                    </Button>
+                  )}
+              </section>
+            ))}
+          {!loading &&
+            !visible.length &&
+            (mode === 'yours' || filter === 'connectors' || filter === 'skills') && (
+              <div className="flex flex-col items-center rounded-xl border border-dashed px-6 py-10 text-center">
+                {filter === 'skills' ? (
+                  <BookOpen size={24} className="mb-3 text-muted-foreground" />
+                ) : (
+                  <LayoutGrid size={24} className="mb-3 text-muted-foreground" />
+                )}
+                <h2 className="text-sm font-medium">
+                  {searchDraft
+                    ? 'Nothing matches your search'
+                    : filter === 'skills'
+                      ? 'Teach your agent a way of working'
+                      : 'Make room for the tools you need'}
+                </h2>
+                <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">
+                  {searchDraft
+                    ? 'Try a different name, account, or workflow.'
+                    : filter === 'skills'
+                      ? 'Create a skill for a workflow you repeat. It will appear here alongside your apps and connections.'
+                      : 'Connect a service, or create a skill for a workflow you repeat.'}
+                </p>
+                <Button
+                  onClick={
+                    searchDraft
+                      ? () => {
+                          setSearchDraft('');
+                          navigate(libraryRoute(query, { q: undefined }));
+                        }
+                      : filter === 'skills'
+                        ? createSkill.start
+                        : () => patch({ browse: 'discover' })
+                  }
+                  variant="secondary"
+                  size="sm"
+                  className="mt-4"
+                >
+                  {searchDraft ? 'Clear search' : filter === 'skills' ? 'Create a skill' : 'Discover apps'}
+                </Button>
+              </div>
+            )}
+          {mode === 'yours' && installed.length > 0 && (
+            <Button
               type="button"
-              onClick={() => patch({ filter: group.items[0].kind })}
+              onClick={() => patch({ browse: 'discover', filter: undefined })}
               variant="ghost"
               size="sm"
-            >Show all {group.items.length} {group.name.toLowerCase()}</Button>}
-          </section>)}
-          {!loading && !visible.length && (mode === 'yours' || filter === 'connectors' || filter === 'skills') && <div className="flex flex-col items-center rounded-xl border border-dashed px-6 py-10 text-center">
-            {filter === 'skills' ? <BookOpen size={24} className="mb-3 text-muted-foreground" /> : <LayoutGrid size={24} className="mb-3 text-muted-foreground" />}
-            <h2 className="text-sm font-medium">{searchDraft ? 'Nothing matches your search' : filter === 'skills' ? 'Teach your agent a way of working' : 'Make room for the tools you need'}</h2>
-            <p className="mt-1 max-w-sm text-xs leading-relaxed text-muted-foreground">{searchDraft ? 'Try a different name, account, or workflow.' : filter === 'skills' ? 'Create a skill for a workflow you repeat. It will appear here alongside your apps and connections.' : 'Connect a service, or create a skill for a workflow you repeat.'}</p>
-            <Button
-              onClick={searchDraft ? () => { setSearchDraft(''); navigate(libraryRoute(query, { q: undefined })); } : filter === 'skills' ? createSkill.start : () => patch({ browse: 'discover' })}
-              variant="secondary"
-              size="sm"
-              className="mt-4"
+              className="flex items-center gap-2"
             >
-              {searchDraft ? 'Clear search' : filter === 'skills' ? 'Create a skill' : 'Discover apps'}
+              <Plus size={14} />
+              Find something else for your work
+              <ArrowUpRight size={12} />
             </Button>
-          </div>}
-          {mode === 'yours' && installed.length > 0 && <Button
-            type="button"
-            onClick={() => patch({ browse: 'discover', filter: undefined })}
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-2"
-          ><Plus size={14} />Find something else for your work<ArrowUpRight size={12} /></Button>}
+          )}
         </div>
       </div>
       <LibraryChat item={chatItem} onClose={() => setChatItem(null)} />

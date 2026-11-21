@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
 import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -11,7 +13,6 @@ import { PAIRING_TOKEN_FRAGMENT_KEY, APP_NAME, APP_SHORT_ID } from '@/constants/
 import type { DeviceKind } from '@/db/types';
 import { tokenDisplay } from '@/lib/auth/token-display';
 import { Button } from '@/components/system/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { QrCode } from '@/components/settings/qr-code';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
@@ -257,6 +258,7 @@ function PairingPanel({
     return { tabs, defaultValue };
   }, [pairing, baseUrls]);
 
+  const [pairingTab, setPairingTab] = useState<string | null>(null);
   if (pairingTabs.tabs.length === 0) return null;
 
   return (
@@ -268,27 +270,26 @@ function PairingPanel({
           <p className="text-[11px] text-muted-foreground/70">
             A phone or computer reaches {APP_NAME} at the address in the link. It works while the computer
             running {APP_NAME} is awake and that address is reachable. On a computer, paste the link into{' '}
-            <code className="font-mono text-foreground/80">{APP_SHORT_ID} connect</code> to use this {APP_NAME} there.
+            <code className="font-mono text-foreground/80">{APP_SHORT_ID} connect</code> to use this{' '}
+            {APP_NAME} there.
           </p>
         </div>
-        <Button
-          onClick={onDone}
-          variant="ghost"
-          size="xs"
-        >
+        <Button onClick={onDone} variant="ghost" size="xs">
           Done
         </Button>
       </div>
-      <Tabs defaultValue={pairingTabs.defaultValue}>
-        <TabsList>
-          {pairingTabs.tabs.map((t) => (
-            <TabsTrigger key={t.id} value={t.id}>
-              {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <SegmentedRoot
+        mode="tabs"
+        value={pairingTab ?? pairingTabs.defaultValue}
+        onChange={setPairingTab}
+        className="flex flex-col gap-2"
+      >
+        <SegmentedList
+          ariaLabel="Device connection address"
+          options={pairingTabs.tabs.map((t) => ({ value: t.id, label: t.label }))}
+        />
         {pairingTabs.tabs.map((t) => (
-          <TabsContent key={t.id} value={t.id} className="mt-3">
+          <SegmentedPanel key={t.id} value={t.id} className="mt-3">
             <p className="text-[11px] text-muted-foreground/70 mb-2">{t.hint}</p>
             <div className="flex gap-3 items-start">
               <QrCode value={t.url} size={140} />
@@ -299,19 +300,15 @@ function PairingPanel({
                   className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
                   onFocus={(e) => e.currentTarget.select()}
                 />
-                <Button
-                  onClick={() => handleCopy(t.id, t.url)}
-                  variant="secondary"
-                  size="sm"
-                >
+                <Button onClick={() => handleCopy(t.id, t.url)} variant="secondary" size="sm">
                   {copiedLabel === t.id ? <Check size={12} /> : <Copy size={12} />}
                   {copiedLabel === t.id ? 'Copied' : 'Copy URL'}
                 </Button>
               </div>
             </div>
-          </TabsContent>
+          </SegmentedPanel>
         ))}
-      </Tabs>
+      </SegmentedRoot>
 
       {/* The raw token, the same for every URL above: for a device that
           already has Ri open, or a paste target that drops the fragment. */}
@@ -327,11 +324,7 @@ function PairingPanel({
             className="flex-1 min-w-0 rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
             onFocus={(e) => e.currentTarget.select()}
           />
-          <Button
-            onClick={() => handleCopy('token', pairing.plaintext)}
-            variant="secondary"
-            size="sm"
-          >
+          <Button onClick={() => handleCopy('token', pairing.plaintext)} variant="secondary" size="sm">
             {copiedLabel === 'token' ? <Check size={12} /> : <Copy size={12} />}
             {copiedLabel === 'token' ? 'Copied' : 'Copy token'}
           </Button>
@@ -531,7 +524,6 @@ function DeviceCard({
               >
                 {pairingAgain ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
               </IconButton>
-
 
               <IconButton
                 onClick={beginEdit}

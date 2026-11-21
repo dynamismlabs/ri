@@ -38,7 +38,7 @@ beforeAll(async () => {
       import {TooltipProvider} from '@/components/ui/tooltip';
       import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {WorkContext} from '@/contexts/work-context';
-      import {RailListHeader} from '@/components/workspaces/rail-list';
+      import {RailListHeader,RailListRoot} from '@/components/workspaces/rail-list';
       import {WorkspaceSelectionProvider,useWorkspaceSelection} from '@/components/workspaces/workspace-selection-context';
       import {Toaster} from 'sonner';
       window.actions=[];
@@ -59,7 +59,7 @@ beforeAll(async () => {
       function Fixture(){
         const [tab,setTab]=useState('workspace');
         return <aside className="w-[256px] border-r border-border bg-background">
-          <WorkspaceSelectionProvider><RailListHeader tab={tab} onSelect={setTab}/><Pick/></WorkspaceSelectionProvider>
+          <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}><RailListHeader tab={tab}/><Pick/></RailListRoot></WorkspaceSelectionProvider>
           <span data-group-label className="text-[8.5px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Pinned</span>
         </aside>;
       }

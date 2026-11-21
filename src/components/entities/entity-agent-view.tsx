@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import type { DocumentChatHandle } from '@/components/ai-elements/slideout-chat';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
@@ -19,7 +21,6 @@ import { TaskDatePicker } from '@/components/tasks/task-date-field';
 import { cn } from '@/lib/utils';
 import { Clock, Flame, Loader2, RefreshCw, Zap } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Tip } from '@/components/ui/tip';
 
 /**
  * The agent-first surface for one note or task.
@@ -330,40 +331,28 @@ function TaskMetaStrip({ task }: { task: TaskRecord }) {
       </TaskDatePicker>
 
       <span className="text-muted-foreground/30">&middot;</span>
-      {ENERGY_OPTIONS.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => save({ energy: task.energy === opt.value ? null : opt.value })}
-          className={cn(
-            'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition-colors',
-            task.energy === opt.value
-              ? `${opt.color} bg-current/10 ring-1 ring-current/20`
-              : 'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-          )}
-        >
-          <opt.icon size={10} />
-          {opt.label}
-        </button>
-      ))}
+      <SegmentedControl<Energy>
+        mode="choice"
+        allowEmpty
+        ariaLabel="Energy"
+        value={task.energy}
+        onChange={(energy) => save({ energy })}
+        options={ENERGY_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label, icon: <opt.icon /> }))}
+      />
 
       <span className="text-muted-foreground/30">&middot;</span>
-      {EFFORT_OPTIONS.map((opt) => (
-        <Tip key={opt.value} label={`Effort: ${opt.value}`}>
-          <button
-            type="button"
-            onClick={() => save({ effort: task.effort === opt.value ? null : opt.value })}
-            className={cn(
-              'rounded px-1.5 py-0.5 font-medium transition-colors',
-              task.effort === opt.value
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-            )}
-          >
-            {opt.label}
-          </button>
-        </Tip>
-      ))}
+      <SegmentedControl<Effort>
+        mode="choice"
+        allowEmpty
+        ariaLabel="Effort"
+        value={task.effort}
+        onChange={(effort) => save({ effort })}
+        options={EFFORT_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: opt.label,
+          hint: 'Effort: ' + opt.value,
+        }))}
+      />
     </div>
   );
 }

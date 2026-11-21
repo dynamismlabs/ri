@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
 import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,7 +10,6 @@ import { Button } from '@/components/system/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tip } from '@/components/ui/tip';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
 import { versionLabel } from '@/lib/apps/version-label';
@@ -138,40 +139,67 @@ export function AppLogsDialog({ sourceId, name, open, onOpenChange }: { sourceId
     refetchInterval: open && follow && which === 'server' ? 3000 : false,
   });
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-1.5"><Server size={15} aria-hidden />{name} logs</DialogTitle>
-          <DialogDescription>The last 500 lines, from the app kit. Times are on this computer&apos;s clock.</DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-wrap items-center gap-3">
-          <Tabs value={which} onValueChange={(value) => setWhich(value as 'server' | 'change')}>
-            <TabsList>
-              <TabsTrigger value="server">While running</TabsTrigger>
-              <TabsTrigger value="change">Last install or change</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          {which === 'server' && (
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Switch checked={follow} onCheckedChange={setFollow} aria-label="Keep showing new lines" />Keep showing new lines
-            </label>
-          )}
-          {logs.isFetching && <Loader2 size={12} className="animate-spin text-muted-foreground" aria-label="Loading" />}
-        </div>
-        <div className="max-h-[60vh] min-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed">
-          {logs.error ? <p className="text-destructive">{logs.error.message}</p>
-            : logs.data?.message ? <p className="text-muted-foreground">{logs.data.message}</p>
-            : !logs.data ? <p className="text-muted-foreground">Loading…</p>
-            : !logs.data.lines.length ? <p className="text-muted-foreground">Nothing yet.</p>
-            : logs.data.lines.map((line, index) => (
-              <div key={index} className="flex gap-2 whitespace-pre-wrap break-words">
-                <span className="shrink-0 text-muted-foreground">{line.time ? new Date(line.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '        '}</span>
-                <span className="min-w-0">{line.text}</span>
-              </div>
-            ))}
-        </div>
-      </DialogContent>
-    </Dialog>
+    <SegmentedRoot mode="tabs" value={which} onChange={setWhich}>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-1.5">
+              <Server size={15} aria-hidden />
+              {name} logs
+            </DialogTitle>
+            <DialogDescription>
+              The last 500 lines, from the app kit. Times are on this computer&apos;s clock.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-wrap items-center gap-3">
+            <SegmentedList
+              ariaLabel="App logs"
+              options={[
+                { value: 'server', label: 'While running' },
+                { value: 'change', label: 'Last install or change' },
+              ]}
+            />
+            {which === 'server' && (
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Switch checked={follow} onCheckedChange={setFollow} aria-label="Keep showing new lines" />
+                Keep showing new lines
+              </label>
+            )}
+            {logs.isFetching && (
+              <Loader2 size={12} className="animate-spin text-muted-foreground" aria-label="Loading" />
+            )}
+          </div>
+          <SegmentedPanel value={which} asChild>
+            <div className="max-h-[60vh] min-h-40 overflow-auto rounded-md border border-border bg-muted/30 p-2 font-mono text-[11px] leading-relaxed">
+              {logs.error ? (
+                <p className="text-destructive">{logs.error.message}</p>
+              ) : logs.data?.message ? (
+                <p className="text-muted-foreground">{logs.data.message}</p>
+              ) : !logs.data ? (
+                <p className="text-muted-foreground">Loading…</p>
+              ) : !logs.data.lines.length ? (
+                <p className="text-muted-foreground">Nothing yet.</p>
+              ) : (
+                logs.data.lines.map((line, index) => (
+                  <div key={index} className="flex gap-2 whitespace-pre-wrap break-words">
+                    <span className="shrink-0 text-muted-foreground">
+                      {line.time
+                        ? new Date(line.time).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })
+                        : '        '}
+                    </span>
+                    <span className="min-w-0">{line.text}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </SegmentedPanel>
+        </DialogContent>
+      </Dialog>
+    </SegmentedRoot>
   );
 }
 

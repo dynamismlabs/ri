@@ -1,5 +1,7 @@
 "use client";
 
+import { SegmentedControl } from "@/components/system/segmented-control";
+
 import { IconButton } from '@/components/system/icon-button';
 import { ChipButton } from '@/components/system/chip-button';
 import { Button } from '@/components/system/button';
@@ -135,50 +137,37 @@ export function StreamList() {
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
-      <div data-slot="list-toolbar" className={cn(
-        'px-3 py-2 border-b border-border flex items-center gap-2 flex-shrink-0',
-        isDark ? 'bg-card/50' : 'bg-muted'
-      )}>
-        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-card rounded border border-border">
-          <button
-            onClick={() => setView('recent')}
-            aria-pressed={view === 'recent'}
-            className={cn(
-              'px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-all',
-              view === 'recent' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            Recent
-          </button>
-          {proposalCount > 0 && (
-            <button
-              onClick={() => setView('needs_call')}
-              aria-pressed={view === 'needs_call'}
-              className={cn(
-                'px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-all',
-                view === 'needs_call' ? 'bg-primary text-primary-foreground' : 'text-primary hover:text-primary/80',
-              )}
-            >
-              Needs your call
-            </button>
-          )}
-        </div>
+      <div
+        data-slot="list-toolbar"
+        className={cn(
+          "px-3 py-2 border-b border-border flex items-center gap-2 flex-shrink-0",
+          isDark ? "bg-card/50" : "bg-muted",
+        )}
+      >
+        <SegmentedControl
+          mode="choice"
+          ariaLabel="Stream view"
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "recent" as const, label: "Recent" },
+            ...(proposalCount > 0 ? [{ value: "needs_call" as const, label: "Needs your call" }] : []),
+          ]}
+        />
 
         {/* Power filters: full history, tucked away */}
         <Popover>
           <PopoverTrigger asChild>
-
-              <IconButton
-                label="History"
-                tooltip="History"
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                <ListFilter size={11} />
-                <ChevronDown size={8} />
-              </IconButton>
-
+            <IconButton
+              label="History"
+              tooltip="History"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1"
+            >
+              <ListFilter size={11} />
+              <ChevronDown size={8} />
+            </IconButton>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
             <div className="py-1">
@@ -187,8 +176,8 @@ export function StreamList() {
                   key={f.id}
                   onClick={() => setView(f.id)}
                   className={cn(
-                    'w-full text-left px-3 py-1.5 text-[10.5px] hover:bg-muted transition-colors',
-                    view === f.id ? 'text-primary font-semibold' : 'text-foreground',
+                    "w-full text-left px-3 py-1.5 text-[10.5px] hover:bg-muted transition-colors",
+                    view === f.id ? "text-primary font-semibold" : "text-foreground",
                   )}
                 >
                   {f.label}
@@ -200,9 +189,7 @@ export function StreamList() {
 
         <div className="flex-1" />
 
-        {notice && (
-          <span className="text-[9.5px] text-muted-foreground truncate max-w-[45%]">{notice}</span>
-        )}
+        {notice && <span className="text-[9.5px] text-muted-foreground truncate max-w-[45%]">{notice}</span>}
 
         {proposalCount > 0 && (
           <ChipButton
@@ -233,7 +220,7 @@ export function StreamList() {
 
       <div className="flex-1 overflow-y-auto pb-4">
         {/* Digest: what triage did, graduation offers */}
-        {view === 'recent' && <StreamDigest />}
+        {view === "recent" && <StreamDigest />}
 
         <div className="p-4">
           {isLoading && (
@@ -250,7 +237,7 @@ export function StreamList() {
             <div className="flex flex-col items-center justify-center h-32 text-muted-foreground gap-2">
               <Inbox size={20} className="opacity-30" />
               <p className="text-[11px]">
-                {view === 'needs_call' ? 'Nothing needs you.' : 'Nothing here yet. Capture anything.'}
+                {view === "needs_call" ? "Nothing needs you." : "Nothing here yet. Capture anything."}
               </p>
             </div>
           )}
@@ -261,32 +248,47 @@ export function StreamList() {
                 <StreamRow
                   key={item.id}
                   item={item}
-                  onOpenEntity={(type, id) => (type === 'task' ? openTask(id) : openNote(id))}
-                  onKeepAsThought={() => decide.mutate({ disposition: 'journal', streamItemIds: [item.id] })}
-                  onDismiss={() => decide.mutate({ disposition: 'dismiss', streamItemIds: [item.id] })}
-                  onPromoteTask={(status) => decide.mutate({
-                    disposition: 'promote_task',
-                    streamItemIds: [item.id],
-                    draft: { title: item.rawText.trim().split('\n')[0]?.slice(0, 200) || 'Untitled', body: item.rawText, status },
-                  })}
-                  onPromoteNote={() => decide.mutate({ disposition: 'promote_note', streamItemIds: [item.id] })}
-                  onMergeTask={(taskId) => decide.mutate({
-                    disposition: 'merge_task',
-                    streamItemIds: [item.id],
-                    targetType: 'task',
-                    targetId: taskId,
-                    draft: { asSubtask: true, title: item.rawText.trim().split('\n')[0]?.slice(0, 200) },
-                  })}
-                  onMergeNote={(noteId) => decide.mutate({
-                    disposition: 'merge_note',
-                    streamItemIds: [item.id],
-                    targetType: 'note',
-                    targetId: noteId,
-                  })}
+                  onOpenEntity={(type, id) => (type === "task" ? openTask(id) : openNote(id))}
+                  onKeepAsThought={() => decide.mutate({ disposition: "journal", streamItemIds: [item.id] })}
+                  onDismiss={() => decide.mutate({ disposition: "dismiss", streamItemIds: [item.id] })}
+                  onPromoteTask={(status) =>
+                    decide.mutate({
+                      disposition: "promote_task",
+                      streamItemIds: [item.id],
+                      draft: {
+                        title: item.rawText.trim().split("\n")[0]?.slice(0, 200) || "Untitled",
+                        body: item.rawText,
+                        status,
+                      },
+                    })
+                  }
+                  onPromoteNote={() =>
+                    decide.mutate({ disposition: "promote_note", streamItemIds: [item.id] })
+                  }
+                  onMergeTask={(taskId) =>
+                    decide.mutate({
+                      disposition: "merge_task",
+                      streamItemIds: [item.id],
+                      targetType: "task",
+                      targetId: taskId,
+                      draft: { asSubtask: true, title: item.rawText.trim().split("\n")[0]?.slice(0, 200) },
+                    })
+                  }
+                  onMergeNote={(noteId) =>
+                    decide.mutate({
+                      disposition: "merge_note",
+                      streamItemIds: [item.id],
+                      targetType: "note",
+                      targetId: noteId,
+                    })
+                  }
                   onReopen={() => handleReopen(item.id)}
-                  onRetry={() => retry.mutate(item.id, {
-                    onError: () => showNotice('Still not able to read it. The original is safe, try again later.'),
-                  })}
+                  onRetry={() =>
+                    retry.mutate(item.id, {
+                      onError: () =>
+                        showNotice("Still not able to read it. The original is safe, try again later."),
+                    })
+                  }
                   onReview={() => setTriageOpen(true)}
                 />
               ))}
@@ -429,7 +431,6 @@ function StreamRow({
                 >
                   <BookOpen size={12} />
                 </IconButton>
-
 
                 <IconButton
                   onClick={onDismiss}

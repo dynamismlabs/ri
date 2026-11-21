@@ -1,5 +1,7 @@
 'use client';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import { useCallback, useMemo, useState } from 'react';
 import {
@@ -288,17 +290,17 @@ function ConflictHunk({
           <TriangleAlert size={11} className="text-orange-500" />
           Conflict {index + 1} of {total}
         </span>
-        <div data-slot="segmented" className="inline-flex items-center rounded-md border border-border bg-background p-0.5">
-          <ChoiceButton active={resolution === 'current'} onClick={() => onChoose('current')}>
-            Accept current
-          </ChoiceButton>
-          <ChoiceButton active={resolution === 'incoming'} onClick={() => onChoose('incoming')}>
-            Accept incoming
-          </ChoiceButton>
-          <ChoiceButton active={resolution === 'both'} onClick={() => onChoose('both')}>
-            Accept both
-          </ChoiceButton>
-        </div>
+        <SegmentedControl
+          mode="choice"
+          ariaLabel={'Resolve conflict ' + (index + 1)}
+          value={resolution}
+          onChange={onChoose}
+          options={[
+            { value: 'current', label: 'Accept current' },
+            { value: 'incoming', label: 'Accept incoming' },
+            { value: 'both', label: 'Accept both' },
+          ]}
+        />
       </div>
 
       {resolution == null ? (
@@ -334,28 +336,6 @@ function ConflictHunk({
         </div>
       )}
     </div>
-  );
-}
-
-function ChoiceButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <Button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      variant="secondary"
-      size="sm"
-    >
-      {children}
-    </Button>
   );
 }
 

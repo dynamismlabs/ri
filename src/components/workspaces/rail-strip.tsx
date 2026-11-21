@@ -15,7 +15,7 @@ import { RailFooter } from './rail-footer';
 import { StripFlyout } from './rail-flyout';
 import { RailIconButton } from './rail-icon-button';
 import { RailStripActions, StripDivider, type RailPlace } from './rail-nav';
-import { RailListBody, RailListHeader } from './rail-list';
+import { RailListBody, RailListHeader, RailListRoot } from './rail-list';
 import { SessionHoverProvider } from './session-hover-context';
 import { WorkspaceSelectionProvider } from './workspace-selection-context';
 
@@ -104,10 +104,12 @@ function FlyoutList() {
   const list = useRevealAgent(tab === 'workspace' && agents ? (activeAgentIdOf(activeView) ?? openChatAgentId) : null);
   return (
     <WorkspaceSelectionProvider>
-      <RailListHeader tab={tab} onSelect={setTab} />
-      <div ref={list} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-4">
-        <RailListBody tab={tab} />
-      </div>
+      <RailListRoot tab={tab} onSelect={setTab}>
+        <RailListHeader tab={tab} />
+        <div ref={list} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden pb-4">
+          <RailListBody tab={tab} />
+        </div>
+      </RailListRoot>
     </WorkspaceSelectionProvider>
   );
 }

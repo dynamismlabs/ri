@@ -1,12 +1,14 @@
 'use client';
 
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
 import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { Loader2, Plus, RefreshCw } from 'lucide-react';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
 import type { MainChatIntro } from '@/components/chat/main-chat-intro';
 import type { SkillView } from '@/lib/api/skills';
-import { cn } from '@/lib/utils';
+
 import { useSkillChat, type SkillChatKind } from './use-skill-chat';
 import { Tip } from '@/components/ui/tip';
 
@@ -64,98 +66,106 @@ export function SkillChatPanel({ skill }: { skill: SkillView }) {
     tryChat.session !== null && new Date(skill.updatedAt).getTime() > new Date(tryChat.session.createdAt).getTime() + 1000;
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/50 px-3 py-1">
-        <div role="tablist" aria-label="Build or try" data-slot="segmented" className="flex items-center gap-0.5">
-          {tabs.map(({ kind, label }) => (
-            <button
-              key={kind}
-              role="tab"
-              aria-selected={tab === kind}
-              onClick={() => {
-                setTab(kind);
-                setVisited((prev) => (prev.has(kind) ? prev : new Set(prev).add(kind)));
-              }}
-              className={cn(
-                'flex items-center gap-1 rounded-md px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-[0.06em] transition-colors',
-                tab === kind ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {label}
-              {chats[kind].isActive && <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />}
-            </button>
-          ))}
-        </div>
-        <Tip label={tab === 'build' ? 'Start a new builder chat (archives this one)' : 'Start a new try (archives this one)'}>
-          <Button
-            onClick={() => active.newChat.mutate()}
-            disabled={active.newChat.isPending || !active.sessionId}
-            variant="secondary"
-            size="sm"
-            className="flex items-center gap-1"
+    <SegmentedRoot
+      mode="tabs"
+      value={tab}
+      onChange={(kind) => {
+        setTab(kind);
+        setVisited((prev) => (prev.has(kind) ? prev : new Set(prev).add(kind)));
+      }}
+    >
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/50 px-3 py-1">
+          <SegmentedList
+            ariaLabel="Build or try"
+            options={tabs.map(({ kind, label }) => ({
+              value: kind,
+              label,
+              dot: chats[kind].isActive ? 'working' : undefined,
+              pulse: chats[kind].isActive,
+            }))}
+          />
+          <Tip
+            label={
+              tab === 'build'
+                ? 'Start a new builder chat (archives this one)'
+                : 'Start a new try (archives this one)'
+            }
           >
-            {active.newChat.isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
-            New
-          </Button>
-        </Tip>
-      </div>
+            <Button
+              onClick={() => active.newChat.mutate()}
+              disabled={active.newChat.isPending || !active.sessionId}
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-1"
+            >
+              {active.newChat.isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
+              New
+            </Button>
+          </Tip>
+        </div>
 
-      {tabs.filter(({ kind }) => visited.has(kind)).map(({ kind }) => {
-        const chat = chats[kind];
-        return (
-          <div key={kind} inert={tab !== kind} className={cn('min-h-0 flex-1 flex-col', tab === kind ? 'flex' : 'hidden')}>
-            {kind === 'try' && tryStale && (
-              <div className="flex shrink-0 items-center gap-2 border-b border-border/50 bg-muted/40 px-3 py-1.5 text-[11px] text-muted-foreground">
-                <span className="flex-1">The skill changed since this try started.</span>
-                <Button
-                  onClick={() => tryChat.newChat.mutate()}
-                  variant="secondary"
-                  size="sm"
-                >
-                  Try the latest
-                </Button>
-              </div>
-            )}
-            {chat.sessionId ? (
-              <HarnessChatSession
-                key={chat.sessionId}
-                sessionId={chat.sessionId}
-                autoFocusComposer={kind === tab}
-                composerPlaceholder={
-                  kind === 'build' ? 'Tell the AI what this skill should do or change' : 'Ask for something the skill should handle'
-                }
-                intro={kind === 'build' ? buildIntro(skill) : tryIntro(skill)}
-                onSwitchProvider={(next) => chat.newChat.mutate({
-                  providerId: next.harness,
-                  model: next.model,
-                  variant: next.variant,
-                  effort: next.effort,
-                  serviceTier: next.serviceTier,
-                })}
-                switchingProvider={chat.newChat.isPending}
-              />
-            ) : chat.error ? (
-              <div className="flex flex-1 items-center justify-center px-8 text-center">
-                <div>
-                  <p className="text-[12px] font-semibold text-foreground">Couldn&apos;t open this chat.</p>
-                  <Button
-                    onClick={() => void chat.refetch()}
-                    variant="ghost"
-                    size="sm"
-                    className="mt-3 inline-flex items-center gap-1"
-                  >
-                    <RefreshCw size={11} /> Retry
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-1 items-center justify-center">
-                <Loader2 size={16} className="animate-spin text-muted-foreground" />
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </div>
+        {tabs
+          .filter(({ kind }) => visited.has(kind))
+          .map(({ kind }) => {
+            const chat = chats[kind];
+            return (
+              <SegmentedPanel key={kind} value={kind} keepMounted className="min-h-0 flex-1 flex-col flex">
+                {kind === 'try' && tryStale && (
+                  <div className="flex shrink-0 items-center gap-2 border-b border-border/50 bg-muted/40 px-3 py-1.5 text-[11px] text-muted-foreground">
+                    <span className="flex-1">The skill changed since this try started.</span>
+                    <Button onClick={() => tryChat.newChat.mutate()} variant="secondary" size="sm">
+                      Try the latest
+                    </Button>
+                  </div>
+                )}
+                {chat.sessionId ? (
+                  <HarnessChatSession
+                    key={chat.sessionId}
+                    sessionId={chat.sessionId}
+                    autoFocusComposer={kind === tab}
+                    composerPlaceholder={
+                      kind === 'build'
+                        ? 'Tell the AI what this skill should do or change'
+                        : 'Ask for something the skill should handle'
+                    }
+                    intro={kind === 'build' ? buildIntro(skill) : tryIntro(skill)}
+                    onSwitchProvider={(next) =>
+                      chat.newChat.mutate({
+                        providerId: next.harness,
+                        model: next.model,
+                        variant: next.variant,
+                        effort: next.effort,
+                        serviceTier: next.serviceTier,
+                      })
+                    }
+                    switchingProvider={chat.newChat.isPending}
+                  />
+                ) : chat.error ? (
+                  <div className="flex flex-1 items-center justify-center px-8 text-center">
+                    <div>
+                      <p className="text-[12px] font-semibold text-foreground">
+                        Couldn&apos;t open this chat.
+                      </p>
+                      <Button
+                        onClick={() => void chat.refetch()}
+                        variant="ghost"
+                        size="sm"
+                        className="mt-3 inline-flex items-center gap-1"
+                      >
+                        <RefreshCw size={11} /> Retry
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-1 items-center justify-center">
+                    <Loader2 size={16} className="animate-spin text-muted-foreground" />
+                  </div>
+                )}
+              </SegmentedPanel>
+            );
+          })}
+      </div>
+    </SegmentedRoot>
   );
 }

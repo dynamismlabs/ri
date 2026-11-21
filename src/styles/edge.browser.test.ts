@@ -33,11 +33,11 @@ beforeAll(async () => {
 import {ChipButton} from '@/components/system/chip-button';
 import {IconButton} from '@/components/system/icon-button';
       import {ButtonGroup} from '@/components/system/button-group';
-      import {Tabs,TabsList,TabsTrigger} from '@/components/ui/tabs';
       import {StatusPill} from '@/components/dashboard/status-pill';
       import {Command} from 'cmdk';
       import {PERMISSION_MODE_META} from '@/lib/permission-modes';
-      import {SegmentedTabs} from '@/components/shared/list-toolbar';
+      import {SegmentedControl,SegmentedRoot,SegmentedList} from '@/components/system/segmented-control';
+      import {useViewportTier} from '@/hooks/use-viewport-tier';
       import {ChatLenses, ChatLensBar} from '@/components/workspaces/chat-lens-bar';
       import {WorkbenchToggles} from '@/components/executions/workbench/workbench-toggles';
       import {FileChip} from '@/components/chat-ui/artifacts/file-chip';
@@ -46,8 +46,9 @@ import {IconButton} from '@/components/system/icon-button';
       const LANES=[{value:'progress',label:'In progress',count:9},{value:'todo',label:'Todo',count:4},{value:'waiting',label:'Waiting',count:2},{value:'done',label:'Done',count:30}];
       function Fixture(){
         const [lane,setLane]=useState('progress');
+        const touch=useViewportTier()==='phone';
         return <div className="flex flex-col items-start gap-3 p-4">
-          <div data-narrow className="flex" style={{width:210}}><SegmentedTabs ariaLabel="Lanes" value={lane} onChange={setLane} options={LANES}/></div>
+          <div data-narrow className="flex" style={{width:210}}><SegmentedControl mode="choice" grow ariaLabel="Lanes" value={lane} onChange={setLane} options={LANES}/></div>
           <ChipButton data-case="toolbar">Filter</ChipButton>
           <button data-case="card" className="w-64 rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">A board card</button>
           {/* The review bar's solid action, with execution-review-bar.tsx's classes. */}
@@ -81,24 +82,19 @@ import {IconButton} from '@/components/system/icon-button';
           </div>
           <div data-slot="calendar-toolbar" data-case="calendar-small" className="flex w-72 items-center gap-2">
             <span className="w-32 min-w-0 truncate">November 16 to 22</span>
-            <div data-slot="segmented" className="flex overflow-hidden rounded-md border"><button>Calendar</button><button>List</button><button>Report</button></div>
+            <SegmentedControl mode="choice" className="shrink-0" ariaLabel="Calendar view" value="calendar" onChange={()=>{}} options={[{value:"calendar",label:"Calendar"},{value:"list",label:"List"},{value:"report",label:"Report"}]} />
           </div>
           {['auto_edits','ask','plan'].map(mode=><ChipButton key={mode} data-case={'mode-'+mode} variant="secondary" size="compact" tone="mode" mode={mode}>{PERMISSION_MODE_META[mode].shortTitle}</ChipButton>)}
           <div data-slot="settings-body" data-case="settings-segments" style={{width:360}}>
-            <div data-slot="segmented" className="flex gap-1">
-              {['All','Local','Cloud','Browser'].map((label,i)=><button key={label} aria-pressed={i===0} className={'rounded-full border px-3 py-1 text-[11px] font-medium transition-all '+(i===0?'border-primary bg-primary/5 text-primary':'border-border text-muted-foreground hover:text-foreground')}>{label}</button>)}
-            </div>
-            <div data-slot="segmented" role="radiogroup" className="flex flex-wrap gap-1.5">
-              <button role="radio" aria-checked="true" className="rounded-full border border-primary/60 bg-primary/10 px-2.5 py-1">Normal</button>
-              <button role="radio" aria-checked="false" className="rounded-full border border-border px-2.5 py-1">Fast</button>
-            </div>
+<SegmentedControl mode="choice" ariaLabel="Voice provider" value="All" onChange={()=>{}} options={["All","Local","Cloud","Browser"].map(value=>({value,label:value}))}/>
+<SegmentedControl mode="choice" selection="radio" ariaLabel="Speed" value="normal" onChange={()=>{}} options={[{value:"normal",label:"Normal"},{value:"fast",label:"Fast"}]}/>
             <ButtonGroup aria-label="Show at"><Button aria-pressed={false} variant="secondary" size="xs">&gt;0%</Button><Button data-case="usage-toggle" aria-pressed size="xs">50%</Button><Button aria-pressed size="xs">80%</Button></ButtonGroup>
           </div>
           <div data-slot="settings-nav"><input data-case="settings-search" aria-label="Search settings" className="rounded-lg border border-border bg-background px-2 py-1 focus:outline-none focus:ring-1 focus:ring-ring" /></div>
           {/* The agent page's chat lenses (compact) and the phone's (touch), as they render. */}
           <div data-case="lenses"><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Chats" options={LENSES}/></ChatLenses></div>
           <div data-case="lenses-touch" style={{width:360}}><ChatLenses value="all" onChange={()=>{}}><ChatLensBar label="Phone chats" size="touch" options={LENSES}/></ChatLenses></div>
-          <div data-case="agent-pane" className="flex w-72 gap-1 px-4 pb-2"><div data-slot="segmented" data-size="touch" className="contents"><button aria-selected="true" className="flex flex-1 items-center justify-center rounded-md py-1.5">Chat</button><button aria-selected="false" className="flex flex-1 items-center justify-center rounded-md py-1.5">Tools</button></div></div>
+<SegmentedRoot mode="tabs" value="chat" onChange={()=>{}}><div data-case="agent-pane" className="flex w-72 gap-1 px-4 pb-2"><SegmentedList ariaLabel="Agent panes" size="touch" stretch options={[{value:"chat",label:"Chat"},{value:"tools",label:"Tools"}]}/></div></SegmentedRoot>
           <div data-case="workbench-toggle"><WorkbenchToggles tools={{open:true,onToggle(){},showLabel:"Files"}} fold={{label:"",kbd:""}} /></div>
           <div data-case="tail" className="flex w-72 flex-col items-start gap-3">
             <button data-tail-focus data-slot="content-card" className="w-full rounded-lg border border-border bg-card p-3 text-left shadow-sm focus-visible:outline-none focus-visible:ring-2">A saved reference<br/>With a description</button>
@@ -113,9 +109,7 @@ import {IconButton} from '@/components/system/icon-button';
               <MessageFileChip tone="bubble" attachment={{fileName:'example.bin',originalName:'Design archive.zip',mimeType:'application/octet-stream',size:2048,uploadedAt:'2026-11-20'}} />
             </div>
             <Button data-tail-focus data-case="floating-action" variant="secondary" size="sm" floating>More models below</Button>
-            <div data-case="filter-scroll" data-slot="segmented" data-scroll className="grid gap-2 sm:grid-cols-2">
-              {['All sources','Built into Ri','Connected apps','Installed skills'].map((label,i)=><button key={label} aria-pressed={i===0} className="rounded-full border px-3 py-1">{label}</button>)}
-            </div>
+<div data-case="filter-scroll" className="max-w-full min-w-0"><SegmentedControl mode="choice" ariaLabel="Sources" value="All sources" onChange={()=>{}} options={["All sources","Built into Ri","Connected apps","Installed skills"].map(value=>({value,label:value}))}/></div>
           </div>
           <section data-case="default-audit" className="flex w-full flex-col items-start gap-3">
             <StatusPill label="Working" tone="success" count={2} icon={<svg/>} accentClass="text-blue-500" countBgClass="bg-blue-500/10 text-blue-500">{()=> <span>Working chats</span>}</StatusPill>
@@ -131,12 +125,12 @@ import {IconButton} from '@/components/system/icon-button';
             </div>
             <Command><Command.Group heading="Recent" className="[&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest"><Command.Item>Recent chat</Command.Item></Command.Group></Command>
             <div data-slot="search-footer" className="text-[9px]">↑↓ navigate <kbd className="text-[8px]">Esc</kbd></div>
-            <Tabs defaultValue="installed"><TabsList variant="line"><TabsTrigger value="installed">Installed</TabsTrigger><TabsTrigger value="discover">Discover</TabsTrigger></TabsList></Tabs>
+<div data-case="plugins"><SegmentedControl mode="choice" ariaLabel="Plugins line replacement" value="installed" onChange={()=>{}} options={[{value:"installed",label:"Installed"},{value:"discover",label:"Discover"}]}/></div>
             {['rounded-[26px]','rounded-lg','rounded-xl'].map((radius,i)=><div key={radius} data-case={'dialog-'+i} data-slot="dialog-content" className={radius+' border bg-card p-2'}>Dialog</div>)}
             {['bg-black/80','bg-background/80 backdrop-blur-sm'].map((fill,i)=><div key={fill} data-case={'overlay-'+i} data-slot="dialog-overlay" className={fill+' h-2 w-2'}/>)}
-            <Tabs defaultValue="all"><TabsList data-case="responsive-tabs" data-size="responsive"><TabsTrigger value="all">All</TabsTrigger><TabsTrigger value="apps">Apps</TabsTrigger></TabsList></Tabs>
+<div data-case="responsive-tabs"><SegmentedControl mode="choice" ariaLabel="Library" size={touch?"touch":"compact"} value="all" onChange={()=>{}} options={[{value:"all",label:"All"},{value:"apps",label:"Apps"}]}/></div>
             <div data-slot="dialog-content" data-kind="wrapped"><div data-case="wrapped-dialog" className="rounded-xl border bg-card p-2 shadow-2xl">New chat</div></div>
-            <div data-case="responsive-segments" data-slot="segmented" data-size="responsive" className="flex"><button aria-pressed="true">All</button><button aria-pressed="false">Active</button></div>
+<div data-case="responsive-segments"><SegmentedControl mode="choice" ariaLabel="Filter" size={touch?"touch":"compact"} value="all" onChange={()=>{}} options={[{value:"all",label:"All"},{value:"active",label:"Active"}]}/></div>
             <a data-audit-focus data-slot="run-row" href="#" className="flex w-full items-center gap-3 rounded-md border bg-card p-3">
               <span data-slot="status-badge" className="rounded border px-1.5 py-0.5 text-[10px]">Scheduled</span>
               <span data-slot="status-badge" className="rounded border px-1.5 py-0.5 text-[10px]">Completed</span>
@@ -144,10 +138,10 @@ import {IconButton} from '@/components/system/icon-button';
             </a>
             <div data-slot="calendar-toolbar" data-case="calendar-phone" className="flex w-full items-center gap-2 border p-3">
               <span className="text-sm font-semibold">Calendar</span>
-              <div data-slot="segmented" className="flex"><button>Week</button><button>Day</button></div>
+              <SegmentedControl mode="choice" className="shrink-0" ariaLabel="Period" value="week" onChange={()=>{}} options={[{value:"week",label:"Week"},{value:"day",label:"Day"}]}/>
               <div data-slot="calendar-navigation" className="flex"><button>‹</button><button>Today</button><button>›</button></div>
               <span data-slot="calendar-date" className="truncate">November 16 to 22</span><div data-slot="calendar-spacer" className="flex-1"/>
-              <div data-slot="segmented" className="flex"><button>Calendar</button><button>List</button><button>Report</button></div>
+              <SegmentedControl mode="choice" className="shrink-0" ariaLabel="Show" value="calendar" onChange={()=>{}} options={[{value:"calendar",label:"Calendar"},{value:"list",label:"List"},{value:"report",label:"Report"}]}/>
               <label data-slot="calendar-work-toggle">Agent work</label><IconButton aria-label="Refresh" variant="secondary" size="sm" label="Refresh">↻</IconButton><IconButton data-kind="close" aria-label="Close calendar" variant="secondary" size="sm" label="Close calendar">×</IconButton>
             </div>
             <dl data-slot="work-chain" className="flex w-full min-w-[min(100%,30rem)] gap-3 rounded-lg border p-3">
@@ -226,7 +220,7 @@ for (const theme of ['light', 'dark'] as const) {
       const seen: string[] = [];
       // Focus the page (an empty corner), then move by keyboard so :focus-visible applies.
       await page.mouse.click(2, 2);
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < 4; i++) {
         await page.keyboard.press('Tab');
         const focused = await page.evaluate(() => {
           const el = document.activeElement as HTMLElement;
@@ -237,7 +231,7 @@ for (const theme of ['light', 'dark'] as const) {
         expect(focused.outline, `${focused.name} shows its focus`).toBe('solid');
         expect(focused.width, `${focused.name} shows its focus`).toBeGreaterThanOrEqual(2);
       }
-      expect(seen).toEqual(['In progress9', 'Todo4', 'Waiting2', 'Done30', 'toolbar', 'card', 'solid']);
+      expect(seen).toEqual(['In progress9', 'toolbar', 'card', 'solid']);
       expect(errors).toEqual([]);
     } finally { await page.close(); }
   });
@@ -258,11 +252,11 @@ it('scrolls a narrow lane switch where its edge fades look', async () => {
   const { page } = await open('light');
   try {
     const state = await page.evaluate(() => {
-      const scroller = document.querySelector('[role="group"][aria-label="Lanes"]') as HTMLElement;
-      const track = document.querySelector('[data-narrow] [data-slot="segmented"]') as HTMLElement;
-      return { trackOverflow: getComputedStyle(track).overflowX, overflows: scroller.scrollWidth > scroller.clientWidth, mask: scroller.style.maskImage || scroller.style.webkitMaskImage };
+      const scroller = document.querySelector('[data-narrow] .ri-segment-scroller') as HTMLElement;
+      const track = document.querySelector('[data-narrow] .ri-segment-track') as HTMLElement;
+      return { trackOverflow: getComputedStyle(track).overflowX, overflows: scroller.scrollWidth > scroller.clientWidth, mask: getComputedStyle(scroller).maskImage };
     });
-    // The track doesn't scroll on its own. The wrapper SegmentedTabs measures does, and fades its edge.
+    // The track doesn't scroll on its own. The wrapper SegmentedControl measures does, and fades its edge.
     expect(state.trackOverflow).toBe('visible');
     expect(state.overflows).toBe(true);
     expect(state.mask).toContain('gradient');
@@ -344,7 +338,7 @@ it('keeps all Calendar view labels visible when the date needs to truncate', asy
   const { page } = await open('light');
   try {
     const state = await page.locator('[data-case="calendar-small"]').evaluate(el => {
-      const track = el.querySelector('[data-slot="segmented"]')!;
+      const track = el.querySelector('.ri-segment-track')!;
       const bounds = track.getBoundingClientRect();
       const last = track.lastElementChild!.getBoundingClientRect();
       return { fits: track.scrollWidth <= track.clientWidth, lastFits: last.right <= bounds.right, toolbarFits: bounds.right <= el.getBoundingClientRect().right };
@@ -365,11 +359,11 @@ for (const theme of ['light', 'dark'] as const) {
         probe.remove();
         return thumb;
       });
-      const tracks = page.locator('[data-case="settings-segments"] [data-slot="segmented"]');
+      const tracks = page.locator('[data-case="settings-segments"] .ri-segment-track');
       for (const track of await tracks.all()) {
         const selected = track.locator('[aria-pressed="true"], [aria-checked="true"]');
         expect(await selected.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
-        expect(await track.evaluate(el => el.getBoundingClientRect().width < el.parentElement!.getBoundingClientRect().width)).toBe(true);
+        expect(await track.evaluate(el => el.getBoundingClientRect().width < el.closest('[data-case="settings-segments"]')!.getBoundingClientRect().width)).toBe(true);
         await selected.hover();
         await page.waitForTimeout(250);
         expect(await selected.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
@@ -424,9 +418,9 @@ for (const theme of ['light', 'dark'] as const) {
         const thumb = getComputedStyle(probe).backgroundColor;
         probe.remove();
         const read = (selector: string) => {
-          const list = document.querySelector(`${selector} [role="tablist"]`) as HTMLElement;
-          const tabs = Array.from(list.querySelectorAll('[role="tab"]')) as HTMLElement[];
-          const chosen = tabs.find(t => t.getAttribute('aria-selected') === 'true')!;
+          const list = document.querySelector(`${selector} [role="group"]`) as HTMLElement;
+          const tabs = Array.from(list.querySelectorAll('[aria-pressed]')) as HTMLElement[];
+          const chosen = tabs.find(t => t.getAttribute('aria-pressed') === 'true')!;
           return {
             trackRadius: parseFloat(getComputedStyle(list).borderTopLeftRadius),
             chosenFill: getComputedStyle(chosen).backgroundColor,
@@ -522,13 +516,13 @@ for (const theme of ['light', 'dark'] as const) {
         expect(state.shadow).not.toBe('none');
         expect(await contrast(page, '[data-case="floating-action"]')).toBeGreaterThan(4.5);
       }
-      const track = page.locator('[data-case="filter-scroll"]');
-      expect(await track.evaluate(el => ({ display: getComputedStyle(el).display, overflow: getComputedStyle(el).overflowX, overflows: el.scrollWidth > el.clientWidth, fits: el.getBoundingClientRect().width <= el.parentElement!.clientWidth }))).toEqual({ display: 'flex', overflow: 'auto', overflows: true, fits: true });
+      const track = page.locator('[data-case="filter-scroll"] .ri-segment-scroller');
+      expect(await track.evaluate(el => ({ display: getComputedStyle(el).display, overflow: getComputedStyle(el).overflowX, overflows: el.scrollWidth > el.clientWidth, fits: el.getBoundingClientRect().width <= el.parentElement!.clientWidth }))).toEqual({ display: 'block', overflow: 'auto', overflows: true, fits: true });
       const last = track.locator('button').last();
       await last.focus();
       const state = await last.evaluate(el => {
         const r = el.getBoundingClientRect();
-        const parent = el.parentElement!.getBoundingClientRect();
+        const parent = el.closest('.ri-segment-scroller')!.getBoundingClientRect();
         return { visible: r.left >= parent.left && r.right <= parent.right, outline: getComputedStyle(el).outlineStyle, inset: parseFloat(getComputedStyle(el).outlineOffset) < 0 };
       });
       expect(state).toEqual({ visible: true, outline: 'solid', inset: true });
@@ -615,8 +609,8 @@ for (const theme of ['light', 'dark'] as const) {
   it(`default audit Plugins line tabs have a thumb without an underline (${theme})`, async () => {
     const { page } = await open(theme);
     try {
-      const tab=page.locator('[data-slot="tabs-list"][data-variant="line"] [data-state="active"]');
-      expect(await tab.evaluate(el=>getComputedStyle(el,'::after').display)).toBe('none');
+      const tab=page.locator('[data-case="plugins"] [aria-pressed="true"]');
+      expect(await tab.evaluate(el=>getComputedStyle(el,'::after').content)).toBe('none');
       expect(await tab.evaluate(el=>getComputedStyle(el).boxShadow)).not.toBe('none');
     } finally { await page.close(); }
   });
@@ -637,11 +631,11 @@ for (const theme of ['light', 'dark'] as const) {
       expect(run.wrap).toBe('normal');expect(run.badge).toBeGreaterThanOrEqual(run.summary);
       expect(await page.locator('[data-slot="work-chain-arrow"]').evaluateAll(els=>els.every(el=>el.getBoundingClientRect().width>0&&getComputedStyle(el).display!=='none'))).toBe(true);
       for (const selector of ['[data-case="calendar-phone"]','[data-slot="work-chain"]']) {
-        const overflow=await page.locator(selector).evaluate(el=>{const bounds=el.getBoundingClientRect();return Array.from(el.children).filter(child=>getComputedStyle(child).display!=='none').map(child=>({left:child.getBoundingClientRect().left-bounds.left,right:bounds.right-child.getBoundingClientRect().right}));});
+        const overflow=await page.locator(selector).evaluate(el=>{const bounds=el.getBoundingClientRect();return (()=>{const boxes=(node:Element):Element[]=>Array.from(node.children).flatMap(child=>{const display=getComputedStyle(child).display;return display==='none'?[]:display==='contents'?boxes(child):[child];});return boxes(el).map(child=>({left:child.getBoundingClientRect().left-bounds.left,right:bounds.right-child.getBoundingClientRect().right}));})();});
         for (const item of overflow) {expect(item.left,selector).toBeGreaterThanOrEqual(0);expect(item.right,selector).toBeGreaterThanOrEqual(0);}
       }
       await page.setViewportSize({width:1024,height:844});
-      expect(await page.locator('[data-case="responsive-segments"] button').first().evaluate(el=>el.getBoundingClientRect().height)).toBe(24);
+      await expect.poll(()=>page.locator('[data-case="responsive-segments"] button').first().evaluate(el=>el.getBoundingClientRect().height)).toBe(24);
     } finally { await page.close(); }
   });
   it(`default audit pairing is quiet and every new control retains keyboard focus (${theme})`, async () => {
