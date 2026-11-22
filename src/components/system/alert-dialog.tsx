@@ -6,10 +6,11 @@ import {
   AlertDialogOverlayPrimitive,
   AlertDialogTitlePrimitive,
   AlertDialogDescriptionPrimitive,
+  AlertDialogHeader as HeaderPrimitive,
+  AlertDialogFooter as FooterPrimitive,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { overlayVariants, type OverlayDrawing } from './overlay';
-import { DialogHeader, DialogFooter } from './dialog';
 export {
   AlertDialog,
   AlertDialogAction,
@@ -42,10 +43,11 @@ export function AlertDialogContent({
       <AlertDialogOverlay />
       <AlertDialogContentPrimitive
         data-slot="alert-dialog-content"
+        data-size={size}
         className={cn(
           overlayVariants({ kind: 'dialog', padding }),
-          'ri-dialog ri-dialog--center',
-          size === 'sm' ? 'ri-dialog--sm' : 'ri-dialog--md',
+          'ri-dialog ri-dialog--center group/alert-dialog-content',
+          size === 'sm' ? 'ri-alert-dialog--sm' : 'ri-alert-dialog--default',
           className,
         )}
         {...props}
@@ -53,11 +55,11 @@ export function AlertDialogContent({
     </AlertDialogPortal>
   );
 }
-export function AlertDialogHeader(props: ComponentProps<typeof DialogHeader>) {
-  return <DialogHeader {...props} />;
+export function AlertDialogHeader({className,...props}: ComponentProps<typeof HeaderPrimitive>) {
+  return <HeaderPrimitive className={cn('ri-alert-dialog-header',className)} {...props} />;
 }
-export function AlertDialogFooter(props: ComponentProps<typeof DialogFooter>) {
-  return <DialogFooter {...props} />;
+export function AlertDialogFooter({className,...props}: ComponentProps<typeof FooterPrimitive>) {
+  return <FooterPrimitive className={cn('ri-alert-dialog-footer',className)} {...props} />;
 }
 export function AlertDialogTitle({
   className,

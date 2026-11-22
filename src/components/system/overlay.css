@@ -57,7 +57,7 @@
     z-index: 50;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 24px;
     width: calc(100% - 32px);
     min-height: 0;
   }
@@ -135,12 +135,12 @@
   .ri-sheet--right {
     inset: 0 0 0 auto;
     width: 100%;
-    max-width: 384px;
+    max-width: none;
   }
   .ri-sheet--left {
     inset: 0 auto 0 0;
     width: 100%;
-    max-width: 384px;
+    max-width: none;
   }
   .ri-sheet--top {
     inset: 0 0 auto;
@@ -382,3 +382,12 @@
 /* A scrolling body clips outside paint at its edge. Keep the field's full focus outline inside its box. */
 .ri-dialog-body .ri-field-control:focus-visible,
 .ri-dialog-body .ri-field-shell:has(.ri-field-control:focus-visible) { outline-offset: -2px; }
+
+@layer components {
+  .ri-alert-dialog--default, .ri-alert-dialog--sm { max-width: 320px; }
+  @media (min-width: 640px) {
+    .ri-sheet--right, .ri-sheet--left { max-width: 384px; }
+    .ri-alert-dialog--default { max-width: 448px; }
+  }
+  @media (max-width: 767px) { .ri-alert-dialog-footer .ri-button { min-height: 40px; } }
+}

@@ -70,8 +70,10 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   // the user's click. Cleared on settle so a stray onOpenChange can't
   // resolve a second time.
   const resolverRef = useRef<((value: boolean) => void) | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const confirm = useCallback<ConfirmFn>((next) => {
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setOpts(next);
     setOpen(true);
     return new Promise<boolean>((resolve) => {
@@ -100,6 +102,12 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         }}
       >
         <AlertDialogContent
+          onCloseAutoFocus={(event) => {
+            // Imperative confirmations have no Radix Trigger to return to.
+            event.preventDefault();
+            if (openerRef.current?.isConnected) openerRef.current.focus();
+            openerRef.current = null;
+          }}
           className={cn(
             opts?.size === 'wide' && 'data-[size=default]:max-w-[calc(100%-2rem)] data-[size=default]:sm:max-w-lg',
           )}

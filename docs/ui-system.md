@@ -760,7 +760,7 @@ without corners. The shared scrim is 40% black with no blur in both themes.
 A rail popover uses `frame="rail"` for its existing square pane boundary.
 
 Automatic Sheet footers keep their column layout and full-width actions on a
-computer as well as a phone. Dialog sections keep their existing 16px spacing.
+computer as well as a phone. Dialog sections keep their installed 24px spacing.
 Automatic Sheet content keeps its 200ms directional presence and Tooltip keeps
 its 100ms exit presence. Raw Frame adapters retain the caller's existing motion.
 `placement="viewport"` preserves Feedback's visual-viewport positioning when a
@@ -788,3 +788,9 @@ floating-tools, wrapped-dialog inheritance, scrims, menu/popover/select frames
 and the old editor suggestion classes. Domain drag indicators, status marks,
 calendar blocks, image zoom controls and loading veils retain their named
 stage 6 boundaries. They are not floating menu or dialog frames.
+
+Menu width continues to follow its trigger unless the caller supplies a width.
+Sheet side caps apply from the installed 640px breakpoint, so an entity sheet
+keeps its full requested width on a phone. Confirmation frames retain their
+size attribute, responsive default/small widths and header/footer layout. The
+wide confirmation option continues to work.

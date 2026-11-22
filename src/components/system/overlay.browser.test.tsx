@@ -11,7 +11,7 @@ beforeAll(async () => {
  import{DropdownMenu,DropdownMenuTrigger,DropdownMenuContent}from'@/components/system/menu';
  import{MenuAction}from'@/components/system/menu-action';import{Button}from'@/components/system/button';import{Field}from'@/components/system/field';import{TipProvider}from'@/components/ui/tip';
  const params=new URLSearchParams(location.search),kind=params.get('kind');document.documentElement.classList.toggle('dark',params.get('theme')==='dark');window.picks=[];
- function Menu(){return <DropdownMenu><DropdownMenuTrigger asChild><Button>Open menu</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu" onSelect={()=>window.picks.push('one')}>First action</MenuAction><MenuAction kind="menu" disabled>Unavailable</MenuAction></DropdownMenuContent></DropdownMenu>}
+ function Menu(){return <DropdownMenu><DropdownMenuTrigger asChild><Button style={{width:params.has('wide')?320:undefined}}>Open menu</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu" onSelect={()=>window.picks.push('one')}>First action</MenuAction><MenuAction kind="menu" disabled>Unavailable</MenuAction></DropdownMenuContent></DropdownMenu>}
  function Pop(){return <Popover><PopoverTrigger asChild><Button>Open popover</Button></PopoverTrigger><PopoverContent><Field aria-label="Popup field" defaultValue="Retained"/></PopoverContent></Popover>}
  function Side(){return <Sheet><SheetTrigger asChild><Button>Open sheet</Button></SheetTrigger><SheetContent aria-describedby={undefined}><SheetTitle>Side panel</SheetTitle><Field aria-label="Sheet field"/><SheetFooter><Button>Save changes</Button></SheetFooter></SheetContent></Sheet>}
  createRoot(document.getElementById('root')).render(<TipProvider><main style={{padding:32}}>
@@ -159,6 +159,42 @@ for(const theme of ['light','dark']) for(const width of [390,1440]) {
   try{await page.goto(`${fixture.url}/?kind=sheet&theme=${theme}`);await page.getByRole('button',{name:'Open sheet',exact:true}).click();
    const action=page.getByRole('button',{name:'Save changes',exact:true});await action.waitFor();
    expect(await action.evaluate(el=>{const a=el.getBoundingClientRect(),p=el.parentElement!,r=p.getBoundingClientRect(),s=getComputedStyle(p);return Math.abs(a.width-(r.width-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)))<1})).toBe(true);
+  }finally{await page.close()}
+ });
+}
+
+let entityFixture: Awaited<ReturnType<typeof browserFixture>>;
+beforeAll(async () => {
+  entityFixture = await browserFixture(`import React from'react';import{createRoot}from'react-dom/client';import{EntitySheet}from'@/components/entities/entity-sheet';
+  document.documentElement.classList.toggle('dark',new URLSearchParams(location.search).has('dark'));
+  createRoot(document.getElementById('root')).render(<EntitySheet open label="Task" width={672} onClose={()=>{}}><div style={{flex:1}}>Task details</div></EntitySheet>);`, [], {css:true});
+},120_000);
+afterAll(async()=>{await entityFixture?.close()});
+for(const width of [360,390,900]) for(const dark of [false,true]) {
+  it(`keeps the actual entity sheet at its requested width at ${width}, dark=${dark}`,async()=>{
+    const page=await entityFixture.browser.newPage({viewport:{width,height:844}});
+    try{await page.goto(entityFixture.url+(dark?'/?dark':''));const dialog=page.getByRole('dialog',{name:'Task',exact:true});await dialog.waitFor();
+      await dialog.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
+      expect(await dialog.boundingBox()).toMatchObject({x:width-Math.min(width,672),y:0,width:Math.min(width,672),height:844});
+    }finally{await page.close()}
+  });
+}
+
+for (const theme of ['light','dark']) it(`keeps a menu aligned to its wide trigger in ${theme}`,async()=>{
+ const page=await fixture.browser.newPage({viewport:{width:900,height:844}});
+ try{await page.goto(`${fixture.url}/?kind=menu&wide&theme=${theme}`);await page.getByRole('button',{name:'Open menu',exact:true}).click();const menu=page.getByRole('menu');await menu.waitFor();expect((await menu.boundingBox())?.width).toBe(320);}finally{await page.close()}
+});
+let confirmFixture: Awaited<ReturnType<typeof browserFixture>>;
+beforeAll(async()=>{confirmFixture=await browserFixture(`import React from'react';import{createRoot}from'react-dom/client';import{ConfirmProvider,useConfirm}from'@/components/system/confirm-dialog';import{Button}from'@/components/system/button';
+ const p=new URLSearchParams(location.search);document.documentElement.classList.toggle('dark',p.has('dark'));window.decisions=[];
+ function App(){const confirm=useConfirm();return <Button onClick={async()=>window.decisions.push(await confirm({title:'Reset preferences?',description:'Your preferences will return to their initial values.',confirmLabel:'Reset',size:p.has('wide')?'wide':'default'}))}>Reset preferences</Button>};createRoot(document.getElementById('root')).render(<ConfirmProvider><App/></ConfirmProvider>);`,[],{css:true})},120_000);
+afterAll(async()=>{await confirmFixture?.close()});
+for(const width of [390,900])for(const dark of [false,true])for(const wide of [false,true]){
+ it(`keeps the actual confirmation width, decisions and focus at ${width}, dark=${dark}, wide=${wide}`,async()=>{
+  const page=await confirmFixture.browser.newPage({viewport:{width,height:844}});
+  try{await page.goto(confirmFixture.url+'/?'+(dark?'dark&':'')+(wide?'wide':''));const trigger=page.getByRole('button',{name:'Reset preferences',exact:true});await trigger.click();const dialog=page.getByRole('alertdialog');await dialog.waitFor();expect((await dialog.boundingBox())?.width).toBe(width<640?(wide?width-32:320):(wide?512:448));
+   await page.keyboard.press('Escape');await dialog.waitFor({state:'detached'});await expect.poll(()=>trigger.evaluate(el=>el===document.activeElement)).toBe(true);
+   expect(await page.evaluate(()=>(window as unknown as {decisions:boolean[]}).decisions)).toEqual([false]);await trigger.click();await page.getByRole('button',{name:'Reset',exact:true}).click();await dialog.waitFor({state:'detached'});expect(await page.evaluate(()=>(window as unknown as {decisions:boolean[]}).decisions)).toEqual([false,true]);
   }finally{await page.close()}
  });
 }

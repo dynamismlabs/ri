@@ -39,7 +39,7 @@ export function DropdownMenuContent({
         sideOffset={sideOffset}
         className={cn(
           overlayVariants({ kind: 'menu', padding }),
-          'z-50 min-w-48 max-h-(--radix-dropdown-menu-content-available-height) overflow-y-auto outline-none',
+          'z-50 min-w-48 w-(--radix-dropdown-menu-trigger-width) max-h-(--radix-dropdown-menu-content-available-height) overflow-x-hidden overflow-y-auto outline-none',
           className,
         )}
         {...props}
@@ -59,7 +59,7 @@ export function DropdownMenuSubContent({
       data-motion
       className={cn(
         overlayVariants({ kind: 'menu', padding }),
-        'z-50 min-w-36 outline-none',
+        'z-50 min-w-36 overflow-hidden outline-none',
         className,
       )}
       {...props}
