@@ -57,6 +57,13 @@ job also prints every change in which processes had that volume open, under
 holding it, stop that before packaging, as is done for Spotlight, and remove the
 watcher.
 
+The same runners drop the network now and then, which used to fail notarizing
+after Apple already had the app. Packaging now notarizes it itself
+(`desktop/notarize.mjs`): an upload that fails before Apple returns a
+submission id is sent again, the log prints that id, and the run then checks on
+that one submission for up to an hour, retrying timeouts and lost connections.
+A stuck run can be looked up with `xcrun notarytool info <id>`.
+
 ## The rolling alpha release
 
 A run from `main` ends with **Publish the alpha release**

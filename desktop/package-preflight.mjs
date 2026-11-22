@@ -36,7 +36,7 @@ export function macSigning({ platform = process.platform, release = false, share
   }
   if (identity.startsWith(DEVELOPER_ID_PREFIX)) throw new Error(`Set CSC_NAME without "${DEVELOPER_ID_PREFIX.trim()}", as in "Example Inc. (ABCDE12345)". electron-builder adds it.`);
   const set = (/** @type {string} */ name) => Boolean(env[name]?.trim());
-  // electron-builder notarizes with the Apple ID whenever either half of it is set.
+  // Packaging notarizes with the Apple ID whenever either half of it is set (desktop/notarize.mjs).
   const appleId = set('APPLE_ID') || set('APPLE_APP_SPECIFIC_PASSWORD');
   const apiKey = !appleId && ['APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER'].some(set);
   if (!appleId && !apiKey) throw new Error('A Developer ID build is notarized, which needs APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID, or an App Store Connect API key in APPLE_API_KEY, APPLE_API_KEY_ID and APPLE_API_ISSUER (docs/publishing.md).');

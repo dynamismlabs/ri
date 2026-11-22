@@ -79,7 +79,7 @@ describe('Mac signing', () => {
     expect(() => macSigning({ platform: 'darwin', release: true, env: { CSC_NAME: notarizing.CSC_NAME } })).toThrow('needs APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD and APPLE_TEAM_ID, or an App Store Connect API key');
     expect(() => macSigning({ platform: 'darwin', release: true, env: { CSC_NAME: notarizing.CSC_NAME, APPLE_API_KEY_ID: 'KEY123' } })).toThrow('Notarizing with an App Store Connect API key needs APPLE_API_KEY, APPLE_API_ISSUER');
     expect(() => macSigning({ platform: 'darwin', release: true, env: { ...notarizing, APPLE_API_KEY: '-----BEGIN PRIVATE KEY-----' } })).toThrow('path to the App Store Connect key');
-    // Half an Apple ID is what electron-builder would take, so a complete API key beside it doesn't help.
+    // Half an Apple ID is what packaging would take, so a complete API key beside it doesn't help.
     expect(() => macSigning({ platform: 'darwin', release: true, env: { ...notarizing, APPLE_ID: 'me@example.com' } })).toThrow('Notarizing with an Apple ID needs APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID');
     expect(() => macSigning({ platform: 'darwin', share: true, env: { ...appleId, APPLE_TEAM_ID: '' } })).toThrow('Notarizing with an Apple ID needs APPLE_TEAM_ID');
     expect(() => macSigning({ platform: 'darwin', share: true, env: { ...appleId, APPLE_TEAM_ID: 'ZZZZZ99999' } })).toThrow('isn\'t a Developer ID in the team APPLE_TEAM_ID names');

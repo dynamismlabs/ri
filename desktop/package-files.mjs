@@ -19,6 +19,32 @@ export function pruneDependencySourceMaps(directory) {
   return removed;
 }
 
+/** Names electron-builder's AppImage target never copies. It stages the packed app
+ * through builder-util's copyDir, whose walk skips these names outright and makes a
+ * folder only when something is copied into it. */
+export const INSTALLER_SKIPPED_NAMES = new Set(['.gitkeep', '.DS_Store']);
+
+/** Removes what the AppImage would drop: files with those names, then every folder
+ * left with nothing in it. Run on the staged resources before the manifest and the
+ * runtime archive are made, so the runtime, its manifest and every installer hold
+ * the same files, and the release check comparing them passes. Returns how many
+ * files and folders it removed. */
+export function removeWhatInstallersDrop(directory) {
+  let removed = 0;
+  const visit = (folder) => {
+    let kept = 0;
+    for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+      const file = path.join(folder, entry.name);
+      if (INSTALLER_SKIPPED_NAMES.has(entry.name)) { fs.rmSync(file, { recursive: true, force: true }); removed++; }
+      else if (entry.isDirectory() && !visit(file)) { fs.rmdirSync(file); removed++; }
+      else kept++;
+    }
+    return kept > 0;
+  };
+  visit(directory);
+  return removed;
+}
+
 /** pnpm's deploy leaves a second copy of every package under .pnpm/@, which no link
  * points at. Refuses if one ever does, so a new pnpm can't quietly break a release. */
 export function removeUnusedPackageCopy(server) {
