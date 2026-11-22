@@ -83,7 +83,7 @@ export function CreateMenu() {
             </Button>
           </Tip>
         </PopoverTrigger>
-        <PopoverContent
+        <PopoverContent padding="compact"
           align="end"
           sideOffset={8}
           className="w-[240px]"

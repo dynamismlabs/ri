@@ -25,6 +25,7 @@ export const overlayVariants = cva('ri-overlay', {
     padding: {
       none: 'ri-overlay-inset--none',
       xs: 'ri-overlay-inset--xs',
+      compact: 'ri-overlay-inset--compact',
       sm: 'ri-overlay-inset--sm',
       md: 'ri-overlay-inset--md',
       lg: 'ri-overlay-inset--lg',

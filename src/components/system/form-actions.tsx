@@ -27,12 +27,12 @@ export function FormFooterHost({
   );
 }
 /** Supply form= on a portaled submit button to retain native form submission. */
-export function FormActions({ className, ...props }: ComponentProps<'div'>) {
+export function FormActions({ className, separated = false, ...props }: ComponentProps<'div'> & { separated?: boolean }) {
   const target = useContext(FooterTarget),
     actions = (
       <div
         data-slot="form-actions"
-        className={cn('ri-form-actions ri-dialog-footer', className)}
+        className={cn('ri-form-actions ri-dialog-footer', separated && 'ri-form-actions--separated', className)}
         {...props}
       />
     );

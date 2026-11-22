@@ -173,7 +173,7 @@ shell without adding a portal or imposing standard width, flex direction or gap.
 Feedback's reduced visual viewport. Search placement and phonePage preserve a
 square full-page phone search. Fixed-height chat/document/form/application/
 settings/window/search roles live in frame CSS, rather than caller utilities.
-Shared padding is none 0, xs 4, sm 8, md 12, lg 16 and xl 24px.
+Shared padding is none 0, xs 4, compact 6, sm 8, md 12, lg 16 and xl 24px.
 
 `DialogBody` scrolls above a fixed `DialogFooter`. `FormFooterHost` moves only
 `FormActions` below a form's scroller. Submit controls retain form ids, native

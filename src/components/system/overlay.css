@@ -33,6 +33,7 @@
   .ri-overlay-inset--none {
     padding: 0;
   }
+  .ri-overlay-inset--compact { padding: 6px; }
   .ri-overlay-inset--xs {
     padding: 4px;
   }
@@ -404,3 +405,5 @@
 @media (min-width: 768px) { .ri-frame-height--search { height: auto; } }
 .ri-dialog-body--panel { padding: 20px; }
 .ri-dialog-body--compact { font-size: 12.5px; }
+
+.ri-form-actions--separated { padding-top: 8px; }
