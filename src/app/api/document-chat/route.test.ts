@@ -114,3 +114,26 @@ describe('GET /api/document-chat — schedule builder chats', () => {
     expect(missing.status).toBe(404);
   });
 });
+
+describe('GET /api/document-chat app builder defaults', () => {
+  it('uses the Home default for a new app and resumes the existing chat after the default changes', async () => {
+    const { createAppSource } = await import('@/lib/db/queries');
+    const app = createAppSource({ name: 'Tide Log', folder: '/apps/tide-log', createdByRi: true });
+    const url = `http://test/api/document-chat?entityType=app-builder&entityId=${app.id}`;
+    updateUserState({ defaultHarness: 'claude', defaultModel: 'sonnet', defaultEffort: 'medium' });
+    const { session } = await (await GET(new Request(url))).json();
+    expect(session).toMatchObject({
+      type: 'content', surfaceKind: 'app-builder', surfaceRef: app.id,
+      harness: 'claude', model: 'sonnet', effort: 'medium',
+    });
+
+    updateUserState({ defaultHarness: 'codex', defaultModel: 'gpt-6.1-sol', defaultEffort: 'xhigh' });
+    const resumed = await (await GET(new Request(url))).json();
+    expect(resumed.session.id).toBe(session.id);
+    expect(resumed.session.harness).toBe('claude');
+
+    const other = createAppSource({ name: 'Fieldnotes', folder: '/apps/fieldnotes', createdByRi: true });
+    const fresh = await (await GET(new Request(`http://test/api/document-chat?entityType=app-builder&entityId=${other.id}`))).json();
+    expect(fresh.session).toMatchObject({ harness: 'codex', model: 'gpt-6.1-sol', effort: 'xhigh' });
+  });
+});

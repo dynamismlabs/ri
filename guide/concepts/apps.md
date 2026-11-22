@@ -22,6 +22,8 @@ Each shows what it can reach, like your email, before you add it. Click **Add** 
 
 Click **New app**, give it a name, and say what it should do. Ri opens a chat that builds it in a folder of its own on your computer. That chat can't use your accounts, since building an app never needs them. When it's ready, **Install and connect** adds it to your Ri. To change it later, use **Change app**, describe the change, then **Apply change**.
 
+The builder starts with your [default model](/docs/guides/harnesses). Use the chat's model menu to choose another model or harness. Choosing another harness starts a new chat and keeps the app's files.
+
 An app is an ordinary MCP server in its own git repository, so you can read, change and share it like any other code.
 
 ## Add an app you already run

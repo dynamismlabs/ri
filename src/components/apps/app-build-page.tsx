@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
+import type { RouterInputs } from '@/lib/trpc/router';
 import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';
 import { TurnOffAccessChoice } from './turn-off-access-choice';
 import { versionLabel } from '@/lib/apps/version-label';
@@ -46,6 +47,12 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
   // A catalog app's page is its progress until the person changes it or asks the builder.
   const showChat = !fromCatalog || changing || chatAsked;
   const chat = useQuery({ queryKey: ['app-builder-chat', sourceId], queryFn: () => ensureAppBuilderChat(sourceId), staleTime: 30_000, enabled: !!source.data && showChat });
+  const newChat = useMutation({
+    mutationFn: (choice: Omit<RouterInputs['documentChat']['create']['body'], 'entityType' | 'entityId'>) =>
+      trpcClient.documentChat.create.mutate({ body: { entityType: 'app-builder', entityId: sourceId, ...choice } }),
+    onSuccess: ({ session }) => queryClient.setQueryData(['app-builder-chat', sourceId], session),
+    onError: (error) => toast.error('Could not start a new chat', { description: error.message }),
+  });
   const app = useQuery({ ...trpc.personalApps.get.queryOptions({ appId: source.data?.personalAppId ?? '' }), enabled: !!source.data?.connected });
   // Where its data is, for what removing it keeps, and the computer it runs on.
   const status = useQuery({ ...trpc.appBuilds.status.queryOptions({ id: sourceId }), enabled: !!source.data?.url });
@@ -197,7 +204,18 @@ export function AppBuildPage({ sourceId, navigate }: { sourceId: string; navigat
         {job && <BuildSteps job={job} />}
         {job?.state === 'failed' && askButton && !chatAsked && <div className="border-b border-border px-5 py-2">{askButton}</div>}
         <div className="flex min-h-0 flex-1 flex-col">
-          {chat.data ? <HarnessChatSession sessionId={chat.data.id} autoFocusComposer={false} />
+          {chat.data ? <HarnessChatSession
+            sessionId={chat.data.id}
+            autoFocusComposer={false}
+            onSwitchProvider={(next) => newChat.mutate({
+              providerId: next.harness,
+              model: next.model,
+              variant: next.variant,
+              effort: next.effort,
+              serviceTier: next.serviceTier,
+            })}
+            switchingProvider={newChat.isPending}
+          />
             : <p role="status" className="p-6 text-xs text-muted-foreground">{chat.error?.message ?? 'Opening the builder chat…'}</p>}
         </div>
       </> : (
