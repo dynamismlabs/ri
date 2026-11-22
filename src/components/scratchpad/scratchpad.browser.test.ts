@@ -85,8 +85,15 @@ beforeAll(async () => {
 
 afterAll(async () => { await fixture?.close(); });
 
-async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
+async function open(viewport = { width: 1440, height: 900 }, slowFrames = false): Promise<Page> {
   const page = await fixture.browser.newPage({ viewport, hasTouch: viewport.width < 1024 });
+  if (slowFrames) {
+    // Reproduce input arriving before the pad's deferred opening focus on a busy renderer.
+    await page.addInitScript(() => {
+      const frame = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = callback => frame(time => { setTimeout(() => callback(time), 80); });
+    });
+  }
   // Short of the test's own limit, so a step that can't happen says which and why.
   testTimeouts(page, 10_000);
   await page.goto(fixture.url);
@@ -95,6 +102,9 @@ async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
   if (viewport.width < 1024) {
     await settle(page.getByRole('dialog'));
   }
+  // Mounted text precedes the pad's opening focus. Wait for that real readiness
+  // before test input can compete with its deferred focus('end') transaction.
+  await expect.poll(() => editor(page).evaluate(el => el === document.activeElement)).toBe(true);
   return page;
 }
 
@@ -314,8 +324,9 @@ describe('scratchpad quick view and expansion', () => {
   });
 
   it.each([320, 390, 1440])('keeps the empty placeholder on one line at %ipx', async width => {
-    const page = await open({ width, height: 780 });
+    const page = await open({ width, height: 780 }, width === 320);
     try {
+      expect(await editor(page).evaluate(el => el === document.activeElement)).toBe(true);
       await clear(page);
       const placeholder = editor(page).locator('.is-empty[data-placeholder]').first();
       expect(await placeholder.getAttribute('data-placeholder')).toBe('Write a note…');
@@ -337,7 +348,7 @@ describe('scratchpad quick view and expansion', () => {
       // Where the sheet and its editor were, for a failure only one platform's fonts show.
       console.error('scratchpad layout', JSON.stringify(await page.evaluate(() => {
         const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().toJSON() ?? null;
-        return { viewport: [innerWidth, innerHeight], sheet: box('[data-scratchpad]'), editor: box('[data-scratchpad] .tiptap'), placeholder: box('[data-scratchpad] .is-empty') };
+        return { viewport: [innerWidth, innerHeight], sheet: box('[data-scratchpad]'), editor: box('[data-scratchpad] .tiptap'), placeholder: box('[data-scratchpad] .is-empty'), text: document.querySelector('[data-scratchpad] .tiptap')?.textContent, active: document.activeElement?.getAttribute('class') };
       }).catch(() => null)));
       throw error;
     } finally { await page.close(); }
