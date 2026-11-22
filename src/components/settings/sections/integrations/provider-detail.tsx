@@ -5,7 +5,6 @@ import { Callout } from '@/components/system/callout';
 import { MenuAction } from '@/components/system/menu-action';
 import { StatusBadge } from '@/components/system/status-badge';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -573,7 +572,6 @@ export function ToolList({
   writePolicy: Record<string, WritePolicyAction>;
   onSetApproval: (actionId: string, mode: ApprovalMode) => void;
 }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
 
   const [filter, setFilter] = useState('');
   const q = filter.trim().toLowerCase();
@@ -600,7 +598,6 @@ export function ToolList({
               aria-label="Filter tools"
               className={cn('w-44', 'relative')}
               leading={<Search />}
-              size={compactFieldSize}
             />
           )
         }

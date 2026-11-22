@@ -794,3 +794,9 @@ Sheet side caps apply from the installed 640px breakpoint, so an entity sheet
 keeps its full requested width on a phone. Confirmation frames retain their
 size attribute, responsive default/small widths and header/footer layout. The
 wide confirmation option continues to work.
+
+The field-row check resolves imported field aliases and explicit compact-size
+variables across product JSX, including fields passed as props. Only the five
+reviewed compact-control rows can request sm. A filter beside a passive heading
+or count uses the default md32/touch40 role. Real ToolList browser checks pin its
+height and filtering in both themes at360,390 and900px.
