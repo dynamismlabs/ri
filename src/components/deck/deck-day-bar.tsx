@@ -1,5 +1,6 @@
 "use client";
 
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
@@ -27,13 +28,12 @@ export function DeckDayBar({ items, routines, onRoutineComplete }: DeckDayBarPro
   const routinesDone = routines.filter(r => r.completedCount >= r.targetCount).length;
 
   return (
-    <div className="relative">
+    <Popover open={open} onOpenChange={setOpen}><div className="relative">
       <DayShapeStrip items={items} />
 
       {routines.length > 0 && (
         <div className="flex items-center justify-end px-4 py-1.5 border-b border-border/50">
-          <Button
-            onClick={() => setOpen(o => !o)}
+          <PopoverTrigger asChild><Button
             variant="ghost"
             size="xs"
             className="flex items-center gap-1.5"
@@ -41,12 +41,12 @@ export function DeckDayBar({ items, routines, onRoutineComplete }: DeckDayBarPro
             <Circle className="w-3 h-3" />
             {routinesDone}/{routines.length} habits
             <ChevronDown className={cn('w-2.5 h-2.5 transition-transform', open && 'rotate-180')} />
-          </Button>
+          </Button></PopoverTrigger>
         </div>
       )}
 
       {open && routines.length > 0 && (
-        <div className="absolute right-4 top-full mt-1 z-10 w-72 bg-popover border border-border rounded-lg shadow-md p-3">
+        <PopoverContent padding="md" align="end" className="w-72">
           <div className="space-y-2">
             {routines.map(routine => {
               const isDone = routine.completedCount >= routine.targetCount;
@@ -74,8 +74,8 @@ export function DeckDayBar({ items, routines, onRoutineComplete }: DeckDayBarPro
               );
             })}
           </div>
-        </div>
+        </PopoverContent>
       )}
-    </div>
+    </div></Popover>
   );
 }

@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { Field } from '@/components/system/field';
 import { TextArea } from '@/components/system/text-area';
 
@@ -70,14 +71,15 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className=" min-h-0 flex flex-1 flex-col gap-4 overflow-hidden">
           <DialogHeader>
             <DialogTitle>New app</DialogTitle>
             <DialogDescription>
               A small app of your own, with its own data, that works in {APP_NAME} and with any assistant. An agent builds it in its own folder. You install it when it&apos;s ready.
             </DialogDescription>
           </DialogHeader>
-          <Field
+          <DialogBody className="space-y-4">
+<Field
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Baby tracker"
@@ -136,6 +138,7 @@ export function NewAppDialog({ open, onOpenChange, onCreated }: { open: boolean;
           )}
           {tools && !tools.git && tools.gitHelp && <p role="status" className="flex items-start gap-2 text-xs text-muted-foreground"><AlertCircle size={13} className="mt-0.5 shrink-0" />{tools.gitHelp}</p>}
           {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{error}</p>}
+</DialogBody>
           <DialogFooter>
             <Button
               type="button"

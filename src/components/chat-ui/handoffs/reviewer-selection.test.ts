@@ -18,7 +18,7 @@ vi.mock('@/hooks/use-harness-models', () => ({ useHarnessModels: (harness: strin
   return { data: { defaultModel: model.id, defaultEffort: 'medium', defaultVariant: null }, models: [model] };
 } }));
 vi.mock('@/components/settings/model-list', () => ({ ModelList: ({ onPick }: { onPick: NonNullable<typeof state.pick> }) => { state.pick = onPick; return null; } }));
-vi.mock('@/components/ui/popover', () => ({
+vi.mock('@/components/system/popover', () => ({
   Popover: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
   PopoverContent: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),
   PopoverTrigger: ({ children }: { children: React.ReactNode }) => createElement('div', null, children),

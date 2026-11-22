@@ -6,7 +6,7 @@ import { RuntimeSetup } from '@/components/desktop/runtime-setup';
 import { Button } from '@/components/system/button';
 
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
 import { documentSaves } from '@/lib/client/document-saves';

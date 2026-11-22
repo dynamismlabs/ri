@@ -1,7 +1,6 @@
 "use client";
 import { MenuAction } from '@/components/system/menu-action';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -28,8 +27,6 @@ interface TaskActionsProps {
 }
 
 export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'menu' | 'search'>('menu');
   const [query, setQuery] = useState('');
@@ -139,8 +136,6 @@ interface NoteActionsProps {
 }
 
 export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'menu' | 'search'>('menu');
   const [query, setQuery] = useState('');

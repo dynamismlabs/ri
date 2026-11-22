@@ -6,7 +6,7 @@ import { ChatMenu } from './chat-menu';
 
 const h = vi.hoisted(() => ({ canStop: undefined as boolean | undefined, pass: ({ children }: { children: ReactNode }) => children }));
 // The popover's content renders inline so the menu's sections can be read.
-vi.mock('@/components/ui/popover', () => ({ Popover: h.pass, PopoverTrigger: h.pass, PopoverContent: h.pass }));
+vi.mock('@/components/system/popover', () => ({ Popover: h.pass, PopoverTrigger: h.pass, PopoverContent: h.pass }));
 vi.mock('@/components/ui/tip', () => ({ Tip: h.pass }));
 vi.mock('@/hooks/use-execution', () => ({ useRuntimeStatus: () => ({ data: { running: false, backgroundTasks: false, backgroundTaskIds: [], canStop: h.canStop } }) }));
 vi.mock('@/components/executions/restart-menu-item', () => ({ RestartMenuItem: ({ sessionId }: { sessionId: string }) => createElement('button', { 'data-restart': sessionId }, 'Restart chat') }));

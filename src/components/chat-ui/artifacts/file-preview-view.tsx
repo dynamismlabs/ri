@@ -42,8 +42,6 @@ export function FilePreviewView({ source, name }: { source: FilePreviewSource; n
 }
 
 function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'video' | 'audio'; url?: string }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const cookieReady = useSessionCookieReady();
   const ref = useRef<HTMLMediaElement | null>(null);
   const [failed, setFailed] = useState(false);

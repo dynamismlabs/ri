@@ -1,6 +1,6 @@
 'use client';
 
-import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
+import { PopoverPrimitive } from '@/components/system/popover';
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState, type ReactElement, type ReactNode, type Ref, type RefObject } from 'react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -207,7 +207,7 @@ export function RailFlyout({
           button: zero size, at 0,0. */}
       <PopoverPrimitive.Anchor virtualRef={{ current: railEdge }} />
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content padding="none"
+        <PopoverPrimitive.Content frame="rail" padding="none"
           ref={content}
           side="right"
           align="start"
@@ -257,7 +257,7 @@ export function RailFlyout({
           }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
-          className={cn('z-50 flex h-[var(--radix-popper-anchor-height)] w-[256px] flex-col border-r outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-left-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0', className)}
+          className={cn('z-50 flex h-[var(--radix-popper-anchor-height)] w-[256px] flex-col outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-left-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0', className)}
         >
           <RailFlyoutDismissContext.Provider value={dismiss}>
             {children}

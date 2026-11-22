@@ -1,4 +1,5 @@
 'use client';
+import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/system/alert-dialog';
 import { Callout } from '@/components/system/callout';
 import { Card } from '@/components/system/card';
 
@@ -11,7 +12,7 @@ import { Button } from '@/components/system/button';
  * chat, and on the /triggers/<id> page.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, PauseCircle, Play, PlayCircle, RotateCcw, Trash2 } from 'lucide-react';
 import type { RunRecord, TriggerView } from '@/db/types';
@@ -41,6 +42,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
   const runTrigger = useRunTrigger();
   const resetFailures = useResetTriggerFailures();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteReturn=useRef<HTMLButtonElement|null>(null);
 
   const failing = trigger.consecutiveFailures >= 3;
   const lastFailedRun = (recentRuns ?? []).find((r) => r.status === 'failed');
@@ -122,7 +124,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
         </Button>
         {!managed && (
           <Button
-            onClick={() => setConfirmingDelete(true)}
+            onClick={(event) => { deleteReturn.current=event.currentTarget; setConfirmingDelete(true); }}
             variant="secondary"
             size="sm"
             tone="danger"
@@ -178,14 +180,13 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
         )}
       </section>
 
-      {confirmingDelete && (
-        <div className="fixed inset-0 bg-background/80 z-[60] flex items-center justify-center p-6">
-          <div data-slot="dialog-content" className="bg-card border border-border rounded-lg p-6 max-w-md w-full space-y-4">
-            <h3 className="text-base font-semibold">Delete this schedule?</h3>
-            <p className="text-sm text-muted-foreground">
+      <AlertDialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
+          <AlertDialogContent onCloseAutoFocus={(event)=>{event.preventDefault();deleteReturn.current?.focus();}}>
+            <AlertDialogTitle>Delete this schedule?</AlertDialogTitle>
+            <AlertDialogDescription>
               Its past runs stay. Only the schedule and its future runs are removed.
-            </p>
-            <div className="flex items-center gap-2 justify-end">
+            </AlertDialogDescription>
+            <AlertDialogFooter>
               <Button
                 onClick={() => setConfirmingDelete(false)}
                 variant="ghost"
@@ -202,10 +203,9 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
               >
                 Delete
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

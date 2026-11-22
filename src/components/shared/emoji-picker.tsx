@@ -1,6 +1,6 @@
 "use client";
 
-import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
+import { PopoverPrimitive } from '@/components/system/popover';
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from "react";
 

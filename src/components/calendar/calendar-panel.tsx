@@ -134,7 +134,7 @@ export function CalendarPanel() {
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="">
+            <TooltipContent side="bottom">
               {data ? `Updated ${formatAsOf(data.asOf)}${degraded ? ' · some calendars unreachable' : ''}` : 'Refresh'}
             </TooltipContent>
           </Tooltip>

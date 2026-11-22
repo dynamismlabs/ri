@@ -10,7 +10,6 @@ import type { MoveSkillBody, ProjectInfo, SkillView } from '@/lib/api/skills';
 import { useMoveSkill, useSkills } from '@/hooks/use-skills';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/system/menu';
-import { cn } from '@/lib/utils';
 import { WHO_USES, displayPath, locationLabel } from './location-copy';
 import { Tip } from '@/components/ui/tip';
 
@@ -236,7 +235,7 @@ function ProjectsSub({
   if (!projects.length && !current) return null;
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger disabled={disabled} className={cn('items-start gap-2 py-1.5', disabled && 'opacity-50')}>
+      <DropdownMenuSubTrigger disabled={disabled} className="items-start gap-2">
         <span className="mt-0.5 text-muted-foreground">{icon ?? <FolderGit2 size={13} />}</span>
         <ItemText label={label} detail={detail} />
         {current && <Check size={13} className="mt-0.5 flex-shrink-0 text-primary" />}

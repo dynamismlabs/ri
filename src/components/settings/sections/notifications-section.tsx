@@ -35,7 +35,7 @@ import { setSettingsSection } from '@/components/settings/settings-store';
 import { StatusBadge as Badge } from '@/components/system/status-badge';
 import { Button } from '@/components/system/button';
 
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import type { NotificationChannelRecord } from '@/db/types';
 import { desktopNeedsSignedBuild, isDesktopNotificationChannel, type DesktopNotificationAction } from '@/lib/notifications/desktop-contract';
 import { EVENT_CATALOG } from '@/lib/notifications/events';
@@ -509,7 +509,7 @@ export function NotificationsSection() {
                     <SelectField className="w-full" aria-label={'Label'}>
                       <SelectValue placeholder="Select a connected bot..." />
                     </SelectField>
-                    <SelectContent className="rounded-2xl border border-border bg-popover text-popover-foreground shadow-xl">
+                    <SelectContent>
                       {telegramConns.map((c) => (
                         <SelectItem key={c.id} value={c.id} className="text-xs">
                           {c.label ?? c.accountId}

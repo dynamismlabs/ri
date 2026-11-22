@@ -11,7 +11,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { invalidateWorkspaceViews } from '@/lib/query/work-view-invalidation';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import type {
 	ExternalAgentDiscovery,
 	ExternalAgentImportResult,

@@ -218,13 +218,13 @@ it('loads skills before creating a chat and updates an open /f picker when disco
     await page.keyboard.press('Escape');
     await page.evaluate(() => (window as unknown as { openLauncher: (seed: { workspaceId: string }) => void }).openLauncher({ workspaceId: 'roast' }));
     await editor(page).pressSequentially('/f');
-    await page.locator('.chat-slash-menu[aria-busy="true"] [data-slot="skeleton"]').first().waitFor();
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"][aria-busy="true"] [data-slot="skeleton"]').first().waitFor();
     await expect.poll(() => skills.requests).toEqual([{ workspaceId: 'roast', harness: 'claude' }]);
     expect(await page.evaluate(() => 'started' in window)).toBe(false);
 
     // No extra keystroke: the query response fills the already open picker.
     await skills.release();
-    await page.locator('.chat-slash-menu').getByRole('button', { name: /first-principles-thinking/ }).waitFor();
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').getByRole('button', { name: /first-principles-thinking/ }).waitFor();
     expect(await editor(page).innerText()).toBe('/f');
     await page.keyboard.press('Enter');
     expect(await page.evaluate(() => 'started' in window)).toBe(false);
@@ -245,15 +245,15 @@ it('changes the skill list with the chosen agent and harness and opens it from +
     await page.keyboard.press('Escape');
     await page.evaluate(() => (window as unknown as { openLauncher: (seed: { workspaceId: null }) => void }).openLauncher({ workspaceId: null }));
     await editor(page).pressSequentially('/');
-    await page.locator('.chat-slash-menu').getByRole('button', { name: /weekly-review/ }).waitFor();
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').getByRole('button', { name: /weekly-review/ }).waitFor();
     await page.getByRole('button', { name: /Pick an agent/ }).click();
     await page.getByRole('option', { name: /Roast lab/ }).click();
     await expect.poll(() => skills.requests.at(-1)).toEqual({ workspaceId: 'roast', harness: 'claude' });
-    await page.locator('.chat-slash-menu').getByRole('button', { name: /first-principles-thinking/ }).waitFor();
-    expect(await page.locator('.chat-slash-menu').getByText(/weekly-review/).count()).toBe(0);
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').getByRole('button', { name: /first-principles-thinking/ }).waitFor();
+    expect(await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').getByText(/weekly-review/).count()).toBe(0);
 
     await page.evaluate(() => (window as unknown as { pickHarness: (pick: unknown) => void }).pickHarness({ harness: 'codex', model: 'gpt-test', variant: null, effort: null }));
-    await page.locator('.chat-slash-menu').getByRole('button', { name: /first-principles-codex/ }).waitFor();
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').getByRole('button', { name: /first-principles-codex/ }).waitFor();
     expect(skills.requests.at(-1)).toEqual({ workspaceId: 'roast', harness: 'codex' });
     expect(await editor(page).innerText()).toBe('/');
 
@@ -261,7 +261,7 @@ it('changes the skill list with the chosen agent and harness and opens it from +
     await page.keyboard.press('Escape');
     await page.getByRole('button', { name: 'Add to this chat' }).click();
     await page.getByRole('menuitem', { name: 'Skills' }).click();
-    await page.locator('.chat-slash-menu').getByRole('button', { name: /first-principles-codex/ }).click();
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').getByRole('button', { name: /first-principles-codex/ }).click();
     await editor(page).locator('[data-slash-command="first-principles-codex"]').waitFor();
     expect(await editor(page).textContent()).toBe('/first-principles-codex ');
     expect(await page.evaluate(() => 'started' in window)).toBe(false);

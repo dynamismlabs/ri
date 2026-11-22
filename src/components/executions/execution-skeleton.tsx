@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { Card } from '@/components/system/card';
 
 // `Bar` is the shared primitive under its local name — the chat and header
@@ -58,7 +59,7 @@ function HeaderBar() {
 function ToolsBoxSkeleton() {
   return (
     <>
-      <div className="absolute right-4 top-3 w-[288px] space-y-3 rounded-2xl bg-card p-2.5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] @max-[1060px]/chat:hidden">
+      <OverlaySurface kind="toolbar" padding="xs" className="absolute right-4 top-3 w-[288px] space-y-3 @max-[1060px]/chat:hidden">
         <Bar w="45%" h="h-2" />
         <div className="h-10 rounded-lg bg-muted/40 animate-pulse" />
         {[70, 60, 40, 50, 64, 52].map((w, i) => (
@@ -67,14 +68,14 @@ function ToolsBoxSkeleton() {
             <Bar w={`${w}%`} h="h-2" delayMs={i * 60} />
           </div>
         ))}
-      </div>
-      <div className="absolute right-3 top-3 hidden flex-col gap-0.5 rounded-xl bg-card p-1 shadow-[0_12px_32px_rgba(0,0,0,0.28)] @max-[1060px]/chat:flex">
+      </OverlaySurface>
+      <OverlaySurface kind="toolbar" padding="xs" className="absolute right-3 top-3 hidden flex-col gap-0.5 @max-[1060px]/chat:flex">
         {[0, 1, 2, 3, 4, 5, 6].map((i) => (
           <div key={i} className="grid size-9 place-items-center">
             <div className="size-5 rounded-md bg-muted/50 animate-pulse" />
           </div>
         ))}
-      </div>
+      </OverlaySurface>
     </>
   );
 }

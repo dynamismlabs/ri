@@ -23,6 +23,7 @@ const dialogVariants = cva('ri-dialog', {
   variants: {
     placement: {
       custom: '',
+      viewport: 'ri-dialog--viewport',
       center: 'ri-dialog--center',
       page: 'ri-dialog--page',
       search: 'ri-dialog--search',
@@ -39,7 +40,7 @@ const dialogVariants = cva('ri-dialog', {
 });
 type FrameProps = ComponentProps<typeof DialogContentPrimitive> &
   VariantProps<typeof dialogVariants> &
-  Omit<OverlayDrawing, 'kind'>;
+  Omit<OverlayDrawing, 'kind'> & { animated?: boolean };
 export function DialogOverlay({
   className,
   ...props
@@ -58,11 +59,13 @@ export function DialogFrame({
   padding = 'xl',
   placement,
   size,
+  animated = false,
   ...props
 }: FrameProps) {
   return (
     <DialogContentPrimitive
       data-slot="dialog-content"
+      data-motion={animated || undefined}
       className={cn(
         overlayVariants({ kind: 'dialog', padding }),
         dialogVariants({ placement, size }),
@@ -80,7 +83,7 @@ export function DialogContent({
   return (
     <DialogPortal>
       <DialogOverlay />
-      <DialogFrame {...props}>
+      <DialogFrame animated {...props}>
         {children}
         {showCloseButton && (
           <DialogClose asChild>
@@ -97,11 +100,23 @@ export function DialogContent({
     </DialogPortal>
   );
 }
-export function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
+export function DialogHeader({
+  className,
+  divider = false,
+  padding = 'none',
+  closeSpace = false,
+  ...props
+}: ComponentProps<'div'> & { divider?: boolean; padding?: 'none' | 'lg' | 'panel'; closeSpace?: boolean }) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn('ri-dialog-header', className)}
+      className={cn(
+        'ri-dialog-header',
+        padding !== 'none' && `ri-dialog-section--${padding}`,
+        closeSpace && 'ri-dialog-header--close',
+        divider && 'ri-overlay-divider--bottom',
+        className,
+      )}
       {...props}
     />
   );
@@ -118,13 +133,20 @@ export function DialogBody({ className, ...props }: ComponentProps<'div'>) {
 export function DialogFooter({
   className,
   showCloseButton = false,
+  divider = false,
+  padding = 'none',
   children,
   ...props
-}: ComponentProps<'div'> & { showCloseButton?: boolean }) {
+}: ComponentProps<'div'> & { showCloseButton?: boolean; divider?: boolean; padding?: 'none' | 'md' | 'panel' }) {
   return (
     <div
       data-slot="dialog-footer"
-      className={cn('ri-dialog-footer', className)}
+      className={cn(
+        'ri-dialog-footer',
+        padding !== 'none' && `ri-dialog-section--${padding}`,
+        divider && 'ri-overlay-divider--top',
+        className,
+      )}
       {...props}
     >
       {children}

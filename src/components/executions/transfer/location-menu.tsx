@@ -158,7 +158,7 @@ export function LocationMenu({
           </Tip>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">
-          <DropdownMenuLabel className="font-normal">Runs on {name}</DropdownMenuLabel>
+          <DropdownMenuLabel>Runs on {name}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {moves.map((move) => {
             const note = hint(move, workspace?.name ?? 'The agent');

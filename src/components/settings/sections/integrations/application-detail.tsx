@@ -41,7 +41,7 @@ import type { WorkspaceIntegrationScope } from '@/db/types';
 import {
   sourceErrorMessage, useConnectAttempt, useConnectionMethod, useDiscoveredAccounts, useManagedAccounts, useSourceMutations, useSourcesOverview,
 } from '@/hooks/use-integration-sources';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import { BackLink, Chip, ConnectFormSection, DetailHeader, GroupHeading } from './parts';
 import { ToolList } from './provider-detail';
 import { connectionIdentity, type ApprovalMode, type Connection, type ToolkitInfo, type WritePolicyAction } from './types';

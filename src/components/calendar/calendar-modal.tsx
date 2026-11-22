@@ -1,6 +1,6 @@
 "use client";
 
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import {
   SegmentedControl,
   SegmentedRoot,
@@ -287,7 +287,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
           data-slot="calendar-toolbar"
           className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2"
         >
-          <DialogTitle className="flex items-center gap-1.5 px-1">
+          <DialogTitle className="flex items-center gap-1.5">
             <CalendarIcon className="size-4 text-muted-foreground" />
             Calendar
           </DialogTitle>

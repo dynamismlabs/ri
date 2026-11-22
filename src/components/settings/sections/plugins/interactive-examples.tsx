@@ -119,16 +119,16 @@ export function InteractiveExamples() {
       </Card>
       <Dialog open={!!view} onOpenChange={open => { if (!open) setView(null); }}>
         <DialogContent padding="none" onCloseAutoFocus={event => { event.preventDefault(); launchButton.current?.focus(); }} className="flex h-[92dvh] w-[calc(100%-1rem)] max-w-none flex-col gap-0 overflow-hidden sm:max-w-[calc(100%-2rem)]">
-          <DialogHeader className="border-b px-4 py-3 pr-12 text-left">
+          <DialogHeader divider padding="lg" closeSpace className="text-left">
             <div className="flex flex-wrap items-center gap-3">
               <Button
                 onClick={() => setView(null)}
                 variant="ghost"
                 size="sm"
               ><ArrowLeft className="size-4" />Return to Plugins</Button>
-              <DialogTitle className="">Interactive examples</DialogTitle>
+              <DialogTitle>Interactive examples</DialogTitle>
             </div>
-            <DialogDescription className="px-2">{view?.account ? `Selected account: ${view.account}. App actions use your current access and approvals.` : 'Sample inputs and public data from external services.'} Closing or reloading ends this view. Your conversation stays in Ri.</DialogDescription>
+            <DialogDescription>{view?.account ? `Selected account: ${view.account}. App actions use your current access and approvals.` : 'Sample inputs and public data from external services.'} Closing or reloading ends this view. Your conversation stays in Ri.</DialogDescription>
           </DialogHeader>
           {state === 'loading' && <p role="status" className="px-6 py-2 text-xs text-muted-foreground">Connecting to the examples…</p>}
           {(state === 'failed' || state === 'ended') ? (

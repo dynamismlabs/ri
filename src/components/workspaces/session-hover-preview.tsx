@@ -1,5 +1,6 @@
 'use client';
 
+import { OverlaySurface } from '@/components/system/overlay';
 import { MessageResponse } from '@/components/ai-elements/message';
 import { AgentInitials } from '@/components/agents/agent-icon';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -140,7 +141,7 @@ function PreviewPortal({
   if (!mounted) return null;
 
   return createPortal(
-    <div
+    <OverlaySurface kind="preview" padding="none"
       ref={panelRef}
       role="dialog"
       aria-label="Session preview"
@@ -158,12 +159,12 @@ function PreviewPortal({
         zIndex: 40,
       }}
       className={cn(
-        'flex flex-col rounded-lg border border-border bg-popover shadow-xl',
+        'flex flex-col',
         pos && 'animate-in fade-in zoom-in-95 duration-150',
       )}
     >
       <PreviewBody sessionId={sessionId} />
-    </div>,
+    </OverlaySurface>,
     document.body,
   );
 }

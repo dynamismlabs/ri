@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { Button } from '@/components/system/button';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -126,9 +127,9 @@ export function HomeReachabilityBanner() {
 
   const where = known?.host?.name ? `${APP_NAME} on ${known.host.name}` : APP_NAME;
   return (
-    <div
+    <OverlaySurface kind="toast" padding="md"
       role="status"
-      className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] right-4 z-50 max-w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-border bg-background px-3 py-2 shadow-sm md:bottom-4"
+      className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] right-4 z-50 max-w-[min(24rem,calc(100vw-2rem))] md:bottom-4"
     >
       <div className="flex items-center gap-3">
         <WifiOff size={13} className="flex-shrink-0 text-amber-400" />
@@ -163,6 +164,6 @@ export function HomeReachabilityBanner() {
         <p className="mt-1 break-words">{issue?.detail ?? 'This view cannot reach your Ri. Its service may be restarting, or the network may be unavailable.'}</p>
       </details>
       {actionError && <p role="alert" className="mt-1 text-[11px] text-destructive">{actionError}</p>}
-    </div>
+    </OverlaySurface>
   );
 }

@@ -44,7 +44,7 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
       </IconButton>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" showCloseButton={false} className="px-3 pb-6 pt-3">
+        <SheetContent side="bottom" showCloseButton={false} padding="md" safeArea>
           <SheetTitle className="sr-only">{title}</SheetTitle>
           <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto mb-3" />
           <div className="flex flex-col">

@@ -37,7 +37,7 @@ export function RunOnSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" showCloseButton={false} className="px-5 pb-8 pt-4">
+        <SheetContent side="bottom" showCloseButton={false} padding="md" safeArea>
           <div className="mx-auto mb-4 h-1 w-8 rounded-full bg-muted-foreground/30" />
           <SheetTitle className="mb-2">New chat in {workspace.name}, on…</SheetTitle>
           {isLoading || !runOn ? (

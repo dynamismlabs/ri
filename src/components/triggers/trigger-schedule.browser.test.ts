@@ -319,3 +319,17 @@ for (const theme of ['light', 'dark'] as const) {
     } finally { await page.close(); }
   });
 }
+
+it('dismisses only the nested schedule deletion confirmation and returns focus', async()=>{
+ const page=await open('?modal');
+ try{
+  await page.getByRole('button',{name:'Open schedules'}).click();
+  const window=page.getByRole('dialog',{name:'Schedules and Triggers'});
+  await window.getByRole('button',{name:/Briefing 24/}).click();
+  const trigger=window.getByRole('button',{name:'Delete',exact:true});await trigger.click();
+  const confirmation=page.getByRole('alertdialog',{name:'Delete this schedule?'});await confirmation.waitFor();
+  await page.keyboard.press('Escape');await confirmation.waitFor({state:'detached'});expect(await window.isVisible()).toBe(true);
+  await expect.poll(()=>trigger.evaluate(el=>el===document.activeElement)).toBe(true);
+  await page.keyboard.press('Escape');await window.waitFor({state:'detached'});
+ }finally{await page.close();}
+});

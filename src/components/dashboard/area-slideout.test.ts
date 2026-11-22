@@ -25,11 +25,12 @@ vi.mock('@/components/tasks/lifecycle-status-control', () => ({ LifecycleStatusC
 vi.mock('@/components/shared/note-icon', () => ({ NoteIcon: () => null }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), warning: vi.fn() } }));
 vi.mock('@/components/ui/tip', () => ({ Tip: ({ children }: { children: ReactNode }) => children }));
-vi.mock('radix-ui', () => {
+vi.mock('radix-ui', async original => {
+  const actual=await original<typeof import('radix-ui')>();
   const wrapper = ({ children }: { children?: ReactNode }) => children;
-  return { Dialog: { Root: wrapper, Portal: wrapper, Content: wrapper, Title: wrapper, Overlay: () => null } };
+  return { ...actual, Dialog: { ...actual.Dialog, Root: wrapper, Portal: wrapper, Content: wrapper, Title: wrapper, Overlay: () => null } };
 });
-vi.mock('@/components/ui/dropdown-menu', () => {
+vi.mock('@/components/system/menu', () => {
   const wrapper = ({ children }: { children?: ReactNode }) => children;
   return { DropdownMenu: wrapper, DropdownMenuTrigger: wrapper, DropdownMenuContent: wrapper, DropdownMenuItem: wrapper };
 });

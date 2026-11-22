@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
@@ -247,12 +248,12 @@ export const TOOLS_BOX_CLEARANCE = '@max-[1390px]/chat:pr-[308px] @max-[1060px]/
 export function FloatingToolsBox({ list, strip, label = 'Tools' }: { list: React.ReactNode; strip: React.ReactNode; label?: string }) {
   return (
     <>
-      <div data-slot="floating-tools" role="group" aria-label={label} className="absolute right-4 top-3 z-20 w-[288px] rounded-2xl bg-card p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] @max-[1060px]/chat:hidden dark:shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+      <OverlaySurface kind="toolbar" padding="xs" role="group" aria-label={label} className="absolute right-4 top-3 z-20 w-[288px] @max-[1060px]/chat:hidden">
         {list}
-      </div>
-      <div data-slot="floating-tools" role="group" aria-label={label} className="absolute right-3 top-3 z-20 hidden flex-col gap-0.5 rounded-xl bg-card p-1 shadow-[0_12px_32px_rgba(0,0,0,0.28)] @max-[1060px]/chat:flex dark:shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+      </OverlaySurface>
+      <OverlaySurface kind="toolbar" padding="xs" role="group" aria-label={label} className="absolute right-3 top-3 z-20 hidden flex-col gap-0.5 @max-[1060px]/chat:flex">
         {strip}
-      </div>
+      </OverlaySurface>
     </>
   );
 }

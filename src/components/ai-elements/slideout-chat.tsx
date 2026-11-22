@@ -1,5 +1,6 @@
 'use client'
 
+import { OverlaySurface } from '@/components/system/overlay';
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { apiErrorStatus } from '@/lib/api/client';
@@ -167,7 +168,7 @@ function ChatBubble({
   return (
     <>
       {bubbleOpen && (
-        <div className="absolute bottom-16 right-4 z-50 w-80 h-[440px] rounded-xl border border-border bg-background shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150">
+        <OverlaySurface kind="popover" padding="none" className="absolute bottom-16 right-4 z-50 w-80 h-[440px] flex flex-col overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150">
           <ChatPanel
             contextLabel={contextLabel}
             chat={chat}
@@ -175,7 +176,7 @@ function ChatBubble({
             compact
             onClose={() => setBubbleOpen(false)}
           />
-        </div>
+        </OverlaySurface>
       )}
 
       <IconButton

@@ -27,7 +27,7 @@ export function TooltipFrame({
       sideOffset={sideOffset}
       className={cn(
         overlayVariants({ kind: 'tooltip', padding: 'sm' }),
-        'z-50',
+        'z-50 data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=instant-open]:animate-in data-[state=instant-open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 duration-100',
         className,
       )}
       {...props}

@@ -16,11 +16,7 @@ vi.mock('@/components/executions/execution-transcript', async () => {
   } };
 });
 vi.mock('@/hooks/use-session-stream', () => ({ useSessionStream: () => {} }));
-vi.mock('@/components/ui/popover', async () => {
-  const React = await import('react');
-  const Pass = ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children);
-  return { Popover: Pass, PopoverTrigger: Pass, PopoverContent: ({ children }: { children: React.ReactNode }) => React.createElement('div', { 'data-chat-menu': '' }, children) };
-});
+vi.mock('@/components/system/popover', () => import('@/test/fixtures/inline-popover'));
 
 const h = vi.hoisted(() => ({
   url: new URL('http://team.test/'), listeners: new Set<() => void>(), calls: [] as string[], pointer: 'X' as string | null, running: false, closeUnconfirmed: false, failSend: false, failNew: false, failResume: false, restartError: false,

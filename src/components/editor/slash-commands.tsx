@@ -1,5 +1,6 @@
 'use client';
 
+import { MenuSurface } from '@/components/system/menu-surface';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Card } from '@/components/system/card';
@@ -238,14 +239,14 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
 
     if (items.length === 0) {
       return (
-        <div className="slash-command-menu p-3 text-sm text-muted-foreground">
+        <MenuSurface empty>
           No matching commands
-        </div>
+        </MenuSurface>
       )
     }
 
     return (
-      <div ref={listRef} className="slash-command-menu">
+      <MenuSurface ref={listRef}>
         {items.map((item, index) => {
           const Icon = item.icon
           return (
@@ -271,7 +272,7 @@ const CommandList = forwardRef<CommandListRef, CommandListProps>(
             </MenuAction>
           )
         })}
-      </div>
+      </MenuSurface>
     )
   }
 )

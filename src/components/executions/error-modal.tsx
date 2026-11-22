@@ -1,6 +1,6 @@
 'use client';
 
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { VisuallyHidden } from 'radix-ui';
@@ -36,12 +36,12 @@ export function ErrorModal({ open, onClose, title, message, action }: ErrorModal
     <DialogPrimitive.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
           <VisuallyHidden.Root>
             <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
             <DialogPrimitive.Description>{message}</DialogPrimitive.Description>
           </VisuallyHidden.Root>
-          <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
+          <div className="overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
               <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide text-rose-700 dark:text-rose-400">
                 <AlertCircle size={13} />

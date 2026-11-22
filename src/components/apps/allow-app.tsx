@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
 import { StatusBadge } from '@/components/system/status-badge';
 
@@ -130,7 +131,8 @@ export function useAllowApp() {
               <DialogTitle>What may {stage.access.placeName} do in {stage.access.appName}?</DialogTitle>
               <DialogDescription>{stage.access.appName} holds {stage.access.placeName} to what you choose, on every call.</DialogDescription>
             </DialogHeader>
-            <ChoiceGroup asChild name="app-access" value={stage.selected} disabled={stage.busy} onValueChange={value => setStage({ ...stage, selected: value as typeof stage.selected, error: null })} aria-label={`What ${stage.access.placeName} may do in ${stage.access.appName}`}><fieldset className="space-y-2" disabled={stage.busy}>
+            <DialogBody className="space-y-4">
+<ChoiceGroup asChild name="app-access" value={stage.selected} disabled={stage.busy} onValueChange={value => setStage({ ...stage, selected: value as typeof stage.selected, error: null })} aria-label={`What ${stage.access.placeName} may do in ${stage.access.appName}`}><fieldset className="space-y-2" disabled={stage.busy}>
               <legend className="sr-only">What {stage.access.placeName} may do in {stage.access.appName}</legend>
               {stage.access.choices.map((choice) => (
                 <ChoiceRow key={choice.access} selection="radio" value={choice.access} density="spacious" className="flex items-start gap-3">
@@ -145,6 +147,7 @@ export function useAllowApp() {
               ))}
             </fieldset></ChoiceGroup>
             {stage.error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" />{stage.error}</p>}
+</DialogBody>
             <DialogFooter>
               <Button
                 disabled={stage.busy}

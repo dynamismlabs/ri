@@ -1,6 +1,7 @@
 "use client";
+import { DialogBody, DialogFooter } from '@/components/system/dialog';
 
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -123,12 +124,12 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] duration-200">
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] duration-200">
           <VisuallyHidden.Root>
             <DialogPrimitive.Title>New Area</DialogPrimitive.Title>
             <DialogPrimitive.Description>Create a new area</DialogPrimitive.Description>
           </VisuallyHidden.Root>
-          <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
+          <div className="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
               <span className="text-xs font-semibold tracking-wide text-foreground">
@@ -146,7 +147,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
             </div>
 
             {/* Body */}
-            <div className="p-5 space-y-4">
+            <DialogBody className="p-5 space-y-4">
               {/* Emoji / Image upload */}
               <div className="flex justify-center">
                 <input
@@ -267,10 +268,10 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                   rows={3}
                 />
               </div>
-            </div>
+            </DialogBody>
 
             {/* Footer */}
-            <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border">
+            <DialogFooter divider className="flex-row items-center justify-end px-5 py-3">
               <DialogPrimitive.Close asChild>
                 <Button
                   variant="ghost"
@@ -291,7 +292,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
                 )}
                 Create area
               </Button>
-            </div>
+            </DialogFooter>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

@@ -1,5 +1,6 @@
 'use client';
 
+import { DialogBody } from '@/components/system/dialog';
 import { PopoverPrimitive as Popover } from '@/components/system/popover';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
 
@@ -63,7 +64,9 @@ export function MarkdownLink({ href: renderedHref, children, className, title, n
         <DialogTitle>Open link</DialogTitle>
         <DialogDescription>{title || 'Copy this destination or open it in a new tab.'}</DialogDescription>
       </DialogHeader>
-      <p className="max-h-48 overflow-y-auto break-all font-mono text-xs select-text">{href}</p>
+      <DialogBody className="space-y-4">
+<p className="max-h-48 overflow-y-auto break-all font-mono text-xs select-text">{href}</p>
+</DialogBody>
       <DialogFooter>
         <CopyLink value={href} />
         <Button
@@ -109,7 +112,7 @@ function WebLink({ description, children, ...props }: ComponentProps<'a'> & { de
       >{children}</a>
     </Popover.Anchor>
     <Popover.Portal>
-      <Popover.Content padding="none" ref={panel} side="top" align="start" sideOffset={6} collisionPadding={12}
+      <Popover.Content padding="md" ref={panel} side="top" align="start" sideOffset={6} collisionPadding={12}
         aria-label="Link destination" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}
         onEscapeKeyDown={() => {
           if (panel.current?.contains(document.activeElement)) anchor.current?.focus();
@@ -125,7 +128,7 @@ function WebLink({ description, children, ...props }: ComponentProps<'a'> & { de
             if (!event.shiftKey) changeOpen(false);
           }
         }}
-        className="z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))] p-2.5 outline-none"
+        className="z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))]"
       >
         {description && <p className="mb-1 text-xs">{description}</p>}
         <div className="flex items-start gap-2">

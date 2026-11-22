@@ -5,7 +5,6 @@ import { ChipButton } from '@/components/system/chip-button';
 import { Check, Repeat } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { Field } from '@/components/system/field';
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import {
@@ -48,7 +47,6 @@ function RecurrencePanel({ value, onChange, onClose }: {
   value: string | null; onChange: (recurrence: string | null) => void; onClose: () => void;
 }) {
   const savedCadence = parseRecurrence(value);
-  const phone = useViewportTier() === 'phone';
   const saved = savedCadence ? recurrenceValue(savedCadence) : null;
   const initial = recurrenceLabel(value) ?? '';
   const [text, setText] = useState(initial);

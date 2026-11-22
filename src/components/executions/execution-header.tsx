@@ -1,5 +1,5 @@
 'use client';
-import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
+import { PopoverPrimitive } from '@/components/system/popover';
 import { Switch } from '@/components/ui/switch';
 import { ChoiceRow } from '@/components/system/choice-row';
 

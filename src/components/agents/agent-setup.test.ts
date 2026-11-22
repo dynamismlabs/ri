@@ -34,7 +34,7 @@ vi.mock('@/hooks/use-results', () => ({ useResultCapabilities: () => ({ data: { 
 vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: null }) }));
 vi.mock('@/lib/trpc/client', () => ({ trpc: { gh: { statusGet: { queryKey: () => ['test-gh-status'] } } }, trpcClient: { gh: { statusGet: { query: vi.fn() } } } }));
 vi.mock('@/lib/attachments/client', () => ({ uploadAttachment: vi.fn() }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => fixtures.confirm }));
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => fixtures.confirm }));
 vi.mock('@/components/ui/switch', () => ({ Switch: () => null }));
 vi.mock('@/components/shared/emoji-picker', () => ({ EmojiPicker: ({ children }: { children: ReactNode }) => children }));
 vi.mock('@/components/chat-ui/handoffs/reviewer-selection', () => ({ ReviewerSelection: () => null }));

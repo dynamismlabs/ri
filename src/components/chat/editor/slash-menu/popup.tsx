@@ -1,5 +1,6 @@
 'use client';
 
+import { MenuSurface } from '@/components/system/menu-surface';
 import { MenuAction } from '@/components/system/menu-action';
 
 import {
@@ -105,20 +106,20 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
     if (items.length === 0) {
       if (loading) {
         return (
-          <div className="slash-command-menu chat-slash-menu" aria-busy="true" aria-label="Loading skills">
+          <MenuSurface density="compact" aria-busy="true" aria-label="Loading skills">
             <SlashSkeletonRows />
-          </div>
+          </MenuSurface>
         )
       }
       return (
-        <div className="slash-command-menu px-3 py-2 text-xs text-muted-foreground">
+        <MenuSurface empty>
           No matching skills
-        </div>
+        </MenuSurface>
       )
     }
 
     return (
-      <div ref={listRef} className="slash-command-menu chat-slash-menu">
+      <MenuSurface density="compact" ref={listRef}>
         {items.map((item, index) => (
           <MenuAction selected={!!((index === selectedIndex))} density="compact"
             key={item.command.id}
@@ -141,7 +142,7 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
             )}
           </MenuAction>
         ))}
-      </div>
+      </MenuSurface>
     )
   },
 )

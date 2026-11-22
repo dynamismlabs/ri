@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
@@ -29,7 +30,7 @@ export function MobileToolsSheet({
 }: Omit<ToolsListProps, 'terminal' | 'touch'> & { open: boolean; onOpenChange: (open: boolean) => void }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" showCloseButton={false} className="max-h-[88dvh] px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
+      <SheetContent side="bottom" showCloseButton={false} padding="md" safeArea className="max-h-[88dvh]">
         <SheetTitle className="sr-only">Tools</SheetTitle>
         <div aria-hidden className="mx-auto mb-3 h-1 w-9 rounded-full bg-muted-foreground/30" />
         <div className="overflow-y-auto">
@@ -111,7 +112,7 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
         </SegmentedPanel>
 
         {needsInput && (
-          <div className="absolute inset-x-2.5 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-center gap-3 rounded-2xl bg-amber-950/95 py-2.5 pl-4 pr-2.5 text-amber-50 shadow-lg ring-1 ring-amber-500/40">
+          <OverlaySurface kind="toast" padding="md" tone="warning" className="absolute inset-x-2.5 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 flex items-center gap-3">
             <span aria-hidden className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-amber-400" />
             <div className="min-w-0 flex-1">
               <div className="text-[12.5px] font-semibold text-amber-300">Needs input</div>
@@ -129,7 +130,7 @@ export function MobileDestination({ view, ctx, onShow, onBack, needsInput }: Mob
             >
               Answer
             </Button>
-          </div>
+          </OverlaySurface>
         )}
       </div>
     </SegmentedRoot>

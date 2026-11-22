@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { Field } from '@/components/system/field';
 
 import { useState, type FormEvent } from 'react';
@@ -43,14 +44,15 @@ function PromptForm({ prompt, onCancel, onFill }: { prompt: ChatAppPrompt; onCan
     finally { setPending(false); }
   };
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form onSubmit={submit} className=" min-h-0 flex flex-1 flex-col gap-4 overflow-hidden">
       <DialogHeader>
         <DialogTitle>{prompt.title ?? prompt.name}</DialogTitle>
         <DialogDescription>
           {prompt.description ? `${prompt.description} ` : ''}{prompt.app} writes the request, and it goes in your draft to edit before you send it.
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-3">
+      <DialogBody className="space-y-4">
+<div className="space-y-3">
         {prompt.arguments.map((arg, index) => {
           const id = `app-prompt-${index}`;
           return (
@@ -79,6 +81,7 @@ function PromptForm({ prompt, onCancel, onFill }: { prompt: ChatAppPrompt; onCan
         })}
       </div>
       {error && <p role="alert" className="flex items-start gap-2 text-xs text-destructive"><AlertCircle size={13} className="mt-0.5 shrink-0" aria-hidden />{error}</p>}
+</DialogBody>
       <DialogFooter>
         <Button
           type="button"

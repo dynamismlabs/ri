@@ -71,7 +71,7 @@ export function FeedbackDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setFeedbackOpen}>
-      <DialogContent padding="none"
+      <DialogContent placement="viewport" padding="none"
         showCloseButton={false}
         className="flex max-h-[calc(100dvh-1.5rem)] flex-col gap-0 overflow-hidden sm:max-w-md"
         style={

@@ -177,7 +177,7 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
           <div className="flex items-start gap-3">
             <ListTree className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
-              <Dialog.Title className="">
+              <Dialog.Title>
                 {verb === 'complete' ? 'Complete this task?' : verb === 'archive' ? 'Archive this task?' : 'Return this task to Todo?'}
               </Dialog.Title>
               <Dialog.Description className="mt-1">
@@ -238,7 +238,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
-              <Dialog.Title className="">An agent is actively working this task</Dialog.Title>
+              <Dialog.Title>An agent is actively working this task</Dialog.Title>
               <Dialog.Description className="mt-1">
                 You can {verb} it and keep the workstream running, or stop the running agent first. Keeping it running
                 changes only this task and tells the agent its scope changed. A turn already in flight cannot be

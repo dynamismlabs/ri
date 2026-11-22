@@ -173,7 +173,7 @@ export function DayShapeStrip({
                     style={{ left: `${seg.startPct}%`, width: `${Math.max(seg.widthPct, 0.75)}%` }}
                   />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="">
+                <TooltipContent side="bottom">
                   {seg.detail}
                 </TooltipContent>
               </Tooltip>

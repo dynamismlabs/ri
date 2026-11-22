@@ -38,3 +38,5 @@ On a phone, filters have more room to tap. The message controls stay together. T
 The desktop app's setup and recovery screens use the same colors and rounded controls as the rest of Ri. They use your computer's font too, including while Ri is starting or finding text on a page.
 
 On a phone, a form keeps its main action visible while you scroll its fields. Field labels and choice titles use the same readable type.
+
+Dialogs, menus and previews share the same quiet frame. Press Escape to close the open menu or popup, then Escape again to close the dialog beneath it. Keyboard focus returns to the control you opened it from.

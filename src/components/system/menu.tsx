@@ -10,6 +10,8 @@ import {
   DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { DropdownMenuCheckboxItem as CheckboxItem, DropdownMenuRadioItem as RadioItem } from '@/components/ui/dropdown-menu';
+import { toneClass, type ContentTone } from './callout';
 import { overlayVariants, type OverlayDrawing } from './overlay';
 export {
   DropdownMenu,
@@ -17,9 +19,7 @@ export {
   DropdownMenuPortal,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSub,
 } from '@/components/ui/dropdown-menu';
 export function DropdownMenuContent({
@@ -34,6 +34,7 @@ export function DropdownMenuContent({
     <DropdownMenuPortal>
       <DropdownMenuContentPrimitive
         data-slot="dropdown-menu-content"
+        data-motion
         align={align}
         sideOffset={sideOffset}
         className={cn(
@@ -55,6 +56,7 @@ export function DropdownMenuSubContent({
   return (
     <DropdownMenuSubContentPrimitive
       data-slot="dropdown-menu-sub-content"
+      data-motion
       className={cn(
         overlayVariants({ kind: 'menu', padding }),
         'z-50 min-w-36 outline-none',
@@ -87,13 +89,14 @@ export function DropdownMenuSubTrigger({
 export function DropdownMenuLabel({
   className,
   inset,
+  tone,
   ...props
-}: ComponentProps<typeof DropdownMenuLabelPrimitive> & { inset?: boolean }) {
+}: ComponentProps<typeof DropdownMenuLabelPrimitive> & { inset?: boolean; tone?: ContentTone }) {
   return (
     <DropdownMenuLabelPrimitive
       data-slot="dropdown-menu-label"
       data-inset={inset}
-      className={cn('ri-menu-label', className)}
+      className={cn('ri-menu-label', toneClass(tone), className)}
       {...props}
     />
   );
@@ -121,4 +124,11 @@ export function DropdownMenuShortcut({
       {...props}
     />
   );
+}
+
+export function DropdownMenuCheckboxItem({className, ...props}: ComponentProps<typeof CheckboxItem>) {
+  return <CheckboxItem className={cn('ri-menu-action ri-menu-action--indicator', className)} {...props} />;
+}
+export function DropdownMenuRadioItem({className, ...props}: ComponentProps<typeof RadioItem>) {
+  return <RadioItem className={cn('ri-menu-action ri-menu-action--indicator', className)} {...props} />;
 }

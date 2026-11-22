@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -299,9 +300,9 @@ export function OpenWorktreeButton({ path, source = null }: OpenWorktreeButtonPr
       </DropdownMenu>
 
       {error && (
-        <div className="absolute right-0 top-full mt-1 z-50 px-2 py-1 rounded-md bg-destructive/10 border border-destructive/30 text-[10px] text-destructive whitespace-nowrap shadow-sm">
+        <OverlaySurface kind="popover" padding="sm" tone="error" className="absolute right-0 top-full mt-1 z-50 whitespace-nowrap">
           {error}
-        </div>
+        </OverlaySurface>
       )}
     </ButtonGroup>
   );

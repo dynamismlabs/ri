@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { Callout } from '@/components/system/callout';
 
 import { Field } from '@/components/system/field';
@@ -51,14 +52,15 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
   return (<>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
-        <form onSubmit={submit} className="space-y-4">
+        <form onSubmit={submit} className=" min-h-0 flex flex-1 flex-col gap-4 overflow-hidden">
           <DialogHeader>
             <DialogTitle>Add an app</DialogTitle>
             <DialogDescription>
               An app that runs on its own, on this computer or online. Paste the MCP address it shows, like http://127.0.0.1:4310/mcp.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          <DialogBody className="space-y-4">
+<div className="space-y-3">
             <Field
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -83,6 +85,7 @@ export function AddAppDialog({ open, onOpenChange }: { open: boolean; onOpenChan
               <AlertCircle size={14} className="mt-0.5 shrink-0" /><span>{error}</span>
             </Callout>
           )}
+</DialogBody>
           <DialogFooter>
             <Button
               type="button"

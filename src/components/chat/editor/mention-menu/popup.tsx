@@ -1,4 +1,5 @@
 'use client';
+import { MenuSurface } from '@/components/system/menu-surface';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -248,11 +249,11 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
     if (items.length === 0) {
       if (loading) {
         return (
-          <div className="slash-command-menu chat-slash-menu" aria-busy="true" aria-label="Loading mentions">
+          <MenuSurface density="compact" aria-busy="true" aria-label="Loading mentions">
             {chips}
             <MentionSkeletonRows count={3} />
             {footer}
-          </div>
+          </MenuSurface>
         )
       }
       // `@task:` takes spaces, so prose typed after a search that found
@@ -261,7 +262,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
       const search = parsed.text.trim()
       const noun = parsed.filter ? KIND_NOUNS[parsed.filter] : null
       return (
-        <div className="slash-command-menu chat-slash-menu">
+        <MenuSurface density="compact">
           {chips}
           <div className="px-2.5 py-1.5 text-xs text-muted-foreground">
             {noun
@@ -269,7 +270,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
               : 'No matches'}
           </div>
           {footer}
-        </div>
+        </MenuSurface>
       )
     }
 
@@ -305,7 +306,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
     // The menu's own overflow is turned off so the chips and the hint stay
     // put while the rows scroll between them.
     return (
-      <div className="slash-command-menu chat-slash-menu" style={{ overflowY: 'hidden' }}>
+      <MenuSurface density="compact" style={{ overflowY: 'hidden' }}>
         {chips}
         <div ref={listRef} className="flex min-h-0 flex-col gap-px overflow-y-auto">
           {rows}
@@ -317,7 +318,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
           )}
         </div>
         {footer}
-      </div>
+      </MenuSurface>
     )
   },
 )

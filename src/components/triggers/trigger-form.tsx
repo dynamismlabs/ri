@@ -1,4 +1,5 @@
 'use client';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { FormActions } from '@/components/system/form-actions';
 import { Card } from '@/components/system/card';
 
@@ -534,10 +535,9 @@ function WorkspacePill({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="relative">
-      <Button
+    <Popover open={open} onOpenChange={setOpen}><div className="relative">
+      <PopoverTrigger asChild><Button
         type="button"
-        onClick={() => setOpen((v) => !v)}
         aria-label="Agent"
         variant="secondary"
         size="sm"
@@ -547,9 +547,9 @@ function WorkspacePill({
         {emoji ? <span>{emoji}</span> : null}
         <span>{label}</span>
         <ChevronDown size={10} />
-      </Button>
+      </Button></PopoverTrigger>
       {open && (
-        <div className="absolute left-0 top-full mt-1 z-20 min-w-[180px] rounded-md border border-border bg-card shadow-md p-1">
+        <PopoverContent padding="xs" align="start" className="w-auto min-w-[180px]">
           {workspaces.length === 0 && <p className="px-2 py-1 text-[11px] text-muted-foreground">No agents.</p>}
           {workspaces.map((w) => (
             <MenuAction density="compact"
@@ -565,8 +565,8 @@ function WorkspacePill({
               <span>{w.name}</span>
             </MenuAction>
           ))}
-        </div>
+        </PopoverContent>
       )}
-    </div>
+    </div></Popover>
   );
 }

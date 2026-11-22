@@ -2,7 +2,7 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { cva } from 'class-variance-authority';
 import { ActionPrimitive } from '@/components/ui/button';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from './menu';
 import { toneClass, type ContentTone } from './callout';
 import { cn } from '@/lib/utils';
 const variants = cva('ri-menu-action', {

@@ -6,7 +6,6 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Field } from '@/components/system/field';
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { parseTypedDate } from '@/lib/date-input';
 import { describeLocalDate, formatLocalDate, isPastDate, parseLocalDate, toDateOnly } from '@/lib/dates';
@@ -43,7 +42,6 @@ export function TaskDatePicker({ label, value, onChange, children, open, onOpenC
 function DatePanel({ label, value, onChange, onClose }: {
   label: string; value: string | null | undefined; onChange: (date: string | null) => void; onClose: () => void;
 }) {
-  const phone = useViewportTier() === 'phone';
   const saved = toDateOnly(value);
   const initial = formatLocalDate(saved, FULL_DATE) ?? '';
   const [text, setText] = useState(initial);

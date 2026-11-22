@@ -1,5 +1,6 @@
 'use client';
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogFooter } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { Callout } from '@/components/system/callout';
 
 import { MenuAction } from '@/components/system/menu-action';
@@ -262,7 +263,7 @@ export function FolderPickerDialog({
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-[60] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
           className="fixed left-1/2 top-1/2 z-[60] w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
           onOpenAutoFocus={(e) => {
             // Don't auto-focus the close button; we want the list to be
@@ -277,7 +278,7 @@ export function FolderPickerDialog({
               Browse the filesystem and pick a folder for your agent.
             </DialogPrimitive.Description>
           </VisuallyHidden.Root>
-          <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col h-[640px] max-h-[85vh]">
+          <div className="overflow-hidden flex flex-col h-[640px] max-h-[85vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
               <span className="text-xs font-semibold tracking-wide text-foreground">
@@ -474,7 +475,7 @@ export function FolderPickerDialog({
             )}
 
             {/* Footer */}
-            <div className="flex items-center gap-2 px-3 py-2.5 border-t border-border">
+            <DialogFooter divider padding="md" className="flex-row flex-wrap items-center justify-start">
               {!device && (
                 <>
                   <Button
@@ -519,7 +520,7 @@ export function FolderPickerDialog({
                   Choose
                 </Button>
               </div>
-            </div>
+            </DialogFooter>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

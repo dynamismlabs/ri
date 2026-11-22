@@ -1,5 +1,5 @@
 'use client';
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { Callout } from '@/components/system/callout';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -663,8 +663,8 @@ function LaunchModalInner({
             (including an animated one) would become the containing block for
             the launcher's `position: fixed` popovers, which re-clips them
             inside the panel's `overflow-hidden`. See `launcher-popover.tsx`. */}
-        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
-          className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl px-3"
+        <DialogPrimitive.Content placement="custom" padding="md" data-slot="dialog-content"
+          className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl"
           onOpenAutoFocus={(e) => {
             // Land in the prompt, not on the first focusable (the workspace
             // chip). This is the whole express lane: open, type, Enter.

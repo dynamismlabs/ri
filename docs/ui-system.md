@@ -88,9 +88,9 @@ screen matrix must remain visually unchanged during the token move.
 ## Components
 
 Product components live in `src/components/system/`, built on installed shadcn
-and Radix primitives in `src/components/ui/`. Stage 0 establishes their tokens. Stage 1 implements the Button family. Stage 2
-implements SegmentedControl.
-The other APIs below are the remaining migration contracts. Missing installed primitives are added through the shadcn
+and Radix primitives in `src/components/ui/`. Stages 0 through 5 implement tokens, actions, segmented controls, fields, content
+and floating frames. Stage 6 adds strict lint and removes migration scaffolding.
+The APIs below are the implemented contracts. Missing installed primitives are added through the shadcn
 CLI, with its files and dependency changes checked afterward.
 
 Each component owns shape, size, typography, fill, border, shadow, hover,
@@ -115,8 +115,9 @@ migration. Native local-page HTML uses its shared plain-CSS adapter.
 | `Callout`, `StatusBadge` | info, warning, error, success, plus neutral for badges | Semantic ink/fill pairs. 14px content callouts and capsule facts | 4, implemented |
 | `InlineAction` | plain, prose link or inline chip, optional bubble and code purpose | Text-sized actions inherit their surrounding type and line height, with an owned capsule fill for references and an inset focus outline | 4, implemented |
 | `Meta`, `MetaItem` | Facts and kind | Plain words, dot separators, semantic ink and wrapping | 4, implemented |
-| `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5 |
-| `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5 |
+| `Dialog`, `Sheet` | Controlled open state and placement variants | Centered dialogs use 20px corners and a 40% black scrim without blur. Sheets retain their placement. Focus, dismissal, portals and scrolling stay correct | 5, implemented |
+| `Popover`, `Menu` | Controlled open state, trigger and content | Floating surfaces over Radix, with keyboard and dismissal behavior | 5, implemented |
+| `HoverPreview`, `Tooltip`, `Toaster`, `OverlaySurface`, `MenuSurface` | Frame kind, padding, semantic tone and existing positioning props | Shared floating paint around installed or existing custom engines. Editor suggestions keep their existing keymaps | 5, implemented |
 
 ### Content components
 
@@ -507,8 +508,6 @@ Use the implemented system components first. These hooks carry families that hav
 | `work-chain`, `work-chain-step`, `work-chain-arrow` | Calendar's leverage summary. The phone keeps three flexible columns with wrapping labels and narrower connecting arrows | |
 | `search-footer` | Search navigation hints at 12px. All cmdk group headings use sentence case at 12px, including descendant utility variants | |
 | `pairing`, `pairing-mark`, `pairing-decoration` | Pairing's surface, quiet icon tile and suppressed decorative gradients. Content uses Callout and the token field uses Field, with one focus outline around the group | |
-| `floating-tools` | The floating tools list and folded strip: 14px content corners with the shared popover shadow | |
-| `dialog-content`, `alert-dialog-content`, `dialog-overlay`, `alert-dialog-overlay` | Shared 20px centered dialog corners and an unblurred 40% black scrim. Search panels use these hooks too | `data-kind="search-page"` keeps full-page phone search square. `data-kind="wrapped"` lets an inner painted panel inherit the corners and use just the outer shadow |
 | `settings-nav`, `settings-body` | Settings' shared navigation and content boundary. MenuAction owns navigation rows, Card owns content sections and Field owns fields. The hooks retain the surrounding layout | `aria-current="page"` on navigation |
 | `system-field`, `field-control`, `field-shell` | Private field adapter parts. Product drawing lives in field.css, not compatibility rules | Owned label, help, error and counter associations |
 | `consent-checkbox` | Native server-built OAuth consent checkboxes, retaining submission before hydration | Token accent and visible focus |
@@ -519,7 +518,7 @@ Use the implemented system components first. These hooks carry families that hav
 
 Two broad rules cover hand-built pieces until each moves onto the shared components:
 a hand-built `button` or `a` with `bg-primary` is a capsule, and a hand-built
-`.border.bg-card` card loses its outline for a soft shadow (remaining floating frames and domain renderers).
+`.border.bg-card` card loses its outline for a soft shadow (remaining domain renderers).
 
 ### Focus
 
@@ -660,7 +659,6 @@ visualization and transport entries into its file-specific allowlist.
 | `rich-message-renderers` | Source mentions, attachment code previews, quotation and editor/drop-target drawing preserve inline flow and bubble ink |
 | `diagnostic-pages` | Development execution and connector probe screens stay outside the normal product surface |
 | `test-fixtures` | Bare controls in fixtures deliberately exercise engines and native behavior |
-| Floating surfaces | Painted dialog, toast, popup, hover-preview and menu frames move in stage 5, together with their focus, portal and dismissal engines |
 
 These are specific boundaries, not a blanket file exemption. Ordinary actions,
 content panels and facts around them use the implemented APIs. The external
@@ -728,7 +726,7 @@ The existing tooltip restriction also covers the content adapters and Button
 family, since they forward a DOM `title`. ChoiceRow's `title` is content, not a
 tooltip, and remains allowed. A scratch fixture verifies both boundaries.
 
-### Overlay adapters (stage 5 in progress)
+### Overlay adapters
 
 `DialogContent`, `DialogFrame`, `SheetContent`, `PopoverContent` and
 `PopoverFrame` retain the installed Radix engines. Frame adapters compose
@@ -749,3 +747,40 @@ follow the body's controls in DOM and focus order. Without a host they stay in
 place on the standalone page. Schedules retains its phone body and builder-chat
 scroller, with actions at the window bottom. Desktop keeps actions below the
 form column. Its approved shell migration supplies modal focus and scroll lock.
+
+
+Dialog, Sheet, Popover, Menu, AlertDialog, HoverPreview and Tooltip use the
+installed Radix engines. The system owns the frame, scrim, label hierarchy,
+separators and focus drawing. Portals, outside dismissal, focus traps, focus
+return and scroll locking stay with their engines. Dialogs have 20px corners,
+floating menus and previews 12px, tooltips 10px, and sheets meet the window
+without corners. The shared scrim is 40% black with no blur in both themes.
+A rail popover uses `frame="rail"` for its existing square pane boundary.
+
+Automatic Sheet content keeps its 200ms directional presence and Tooltip keeps
+its 100ms exit presence. Raw Frame adapters retain the caller's existing motion.
+`placement="viewport"` preserves Feedback's visual-viewport positioning when a
+phone keyboard reduces the visible area. `placement="search"` and `phonePage`
+keep the existing centered desktop or square full-page phone search layout.
+
+`OverlaySurface` and `OverlayScrim` give an existing nonmodal or measured engine
+the same paint without changing its behavior. The session hover preview keeps
+its measured portal, pointer timers and scrolling. App-host approval frames
+keep their existing permissions and protocol. `MenuSurface` supplies normal or
+compact drawing for Tiptap suggestions, leaving the renderer, popup placement,
+mention semantics and Escape lifecycle intact. Sonner still owns notification
+queues, timing and announcements, with shared Toaster drawing.
+
+Schedules now uses the installed Dialog for modal focus, return focus and body
+scroll locking. Its views, Back behavior, scroll containers and draft remain.
+Escape still closes the window. An open editor suggestion, agent picker,
+popover, menu or confirmation receives the first Escape. A second Escape closes
+the parent. Opening a layer does not immediately open a tooltip on its focused
+control. Tab inside that layer can still reveal a tooltip.
+
+No product caller imports the old painted UI overlay wrappers. The installed
+primitives remain the engine boundary. Retired compatibility drawing includes
+floating-tools, wrapped-dialog inheritance, scrims, menu/popover/select frames
+and the old editor suggestion classes. Domain drag indicators, status marks,
+calendar blocks, image zoom controls and loading veils retain their named
+stage 6 boundaries. They are not floating menu or dialog frames.

@@ -148,7 +148,7 @@ describe.each(engines)('the + menu in %s', (_name, engine) => {
     await plus(page).click();
     await row(page, 'Skills').click();
     await expect.poll(() => text(page)).toBe('/fix login');
-    const review = page.locator('.chat-slash-menu').locator('visible=true').getByText('review').first();
+    const review = page.locator('[data-slot="suggestion-menu"][data-density="compact"]').locator('visible=true').getByText('review').first();
     await review.click();
     await expect.poll(() => text(page)).toBe('/review fix login');
     expect(errors).toEqual([]);
@@ -162,7 +162,7 @@ describe.each(engines)('the + menu in %s', (_name, engine) => {
     await plus(page).click();
     await row(page, 'Skills').click();
     await expect.poll(() => text(page)).toBe('/rev');
-    await page.locator('.chat-slash-menu').locator('visible=true').getByText('review').first().click();
+    await page.locator('[data-slot="suggestion-menu"][data-density="compact"]').locator('visible=true').getByText('review').first().click();
     await expect.poll(() => text(page)).toBe('/review');
     await close();
   }, 30_000);

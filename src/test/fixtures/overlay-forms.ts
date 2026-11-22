@@ -1,7 +1,15 @@
 /** Production forms and hosts. Only Home data, mutations and the unrelated builder chat are synthetic. */
 import { browserFixture } from './browser-fixture';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
-export function overlayFormsFixture() {
+export function overlayFormsFixture(
+  options: {
+    builder?: boolean;
+    baselineShell?: boolean;
+    baselinePicker?: boolean;
+  } = {},
+) {
   return browserFixture(
     `
     import React,{useState}from'react';import{createRoot}from'react-dom/client';
@@ -35,7 +43,7 @@ export function overlayFormsFixture() {
         name: 'overlay-home-data',
         setup(build) {
           const modules: Record<string, string> = {
-            '@/hooks/use-workspaces': `export const useStackDetection=()=>({data:null});export const useWorkspaces=()=>({data:[{id:'current',name:'Current agent'}]});export const useNewAgentFolder=()=>({data:{path:'/Users/example/agents/new'}});export const useCreateWorkspace=()=>({isPending:false,mutateAsync:async input=>{window.fixtureCalls.push(input);return{id:'created',...input}}});`,
+            '@/hooks/use-workspaces': `export const useRunOn=()=>({});export const useWorkspace=()=>({});export const useStackDetection=()=>({data:null});export const useWorkspaces=()=>({data:[{id:'current',name:'Current agent'}]});export const useNewAgentFolder=()=>({data:{path:'/Users/example/agents/new'}});export const useCreateWorkspace=()=>({isPending:false,mutate:(input,options)=>{window.fixtureCalls.push(input);options?.onSuccess?.({id:'created',...input});}});`,
             '@/hooks/use-areas': `export const useAreas=()=>({data:[{id:'work',name:'Work'}]});`,
             '@/hooks/use-client-location': `export const isHostnameClaimed=()=>true;export const useClientLocation=()=>({kind:'host',reason:'localhost',hostname:'localhost'});`,
             '@/components/home/home-context': `export const useOptionalHomeContext=()=>null;export const useHomeDocumentScope=()=>undefined;`,
@@ -45,12 +53,50 @@ export function overlayFormsFixture() {
             '@/hooks/use-user-state': `export const useUserState=()=>({data:{defaultHarness:'codex',defaultModel:'gpt-5.5'}});`,
             '@/hooks/use-harness-models': `export const useHarnessModels=()=>({models:[{id:'gpt-5.5',label:'GPT-5.5'}]});`,
             '@/hooks/use-devices': `export const useLaptopHome=()=>null;`,
-            '@/hooks/use-execution': `export const useSession=()=>({data:{label:'Builder chat'}});`,
+            '@/hooks/use-execution': `export const invalidateWorktree=()=>{};export const worktreeFileKey=()=>[];export const useWorktreeScope=()=>null;export const useSessionBaseFile=()=>({});export const useSessionFile=()=>({});export const useSessionTree=()=>({data:[]});export const useSession=()=>({data:{label:'Builder chat'}});`,
             './use-schedule-chat': `export const useScheduleChat=()=>({});export const useAdoptMovedScheduleChat=()=>()=>{};`,
             './schedule-chat-panel': `export const ScheduleChatPanel=()=> <section aria-label="Synthetic builder delivery">Builder chat</section>;`,
             '@/components/workspaces/launcher/launch-controls': `export const ModelControl=()=>null;export const EffortControl=()=>null;`,
             '@/components/runs/run-activity-badge': `export const RunActivityBadge=()=>null;`,
           };
+          if (options.builder)
+            modules['./schedule-chat-panel'] = `
+        import React,{useRef}from'react';
+        import{ChatInputEditor}from'@/components/chat/editor/chat-input-editor';
+        import{Button}from'@/components/system/button';
+        import{Popover,PopoverContent,PopoverTrigger}from'@/components/system/popover';
+        import{DropdownMenu,DropdownMenuContent,DropdownMenuTrigger}from'@/components/system/menu';
+        import{MenuAction}from'@/components/system/menu-action';
+        import{Sheet,SheetContent,SheetTitle,SheetTrigger}from'@/components/system/sheet';
+        export function ScheduleChatPanel(){const ref=useRef(null);window.builderDraft=()=>ref.current?.getMarkerOutput().text;
+          return <section aria-label="Builder composer" className="flex h-full min-h-0 flex-col gap-3 p-3">
+          <Popover><PopoverTrigger asChild><Button>Builder popup</Button></PopoverTrigger><PopoverContent><Button>Popup action</Button></PopoverContent></Popover>
+          <DropdownMenu><DropdownMenuTrigger asChild><Button>Builder menu</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu">Menu action</MenuAction></DropdownMenuContent></DropdownMenu>
+          <Sheet><SheetTrigger asChild><Button>Builder sheet</Button></SheetTrigger><SheetContent aria-describedby={undefined}><SheetTitle>Builder details</SheetTitle><Button>Sheet action</Button></SheetContent></Sheet>
+          <ChatInputEditor ref={ref} ariaLabel="Schedule builder" slashCommands={[{id:'review',name:'review',description:'Review the diff',source:'installed-user',userInvocable:true,available:true,execution:{kind:'provider-slash',provider:'codex',commandText:'/review'}}]} mentionFiles={[{kind:'file',path:'src/index.ts',name:'index.ts'}]} searchMentionEntities={async()=>({tasks:[],notes:[],totals:{tasks:0,notes:0}})}/>
+          </section>;
+        }
+      `;
+          if (options.baselinePicker)
+            build.onLoad({ filter: /trigger-form\.tsx$/ }, (args) => ({
+              loader: 'tsx',
+              resolveDir: path.dirname(args.path),
+              contents: execFileSync(
+                'git',
+                ['show', '776ee9d5:src/components/triggers/trigger-form.tsx'],
+                { encoding: 'utf8' },
+              ),
+            }));
+          if (options.baselineShell)
+            build.onLoad({ filter: /triggers-modal\.tsx$/ }, (args) => ({
+              loader: 'tsx',
+              resolveDir: path.dirname(args.path),
+              contents: execFileSync(
+                'git',
+                ['show', '4bf74a32:src/components/triggers/triggers-modal.tsx'],
+                { encoding: 'utf8' },
+              ),
+            }));
           for (const name of Object.keys(modules)) {
             build.onResolve(
               {

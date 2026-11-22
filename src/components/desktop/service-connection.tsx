@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { api } from '@/lib/api/client';
 import { reportNetworkFailure } from '@/lib/api/connectivity';
 import { getApiCompatibilityIssue, reportApiCompatibility, subscribeApiCompatibility } from '@/lib/client/api-compatibility';
@@ -148,11 +149,11 @@ export function ServiceConnection() {
 
 function UpdateNotice({ title, children, actions, complete = false }: { title: string; children: ReactNode; actions: ReactNode; complete?: boolean }) {
   const Icon = complete ? CircleCheck : CircleArrowUp;
-  return <section role="status" aria-label={title} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[100] w-[calc(100vw-2rem)] max-w-sm rounded-2xl border border-border bg-background p-5 text-sm shadow-xl">
+  return <OverlaySurface as="section" kind="toast" padding="xl" role="status" aria-label={title} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[100] w-[calc(100vw-2rem)] max-w-sm">
     <div className="flex items-start gap-3">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted"><Icon size={19} aria-hidden /></div>
       <div className="min-w-0 flex-1"><p className="font-semibold leading-snug">{title}</p><div className="mt-2 text-xs leading-relaxed text-muted-foreground">{children}</div></div>
     </div>
     <div className="mt-4 flex flex-wrap justify-end gap-2">{actions}</div>
-  </section>;
+  </OverlaySurface>;
 }

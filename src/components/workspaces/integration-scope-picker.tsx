@@ -158,7 +158,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
         {dormant.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="py-1.5 text-amber-700 dark:text-amber-400">
+            <DropdownMenuLabel tone="warning">
               Not connected (kept, inactive)
             </DropdownMenuLabel>
             {dormant.map((p) => (

@@ -1,5 +1,6 @@
 'use client';
 
+import { DialogBody } from '@/components/system/dialog';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Callout } from '@/components/system/callout';
@@ -655,7 +656,8 @@ function ChooseFolderBody({
         <DialogTitle className="break-words">{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
-      <form
+      <DialogBody className="space-y-4">
+<form
         onSubmit={(e) => {
           e.preventDefault();
           void save();
@@ -670,6 +672,7 @@ function ChooseFolderBody({
         )}
         {problem && <p className="text-[12px] text-destructive">{problem}</p>}
       </form>
+</DialogBody>
       <DialogFooter>
         <Button
           onClick={onDone}

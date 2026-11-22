@@ -477,8 +477,8 @@ export function StreamTriage({ open, onOpenChange }: StreamTriageProps) {
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="right" className="w-full data-[side=right]:sm:max-w-[640px] flex flex-col">
         <SheetHeader>
-          <SheetTitle className="">Needs your call</SheetTitle>
-          <SheetDescription className="">
+          <SheetTitle>Needs your call</SheetTitle>
+          <SheetDescription>
             {proposalList.length > 0
               ? 'Suggestions wait for you. Nothing here has changed anything yet.'
               : pending.length > 0

@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
@@ -60,7 +61,7 @@ export function ContinueDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 text-[12.5px]">
+        <DialogBody className="space-y-3 text-[12.5px]">
           {isLoading ? (
             <p className="flex items-center gap-2 text-muted-foreground">
               <Loader2 size={12} className="animate-spin" /> Looking at the work on {from}…
@@ -108,7 +109,7 @@ export function ContinueDialog({
             </>
           ) : null}
           {start.error && <p className="text-destructive">{apiErrorText(start.error)}</p>}
-        </div>
+        </DialogBody>
 
         <DialogFooter>
           <Button

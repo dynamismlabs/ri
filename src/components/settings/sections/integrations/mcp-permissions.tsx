@@ -4,7 +4,7 @@ import { Card } from '@/components/system/card';
 import { SelectField } from '@/components/system/select-field';
 
 import { Button } from '@/components/system/button';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import { Globe } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { DEFAULT_MCP_APPROVAL_POLICY, MCP_APPROVAL_POLICIES, type McpApprovalPolicy } from '@/lib/integrations/mcp-approval-policy';

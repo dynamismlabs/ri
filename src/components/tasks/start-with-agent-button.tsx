@@ -105,7 +105,7 @@ export function StartWithAgentButton({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[60]" />
         <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
-          <Dialog.Title className="">Continue which workstream?</Dialog.Title>
+          <Dialog.Title>Continue which workstream?</Dialog.Title>
           <Dialog.Description className="mt-1">
             Several agent workstreams are working this task. Resume one, or start another.
           </Dialog.Description>

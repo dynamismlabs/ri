@@ -123,7 +123,7 @@ it('shows loading skeletons for @ and / immediately and badges leading slash com
 
     // 2. `/` shows a loading skeleton while slash commands are loading, then renders commands once loaded.
     await page.keyboard.type('/');
-    await popup.locator('.chat-slash-menu[aria-busy="true"]').waitFor();
+    await popup.locator('[data-slot="suggestion-menu"][data-density="compact"][aria-busy="true"]').waitFor();
     expect(await skeletons.count()).toBeGreaterThan(0);
 
     await page.evaluate(() => (window as unknown as { testComposer: { finishCommands(): void } }).testComposer.finishCommands());

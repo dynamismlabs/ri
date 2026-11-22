@@ -1,5 +1,5 @@
 'use client';
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { Card } from '@/components/system/card';
 
 import { TextArea } from '@/components/system/text-area';
@@ -174,7 +174,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
   return <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50" />
-      <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
+      <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
         className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 outline-none"
         onPaste={event => {
           const files = transferFiles(event.clipboardData);
@@ -190,7 +190,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
         }}>
         <VisuallyHidden.Root><DialogPrimitive.Title>Quick Capture</DialogPrimitive.Title>
           <DialogPrimitive.Description>Capture a thought into your Stream. Type, speak, paste or drop images. Closing keeps your draft on this device.</DialogPrimitive.Description></VisuallyHidden.Root>
-        <div className="relative flex max-h-[85dvh] flex-col overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
+        <div className="relative flex max-h-[85dvh] flex-col overflow-y-auto">
           <div className="flex items-center justify-between px-5 pt-4 pb-2">
             <div className="flex items-center gap-2 text-muted-foreground"><Zap size={14} /><span className="text-sm font-medium">Quick capture</span></div>
             <DialogPrimitive.Close asChild><IconButton

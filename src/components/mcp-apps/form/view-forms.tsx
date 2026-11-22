@@ -1,4 +1,5 @@
 'use client';
+import { OverlayScrim } from '@/components/system/overlay';
 import { Card } from '@/components/system/card';
 
 import { useQuery } from '@tanstack/react-query';
@@ -14,9 +15,9 @@ export function ConnectedViewForms({viewId}: {viewId: string}) {
   const query = useQuery(trpc.connectedApps.forms.forView.queryOptions({viewId}, {refetchInterval: 1500, retry: false}));
   const formId = query.data?.[0];
   if (!formId) return null;
-  return <div className="absolute inset-0 z-10 flex items-start justify-center overflow-auto bg-background/70 p-4 backdrop-blur-sm">
+  return <OverlayScrim className="absolute inset-0 z-10 flex items-start justify-center overflow-auto">
     <Card padding="lg" className="w-full max-w-lg">
       <ConnectedForm key={formId} formId={formId} bare />
     </Card>
-  </div>;
+  </OverlayScrim>;
 }

@@ -18,7 +18,7 @@ import { AlertCircle, AppWindow, Loader2, Play, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Field } from '@/components/system/field';
 import { Switch } from '@/components/ui/switch';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';

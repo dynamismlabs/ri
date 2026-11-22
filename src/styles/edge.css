@@ -21,9 +21,6 @@ html:root [data-slot="chat-composer-card"] { border-color: transparent; border-r
 html:root [data-slot="chat-composer-card"]:focus-within { border-color: transparent; box-shadow: var(--composer-focus); }
 
 /* ── Shared controls (shadcn) ──────────────────────────────────────────── */
-/* Menus and popovers lift off the page by shadow, not a heavy border. */
-html:root :is([data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="popover-content"], [data-slot="select-content"], [data-slot="combobox-content"]) { border-color: transparent; border-radius: 12px; box-shadow: var(--shadow-pop); }
-html:root :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-color: transparent; box-shadow: var(--shadow-pop); }
 
 /* ── Phase 2: the daily screens ─────────────────────────────────────────── */
 
@@ -142,23 +139,12 @@ html:root [cmdk-group-heading] { font-size: 12px; font-weight: 500; letter-spaci
 html:root [data-slot="search-footer"] { font-size: 12px; color: var(--t3); }
 html:root [data-slot="search-footer"] kbd { font-size: 11px; }
 
-/* Centered dialogs share corners and one scrim, without blur. Full-page phone
-   search is a page, so it keeps square corners and the full viewport. */
-html:root :is([data-slot="dialog-content"], [data-slot="alert-dialog-content"]) { border-radius: var(--dialog-radius); }
-/* Some Radix contents position an inner painted panel. It inherits the outer
-   corners and leaves the floating shadow to the outer content. */
-html:root [data-slot="dialog-content"][data-kind="wrapped"] > :last-child { border-color: transparent; border-radius: inherit; box-shadow: none; }
-html:root :is([data-slot="dialog-overlay"], [data-slot="alert-dialog-overlay"]) { background-color: var(--dialog-scrim); backdrop-filter: none; }
-html:root [data-slot="dialog-content"][data-kind="search"] { width: min(42rem, calc(100% - 16px)); }
-html:root [data-slot="floating-tools"] { border-radius: 14px; box-shadow: var(--shadow-pop); }
-
 /* Pairing uses the same opaque panels and quiet fields as the rest of Ri. */
 html:root [data-slot="pairing-decoration"] { display: none; }
 html:root [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--raised); box-shadow: none; backdrop-filter: none; }
 html:root [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--line); }
 
 @media (max-width: 767px) {
-  html:root [data-slot="dialog-content"][data-kind="search-page"] { border-radius: 0; }
   html:root [data-slot="calendar-toolbar"] { position: relative; flex-wrap: wrap; padding-right: 44px; }
   html:root [data-slot="calendar-toolbar"] > [data-slot="button"][data-kind="close"] { position: absolute; right: 8px; top: 8px; }
   html:root [data-slot="calendar-spacer"] { display: none; }

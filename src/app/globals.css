@@ -1195,30 +1195,6 @@ html[data-ri-desktop='darwin'] [data-slot='sheet-content']:is([data-side='left']
   z-index: 999;
 }
 
-.slash-command-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px;
-  min-width: 240px;
-  max-height: 320px;
-  overflow-y: auto;
-  background: var(--popover);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-  box-sizing: border-box;
-}
-
-/* Chat composer variant: width is JS-controlled (matches the composer's
- * width), gap is tighter, and we drop the min-width floor so a narrow
- * composer doesn't push the menu wider than the editor. */
-.chat-slash-menu {
-  min-width: 0;
-  gap: 1px;
-  padding: 4px;
-}
-
 /* CodeMirror 6 file viewer + merge view — height + overflow plumbing. */
 .cm-editor {
   height: 100%;

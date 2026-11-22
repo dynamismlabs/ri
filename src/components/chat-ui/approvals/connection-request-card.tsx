@@ -30,7 +30,7 @@ import { sourceErrorMessage, useConnectAttempt, useConnectionMethod } from '@/ho
 import { applicationForDirectToolkit, parseManagedToolkitId } from '@/lib/integrations/sources/applications';
 import type { ApplicationId } from '@/lib/integrations/sources/types';
 import { trpcClient } from '@/lib/trpc/client';
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 
 /** The card a sign-in started from, so its result (or error) shows on it when the page returns. */
 const PENDING_SIGN_IN_KEY = 'ri.connectCard.signIn';

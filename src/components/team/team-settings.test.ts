@@ -32,8 +32,8 @@ vi.mock('./team-areas', () => ({ NewAreaDialog: () => null }));
 vi.mock('./use-team', () => ({ useTeamMembers: () => ({ active: [] }) }));
 vi.mock('@/hooks/use-areas', () => ({ useAreas: () => ({ data: [] }), useUpdateArea: () => ({}) }));
 vi.mock('@/components/spaces/space-root', () => ({ useSpace: () => null }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => vi.fn() }));
-vi.mock('@/components/ui/dialog', () => {
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => vi.fn() }));
+vi.mock('@/components/system/dialog', () => {
   const container = ({ children }: { children: React.ReactNode }) => createElement('div', null, children);
   return { Dialog: container, DialogContent: container, DialogHeader: container, DialogTitle: container, DialogDescription: container };
 });

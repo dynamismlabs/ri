@@ -13,7 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import type { EffortLevel } from '@/db/types';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import {

@@ -1,4 +1,5 @@
 "use client";
+import { OverlaySurface } from '@/components/system/overlay';
 import { MenuAction } from '@/components/system/menu-action';
 
 
@@ -153,7 +154,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
       />
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-popover shadow-md">
+        <OverlaySurface kind="menu" padding="none" className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden">
           {/* Create new */}
           <MenuAction selected={!!((highlight === 0))}
             type="button"
@@ -192,7 +193,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
               })}
             </>
           )}
-        </div>
+        </OverlaySurface>
       )}
     </div>
   );

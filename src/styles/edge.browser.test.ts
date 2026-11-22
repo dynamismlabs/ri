@@ -34,6 +34,7 @@ import {Field} from '@/components/system/field';
 import {ChipButton} from '@/components/system/chip-button';
 import {IconButton} from '@/components/system/icon-button';
       import {ButtonGroup} from '@/components/system/button-group';
+      import {OverlaySurface,OverlayScrim} from '@/components/system/overlay';
       import {Card} from '@/components/system/card';import {ChoiceRow} from '@/components/system/choice-row';import {MenuAction} from '@/components/system/menu-action';
       import {Callout} from '@/components/system/callout';import {StatusBadge} from '@/components/system/status-badge';import {Meta,MetaItem} from '@/components/system/meta';
       import {StatusPill} from '@/components/dashboard/status-pill';
@@ -129,10 +130,9 @@ import {IconButton} from '@/components/system/icon-button';
             <Command><Command.Group heading="Recent" className="[&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest"><Command.Item>Recent chat</Command.Item></Command.Group></Command>
             <div data-slot="search-footer" className="text-[9px]">↑↓ navigate <kbd className="text-[8px]">Esc</kbd></div>
 <div data-case="plugins"><SegmentedControl mode="choice" ariaLabel="Plugins line replacement" value="installed" onChange={()=>{}} options={[{value:"installed",label:"Installed"},{value:"discover",label:"Discover"}]}/></div>
-            {['rounded-[26px]','rounded-lg','rounded-xl'].map((radius,i)=><div key={radius} data-case={'dialog-'+i} data-slot="dialog-content" className={radius+' border bg-card p-2'}>Dialog</div>)}
-            {['bg-black/80','bg-background/80 backdrop-blur-sm'].map((fill,i)=><div key={fill} data-case={'overlay-'+i} data-slot="dialog-overlay" className={fill+' h-2 w-2'}/>)}
+            {['sm','md','lg'].map((padding,i)=><OverlaySurface key={padding} kind="dialog" padding={padding} data-case={'dialog-'+i}>Dialog</OverlaySurface>)}
+            {[0,1].map(i=><OverlayScrim key={i} data-case={'overlay-'+i} className="h-2 w-2"/>)}
 <div data-case="responsive-tabs"><SegmentedControl mode="choice" ariaLabel="Library" size={touch?"touch":"compact"} value="all" onChange={()=>{}} options={[{value:"all",label:"All"},{value:"apps",label:"Apps"}]}/></div>
-            <div data-slot="dialog-content" data-kind="wrapped"><div data-case="wrapped-dialog" className="rounded-xl border bg-card p-2 shadow-2xl">New chat</div></div>
 <div data-case="responsive-segments"><SegmentedControl mode="choice" ariaLabel="Filter" size={touch?"touch":"compact"} value="all" onChange={()=>{}} options={[{value:"all",label:"All"},{value:"active",label:"Active"}]}/></div>
             <Card as="a" data-audit-focus data-case="audit-run" href="#" shadow className="flex w-full flex-wrap items-center gap-3 md:flex-nowrap">
               <StatusBadge>Scheduled</StatusBadge><StatusBadge>Completed</StatusBadge>
@@ -621,7 +621,6 @@ for (const theme of ['light', 'dark'] as const) {
     const { page } = await open(theme);
     try {
       for (let i=0;i<3;i++) expect(await page.locator('[data-case="dialog-'+i+'"]').evaluate(el=>getComputedStyle(el).borderRadius)).toBe('20px');
-      expect(await page.locator('[data-case="wrapped-dialog"]').evaluate(el=>{const s=getComputedStyle(el);return [s.borderRadius,s.boxShadow];})).toEqual(['20px','none']);
       for (let i=0;i<2;i++) expect(await page.locator('[data-case="overlay-'+i+'"]').evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.backdropFilter];})).toEqual(['rgba(0, 0, 0, 0.4)','none']);
     } finally { await page.close(); }
   });

@@ -8,7 +8,7 @@ const titleSelectors = [{
   selector: "JSXOpeningElement[name.name=/^[a-z]/][name.name!='iframe'] > JSXAttribute[name.name='title']",
   message: "Use <Tip label=\"…\"> from '@/components/ui/tip' instead of the title attribute.",
 }, {
-  selector: "JSXOpeningElement:matches([name.name=/^(Button|IconButton|ChipButton|ActionPrimitive|Card|Callout|MenuAction|StatusBadge|Meta|MetaItem|InlineAction|Field|TextArea|NativeSelect|SelectField|Link|NodeViewWrapper|\\w+Trigger)$/], [name.type='JSXMemberExpression']) > JSXAttribute[name.name='title']",
+  selector: "JSXOpeningElement:matches([name.name=/^(Button|IconButton|ChipButton|ActionPrimitive|Card|Callout|MenuAction|StatusBadge|Meta|MetaItem|InlineAction|Field|TextArea|NativeSelect|SelectField|OverlaySurface|OverlayScrim|MenuSurface|ToastSurface|FormActions|FormLabel|FormDescription|(?:Dialog|Sheet|AlertDialog)(?:Content|Frame|Header|Footer|Title|Description|Body)|(?:Popover|Tooltip|HoverPreview)(?:Content|Frame)|DropdownMenu(?:Content|SubContent|Label|Separator|SubTrigger|Shortcut|CheckboxItem|RadioItem)|Select(?:Content|Item|Label|Separator)|Link|NodeViewWrapper|\\w+Trigger)$/], [name.type='JSXMemberExpression']) > JSXAttribute[name.name='title']",
   message: "This component passes title to the DOM. Wrap it in <Tip label=\"…\"> from '@/components/ui/tip' instead.",
 }];
 const capitalLabelSelector = {

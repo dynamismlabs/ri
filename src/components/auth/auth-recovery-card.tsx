@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { InlineAction } from '@/components/system/inline-action';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -75,10 +76,10 @@ export function AuthRecoveryCard() {
   if (!visible) return null;
 
   return (
-    <div
+    <OverlaySurface kind="popover" padding="none"
       role="dialog"
       aria-label="Sessions paused for login"
-      className="fixed bottom-4 right-4 z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-background shadow-lg"
+      className="fixed bottom-4 right-4 z-50 w-[340px] max-w-[calc(100vw-2rem)]"
     >
       <CardHeader
         count={sessions.length}
@@ -90,7 +91,7 @@ export function AuthRecoveryCard() {
         ))}
       </div>
       {sessions.length > 1 && <CardFooter sessions={sessions} />}
-    </div>
+    </OverlaySurface>
   );
 }
 

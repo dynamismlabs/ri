@@ -1,8 +1,9 @@
 'use client';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from '@/components/system/chip-button';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { History, Loader2 } from 'lucide-react';
 import {
   useMainChat,
@@ -23,30 +24,19 @@ import { cn } from '@/lib/utils';
  */
 export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScope; onOpenChat?: (id: string) => void }) {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const { data: current } = useMainChat(scope);
   const { data: history, isLoading } = useMainChatHistory(scope, open);
   const resume = useResumeMainChat(scope);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
+
 
   const currentId = current?.session?.id ?? null;
   const sessions = history?.sessions ?? [];
 
   return (
-    <div className="relative" ref={menuRef}>
-      <ChipButton
+    <Popover open={open} onOpenChange={setOpen}><div className="relative">
+      <PopoverTrigger asChild><ChipButton
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
         variant="secondary"
         size="compact"
         pressed={open}
@@ -54,10 +44,10 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
       >
         <History size={10} />
         History
-      </ChipButton>
+      </ChipButton></PopoverTrigger>
 
       {open && (
-        <div data-slot="popover-content" className="absolute right-0 top-full mt-1 w-64 max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl z-50 py-1">
+        <PopoverContent padding="xs" align="end" className="w-64 max-h-72 overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
               <Loader2 size={12} className="animate-spin text-muted-foreground" />
@@ -104,8 +94,8 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
               );
             })
           )}
-        </div>
+        </PopoverContent>
       )}
-    </div>
+    </div></Popover>
   );
 }

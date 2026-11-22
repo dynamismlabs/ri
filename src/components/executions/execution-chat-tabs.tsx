@@ -1,5 +1,5 @@
 'use client';
-import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
+import { PopoverPrimitive } from '@/components/system/popover';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Field } from '@/components/system/field';

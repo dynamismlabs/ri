@@ -1,6 +1,6 @@
 'use client';
 
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { SegmentedControl } from '@/components/system/segmented-control';
 
 import { IconButton } from '@/components/system/icon-button';

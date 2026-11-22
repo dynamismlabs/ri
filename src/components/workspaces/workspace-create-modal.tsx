@@ -1,5 +1,6 @@
 'use client';
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { DialogFooter } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { InlineAction } from '@/components/system/inline-action';
@@ -231,12 +232,12 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
     <DialogPrimitive.Root open={open && canConfigure} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
           className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
-          <div className="flex max-h-[88vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+          <div className="flex max-h-[88vh] flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3">
-              <DialogPrimitive.Title className="">New agent</DialogPrimitive.Title>
+              <DialogPrimitive.Title>New agent</DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>
                 <IconButton
                   label="Close"
@@ -479,7 +480,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
               )}
             </form>
 
-            <div className="flex shrink-0 items-center justify-end gap-2 px-5 pt-2 pb-4">
+            <DialogFooter padding="panel" className="flex-row items-center justify-end">
               <DialogPrimitive.Close asChild>
                 <Button
                   type="button"
@@ -500,7 +501,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 {createWs.isPending && <Loader2 size={14} className="animate-spin" />}
                 Create agent
               </Button>
-            </div>
+            </DialogFooter>
           </div>
           <FolderPickerDialog
             open={picking}

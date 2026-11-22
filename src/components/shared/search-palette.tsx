@@ -1,6 +1,7 @@
 'use client';
 
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { OverlaySurface, OverlayScrim } from '@/components/system/overlay';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
@@ -36,8 +37,8 @@ export function SearchPalette({ open, onOpenChange, query, onQueryChange, search
   const hasQuery = searchQuery.trim().length > 0;
   return <Command.Dialog open={open} onOpenChange={onOpenChange} label="Search" shouldFilter={false} className="fixed inset-0 z-50">
     <VisuallyHidden.Root><DialogPrimitive.Title>Search</DialogPrimitive.Title><DialogPrimitive.Description>Find work in Ri</DialogPrimitive.Description></VisuallyHidden.Root>
-    <div data-slot="dialog-overlay" className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => onOpenChange(false)}/>
-    <div data-slot="dialog-content" data-kind="search" className="relative mx-auto mt-[15vh] w-full max-w-2xl overflow-hidden rounded-xl border bg-card shadow-2xl">
+    <OverlayScrim className="absolute inset-0" onClick={() => onOpenChange(false)}/>
+    <OverlaySurface kind="dialog" padding="none" data-slot="dialog-content" className="relative mx-auto mt-[15vh] w-[min(42rem,calc(100%-16px))] max-w-2xl overflow-hidden">
       <div className="flex items-center gap-3 border-b px-4 py-3"><Search size={16} className="shrink-0 text-muted-foreground"/><Command.Input ref={inputRef} value={query} onValueChange={onQueryChange} placeholder={placeholder} className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none"/>{hasQuery && fetching && <Loader2 size={14} className="animate-spin"/>}{typeFilter && <span className="text-[9px] uppercase text-primary">{typeFilter}</span>}<IconButton
         onClick={() => onOpenChange(false)}
         label="Close search"
@@ -54,7 +55,7 @@ export function SearchPalette({ open, onOpenChange, query, onQueryChange, search
         >Retry</Button></p>}
       </Command.List>
       <div data-slot="search-footer" className="flex gap-3 border-t px-4 py-2 text-[9px] text-muted-foreground"><span>↑↓ navigate</span><span>Enter open</span><span>Esc close</span></div>
-    </div>
+    </OverlaySurface>
   </Command.Dialog>;
 }
 

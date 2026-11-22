@@ -1,5 +1,6 @@
 'use client';
-import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
+import { OverlaySurface, OverlayScrim } from '@/components/system/overlay';
+import { DialogPrimitive } from '@/components/system/dialog';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -125,11 +126,11 @@ function ChatSearchPanel() {
 
   return (
     <>
-      <div data-slot="dialog-overlay" className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={closeChatSearch} />
+      <OverlayScrim className="absolute inset-0" onClick={closeChatSearch} />
 
       {/* The whole screen on a phone, where the keyboard takes half of it,
           and a card over the page from the phone breakpoint up. */}
-      <div data-slot="dialog-content" data-kind="search-page" className="relative flex h-dvh w-full flex-col overflow-hidden bg-card pt-[env(safe-area-inset-top)] md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl md:rounded-xl md:border md:border-border md:pt-0 md:shadow-2xl">
+      <OverlaySurface kind="dialog" padding="none" phonePage data-slot="dialog-content" className="relative flex h-dvh w-full flex-col overflow-hidden md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl">
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <TextSearch size={16} className="flex-shrink-0 text-muted-foreground" />
           <Command.Input
@@ -249,7 +250,7 @@ function ChatSearchPanel() {
             <kbd className="rounded bg-muted px-1 py-0.5 text-[8px] uppercase">Esc</kbd> close
           </span>
         </div>
-      </div>
+      </OverlaySurface>
     </>
   );
 }

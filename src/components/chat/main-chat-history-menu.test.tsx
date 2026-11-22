@@ -7,6 +7,7 @@ import { MainChatHistoryMenu } from './main-chat-history-menu';
 import { mainChatKey } from '@/hooks/use-main-chat';
 import { trpc } from '@/lib/trpc/client';
 
+vi.mock('@/components/system/popover', () => import('@/test/fixtures/inline-popover'));
 const state = vi.hoisted(() => ({ fail: true, error: vi.fn() }));
 vi.mock('sonner', () => ({ toast: { error: state.error } }));
 vi.mock('@/lib/trpc/client', async original => ({ ...await original<typeof import('@/lib/trpc/client')>(), trpcClient: { workspaces: {

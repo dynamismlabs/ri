@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { ChoiceRow } from '@/components/system/choice-row';
 
 import { Field } from '@/components/system/field';
@@ -133,7 +134,8 @@ function SetupAgentBody({
         </DialogDescription>
       </DialogHeader>
 
-      {plan.isLoading && (
+      <DialogBody className="space-y-4">
+{plan.isLoading && (
         <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
           <Loader2 size={14} className="animate-spin" /> Checking {device.name}…
         </p>
@@ -244,6 +246,7 @@ function SetupAgentBody({
         </p>
       )}
       {problem && <p className="text-[12.5px] text-destructive">{problem}</p>}
+</DialogBody>
 
       <DialogFooter>
         <Button

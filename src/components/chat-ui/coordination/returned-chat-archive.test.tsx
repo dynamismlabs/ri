@@ -35,7 +35,7 @@ vi.mock('@/lib/api/sessions', () => ({ sessionsApi: {
   archive: server.archive,
   continueWork: server.continueWork,
 } }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => server.confirm }));
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => server.confirm }));
 vi.mock('@/components/executions/workbench/view-request', () => ({ requestWorkbenchView: server.requestView }));
 vi.mock('sonner', () => ({ toast: { error: server.error } }));
 vi.mock('@/lib/file-icons', () => ({ fileIconUrl: () => '', folderIconUrl: () => '', iconForFile: () => '', iconForFolder: () => '' }));

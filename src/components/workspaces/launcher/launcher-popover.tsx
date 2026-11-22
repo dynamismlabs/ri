@@ -1,6 +1,6 @@
 'use client';
 
-import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
+import { PopoverPrimitive } from '@/components/system/popover';
 
 import { cn } from '@/lib/utils';
 

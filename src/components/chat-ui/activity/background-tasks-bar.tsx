@@ -173,7 +173,7 @@ function BackgroundTasksSheet({
         ) : (
           <>
             <SheetHeader className="border-b">
-              <SheetTitle className="">Background tasks</SheetTitle>
+              <SheetTitle>Background tasks</SheetTitle>
             </SheetHeader>
             <ul className="flex-1 overflow-y-auto">
               {running.map((t) => (

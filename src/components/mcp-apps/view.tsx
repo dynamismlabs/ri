@@ -1,5 +1,6 @@
 'use client';
 
+import { OverlaySurface } from '@/components/system/overlay';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -156,7 +157,7 @@ export function ConnectedView({captureId, chatId, expanded = false, onClose, app
 function ApprovalCard({pending}: {pending: Pending}) {
   const [armed, setArmed] = useState(false);
   useEffect(() => { const timer = setTimeout(() => setArmed(true), APPROVAL_ARM_MS); return () => clearTimeout(timer); }, []);
-  return <div role="alertdialog" aria-label="App operation approval" className="absolute inset-x-0 top-0 z-20 space-y-2 border-b border-amber-500/30 bg-amber-50 p-3 text-xs shadow-md dark:bg-amber-950">
+  return <OverlaySurface kind="popover" padding="md" tone="warning" role="alertdialog" aria-label="App operation approval" className="absolute inset-x-0 top-0 z-20 space-y-2">
     <p className="font-medium">Allow this app operation?</p>
     <pre className="max-h-32 overflow-auto whitespace-pre-wrap">{JSON.stringify(pending.preview, null, 2)}</pre>
     <div className="flex gap-2"><Button
@@ -170,13 +171,13 @@ function ApprovalCard({pending}: {pending: Pending}) {
       variant="secondary"
       size="xs"
     >Decline</Button></div>
-  </div>;
+  </OverlaySurface>;
 }
 /** The person decides whether a file the app handed Ri is saved (`ui/download-file`). */
 function SaveCard({app, pending}: {app: string; pending: PendingSave}) {
   const [armed, setArmed] = useState(false);
   useEffect(() => { const timer = setTimeout(() => setArmed(true), APPROVAL_ARM_MS); return () => clearTimeout(timer); }, []);
-  return <div role="alertdialog" aria-label="Save a file from this app" className="absolute inset-x-0 top-0 z-20 space-y-2 border-b border-border bg-card p-3 text-xs shadow-md">
+  return <OverlaySurface kind="popover" padding="md" role="alertdialog" aria-label="Save a file from this app" className="absolute inset-x-0 top-0 z-20 space-y-2">
     <p><span className="font-medium">{app}</span> wants to save <span className="break-all font-medium">{pending.file.name}</span> ({fileSizeLabel(pending.file.bytes.byteLength)}).</p>
     <div className="flex gap-2"><Button
       disabled={!armed}
@@ -189,7 +190,7 @@ function SaveCard({app, pending}: {app: string; pending: PendingSave}) {
       variant="secondary"
       size="xs"
     >Don’t save</Button></div>
-  </div>;
+  </OverlaySurface>;
 }
 function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expanded: boolean; deepLink?: string; onExpand: (mode: 'inline' | 'fullscreen' | 'pip') => void}) {
   const queryClient = useQueryClient();

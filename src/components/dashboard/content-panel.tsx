@@ -1,4 +1,5 @@
 "use client";
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { ChipButton } from "@/components/system/chip-button";
@@ -9,7 +10,7 @@ import { Button } from '@/components/system/button';
 import {
   Layers, ChevronDown, Users, SquareTerminal, Maximize2, Minimize2,
 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { cn } from '@/lib/utils';
 import type { PanelId, PanelTab, MorePanelTab } from '@/types/dashboard';
@@ -126,22 +127,9 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
   // File tabs need additional room. Restore always remains reachable.
   const showExpand = expanded || (width ?? 0) >= (team ? 360 : fileHere ? 760 : 640);
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreRef = useRef<HTMLDivElement>(null);
 
   const isMoreTab = MORE_TAB_IDS.has(activeTab);
   const needsYourCall = useNeedsYourCall(!team);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!moreOpen) return;
-    const handleClick = (e: MouseEvent) => {
-      if (moreRef.current && !moreRef.current.contains(e.target as Node)) {
-        setMoreOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [moreOpen]);
 
   return (
     <SegmentedRoot
@@ -213,24 +201,18 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
             )}
 
             {/* More button */}
-            <div className="relative" ref={moreRef}>
-              <ChipButton
+            <Popover open={moreOpen} onOpenChange={setMoreOpen}><div className="relative">
+              <PopoverTrigger asChild><ChipButton
                 variant="ghost"
                 pressed={isMoreTab && !fileShown}
                 aria-expanded={moreOpen}
-                onClick={() => setMoreOpen(!moreOpen)}
               >
                 More
                 <ChevronDown />
-              </ChipButton>
+              </ChipButton></PopoverTrigger>
 
               {moreOpen && (
-                <div
-                  className={cn(
-                    "absolute right-0 top-full mt-1 w-52 rounded-lg border border-border shadow-xl z-50 py-1",
-                    isDark ? "bg-card" : "bg-background",
-                  )}
-                >
+                <PopoverContent padding="xs" align="end" className="w-52">
                   {moreTabs.map((tab) => (
                     <MenuAction selected={!!((activeTab === tab.id))}
                       key={tab.id}
@@ -261,9 +243,9 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
                       <span className="font-medium">Expand panel</span>
                     </MenuAction>
                   )}
-                </div>
+                </PopoverContent>
               )}
-            </div>
+            </div></Popover>
           </div>
         )}
 

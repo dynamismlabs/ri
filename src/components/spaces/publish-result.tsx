@@ -1,4 +1,5 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
 import { TextArea } from '@/components/system/text-area';
 import { Field } from '@/components/system/field';
 
@@ -140,7 +141,8 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
           <DialogDescription>Choose what {teamName} should see about this task.</DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-start gap-2 rounded-md bg-muted/50 px-3 py-2 text-xs">
+        <DialogBody className="space-y-4">
+<div className="flex items-start gap-2 rounded-md bg-muted/50 px-3 py-2 text-xs">
           <Users size={13} className="mt-0.5 flex-shrink-0 text-muted-foreground" aria-hidden />
           <p>
             <span className="font-medium">Everyone in {teamName} sees this</span>
@@ -213,6 +215,7 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
         <p className="text-[11px] text-muted-foreground">
           Only what you choose here is shared. Your conversation, private notes and where the work ran stay with you, and the task&apos;s status stays as it is.
         </p>
+</DialogBody>
 
         <DialogFooter>
           <Button

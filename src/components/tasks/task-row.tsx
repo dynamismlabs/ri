@@ -408,7 +408,7 @@ export function TaskRow({
             {onPickBucket && (
               <>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger className="text-xs">
+                  <DropdownMenuSubTrigger>
                     <ArrowUpDown size={12} className="mr-2" /> Priority
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent className="w-32">
