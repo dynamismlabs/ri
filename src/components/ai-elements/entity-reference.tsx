@@ -183,7 +183,7 @@ function TaskCard({ data, onClick }: { data: TaskRecord; onClick: () => void }) 
             </span>
           )}
           {data.effort && (
-            <span className="text-[10px] text-muted-foreground font-medium uppercase">
+            <span className="text-[10px] text-muted-foreground font-medium">
               {data.effort}
             </span>
           )}
@@ -394,7 +394,7 @@ function TeamRecordCard({ kind, id, view }: { kind: RemoteRecordKind; id: string
   return (
     <div className="my-1">
       {look.opens
-        ? <Card as="button" padding="md" type="button" onClick={() => open(kind, id, view)} className={cn(frame, "")}>{inner}</Card>
+        ? <Card as="button" padding="md" type="button" onClick={() => open(kind, id, view)} dimmed={look.muted} className="flex items-start gap-2.5 w-full text-left">{inner}</Card>
         : <div className={frame}>{inner}</div>}
     </div>
   )
@@ -403,7 +403,7 @@ function TeamRecordCard({ kind, id, view }: { kind: RemoteRecordKind; id: string
 function EntityLoading({ entityType }: { entityType: EntityType }) {
   const config = ENTITY_CONFIG[entityType]
   return (
-    <Card padding="md" density="comfortable" shadow className={cn("flex items-center gap-2 my-1", config.borderColor)}>
+    <Card padding="md" density="comfortable" shadow className="flex items-center gap-2 my-1">
       <Loader2 size={12} className="animate-spin text-muted-foreground" />
       <span className="text-[11px] text-muted-foreground">Loading {config.label.toLowerCase()}...</span>
     </Card>

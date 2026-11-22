@@ -1,6 +1,7 @@
 'use client';
 import { StatusBadge } from '@/components/system/status-badge';
 
+import { InlineAction } from '@/components/system/inline-action';
 import { Users } from 'lucide-react';
 import type { EntityVersionRecord, TaskRecord } from '@/db/types';
 import { useTeam } from './team-context';
@@ -21,10 +22,10 @@ export function TeamTaskAssignee({ task }: { task: TaskRecord }) {
   const update = useUpdateTask();
   const assignee = active.find(value => value.id === task.assigneeMemberId);
   return <><span className="font-medium text-muted-foreground">Assigned to</span><DropdownMenu>
-    <DropdownMenuTrigger className="inline-flex w-fit items-center gap-1.5 rounded-md px-1.5 py-1 hover:bg-muted/50" aria-label="Assigned to">
+    <DropdownMenuTrigger asChild><InlineAction appearance="control" className="w-fit" aria-label="Assigned to">
       {assignee && <MemberAvatar name={assignee.name} size="xs" />}<span>{assignee?.name ?? 'Nobody'}</span>
-    </DropdownMenuTrigger><DropdownMenuContent align="start" className="w-48"><DropdownMenuRadioGroup value={task.assigneeMemberId ?? ''} onValueChange={value => update.mutate({ id: task.id, assigneeMemberId: value || null })}>
-      <DropdownMenuRadioItem value="" className="text-xs">Nobody</DropdownMenuRadioItem>{active.map(value => <DropdownMenuRadioItem key={value.id} value={value.id} className="text-xs">{value.name}{value.id === member.id ? ' (you)' : ''}</DropdownMenuRadioItem>)}
+    </InlineAction></DropdownMenuTrigger><DropdownMenuContent align="start" className="w-48"><DropdownMenuRadioGroup value={task.assigneeMemberId ?? ''} onValueChange={value => update.mutate({ id: task.id, assigneeMemberId: value || null })}>
+      <DropdownMenuRadioItem value="" className="">Nobody</DropdownMenuRadioItem>{active.map(value => <DropdownMenuRadioItem key={value.id} value={value.id} className="">{value.name}{value.id === member.id ? ' (you)' : ''}</DropdownMenuRadioItem>)}
     </DropdownMenuRadioGroup></DropdownMenuContent></DropdownMenu></>;
 }
 function describe(version: EntityVersionRecord, name: (id: string | null) => string) {

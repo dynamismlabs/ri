@@ -196,7 +196,7 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">Default model</p>
+            <p className="text-[11px] text-muted-foreground/60">Default model</p>
             <p className="mt-0.5 text-sm font-medium text-foreground">{selectedModel?.label ?? selectedModelId}</p>
           </div>
           <ChevronDown size={14} className={`text-muted-foreground transition-transform ${modelPickerOpen ? 'rotate-180' : ''}`} />

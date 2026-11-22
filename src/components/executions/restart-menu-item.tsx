@@ -65,7 +65,7 @@ function ChatRestart({ sessionId, active = true }: RestartProps) {
         type="button"
         onClick={handleClick}
         disabled={isPending}
-        className="w-full flex items-center justify-between gap-2 disabled:opacity-60 disabled:cursor-not-allowed text-left"
+        className="w-full flex items-center justify-between gap-2 disabled:cursor-not-allowed text-left"
       >
         <span className="flex items-center gap-2">
           {isPending ? (

@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { IconButton } from './icon-button';
 import { Button } from './button';
-import { overlayVariants, type OverlayDrawing } from './overlay';
+import { overlayVariants, frameHeightVariants, type FrameHeight, type OverlayDrawing } from './overlay';
 export { Dialog, DialogTrigger, DialogPortal, DialogClose };
 
 const dialogVariants = cva('ri-dialog', {
@@ -39,7 +39,7 @@ const dialogVariants = cva('ri-dialog', {
   defaultVariants: { placement: 'center', size: 'md' },
 });
 type FrameProps = ComponentProps<typeof DialogContentPrimitive> &
-  VariantProps<typeof dialogVariants> &
+  VariantProps<typeof dialogVariants> & FrameHeight &
   Omit<OverlayDrawing, 'kind'> & { animated?: boolean };
 export function DialogOverlay({
   className,
@@ -59,6 +59,7 @@ export function DialogFrame({
   padding = 'xl',
   placement,
   size,
+  height,
   animated = false,
   ...props
 }: FrameProps) {
@@ -69,6 +70,7 @@ export function DialogFrame({
       className={cn(
         overlayVariants({ kind: 'dialog', padding }),
         placement !== 'custom' && dialogVariants({ placement, size }),
+        frameHeightVariants({ height }),
         className,
       )}
       {...props}
@@ -121,11 +123,11 @@ export function DialogHeader({
     />
   );
 }
-export function DialogBody({ className, ...props }: ComponentProps<'div'>) {
+export function DialogBody({ className, padding = 'none', compact = false, ...props }: ComponentProps<'div'> & { padding?: 'none' | 'panel'; compact?: boolean }) {
   return (
     <div
       data-slot="dialog-body"
-      className={cn('ri-dialog-body', className)}
+      className={cn('ri-dialog-body', padding === 'panel' && 'ri-dialog-body--panel', compact && 'ri-dialog-body--compact', className)}
       {...props}
     />
   );

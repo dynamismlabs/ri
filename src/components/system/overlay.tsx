@@ -32,12 +32,18 @@ export const overlayVariants = cva('ri-overlay', {
     },
   },
 });
+export const frameHeightVariants = cva('', { variants: { height: {
+  chat: 'ri-frame-height--chat', document: 'ri-frame-height--document', form: 'ri-frame-height--form',
+  application: 'ri-frame-height--application', settings: 'ri-frame-height--settings', fit: 'ri-frame-height--fit',
+  window: 'ri-frame-height--window', search: 'ri-frame-height--search',
+} } });
+export type FrameHeight = VariantProps<typeof frameHeightVariants>;
 export type OverlayDrawing = VariantProps<typeof overlayVariants>;
-type SurfaceProps<E extends ElementType> = OverlayDrawing & {
+type SurfaceProps<E extends ElementType> = OverlayDrawing & FrameHeight & {
   as?: E;
   className?: string;
   tone?: ContentTone;
-} & Omit<ComponentPropsWithRef<E>, keyof OverlayDrawing | 'as' | 'className'>;
+} & Omit<ComponentPropsWithRef<E>, keyof OverlayDrawing | keyof FrameHeight | 'as' | 'className'>;
 /** A frame for an existing custom positioning or dismissal engine. */
 export function OverlaySurface<E extends ElementType = 'div'>({
   as,
@@ -46,6 +52,7 @@ export function OverlaySurface<E extends ElementType = 'div'>({
   className,
   tone,
   phonePage,
+  height,
   ...props
 }: SurfaceProps<E>) {
   return createElement(as ?? 'div', {
@@ -53,6 +60,7 @@ export function OverlaySurface<E extends ElementType = 'div'>({
     ...props,
     className: cn(
       overlayVariants({ kind, padding, phonePage }),
+      frameHeightVariants({ height }),
       toneClass(tone),
       className,
     ),

@@ -49,7 +49,7 @@ export function AgentChatsFlyout({
     >
       <div className="flex min-h-8 flex-shrink-0 items-center gap-2 border-b border-border/40 px-3">
         <Tip label={`${name} chats`} onlyWhenTextHidden>
-          <span className="min-w-0 flex-1 truncate text-[9px] font-bold uppercase tracking-[0.15em] text-foreground">
+          <span className="min-w-0 flex-1 truncate text-[11px] leading-[1.4] font-medium text-foreground">
             {name} chats
           </span>
         </Tip>

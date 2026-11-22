@@ -117,7 +117,7 @@ export function RateLimitsPill() {
         className="max-h-[var(--radix-popover-content-available-height)] w-72 max-w-[calc(100vw-16px)] overflow-y-auto"
       >
         <div className="flex items-center justify-between gap-2 pb-2">
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Usage</p>
+          <p className="text-[10.5px] font-bold text-muted-foreground">Usage</p>
           {updating && (
             <span className="flex items-center gap-1 text-[10.5px] text-muted-foreground" role="status">
               <Loader2 size={10} className="animate-spin" /> Updating

@@ -56,7 +56,7 @@ function ActiveStatusPill({ label, count, icon, tone = 'neutral', accentClass, h
       <PopoverContent padding="none" align="start" sideOffset={6} className="w-72 overflow-hidden">
         <div className={cn('flex items-center gap-1.5 px-3 py-2 border-b border-border/40', headerBgClass)}>
           <span className="flex items-center justify-center">{icon}</span>
-          <span className={cn('flex-1 text-[10.5px] font-bold uppercase tracking-[0.12em]', accentClass)}>{label}</span>
+          <span className={cn("flex-1 text-[10.5px] font-bold", accentClass)}>{label}</span>
           <StatusBadge size="count" tone={tone} code>{count}</StatusBadge>
           {action?.(close)}
         </div>

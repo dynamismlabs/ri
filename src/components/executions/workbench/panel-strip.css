@@ -1,0 +1,4 @@
+html:root .panel-tab { align-self: center; height: 26px; margin: 0; padding-inline: 10px; border-bottom-width: 0; border-radius: 999px; color: var(--t3); }
+html:root .panel-tab:hover { color: var(--t1); }
+html:root .panel-tab.panel-tab-on { background-color: var(--selected); color: var(--t1); }
+html:root .panel-tab:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

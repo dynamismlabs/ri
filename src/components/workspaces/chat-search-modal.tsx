@@ -36,7 +36,7 @@ type SourceFacet = 'all' | 'native' | 'imported';
 const RECENT_LIMIT = 8;
 
 const GROUP_CLASS =
-  'px-2 pb-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-muted-foreground/60';
+  'px-2 pb-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-muted-foreground/60';
 
 /**
  * Search every chat's title and transcript, in a modal. It used to be a box in
@@ -130,7 +130,7 @@ function ChatSearchPanel() {
 
       {/* The whole screen on a phone, where the keyboard takes half of it,
           and a card over the page from the phone breakpoint up. */}
-      <OverlaySurface kind="dialog" padding="none" phonePage data-slot="dialog-content" className="relative flex h-dvh w-full flex-col overflow-hidden md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl">
+      <OverlaySurface height="search" kind="dialog" padding="none" phonePage data-slot="dialog-content" className="relative flex w-full flex-col overflow-hidden md:mx-auto md:mt-[15vh] md:block md:max-w-2xl">
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <TextSearch size={16} className="flex-shrink-0 text-muted-foreground" />
           <Command.Input
@@ -247,7 +247,7 @@ function ChatSearchPanel() {
             <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">{'⏎'}</kbd> open
           </span>
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 text-[8px] uppercase">Esc</kbd> close
+            <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">Esc</kbd> close
           </span>
         </div>
       </OverlaySurface>

@@ -177,7 +177,7 @@ function NotePageContent({ params }: { params: Promise<{ id: string }> }) {
           <DropdownMenuContent align="end" className="w-44">
             {note?.url && (
               <>
-                <DropdownMenuItem asChild className="text-xs">
+                <DropdownMenuItem asChild className="">
                   <a href={note.url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink size={12} className="mr-2" /> Open link
                   </a>
@@ -194,7 +194,7 @@ function NotePageContent({ params }: { params: Promise<{ id: string }> }) {
                       router.push('/'),
                     )
                   }
-                  className="text-xs"
+                  className=""
                 >
                   <X size={12} className="mr-2" /> Remove from my notes
                 </DropdownMenuItem>
@@ -210,10 +210,10 @@ function NotePageContent({ params }: { params: Promise<{ id: string }> }) {
                     <DropdownMenuSeparator />
                   </>
                 )}
-                <DropdownMenuItem onClick={handleArchive} className="text-xs">
+                <DropdownMenuItem onClick={handleArchive} className="">
                   <Archive size={12} className="mr-2" /> Archive
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} className="text-xs text-destructive">
+                <DropdownMenuItem onClick={handleDelete} className="">
                   <Trash2 size={12} className="mr-2" /> Delete
                 </DropdownMenuItem>
               </>

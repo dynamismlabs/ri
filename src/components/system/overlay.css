@@ -391,3 +391,16 @@
   }
   @media (max-width: 767px) { .ri-alert-dialog-footer .ri-button { min-height: 40px; } }
 }
+
+/* Fixed-height frame roles retain the geometry of their existing hosts. */
+.ri-frame-height--chat { height: 440px; }
+.ri-frame-height--document { height: 90dvh; }
+.ri-frame-height--form { height: min(85vh, 760px); }
+.ri-frame-height--application { height: 92dvh; }
+.ri-frame-height--settings { height: 800px; }
+.ri-frame-height--fit { height: fit-content; }
+.ri-frame-height--window { height: min(88dvh, 56rem); }
+.ri-frame-height--search { height: 100dvh; }
+@media (min-width: 768px) { .ri-frame-height--search { height: auto; } }
+.ri-dialog-body--panel { padding: 20px; }
+.ri-dialog-body--compact { font-size: 12.5px; }

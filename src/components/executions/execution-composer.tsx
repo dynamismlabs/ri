@@ -1000,7 +1000,7 @@ function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, c
         </Tip>
       </PopoverTrigger>
       <PopoverContent padding="xs" align="start" sideOffset={6} className="w-72">
-        <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+        <div className="px-2 py-1.5 text-[10px] text-muted-foreground/70 font-semibold">
           Permission mode
         </div>
         <HarnessPermissionNotice harness={harness} />

@@ -82,11 +82,11 @@ export function SheetContent({
     </SheetPortalPrimitive>
   );
 }
-export function SheetHeader({ className, ...props }: ComponentProps<'div'>) {
+export function SheetHeader({ className, divider = false, ...props }: ComponentProps<'div'> & { divider?: boolean }) {
   return (
     <div
       data-slot="sheet-header"
-      className={cn('ri-sheet-header', className)}
+      className={cn('ri-sheet-header', divider && 'ri-overlay-divider--bottom', className)}
       {...props}
     />
   );

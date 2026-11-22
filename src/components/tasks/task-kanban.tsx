@@ -94,10 +94,10 @@ function KanbanCard({
   const showAgentRow =
     !!signals && (signals.blocked || signals.stalled || signals.review || signals.working || !!agentSessionId);
   return (
-    <Card padding="sm" shadow
+    <Card dragging={isDragging} padding="sm" shadow
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn("group", "cursor-grab active:cursor-grabbing", isDragging && "opacity-40")}
+      className="group cursor-grab active:cursor-grabbing"
       {...attributes}
       {...listeners}
       onClick={() => onOpen(task.id)}
@@ -255,7 +255,7 @@ function KanbanColumn({
   return (
     <div className="flex h-full min-h-0 min-w-[240px] flex-1 flex-col">
       <div className="mb-2 flex items-center justify-between px-1">
-        <span className={cn('text-[10px] font-bold uppercase tracking-wider', STATUS_COLOR[def.status])}>{def.label}</span>
+        <span className={cn("text-[10px] font-bold", STATUS_COLOR[def.status])}>{def.label}</span>
         <span className="text-[10px] text-muted-foreground">{loading ? '' : tasks.length}</span>
       </div>
       <div
@@ -540,12 +540,12 @@ export function TaskKanban({
             {areaMode !== 'all' && <ToolbarActiveDot />}
           </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel className="uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaMode} onValueChange={setAreaMode}>
-              <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="none" className="text-xs">No Area</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all" className="">All Areas</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="none" className="">No Area</DropdownMenuRadioItem>
               {areas?.map((a) => (
-                <DropdownMenuRadioItem key={a.id} value={a.id} className="text-xs">{a.name}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem key={a.id} value={a.id} className="">{a.name}</DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>

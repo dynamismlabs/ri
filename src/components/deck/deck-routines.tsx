@@ -31,7 +31,7 @@ export function DeckRoutines({
           ? <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50" />
           : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground/50" />
         }
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+        <span className="text-[10px] font-semibold text-muted-foreground/50">
           Routines
         </span>
       </InlineAction>

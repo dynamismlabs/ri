@@ -168,7 +168,7 @@ function ChatBubble({
   return (
     <>
       {bubbleOpen && (
-        <OverlaySurface kind="popover" padding="none" className="absolute bottom-16 right-4 z-50 w-80 h-[440px] flex flex-col overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150">
+        <OverlaySurface height="chat" kind="popover" padding="none" className="absolute bottom-16 right-4 z-50 w-80  flex flex-col overflow-hidden animate-in slide-in-from-bottom-2 fade-in duration-150">
           <ChatPanel
             contextLabel={contextLabel}
             chat={chat}

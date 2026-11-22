@@ -38,7 +38,7 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
   return (
     <section className="space-y-3" aria-labelledby={`${id}-heading`}>
       <div className="flex items-center justify-between gap-3">
-        <h2 id={`${id}-heading`} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent delivery history</h2>
+        <h2 id={`${id}-heading`} className="text-[10px] font-semibold text-muted-foreground">Recent delivery history</h2>
         <Button
           type="button"
           disabled={query.isFetching}

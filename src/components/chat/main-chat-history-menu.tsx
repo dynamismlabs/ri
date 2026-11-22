@@ -68,7 +68,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
                     else resume.mutate(s.id, { onSuccess: () => setOpen(false) });
                   }}
                   disabled={resume.isPending}
-                  className="w-full flex items-center gap-2 text-left disabled:opacity-50"
+                  className="w-full flex items-center gap-2 text-left"
                 >
                   <span
                     className={cn(

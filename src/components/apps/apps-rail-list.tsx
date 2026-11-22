@@ -29,7 +29,7 @@ export function AppsRailList() {
   return (
     <>
       <div className="flex min-h-[32px] flex-shrink-0 items-center gap-2 border-b border-border/40 px-3">
-        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-foreground">Apps</span>
+        <span className="text-[11px] leading-[1.4] font-medium text-foreground">Apps</span>
       </div>
       <nav aria-label="Apps" className="flex min-h-0 flex-col gap-0.5 overflow-y-auto px-2 py-1.5">
         <Row

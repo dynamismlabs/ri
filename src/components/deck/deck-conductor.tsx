@@ -91,7 +91,7 @@ export function DeckConductor({
               size="compact"
               className="flex items-center gap-1.5 @max-[30rem]/conductor:gap-1"
             >
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest @max-[30rem]/conductor:tracking-wide">
+              <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground">
                 {selectedArea ? selectedArea.name : 'All areas'}
               </span>
               <ChevronDown size={9} className="text-muted-foreground" />

@@ -136,7 +136,7 @@ function ChatSchedules({ chat, mine, onDone }: {
     <>
       {mine.length > 0 && (
         <div className="border-b border-border p-3 space-y-2">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Scheduled for this chat</p>
+          <p className="text-[11px] font-medium text-muted-foreground">Scheduled for this chat</p>
           {mine.map((t) => <ScheduledRow key={t.id} trigger={t} onEdit={() => { onDone(); openSchedulesWindow({ triggerId: t.id }); }} />)}
         </div>
       )}
@@ -238,7 +238,7 @@ function NewChatSchedule({
 
   return (
     <form onSubmit={save} className="space-y-3 p-3">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Schedule this chat</p>
+      <p className="text-[11px] font-medium text-muted-foreground">Schedule this chat</p>
       <TriggerScheduleFields value={schedule} onChange={setSchedule} kinds={CHAT_KINDS} disabled={create.isPending} />
       <TextArea
         value={prompt}

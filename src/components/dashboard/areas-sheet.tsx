@@ -215,7 +215,7 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
           data-slot="sheet-content" data-side="right"
           ref={containerRef}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out outline-none',
+            "fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out",
             isVisible ? 'translate-x-0' : 'translate-x-full'
           )}
           style={{ width: `min(${width}px, 100vw)` }}
@@ -253,7 +253,7 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
                 >
                   <X size={16} />
                 </IconButton>
-                <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60 uppercase">
+                <span className="text-[10px] font-bold text-muted-foreground/60">
                   Areas
                 </span>
               </div>

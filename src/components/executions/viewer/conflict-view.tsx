@@ -352,7 +352,7 @@ function SideHeader({
   return (
     <div
       className={cn(
-        'flex items-center gap-1.5 px-3 py-0.5 text-[10px] font-semibold uppercase tracking-wide',
+        "flex items-center gap-1.5 px-3 py-0.5 text-[10px] font-semibold",
         tone === 'current'
           ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
           : 'bg-sky-500/10 text-sky-700 dark:text-sky-300',

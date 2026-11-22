@@ -193,7 +193,7 @@ function Section({
 }) {
   return (
     <section>
-      {title && <h3 className="flex items-center gap-1.5 px-1 mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+      {title && <h3 className="flex items-center gap-1.5 px-1 mb-1 text-[10px] font-semibold text-muted-foreground">
         {icon}
         {title}
         {count > 0 && (

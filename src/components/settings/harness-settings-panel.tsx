@@ -369,7 +369,7 @@ function VirtualModelChecklist({
   });
 
   return (
-    <div ref={scrollRef} className="max-h-72 min-h-0 overflow-y-auto rounded-md border border-border [scrollbar-width:thin]">
+    <div ref={scrollRef} className="ri-harness-settings-panel-frame max-h-72 min-h-0 overflow-y-auto rounded-md border border-border [scrollbar-width:thin]">
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const model = rows[virtualRow.index]!;

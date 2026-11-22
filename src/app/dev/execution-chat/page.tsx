@@ -191,7 +191,7 @@ function DevExecutionChatInner() {
             return (
               <section key={cat.id} className="border-b border-border/50">
                 <div className="px-4 py-2 flex items-baseline gap-2 sticky top-0 bg-muted/40 backdrop-blur-sm">
-                  <h2 className="text-[10px] uppercase tracking-wider font-semibold text-foreground/80">
+                  <h2 className="text-[10px] font-semibold text-foreground/80">
                     {cat.label}
                   </h2>
                   <span className="text-[10px] text-muted-foreground/60">{cat.hint}</span>
@@ -238,7 +238,7 @@ function ScenarioCard({
   livePending: boolean;
 }) {
   return (
-    <div className="rounded-md border border-border/60 bg-card px-2.5 py-2 hover:border-border transition-colors">
+    <div className="ri-diagnostic-card rounded-md border border-border/60 bg-card px-2.5 py-2 hover:border-border transition-colors">
       <div className="text-[11.5px] font-medium text-foreground leading-snug">{scenario.title}</div>
       <div className="text-[10.5px] text-muted-foreground/80 mt-0.5 leading-snug">
         {scenario.description}

@@ -42,7 +42,7 @@ export function HomeEnvironmentMarker() {
       <div className="absolute inset-x-0 top-0 h-[3px] bg-amber-500" />
       <Tip label={description}>
         <div
-          className="pointer-events-auto mt-[3px] rounded-b-md bg-amber-500 px-2 pb-0.5 text-[10px] font-semibold uppercase leading-4 tracking-wider text-amber-950 shadow-sm"
+          className="pointer-events-auto mt-[3px] rounded-b-md bg-amber-500 px-2 pb-0.5 text-[10px] font-semibold leading-4 text-amber-950 shadow-sm"
         >
           {label}
         </div>

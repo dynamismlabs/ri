@@ -37,7 +37,7 @@ export function GroupHeading({
 }) {
   return (
     <div className="flex min-h-6 items-center justify-between gap-2">
-      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <h3 className="text-[10px] font-semibold text-muted-foreground">
         {children}
         {typeof count === 'number' && (
           <span className="ml-1.5 font-medium tabular-nums text-muted-foreground/60">{count}</span>

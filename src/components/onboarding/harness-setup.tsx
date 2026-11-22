@@ -252,7 +252,7 @@ export function HarnessSetup({
   return (
     <div className="@container space-y-4">
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Harness</div>
+        <div className="text-xs text-muted-foreground">Harness</div>
         <HarnessPicker
           harnesses={HARNESS_IDS.map((id) => HARNESS_BY_ID[id])}
           value={state.harness}
@@ -303,7 +303,7 @@ function ModelChoice({
   }, [onSelect, options, selected]);
   return (
     <div className="space-y-2">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">Default model</div>
+      <div className="text-xs text-muted-foreground">Default model</div>
       {isLoading && <div className="text-xs text-muted-foreground">Loading models…</div>}
       <div className="grid max-h-72 grid-cols-1 gap-2 overflow-y-auto @min-[400px]:grid-cols-2">
         {options.map((opt) => {

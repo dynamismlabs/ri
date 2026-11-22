@@ -561,7 +561,7 @@ function WorktreeDeepLinks({ sessionId, worktreePath }: { sessionId: string; wor
         type="button"
         onClick={handleReveal}
         disabled={revealing}
-        className="w-full flex items-center gap-2 disabled:opacity-50"
+        className="w-full flex items-center gap-2"
       >
         {revealing ? <Loader2 size={12} className="animate-spin" /> : <FolderOpen size={12} />}
         {revealLabel(platform)}
@@ -570,7 +570,7 @@ function WorktreeDeepLinks({ sessionId, worktreePath }: { sessionId: string; wor
         type="button"
         onClick={handleOpenInEditor}
         disabled={opening}
-        className="w-full flex items-center gap-2 disabled:opacity-50"
+        className="w-full flex items-center gap-2"
       >
         {opening ? <Loader2 size={12} className="animate-spin" /> : <SquareArrowOutUpRight size={12} />}
         Open in {label}
@@ -590,7 +590,7 @@ function DetailRow({
 }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 w-20 flex-shrink-0">
+      <span className="text-[10px] text-muted-foreground/70 w-20 flex-shrink-0">
         {label}
       </span>
       <span className={cn('flex-1 min-w-0 text-[12px]', valueClass)}>{value}</span>
@@ -626,7 +626,7 @@ function CopyableDetailRow({
   };
   return (
     <div className="flex items-baseline gap-3">
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70 w-20 flex-shrink-0">
+      <span className="text-[10px] text-muted-foreground/70 w-20 flex-shrink-0">
         {label}
       </span>
       <Tip label={`Copy ${copyLabel}`}>
@@ -694,7 +694,7 @@ function LinkPrSection({ session }: LinkPrSectionProps) {
 
   return (
     <div className="space-y-1.5">
-      <div className="px-1 text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70">
+      <div className="px-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
         Link PR
       </div>
       {linkedNumber != null ? (

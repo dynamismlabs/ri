@@ -172,7 +172,7 @@ export function StartWithAgentButton({
         <MenuAction density="compact"
           onClick={onClick}
           disabled={busy}
-          className={cn("flex w-full items-center gap-2 text-left disabled:opacity-60", className)}
+          className={cn("flex w-full items-center gap-2 text-left", className)}
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <Bot size={13} className="text-violet-500" />}
           {label}

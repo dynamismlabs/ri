@@ -697,7 +697,7 @@ export function IntegrationsSection({ active = true, navigation }: {
         >Stop waiting</Button></div>
       </Card>}
       {pendingOAuth && (
-        <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+        <div className="ri-integrations-section-frame flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
           <span>Finish connecting in your browser.</span>
           <Button
             onClick={() => void run(async () => {

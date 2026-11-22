@@ -236,7 +236,7 @@ function PassDigest({ passId }: { passId: string }) {
         ) : (
           <ChevronRight size={11} className="text-muted-foreground flex-shrink-0" />
         )}
-        <span className="flex-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="flex-1 text-[10px] font-semibold text-muted-foreground">
           Triage {timeAgo(pass.completedAt ?? pass.createdAt)}
         </span>
         {unseen && <span className="w-1.5 h-1.5 rounded-full bg-primary/70" />}
@@ -260,7 +260,7 @@ function PassDigest({ passId }: { passId: string }) {
 
           {auto.length > 0 && (
             <div className="pt-1 border-t border-border/60">
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-0.5">
+              <p className="text-[11px] leading-[1.4] font-medium text-muted-foreground/60 mb-0.5">
                 Handled automatically
               </p>
               {auto.map((d) => <DigestDecisionRow key={d.id} decision={d} />)}

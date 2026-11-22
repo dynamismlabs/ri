@@ -15,7 +15,7 @@ export function TeamGate({ title, children, footer }: { title: string; children:
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-[400px]">
-        <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{APP_NAME}</p>
+        <p className="mb-6 text-[11px] font-semibold text-muted-foreground">{APP_NAME}</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
         <div className="mt-4 space-y-4 text-sm text-muted-foreground">{children}</div>
         {footer && <div className="mt-8 text-xs text-muted-foreground/80">{footer}</div>}

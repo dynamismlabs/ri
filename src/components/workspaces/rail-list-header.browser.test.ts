@@ -60,7 +60,7 @@ beforeAll(async () => {
         const [tab,setTab]=useState('workspace');
         return <aside className="w-[256px] border-r border-border bg-background">
           <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}><RailListHeader tab={tab}/><Pick/></RailListRoot></WorkspaceSelectionProvider>
-          <span data-group-label className="text-[8.5px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Pinned</span>
+          <span data-group-label className="text-[11px] leading-[1.4] font-medium text-muted-foreground">Pinned</span>
         </aside>;
       }
       createRoot(document.getElementById('root')).render(

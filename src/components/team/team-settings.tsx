@@ -99,7 +99,7 @@ export function TeamSettings() {
 function Section({ title, children, hint }: { title: string; children: ReactNode; hint?: string }) {
   return (
     <section className="min-w-0">
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <h3 className="text-[11px] font-semibold text-muted-foreground">{title}</h3>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       <div className="mt-2 space-y-2">{children}</div>
     </section>

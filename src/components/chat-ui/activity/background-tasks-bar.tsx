@@ -172,7 +172,7 @@ function BackgroundTasksSheet({
           />
         ) : (
           <>
-            <SheetHeader className="border-b">
+            <SheetHeader divider>
               <SheetTitle>Background tasks</SheetTitle>
             </SheetHeader>
             <ul className="flex-1 overflow-y-auto">
@@ -271,7 +271,7 @@ function TaskDetail({
   const detail = deriveTaskDetail(events, task);
   return (
     <>
-      <SheetHeader className="gap-2 border-b">
+      <SheetHeader divider className="gap-2">
         <Button
           type="button"
           onClick={onBack}
@@ -402,7 +402,7 @@ function StopButton({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+      <div className="mb-1 text-[10px] font-medium text-muted-foreground/70">
         {label}
       </div>
       {children}

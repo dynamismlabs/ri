@@ -39,7 +39,7 @@ export function SearchPalette({ open, onOpenChange, query, onQueryChange, search
     <VisuallyHidden.Root><DialogPrimitive.Title>Search</DialogPrimitive.Title><DialogPrimitive.Description>Find work in Ri</DialogPrimitive.Description></VisuallyHidden.Root>
     <OverlayScrim className="absolute inset-0" onClick={() => onOpenChange(false)}/>
     <OverlaySurface kind="dialog" padding="none" data-slot="dialog-content" className="relative mx-auto mt-[15vh] w-[min(42rem,calc(100%-16px))] max-w-2xl overflow-hidden">
-      <div className="flex items-center gap-3 border-b px-4 py-3"><Search size={16} className="shrink-0 text-muted-foreground"/><Command.Input ref={inputRef} value={query} onValueChange={onQueryChange} placeholder={placeholder} className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none"/>{hasQuery && fetching && <Loader2 size={14} className="animate-spin"/>}{typeFilter && <span className="text-[9px] uppercase text-primary">{typeFilter}</span>}<IconButton
+      <div className="flex items-center gap-3 border-b px-4 py-3"><Search size={16} className="shrink-0 text-muted-foreground"/><Command.Input ref={inputRef} value={query} onValueChange={onQueryChange} placeholder={placeholder} className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none"/>{hasQuery && fetching && <Loader2 size={14} className="animate-spin"/>}{typeFilter && <span className="text-[11px] leading-[1.4] font-medium text-primary">{typeFilter}</span>}<IconButton
         onClick={() => onOpenChange(false)}
         label="Close search"
         variant="ghost"
@@ -89,7 +89,7 @@ function SearchResultItem({
           {result.entityType === 'note' && result.kind === 'decision' ? (
             <DecisionLabel kind="decision" className="py-0 text-[8px]" />
           ) : (
-            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            <span className="text-[8px] font-bold text-muted-foreground/60">
               {result.entityType}
             </span>
           )}

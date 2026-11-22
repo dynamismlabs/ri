@@ -14,7 +14,7 @@ export function ApiTransportSettings() {
       <NativeSelect aria-label="Connection transport" value={mode} onChange={event => setTransportMode(event.target.value === 'websocket' ? 'websocket' : 'http')}
         className="w-auto">
         <option value="websocket">WebSocket (default)</option>
-        <option value="http">HTTP</option>
+        <option value="http">{'HTTP'}</option>
       </NativeSelect>
       <p role="status" className="text-[11px] text-muted-foreground">
         {mode === 'http' ? 'Using HTTP.' : status.state === 'websocket' ? 'WebSocket connected.' : status.state === 'connecting' ? 'Connecting to WebSocket.' : status.reason ?? 'Using HTTP until WebSocket connects.'}

@@ -456,11 +456,11 @@ export function NotificationsSection() {
 
       {/* 2. Add a channel */}
       <div className="space-y-3">
-        <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Add a channel</h2>
+        <h2 className="text-[10px] font-semibold text-muted-foreground">Add a channel</h2>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {/* Web push */}
           {desktopViewer ? (
-            <div className="rounded-xl border border-border p-3">
+            <div className="ri-notifications-section-frame rounded-xl border border-border p-3">
               <div className="text-xs font-semibold">Phone notifications</div>
               <p className="mt-1 text-[11px] text-muted-foreground">Open Ri on your phone to enable browser push there.</p>
             </div>
@@ -511,7 +511,7 @@ export function NotificationsSection() {
                     </SelectField>
                     <SelectContent>
                       {telegramConns.map((c) => (
-                        <SelectItem key={c.id} value={c.id} className="text-xs">
+                        <SelectItem key={c.id} value={c.id} className="">
                           {c.label ?? c.accountId}
                         </SelectItem>
                       ))}
@@ -558,7 +558,7 @@ export function NotificationsSection() {
                       <div className="space-y-4 border-t border-border/40 pt-4">
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between">
-                            <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            <label className="text-[10px] font-semibold text-muted-foreground">
                               Chat ID
                             </label>
                             <Button
@@ -633,7 +633,7 @@ export function NotificationsSection() {
       {channels.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Channels</h2>
+            <h2 className="text-[10px] font-semibold text-muted-foreground">Channels</h2>
             <Badge appearance="soft" >
               {channels.length} total
             </Badge>
@@ -713,7 +713,7 @@ export function NotificationsSection() {
 
                   {/* Inline rename */}
                   <div className="mt-2.5 flex items-center gap-2 border-t border-border/40 pt-2.5">
-                    <span className="w-10 shrink-0 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <span className="w-10 shrink-0 text-[10px] font-semibold text-muted-foreground">
                       Name
                     </span>
                     <Field
@@ -741,14 +741,14 @@ export function NotificationsSection() {
       {channels.length > 0 && (
         <div className="space-y-3">
           <div>
-            <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Routing</h2>
+            <h2 className="text-[10px] font-semibold text-muted-foreground">Routing</h2>
             <p className="text-[11px] text-muted-foreground">Pick which events each channel delivers.</p>
           </div>
           <Card padding="none" className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr>
-                  <th className="p-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Event</th>
+                  <th className="p-3 text-[10px] font-semibold text-muted-foreground">Event</th>
                   {channels.map((c) => (
                     <Tip key={c.id} label={channelLabel(c)}>
                       <th className={cn('p-2 align-bottom', !c.enabled && 'opacity-50')}>
@@ -808,7 +808,7 @@ export function NotificationsSection() {
           Route outcomes from automated agent triggers directly to your channels.
         </p>
         {digests.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border py-6 text-center text-xs text-muted-foreground">
+          <div className="ri-notifications-section-frame rounded-xl border border-dashed border-border py-6 text-center text-xs text-muted-foreground">
             No scheduled digests yet.
           </div>
         ) : (
@@ -822,7 +822,7 @@ export function NotificationsSection() {
                   </Badge>
                 </div>
                 <div className="space-y-2 border-t border-border/30 pt-3">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Deliver to</div>
+                  <div className="text-[10px] font-semibold text-muted-foreground">Deliver to</div>
                   {channels.length === 0 ? (
                     <p className="text-xs italic text-muted-foreground">Add a channel to route reports.</p>
                   ) : (

@@ -79,14 +79,14 @@ export function CreateMenu() {
               size="sm"
               className="flex shrink-0 items-center gap-1"
             >
-              <Plus size={14} className="shrink-0" /> <span className="hud-create-label uppercase">Create</span>
+              <Plus size={14} className="shrink-0" /> <span className="hud-create-label">Create</span>
             </Button>
           </Tip>
         </PopoverTrigger>
         <PopoverContent
           align="end"
           sideOffset={8}
-          className="w-[240px] p-1.5"
+          className="w-[240px]"
           // Each item here navigates into a new surface (task/note slideout,
           // area modal, quick capture) that focuses its own field. Don't let the
           // popover snap focus back to the CREATE trigger as it closes, or it
@@ -160,7 +160,7 @@ export function CreateMenu() {
             <Plus size={15} className="shrink-0 text-muted-foreground" /> Connect a service
           </MenuAction>
           <MenuAction type="button" disabled={newSkill.isPending} onClick={() => { setOpen(false); newSkill.start(); }}
-            className="flex w-full items-center gap-2.5 text-left disabled:opacity-50">
+            className="flex w-full items-center gap-2.5 text-left">
             <Plus size={15} className="shrink-0 text-muted-foreground" /> New skill
           </MenuAction>
           <MenuAction type="button" onClick={() => { setOpen(false); openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.mcpServer }); }}

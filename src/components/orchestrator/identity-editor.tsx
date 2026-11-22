@@ -222,7 +222,7 @@ export function IdentityEditor({
       <ColorRow color={draft.color} disabled={!!draft.image} onPick={(color) => set({ color })} />
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Ideas</span>
+        <span className="text-[10px] font-semibold text-muted-foreground/70">Ideas</span>
         <div
           className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1.5 [scrollbar-width:thin]"
           style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }}
@@ -316,7 +316,7 @@ function Swatch({
 }) {
   return (
     <Tip label={label}>
-      <button data-slot="action-button" data-variant="ghost"
+      <button data-native-action="ri-identity-swatch"
         type="button"
         role="radio"
         aria-checked={selected}

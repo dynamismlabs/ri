@@ -25,7 +25,7 @@ export function HostAvailability() {
   if (service.data?.platform === 'win32') return <p className="text-xs text-muted-foreground">Keep Ri open to use it from another device. Keeping Windows awake is not available in this preview.</p>;
   return <section className="space-y-3">
     <h3 className="text-[12px] font-medium">Host availability</h3>
-    <div className="space-y-3 rounded-lg border p-3">
+    <div className="ri-host-availability-frame space-y-3 rounded-lg border p-3">
       <div className="flex items-center justify-between gap-3">
         <div><p className="text-sm font-medium">Keep the host awake while plugged in</p><p className="text-xs text-muted-foreground">Applies to the device running your Ri server, including when the desktop app is closed or quit. Its screen can still sleep.</p></div>
         <Switch aria-label="Keep the host awake while plugged in" checked={status?.enabled ?? false} disabled={busy || !managed || !owner || !status || !!query.error || !!service.error || status.phase === 'unsupported'} onCheckedChange={enabled => void change(enabled)} />

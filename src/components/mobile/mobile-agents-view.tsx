@@ -550,7 +550,7 @@ function MobileChatRow({ session, agentName, waitingOn, inactive = false }: Mobi
       type="button"
       onClick={() => openExecution(session.id)}
       data-chat-row={session.id}
-      className={cn("w-full flex items-start gap-2 text-left", inactive && !isActive && "opacity-60")}
+      muted={inactive && !isActive} className="w-full flex items-start gap-2 text-left"
     >
       <span className="flex h-[18px] w-4 flex-shrink-0 items-center justify-center">
         {(isPending || unread) && <span className="sr-only">{isPending ? 'Waiting on you: ' : 'Unread: '}</span>}

@@ -33,7 +33,7 @@ function ChatHeaderBar({
       {/* Who you're talking to, the same name the rail's home row shows. */}
       <span className="mr-auto flex min-w-0 items-center gap-1.5 pl-0.5">
         <OrchestratorAvatar size="xs" />
-        <span className="truncate text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+        <span className="truncate text-[9.5px] font-bold text-muted-foreground">
           {name}
         </span>
       </span>

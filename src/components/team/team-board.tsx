@@ -57,7 +57,7 @@ export function TeamBoard({ fullPage = false }: { fullPage?: boolean }) {
           ) : null;
         }}
         filterControls={
-          <DropdownMenuCheckboxItem checked={nav.mine} onCheckedChange={checked => nav.setMine(checked)} className="gap-2 text-xs">
+          <DropdownMenuCheckboxItem checked={nav.mine} onCheckedChange={checked => nav.setMine(checked)} className="gap-2">
             <UserRoundCheck className="size-3.5" aria-hidden />Assigned to me
           </DropdownMenuCheckboxItem>
         }

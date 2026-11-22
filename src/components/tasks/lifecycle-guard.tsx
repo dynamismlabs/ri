@@ -257,7 +257,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
                   </div>
                   {w.otherTasks.length > 0 && (
                     <div className="mt-1 ml-5 space-y-0.5">
-                      <div className="text-[10px] uppercase tracking-wide text-amber-600 dark:text-amber-400">Stopping also affects</div>
+                      <div className="text-[10px] text-amber-600 dark:text-amber-400">Stopping also affects</div>
                       {w.otherTasks.map((t) => (
                         <div key={t.id} className="flex items-center gap-1.5 text-muted-foreground">
                           <ListTree size={10} className="flex-shrink-0" />

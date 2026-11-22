@@ -303,7 +303,7 @@ function DiffBody({
   return (
     <div className="space-y-4">
       {(titleChanged || bodyChanged) && viewMode === 'split' && (
-        <div className="flex text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/50">
+        <div className="flex text-[10px] font-semibold text-muted-foreground/50">
           <span className="flex-1">Before</span>
           <span className="flex-1 pl-3">After</span>
         </div>
@@ -311,21 +311,21 @@ function DiffBody({
 
       {titleChanged && (
         <section>
-          <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Title</h3>
+          <h3 className="mb-1.5 text-[11px] font-semibold text-muted-foreground/70">Title</h3>
           {renderDiff(str(before.title), str(after.title))}
         </section>
       )}
 
       {bodyChanged && (
         <section>
-          <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Body</h3>
+          <h3 className="mb-1.5 text-[11px] font-semibold text-muted-foreground/70">Body</h3>
           {renderDiff(str(before.body), str(after.body))}
         </section>
       )}
 
       {changedProps.length > 0 && (
         <section>
-          <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">Properties</h3>
+          <h3 className="mb-1.5 text-[11px] font-semibold text-muted-foreground/70">Properties</h3>
           <div className="space-y-1">
             {changedProps.map((f) => (
               <div key={String(f.key)} className="flex items-baseline gap-2 text-[12px]">

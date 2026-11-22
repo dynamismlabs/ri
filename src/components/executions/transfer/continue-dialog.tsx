@@ -61,7 +61,7 @@ export function ContinueDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <DialogBody className="space-y-3 text-[12.5px]">
+        <DialogBody compact className="space-y-3 ">
           {isLoading ? (
             <p className="flex items-center gap-2 text-muted-foreground">
               <Loader2 size={12} className="animate-spin" /> Looking at the work on {from}…

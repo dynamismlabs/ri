@@ -572,7 +572,7 @@ export function RemoteBaseUrlSection() {
       </div>
 
       <div className="pt-1 space-y-0.5">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50">Examples</p>
+        <p className="text-[10px] text-muted-foreground/50">Examples</p>
         <ul className="text-[11px] text-muted-foreground/60 font-mono space-y-0.5">
           <li>https://{APP_SHORT_ID}.example.com <span className="font-sans text-muted-foreground/50">(tunnel on 443)</span></li>
           <li>http://mac.tail-scale.ts.net:4224 <span className="font-sans text-muted-foreground/50">(Tailscale MagicDNS)</span></li>

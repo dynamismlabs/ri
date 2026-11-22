@@ -24,7 +24,7 @@ export function DesktopControls() {
     finally { setOpening(false); }
   };
 
-  return <section aria-label="Desktop settings on this computer" className="space-y-3 rounded-lg border border-border p-3">
+  return <section aria-label="Desktop settings on this computer" className="ri-desktop-controls-frame space-y-3 rounded-lg border border-border p-3">
     <div>
       <h3 className="text-sm font-medium">This computer</h3>
       <p className="mt-1 text-xs text-muted-foreground">Enable agents on this computer, manage its connection to Ri, and choose how it starts.</p>

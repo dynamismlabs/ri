@@ -1,0 +1,2 @@
+html:root [data-slot="row-actions"]:focus-within { opacity: 1; }
+html:root [data-slot="row-actions"] button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

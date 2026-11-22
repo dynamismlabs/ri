@@ -256,7 +256,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       )}
 
       {(p.method === 'oauth2' || registered) && p.configured && canConnect && (
-        <section className="rounded-xl border border-border/70">
+        <section className="ri-provider-detail-frame-plain rounded-xl border border-border/70">
           <MenuAction density="comfortable"
             type="button"
             aria-expanded={props.advancedOpen}

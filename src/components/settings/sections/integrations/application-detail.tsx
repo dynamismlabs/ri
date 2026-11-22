@@ -394,7 +394,7 @@ function PendingSignIn({ attemptId, appName, onDone }: { attemptId: string; appN
     }
   }, [status, failure, onDone]);
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+    <div className="ri-application-detail-frame flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
       <span className="flex items-center gap-2 text-xs"><Loader2 size={13} className="animate-spin text-muted-foreground" /> Finish signing in to {appName} in your browser.</span>
       <Button
         onClick={() => void m.cancelAttempt.mutateAsync({ attemptId }).finally(() => onDone({ status: 'cancelled', error: 'Cancelled.' }))}
@@ -617,7 +617,7 @@ function ExistingAccounts({ applicationId, sources, onChanged, onError }: {
   const pending = (discovered.data ?? []).filter(account => !account.imported && account.status === 'ACTIVE');
   if (!sourceId) return null;
   return (
-    <section className="rounded-xl border border-border/70">
+    <section className="ri-application-detail-frame-plain rounded-xl border border-border/70">
       <MenuAction density="comfortable"  type="button" aria-expanded={open} onClick={() => setOpen(value => !value)} className="flex w-full items-center gap-3 text-left">
         <ExternalLink size={14} className="shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1">
@@ -632,7 +632,7 @@ function ExistingAccounts({ applicationId, sources, onChanged, onError }: {
             <Select value={sourceId} onValueChange={setPicked}>
               <SelectField aria-label="Source" className="mb-1 w-fit"><SelectValue /></SelectField>
               <SelectContent>
-                {sources.map(source => <SelectItem key={source.id} value={source.id} className="text-xs">{source.label}</SelectItem>)}
+                {sources.map(source => <SelectItem key={source.id} value={source.id} className="">{source.label}</SelectItem>)}
               </SelectContent>
             </Select>
           )}

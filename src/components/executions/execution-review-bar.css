@@ -1,0 +1,3 @@
+html:root [data-slot="review-bar"] { padding: 5px 5px 5px 14px; border-color: transparent; border-radius: 16px; background-color: var(--composer); box-shadow: var(--bar-shadow); }
+html:root [data-slot="review-bar-title"] { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+html:root [data-slot="review-bar"][data-state="unreviewed"] [data-slot="review-bar-title"]::before { content: ''; width: 7px; height: 7px; border-radius: 999px; background-color: var(--attention); }

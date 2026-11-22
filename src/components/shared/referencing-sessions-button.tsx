@@ -68,7 +68,7 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
           collisionPadding={12}
           className="z-50 w-[min(20rem,calc(100vw-1.5rem))] pointer-events-auto outline-none"
         >
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold border-b border-border">
+          <div className="px-3 py-2 text-[10px] text-muted-foreground/70 font-semibold border-b border-border">
             Referenced in {count} session{count === 1 ? '' : 's'}
           </div>
           <ul className="max-h-[300px] overflow-y-auto py-1">

@@ -1,0 +1,4 @@
+@media (max-width: 767px) { html:root [data-slot="work-chain"] { min-width: 0; gap: 8px; } }
+@media (max-width: 767px) { html:root [data-slot="work-chain-step"] { min-width: 0; flex: 1 1 0; } }
+@media (max-width: 767px) { html:root [data-slot="work-chain-arrow"] { min-width: 20px; flex: 0 0 20px; padding-top: 37px; } }
+@media (max-width: 767px) { html:root [data-slot="work-chain-step"] > dt { min-height: 42px; line-height: 14px; } }

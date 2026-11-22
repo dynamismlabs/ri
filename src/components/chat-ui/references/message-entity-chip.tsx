@@ -122,9 +122,9 @@ export function TeamRecordChip({ kind, id, view, tone = 'surface' }: { kind: Rem
   return (
     <Tip label={record?.reason ?? (record?.team ? `${record.label}, in ${record.team}` : record?.label ?? 'Loading')} onlyWhenTextHidden={!record?.reason}>
       {view && record?.opens ? (
-        <InlineAction appearance="chip" bubble={chip.bubble} type="button" onClick={() => open(kind, id, view)} className={cn(chip.chip, dimmed && "opacity-70")}>{content}</InlineAction>
+        <InlineAction appearance="chip" bubble={chip.bubble} type="button" onClick={() => open(kind, id, view)} dimmed={dimmed} className={chip.chip}>{content}</InlineAction>
       ) : (
-        <InlineAction asChild appearance="chip" bubble={chip.bubble}><span className={cn(chip.chip, dimmed && 'opacity-70')}>{content}</span></InlineAction>
+        <InlineAction asChild appearance="chip" bubble={chip.bubble} dimmed={dimmed}><span className={chip.chip}>{content}</span></InlineAction>
       )}
     </Tip>
   );
@@ -174,7 +174,7 @@ function TaskChip({
       <InlineAction appearance="chip" bubble={look.bubble}
         type="button"
         onClick={() => onOpen?.(marker)}
-        className={cn(look.chip, !task && "opacity-70")}
+        dimmed={!task} className={look.chip}
       >
         <Icon size={11} className={look.icon} />
         <span className="self-baseline text-[11px] truncate max-w-[200px]">{title}</span>
@@ -202,7 +202,7 @@ function NoteChip({
       <InlineAction appearance="chip" bubble={look.bubble}
         type="button"
         onClick={() => onOpen?.(marker)}
-        className={cn(look.chip, !note && "opacity-70")}
+        dimmed={!note} className={look.chip}
       >
         <StickyNote size={11} className={look.icon} />
         <span className="self-baseline text-[11px] truncate max-w-[200px]">{title}</span>

@@ -68,7 +68,7 @@ export function UnreadRow() {
       >
         <SessionHoverProvider>
           <div className="flex min-h-8 flex-shrink-0 items-center gap-2 border-b border-border/40 px-3">
-            <span className="flex-1 text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Unread</span>
+            <span className="flex-1 text-[11px] leading-[1.4] font-medium text-muted-foreground">Unread</span>
             <AgentFilter
               agents={waitingAgents}
               value={agent}

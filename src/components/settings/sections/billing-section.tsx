@@ -41,7 +41,7 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">Monthly budget</p>
         {unlimited && (
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Unlimited</span>
+          <span className="text-[10px] font-medium text-muted-foreground/70">Unlimited</span>
         )}
       </div>
       <p className="text-[11px] text-muted-foreground/60">

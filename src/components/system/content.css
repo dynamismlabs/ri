@@ -198,3 +198,11 @@
 .ri-meta-item:is([data-kind='deadline'], [data-kind='entity']) { font-weight: 500; }
 
 .ri-inline-action:not(.ri-inline-action--chip)[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { color: var(--control-ink); }
+
+.ri-content--dimmed:not(:disabled, [aria-disabled='true'], [data-disabled]) { opacity: .7; }
+.ri-card--dragging:not(:disabled, [aria-disabled='true']) { opacity: .4; }
+.ri-menu-action--muted:not(:disabled, [aria-disabled='true'], [data-disabled]) { opacity: .6; }
+.ri-menu-action--reveal { opacity: 0; }
+.ri-menu-action--reveal:hover { opacity: 1; }
+.ri-inline-action--control { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; }
+.ri-inline-action.ri-inline-action--control:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: color-mix(in oklab, var(--muted) 50%, transparent); }

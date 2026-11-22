@@ -182,7 +182,7 @@ function DateGroups({
     <>
       {groups.map((group) => (
         <section key={group.id} className="flex flex-col">
-          <h3 className="px-3 pt-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+          <h3 className="px-3 pt-2 pb-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
             {group.label}
             <span className="ml-1.5 text-muted-foreground/50 font-normal lowercase tracking-normal">
               {group.sessions.length}

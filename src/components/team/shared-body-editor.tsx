@@ -254,11 +254,11 @@ function CompareDialog({ open, onOpenChange, theirs, mine }: { open: boolean; on
         </DialogHeader>
         <div ref={scroll} className="grid max-h-[60vh] grid-cols-1 gap-3 overflow-y-auto md:grid-cols-2">
           <section>
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Theirs (shared now)</h3>
+            <h3 className="mb-1 text-[11px] font-semibold text-muted-foreground">Theirs (shared now)</h3>
             <pre className="whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs">{theirs || 'Empty'}</pre>
           </section>
           <section>
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Yours (kept here)</h3>
+            <h3 className="mb-1 text-[11px] font-semibold text-muted-foreground">Yours (kept here)</h3>
             <pre className="whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs">{mine || 'Empty'}</pre>
           </section>
         </div>

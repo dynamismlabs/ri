@@ -80,7 +80,7 @@ export function OpenCodeProviderPanel() {
       />
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (
-          <div key={provider.id} className="rounded-md border border-border/70">
+          <div key={provider.id} className="ri-opencode-provider-panel-frame-plain rounded-md border border-border/70">
             <MenuAction
               type="button"
               onClick={() => setExpanded(expanded === provider.id ? null : provider.id)}

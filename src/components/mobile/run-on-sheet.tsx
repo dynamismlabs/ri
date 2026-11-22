@@ -55,7 +55,7 @@ export function RunOnSheet({
                       type="button"
                       disabled={!choice.ready && !canSetUp}
                       onClick={() => (canSetUp ? setSettingUp({ id: choice.deviceId, name: choice.name }) : onPick(choice.deviceId))}
-                      className="flex flex-1 items-start gap-3 text-left disabled:opacity-50"
+                      className="flex flex-1 items-start gap-3 text-left"
                     >
                       <Laptop size={16} className="mt-0.5 flex-shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1">

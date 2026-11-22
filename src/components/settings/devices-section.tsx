@@ -497,7 +497,7 @@ function DeviceCard({
           <div className="min-w-0 flex-1 space-y-0.5">
             <div className="flex flex-wrap items-center gap-1.5">
               <p className="text-sm font-medium text-foreground truncate">{device.name}</p>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">{kindLabel(device.kind)}</span>
+              <span className="text-[10px] text-muted-foreground/70">{kindLabel(device.kind)}</span>
               {device.isHome && <Marker tone="agents">Runs Ri and agents</Marker>}
               {!device.isHome && device.runsAgents && <Marker tone="agents">Runs agents</Marker>}
               {device.isThisDevice && <Marker>This device</Marker>}

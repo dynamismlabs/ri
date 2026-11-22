@@ -399,7 +399,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
 
       {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
 
-      <FormActions className="flex items-center justify-end gap-3 pt-2">
+      <FormActions className="flex items-center justify-end gap-3">
         {trigger ? (
           dirty && (
             <Button

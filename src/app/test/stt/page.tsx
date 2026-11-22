@@ -276,7 +276,7 @@ export default function SttBenchPage() {
         {/* Results */}
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <h2 className="text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wider">
+            <h2 className="text-muted-foreground mb-3 text-xs font-medium">
               V3: Multilingual (25 languages)
             </h2>
             <div className="flex flex-col gap-3">
@@ -295,7 +295,7 @@ export default function SttBenchPage() {
           </div>
 
           <div>
-            <h2 className="text-muted-foreground mb-3 text-xs font-medium uppercase tracking-wider">
+            <h2 className="text-muted-foreground mb-3 text-xs font-medium">
               V2: English optimized
             </h2>
             <div className="flex flex-col gap-3">

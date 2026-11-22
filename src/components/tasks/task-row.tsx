@@ -491,7 +491,7 @@ export function TaskRow({
             <span />
           </PopoverTrigger>
           <PopoverContent padding="sm" className="w-56" align="end">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Blocked on</p>
+            <p className="text-[10px] font-bold text-muted-foreground mb-1.5">Blocked on</p>
             <form onSubmit={(e) => {
               e.preventDefault();
               const val = blockInputRef.current?.value.trim();

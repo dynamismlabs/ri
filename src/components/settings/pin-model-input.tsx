@@ -51,7 +51,7 @@ export function PinModelInput({
     // already forms (the trigger composer) and inside popovers that don't
     // portal. A nested form tag is discarded by the parser, which would hand
     // the submit to the OUTER form and create a trigger instead of a pin.
-    <div className="mb-1 rounded-md border border-dashed border-border px-2 py-1.5">
+    <div className="ri-pin-model-input-frame mb-1 rounded-md border border-dashed border-border px-2 py-1.5">
       <div className="flex items-center gap-1.5">
         <Field
           value={value}

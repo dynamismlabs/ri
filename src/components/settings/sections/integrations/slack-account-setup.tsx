@@ -40,7 +40,7 @@ export function SlackAccountSetup({ redirectUri, callbackFields, credentials, sa
         </div>
         {!redirectUri && <p role="status" className="text-muted-foreground">Ri’s callback address is unavailable. Reload these settings before creating the app.</p>}
         <p className="text-xs text-muted-foreground">Slack requests account permissions for reading conversations, sending messages and editing content. You will review access when signing in.</p>
-        <details className="space-y-3 rounded-lg border border-border/60 p-3">
+        <details className="ri-slack-account-setup-frame-plain space-y-3 rounded-lg border border-border/60 p-3">
           <summary className="cursor-pointer font-medium">Use an app I already created</summary>
           <p className="text-muted-foreground">Open your app using <strong>Open existing Slack apps</strong> above. You can reuse the internal app you use to talk to Ri in Slack.</p>
           <p className="text-muted-foreground">In <strong>OAuth &amp; Permissions → Redirect URLs</strong>, add this callback address and save it.</p>

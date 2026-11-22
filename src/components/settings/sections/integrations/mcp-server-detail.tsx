@@ -197,7 +197,7 @@ export function McpServerDetail({
             Turn off tools agents should never call. Ask first pauses each call for approval. Individual switches override the server setting.
           </p>
           <Card padding="none" density="compact" className="overflow-hidden">
-            <div className="grid grid-cols-[1fr_2.5rem_3.5rem_1.25rem] items-center gap-x-2 px-3 pb-1 pt-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="grid grid-cols-[1fr_2.5rem_3.5rem_1.25rem] items-center gap-x-2 px-3 pb-1 pt-1.5 text-[11px] leading-[1.4] font-medium text-muted-foreground">
               <span>Tool</span>
               <span className="text-center">On</span>
               <span className="text-center">Ask first</span>
@@ -416,7 +416,7 @@ function McpAuthChoice({ detection, url, selected, busy, onChoose, fields }: {
   return (
     <div className="space-y-1.5">
       <div className="flex min-h-4 flex-wrap items-center gap-x-2 gap-y-1">
-        <span id="mcp-auth-label" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Authentication</span>
+        <span id="mcp-auth-label" className="text-[10px] font-semibold text-muted-foreground">Authentication</span>
         {!detected && (
           <span role="status" className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="shrink-0 animate-spin" aria-hidden />

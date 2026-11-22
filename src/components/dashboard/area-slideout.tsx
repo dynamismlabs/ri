@@ -193,7 +193,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
           data-slot="sheet-content" data-side="right"
           ref={containerRef}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out outline-none',
+            "fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out",
             isVisible ? 'translate-x-0' : 'translate-x-full'
           )}
           style={{ width: `min(${width}px, 100vw)` }}
@@ -286,7 +286,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   {/* Area header */}
                   <div className="px-8 pt-4 pb-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60 uppercase">
+                      <span className="text-[10px] font-bold text-muted-foreground/60">
                         Area
                       </span>
                       <span className="text-muted-foreground/30">·</span>
@@ -357,7 +357,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   <div className="px-8 pb-6">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckSquare size={13} className="text-muted-foreground/50" />
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                      <h3 className="text-[10px] font-bold text-muted-foreground/60">
                         Tasks
                       </h3>
                     </div>
@@ -437,7 +437,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       {doneTasks.length > 0 && (
                         <>
                           <div className="pt-2 pb-1 pl-3">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+                            <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground/40">
                               Completed ({doneTasks.length})
                             </span>
                           </div>
@@ -471,7 +471,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   <div className="px-8 pb-8">
                     <div className="flex items-center gap-2 mb-2">
                       <FileText size={13} className="text-muted-foreground/50" />
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                      <h3 className="text-[10px] font-bold text-muted-foreground/60">
                         Notes
                       </h3>
                     </div>

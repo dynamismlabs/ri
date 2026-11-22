@@ -170,7 +170,7 @@ export function ConversationsSection() {
       variant="secondary"
       size="sm"
     >Retry</Button></p>}
-    {connections.map(connection => <section key={connection.id} id={`conversation-${connection.id}`} ref={connection.id === newConnectionId ? savedConnectionRef : undefined} tabIndex={-1} className="scroll-mt-4 space-y-3 rounded-lg border p-4 focus:outline-none focus:ring-2 focus:ring-ring" aria-label={connection.name}>
+    {connections.map(connection => <section key={connection.id} id={`conversation-${connection.id}`} ref={connection.id === newConnectionId ? savedConnectionRef : undefined} tabIndex={-1} className="ri-conversations-section-frame scroll-mt-4 space-y-3 rounded-lg border p-4 focus:outline-none focus:ring-2 focus:ring-ring" aria-label={connection.name}>
       {connection.id === newConnectionId && <div role="status" className="space-y-1 rounded-md bg-muted p-3">
         <p className="font-medium">{connection.provider === 'slack' ? 'Slack app saved' : 'Buzz connection saved'}</p>
         <p className="text-sm">{connection.name} will talk to {query.data?.agents.find(agent => agent.id === connection.workspaceId)?.name ?? 'your personal orchestrator'} in Ri.</p>
@@ -305,7 +305,7 @@ export function ConversationsSection() {
             <a className="text-sm underline" href="https://api.slack.com/apps" target="_blank" rel="noreferrer">Open Slack apps</a>
           </div>
           <p className="text-sm text-muted-foreground">To create an app, choose <strong>Create New App → From a manifest</strong> in Slack, select your Slack workspace, and paste the copied manifest. If you use Slack’s AI agent wizard instead, choose <strong>Starter agent</strong>.</p>
-          <details className="space-y-2 rounded-md border p-3 text-sm">
+          <details className="ri-conversations-section-frame space-y-2 rounded-md border p-3 text-sm">
             <summary className="cursor-pointer font-medium">Reuse an app connected to my Slack account</summary>
             <p>Open the same app in Slack and select <strong>App Manifest</strong>. Merge Ri’s agent manifest into the existing configuration. Keep your existing <code>oauth_config.redirect_urls</code> and <code>oauth_config.scopes.user</code>.</p>
             <p>Add the manifest’s <code>features</code>, <code>oauth_config.scopes.bot</code> and <code>settings</code> entries, keeping any existing features, scopes and event subscriptions. Save the changes and reinstall the app if Slack requests it, then continue with step 3.</p>
@@ -348,7 +348,7 @@ export function ConversationsSection() {
         >{create.isPending ? 'Connecting…' : 'Connect'}</Button>
       </>}
     </Card>}
-    {buzzSetup && <section className="space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><TextArea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} autoSize /><Button
+    {buzzSetup && <section className="ri-conversations-section-frame space-y-2 rounded-lg border p-4"><h3 className="font-medium">Buzz bridge credentials</h3><p className="text-sm">Save these environment variables for buzz-acp. The connection token is shown once. Install the Ri CLI and Buzz CLI on that computer.</p><TextArea aria-label="Buzz bridge environment" value={buzzSetup} readOnly rows={7} autoSize /><Button
       onClick={() => void navigator.clipboard.writeText(buzzSetup)}
       variant="secondary"
       size="sm"

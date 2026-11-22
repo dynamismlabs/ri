@@ -24,8 +24,8 @@ export function SettingsPanel({ navigation, title, description, children, compac
   bodyClassName?: string;
   onOpenAutoFocus?: (event: Event) => void;
 }) {
-  return <DialogContent padding="none"
-    className={cn('inset-0 m-auto flex max-h-[92dvh] w-full max-w-[calc(100%-1rem)] translate-none flex-col gap-0 overflow-hidden', compact ? 'h-fit sm:max-w-xl' : 'h-[800px] sm:max-w-6xl sm:flex-row')}
+  return <DialogContent padding="none" height={compact ? "fit" : "settings"}
+    className={cn('inset-0 m-auto flex max-h-[92dvh] w-full max-w-[calc(100%-1rem)] translate-none flex-col gap-0 overflow-hidden', compact ? 'sm:max-w-xl' : 'sm:max-w-6xl sm:flex-row')}
     onOpenAutoFocus={onOpenAutoFocus}
   >
     {navigation}
@@ -35,7 +35,7 @@ export function SettingsPanel({ navigation, title, description, children, compac
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <FormFooterHost>
-      <div ref={bodyRef} data-slot="settings-body" data-settings-scroll className={cn('min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-5 pb-5 pt-5', bodyClassName)}>
+      <div ref={bodyRef} data-settings-scroll className={cn('min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden px-5 pb-5 pt-5', bodyClassName)}>
         {children}
       </div>
       </FormFooterHost>

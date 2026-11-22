@@ -118,7 +118,7 @@ export function InteractiveExamples() {
       {accounts.error && <p role="alert" className="text-xs text-destructive">Account status could not load. Use Manage accounts to check your connection.</p>}
       </Card>
       <Dialog open={!!view} onOpenChange={open => { if (!open) setView(null); }}>
-        <DialogContent padding="none" onCloseAutoFocus={event => { event.preventDefault(); launchButton.current?.focus(); }} className="flex h-[92dvh] w-[calc(100%-1rem)] max-w-none flex-col gap-0 overflow-hidden sm:max-w-[calc(100%-2rem)]">
+        <DialogContent height="application" padding="none" onCloseAutoFocus={event => { event.preventDefault(); launchButton.current?.focus(); }} className="flex  w-[calc(100%-1rem)] max-w-none flex-col gap-0 overflow-hidden sm:max-w-[calc(100%-2rem)]">
           <DialogHeader divider padding="lg" closeSpace className="text-left">
             <div className="flex flex-wrap items-center gap-3">
               <Button

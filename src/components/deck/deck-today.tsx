@@ -123,7 +123,7 @@ export function DeckToday({
     <section className="px-4 pt-4 pb-3">
       {/* ── Section header: same grammar as DEADLINES ── */}
       <div className="mb-1.5 flex items-center gap-2 px-1">
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Today</h3>
+        <h3 className="text-[10px] font-bold text-muted-foreground">Today</h3>
         {changeLine && <span className="truncate text-[10px] text-muted-foreground/70">{changeLine}</span>}
         <div className="ml-1 h-px min-w-4 flex-1 bg-border" />
         {hasHistory && (

@@ -513,7 +513,7 @@ export function StreamTriage({ open, onOpenChange }: StreamTriageProps) {
               {groupByPass(proposalList).map((group, i) => (
                 <div key={group.passId ?? `manual-${i}`} className="space-y-2">
                   {groupByPass(proposalList).length > 1 && (
-                    <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 px-1 pt-1">
+                    <p className="text-[11px] leading-[1.4] font-medium text-muted-foreground/60 px-1 pt-1">
                       {group.passId ? `Suggested ${timeAgo(group.decisions[0].createdAt)}` : 'Suggested in chat'}
                     </p>
                   )}
@@ -528,7 +528,7 @@ export function StreamTriage({ open, onOpenChange }: StreamTriageProps) {
           {pending.length > 0 && (
             <div>
               {proposalList.length > 0 && (
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1 px-2">
+                <p className="text-[11px] leading-[1.4] font-medium text-muted-foreground/60 mb-1 px-2">
                   Still waiting
                 </p>
               )}

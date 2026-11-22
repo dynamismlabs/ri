@@ -447,7 +447,7 @@ export function LaunchBrowse({
               {group.toolkitId && (
                 <IntegrationLogo providerId={group.toolkitId} name={group.label} size={11} />
               )}
-              <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground/70">
+              <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
                 {group.label}
               </span>
               {group.isLoading && (

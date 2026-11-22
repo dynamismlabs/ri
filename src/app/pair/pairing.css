@@ -1,0 +1,5 @@
+html:root [data-slot="pairing-mark"] { border-color: transparent; border-radius: 14px; background-image: none; background-color: var(--raised); box-shadow: none; backdrop-filter: none; }
+html:root [data-slot="pairing"] [data-slot="separator"] { background-image: none; background-color: var(--line); }
+html:root [data-native-action="ri-pairing-summary"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; background-color: transparent; }
+html:root [data-native-action="ri-pairing-summary"]:hover:not(:disabled) { background-color: var(--selected); }
+html:root [data-native-action="ri-pairing-summary"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

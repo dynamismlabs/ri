@@ -14,7 +14,7 @@ import { DesktopControls } from '@/components/settings/desktop-controls';
 
 function ShortcutForm({ status, busy, save }: { status: DesktopSettingsStatus['shortcut']; busy: boolean; save(action: DesktopSettingsAction): Promise<void> }) {
   const [accelerator, setAccelerator] = useState(status.accelerator);
-  return <div className="space-y-3 rounded-lg border p-3">
+  return <div className="ri-desktop-settings-frame space-y-3 rounded-lg border p-3">
     <div className="flex items-center justify-between gap-3">
       <div><p className="text-sm font-medium">Capture from any app</p><p className="text-xs text-muted-foreground">Open Quick Capture while Ri runs in the menu bar. Your current document stays open.</p></div>
       <Switch aria-label="Global Quick Capture" disabled={busy} checked={status.enabled} onCheckedChange={enabled => void save({ type: 'shortcut', enabled, accelerator: enabled ? accelerator : status.accelerator })} />
@@ -66,7 +66,7 @@ export function DesktopSettings() {
 export function DesktopPreferenceControls({ status, busy, save }: { status: DesktopSettingsStatus; busy: boolean; save(action: DesktopSettingsAction): Promise<void> }) {
   return <>
       <ShortcutForm key={`${status.shortcut.enabled}:${status.shortcut.accelerator}`} status={status.shortcut} busy={busy} save={save} />
-      <div className="space-y-2 rounded-lg border p-3">
+      <div className="ri-desktop-settings-frame space-y-2 rounded-lg border p-3">
         <div className="flex items-center justify-between gap-3">
           <div><p className="text-sm font-medium">Open Ri quietly when I log in</p><p className="text-xs text-muted-foreground">Start in the menu bar so native notifications and your capture shortcut are available.</p></div>
           <Switch aria-label="Open Ri at login" disabled={busy || !status.login.supported} checked={status.login.enabled} onCheckedChange={enabled => void save({ type: 'login', enabled })} />

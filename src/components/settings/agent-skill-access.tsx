@@ -67,13 +67,13 @@ export function AgentSkillFooter() {
 
   return (
     <section className="min-w-0" aria-label={`${APP_NAME}’s skills`}>
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{APP_NAME}’s skills</h3>
+      <h3 className="text-[11px] font-semibold text-muted-foreground">{APP_NAME}’s skills</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         {HARNESS_NAMES} on this computer have {APP_NAME}’s skills for tasks, notes and the agent browser, so they can use
         your work through the <code className="font-mono">{APP_SHORT_ID}</code> command even before you connect them. Connecting one
         installs them for it. Your projects are never changed.
       </p>
-      <div className="mt-2 flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
+      <div className="ri-agent-skill-access-frame mt-2 flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
         {skill.failed ? (
           <>
             <span className="min-w-0 flex-1 text-destructive">Could not check the skills.</span>

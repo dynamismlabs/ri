@@ -120,7 +120,7 @@ export function PreviewHeader({
               : `Remote: reached via ${providerLabel}.`
           }
         >
-          <StatusBadge appearance="plain" tone={mode === 'local' ? 'info' : 'success'} className="flex h-7 items-center gap-1">
+          <StatusBadge appearance="plain" tone={mode === 'local' ? 'info' : 'success'} className="flex items-center gap-1">
             {mode === 'local' ? <Monitor size={10} /> : <Globe size={10} />}
             {mode === 'local' ? 'Local' : providerLabel}
           </StatusBadge>
@@ -133,7 +133,7 @@ export function PreviewHeader({
           type="button"
           onClick={handleCopy}
           disabled={!url}
-          className="mx-1 flex flex-1 items-center truncate text-left disabled:opacity-50"
+          className="mx-1 flex flex-1 items-center truncate text-left"
         >
           {copied ? 'Copied URL' : url ?? '-'}
         </InlineAction>

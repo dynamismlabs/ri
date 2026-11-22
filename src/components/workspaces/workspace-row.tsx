@@ -331,11 +331,6 @@ export function WorkspaceRow({
 
 type CountVariant = 'working' | 'attention';
 
-const COUNT_VARIANT_CLASSES: Record<CountVariant, string> = {
-  working: 'bg-emerald-500/90 text-white',
-  attention: 'bg-amber-500/90 text-white',
-};
-
 const COUNT_VARIANT_LABELS: Record<CountVariant, string> = {
   working: 'working',
   attention: 'needing attention',
@@ -354,7 +349,7 @@ function CountDot({ variant, count }: { variant: CountVariant; count: number }) 
   return (
     <Tip label={`${count} ${COUNT_VARIANT_LABELS[variant]}`}>
       <StatusBadge tone={({working:"success",attention:"warning"} as const)[variant]} code
-        className={cn("inline-flex items-center justify-center min-w-[14px]", "tabular-nums", COUNT_VARIANT_CLASSES[variant], variant === 'working' && "animate-pulse")}
+        className={cn("inline-flex items-center justify-center min-w-[14px]", "tabular-nums", variant === 'working' && "animate-pulse")}
         aria-label={`${count} ${COUNT_VARIANT_LABELS[variant]}`}
       >
         {count}

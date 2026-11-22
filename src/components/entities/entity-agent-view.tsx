@@ -98,7 +98,7 @@ export function EntityAgentView({
             <>
               <EntityChangeBanner entityType={entityType} entityId={entityId} />
               <div className="flex items-center gap-2 pt-1">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">
+                <span className="text-[10px] font-bold text-muted-foreground/60">
                   {entityType === 'task' ? ((task as TaskRecord).parentId ? 'Subtask' : 'Task') : 'Note'}
                 </span>
                 <span className="text-muted-foreground/30">&middot;</span>

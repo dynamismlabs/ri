@@ -45,7 +45,7 @@ function ActivationSettings({ update, disabled, onAction }: {
     void onAction({ action: 'when-idle', ...(scheduled && result.success ? { window: result.data } : {}) });
   };
 
-  return <div className="space-y-4 rounded-lg border p-4">
+  return <div className="ri-updates-section-frame space-y-4 rounded-lg border p-4">
     <div className="flex items-center justify-between gap-4">
       <div className="space-y-1">
         <Label htmlFor={`${id}-scheduled`}>Use a maintenance window</Label>
@@ -228,7 +228,7 @@ export function UpdatesSection() {
     {update && (inProgress || canFetch) && <WhatIsWaiting update={update} canUse={data.canUseUpdates} disabled={disabled} onAction={action} />}
     {fromCheckout && <p className="text-muted-foreground">This computer builds Ri from {update?.origin.checkout ?? 'a checkout'} when someone runs <code>ri update</code>. Automatic updates apply to published releases.</p>}
     {update && !fromCheckout && !update.configured && <p className="text-muted-foreground">This build has no release publisher configured, so it can&apos;t update itself. Install a published release to enable updates.</p>}
-    {update?.configured && !fromCheckout && update.policy && <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+    {update?.configured && !fromCheckout && update.policy && <div className="ri-updates-section-frame flex items-center justify-between gap-4 rounded-lg border p-4">
       <div className="space-y-1">
         <Label htmlFor={`${id}-automatic`}>Automatic updates</Label>
         <p id={`${id}-automatic-help`} className="text-xs text-muted-foreground">Ri updates itself after a minute of inactivity. It never stops running work, and this applies to every Ri on this computer.</p>
@@ -236,7 +236,7 @@ export function UpdatesSection() {
       <Switch id={`${id}-automatic`} checked={update.policy.auto} disabled={disabled || !data.canUseUpdates} aria-describedby={`${id}-automatic-help`} onCheckedChange={auto => void savePreferences({ auto })} />
     </div>}
     {!data.canUseUpdates && update?.configured && <p className="text-muted-foreground">The owner of this computer manages its updates.</p>}
-    {data.canManage && update && <details className="space-y-4 rounded-lg border p-4">
+    {data.canManage && update && <details className="ri-updates-section-frame space-y-4 rounded-lg border p-4">
       <summary className="cursor-pointer font-medium">Advanced</summary>
       <div className="mt-4 space-y-4">
         {update.configured && !fromCheckout && <div className="flex flex-wrap gap-2">

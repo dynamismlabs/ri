@@ -23,8 +23,8 @@ export function McpPermissionSelect({ value, inheritedLabel, label, busy, onChan
       <SelectValue>{value === null ? inheritedLabel : MCP_POLICY_LABELS[value]}</SelectValue>
     </SelectField>
     <SelectContent position="popper" align="start">
-      <SelectItem value="inherit" className="text-xs">{inheritedLabel}</SelectItem>
-      {MCP_APPROVAL_POLICIES.map(policy => <SelectItem key={policy} value={policy} className="text-xs">{MCP_POLICY_LABELS[policy]}</SelectItem>)}
+      <SelectItem value="inherit" className="">{inheritedLabel}</SelectItem>
+      {MCP_APPROVAL_POLICIES.map(policy => <SelectItem key={policy} value={policy} className="">{MCP_POLICY_LABELS[policy]}</SelectItem>)}
     </SelectContent>
   </Select>;
 }

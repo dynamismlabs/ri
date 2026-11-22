@@ -71,7 +71,7 @@ export const EntityLinkMenuList = forwardRef<SuggestionPopupRef, Props>(
               >
                 <Icon size={13} className="shrink-0 text-muted-foreground" />
                 <span className="truncate flex-1">{label}</span>
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground/60">
+                <span className="text-[10px] text-muted-foreground/60">
                   {item.kind}
                 </span>
               </MenuAction>

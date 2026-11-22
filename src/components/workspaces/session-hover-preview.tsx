@@ -403,7 +403,7 @@ function PreviewMessage({ event, full }: { event: ChatEventRecord; full?: boolea
         {isUser ? <User size={9} /> : <Bot size={9} />}
       </span>
       <div className="flex-1 min-w-0">
-        <div className="text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70 mb-0.5">
+        <div className="text-[11px] leading-[1.4] font-medium text-muted-foreground/70 mb-0.5">
           {isUser ? 'You' : 'Agent'}
         </div>
         {content ? (

@@ -413,7 +413,7 @@ function SectionHeader({ kind, label: named }: { kind: Section; label?: string }
   else if (kind.startsWith('ref:')) label = `In @${kind.slice(4)} · read-only`
   else label = 'Files'
   return (
-    <div className="px-2.5 pt-1.5 pb-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+    <div className="px-2.5 pt-1.5 pb-0.5 text-[11px] leading-[1.4] font-medium text-muted-foreground/60">
       {label}
     </div>
   )

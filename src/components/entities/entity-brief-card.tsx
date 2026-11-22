@@ -126,7 +126,7 @@ export function EntityBriefCard({
 
       {b.open.length > 0 && (
         <div className="mt-3">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">Still open</div>
+          <div className="text-[10px] font-semibold text-muted-foreground/70">Still open</div>
           <ul className="mt-1 space-y-1">
             {b.open.map((o, i) => (
               <li key={i} className="flex gap-2 text-[12.5px] leading-snug text-foreground/85">

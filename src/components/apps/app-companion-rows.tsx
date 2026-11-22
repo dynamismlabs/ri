@@ -30,7 +30,7 @@ export function AppCompanionRows({ chatId }: { chatId: string }) {
   return (
     <>
       <DropdownMenuSeparator />
-      <DropdownMenuLabel className="uppercase tracking-wider">
+      <DropdownMenuLabel className="">
         Beside this chat
       </DropdownMenuLabel>
       {tabs.map((item) => (

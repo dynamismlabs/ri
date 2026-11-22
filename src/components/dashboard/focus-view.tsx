@@ -20,10 +20,10 @@ export function FocusView() {
         <Dialog.Popup className="fixed inset-0 z-50 flex items-center justify-center p-8 outline-none">
           <div className="max-w-2xl w-full">
             <Dialog.Title className="sr-only">Focus Mode</Dialog.Title>
-            <div className={cn(
+            <div className={cn("ri-focus-card", cn(
               'p-6 rounded-2xl bg-card border transition-all duration-500',
               'border-orange-500/40 shadow-2xl shadow-orange-500/10'
-            )}>
+            ))}>
               <div className="flex items-start gap-4">
                 <div className="w-2.5 h-2.5 rounded-full bg-orange-500 mt-2 shadow-[0_0_10px_rgba(249,115,22,0.4)]" />
                 <div className="flex-1">
@@ -31,7 +31,7 @@ export function FocusView() {
                     {focusTask.title}
                   </h2>
                   <div className="flex items-center gap-3 text-[10.5px] font-bold text-muted-foreground">
-                    <span className="uppercase tracking-[0.1em]">{focusTask.project}</span>
+                    <span className="">{focusTask.project}</span>
                   </div>
                   {focusTask.context && (
                     <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">

@@ -469,8 +469,7 @@ export function DeckStack({ items, onComplete, onStart, onNotToday, onFocus, onR
                 {showDivider && (
                   <MenuAction density="compact"
                     onClick={() => setHideBelowIndex(isActiveHidePoint ? null : i)}
-                    className={cn("w-full flex items-center gap-2 group/divider", alwaysVisible || isActiveHidePoint
-    ? "opacity-100" : "opacity-0 hover:opacity-100")}
+                    reveal={!alwaysVisible && !isActiveHidePoint} className="w-full flex items-center gap-2 group/divider"
                   >
                     <div className="flex-1 h-px bg-border/50" />
                     <span className="flex items-center gap-1 text-[9px] leading-none text-muted-foreground/40 group-hover/divider:text-muted-foreground/60 transition-colors shrink-0">

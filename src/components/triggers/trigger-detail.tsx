@@ -157,8 +157,8 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
 
       {trigger.kind === 'webhook' && trigger.webhookPublicId && (
         <section>
-          <h2 className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Webhook endpoint</h2>
-          <code className="block p-3 rounded-md border border-border bg-card text-xs font-mono break-all">
+          <h2 className="text-[11px] text-muted-foreground mb-2">Webhook endpoint</h2>
+          <code className="ri-trigger-secret block p-3 rounded-md border border-border bg-card text-xs font-mono break-all">
             POST /api/webhooks/triggers/{trigger.webhookPublicId}
           </code>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -169,7 +169,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
       )}
 
       <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Recent runs</h2>
+        <h2 className="text-[11px] text-muted-foreground mb-2">Recent runs</h2>
         {recentRuns && recentRuns.length === 0 && <p className="text-sm text-muted-foreground">No runs yet.</p>}
         {recentRuns && recentRuns.length > 0 && (
           <div className="space-y-1">

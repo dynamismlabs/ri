@@ -55,10 +55,10 @@ export function DeadlineBand() {
   const showSoon = soonExpanded || urgent.length === 0;
 
   return (
-    <section data-slot="deadline-band" className="px-4 pt-3">
+    <section className="px-4 pt-3">
       <div data-slot="deadline-head" className="mb-1.5 flex items-center gap-2 px-1">
         <CalendarClock size={12} className="text-amber-600 dark:text-amber-500" />
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
+        <h3 className="text-[10px] font-bold text-amber-600 dark:text-amber-500">
           Deadlines
         </h3>
         <span className="text-[10px] text-muted-foreground">

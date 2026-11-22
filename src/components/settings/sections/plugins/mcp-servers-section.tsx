@@ -183,7 +183,7 @@ export function McpServersSection({ active, navigation }: {
   const visible = servers.filter(server => !server.app && (!q || `${server.displayName} ${server.url}`.toLowerCase().includes(q))).sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   return <div ref={rootRef} className="@container space-y-5">
-    {pendingOAuth && <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-xs"><span>Finish connecting in your browser.</span>
+    {pendingOAuth && <div className="ri-mcp-servers-section-frame flex flex-wrap items-center justify-between gap-2 rounded-lg border p-3 text-xs"><span>Finish connecting in your browser.</span>
       <Button
         disabled={busy}
         onClick={() => run(async () => { await trpcClient.desktop.cancelOAuth.mutate({ body: { id: pendingOAuth } }); setPendingOAuth(null); setAwaitingServer(null); })}
@@ -215,7 +215,7 @@ export function McpServersSection({ active, navigation }: {
         />}
         {visible.length ? <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">{visible.map(server => { const status = mcpTone(server); return <CatalogTile key={server.id} logo={<McpLogo size={36} dim={!server.enabled} />} name={server.displayName}
           subtitle={server.url} tone={status.tone} toneLabel={status.label} onOpen={() => navigate({ kind: 'server', id: server.id })} />; })}</div>
-          : <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center"><Server size={20} className="text-muted-foreground" /><p className="text-xs font-medium">{q ? 'No MCP servers match your search' : 'No MCP servers yet'}</p><p className="text-[11px] text-muted-foreground">{q ? 'Try a name or server URL.' : 'Use Add MCP server above to connect your first one.'}</p></div>}
+          : <div className="ri-mcp-servers-section-frame flex flex-col items-center gap-2 rounded-xl border border-dashed p-6 text-center"><Server size={20} className="text-muted-foreground" /><p className="text-xs font-medium">{q ? 'No MCP servers match your search' : 'No MCP servers yet'}</p><p className="text-[11px] text-muted-foreground">{q ? 'Try a name or server URL.' : 'Use Add MCP server above to connect your first one.'}</p></div>}
       </>}
   </div>;
 }

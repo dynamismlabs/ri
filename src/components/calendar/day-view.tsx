@@ -146,7 +146,7 @@ export function DayView({ date, day, workday, isToday, work }: DayViewProps) {
               {packed.overflow.map((group, i) => (
                 <Popover key={`overflow-${i}`}>
                   <PopoverTrigger asChild>
-                    <button data-slot="action-button"
+                    <button data-native-action="ri-calendar-overflow"
                       type="button"
                       className="absolute z-20 w-1/3 right-2 min-h-5 rounded-md border border-border bg-muted px-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                       style={toStyle(windowPct(group, bounds))}

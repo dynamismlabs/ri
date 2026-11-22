@@ -172,7 +172,7 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
 
           {matches.length > 0 && (
             <>
-              <div className="border-t border-border/60 px-3 py-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <div className="border-t border-border/60 px-3 py-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/60">
                 Add existing
               </div>
               {matches.map((t, i) => {

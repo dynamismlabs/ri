@@ -167,7 +167,7 @@ function PlaceIcon({ kind }: { kind: SkillView['location']['kind'] }) {
 
 function MenuLabel({ children }: { children: React.ReactNode }) {
   return (
-    <DropdownMenuLabel className="uppercase tracking-wider">{children}</DropdownMenuLabel>
+    <DropdownMenuLabel className="">{children}</DropdownMenuLabel>
   );
 }
 

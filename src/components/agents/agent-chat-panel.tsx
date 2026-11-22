@@ -50,7 +50,7 @@ export function AgentChatPanel({
     <div className="flex flex-col h-full min-h-0">
       <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-1 border-b border-border/50">
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{sessionId ? saved?.label ?? 'Chat' : 'Main chat'}</span>
+          <span className="text-[9.5px] font-bold text-muted-foreground">{sessionId ? saved?.label ?? 'Chat' : 'Main chat'}</span>
           {elsewhere && (
             <Tip
               label={

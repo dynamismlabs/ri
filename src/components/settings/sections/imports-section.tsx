@@ -314,7 +314,7 @@ export function ExternalAgentImportPanel() {
           {discovery.error instanceof Error ? discovery.error.message : ''}
         </Callout>
       ) : !hasRows ? (
-        <div className="rounded-lg border border-dashed border-border p-6 text-center">
+        <div className="ri-imports-section-frame rounded-lg border border-dashed border-border p-6 text-center">
           <MessageSquare className="mx-auto size-5 text-muted-foreground" />
           <p className="mt-2 text-sm font-medium text-foreground">{deviceName ? `No chats found on ${deviceName}` : 'No local chats found'}</p>
           <p className="mt-1 text-[11px] text-muted-foreground">

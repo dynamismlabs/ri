@@ -156,7 +156,7 @@ export function MergeButton({
                 )}
 
                 <ChoiceGroup asChild name="merge-method" value={method} onValueChange={value => setMethod(value as typeof method)}><fieldset className="space-y-1.5">
-                  <legend className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-1">
+                  <legend className="text-[10px] font-bold text-muted-foreground mb-1">
                     Merge method
                   </legend>
                   {METHODS.map((m) => (

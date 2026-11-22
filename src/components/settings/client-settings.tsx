@@ -96,7 +96,7 @@ export function ClientSettings() {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-baseline gap-3">
-      <span className="w-24 flex-shrink-0 text-[10px] uppercase tracking-wider text-muted-foreground/70">{label}</span>
+      <span className="w-24 flex-shrink-0 text-[10px] text-muted-foreground/70">{label}</span>
       <span className="min-w-0 flex-1 text-[12px]">{children}</span>
     </div>
   );

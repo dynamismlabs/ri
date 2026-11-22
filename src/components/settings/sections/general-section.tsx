@@ -132,7 +132,7 @@ export function GeneralSection() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-border p-3">
+      <section className="ri-general-section-frame rounded-lg border border-border p-3">
         <h3 className="text-[12px] font-medium">Chat UI gallery</h3>
         <p className="mt-1 text-[11px] text-muted-foreground">Explore interactive chat interfaces and see where each comes from.</p>
         <Link href="/gallery" onClick={closeSettings} className="mt-2 inline-block text-xs font-medium text-primary hover:underline">Open gallery</Link>

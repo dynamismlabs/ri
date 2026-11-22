@@ -61,7 +61,7 @@ export function WebhookCredentialsPanel({
 function CredentialRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="text-[11px] text-muted-foreground">{label}</p>
       <div className="flex items-center gap-2 mt-1">
         <code
           className={cn(

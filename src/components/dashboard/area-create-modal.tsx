@@ -131,7 +131,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
           </VisuallyHidden.Root>
           <div className="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+            <div className="flex items-center justify-between  border-b border-border">
               <span className="text-xs font-semibold tracking-wide text-foreground">
                 New Area
               </span>
@@ -147,7 +147,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
             </div>
 
             {/* Body */}
-            <DialogBody className="p-5 space-y-4">
+            <DialogBody padding="panel" className="space-y-4">
               {/* Emoji / Image upload */}
               <div className="flex justify-center">
                 <input
@@ -271,7 +271,7 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
             </DialogBody>
 
             {/* Footer */}
-            <DialogFooter divider className="flex-row items-center justify-end px-5 py-3">
+            <DialogFooter padding="panel" divider className="flex-row items-center justify-end ">
               <DialogPrimitive.Close asChild>
                 <Button
                   variant="ghost"

@@ -302,7 +302,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
               <div className="space-y-2">
                 {/* An agent with nothing to do here (ChatGPT on a team) keeps only its note. */}
                 {(linkPreview || steps?.steps.length || !client.signsIn) && <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
                     {client.signsIn ? `In ${client.label}` : showLocal ? 'Or on any computer' : 'On any computer'}
                   </p>
                   <div className="flex flex-wrap items-center gap-1.5">
@@ -377,7 +377,7 @@ function ClientItem({ client, target, keys, createKey, revokeKey, onChanged, loc
 
             {otherKeys.length > 0 && !checking && (
               <div className="space-y-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{client.signsIn ? 'Connections' : 'Keys'}</p>
+                <p className="text-[11px] font-semibold text-muted-foreground">{client.signsIn ? 'Connections' : 'Keys'}</p>
                 <Card as="ul" padding="none" className="divide-y divide-border/60">
                   {otherKeys.map((key) => (
                     <li key={key.keyId} className="flex items-center gap-2 px-3 py-2 text-xs">
@@ -415,8 +415,8 @@ function LocalRow({ client, device, state, usedAt, result, busy, disabled, onSet
   const reached = Boolean(connection && usedAt);
   return (
     <div className="space-y-1.5">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{where}</p>
-      <div className="flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
+      <p className="text-[11px] font-semibold text-muted-foreground">{where}</p>
+      <div className="ri-connect-agents-frame flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
         <span aria-hidden className={cn('size-1.5 shrink-0 rounded-full', reached ? 'bg-emerald-500' : connection || state.stale ? 'bg-amber-500' : 'bg-muted-foreground/40')} />
         <span className="min-w-0 flex-1">
           {connection && reached ? (

@@ -366,7 +366,7 @@ function ManagedConnect({ applicationId, eventId, view, busy, notice, onDecline,
               <SelectValue />
             </SelectField>
             <SelectContent>
-              {managedOptions.map(o => <SelectItem key={o.source.id} value={o.source.id} className="text-xs">{o.source.label}</SelectItem>)}
+              {managedOptions.map(o => <SelectItem key={o.source.id} value={o.source.id} className="">{o.source.label}</SelectItem>)}
             </SelectContent>
           </Select>
         )}

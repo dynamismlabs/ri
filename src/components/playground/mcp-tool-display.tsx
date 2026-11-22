@@ -50,7 +50,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
         <div className="border-t border-border/60 px-2 py-2 space-y-2">
           {/* Message */}
           <div>
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Message</div>
+            <div className="text-[10px] text-muted-foreground mb-0.5">Message</div>
             <Card padding="xs" purpose="code" className="break-words whitespace-pre-wrap">
               {inputMessage || JSON.stringify(input, null, 2)}
             </Card>
@@ -59,7 +59,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {/* Context (optional) */}
           {inputContext && (
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Context</div>
+              <div className="text-[10px] text-muted-foreground mb-0.5">Context</div>
               <Card padding="xs" purpose="code" className="break-words whitespace-pre-wrap">
                 {inputContext}
               </Card>
@@ -74,7 +74,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {/* Error */}
           {errored && (
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-destructive mb-0.5">Error</div>
+              <div className="text-[10px] text-destructive mb-0.5">Error</div>
               <Callout padding="xs" tone={"error"} purpose="code" className="break-words whitespace-pre-wrap">
                 {errorText || 'Tool call failed.'}
               </Callout>
@@ -85,7 +85,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {parsed && (
             <>
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Response</div>
+                <div className="text-[10px] text-muted-foreground mb-0.5">Response</div>
                 <Card padding="xs" className="break-words whitespace-pre-wrap">
                   {parsed.response}
                 </Card>
@@ -93,7 +93,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
 
               {parsed.entities.length > 0 && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
+                  <div className="text-[10px] text-muted-foreground mb-0.5">
                     Entities ({parsed.entities.length})
                   </div>
                   <div className="flex flex-wrap gap-1">
@@ -111,7 +111,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {/* Raw output fallback when we couldn't parse */}
           {output && !parsed && !errored && (
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Raw output</div>
+              <div className="text-[10px] text-muted-foreground mb-0.5">Raw output</div>
               <pre className="rounded bg-background/60 border border-border/60 p-1.5 font-mono text-[11px] break-words whitespace-pre-wrap overflow-x-auto">
                 {output}
               </pre>
@@ -196,13 +196,13 @@ function InnerStepRow({ step, index }: { step: McpInnerStep; index: number }) {
       {open && (
         <div className="px-2 pb-1.5 pt-0.5 space-y-1">
           <div>
-            <div className="text-[9px] uppercase tracking-wide text-muted-foreground">Input</div>
+            <div className="text-[11px] leading-[1.4] font-medium text-muted-foreground">Input</div>
             <pre className="font-mono text-[10px] break-words whitespace-pre-wrap overflow-x-auto">
               {JSON.stringify(step.input, null, 2)}
             </pre>
           </div>
           <div>
-            <div className="text-[9px] uppercase tracking-wide text-muted-foreground">Output</div>
+            <div className="text-[11px] leading-[1.4] font-medium text-muted-foreground">Output</div>
             <pre className="font-mono text-[10px] break-words whitespace-pre-wrap overflow-x-auto">
               {JSON.stringify(step.output, null, 2)}
             </pre>

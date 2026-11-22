@@ -1,0 +1,1 @@
+html:root [data-slot="pane-tabs"] { background-color: var(--background); min-height: 44px; padding-inline: 8px; gap: 4px; }

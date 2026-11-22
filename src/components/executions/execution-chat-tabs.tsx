@@ -439,7 +439,7 @@ export function ExecutionChatsMenu({
                   setHistoryOpen(false);
                   onNewChat();
                 }}
-                className="flex w-full items-center gap-2 text-left disabled:opacity-50"
+                className="flex w-full items-center gap-2 text-left"
               >
                 {newChatPending ? <Loader2 size={12} className="animate-spin" /> : <Plus size={12} />}
                 New chat
@@ -448,7 +448,7 @@ export function ExecutionChatsMenu({
               <div className="my-1 h-px bg-border" />
             </>
           )}
-          <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+          <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground/70">
             All chats
           </div>
           {entries.map((s) => {

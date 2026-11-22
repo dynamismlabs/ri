@@ -1,10 +1,4 @@
-/**
- * The product system (theme.css and edge.css) against the real stylesheet in Chromium.
- * Compatibility rules draw fills and shadows over hand-built utility classes,
- * so what can go wrong is a cascade mistake no unit test sees: a focus ring
- * replaced by a fill, a hover that loses its contrast, a scroller that moves
- * from the element that watches it. Each case is one a review found.
- */
+/** Real product component CSS in Chromium. Pins focus, contrast, geometry and scrolling. */
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -57,7 +51,7 @@ import {IconButton} from '@/components/system/icon-button';
           <Card as="button" data-case="card" className="w-64" shadow>A board card</Card>
           {/* The review bar's solid action, with execution-review-bar.tsx's classes. */}
           <Button data-case="solid" variant="primary" size="sm" tone="success">Accept & complete</Button>
-          <span data-case="small-label" className="text-[8.5px] uppercase tracking-widest">Recent chats</span>
+          <span data-case="small-label" className="text-[11px] leading-[1.4] font-medium">Recent chats</span>
           <div data-slot="status-strip" className="inline-flex items-center gap-3 rounded-lg border border-blue-500/40 bg-blue-500/10 p-1">
             <span>2 commits ahead</span><Button data-focus data-case="git-action" variant="primary" size="sm">Push</Button>
           </div>
@@ -76,7 +70,7 @@ import {IconButton} from '@/components/system/icon-button';
             </Card>
           </div>
           <ChoiceRow data-focus data-case="choice" aria-pressed="true" className="w-64">Continue this chat</ChoiceRow>
-          <div data-slot="calendar-navigation" className="flex"><button data-focus data-case="previous" aria-label="Previous week" className="rounded-md p-1 text-muted-foreground hover:bg-muted/50">‹</button><button data-focus data-case="today" className="rounded-md px-1.5 py-0.5 text-muted-foreground hover:bg-muted/50">Today</button></div>
+          <div data-slot="calendar-navigation" className="flex"><Button data-focus data-case="previous" aria-label="Previous week" variant="ghost" size="sm">‹</Button><Button data-focus data-case="today" variant="ghost" size="sm">Today</Button></div>
           <div data-slot="chat-tabs" className="flex h-9 w-64 items-center gap-0.5 border-b px-1.5">
             <Button data-focus data-case="all-chats" size="sm" focus="inside">≡ 3</Button>
             <div data-slot="chat-tabs-scroll" className="flex min-w-0 shrink items-center gap-0.5 overflow-x-auto">
@@ -171,7 +165,7 @@ import {IconButton} from '@/components/system/icon-button';
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   const executablePath = testChromiumPath();
-  if (!executablePath) throw new Error('Chromium is required for the new look checks');
+  if (!executablePath) throw new Error('Chromium is required for UI system checks');
   browser = await chromium.launch({ executablePath, headless: true });
 }, 60_000);
 
@@ -266,7 +260,7 @@ it('scrolls a narrow lane switch where its edge fades look', async () => {
 });
 
 for (const theme of ['light', 'dark'] as const) {
-  it(`shows keyboard focus on phase 3 controls, including clipped tabs (${theme})`, async () => {
+  it(`shows keyboard focus on product controls, including clipped tabs (${theme})`, async () => {
     const { page } = await open(theme);
     try {
       await page.locator('[data-case="solid"]').focus();

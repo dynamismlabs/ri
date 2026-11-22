@@ -160,7 +160,7 @@ export function RunOnControl({
           </Tip>
         </PopoverTrigger>
         <LauncherPopoverContent align="start" className="w-[280px] p-1">
-          <div className="px-2 pb-1 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Run on</div>
+          <div className="px-2 pb-1 pt-1.5 text-[10px] font-medium text-muted-foreground/60">Run on</div>
           {runOn.choices.map((choice) => {
             const isSelected = choice.deviceId === value;
             const canSetUp = choice.needsSetup && choice.connected;

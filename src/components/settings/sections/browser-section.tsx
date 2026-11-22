@@ -160,7 +160,7 @@ export function BrowserSection() {
         <>
           {/* Browser picker */}
           <Card padding="md" >
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">Browser</p>
+            <p className="text-[11px] text-muted-foreground/60">Browser</p>
             {detected.length === 0 ? (
               <p className="mt-2 text-[12px] text-amber-500">
                 No Chromium-family browser found. Install Chrome, Brave, Edge, or Chromium.
@@ -200,7 +200,7 @@ export function BrowserSection() {
 
           {/* Default profile */}
           <Card padding="md" >
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">Default profile</p>
+            <p className="text-[11px] text-muted-foreground/60">Default profile</p>
             <p className="mt-1 text-[11px] text-muted-foreground/60">
               The logged-in identity actions use when none is given. Letters, digits, underscore, or hyphen.
             </p>
@@ -272,7 +272,7 @@ export function BrowserSection() {
           {/* Recent activity */}
           {status.audit.length > 0 && (
             <Card padding="md" >
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-[11px] text-muted-foreground/60">
                 Recent activity
               </p>
               <ul className="mt-2 space-y-1">

@@ -34,7 +34,7 @@ export function TeamAiSection() {
   const canConfigure = home.capabilities.manageSignIns;
   return <section className="min-w-0 space-y-4">
     <div>
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Team AI</h3>
+      <h3 className="text-[11px] font-semibold text-muted-foreground">Team AI</h3>
       <p className="mt-2 text-sm" role="status">{!status.data ? 'Checking…' : !status.data.enabled ? 'Off. Tasks and notes work without AI.' : status.data.state === 'ready' ? "On. Runs on this team's server." : status.data.reason}</p>
       <p className="mt-1 text-xs text-muted-foreground">Team agents and chats are shared with everyone in this team.</p>
       <p className="mt-1 text-xs text-muted-foreground">GitHub controls use the GitHub account signed in on this Team server. Changes are also attributed here to the member requesting them.</p>

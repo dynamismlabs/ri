@@ -41,7 +41,7 @@ export function DeckMoreOptions({
         onClick={onToggleCollapse}
         className="flex items-center justify-between w-full"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+        <span className="text-[10px] font-semibold text-muted-foreground/60">
           More options
           <span className="ml-1.5 text-muted-foreground/40 font-normal normal-case tracking-normal">
             {totalCount}
@@ -59,7 +59,7 @@ export function DeckMoreOptions({
           {/* ─── Bumped today — moved off the deck, nothing lost ─── */}
           {bumped.length > 0 && (
             <>
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/50 pt-1 pb-0.5">
+              <p className="text-[11px] leading-[1.4] font-medium text-muted-foreground/50 pt-1 pb-0.5">
                 Bumped today
               </p>
               {bumped.map(item => (

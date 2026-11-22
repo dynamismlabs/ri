@@ -1,0 +1,3 @@
+html:root [data-native-action="ri-identity-swatch"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; background-color: transparent; }
+html:root [data-native-action="ri-identity-swatch"]:hover:not(:disabled) { background-color: var(--selected); }
+html:root [data-native-action="ri-identity-swatch"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

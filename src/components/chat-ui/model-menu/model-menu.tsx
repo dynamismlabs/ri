@@ -328,7 +328,7 @@ function OptionRow({
               content.current?.querySelector<HTMLElement>('[role="menuitemradio"]:not([data-disabled])')?.focus();
             }
           }}
-          className="flex w-full items-center gap-2 disabled:opacity-50"
+          className="flex w-full items-center gap-2"
         >
           <span>{label}</span>
           <span className="ml-auto truncate text-muted-foreground">
@@ -373,7 +373,7 @@ function OptionRow({
               key={option.id}
               value={option.id}
               disabled={disabled || option.disabled}
-              className="rounded-md px-2.5 py-2 text-[12px]"
+              className=""
             >
               <span>
                 <span className="block">{option.label}</span>

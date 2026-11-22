@@ -242,7 +242,7 @@ function YourAppCard({ source, serverId, update, onOpen, onDetails }: { source: 
   const open = () => serverId ? onOpen(serverId) : onDetails(source.id);
   const action = serverId ? 'Open' : 'Finish connecting';
   return (
-    <li className="rounded-lg border border-border bg-card text-xs transition-colors hover:bg-muted/30">
+    <li className="ri-app-status-frame rounded-lg border border-border bg-card text-xs transition-colors hover:bg-muted/30">
       <div className="flex items-center gap-3 px-3 pt-3">
         <InlineAction  type="button" onClick={open} className="flex min-w-0 flex-1 items-center gap-3 text-left" aria-label={`${action} ${source.name}`}>
           <AppMark name={source.name} size="lg" />

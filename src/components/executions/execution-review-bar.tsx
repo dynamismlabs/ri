@@ -142,7 +142,7 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="max-w-xs">
-                <div className="px-2 py-1 text-[10px] uppercase tracking-wide text-muted-foreground">Complete which task?</div>
+                <div className="px-2 py-1 text-[10px] text-muted-foreground">Complete which task?</div>
                 {eligible.map((t) => (
                   <MenuAction kind="menu"
                     key={t.id}

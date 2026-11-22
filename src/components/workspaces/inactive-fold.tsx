@@ -165,7 +165,7 @@ function InactiveAfterOptions({ stored }: { stored: number | null | undefined })
   };
   return (
     <div>
-      <div className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+      <div className="px-2 pb-1 pt-1.5 text-[10px] font-semibold text-muted-foreground/70">
         Go inactive after
       </div>
       {presets.map((days) => (

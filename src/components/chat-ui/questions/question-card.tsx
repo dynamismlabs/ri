@@ -191,7 +191,7 @@ export function QuestionCard({
         {pending.questions.length > 1 ? (
           <div className="flex gap-1">
             {pending.questions.map((_, i) => (
-              <button data-slot="action-button" data-tone="status"
+              <button data-native-action="ri-question-progress"
                 key={i}
                 type="button"
                 onClick={() => setCurrentIdx(i)}

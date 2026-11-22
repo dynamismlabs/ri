@@ -64,7 +64,7 @@ function HomeComputerSection() {
       </div>)}
     </dl>
     {otherHomes.length > 0 && <div className="space-y-1"><p className="text-muted-foreground">Also on this computer</p>{otherHomes.map(home => <p key={home}>{home}</p>)}</div>}
-    {desktop && app.data?.canKeepRunning && <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+    {desktop && app.data?.canKeepRunning && <div className="ri-this-computer-section-frame flex items-center justify-between gap-4 rounded-lg border p-4">
       <div className="space-y-1">
         <Label htmlFor={`${id}-keep`}>Keep Ri running on this computer</Label>
         <p id={`${id}-keep-help`} className="text-xs text-muted-foreground">Ri starts when you log in and comes back after a crash, whether or not this window is open. Turning it off restarts Ri, which ends any running chats.</p>

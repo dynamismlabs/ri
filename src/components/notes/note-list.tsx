@@ -123,16 +123,16 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
             <DropdownMenuCheckboxItem
               checked={decisionsOnly}
               onCheckedChange={(c) => setDecisionsOnly(!!c)}
-              className="text-xs"
+              className=""
             >
               Decisions only
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaFilter} onValueChange={setAreaFilter}>
-              <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all" className="">All Areas</DropdownMenuRadioItem>
               {areas?.map(area => (
-                <DropdownMenuRadioItem key={area.id} value={area.id} className="text-xs">
+                <DropdownMenuRadioItem key={area.id} value={area.id} className="">
                   {area.name}
                 </DropdownMenuRadioItem>
               ))}
@@ -147,11 +147,11 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
             <span className="hidden @md/lt:inline">{NOTE_SORT_LABELS[sortBy]}</span>
           </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-40">
-            <DropdownMenuLabel className="uppercase tracking-widest">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Sort by</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as NoteSortOption)}>
-              <DropdownMenuRadioItem value="lastViewedAt" className="text-xs">Last viewed</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="createdAt" className="text-xs">Created</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="updatedAt" className="text-xs">Updated</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="lastViewedAt" className="">Last viewed</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="createdAt" className="">Created</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="updatedAt" className="">Updated</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>

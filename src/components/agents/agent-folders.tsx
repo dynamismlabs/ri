@@ -304,7 +304,7 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
             // A device that isn't running Ri can't be browsed, so its folder is typed in the full dialog.
             onClick={() => (on.connected ? setPicking(true) : setDefining({ editing: null }))}
             disabled={change.addFolder.isPending}
-            className="flex w-full items-center gap-2.5 text-left disabled:opacity-50"
+            className="flex w-full items-center gap-2.5 text-left"
           >
             {change.addFolder.isPending ? <Loader2 size={15} className="shrink-0 animate-spin" /> : <FolderPlus size={15} className="shrink-0" />}
             Add folder

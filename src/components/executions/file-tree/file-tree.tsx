@@ -670,7 +670,7 @@ export function FileTree({
       {titleRow && (
         <div className="flex items-center justify-between gap-2 border-b border-border px-2 py-1.5 min-w-0">
           <div className="flex items-center gap-1 min-w-0">
-            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70 px-1">
+            <span className="text-[10px] font-medium text-muted-foreground/70 px-1">
               Files
             </span>
             {writable && (

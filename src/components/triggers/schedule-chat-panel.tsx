@@ -39,7 +39,7 @@ export function ScheduleChatPanel({ chat, scheduleRef }: { chat: ReturnType<type
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/50 px-3 py-1.5">
-        <span className="flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground">
+        <span className="flex items-center gap-1.5 text-[9.5px] font-bold text-muted-foreground">
           <MessageCircleMore size={11} />
           Set it up by chat
           {chat.isActive && <span className="size-1.5 animate-pulse rounded-full bg-emerald-500" />}

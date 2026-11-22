@@ -79,12 +79,12 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
 
   return (
     <Dialog open onOpenChange={(next) => { if (!next) closeSchedulesWindow(); }}>
-      <DialogContent
+      <DialogContent height="window"
         showCloseButton={false}
         padding="none"
         size="wide"
         aria-describedby={undefined}
-        className={cn('h-[min(88dvh,56rem)] gap-0 overflow-hidden', withChat ? 'max-w-6xl' : 'max-w-4xl')}
+        className={cn(' gap-0 overflow-hidden', withChat ? 'max-w-6xl' : 'max-w-4xl')}
         onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true }); }}
       >
         <DialogTitle className="sr-only">Schedules and Triggers</DialogTitle>
@@ -285,7 +285,7 @@ function ListBody({
         // a header strip — auto-width, right-aligned so it doesn't
         // dominate the visual hierarchy.
         <div className="flex items-center justify-between">
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider">
+          <p className="text-[11px] text-muted-foreground">
             {triggers.length} trigger{triggers.length === 1 ? '' : 's'}
           </p>
           <NewTriggerButton onClick={onNew} />

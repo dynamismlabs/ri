@@ -700,7 +700,7 @@ function LaunchModalInner({
           </VisuallyHidden.Root>
 
           <ChatDropZone
-            className="flex max-h-[84vh] animate-in flex-col overflow-hidden rounded-xl border border-border bg-card fade-in-0 shadow-2xl duration-150"
+            className="ri-launch-frame flex max-h-[84vh] animate-in flex-col overflow-hidden rounded-xl border border-border bg-card fade-in-0 shadow-2xl duration-150"
             // The panel sits 8vh down. Its bottom stops 0.75rem above the
             // keyboard's top edge, so the footer never slides under it.
             style={touch && visibleBottom ? { maxHeight: `min(84vh, calc(${visibleBottom}px - 8vh - 0.75rem))` } : undefined}
@@ -832,7 +832,7 @@ function LaunchModalInner({
                 />
               ) : (
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[10px] font-medium text-muted-foreground/60">
                     Start from
                   </span>
                   <Button

@@ -17,7 +17,7 @@ import { ConnectedView } from '../view';
 export function FormPreview({formId, chatId, option, onClose}: {formId: string; chatId: string | null; option: ResourceOption; onClose: () => void}) {
   const title = option.title ?? option.name;
   return <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
-    <DialogContent className={option.preview?.type === 'mcp_app_tool' ? 'flex h-[min(85vh,760px)] max-w-4xl flex-col' : 'max-w-2xl'}>
+    <DialogContent height="form" className={option.preview?.type === 'mcp_app_tool' ? 'flex  max-w-4xl flex-col' : 'max-w-2xl'}>
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         {option.description && <DialogDescription>{option.description}</DialogDescription>}

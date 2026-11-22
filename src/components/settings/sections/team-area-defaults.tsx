@@ -92,7 +92,7 @@ export function TeamAreaDefaults({ teamId, connected }: { teamId: string; connec
         size="sm"
       >Review existing unorganized work</Button>}
       {review && (
-        <div className="space-y-2 rounded border p-3">
+        <div className="ri-team-area-defaults-frame space-y-2 rounded border p-3">
           <p>{preview.isFetching ? 'Checking references…' : `${preview.data?.length ?? 0} unorganized references in this team.`} Select the work to organize. Deliberately cleared Areas are excluded.</p>
           {preview.error && <p role="alert">Could not load the preview. <Button
             onClick={() => void preview.refetch()}

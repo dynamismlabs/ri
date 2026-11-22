@@ -56,9 +56,9 @@ export function ArtifactPreviewProvider({ children }: { children: ReactNode }) {
     <ArtifactPreviewContext.Provider value={store}>
       {children}
       <Dialog open={isOpen} onOpenChange={value => { if (!value) store.closeDialog(); }}>
-        <DialogContent padding="none"
+        <DialogContent height="document" padding="none"
           {...{ [PREVIEW_KEY_SCOPE]: '' }}
-          className="flex h-[90dvh] w-[calc(100%-2rem)] max-w-none flex-col gap-0 overflow-hidden sm:max-w-[min(90vw,1440px)]"
+          className="flex  w-[calc(100%-2rem)] max-w-none flex-col gap-0 overflow-hidden sm:max-w-[min(90vw,1440px)]"
           onCloseAutoFocus={event => {
             event.preventDefault();
             // The card last shown, after any Previous or Next, or the file's view where it moved beside the chat.

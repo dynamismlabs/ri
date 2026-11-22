@@ -132,7 +132,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
         </Tip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)]">
-        <DropdownMenuCheckboxItem checked={all} onCheckedChange={selectAll} onSelect={stayOpen} className="items-start text-xs">
+        <DropdownMenuCheckboxItem checked={all} onCheckedChange={selectAll} onSelect={stayOpen} className="items-start">
           <span className="min-w-0">
             <span className="block font-medium">{directOnly ? 'All direct accounts' : 'All accounts'}</span>
             <span className="block text-[10px] text-muted-foreground">{directOnly ? 'Includes future direct accounts. Accounts through a source are chosen below.' : 'Includes accounts you connect later'}</span>
@@ -149,7 +149,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
               disabled={lastOne && checked}
               onCheckedChange={() => toggleAccount(c)}
               onSelect={stayOpen}
-              className="text-xs"
+              className=""
             >
               <span className="truncate">{accountLabel(c)}</span>
             </DropdownMenuCheckboxItem>
@@ -168,7 +168,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
                 disabled={lastOne}
                 onCheckedChange={() => removePin(p)}
                 onSelect={stayOpen}
-                className="text-xs"
+                className=""
               >
                 <span className="truncate font-mono text-[11px] text-muted-foreground">{p.accountId}</span>
               </DropdownMenuCheckboxItem>

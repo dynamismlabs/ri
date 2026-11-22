@@ -91,7 +91,7 @@ function SavedResult({ detail, exact }: { detail: WorkResultDetailResponse; exac
     <Card as="article" padding={exact ? "none" : "lg"} surface={exact ? "plain" : "raised"} className={exact ? "space-y-5" : "space-y-4"} aria-label={reportTargetId ? 'Saved AI review' : 'Saved handoff'}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{reportTargetId ? 'AI review' : 'Handoff'}</p>
+          <p className="text-[10px] font-medium text-muted-foreground">{reportTargetId ? 'AI review' : 'Handoff'}</p>
           {result.title && <h2 className="mt-1 text-base font-semibold leading-snug">{result.title}</h2>}
           <p className="mt-1 text-[11px] text-muted-foreground">Saved {result.createdAt} by {author(result)}</p>
         </div>

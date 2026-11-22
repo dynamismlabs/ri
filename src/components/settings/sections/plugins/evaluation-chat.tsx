@@ -181,7 +181,7 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
           >Chat {index + 1}</Button>)}
         </div>
         <div className="space-y-2 px-4 py-3">
-          {chat.contextId ? <div className="flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1 text-xs">
+          {chat.contextId ? <div className="ri-evaluation-chat-frame flex items-center justify-between gap-2 rounded-md border border-border px-2 py-1 text-xs">
             <span><Tag className="mr-1 inline size-3" />{context ? viewName(context) + ('inputs' in context ? ` · Growth ${context.inputs.monthlyGrowthRate}%` : '') : 'Attached result · View closed'}</span>
             <IconButton
               onClick={() => patch(selected, value => ({ ...value, contextId: null, allowChanges: false }))}
@@ -207,7 +207,7 @@ export function EvaluationChat({ viewUrl, frame }: { viewUrl: string; frame: Ref
           {chat.messages.map((message, index) => <div key={index} className={message.role === 'user' ? 'ml-6 rounded-lg bg-muted px-3 py-2' : 'mr-2 px-1 py-1'}>
             <p className="mb-1 text-[10px] font-medium text-muted-foreground">{message.role === 'user' ? 'You' : 'Agent'}</p>
             {message.role === 'assistant' ? <MessageResponse mode="static" className="break-words text-xs">{message.text}</MessageResponse> : <p className="whitespace-pre-wrap break-words text-xs">{message.text}</p>}
-            {message.approval && <div className="mt-2 space-y-2 rounded-md border border-border p-2"><p className="text-xs font-medium">{message.approval.toolName}</p><pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-[10px]">{JSON.stringify(message.approval.arguments, null, 2).slice(0, 4000)}</pre><div className="flex gap-2"><Button
+            {message.approval && <div className="ri-evaluation-chat-frame mt-2 space-y-2 rounded-md border border-border p-2"><p className="text-xs font-medium">{message.approval.toolName}</p><pre className="max-h-32 overflow-auto whitespace-pre-wrap break-words text-[10px]">{JSON.stringify(message.approval.arguments, null, 2).slice(0, 4000)}</pre><div className="flex gap-2"><Button
               disabled={busy}
               onClick={() => void decide(selected, message, true)}
               variant="primary"

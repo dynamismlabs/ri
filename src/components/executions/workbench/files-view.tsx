@@ -271,7 +271,7 @@ function PickAFile({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <div className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">{title}</div>
+      <div className="mb-1.5 px-2 text-[10px] font-semibold text-muted-foreground/70">{title}</div>
       <div className="flex flex-col">{children}</div>
     </div>
   );

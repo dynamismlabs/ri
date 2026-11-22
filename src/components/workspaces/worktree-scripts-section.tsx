@@ -54,7 +54,7 @@ export function WorktreeScriptsSection({
         hint={
           <>
             Runs once after the worktree is created. A fresh worktree has no installed dependencies. Install or copy what
-            it needs here. <code className="font-mono">$RI_SOURCE_CHECKOUT_PATH</code> points at the original checkout.
+            it needs here. <code className="font-mono">{'$RI_SOURCE_CHECKOUT_PATH'}</code> points at the original checkout.
           </>
         }
       />
@@ -66,7 +66,7 @@ export function WorktreeScriptsSection({
         hint={
           <>
             The dev command Ri runs in each worktree to start its preview. Ri assigns a stable port (injected as{' '}
-            <code className="font-mono">PORT</code>) and waits for it to listen.
+            <code className="font-mono">{'PORT'}</code>) and waits for it to listen.
           </>
         }
       />

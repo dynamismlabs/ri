@@ -1,0 +1,2 @@
+html:root [data-slot="image-picker"] { border-radius: 14px; }
+html:root [data-slot="image-picker"]:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }

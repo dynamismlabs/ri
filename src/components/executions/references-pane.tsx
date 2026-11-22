@@ -279,7 +279,7 @@ function Section({
 }) {
   return (
     <div>
-      <div className="px-2 pb-1 text-[9px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
+      <div className="px-2 pb-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
         {title}
         <span className="ml-1 text-muted-foreground/50 lowercase font-normal tabular-nums">
           · {count}

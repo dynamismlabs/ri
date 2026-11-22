@@ -81,7 +81,7 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
       </PopoverTrigger>
       <PopoverContent padding="none" align="end" sideOffset={6} className="w-80">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="text-[11px] font-semibold text-muted-foreground">
             Recent files
           </span>
           <div className="flex items-center gap-1.5">

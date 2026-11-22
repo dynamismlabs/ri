@@ -67,7 +67,7 @@ export function ModelMenuPreview({ state }: { state: string }) {
         : ['default', 'fast', 'ultrafast'];
   return (
     <div className="mx-auto w-80 max-w-full">
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-lg">
+      <div className="ri-model-menu-preview overflow-hidden rounded-xl border border-border bg-card shadow-lg">
         <ModelMenuContent
           effort={effort}
           efforts={efforts}

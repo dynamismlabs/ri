@@ -21,7 +21,7 @@ export function SlackAppsSection(props: ProviderDetailProps & { onConnectApp: (i
     </div>
     <p className="text-xs text-muted-foreground">An app lets Ri request access to Slack. Save its credentials, then connect the Slack account you want Ri to use.</p>
     {props.loadingApps && <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 size={14} className="animate-spin" />Loading saved Slack apps…</p>}
-    {props.byoConfigs.map(app => <div key={app.id} className="space-y-2 rounded-xl border border-border p-3">
+    {props.byoConfigs.map(app => <div key={app.id} className="ri-slack-apps-section-frame space-y-2 rounded-xl border border-border p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0"><p className="break-words text-sm font-medium">{app.label ?? app.id}</p><p className="text-xs text-muted-foreground">App saved{app.isDefault ? ' · Default app' : ''}</p></div>
         <div className="flex flex-wrap gap-1">
@@ -47,6 +47,6 @@ export function SlackAppsSection(props: ProviderDetailProps & { onConnectApp: (i
       </div>
       {props.savedApp?.id === app.id && !used.includes(app.id) && <p role="status" className="text-sm text-emerald-700 dark:text-emerald-400">App saved. Next, connect your Slack account below.</p>}
     </div>)}
-    {adding && <div className="rounded-xl border border-border p-4"><Byo {...props} provider={providerForHostedAccount(props.provider, {addAccount:true})} byoConfigs={[]} /></div>}
+    {adding && <div className="ri-slack-apps-section-frame rounded-xl border border-border p-4"><Byo {...props} provider={providerForHostedAccount(props.provider, {addAccount:true})} byoConfigs={[]} /></div>}
   </section>;
 }

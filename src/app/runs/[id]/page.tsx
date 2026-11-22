@@ -64,7 +64,7 @@ export default function RunDetailPage() {
       <main className="px-6 py-6 max-w-3xl mx-auto space-y-4">
         {run.errorMessage && (
           <Callout as="section" padding="md" tone={"error"} >
-            <p className="text-[11px] uppercase tracking-wider text-destructive">
+            <p className="text-[11px] text-destructive">
               Error
             </p>
             <p className="text-sm text-destructive font-mono mt-1 whitespace-pre-wrap">
@@ -80,7 +80,7 @@ export default function RunDetailPage() {
 
         {run.summary && (
           <section>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            <p className="text-[11px] text-muted-foreground">
               Summary
             </p>
             <p className="text-sm mt-1">{run.summary}</p>
@@ -104,7 +104,7 @@ export default function RunDetailPage() {
 
         {Array.isArray(run.artifactRefs) && run.artifactRefs.length > 0 && (
           <section>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground mb-1">
+            <p className="text-[11px] text-muted-foreground mb-1">
               What it changed
             </p>
             <p className="text-[11px] text-muted-foreground mb-2">

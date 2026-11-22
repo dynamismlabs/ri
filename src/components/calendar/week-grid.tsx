@@ -197,7 +197,7 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
                   {p.overflow.map((group, gi) => (
                     <Popover key={`ov-${day.date}-${gi}`}>
                       <PopoverTrigger asChild>
-                        <button data-slot="action-button"
+                        <button data-native-action="ri-calendar-overflow"
                           type="button"
                           className="absolute z-20 right-0 w-1/3 min-h-4 rounded border border-border bg-muted px-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
                           style={toStyle(windowPct(group, bounds))}

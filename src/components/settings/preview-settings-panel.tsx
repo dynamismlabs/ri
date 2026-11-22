@@ -73,7 +73,7 @@ export function PreviewSettingsPanel() {
             always so you can connect or fix it here no matter which provider is
             active. */}
         <div className="space-y-1.5 border-t border-border pt-3">
-          <h4 className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+          <h4 className="text-[11px] font-semibold text-muted-foreground/70">
             Beamd · this machine
           </h4>
           <BeamdConnect onConnected={handleBeamdConnected} />

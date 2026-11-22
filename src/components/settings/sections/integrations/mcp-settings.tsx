@@ -150,7 +150,7 @@ function SettingControl({ id, field, value, invalid, describedBy, onSave }: { id
         >
           <SelectValue />
         </SelectField>
-        <SelectContent position="popper" align="end">{field.enum.map(option => <SelectItem key={option} value={option} className="text-xs">{option}</SelectItem>)}</SelectContent>
+        <SelectContent position="popper" align="end">{field.enum.map(option => <SelectItem key={option} value={option} className="">{option}</SelectItem>)}</SelectContent>
       </Select>;
       return <DraftInput id={id} describedBy={describedBy} value={typeof value === 'string' ? value : ''} invalid={invalid} onCommit={draft => onSave(draft)} />;
     case 'number':
@@ -328,13 +328,13 @@ function SettingsAppDialog({ serverId, tool, title, onClose }: { serverId: strin
     >Try again</Button>
   </div>;
   return <Dialog open onOpenChange={next => { if (!next) onClose(); }}>
-    <DialogContent padding="lg" className="flex h-[min(85vh,760px)] max-w-[min(960px,calc(100%-2rem))] flex-col gap-3 sm:max-w-[min(960px,calc(100%-2rem))]">
+    <DialogContent height="form" padding="lg" className="flex  max-w-[min(960px,calc(100%-2rem))] flex-col gap-3 sm:max-w-[min(960px,calc(100%-2rem))]">
       {/* Once the interface is open, its own header names it. */}
       <DialogHeader className={opened ? 'sr-only' : undefined}>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription className="sr-only">An interface from this MCP server, opened from its settings.</DialogDescription>
       </DialogHeader>
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border">{body}</div>
+      <div className="ri-mcp-settings-frame flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border">{body}</div>
     </DialogContent>
   </Dialog>;
 }
