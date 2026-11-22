@@ -95,7 +95,7 @@ export function SheetFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="sheet-footer"
-      className={cn('ri-sheet-footer ri-dialog-footer', className)}
+      className={cn('ri-sheet-footer', className)}
       {...props}
     />
   );

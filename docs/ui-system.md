@@ -759,6 +759,8 @@ floating menus and previews 12px, tooltips 10px, and sheets meet the window
 without corners. The shared scrim is 40% black with no blur in both themes.
 A rail popover uses `frame="rail"` for its existing square pane boundary.
 
+Automatic Sheet footers keep their column layout and full-width actions on a
+computer as well as a phone. Dialog sections keep their existing 16px spacing.
 Automatic Sheet content keeps its 200ms directional presence and Tooltip keeps
 its 100ms exit presence. Raw Frame adapters retain the caller's existing motion.
 `placement="viewport"` preserves Feedback's visual-viewport positioning when a

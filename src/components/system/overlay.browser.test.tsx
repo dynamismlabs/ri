@@ -6,14 +6,14 @@ beforeAll(async () => {
     `
  import React from'react';import{createRoot}from'react-dom/client';
  import{Dialog,DialogTrigger,DialogContent,DialogTitle}from'@/components/system/dialog';
- import{Sheet,SheetTrigger,SheetContent,SheetTitle}from'@/components/system/sheet';
+ import{Sheet,SheetTrigger,SheetContent,SheetTitle,SheetFooter}from'@/components/system/sheet';
  import{Popover,PopoverTrigger,PopoverContent}from'@/components/system/popover';
  import{DropdownMenu,DropdownMenuTrigger,DropdownMenuContent}from'@/components/system/menu';
  import{MenuAction}from'@/components/system/menu-action';import{Button}from'@/components/system/button';import{Field}from'@/components/system/field';import{TipProvider}from'@/components/ui/tip';
  const params=new URLSearchParams(location.search),kind=params.get('kind');document.documentElement.classList.toggle('dark',params.get('theme')==='dark');window.picks=[];
  function Menu(){return <DropdownMenu><DropdownMenuTrigger asChild><Button>Open menu</Button></DropdownMenuTrigger><DropdownMenuContent><MenuAction kind="menu" onSelect={()=>window.picks.push('one')}>First action</MenuAction><MenuAction kind="menu" disabled>Unavailable</MenuAction></DropdownMenuContent></DropdownMenu>}
  function Pop(){return <Popover><PopoverTrigger asChild><Button>Open popover</Button></PopoverTrigger><PopoverContent><Field aria-label="Popup field" defaultValue="Retained"/></PopoverContent></Popover>}
- function Side(){return <Sheet><SheetTrigger asChild><Button>Open sheet</Button></SheetTrigger><SheetContent aria-describedby={undefined}><SheetTitle>Side panel</SheetTitle><Field aria-label="Sheet field"/></SheetContent></Sheet>}
+ function Side(){return <Sheet><SheetTrigger asChild><Button>Open sheet</Button></SheetTrigger><SheetContent aria-describedby={undefined}><SheetTitle>Side panel</SheetTitle><Field aria-label="Sheet field"/><SheetFooter><Button>Save changes</Button></SheetFooter></SheetContent></Sheet>}
  createRoot(document.getElementById('root')).render(<TipProvider><main style={{padding:32}}>
  {kind==='dialog'?<Dialog><DialogTrigger asChild><Button>Open dialog</Button></DialogTrigger><DialogContent aria-describedby={undefined}><DialogTitle>Main dialog</DialogTitle><Field aria-label="Dialog field"/><Pop/><Menu/><Side/></DialogContent></Dialog>:kind==='sheet'?<Side/>:kind==='menu'?<Menu/>:<Pop/>}
  <Button>Outside action</Button></main></TipProvider>);
@@ -149,6 +149,16 @@ for(const width of [390,900,1440]) {
    const box=await layer.boundingBox();expect(box?.width).toBe(Math.min(672,width));
    const resizer=await page.locator('[data-resizer]').boundingBox(),body=await page.locator('[data-body]').boundingBox();
    expect(resizer?.width).toBe(6);expect(body!.x).toBe(resizer!.x+6);expect(body!.height).toBe(900);
+  }finally{await page.close()}
+ });
+}
+
+for(const theme of ['light','dark']) for(const width of [390,1440]) {
+ it(`keeps a sheet footer action stretched at ${width} ${theme}`,async()=>{
+  const page=await fixture.browser.newPage({viewport:{width,height:844}});
+  try{await page.goto(`${fixture.url}/?kind=sheet&theme=${theme}`);await page.getByRole('button',{name:'Open sheet',exact:true}).click();
+   const action=page.getByRole('button',{name:'Save changes',exact:true});await action.waitFor();
+   expect(await action.evaluate(el=>{const a=el.getBoundingClientRect(),p=el.parentElement!,r=p.getBoundingClientRect(),s=getComputedStyle(p);return Math.abs(a.width-(r.width-parseFloat(s.paddingLeft)-parseFloat(s.paddingRight)))<1})).toBe(true);
   }finally{await page.close()}
  });
 }
