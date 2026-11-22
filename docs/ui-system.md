@@ -731,7 +731,9 @@ tooltip, and remains allowed. A scratch fixture verifies both boundaries.
 `DialogContent`, `DialogFrame`, `SheetContent`, `PopoverContent` and
 `PopoverFrame` retain the installed Radix engines. Frame adapters compose
 existing portals without adding another portal or scrim. `placement="custom"`
-keeps an existing positioned shell. `DialogBody` scrolls between a fixed header
+keeps an existing positioned shell without imposing dialog width, gap or flex
+layout. A raw SheetFrame likewise keeps the caller's width, direction and
+resizer. Automatic SheetContent supplies the standard side layout. `DialogBody` scrolls between a fixed header
 and `DialogFooter`. Floating Menu, HoverPreview, Tooltip and Toast adapters own
 frame drawing. Named padding is none 0, xs 4, sm 8, md 12, lg 16 and xl 24px.
 

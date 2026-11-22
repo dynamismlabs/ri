@@ -121,3 +121,34 @@ for (const theme of ['light', 'dark'])
       }
     });
   }
+
+let rawFixture: Awaited<ReturnType<typeof browserFixture>>;
+beforeAll(async () => {
+ rawFixture = await browserFixture(`
+ import React from'react';import{createRoot}from'react-dom/client';
+ import{Dialog,DialogPortal,DialogFrame,DialogTitle}from'@/components/system/dialog';
+ import{SheetFrame}from'@/components/system/sheet';
+ const sheet=new URLSearchParams(location.search).has('sheet');
+ createRoot(document.getElementById('root')).render(<Dialog open><DialogPortal>
+ {sheet?<SheetFrame padding="none" aria-describedby={undefined} style={{width:'min(672px,100vw)'}} className="fixed right-0 top-0 bottom-0 flex"><DialogTitle className="sr-only">Area</DialogTitle><div data-resizer style={{width:6,flexShrink:0}}/><div data-body style={{flex:1}}><button>Area action</button></div></SheetFrame>
+ :<DialogFrame placement="custom" padding="none" aria-describedby={undefined} className="fixed inset-x-2 top-2 bottom-2 flex flex-col md:inset-x-4 md:top-12 md:bottom-4"><DialogTitle>Board</DialogTitle><div data-body style={{flex:1}}>Content</div></DialogFrame>}
+ </DialogPortal></Dialog>);`, [], {css:true});
+},120_000);
+afterAll(async()=>{await rawFixture?.close()});
+for(const width of [390,900,1440]) {
+ it(`keeps custom Board and Calendar frame dimensions at ${width}`,async()=>{
+  const page=await rawFixture.browser.newPage({viewport:{width,height:900}});
+  try{await page.goto(rawFixture.url);const layer=page.getByRole('dialog');await layer.waitFor();
+   const box=await layer.boundingBox();expect(box).toMatchObject({x:width>=768?16:8,y:width>=768?48:8,width:width-(width>=768?32:16),height:900-(width>=768?64:16)});
+   expect(await layer.evaluate(el=>getComputedStyle(el).gap)).toMatch(/^(0px|normal)$/);
+  }finally{await page.close()}
+ });
+ it(`keeps raw area sheet width and horizontal resizer at ${width}`,async()=>{
+  const page=await rawFixture.browser.newPage({viewport:{width,height:900}});
+  try{await page.goto(rawFixture.url+'/?sheet');const layer=page.getByRole('dialog');await layer.waitFor();
+   const box=await layer.boundingBox();expect(box?.width).toBe(Math.min(672,width));
+   const resizer=await page.locator('[data-resizer]').boundingBox(),body=await page.locator('[data-body]').boundingBox();
+   expect(resizer?.width).toBe(6);expect(body!.x).toBe(resizer!.x+6);expect(body!.height).toBe(900);
+  }finally{await page.close()}
+ });
+}

@@ -68,7 +68,7 @@ export function DialogFrame({
       data-motion={animated || undefined}
       className={cn(
         overlayVariants({ kind: 'dialog', padding }),
-        dialogVariants({ placement, size }),
+        placement !== 'custom' && dialogVariants({ placement, size }),
         className,
       )}
       {...props}

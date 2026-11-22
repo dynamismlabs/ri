@@ -31,7 +31,7 @@ type SheetFrameProps = ComponentProps<typeof SheetContentPrimitive> &
   VariantProps<typeof sheetVariants> &
   Omit<OverlayDrawing, 'kind'> & { animated?: boolean; safeArea?: boolean };
 export function SheetFrame({
-  side = 'right',
+  side,
   padding = 'none',
   className,
   animated = false,
@@ -45,7 +45,7 @@ export function SheetFrame({
       data-motion={animated || undefined}
       className={cn(
         overlayVariants({ kind: 'sheet', padding }),
-        sheetVariants({ side }),
+        side && sheetVariants({ side }),
         safeArea && 'ri-sheet--safe-area',
         className,
       )}
@@ -55,6 +55,7 @@ export function SheetFrame({
 }
 export function SheetContent({
   showCloseButton = true,
+  side = 'right',
   children,
   ...props
 }: SheetFrameProps & { showCloseButton?: boolean }) {
@@ -64,7 +65,7 @@ export function SheetContent({
         data-slot="sheet-overlay"
         className="ri-overlay-scrim fixed inset-0 z-50"
       />
-      <SheetFrame animated {...props}>
+      <SheetFrame animated side={side} {...props}>
         {children}
         {showCloseButton && (
           <SheetClose asChild>
