@@ -373,3 +373,7 @@
 .ri-menu-action--indicator { padding-inline-end: 32px; }
 .ri-menu-label[class*='ri-tone--'] { color: var(--control-ink); }
 .ri-menu-surface[data-empty] { color: var(--t3); }
+
+/* A scrolling body clips outside paint at its edge. Keep the field's full focus outline inside its box. */
+.ri-dialog-body .ri-field-control:focus-visible,
+.ri-dialog-body .ri-field-shell:has(.ri-field-control:focus-visible) { outline-offset: -2px; }

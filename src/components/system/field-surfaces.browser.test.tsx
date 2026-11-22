@@ -405,3 +405,21 @@ for (const theme of ['light', 'dark']) {
     } finally { await page.close(); }
   });
 }
+
+for (const theme of ['light', 'dark']) for (const width of [360, 390]) {
+  it(`keeps the linked-folder invalid focus outline inside the scrolling body at ${width} ${theme}`, async () => {
+    const page = await fixture.browser.newPage({viewport: {width, height: 844}});
+    try {
+      await page.goto(fixture.url + '/?surface=reference&theme=' + theme);
+      const alias = page.getByRole('textbox', {name: 'Alias', exact: true});
+      await alias.fill('bad alias');
+      const geometry = await alias.evaluate(el => {
+        const owner = el.closest('[data-slot="field-shell"]') ?? el;
+        const r = owner.getBoundingClientRect(), body = el.closest('[data-slot="dialog-body"]')!.getBoundingClientRect();
+        const style = getComputedStyle(owner), outside = Math.max(0, parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset));
+        return {focused: el === document.activeElement, invalid: el.getAttribute('aria-invalid'), outline: style.outlineWidth, contained: r.left - outside >= body.left && r.right + outside <= body.right};
+      });
+      expect(geometry).toEqual({focused: true, invalid: 'true', outline: '2px', contained: true});
+    } finally {await page.close();}
+  });
+}
