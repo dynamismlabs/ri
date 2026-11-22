@@ -11,7 +11,7 @@ export const updateStatusSchema = z.object({
   reason: z.string().optional(), error: z.string().optional(), changedAt: z.string(), committedAt: z.string().optional(), window: legacySchema(MaintenanceWindowSchema).optional(),
   configured: z.boolean(), busy: z.boolean(), policy: releasePreferencesSchema.nullable(),
   origin: z.object({ source: z.enum(['published', 'checkout']), checkout: z.string().optional() }),
-  waitingLong: z.boolean(), automatic: z.boolean().optional(), headsUpAt: z.string().optional(), heldUntil: z.string().optional(),
+  waitingLong: z.boolean(), automatic: z.boolean().optional(), heldUntil: z.string().optional(),
   waitingSince: z.string().optional(), lastAutomaticAt: z.string().optional(), rejected: z.string().optional(),
   local: z.object({ commit: z.string().optional(), checkout: z.string().optional() }).optional(), force: z.boolean().optional(),
 }) satisfies z.ZodType<ReturnType<UpdateCoordinator['status']>>;

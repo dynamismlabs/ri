@@ -467,6 +467,7 @@ describe('the automatic update rule (section 7.2)', () => {
     backend.work = vi.fn(async () => work);
   });
   afterEach(() => { vi.useRealTimers(); });
+  const advance = (ms: number) => { now += ms; vi.setSystemTime(now); };
   async function waiting() {
     const updater = coordinator();
     await updater.offer(candidate);
@@ -474,15 +475,13 @@ describe('the automatic update rule (section 7.2)', () => {
     return updater;
   }
 
-  it('waits 10 quiet minutes, gives a minute\'s heads-up, then switches', async () => {
+  it('switches after one quiet minute without an extra countdown', async () => {
     const updater = await waiting();
+    advance(MINUTE - 1);
     await updater.tick();
     expect(updater.status()).toMatchObject({ phase: 'waiting', automatic: true, reason: 'a quiet moment' });
-    now += 10 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
     expect(backend.stop).not.toHaveBeenCalled();
-    now += MINUTE; vi.setSystemTime(now);
+    advance(1);
     await updater.tick();
     expect(backend.stop).toHaveBeenCalledOnce();
     expect(updater.status()).toMatchObject({ phase: 'committed', approved: false });
@@ -490,60 +489,51 @@ describe('the automatic update rule (section 7.2)', () => {
     expect(installedRuntime(directory)!.id).toBe(candidate);
   });
 
-  it('settles everything that could stop it before the notice, so Not now always works', async () => {
+  it('accepts Not now as soon as the download is waiting, and verifies once after the hold', async () => {
     backend.verify = vi.fn(async (resources: string) => verifyRuntime(resources));
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    expect(backend.verify).toHaveBeenCalledOnce();
-    expect(updater.status().headsUpAt).toBeTruthy();
     expect(() => updater.later()).not.toThrow();
-    expect(updater.status().headsUpAt).toBeUndefined();
-    now += 61 * MINUTE; vi.setSystemTime(now);
+    expect(updater.status().heldUntil).toBeTruthy();
+    advance(59 * MINUTE);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
-    // It asks again, so the answer has to be there again.
-    expect(updater.status().heldUntil).toBeUndefined();
-    now += MINUTE; vi.setSystemTime(now);
+    expect(backend.verify).not.toHaveBeenCalled();
+    expect(backend.stop).not.toHaveBeenCalled();
+    advance(MINUTE);
     await updater.tick();
     expect(updater.status().phase).toBe('committed');
     expect(backend.verify).toHaveBeenCalledOnce();
   });
 
-  it('shows no notice for a release that fails its check, and stays off it', async () => {
+  it('rejects a release that fails its check without stopping the Home', async () => {
     backend.verify = vi.fn(async () => { throw new Error('A file changed on disk'); });
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
     expect(updater.status()).toMatchObject({ phase: 'failed', error: 'A file changed on disk', rejected: candidate, approved: false });
-    expect(updater.status().headsUpAt).toBeUndefined();
     expect(backend.stop).not.toHaveBeenCalled();
   });
 
-  it('shows no notice while a connected computer would be left behind', async () => {
+  it('waits while a connected computer would be left behind', async () => {
     backend.compatibility = vi.fn(async () => ['a connected computer needs a compatible bridge first']);
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeUndefined();
     expect(updater.status().reason).toContain('compatible bridge');
+    expect(backend.stop).not.toHaveBeenCalled();
     backend.compatibility = vi.fn(async () => []);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
+    expect(updater.status().phase).toBe('committed');
   });
 
-  it('stands down when automatic updates are turned off, even mid-notice', async () => {
+  it('stands down when automatic updates are turned off while waiting', async () => {
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
+    advance(30_000);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
     writeOrigin({ auto: false });
-    now += 5 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
     expect(backend.stop).not.toHaveBeenCalled();
     expect(updater.status()).toMatchObject({ phase: 'ready', approved: false });
-    expect(updater.status().headsUpAt).toBeUndefined();
-    // Someone can still ask.
     updater.approve();
     await updater.tick();
     expect(updater.status().phase).toBe('committed');
@@ -559,10 +549,9 @@ describe('the automatic update rule (section 7.2)', () => {
     expect(updater.status()).toMatchObject({ phase: 'waiting', reason: 'a quiet moment', window: inside });
     expect(backend.stop).not.toHaveBeenCalled();
     updater.later();
-
     const outside = { hour: (hour + 6) % 24, durationHours: 1, timeZone: 'UTC' };
     updater.approve(outside, false, false);
-    now += 11 * MINUTE; vi.setSystemTime(now);
+    advance(2 * MINUTE);
     await updater.tick();
     expect(updater.status().reason).toContain('maintenance window');
     updater.approve();
@@ -573,10 +562,7 @@ describe('the automatic update rule (section 7.2)', () => {
 
   it('hears Not now even while it is deciding, and keeps the hold', async () => {
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
-    now += MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     let answer!: (reasons: string[]) => void;
     backend.compatibility = vi.fn(() => new Promise<string[]>(resolve => { answer = resolve; }));
     const deciding = updater.tick();
@@ -586,29 +572,27 @@ describe('the automatic update rule (section 7.2)', () => {
     await deciding;
     expect(backend.stop).not.toHaveBeenCalled();
     expect(updater.status().heldUntil).toBeTruthy();
-    expect(updater.status().headsUpAt).toBeUndefined();
   });
 
   it('does not hold a shutdown mid-check against the release', async () => {
     backend.verify = vi.fn(async () => { throw Object.assign(new Error('The service stopped this runtime job'), { stopped: true }); });
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
     expect(updater.status()).toMatchObject({ phase: 'waiting', automatic: true });
     expect(updater.status().rejected).toBeUndefined();
   });
 
-  it('waits for room on the disk, with the Home still serving, and shows no notice meanwhile', async () => {
+  it('waits for room on the disk with the Home still serving', async () => {
     mocked.space.mockReturnValue('Not enough free disk space to update safely. The update needs 2.0 GiB free and 1.0 GiB is.');
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeUndefined();
     expect(updater.status().reason).toContain('Not enough free disk space');
     expect(backend.stop).not.toHaveBeenCalled();
     mocked.space.mockReturnValue(null);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
+    expect(updater.status().phase).toBe('committed');
   });
 
   it('asks nothing of a person who asked, but still waits for room', async () => {
@@ -631,7 +615,6 @@ describe('the automatic update rule (section 7.2)', () => {
     expect(updater.status().force).toBe(false);
     expect(backend.stop).toHaveBeenCalled();
     const stops = vi.mocked(backend.stop).mock.calls.length;
-    // The tick right after: asked for now, but no longer forced past the wait.
     await updater.tick();
     expect(vi.mocked(backend.stop).mock.calls.length).toBe(stops);
   });
@@ -648,61 +631,42 @@ describe('the automatic update rule (section 7.2)', () => {
     expect(backend.restart).toHaveBeenCalledOnce();
   });
 
-  it('cancels the heads-up when someone uses Ri, and starts the wait over', async () => {
+  it('starts the quiet minute over when someone uses Ri', async () => {
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
+    advance(30_000);
+    lastUseAt = now;
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
-    lastUseAt = now + 1000;
-    now += 30_000; vi.setSystemTime(now);
+    advance(MINUTE - 1);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeUndefined();
-    now += 9 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    expect(updater.status().headsUpAt).toBeUndefined();
     expect(backend.stop).not.toHaveBeenCalled();
+    advance(1);
+    await updater.tick();
+    expect(updater.status().phase).toBe('committed');
   });
 
-  it('cancels the heads-up when a chat starts, and counts 10 minutes from when it ends', async () => {
+  it('waits for a chat and then counts a quiet minute', async () => {
     const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
     work = ['1 chat'];
-    now += 30_000; vi.setSystemTime(now);
+    advance(2 * MINUTE);
     await updater.tick();
-    expect(updater.status()).toMatchObject({ reason: '1 chat' });
-    expect(updater.status().headsUpAt).toBeUndefined();
+    expect(updater.status()).toMatchObject({ phase: 'waiting', reason: '1 chat' });
+    expect(backend.stop).not.toHaveBeenCalled();
     work = [];
-    now += 9 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE - 1);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeUndefined();
-    now += MINUTE; vi.setSystemTime(now);
+    expect(backend.stop).not.toHaveBeenCalled();
+    advance(1);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
+    expect(updater.status().phase).toBe('committed');
   });
 
   it('never stops running work, however long it runs, and says so after a day', async () => {
     work = ['2 chats'];
     const updater = await waiting();
-    now += 25 * 60 * MINUTE; vi.setSystemTime(now);
+    advance(25 * 60 * MINUTE);
     await updater.tick();
     expect(backend.stop).not.toHaveBeenCalled();
     expect(updater.status()).toMatchObject({ phase: 'waiting', reason: '2 chats', waitingLong: true });
-  });
-
-  it('holds for an hour after Not now, then asks again', async () => {
-    const updater = await waiting();
-    now += 10 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    updater.later();
-    expect(updater.status().headsUpAt).toBeUndefined();
-    expect(updater.status().phase).toBe('waiting');
-    now += 59 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    expect(updater.status().headsUpAt).toBeUndefined();
-    now += MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
   });
 
   it('lets Update now skip the wait, and waits for chats unless told to end them', async () => {
@@ -719,53 +683,47 @@ describe('the automatic update rule (section 7.2)', () => {
 
   it('updates by itself at most every 12 hours', async () => {
     const updater = await waiting();
-    now += 11 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    now += MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
     expect(installedRuntime(directory)!.id).toBe(candidate);
     await updater.offer(prior);
-    expect(updater.status().phase).toBe('ready');
     updater.approveAutomatically();
-    now += 60 * MINUTE; vi.setSystemTime(now);
+    advance(60 * MINUTE);
     await updater.tick();
     expect(updater.status().reason).toMatch(/12 hours/);
     expect(installedRuntime(directory)!.id).toBe(candidate);
-    now += 12 * 60 * MINUTE; vi.setSystemTime(now);
+    advance(12 * 60 * MINUTE);
     await updater.tick();
-    expect(updater.status().headsUpAt).toBeTruthy();
+    expect(installedRuntime(directory)!.id).toBe(prior);
   });
 
   it('survives a controller restart, starting the quiet stretch again', async () => {
     const first = await waiting();
-    now += 9 * MINUTE; vi.setSystemTime(now);
+    advance(30_000);
     await first.tick();
     const second = coordinator();
     expect(second.status()).toMatchObject({ phase: 'waiting', automatic: true });
-    now += 2 * MINUTE; vi.setSystemTime(now);
+    advance(MINUTE - 1);
     await second.tick();
-    expect(second.status().headsUpAt).toBeUndefined();
-    now += 8 * MINUTE; vi.setSystemTime(now);
+    expect(backend.stop).not.toHaveBeenCalled();
+    advance(1);
     await second.tick();
-    expect(second.status().headsUpAt).toBeTruthy();
+    expect(second.status().phase).toBe('committed');
   });
 
   it('never moves by itself to a release that failed here', async () => {
     backend.validate = vi.fn(async () => { throw new Error('The check-only start failed'); });
     const updater = await waiting();
-    now += 11 * MINUTE; vi.setSystemTime(now);
-    await updater.tick();
-    now += MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
     expect(updater.status()).toMatchObject({ phase: 'failed', rejected: candidate });
     expect(installedRuntime(directory)!.id).toBe(prior);
     await updater.offer(candidate);
     updater.approveAutomatically();
     expect(updater.status().phase).toBe('ready');
-    // A person asking still can.
     backend.validate = vi.fn(async () => {});
     updater.approve();
-    now += MINUTE; vi.setSystemTime(now);
+    advance(MINUTE);
     await updater.tick();
     expect(installedRuntime(directory)!.id).toBe(candidate);
     expect(updater.status().rejected).toBeUndefined();
@@ -783,7 +741,7 @@ describe('the automatic update rule (section 7.2)', () => {
   it('leaves a server that does not answer waiting', async () => {
     backend.quiet = vi.fn(async () => { throw new Error('No answer'); });
     const updater = await waiting();
-    now += 60 * MINUTE; vi.setSystemTime(now);
+    advance(60 * MINUTE);
     await updater.tick();
     expect(updater.status().phase).toBe('waiting');
     expect(backend.stop).not.toHaveBeenCalled();

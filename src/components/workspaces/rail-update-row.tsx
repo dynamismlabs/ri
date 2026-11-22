@@ -10,10 +10,9 @@ import { RailIconButton } from './rail-icon-button';
 
 /**
  * An update that is installed and waiting on running work (`ri update`, or an
- * automatic one waiting for quiet). Nothing else in the window says so until
- * the 1-minute heads-up, so the rail keeps one quiet row near Settings for as
- * long as it waits, and it leads to Settings, Updates, which has Update now
- * and end them. No banner and no popup. It goes away when the Home switches.
+ * automatic one waiting for quiet). The rail keeps a quiet row near Settings
+ * even when the update card is postponed. It leads to Settings, Updates,
+ * which has Update now and end them. It goes away when the Home switches.
  */
 export function RailUpdateRow({ collapsed }: { collapsed: boolean }) {
   // ServiceConnection keeps this entry current, so the interval is a fallback.

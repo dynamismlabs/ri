@@ -9,8 +9,12 @@ import { API_PROTOCOL, apiCompatibilityIssue } from '@/lib/releases/api-contract
 import { trpcClient } from '@/lib/trpc/client';
 import { rpcOptions } from '@/lib/trpc/request-options';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { SERVICE_STATUS_KEY } from '@/hooks/use-service-status';
+import { CircleArrowUp, CircleCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
+import { readyUpdateNotice } from '@/lib/service/update-presentation';
 
 /** At most this often, a window says a person is using it (docs/always-on-spec.md 7.2). */
 const USE_EVERY_MS = 30_000;
@@ -24,8 +28,9 @@ export function ServiceConnection() {
    * reloading under whoever is reading it (section 4.3). */
   const [refresh, setRefresh] = useState<'' | 'updated' | 'required'>('');
   const [reloading, setReloading] = useState(false);
-  const [headsUp, setHeadsUp] = useState(false);
+  const [readyUpdate, setReadyUpdate] = useState<ReturnType<typeof readyUpdateNotice>>(null);
   const [answering, setAnswering] = useState(false);
+  const settings = useSettingsStore();
   useEffect(() => {
     let disposed = false;
     let checking = false;
@@ -36,7 +41,7 @@ export function ServiceConnection() {
       if (!issue || disposed) return false;
       setMessage(issue.message);
       setRefresh(issue.update === 'client' ? 'required' : '');
-      setHeadsUp(false);
+      setReadyUpdate(null);
       return true;
     };
     /** A tab in the background saves its drafts and reloads by itself. If it
@@ -61,7 +66,7 @@ export function ServiceConnection() {
           updated = true;
           setMessage('Ri was updated.');
           setRefresh('updated');
-          setHeadsUp(false);
+          setReadyUpdate(null);
           // The new server answers for the rail and Settings, not the old one's last word.
           void queryClient.invalidateQueries({ queryKey: SERVICE_STATUS_KEY });
           await reloadIfHidden();
@@ -71,7 +76,7 @@ export function ServiceConnection() {
         // One poll per window: the rail's update row and Settings read this answer.
         queryClient.setQueryData(SERVICE_STATUS_KEY, status);
         const update = 'update' in status ? status.update : undefined;
-        setHeadsUp(!!update?.headsUpAt && status.canUseUpdates);
+        setReadyUpdate(readyUpdateNotice({ canUseUpdates: status.canUseUpdates, update }));
         if (update?.phase === 'draining') {
           setMessage('Preparing an update. Saving your changes.');
           await documentSaves.flushAll();
@@ -116,20 +121,38 @@ export function ServiceConnection() {
     try {
       if (action === 'apply') await documentSaves.flushAll();
       await trpcClient.service.updatePost.mutate({ body: { action } });
-      setHeadsUp(false);
+      setReadyUpdate(null);
     } catch { /* The next check shows where things stand. */ }
     finally { setAnswering(false); }
   };
-  const box = 'fixed bottom-4 left-1/2 z-[100] max-w-[90vw] -translate-x-1/2 rounded-lg border bg-background px-4 py-2 text-sm shadow-lg';
+  const viewUpdate = () => { setReadyUpdate(null); openSettings('updates'); };
+  if (refresh === 'updated' && settings.open && settings.section === 'updates') return null;
   if (message) {
-    return <div role="status" className={box}>
-      {message}{refresh && <button type="button" disabled={reloading} className="ml-3 underline" onClick={() => void reload()}>Refresh</button>}
-    </div>;
+    return <UpdateNotice title={refresh === 'updated' ? 'Ri was updated' : refresh === 'required' ? 'Refresh Ri' : 'Ri update'} complete={refresh === 'updated'} actions={<>
+      {refresh === 'updated' && <Button size="sm" variant="outline" onClick={viewUpdate}>View update</Button>}
+      {refresh && <Button size="sm" disabled={reloading} onClick={() => void reload()}>{reloading ? 'Saving drafts…' : 'Refresh'}</Button>}
+    </>}>
+      <p>{message === 'Ri was updated.' ? 'Refresh to use the latest version. Your drafts will be saved before reloading.' : message}</p>
+    </UpdateNotice>;
   }
-  if (!headsUp) return null;
-  return <div role="status" className={box}>
-    Ri will update in 1 minute.
-    <button type="button" disabled={answering} className="ml-3 underline" onClick={() => void answer('later')}>Not now</button>
-    <button type="button" disabled={answering} className="ml-3 underline" onClick={() => void answer('apply')}>Update now</button>
-  </div>;
+  if (!readyUpdate || (settings.open && settings.section === 'updates')) return null;
+  return <UpdateNotice title={`Ri ${readyUpdate.version} is ready to update`} actions={<>
+    <Button size="sm" variant="outline" onClick={viewUpdate}>View update</Button>
+    <Button size="sm" variant="ghost" disabled={answering} onClick={() => void answer('later')}>Not now</Button>
+    <Button size="sm" disabled={answering} onClick={() => void answer('apply')}>Update now</Button>
+  </>}>
+    <p>{readyUpdate.automatic ? 'Ri will install it after a minute of inactivity. Running chats will finish first.' : 'The update is downloaded and verified. Ri is waiting for running work to finish.'}</p>
+    {readyUpdate.notes.trim() && <p className="mt-3 line-clamp-3 whitespace-pre-line border-t border-border/60 pt-3 text-foreground/80">{readyUpdate.notes}</p>}
+  </UpdateNotice>;
+}
+
+function UpdateNotice({ title, children, actions, complete = false }: { title: string; children: ReactNode; actions: ReactNode; complete?: boolean }) {
+  const Icon = complete ? CircleCheck : CircleArrowUp;
+  return <section role="status" aria-label={title} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[100] w-[calc(100vw-2rem)] max-w-sm rounded-2xl border border-border bg-background p-5 text-sm shadow-xl">
+    <div className="flex items-start gap-3">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted"><Icon size={19} aria-hidden /></div>
+      <div className="min-w-0 flex-1"><p className="font-semibold leading-snug">{title}</p><div className="mt-2 text-xs leading-relaxed text-muted-foreground">{children}</div></div>
+    </div>
+    <div className="mt-4 flex flex-wrap justify-end gap-2">{actions}</div>
+  </section>;
 }

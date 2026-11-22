@@ -14,6 +14,7 @@ import { demoEnvironment, demoRoot, type BackendMessage, type BackendReady } fro
 import { agentInstallUrl, certificateDecision, desktopRequestHeaders, externalLinkUrl, externalWebUrl, sameOrigin } from './trust';
 import { removeTerminalCommand, type CliInstallation } from './cli-install';
 import { downloadDesktopUpdateInBackground, relaunchWithHome, updateDesktop } from './shell-update';
+import { updateCheckIntervalMs } from '../src/lib/service/update-timing';
 import { HarnessToolSetup } from './harness-tools';
 import type { DesktopComputerStatus } from '../src/lib/client/desktop';
 import { parseDeepLink, resultLocation, watchOAuthResults } from './oauth-client';
@@ -1308,7 +1309,7 @@ async function start() {
   updateActivity(activityState);
   const checkAppUpdate = () => { if (!quitting) void downloadDesktopUpdateInBackground(); };
   const firstAppCheck = setTimeout(checkAppUpdate, 5 * 60_000); firstAppCheck.unref();
-  const appChecks = setInterval(checkAppUpdate, 6 * 60 * 60_000); appChecks.unref();
+  const appChecks = setInterval(checkAppUpdate, updateCheckIntervalMs()); appChecks.unref();
   if (!backgroundLaunch || !tray || process.platform !== 'darwin') {
     showWindow();
     if (backgroundLaunch && process.platform !== 'darwin') backgroundWindow(window, process.platform, !!tray);

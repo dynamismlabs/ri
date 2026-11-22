@@ -7,8 +7,7 @@ export function maintenanceWindowText(window: MaintenanceWindow) {
 }
 
 /** What a waiting update is waiting for, as Settings and `ri status` say it (7.1). */
-export function updateWaitingText(update: Pick<UpdateRecord, 'reason' | 'headsUpAt' | 'heldUntil'>, now = Date.now()) {
-  if (update.headsUpAt) return 'Ri will update in 1 minute';
+export function updateWaitingText(update: Pick<UpdateRecord, 'reason' | 'heldUntil'>, now = Date.now()) {
   if (update.heldUntil && Date.parse(update.heldUntil) > now) return `You asked to update later. Ri asks again when it's quiet after ${new Date(update.heldUntil).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`;
   const reason = (update.reason ?? 'the service to be idle').replace(/^waiting for /i, '').replace(/\.$/, '');
   // Counts of running work finish. Anything else is only waited for.
@@ -20,9 +19,17 @@ export function updateWaitingText(update: Pick<UpdateRecord, 'reason' | 'headsUp
  * Only for people who can act on updates, and only while one waits: what it
  * says is what Settings and `ri status` say (`updateWaitingText`).
  */
-export function railUpdateNotice(status: { canUseUpdates: boolean; update?: Pick<UpdateRecord, 'phase' | 'reason' | 'headsUpAt' | 'heldUntil'> } | undefined, now = Date.now()): string | null {
+export function railUpdateNotice(status: { canUseUpdates: boolean; update?: Pick<UpdateRecord, 'phase' | 'reason' | 'heldUntil'> } | undefined, now = Date.now()): string | null {
   if (!status?.canUseUpdates || status.update?.phase !== 'waiting') return null;
   return updateWaitingText(status.update, now);
+}
+
+/** A downloaded update stays visible until it installs or the person postpones it. */
+export function readyUpdateNotice(status: { canUseUpdates: boolean; update?: Pick<UpdateRecord, 'phase' | 'heldUntil' | 'release' | 'automatic'> }, now = Date.now()) {
+  const update = status.update;
+  if (!status.canUseUpdates || update?.phase !== 'waiting' || !update.release) return null;
+  if (update.heldUntil && Date.parse(update.heldUntil) > now) return null;
+  return { version: update.release.version, notes: update.release.notes, automatic: !!update.automatic };
 }
 
 export function updateStatusText(update: UpdateRecord & { busy?: boolean }) {
