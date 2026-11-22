@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import type { Release } from './release-trust';
 import type { UpdateRecord } from './update';
-import { maintenanceWindowText, railUpdateNotice, updateProgress, updateStatusText } from './update-presentation';
+import { maintenanceWindowText, railUpdateNotice, readyUpdateNotice, updateProgress, updateStatusText } from './update-presentation';
 
 const record: UpdateRecord = { format: 1, phase: 'downloading', changedAt: '', release: { runtime: { size: 4 * 1024 ** 2 } } as Release };
 it('distinguishes byte transfer from verification after the last byte', () => {
@@ -14,7 +14,6 @@ it('retains the waiting reason and identifies maintenance phases while busy', ()
   expect(updateStatusText({ ...record, phase: 'waiting', reason: '2 chats', busy: true })).toBe('Waiting for 2 chats to finish');
   expect(updateStatusText({ ...record, phase: 'waiting', reason: 'a quiet moment' })).toBe('Waiting for a quiet moment');
   expect(updateStatusText({ ...record, phase: 'waiting', reason: 'Waiting for the maintenance window (UTC)' })).toBe('Waiting for the maintenance window (UTC)');
-  expect(updateStatusText({ ...record, phase: 'waiting', headsUpAt: new Date().toISOString() })).toBe('Ri will update in 1 minute');
   expect(updateStatusText({ ...record, phase: 'waiting', heldUntil: new Date(Date.now() + 60_000).toISOString() })).toMatch(/^You asked to update later/);
   expect(updateStatusText({ ...record, phase: 'checkpointing', busy: true })).toBe('Backing up your data…');
   expect(updateStatusText({ ...record, phase: 'validating', busy: true })).toMatch(/migrations/);
@@ -33,5 +32,21 @@ it('puts a waiting update in the rail only for people who can act on it, and onl
   }
   expect(railUpdateNotice({ canUseUpdates: true })).toBeNull();
   expect(railUpdateNotice(undefined)).toBeNull();
-  expect(railUpdateNotice({ canUseUpdates: true, update: { ...waiting, headsUpAt: new Date().toISOString() } })).toBe('Ri will update in 1 minute');
+});
+
+it('shows a downloaded update immediately, with its version and release notes', () => {
+  const update = { ...record, phase: 'waiting' as const, automatic: true, release: { ...record.release!, version: '0.2.0', notes: 'Faster chats' } };
+  expect(readyUpdateNotice({ canUseUpdates: true, update })).toEqual({ version: '0.2.0', notes: 'Faster chats', automatic: true });
+  expect(readyUpdateNotice({ canUseUpdates: false, update })).toBeNull();
+  expect(readyUpdateNotice({ canUseUpdates: true })).toBeNull();
+  for (const phase of ['available', 'downloading', 'ready', 'draining', 'committed', 'failed'] as const) {
+    expect(readyUpdateNotice({ canUseUpdates: true, update: { ...update, phase } })).toBeNull();
+  }
+});
+
+it('keeps a postponed notice hidden until the hold ends', () => {
+  const now = Date.now();
+  const update = { ...record, phase: 'waiting' as const, heldUntil: new Date(now + 60_000).toISOString() };
+  expect(readyUpdateNotice({ canUseUpdates: true, update }, now)).toBeNull();
+  expect(readyUpdateNotice({ canUseUpdates: true, update }, now + 60_000)).not.toBeNull();
 });

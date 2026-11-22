@@ -125,7 +125,7 @@ If an online key leaked, or might have:
 
 1. `pnpm release:rotate --root-key <file> --revoke <id>`. The id is in the key's file name, and every run's log names the key it signed with. The new version lists only the new key.
 2. Commit, push and set the secret, as above.
-3. Sign the feed again now: `gh workflow run release.yml -f action=refresh`. It uploads the new keys file and signs every file on the feed with the new key. Each computer stops trusting the revoked key at its next check, within 6 hours, and never trusts it again, since it refuses an older keys file.
+3. Sign the feed again now: `gh workflow run release.yml -f action=refresh`. It uploads the new keys file and signs every file on the feed with the new key. Each online computer stops trusting the revoked key at its next check, within 20 minutes, and never trusts it again, since it refuses an older keys file.
 
 The refresh trusts what is already on the feed. If whoever had the key could also upload to the `feed` release, check it holds only what you published before running it: `gh release view feed` for unexpected uploads, and every version in the index pointing at its own release's runtime.
 

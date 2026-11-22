@@ -59,6 +59,28 @@ async function fire(extra: Record<string, unknown>) {
 }
 
 describe('OpenCode effort', () => {
+  it('keeps the Codex Home default when an OpenCode cron is created and runs', async () => {
+    const q = await import('@/lib/db/queries');
+    const { dispatchRun } = await import('@/lib/runs/dispatch');
+    const defaults = { defaultHarness: 'codex' as const, defaultModel: 'gpt-6.2-sol', defaultEffort: 'xhigh' as const };
+    q.updateUserState(defaults);
+
+    const created = await run('create_trigger', {
+      name: 'OpenCode briefing', targetKind: 'orchestrator', kind: 'cron',
+      cronExpression: '0 8 * * *', timezone: 'UTC',
+      prompt: 'Prepare the briefing', provider: 'opencode', model: sonnet, effort: 'high',
+    });
+    expect(created.ok).toBe(true);
+    expect(q.getUserState()).toMatchObject(defaults);
+
+    const trigger = q.getTrigger((created.result as { trigger: { id: string } }).trigger.id)!;
+    const result = await dispatchRun({ trigger, triggerKind: 'cron' });
+    expect(await finished(result.run.id)).toMatchObject({ status: 'completed', harness: 'opencode' });
+    expect(result.chatSession).toMatchObject({ harness: 'opencode', model: sonnet, effort: 'high' });
+    expect(fake.latest().ctx.config).toMatchObject({ model: sonnet, effort: 'high' });
+    expect(q.getUserState()).toMatchObject(defaults);
+  });
+
   it('starts a scheduled chat on the saved effort and sends it to OpenCode as effort', async () => {
     const { trigger, chat } = await fire({ model: sonnet, effort: 'xhigh' });
     expect(trigger).toMatchObject({ harness: 'opencode', model: sonnet, effort: 'xhigh' });

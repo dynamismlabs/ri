@@ -36,9 +36,7 @@ export interface UpdateRecord {
   automatic?: boolean;
   /** Update now: a person asking, which goes ahead of a maintenance window. */
   now?: boolean;
-  /** The heads-up, while it's showing. */
-  headsUpAt?: string;
-  /** Not now: no heads-up before this. */
+  /** Not now: no automatic update or notice before this. */
   heldUntil?: string;
   /** When this wait began, for the 24-hour notice. */
   waitingSince?: string;
@@ -122,7 +120,7 @@ export function snapshotsInUse(record: Pick<UpdateRecord, 'phase' | 'checkpoint'
 /** One instance in the service owner. Every GUI/CLI action uses its private
  * control socket, so there is no second updater or independent DB migrator. */
 const DRAIN_RETRY_MS = 5 * 60_000;
-const NOT_WAITING = { automatic: undefined, now: undefined, headsUpAt: undefined, heldUntil: undefined, waitingSince: undefined };
+const NOT_WAITING = { automatic: undefined, now: undefined, heldUntil: undefined, waitingSince: undefined };
 
 export class UpdateCoordinator {
   private busy = false;
@@ -265,7 +263,7 @@ export class UpdateCoordinator {
       return this.status();
     });
   }
-  /** A person asking: Update now in Settings or the heads-up, or `ri update`. It
+  /** A person asking: Update now in Settings or the update notice, or `ri update`. It
    * skips the quiet stretch, and waits for running chats unless told not to.
    * `now` is false for a scheduled update, which leaves the rule in charge. */
   approve(window?: UpdateRecord['window'], force = false, now = !window) {
@@ -279,7 +277,7 @@ export class UpdateCoordinator {
       throw new Error('Download an update before scheduling activation');
     }
     this.drainAfter = 0;
-    const waiting = { approved: true, window: now ? this.record.window : window, now, force, reason: 'Waiting for the service to be idle', automatic: false, headsUpAt: undefined, heldUntil: undefined, waitingSince: this.record.waitingSince ?? new Date().toISOString() };
+    const waiting = { approved: true, window: now ? this.record.window : window, now, force, reason: 'Waiting for the service to be idle', automatic: false, heldUntil: undefined, waitingSince: this.record.waitingSince ?? new Date().toISOString() };
     if (fetchFirst) {
       this.save(waiting);
       void this.download().catch(error => console.warn('[update] Download failed:', message(error)));
@@ -294,7 +292,7 @@ export class UpdateCoordinator {
     if (this.busy || this.record.phase !== 'ready' || !this.record.release) return this.status();
     if (this.record.rejected === this.record.release.runtime.id) return this.status();
     this.quietFrom = Date.now();
-    this.save({ approved: true, automatic: true, phase: 'waiting', force: false, reason: QUIET_REASON, headsUpAt: undefined, heldUntil: undefined, waitingSince: new Date().toISOString() });
+    this.save({ approved: true, automatic: true, phase: 'waiting', force: false, reason: QUIET_REASON, heldUntil: undefined, waitingSince: new Date().toISOString() });
     return this.status();
   }
   /** Not now. The rule asks again after the hold. A wait a person approved goes
@@ -302,7 +300,7 @@ export class UpdateCoordinator {
   later() {
     if (this.busy || transient.has(this.record.phase)) throw new Error('The update is already in progress');
     if (this.record.phase !== 'waiting') return this.status();
-    if (this.record.automatic) this.save({ headsUpAt: undefined, heldUntil: new Date(Date.now() + updateTiming().holdMs).toISOString(), reason: 'you asked to update later' });
+    if (this.record.automatic) this.save({ heldUntil: new Date(Date.now() + updateTiming().holdMs).toISOString(), reason: 'you asked to update later' });
     else this.save({ approved: false, force: false, phase: 'ready', window: undefined, reason: undefined, ...NOT_WAITING });
     return this.status();
   }
@@ -315,7 +313,7 @@ export class UpdateCoordinator {
     const window = this.record.now ? undefined : this.record.window;
     if (window) {
       const hour = Number(new Intl.DateTimeFormat('en-GB', { hour: 'numeric', hourCycle: 'h23', timeZone: window.timeZone }).format(new Date()));
-      if ((hour - window.hour + 24) % 24 >= window.durationHours) { this.save({ reason: `Waiting for the maintenance window (${window.timeZone})`, headsUpAt: undefined }); return; }
+      if ((hour - window.hour + 24) % 24 >= window.durationHours) { this.save({ reason: `Waiting for the maintenance window (${window.timeZone})` }); return; }
     }
     // A window narrows when the rule can run, so a scheduled update follows it too.
     if ((this.record.automatic || window) && this.backend.quiet && !(await this.quietEnough())) return;
@@ -331,7 +329,7 @@ export class UpdateCoordinator {
     if (facts.work.length) this.quietFrom = now;
     const time = (value?: string) => value ? Date.parse(value) : undefined;
     const decide = () => nextTimingStep({ now, work: facts.work, lastUseAt: facts.lastUseAt, quietFrom: this.quietFrom,
-      headsUpAt: time(this.record.headsUpAt), heldUntil: time(this.record.heldUntil), lastAutomaticAt: time(this.record.lastAutomaticAt) });
+      heldUntil: time(this.record.heldUntil), lastAutomaticAt: time(this.record.lastAutomaticAt) });
     let step = decide();
     if (step.step !== 'wait') {
       const clear = await this.clearToSwitch();
@@ -343,12 +341,7 @@ export class UpdateCoordinator {
       step = decide();
     }
     if (step.step === 'update') return true;
-    if (step.step === 'heads-up') {
-      const headsUpAt = new Date(step.at).toISOString();
-      if (this.record.headsUpAt !== headsUpAt) this.save({ headsUpAt, heldUntil: undefined, reason: 'the 1-minute notice' });
-      return false;
-    }
-    if (this.record.reason !== step.reason || this.record.headsUpAt) this.save({ reason: step.reason, headsUpAt: undefined });
+    if (this.record.reason !== step.reason) this.save({ reason: step.reason });
     return false;
   }
   /** A connected computer keeps no Home data, so it takes no snapshot. */
@@ -377,7 +370,7 @@ export class UpdateCoordinator {
     catch (error) { blocked = [message(error)]; }
     const noRoom = this.roomProblem();
     if (noRoom) blocked = [...blocked, noRoom];
-    if (blocked.length) { this.save({ reason: blocked.join(', '), headsUpAt: undefined }); return 'blocked'; }
+    if (blocked.length) { this.save({ reason: blocked.join(', ') }); return 'blocked'; }
     return 'clear';
   }
 
@@ -432,13 +425,13 @@ export class UpdateCoordinator {
       // free to act.
       if (!force) {
         const running = await this.backend.work?.() ?? [];
-        if (running.length) { this.save({ phase: 'waiting', reason: running.join(', '), headsUpAt: undefined }); return this.status(); }
+        if (running.length) { this.save({ phase: 'waiting', reason: running.join(', ') }); return this.status(); }
       }
       // A disk too full for the snapshot means waiting, and costs no downtime (7.4 step 3).
       const noRoom = this.roomProblem();
       if (noRoom) {
         this.drainAfter = Date.now() + DRAIN_RETRY_MS;
-        this.save({ phase: 'waiting', reason: noRoom, headsUpAt: undefined });
+        this.save({ phase: 'waiting', reason: noRoom });
         return this.status();
       }
       // The one full check of the release, while the Home still serves.
@@ -464,7 +457,7 @@ export class UpdateCoordinator {
       }
       const compatibility = () => this.backend.compatibility?.(target) ?? Promise.resolve([]);
       const blocked = await compatibility();
-      if (blocked.length) { this.save({ phase: 'waiting', reason: blocked.join(', '), headsUpAt: undefined }); return this.status(); }
+      if (blocked.length) { this.save({ phase: 'waiting', reason: blocked.join(', ') }); return this.status(); }
       const token = randomBytes(32).toString('hex');
       const gate = { phase: 'draining' as const, token, startedAt: new Date().toISOString() };
       this.save({ phase: 'draining', priorId: prior.id, checkpoint: undefined, error: undefined, committedAt: undefined });
@@ -475,7 +468,7 @@ export class UpdateCoordinator {
         const drained = await this.drain(gate, async () => [...(force ? [] : await this.backend.activity()), ...await compatibility()], force);
         if ('reasons' in drained) {
           this.drainAfter = Date.now() + DRAIN_RETRY_MS;
-          clearMaintenance(); this.save({ phase: 'waiting', reason: drained.reasons.join(', '), headsUpAt: undefined }); return this.status();
+          clearMaintenance(); this.save({ phase: 'waiting', reason: drained.reasons.join(', ') }); return this.status();
         }
         activity = drained.lease;
         writeMaintenance({ ...gate, phase: 'offline' });
@@ -543,7 +536,7 @@ export class UpdateCoordinator {
           this.drainAfter = Date.now() + DRAIN_RETRY_MS;
           this.quietFrom = Date.now();
           // Update now was about the chats running when it was asked, and it has ended those.
-          this.save({ phase: 'waiting', force: false, reason: message(error), error: undefined, headsUpAt: undefined, checkpoint: undefined, priorId: undefined });
+          this.save({ phase: 'waiting', force: false, reason: message(error), error: undefined, checkpoint: undefined, priorId: undefined });
         } else this.save({ phase: 'failed', approved: false, force: false, error: message(error), ...NOT_WAITING, rejected: this.record.release?.runtime.id });
         if (stopped) {
           try { await this.backend.restart(await this.target(prior.id)); stopped = false; }

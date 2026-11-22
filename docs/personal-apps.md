@@ -157,6 +157,8 @@ Tested through Ri's real path in `remove.test.ts`: catalog Add, Install, consent
 
 **The builder brief** (`src/lib/apps/builder-brief.ts`) keeps only host facts: where the folder or working copy is, that checks use their own data directory and fixture connectors, how to build and check, to commit, and never to install or run the service, open its data, connect it, grant it access, read Ri's credentials or edit Ri's source. How to build an app is the kit's build skill in the folder. The builder chat also has no reach into the person's accounts. It's guidance, not isolation (shared spec, Trust).
 
+**The builder's model menu.** A new builder chat starts from the Home's default selection, as other focused chats do. Its menu offers the connected harnesses and their visible models. Choosing another harness archives the current thread and starts one for the same app on that selection, including its variant, effort and speed. The app's files and any change in progress stay in place.
+
 Checked on November 12, 2026 with the kit's `claude/single-path-kit-jobs` branch, on the isolated Ri with the kit's plain-process service: New app created and committed Tide Log, Install and connect passed every kit step and connected Ri over OAuth, a change in its own working copy switched the running app to its commit and fast-forwarded the folder, and a change with a failing test stopped at `test` with nothing changed and the working copy kept.
 
 ## Status, Restart and Logs

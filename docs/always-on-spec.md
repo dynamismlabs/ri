@@ -112,7 +112,7 @@ The `ri service ...` commands stay as the detailed form (`status` as JSON, `awak
 ### 4.2 Desktop app
 
 - **First run.** "Start a new Ri" creates the Home and keeps it running in one step. So does choosing an existing Ri on this computer, or creating a team. "Connect to Ri" pairs, as today. Nobody has to find a separate "Start at Login" choice.
-- **Updates.** A Home on this computer updates by the rule in section 7.2, the same rule as everywhere else: the heads-up shows in the app's window, with **Not now** and **Update now**. A Ri update usually changes only pages and server code, and those reach the window through the Home with no app download. The app's own part (its three screens, menus, Quick Capture, notifications and the bridge between the pages and the Mac) downloads only when its own files changed.
+- **Updates.** A Home on this computer updates by the rule in section 7.2, the same rule as everywhere else: the update notice shows in the app's window, with **Not now** and **Update now**. A Ri update usually changes only pages and server code, and those reach the window through the Home with no app download. The app's own part (its three screens, menus, Quick Capture, notifications and the bridge between the pages and the Mac) downloads only when its own files changed.
   - **The Home is on this computer.** A changed app part comes with the Home's update, and the window relaunches as part of that same restart.
   - **The Home is elsewhere.** A changed app part downloads in the background and takes effect the next time the app starts, the way Claude Code does. A release says what its app part is (`shell.id`), so an unchanged one isn't downloaded at all.
   - **The bridge to the Mac must stay in step, local or remote.** Every Home's pages, including a remote Home's, get the app's bridge, `riDesktop` (`desktop/preload.ts`): opening links, notifications, connection controls and Quick Capture. Only its settings calls are limited to a Home on this computer. The bridge has a version. When a Home's pages need a bridge version this app doesn't have, the window says "Update the Ri desktop app to keep using this Ri", with **Restart now**. That check (`assertBridge` in `desktop/viewer-trust.ts`) runs for a Home on this computer and a remote one alike. The Home's pages also check what the window's bridge offers before using a feature, so an older app loses only that feature instead of breaking.
@@ -249,7 +249,7 @@ Setup never asks about automatic updates. Most people can't judge the choice bef
 
 Once automatic updates are on:
 
-- The installation checks for a new published release when a controller starts and every 6 hours after that, as the updater does today.
+- The installation checks for a new published release shortly after a controller starts and every 15 to 20 minutes after that. The desktop app checks on the same interval, with jitter to spread requests across installations.
 - A new release downloads in the background, along with the desktop app's own part when that changed (section 4.2).
 - When the new release takes effect depends on what is running (section 7.2).
 - If a Home hasn't been able to switch for 24 hours, `ri status` and Settings say what it is waiting for ("2 chats running") and offer to update now.
@@ -261,28 +261,27 @@ Automatic updates apply to published releases only. A checkout builds only when 
 
 Every Home follows one rule, whether it was set up from the desktop app or the CLI, and whether it sits on a laptop or a server nobody watches:
 
-1. **Wait for 10 quiet minutes.** Quiet means all of these:
+1. **Show the downloaded update immediately.** A taller card at the bottom right of each window shows the release version, a short preview of its notes, **View update**, **Not now** and **Update now**. View update opens Settings, Updates with the full notes. The card stays visible while work finishes or Ri is in use, and hides while those details are open.
+2. **Wait for one quiet minute.** There is no countdown or extra warning minute. Quiet means all of these:
    - **Nothing is running that an update would cut off:** no chat turn, no app task, no agent background task, no permission waiting on someone, and no terminal a window is showing or that's running a command. A request in flight finishes during the restart's drain (section 7.4).
-   - **Nobody is looking at a preview:** a preview a window viewed in the last 10 minutes counts as use, though it never holds up someone pressing Update now.
-   - **Nobody has used Ri for the whole 10 minutes:** no typing or clicking in any window, and no calls from agents connected over MCP ("Ri in other agents").
-2. **Give a 1-minute heads-up** in every window showing the Home (browser, desktop app, phone): "Ri will update in 1 minute", with **Not now** and **Update now**.
-   - If no window is open, as on a server used only through MCP, there is no one to tell and the minute simply passes.
-   - Any new activity during the minute (a chat starts, a background task begins) cancels it, and the wait starts over.
+   - **Nobody is looking at a preview:** a preview counts as use, though it never holds up someone pressing Update now.
+   - **Nobody has used Ri for the whole minute:** no typing or clicking in any window, and no calls from agents connected over MCP ("Ri in other agents"). Any new activity starts this minute over.
+   - **The person has not postponed it:** Not now hides the card and prevents automatic installation for an hour. The maintenance window and the 12-hour spacing also still apply.
 3. **Update.** The restart takes seconds (section 7.4).
-   - Open windows then show the refresh notice (section 4.3).
+   - Open windows then show a card with **View update** and **Refresh** (section 4.3). The installed release's notes remain readable in Settings.
    - An agent whose MCP call lands in those seconds gets an error and retries, as it would after any dropped connection.
 
-**Idle processes don't count as work.** The activity check (`activity()` in `src/service/main.ts`) asks what a restart would cut off, not which processes the server owns. Agent processes stay open for up to 30 minutes after a chat goes quiet (`IDLE_CLOSE_MS` in `src/lib/runner/local-runner.ts`) and resume from their session id when the chat continues, and the agent browser is meant to outlive the server. Counting them would stretch 10 quiet minutes to about 40, and a helper process that never exits would block updates for good. So the check counts only the work listed in step 1, and the drain closes idle agent processes the way it always has (`closeIdleHarnessesForMaintenance`, called through `prepareIdle` in `src/lib/service/validation-boot.ts`). A terminal counts while a window shows it or a command runs in it, since nothing closes a forgotten one and walking away from a long job is normal. A preview doesn't count yet: `ri update` is a person asking, and phase C's quiet check adds it.
+**Idle processes don't count as work.** The activity check (`activity()` in `src/service/main.ts`) asks what a restart would cut off, not which processes the server owns. Agent processes stay open for up to 30 minutes after a chat goes quiet (`IDLE_CLOSE_MS` in `src/lib/runner/local-runner.ts`) and resume from their session id when the chat continues, and the agent browser is meant to outlive the server. Counting them would stretch one quiet minute to about 31, and a helper process that never exits would block updates for good. So the check counts only the work listed in step 2, and the drain closes idle agent processes the way it always has (`closeIdleHarnessesForMaintenance`, called through `prepareIdle` in `src/lib/service/validation-boot.ts`). A terminal counts while a window shows it or a command runs in it, since nothing closes a forgotten one and walking away from a long job is normal. A preview doesn't count yet: `ri update` is a person asking, and phase C's quiet check adds it.
 
 Around that rule:
 
-- **Not now** holds the update for an hour. After that, the next quiet stretch brings the heads-up back. It asks again, and never gives up or goes ahead silently.
-- **Update now** (in the heads-up, in Settings, or `ri update`) skips the wait, and fetches the release first if it hasn't downloaded, as with automatic updates off. If chats are running, it says which and offers to wait for them or stop them.
-- **Automatic updates never stop running work.** A Home that is never quiet for 10 minutes keeps its version, and after 24 hours `ri status` and Settings say what it is waiting for.
+- **Not now** holds the update for an hour. After that, the card returns and the next quiet stretch can install it. There is no extra countdown.
+- **Update now** (in the update notice, in Settings, or `ri update`) skips the wait, and fetches the release first if it hasn't downloaded, as with automatic updates off. If chats are running, it says which and offers to wait for them or stop them.
+- **Automatic updates never stop running work.** A Home that is never quiet for a minute keeps its version, and after 24 hours `ri status` and Settings say what it is waiting for.
 - **At most one automatic update every 12 hours,** so a Home on `latest` doesn't restart for every release. A release that arrives in between is picked up at the next one.
-- **Only people who can change update settings (section 7.1) see the heads-up's buttons.** Everyone else sees the refresh notice afterwards.
-- **Until the heads-up, the rail says an update is waiting.** For those same people, a quiet "Update ready" row above Settings names what it waits for and opens Settings, Updates. `ri update` waits only for running work, so without it a person who ran the command had no sign in the app that the Home hadn't switched.
-- **A maintenance window** (`ri update when-idle --hour`) still narrows when step 1 can happen, and carries to later releases. Update now goes ahead of it.
+- **Only people who can change update settings (section 7.1) see the update notice's buttons.** Everyone else sees the refresh notice afterwards.
+- **The rail also says an update is waiting.** For those same people, a quiet "Update ready" row above Settings names what it waits for and opens Settings, Updates. `ri update` waits only for running work, so without it a person who ran the command had no sign in the app that the Home hadn't switched.
+- **A maintenance window** (`ri update when-idle --hour`) still narrows when step 2 can happen, and carries to later releases. Update now goes ahead of it.
 
 For everything else:
 
@@ -292,7 +291,7 @@ For everything else:
 | A browser tab or desktop window | When its person refreshes, or on its own if it's in the background (section 4.3). |
 | A connected computer | Its server part when its Home moves, or first when the Home's next release needs it to (section 7.7). Its desktop app part at the app's next start (section 4.2). |
 
-This sits between the tools before it. Hermes never updates itself: it shows a banner, waits for `hermes update`, and then drains running work for up to 30 minutes. OpenClaw leaves automatic updates off for its server by default. Turned on, they wait for running work, give a one-minute countdown, allow one hour's hold, and go ahead anyway after 15 minutes even if work remains. Its connected machines update by default, only when idle, at most every 12 hours. Ri is on by default like Claude Code and OpenClaw's machines, and borrows OpenClaw's countdown, hold and spacing, but drops its forced deadline, because a Home's running work is a person's agents mid-task.
+This sits between the tools before it. Hermes never updates itself: it shows a banner, waits for `hermes update`, and then drains running work for up to 30 minutes. OpenClaw leaves automatic updates off for its server by default. Turned on, they wait for running work, give a one-minute countdown, allow one hour's hold, and go ahead anyway after 15 minutes even if work remains. Its connected machines update by default, only when idle, at most every 12 hours. Ri is on by default like Claude Code and OpenClaw's machines, and borrows OpenClaw's hold and spacing. It uses a ready card and a quiet minute instead of a countdown, and has no forced deadline, because a Home's running work is a person's agents mid-task.
 
 ### 7.3 Channels
 
@@ -307,7 +306,7 @@ The channel is a preference on each computer, not part of a build (`ri update --
 
 The steps build on `UpdateCoordinator.apply` today. Each Home's own controller runs them for that Home, with its own journal.
 
-1. **Wait and drain.** Wait for the quiet stretch and the heads-up (section 7.2), which Update now and `ri update` skip. While chats, background tasks or questions to a person are running, it only waits: the Home stays open and nothing is hashed, so `ri update --now` can act at any moment. Then drain new work and in-flight requests, and close idle agent processes (existing). A running turn holds its lease until it ends, so Update now stops waiting after 15 seconds and stops the server, which ends the turn. A drain that can't finish for any other reason reopens the Home and waits 5 minutes before the next, unless someone asks again.
+1. **Wait and drain.** Wait for the quiet stretch (section 7.2), which Update now and `ri update` skip. While chats, background tasks or questions to a person are running, it only waits: the Home stays open and nothing is hashed, so `ri update --now` can act at any moment. Then drain new work and in-flight requests, and close idle agent processes (existing). A running turn holds its lease until it ends, so Update now stops waiting after 15 seconds and stops the server, which ends the turn. A drain that can't finish for any other reason reopens the Home and waits 5 minutes before the next, unless someone asks again.
 2. **Stop the server** (existing).
 3. **Snapshot the config folder and the database, every time.**
    - **Why every time.** A release changes stored data at startup even without migrations: `initDatabase` rebuilds search tables and triggers and runs backfills (`src/lib/db/index.ts`), and `migrateIntegrationStorage` converts the connector settings folder (`src/lib/integrations/storage.ts`). So "no new migrations" doesn't mean the old release can read what the new one leaves behind, and only a snapshot makes going back exact.
@@ -560,15 +559,15 @@ Acceptance:
 - A Linux VM with linger on: back after a reboot with nobody logging in.
 
 **C. Automatic updates and alignment.**
-- Automatic download and the rule in section 7.2: the quiet stretch, counting only work in progress, the heads-up, Not now and Update now, and the 12-hour spacing.
+- Automatic download and the rule in section 7.2: the quiet stretch, counting only work in progress, the update notice, Not now and Update now, and the 12-hour spacing.
 - Who can change update settings (section 7.1).
 - The 24-hour waiting notice, `stable` and `latest`, and the shell updater following the setting.
 - The CLI's one-line notices, and the refresh notice in browsers and the desktop window (section 4.3).
 - Connected computers following their Home, including moving first to a bridge release (section 7.7).
 
 Acceptance, against a test feed:
-- A Home with no window open, used only over MCP, with idle agent processes left from a chat, updates after 10 quiet minutes (not 40), and an MCP call during the restart succeeds on retry.
-- A Home with a window open shows the heads-up. Not now brings it back after an hour. A chat or background task starting during the minute cancels it.
+- A Home with no window open, used only over MCP, with idle agent processes left from a chat, updates after one quiet minute (not 31), and an MCP call during the restart succeeds on retry.
+- A Home with a window open shows the update notice as soon as it is downloaded. Not now hides it for an hour. A chat or background task keeps installation waiting while the card stays visible.
 - A busy Home never updates by itself and says why after 24 hours.
 - From a paired laptop, the personal Home's owner switches automatic updates off and presses Update now. A team member can't, and neither can the laptop change the channel.
 - A connected computer switches right after its Home, waits when it is running chats for it, and moves first to a bridge release when the Home's update needs it.
@@ -577,11 +576,11 @@ Built. Section 13.4 says what ran.
 
 **D. Desktop surfaces.**
 - First run that creates and supervises.
-- The heads-up and refresh notice in the app's window.
+- The update notice and refresh notice in the app's window.
 - Settings This computer and Updates, "Add `ri` to Terminal" and "Check for Updates…".
 - Removing the old Tools items.
 
-Acceptance: a fresh Mac account goes from first launch to a supervised Home in one click, survives a restart, and updates through the heads-up. The app updating its own part needs the signed app from open question 2, so that check runs once one exists.
+Acceptance: a fresh Mac account goes from first launch to a supervised Home in one click, survives a restart, and updates through the update notice. The app updating its own part needs the signed app from open question 2, so that check runs once one exists.
 
 Built. Section 13.4 says what ran.
 
@@ -607,8 +606,8 @@ The Windows desktop port runs its Home while its window is open. Its Scheduled T
 - **Addresses.** A Home keeps its address through takeover, restarts and updates.
 - **Things outside Ri's folders.** Everything Ri installs outside its folders (skills, the launcher, agent connections, the Home's OS job) belongs to the installation or the Home and is refreshed by updates. Global skills follow the Home `ri agent` reaches. The owner's backup job stays checkout-dependent.
 - **When updates happen.** Published releases update automatically, by one rule for every Home:
-  - after 10 quiet minutes, where chats, background tasks, MCP calls, open terminals and previews, and people all count, and idle agent processes don't
-  - after a 1-minute heads-up. Not now holds it an hour and then asks again
+  - after one quiet minute, where chats, background tasks, MCP calls, open terminals and previews, and people all count, and idle agent processes don't
+  - with no countdown. Not now hides the card and holds installation for an hour
   - never stopping running work, and at most every 12 hours
   - the `ri` command picks up a new release at its next run, and windows and tabs through a refresh notice
 - **Update settings.**
@@ -825,11 +824,11 @@ Built on the branch `always-on-rest`, then reviewed independently three times, e
 
 - `curl | sh` from nothing, a tampered release refused, then `ri start` under launchd.
 - A release published to `latest` and promoted to `stable`, found, downloaded and verified by itself.
-- A real browser tab showing the heads-up, Not now holding it and it asking again, an MCP call cancelling it, the switch going off standing it down, and with nobody answering it going ahead with a refresh notice.
-- A chat turn from a stand-in harness: no heads-up and no closing for its whole length, then the rule ran to a switch with the idle agent process still open.
+- A real browser tab showing the update notice, Not now holding it and it asking again, an MCP call restarting the quiet minute, the switch going off standing it down, and with nobody answering it going ahead with a refresh notice.
+- A chat turn from a stand-in harness: an update notice but no closing for its whole length, then the rule ran to a switch with the idle agent process still open.
 - Rollback staying put against a feed still offering the newer release.
 - A paired device: the switch and Update now work, and the channel, metered, rollback, check and download are refused. With automatic updates off, it fetched the release and moved.
-- The dmg, copied to Applications under a new account: one click to a Home the OS keeps running, Settings > This computer, Add `ri` to Terminal, the Keep running switch both ways, the heads-up and Update now in the app's window, a team made in the app kept running too, the OS bringing the Home back with no window open, and the app attaching to it again.
+- The dmg, copied to Applications under a new account: one click to a Home the OS keeps running, Settings > This computer, Add `ri` to Terminal, the Keep running switch both ways, the update notice and Update now in the app's window, a team made in the app kept running too, the OS bringing the Home back with no window open, and the app attaching to it again.
 - A real connected computer, enrolled through `ri connect` and `ri worker enroll`, following its Home to the new version by itself.
 
 **Not run, and why:**

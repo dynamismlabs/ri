@@ -21,7 +21,7 @@ Beside the form, a chat helps you write it. Describe what you want in plain word
 
 Under **Advanced** you can set a time limit, active hours, and what to do if the last run is still going: skip this run, add it to the running chat, or run alongside it.
 
-Each schedule runs on the harness and model you pick in its form. Work that reads your email or uses another connected account needs [Connectors](/docs/concepts/connectors). Choose Claude Code, Codex or OpenCode 2.3 or newer for that work.
+Each schedule runs on the harness and model you pick in its form. That choice does not change your default model for new chats. Work that reads your email or uses another connected account needs [Connectors](/docs/concepts/connectors). Choose Claude Code, Codex or OpenCode 2.3 or newer for that work.
 
 ### Schedule a chat to check back
 

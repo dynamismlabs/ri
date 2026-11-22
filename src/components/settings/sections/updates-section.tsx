@@ -217,7 +217,7 @@ export function UpdatesSection() {
     {status.error && <p role="status" className="text-muted-foreground">Reconnecting to the service. The last known update status is shown below.</p>}
     {update && <div className="space-y-2">
       {update.release && update.phase !== 'committed' && update.phase !== 'idle' && <p>Release {update.release.version}</p>}
-      {update.release?.notes && inProgress && <p className="whitespace-pre-wrap text-muted-foreground">{update.release.notes}</p>}
+      {update.release?.notes && (inProgress || update.phase === 'committed') && <p className="whitespace-pre-wrap text-muted-foreground">{update.release.notes}</p>}
       <p role="status" aria-live="polite">{updateStatusText(update)}</p>
       {progress && <div className="space-y-1">
         <progress className="h-2 w-full accent-primary" max={100} value={progress.percent} aria-label="Update download" />
@@ -231,7 +231,7 @@ export function UpdatesSection() {
     {update?.configured && !fromCheckout && update.policy && <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
       <div className="space-y-1">
         <Label htmlFor={`${id}-automatic`}>Automatic updates</Label>
-        <p id={`${id}-automatic-help`} className="text-xs text-muted-foreground">Ri updates itself when it&apos;s quiet, after a 1-minute notice. It never stops running work, and this applies to every Ri on this computer.</p>
+        <p id={`${id}-automatic-help`} className="text-xs text-muted-foreground">Ri updates itself after a minute of inactivity. It never stops running work, and this applies to every Ri on this computer.</p>
       </div>
       <Switch id={`${id}-automatic`} checked={update.policy.auto} disabled={disabled || !data.canUseUpdates} aria-describedby={`${id}-automatic-help`} onCheckedChange={auto => void savePreferences({ auto })} />
     </div>}

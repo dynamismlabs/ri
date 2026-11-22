@@ -34,6 +34,7 @@ import { followTarget, type HomeRelease } from '@/lib/service/follow-home';
 import { negotiateWorker } from '@/lib/releases/compatibility';
 import { readOrigin } from '@/lib/service/origin';
 import { updateReleasePreferences } from '@/lib/service/release-trust';
+import { updateCheckIntervalMs } from '@/lib/service/update-timing';
 import { ServiceControlCoordination } from '@/lib/service/control-coordination';
 import { consumeDesktopInitialization } from '@/lib/service/initialization';
 import { redactServiceLine, rotateServiceLog } from '@/lib/service/logging';
@@ -764,7 +765,7 @@ function startTimers() {
   // holds the download, and an explicit Download stays available.
   const firstCheckMs = Number(process.env.RI_UPDATE_FIRST_CHECK_MS) || 60_000 + Math.random() * 60_000;
   const initial = setTimeout(() => void checkForRelease(), firstCheckMs); initial.unref();
-  const checks = setInterval(() => void checkForRelease(), Number(process.env.RI_UPDATE_CHECK_MS) || (6 + Math.random()) * 60 * 60_000); checks.unref();
+  const checks = setInterval(() => void checkForRelease(), updateCheckIntervalMs()); checks.unref();
 }
 
 async function checkForRelease() {
