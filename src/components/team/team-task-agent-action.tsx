@@ -12,7 +12,7 @@ import { WorkWithPersonalAgent } from '@/components/spaces/work-with-personal-ag
 import { myRiClient } from '@/lib/spaces/my-ri-client';
 import { trpc } from '@/lib/trpc/client';
 import { isTerminal } from '@/lib/tasks/lifecycle';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { Tip } from '@/components/ui/tip';
 import { useHomeExecutionChoices } from '@/hooks/use-home-execution-choices';
 
@@ -52,7 +52,7 @@ export function TeamTaskAgentAction({ task }: { task: TaskLike }) {
       size="sm"
       className="inline-flex items-center gap-1.5"
     ><Bot size={13}/>Work with agent</Button></DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="space-y-2 p-3">
+    <DropdownMenuContent padding="md" align="end" className="space-y-2">
       <div><StartWithAgentButton task={task} label="Work on team's server"/><p className="mt-1 text-[11px] text-muted-foreground">Everyone on the team can read the chat.</p></div>
       <div><WorkWithPersonalAgent taskId={task.id} label="Work in My Ri"/><p className="mt-1 text-[11px] text-muted-foreground">Your personal agents. Only you can read the chat.</p></div>
     </DropdownMenuContent>

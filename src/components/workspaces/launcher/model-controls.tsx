@@ -9,7 +9,7 @@ import { VisibleModelOptions } from '@/components/settings/visible-model-options
 import { ModelMenuContent, ModelMenuLabel } from '@/components/chat-ui/model-menu/model-menu';
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { useHomeStorageScope } from '@/components/home/home-context';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import type { EffortLevel } from '@/db/types';
 import { useDefaultSelection } from '@/hooks/use-default-selection';

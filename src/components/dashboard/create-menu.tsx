@@ -8,7 +8,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@/components/ui/popover";
+} from "@/components/system/popover";
 import { AreaCreateModal } from "./area-create-modal";
 import { useCreateNote } from "@/hooks/use-notes";
 import { useCreateTask } from "@/hooks/use-tasks";

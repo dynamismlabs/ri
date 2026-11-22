@@ -16,7 +16,7 @@ import { TeamLabel } from '@/components/spaces/team-label';
 import { removeFromMyNotes } from '@/components/spaces/my-work';
 import { NoteIcon } from '@/components/shared/note-icon';
 import { DecisionLabel, NoteKindMenuItem } from './note-kind';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 import { AreaSelect } from '@/components/shared/area-select';
 import { TaskPicker } from '@/components/shared/task-picker';
 

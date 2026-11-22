@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
 import { Card } from '@/components/system/card';
 
 import { Button } from '@/components/system/button';
@@ -7,7 +8,7 @@ import { trpc } from '@/lib/trpc/client';
 import { entityKeys } from '@/lib/query/entity-keys';
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { Dialog } from 'radix-ui';
+
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AlertTriangle, Loader2, Bot, ListTree } from 'lucide-react';
@@ -171,15 +172,15 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
   return (
     <Dialog.Root open={!!ask} onOpenChange={(o) => !o && ask?.resolve(false)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-[60]" />
+        <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
           <div className="flex items-start gap-3">
             <ListTree className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
-              <Dialog.Title className="text-sm font-semibold text-foreground">
+              <Dialog.Title className="">
                 {verb === 'complete' ? 'Complete this task?' : verb === 'archive' ? 'Archive this task?' : 'Return this task to Todo?'}
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-xs text-muted-foreground">
+              <Dialog.Description className="mt-1">
                 It has {n} open subtask{n > 1 ? 's' : ''}, which will be left unchanged.
               </Dialog.Description>
             </div>
@@ -232,13 +233,13 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
   return (
     <Dialog.Root open={!!ask} onOpenChange={(o) => !o && ask?.resolve(null)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-[60]" />
+        <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
-              <Dialog.Title className="text-sm font-semibold text-foreground">An agent is actively working this task</Dialog.Title>
-              <Dialog.Description className="mt-1 text-xs text-muted-foreground">
+              <Dialog.Title className="">An agent is actively working this task</Dialog.Title>
+              <Dialog.Description className="mt-1">
                 You can {verb} it and keep the workstream running, or stop the running agent first. Keeping it running
                 changes only this task and tells the agent its scope changed. A turn already in flight cannot be
                 partially interrupted, and code or artifacts already produced in a shared worktree are not undone.

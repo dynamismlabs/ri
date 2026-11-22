@@ -8,7 +8,7 @@ import { AlertCircle, AppWindow, Blocks } from 'lucide-react';
 import { useState } from 'react';
 import { AddMenuRow } from '@/components/chat-ui/add-menu/composer-add-menu';
 import { usePersonalServices } from '@/components/home/use-personal-services';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 
 type Mode = 'on' | 'auto' | 'off';

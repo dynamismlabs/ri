@@ -6,7 +6,7 @@ import { AlertCircle, ArrowLeft, ArrowUpCircle, CheckCircle2, Circle, GitBranch,
 import { uuidv7 } from 'uuidv7';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
 import { Button } from '@/components/system/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { APP_NAME } from '@/constants/app';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import type { RouterInputs } from '@/lib/trpc/router';

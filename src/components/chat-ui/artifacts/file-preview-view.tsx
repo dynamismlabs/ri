@@ -62,7 +62,6 @@ function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'vi
       label="Playback speed"
       orientation="horizontal"
       className="shrink-0 w-auto"
-      size={compactFieldSize}
     >
       {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
         <option key={rate} value={rate}>

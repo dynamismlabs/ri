@@ -1,5 +1,4 @@
 'use client';
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -44,8 +43,6 @@ export function TreeInputRow({
   onSubmit,
   onCancel,
 }: TreeInputRowProps) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [value, setValue] = useState(initialValue);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -102,7 +99,6 @@ export function TreeInputRow({
         className="flex-1 min-w-0"
         placeholder={kind === 'dir' ? 'folder name' : 'file name'}
         aria-label={kind === 'dir' ? 'Folder name' : 'File name'}
-        size={compactFieldSize}
       />
       {isBusy && (
         <Loader2 size={11} className="shrink-0 animate-spin text-muted-foreground" />

@@ -23,7 +23,7 @@ import {
 import type { LocalAgentState, LocalConnectResult } from '@/lib/external-ai/local-setup';
 import type { HarnessId } from '@/lib/harness/registry';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
 import { cn } from '@/lib/utils';
 import { AiClientLogo } from './ai-client-logo';

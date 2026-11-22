@@ -123,7 +123,6 @@ export function ChatUiGallery() {
               onChange={(event) => filter(event.target.value, origin)}
               leading={<Search />}
               className="relative"
-              size={compactFieldSize}
             />
             <p className="mt-2 text-[11px] text-muted-foreground" aria-live="polite">
               {matches.length} {matches.length === 1 ? 'example' : 'examples'}
@@ -135,7 +134,6 @@ export function ChatUiGallery() {
                 controlClassName="w-full"
                 aria-label="Select an example"
                 className="mt-3 block"
-                size={compactFieldSize}
               >
                 {matches.map((item) => (
                   <option value={item.id} key={item.id}>

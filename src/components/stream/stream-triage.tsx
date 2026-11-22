@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 
 import { AreaSelect } from '@/components/shared/area-select';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { TaskActions, NoteActions } from './promote-actions';
 import { StreamAttachments } from './stream-attachments';
 import {
@@ -34,7 +34,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet';
+} from '@/components/system/sheet';
 import {
   useStream,
   useProposedDecisions,
@@ -261,7 +261,7 @@ function ProposalCard({ decision }: { decision: TriageDecisionWithItems }) {
                 Instead…
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
+            <PopoverContent padding="none" align="start" className="w-44" sideOffset={4}>
               <div className="py-1">
                 {REROUTE_OPTIONS.filter((o) => o.disposition !== decision.disposition).map((o) => (
                   <MenuAction density="compact"
@@ -477,8 +477,8 @@ export function StreamTriage({ open, onOpenChange }: StreamTriageProps) {
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="right" className="w-full data-[side=right]:sm:max-w-[640px] flex flex-col">
         <SheetHeader>
-          <SheetTitle className="text-[13px]">Needs your call</SheetTitle>
-          <SheetDescription className="text-[10px]">
+          <SheetTitle className="">Needs your call</SheetTitle>
+          <SheetDescription className="">
             {proposalList.length > 0
               ? 'Suggestions wait for you. Nothing here has changed anything yet.'
               : pending.length > 0

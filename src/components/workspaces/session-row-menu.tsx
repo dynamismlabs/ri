@@ -5,7 +5,7 @@ import { IconButton } from '@/components/system/icon-button';
 import {
   MoreVertical, Archive, Eye, EyeOff, Settings, Plus, Pin, PinOff,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import {
   useMarkSessionRead,
   useMarkSessionUnread,
@@ -104,7 +104,7 @@ export function SessionRowMenu({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="text-[11px] min-w-[180px]"
+        className="min-w-[180px]"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >

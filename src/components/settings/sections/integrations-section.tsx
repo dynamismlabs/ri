@@ -2,7 +2,6 @@
 import { Card } from '@/components/system/card';
 import { Callout } from '@/components/system/callout';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -121,8 +120,6 @@ export function IntegrationsSection({ active = true, navigation }: {
   /** Apps can reuse account setup without opening or changing Settings. */
   navigation?: { providerId: string; returnTo?: string; onBack: () => void };
 }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [toolkits, setToolkits] = useState<ToolkitInfo[]>([]);
@@ -750,7 +747,6 @@ export function IntegrationsSection({ active = true, navigation }: {
               </>
             }
             className="relative"
-            size={compactFieldSize}
           />
 
           {q && catalog.total === 0 ? (

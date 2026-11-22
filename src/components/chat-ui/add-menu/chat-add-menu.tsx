@@ -18,7 +18,7 @@ import { AppCompanionRows } from '@/components/apps/app-companion-rows';
 import { ChatAppToolsDialog, ChatAppToolsRow } from '@/components/apps/chat-app-tools';
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { ScheduleChatDialog } from '@/components/triggers/schedule-chat-button';
-import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenuSeparator } from '@/components/system/menu';
 import { useSession } from '@/hooks/use-execution';
 import { useAgentFolders, useMentionAgents, useWorkspace } from '@/hooks/use-workspaces';
 import { canScheduleChat } from '@/lib/triggers/chat-schedule';

@@ -1,7 +1,6 @@
 'use client';
 import { MenuAction } from '@/components/system/menu-action';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
@@ -16,7 +15,7 @@ import { useDeferredValue, useState } from 'react';
 import { Forward, Search } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/system/dialog';
 
 import { useWorkspaces } from '@/hooks/use-workspaces';
 import { useDefaultSelection } from '@/hooks/use-default-selection';
@@ -47,8 +46,6 @@ function AvailableSendToChatButton({ eventId, sessionId, size }: SendToChatButto
   </Dialog>;
 }
 function SendToChatDialog({ eventId, sessionId, size, onClose, onSendingChange }: SendToChatButtonProps & { onClose: () => void; onSendingChange: (sending: boolean) => void }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const defaults = useDefaultSelection();
   const [sendId] = useState(uuidv7);
   const [search, setSearch] = useState('');
@@ -82,7 +79,6 @@ function SendToChatDialog({ eventId, sessionId, size, onClose, onSendingChange }
         onChange={(event) => setSearch(event.target.value)}
         className={'min-w-0 flex-1'}
         leading={<Search />}
-        size={compactFieldSize}
       />
       <NativeSelect
         aria-label="Filter by agent"
@@ -95,7 +91,6 @@ function SendToChatDialog({ eventId, sessionId, size, onClose, onSendingChange }
         label="Agent"
         orientation="horizontal"
         className="w-auto"
-        size={compactFieldSize}
       >
         <option value="">All agents</option>
         {agents.map((agent) => (

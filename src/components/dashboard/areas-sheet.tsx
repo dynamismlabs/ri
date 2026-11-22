@@ -1,11 +1,13 @@
 'use client';
+import { SheetFrame } from '@/components/system/sheet';
 
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useCallback, useRef, useState } from 'react'
-import { Dialog } from 'radix-ui'
+
 import { X, Plus, GripVertical } from 'lucide-react'
 import {
   DndContext,
@@ -203,13 +205,13 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
         {/* Overlay */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-40 bg-black/30 transition-opacity duration-150',
+            'fixed inset-0 z-40 transition-opacity duration-150',
             isVisible ? 'opacity-100' : 'opacity-0'
           )}
         />
 
         {/* Slideout panel */}
-        <Dialog.Content
+        <SheetFrame padding="none"
           data-slot="sheet-content" data-side="right"
           ref={containerRef}
           className={cn(
@@ -308,7 +310,7 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
               </div>
             )}
           </div>
-        </Dialog.Content>
+        </SheetFrame>
       </Dialog.Portal>
 
       <AreaCreateModal open={createModalOpen} onOpenChange={setCreateModalOpen} />

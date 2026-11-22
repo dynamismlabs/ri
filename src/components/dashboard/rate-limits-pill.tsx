@@ -3,7 +3,7 @@
 import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useRef, useState } from 'react';
 import { Gauge, Loader2 } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { UsageWarningsSetting } from '@/components/settings/usage-warnings-setting';
 import { useHarnessRateLimits } from '@/hooks/use-harness-rate-limits';
@@ -114,7 +114,7 @@ export function RateLimitsPill() {
           if (returnFocus.current) { returnFocus.current = false; trigger.current?.focus(); }
         }}
         onEscapeKeyDown={() => { cancelHover(); returnFocus.current = true; }}
-        className="max-h-[var(--radix-popover-content-available-height)] w-72 max-w-[calc(100vw-16px)] overflow-y-auto bg-popover text-popover-foreground"
+        className="max-h-[var(--radix-popover-content-available-height)] w-72 max-w-[calc(100vw-16px)] overflow-y-auto"
       >
         <div className="flex items-center justify-between gap-2 pb-2">
           <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Usage</p>

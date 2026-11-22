@@ -1,0 +1,233 @@
+/* Shared frames. Position and available space belong to their installed engines. */
+@layer components {
+  .ri-overlay {
+    box-sizing: border-box;
+    border: 0;
+    border-radius: 12px;
+    background: var(--popover);
+    color: var(--t1);
+    box-shadow: var(--shadow-pop);
+    font: 400 14px/1.5 var(--font-sans);
+    outline: none;
+  }
+  .ri-overlay--dialog {
+    border-radius: var(--dialog-radius);
+  }
+  .ri-overlay--sheet {
+    border-radius: 0;
+  }
+  .ri-overlay--toast {
+    border-radius: 14px;
+  }
+  .ri-overlay--tooltip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: fit-content;
+    max-width: 320px;
+    border-radius: 10px;
+    background: var(--t1);
+    color: var(--pane);
+    font-size: 12px;
+  }
+  .ri-overlay-inset--none {
+    padding: 0;
+  }
+  .ri-overlay-inset--xs {
+    padding: 4px;
+  }
+  .ri-overlay-inset--sm {
+    padding: 8px;
+  }
+  .ri-overlay-inset--md {
+    padding: 12px;
+  }
+  .ri-overlay-inset--lg {
+    padding: 16px;
+  }
+  .ri-overlay-inset--xl {
+    padding: 24px;
+  }
+  .ri-overlay-scrim {
+    background: var(--dialog-scrim);
+    backdrop-filter: none;
+  }
+  .ri-dialog {
+    position: fixed;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: calc(100% - 32px);
+    min-height: 0;
+  }
+  .ri-dialog--center {
+    max-height: calc(100dvh - 32px);
+    inset: 0;
+    margin: auto;
+    height: fit-content;
+  }
+  .ri-dialog--sm {
+    max-width: 384px;
+  }
+  .ri-dialog--md {
+    max-width: 448px;
+  }
+  .ri-dialog--lg {
+    max-width: 512px;
+  }
+  .ri-dialog--wide {
+    max-width: 960px;
+  }
+  .ri-dialog--full {
+    max-width: calc(100% - 32px);
+  }
+  .ri-dialog--page {
+    inset: 0;
+    margin: 0;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  .ri-dialog--search {
+    position: relative;
+    margin: 15vh auto 0;
+    width: min(42rem, calc(100% - 16px));
+    max-width: 42rem;
+  }
+  .ri-dialog-header {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ri-dialog-body {
+    min-width: 0;
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .ri-dialog-footer {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .ri-overlay-title {
+    color: var(--t1);
+    font: 600 16px/1.25 var(--font-sans);
+  }
+  .ri-overlay-description {
+    color: var(--t3);
+    font: 400 14px/1.4 var(--font-sans);
+  }
+  .ri-sheet {
+    position: fixed;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .ri-sheet--right {
+    inset: 0 0 0 auto;
+    width: 100%;
+    max-width: 384px;
+  }
+  .ri-sheet--left {
+    inset: 0 auto 0 0;
+    width: 100%;
+    max-width: 384px;
+  }
+  .ri-sheet--top {
+    inset: 0 0 auto;
+  }
+  .ri-sheet--bottom {
+    inset: auto 0 0;
+  }
+  .ri-sheet-header {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 6px;
+    padding: 24px;
+  }
+  .ri-sheet-footer {
+    margin-top: auto;
+    padding: 24px;
+  }
+  .ri-menu-label {
+    padding: 8px 12px;
+    color: var(--t3);
+    font: 500 12px/18px var(--font-sans);
+  }
+  .ri-menu-separator {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--line);
+  }
+  .ri-menu-shortcut {
+    margin-left: auto;
+    color: var(--t3);
+    font-size: 11px;
+  }
+  @media (min-width: 768px) {
+    .ri-dialog-footer {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-end;
+    }
+  }
+  @media (max-width: 767px) {
+    .ri-dialog-footer .ri-button {
+      min-height: 40px;
+    }
+    .ri-dialog--search-page {
+      inset: 0;
+      margin: 0;
+      width: 100%;
+      height: 100dvh;
+      max-width: none;
+      max-height: 100dvh;
+      border-radius: 0;
+    }
+  }
+}
+/* Sonner keeps its live region, dismissal timer, placement and swipe engine. */
+[data-sonner-toaster] [data-sonner-toast].ri-toast {
+  background: var(--popover);
+  color: var(--t1);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: var(--shadow-pop);
+  padding: 16px;
+  font: 400 13px/1.5 var(--font-sans);
+}
+[data-sonner-toast] .ri-toast-title {
+  font-weight: 500;
+}
+[data-sonner-toast] .ri-toast-description {
+  color: var(--t3);
+  font-size: 12px;
+}
+@layer components {
+  .ri-form-footer-host {
+    flex-shrink: 0;
+    min-width: 0;
+  }
+  .ri-form-footer-host:empty {
+    display: none;
+  }
+  .ri-form-footer-host > .ri-form-actions {
+    padding: 16px 20px;
+    background: var(--popover);
+    border-top: 1px solid var(--line);
+  }
+}
+
+.ri-tooltip-arrow {
+  fill: var(--t1);
+}

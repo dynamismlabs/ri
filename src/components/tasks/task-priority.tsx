@@ -13,7 +13,7 @@ import { useRankTask, useTasks } from '@/hooks/use-tasks';
 import { PRIORITY_RANK_FILTER, RANKED_STATUSES, clampRank } from '@/lib/tasks/priority-rank';
 import type { TaskStatus } from '@/lib/tasks/lifecycle';
 import { BUCKET_OPTIONS, bucketRank } from '@/lib/utils/bucket-placement';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/system/menu';
 import { Tip } from '@/components/ui/tip';
 
 /**

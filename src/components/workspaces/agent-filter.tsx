@@ -4,7 +4,7 @@ import { Button } from '@/components/system/button';
 import { useState, type RefObject } from 'react';
 import { Command } from 'cmdk';
 import { Bot, ChevronDown, Search } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import type { Attachment } from '@/db/types';
 import { coverAttachmentUrl } from '@/lib/attachments/view';
 import { cn } from '@/lib/utils';

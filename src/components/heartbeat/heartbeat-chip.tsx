@@ -12,7 +12,7 @@ import { ChipButton } from '@/components/system/chip-button';
 
 import { useState } from 'react';
 import { HeartPulse } from 'lucide-react';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/system/sheet';
 import { useHeartbeat } from '@/hooks/use-heartbeat';
 import { useOrchestratorName } from '@/hooks/use-user-state';
 import { describeHeartbeat, heartbeatDeckSignal, type HeartbeatDeckSignal } from '@/lib/heartbeat/status';

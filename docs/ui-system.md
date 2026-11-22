@@ -727,3 +727,25 @@ fail with the new rules removed.
 The existing tooltip restriction also covers the content adapters and Button
 family, since they forward a DOM `title`. ChoiceRow's `title` is content, not a
 tooltip, and remains allowed. A scratch fixture verifies both boundaries.
+
+### Overlay adapters (stage 5 in progress)
+
+`DialogContent`, `DialogFrame`, `SheetContent`, `PopoverContent` and
+`PopoverFrame` retain the installed Radix engines. Frame adapters compose
+existing portals without adding another portal or scrim. `placement="custom"`
+keeps an existing positioned shell. `DialogBody` scrolls between a fixed header
+and `DialogFooter`. Floating Menu, HoverPreview, Tooltip and Toast adapters own
+frame drawing. Named padding is none 0, xs 4, sm 8, md 12, lg 16 and xl 24px.
+
+Standalone fields use md 32px on desktop and touch 40px on phones. sm 28px is
+reserved for a field sharing a row with sm controls, such as linking a PR.
+An addon inside a field does not make its main entry row a compact toolbar.
+FormLabel and ChoiceRow titles share Field label type, 13px at weight 500.
+
+`FormFooterHost` gives a real form inside a scrolling dialog or sheet a footer
+outside that scroller. `FormActions` moves only the actions into that host.
+Submit buttons retain their form id, native validation and submission. Actions
+follow the body's controls in DOM and focus order. Without a host they stay in
+place on the standalone page. Schedules retains its phone body and builder-chat
+scroller, with actions at the window bottom. Desktop keeps actions below the
+form column. Its approved shell migration supplies modal focus and scroll lock.

@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { Tooltip as TooltipPrimitive } from 'radix-ui';
 import { Kbd } from '@/components/ui/kbd';
-import { Tooltip, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider } from '@/components/system/tooltip';
 
 /** Hover time before the first tooltip opens. Once one is showing, the next
  *  opens at once (Radix's skip delay), so moving along a toolbar reads it. */

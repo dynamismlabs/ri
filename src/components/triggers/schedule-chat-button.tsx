@@ -20,8 +20,8 @@ import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { Clock, Loader2, Pause, Pencil, Play } from 'lucide-react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogTitle } from '@/components/system/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
 import { APP_NAME } from '@/constants/app';
@@ -93,7 +93,7 @@ export function ScheduleChatButton({
         </Tip>
       </PopoverTrigger>
       {/* Built only while open: every chat header carries this button. */}
-      {open && <PopoverContent align="end" className="w-[22rem] max-w-[calc(100vw-2rem)] max-h-[min(80vh,40rem)] overflow-y-auto p-0">
+      {open && <PopoverContent padding="none" align="end" className="w-[22rem] max-w-[calc(100vw-2rem)] max-h-[min(80vh,40rem)] overflow-y-auto">
         <ChatSchedules chat={chat} mine={mine} onDone={() => setOpen(false)} />
       </PopoverContent>}
     </Popover>
@@ -108,7 +108,7 @@ export function ScheduleChatDialog({ sessionId, open, onOpenChange }: {
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-sm">
+      <DialogContent padding="none" className="gap-0 overflow-hidden sm:max-w-sm">
         <DialogTitle className="sr-only">Schedule this chat</DialogTitle>
         {open && <ScheduleDialogBody sessionId={sessionId} onDone={() => onOpenChange(false)} />}
       </DialogContent>

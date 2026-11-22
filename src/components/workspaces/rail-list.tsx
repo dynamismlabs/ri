@@ -13,7 +13,7 @@ import { useOptionalHomeContext } from '@/components/home/home-context';
 import { HOTKEYS } from '@/constants/commands';
 import { cachedRailSession, useBulkArchiveSessions } from '@/hooks/use-workspaces';
 import { useLeaveArchivedChat, useReviewChanges } from '@/hooks/use-archive-execution';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { archiveAnywayDialog } from '@/components/executions/uncommitted-files';
 
 import { Tip } from '@/components/ui/tip';

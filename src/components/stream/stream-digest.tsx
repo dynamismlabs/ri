@@ -35,7 +35,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover';
+} from '@/components/system/popover';
 
 function timeAgo(isoDate: string): string {
   const diff = Date.now() - new Date(isoDate).getTime();
@@ -108,7 +108,7 @@ function RerouteMenu({ decision }: { decision: TriageDecisionWithItems }) {
           </IconButton>
 
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-44 p-0" sideOffset={4}>
+      <PopoverContent padding="none" align="end" className="w-44" sideOffset={4}>
         <div className="py-1">
           {REROUTE_OPTIONS.filter((o) => o.disposition !== decision.disposition).map((o) => (
             <MenuAction density="compact"

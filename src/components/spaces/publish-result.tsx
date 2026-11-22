@@ -13,7 +13,7 @@ import { spaceApiBase } from '@/lib/spaces/document';
 import { myRiClient } from '@/lib/spaces/my-ri-client';
 import { useResults } from '@/hooks/use-results';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { PublishedResultList } from './published-results';
 
 /** A link's label from where it points: a pull request says so. */

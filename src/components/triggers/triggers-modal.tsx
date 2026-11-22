@@ -1,4 +1,7 @@
 'use client';
+import { Dialog, DialogContent, DialogTitle } from '@/components/system/dialog';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+import { FormFooterHost } from '@/components/system/form-actions';
 import { InlineAction } from '@/components/system/inline-action';
 
 import { Card } from '@/components/system/card';
@@ -62,6 +65,7 @@ export function TriggersModal() {
 
 function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
   const [view, setView] = useState<View>(() => triggerId ? { kind: 'edit', id: triggerId } : { kind: 'list' });
+  const returnFocus = useRef<HTMLElement | null>(typeof document === 'undefined' ? null : document.activeElement as HTMLElement);
   const listButton = useRef<HTMLButtonElement | null>(null);
   const backButton = useRef<HTMLButtonElement | null>(null);
 
@@ -70,39 +74,20 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
     else backButton.current?.focus({ preventScroll: true });
   }, [view.kind]);
 
-  // Escape closes the window, unless something inside it (a menu, the
-  // chat's composer) already used the key.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) closeSchedulesWindow();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
   const withChat = view.kind === 'new' || view.kind === 'edit';
   const toList = () => setView({ kind: 'list' });
 
   return (
-    <div data-slot="dialog-overlay"
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={closeSchedulesWindow}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Schedules and Triggers"
-    >
-      <div
-        data-slot="dialog-content"
-        // Height: capped at 88% of the viewport and ~896px, floored for short
-        // screens, in rem so it scales with the user's font size. A steady
-        // height keeps the window from jumping between views; the body
-        // scrolls instead. Wider with the chat beside the form.
-        className={cn(
-          'w-full h-[min(88vh,56rem)] min-h-[36rem] bg-background border border-border rounded-lg shadow-2xl flex flex-col',
-          withChat ? 'max-w-6xl' : 'max-w-4xl',
-        )}
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open onOpenChange={(next) => { if (!next) closeSchedulesWindow(); }}>
+      <DialogContent
+        showCloseButton={false}
+        padding="none"
+        size="wide"
+        aria-describedby={undefined}
+        className={cn('h-[min(88dvh,56rem)] gap-0 overflow-hidden', withChat ? 'max-w-6xl' : 'max-w-4xl')}
+        onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true }); }}
       >
+        <DialogTitle className="sr-only">Schedules and Triggers</DialogTitle>
         <Header view={view} onBack={toList} backButton={backButton} />
 
         {/* Keep the list's scroll position and buttons when switching to a detail. */}
@@ -135,20 +120,23 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
             />
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 /** The form on the left and the schedule's chat on the right; stacked on a phone. */
 function WithChat({ children, chat }: { children: React.ReactNode; chat: React.ReactNode }) {
+  const phone=useViewportTier()==='phone';
   return (
+    <FormFooterHost enabled={phone}>
     <div className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row">
-      <div className="md:flex-1 md:min-w-0 md:overflow-y-auto px-6 py-5">{children}</div>
+      <div className="shrink-0 md:shrink md:flex min-h-0 md:flex-1 flex-col md:min-w-0"><FormFooterHost enabled={!phone}><div className="min-h-0 md:flex-1 md:overflow-y-auto px-6 py-5">{children}</div></FormFooterHost></div>
       <div className="h-[32rem] md:h-auto md:w-[26rem] flex-shrink-0 border-t md:border-t-0 md:border-l border-border min-h-0">
         {chat}
       </div>
     </div>
+    </FormFooterHost>
   );
 }
 

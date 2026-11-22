@@ -7,7 +7,7 @@ import { useMemo, useRef, useState } from 'react';
 import { useDefaultLayout, type Layout, type LayoutStorage } from 'react-resizable-panels';
 import { ChevronDown, FilePlus, FileText, FolderPlus, PanelLeft, Plus, Upload } from 'lucide-react';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { FileIcon } from '@/components/file-icon';
 import { HOTKEYS } from '@/constants/commands';
 import { useSessionDiff } from '@/hooks/use-execution';

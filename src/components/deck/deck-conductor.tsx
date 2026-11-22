@@ -11,7 +11,7 @@ import { ChevronDown, RefreshCw, Clock, Check, SlidersHorizontal } from 'lucide-
 import { useAreas } from '@/hooks/use-areas';
 import { useMorningDeck, useUpdateMorningDeck } from '@/hooks/use-morning-deck';
 import { openSettings } from '@/components/settings/settings-store';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 import type { WorkMode } from '@/types/dashboard';
 import { Tip } from '@/components/ui/tip';
 

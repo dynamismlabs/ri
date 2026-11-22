@@ -10,7 +10,7 @@ import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
 
@@ -39,7 +39,7 @@ export function AllDayRow({ events }: { events: CalendarEvent[] }) {
               {e.title}
             </button>
           </PopoverTrigger>
-          <PopoverContent side="bottom" align="start" className="p-0 w-auto">
+          <PopoverContent padding="none" side="bottom" align="start" className="w-auto">
             <EventPopoverContent event={e} />
           </PopoverContent>
         </Popover>

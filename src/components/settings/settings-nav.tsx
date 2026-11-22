@@ -2,7 +2,6 @@
 import { MenuAction } from '@/components/system/menu-action';
 import { StatusBadge } from '@/components/system/status-badge';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -32,8 +31,6 @@ export function SettingsNavigation<Id extends string>({
   sections: readonly SettingsNavItem<Id>[];
   label?: string;
 }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [query, setQuery] = useState('');
   const activeButton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -60,7 +57,6 @@ export function SettingsNavigation<Id extends string>({
         aria-label={`Search ${label.toLowerCase()}`}
         className="relative mb-1 hidden w-full sm:flex"
         leading={<Search />}
-        size={compactFieldSize}
       />
 
       {matches.map((section) => {

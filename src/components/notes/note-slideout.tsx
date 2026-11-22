@@ -33,7 +33,7 @@ import { useOptionalHomeContext, useHomeStorageScope } from '@/components/home/h
 import { homeStorageIdentity } from '@/lib/home/document-scope';
 import { homeResourceHref } from '@/lib/home/resource-href';
 import { currentSpaceId } from '@/lib/spaces/document';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useSharedBody, SaveStatus, SharedBodyState } from '@/components/team/shared-body-editor';
 import { TeamAudience, TeamEntityHistory } from '@/components/team/team-document-controls';
 import { TeamAreaSelect } from '@/components/team/team-areas';

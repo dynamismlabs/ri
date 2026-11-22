@@ -16,7 +16,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover';
+} from '@/components/system/popover';
 import { useTasks } from '@/hooks/use-tasks';
 import { useNotes } from '@/hooks/use-notes';
 
@@ -67,7 +67,7 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
           <Target size={12} />
         </IconButton>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
+      <PopoverContent padding="none" align="end" className="w-56" sideOffset={4}>
         {mode === 'menu' && (
           <div className="py-1">
             <MenuAction
@@ -106,7 +106,6 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
               purpose="embedded"
               leading={<Search />}
               aria-label={'Search tasks'}
-              size={compactFieldSize}
             /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
@@ -179,7 +178,7 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
           <FileText size={12} />
         </IconButton>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
+      <PopoverContent padding="none" align="end" className="w-56" sideOffset={4}>
         {mode === 'menu' && (
           <div className="py-1">
             <MenuAction
@@ -211,7 +210,6 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
               purpose="embedded"
               leading={<Search />}
               aria-label={'Search notes'}
-              size={compactFieldSize}
             /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (

@@ -24,7 +24,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import type { WorkspaceIntegrationScope, WorkspaceIntegrationScopeAccount } from '@/db/types';
 import { pinKey, pinMatchesConnection, scopePins, toggleAccountPin } from '@/lib/integrations/scope-pins';
 import { APPLICATIONS, applicationForDirectToolkit, parseManagedToolkitId } from '@/lib/integrations/sources/applications';
@@ -158,7 +158,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
         {dormant.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="py-1.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+            <DropdownMenuLabel className="py-1.5 text-amber-700 dark:text-amber-400">
               Not connected (kept, inactive)
             </DropdownMenuLabel>
             {dormant.map((p) => (

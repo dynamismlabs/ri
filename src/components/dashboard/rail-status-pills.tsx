@@ -9,7 +9,7 @@ import { useActivityBuckets } from '@/hooks/use-activity-buckets';
 import type { ActivityItem } from '@/lib/sessions/activity-buckets';
 import { openBoard } from '@/lib/client/task-board';
 import { useRailSessions } from '@/hooks/use-workspaces';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import {
   BUCKET_CONFIG,
   BUCKET_ORDER,
@@ -69,7 +69,7 @@ export function ReviewAttentionPill({ reviews, pendingSessionIds }: { reviews: N
           {needsAttention ? <ShieldAlert size={10} /> : <ClipboardCheck size={10} />}<span className="font-mono font-semibold">{reviews.length}</span>
         </ChipButton></Tip>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-2">
+      <PopoverContent padding="sm" align="start" className="w-72">
         <p className="px-1 pb-2 text-xs font-medium">AI review activity</p>
         <div className="max-h-[min(28rem,60dvh)] overflow-y-auto space-y-1">
           {reviews.map((review) => <Link key={review.reviewId} href={`/results/${review.resultId}`} onClick={() => setOpen(false)} className="block rounded-md px-2 py-2 hover:bg-muted">

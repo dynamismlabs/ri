@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Editor } from '@tiptap/core';
 import { MessageCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Button } from '@/components/system/button';
 
 import { openSettings } from '@/components/settings/settings-store';
@@ -126,7 +126,7 @@ export function SourceChip({ sourceRef, onRemove, tone = 'surface' }: { sourceRe
           {attention && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-amber-500" />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-72 space-y-3 text-xs" align="start">
+      <PopoverContent className="w-72 space-y-3" align="start">
         <div className="flex items-start gap-2">
           <SourceMark mark={source?.mark} name={source?.service ?? chipLabel} size={16} className="mt-px" />
           <div className="min-w-0"><p className="font-medium break-words">{source && source.accountLabel?.toLocaleLowerCase() === source.service.toLocaleLowerCase() ? source.service : label}</p><p className="mt-1 text-muted-foreground">{SOURCE_STATUS_LABELS[status]}</p></div>

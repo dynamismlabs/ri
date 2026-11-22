@@ -4,7 +4,7 @@ import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { AppWindow, ExternalLink, FileText, Loader2, X } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 
 import type { VisibleContextItem } from '@/lib/client/mcp-app-context';
 import { safeViewThumbnail } from '@/lib/integrations/mcp-icons';
@@ -59,7 +59,7 @@ function AppContextChip({ group, onRemove }: { group: AppContextGroupView; onRem
           <span className="min-w-0 max-w-[220px] truncate text-muted-foreground">{contextSummary(group.items)}</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 space-y-2 p-3 text-xs" align="start">
+      <PopoverContent padding="md" className="w-80 space-y-2" align="start">
         <p className="font-medium">{group.app} adds this to your next message</p>
         <ul className="max-h-72 space-y-2 overflow-y-auto">
           {group.items.map((item, index) => <li key={index}><ContextItem item={item} /></li>)}

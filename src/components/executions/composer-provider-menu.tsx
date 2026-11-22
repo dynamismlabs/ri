@@ -9,7 +9,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@/components/system/popover';
 import { MessageSquarePlus, Loader2 } from 'lucide-react';
 import {
   effortOptionsForModel,
@@ -192,10 +192,10 @@ export function ComposerProviderMenu({
           </ChipButton>
         </Tip>
       </PopoverTrigger>
-      <PopoverContent
+      <PopoverContent padding="none"
         align="end"
         sideOffset={6}
-        className="w-80 max-w-[calc(100vw-1rem)] overflow-hidden p-0"
+        className="w-80 max-w-[calc(100vw-1rem)] overflow-hidden"
       >
         {pending && pendingProvider ? (
           // Cross-provider pick can't change this session mid-stream, so the

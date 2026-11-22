@@ -9,7 +9,7 @@ import {
   Sheet,
   SheetContent,
   SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/system/sheet';
 import { AreaCreateModal } from '@/components/dashboard/area-create-modal';
 import { useCreateNote } from '@/hooks/use-notes';
 import { useCreateTask } from '@/hooks/use-tasks';
@@ -57,7 +57,7 @@ export function MobileCreateSheet() {
   return (
     <>
       <Sheet open={mobileCreateOpen} onOpenChange={setMobileCreateOpen}>
-        <SheetContent side="bottom" showCloseButton={false} className="gap-0 rounded-t-2xl px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
+        <SheetContent side="bottom" showCloseButton={false} className="gap-0 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
           <SheetTitle className="sr-only">Create</SheetTitle>
           <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-muted-foreground/30" />
 

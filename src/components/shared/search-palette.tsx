@@ -1,10 +1,11 @@
 'use client';
 
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Command } from 'cmdk';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { Search, Loader2, X, MessageSquare, Target } from 'lucide-react';
 import { NoteIcon } from './note-icon';
 import { DecisionLabel } from '@/components/notes/note-kind';

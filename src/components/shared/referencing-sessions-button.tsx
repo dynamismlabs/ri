@@ -1,4 +1,5 @@
 'use client';
+import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
@@ -8,7 +9,7 @@ import { rpcQuery } from '@/lib/trpc/request-options';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Link as LinkIcon, MessageSquare } from 'lucide-react';
-import { Popover as PopoverPrimitive } from 'radix-ui';
+
 import { useState } from 'react';
 import { Tip } from '@/components/ui/tip';
 
@@ -60,12 +61,12 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
         </Tip>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
+        <PopoverPrimitive.Content padding="none"
           side="bottom"
           align="end"
           sideOffset={6}
           collisionPadding={12}
-          className="z-50 w-[min(20rem,calc(100vw-1.5rem))] rounded-lg border border-border bg-popover shadow-xl pointer-events-auto outline-none"
+          className="z-50 w-[min(20rem,calc(100vw-1.5rem))] pointer-events-auto outline-none"
         >
           <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold border-b border-border">
             Referenced in {count} session{count === 1 ? '' : 's'}

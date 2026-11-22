@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { Callout } from '@/components/system/callout';
 
 import { MenuAction } from '@/components/system/menu-action';
@@ -25,7 +26,7 @@ import {
 	Loader2,
 	X,
 } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface FolderPickerDialogProps {
@@ -260,8 +261,8 @@ export function FolderPickerDialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-[60] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
           className="fixed left-1/2 top-1/2 z-[60] w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
           onOpenAutoFocus={(e) => {
             // Don't auto-focus the close button; we want the list to be

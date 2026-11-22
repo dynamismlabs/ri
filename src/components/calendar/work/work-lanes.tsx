@@ -1,7 +1,7 @@
 "use client";
 
 import { instantWindowOnDate, minutePct, type MinuteWindow } from '@/lib/calendar/layout';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { sittingWindows } from '@/lib/work/ribbon';
 import type { WorkAgent, WorkDay, WorkSpan } from '@/lib/work/types';
 import { cn } from '@/lib/utils';
@@ -106,7 +106,7 @@ export function WorkLaneTrack({ lanes, day, bounds }: { lanes: Lane[]; day: Work
                         style={{ ...pos(w, bounds), ...agentStyle(lane.agent?.color ?? 0).bar }}
                       />
                     </PopoverTrigger>
-                    <PopoverContent side="left" align="start" className="w-80 p-0">
+                    <PopoverContent padding="none" side="left" align="start" className="w-80">
                       <WorkSpanDetails span={span} agent={lane.agent} />
                     </PopoverContent>
                   </Popover>

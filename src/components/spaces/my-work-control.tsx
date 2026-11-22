@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookmarkPlus, Check, ChevronDown, ListPlus } from 'lucide-react';
 import { useState } from 'react';
 import { myRiClient } from '@/lib/spaces/my-ri-client';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { Tip } from '@/components/ui/tip';
 import { addToMyWork, removeFromMyNotes, removeFromMyWork, saveToMyNotes } from './my-work';
 import { useSpace } from './space-root';

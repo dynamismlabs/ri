@@ -5,7 +5,7 @@ import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import type { ReviewDisposition } from '@/db/types';
 import { apiErrorText } from '@/lib/api/client';
 import { cn } from '@/lib/utils';

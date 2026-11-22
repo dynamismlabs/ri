@@ -10,8 +10,8 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, KeyRound, X } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 
 import { ApprovalDetails } from '@/components/chat-ui/approvals/approval-details';
 import { APP_NAME } from '@/constants/app';

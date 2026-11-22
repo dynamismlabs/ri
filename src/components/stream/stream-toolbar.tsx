@@ -6,7 +6,7 @@ import { ClipboardCheck, ListChecks, ListFilter } from 'lucide-react';
 import { ChipButton } from '@/components/system/chip-button';
 import { IconButton } from '@/components/system/icon-button';
 import { SegmentedControl } from '@/components/system/segmented-control';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import type { StreamStatus } from '@/db/types';
 import { cn } from '@/lib/utils';
@@ -123,7 +123,7 @@ export function StreamToolbar({
               <ListFilter />
             </IconButton>
           </PopoverTrigger>
-          <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
+          <PopoverContent padding="none" align="start" className="w-44" sideOffset={4}>
             <div className="py-1">
               {HISTORY_FILTERS.map((f) => (
                 <MenuAction selected={!!((view === f.id))} density="compact"

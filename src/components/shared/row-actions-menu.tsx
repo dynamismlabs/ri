@@ -4,7 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { MoreHorizontal, type LucideIcon } from 'lucide-react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
 import { cn } from '@/lib/utils';
 
 export interface RowAction {
@@ -44,7 +44,7 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
       </IconButton>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" showCloseButton={false} className="rounded-t-2xl px-3 pb-6 pt-3">
+        <SheetContent side="bottom" showCloseButton={false} className="px-3 pb-6 pt-3">
           <SheetTitle className="sr-only">{title}</SheetTitle>
           <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto mb-3" />
           <div className="flex flex-col">

@@ -4,7 +4,7 @@ import { ChoiceRow } from '@/components/system/choice-row';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MessageCircle, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { Button } from '@/components/system/button';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { mainChatKey } from '@/hooks/use-main-chat';

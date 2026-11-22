@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import type { Editor } from '@tiptap/core';
 import { Layers3, Maximize2, NotebookPen, X } from 'lucide-react';
 import { EntitySheet } from '@/components/entities/entity-sheet';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
 import { useHomeStorageScope, useOptionalHomeContext } from '@/components/home/home-context';
 import { composerTarget } from '@/components/chat/editor/composer-focus';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
@@ -270,7 +270,7 @@ export function ScratchpadSheet() {
   if (!available) return null;
   return (
     <Sheet open={open && tier !== null && tier !== 'desktop'} onOpenChange={(next) => { if (!next) setScratchpadSheetOpen(false); }}>
-      <SheetContent side="right" showCloseButton={false} className="gap-0 p-0 data-[side=right]:sm:max-w-md"
+      <SheetContent padding="none" side="right" showCloseButton={false} className="gap-0 data-[side=right]:sm:max-w-md"
         // The pad's editor takes the caret itself once its text has loaded.
         onOpenAutoFocus={(e) => e.preventDefault()}>
         <SheetTitle className="sr-only">Scratchpad</SheetTitle>

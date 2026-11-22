@@ -1,6 +1,7 @@
 'use client';
 
-import { Popover as PopoverPrimitive } from 'radix-ui';
+import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
+
 import { cn } from '@/lib/utils';
 
 /**
@@ -43,7 +44,7 @@ export function LauncherPopoverContent({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
   return (
-    <PopoverPrimitive.Content
+    <PopoverPrimitive.Content padding="md"
       data-slot="popover-content"
       align={align}
       sideOffset={sideOffset}
@@ -52,7 +53,7 @@ export function LauncherPopoverContent({
       // internally instead of running off the top or bottom of the viewport.
       style={{ maxHeight: 'min(60vh, var(--radix-popover-content-available-height))', ...style }}
       className={cn(
-        'z-50 w-72 overflow-y-auto overscroll-contain rounded-lg border border-border bg-card p-3 shadow-lg outline-none',
+        'z-50 w-72 overflow-y-auto overscroll-contain outline-none',
         'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
         className,
       )}

@@ -1,6 +1,5 @@
 import { Card } from '@/components/system/card';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 import { ChipButton } from '@/components/system/chip-button';
@@ -11,8 +10,8 @@ import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Tip, TipProvider } from '@/components/ui/tip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { CoordinationControls } from '@/components/chat-ui/coordination/controls';
 import { ChatMenu } from '@/components/chat-ui/chat-menu';
 import { CoordinationApproval } from '@/components/chat-ui/coordination/approval-card';
@@ -38,7 +37,7 @@ import { ChatComposer } from '@/components/chat-ui/chat-composer';
 import { ChatAddMenu } from '@/components/chat-ui/add-menu/chat-add-menu';
 import { ComposerAddMenu } from '@/components/chat-ui/add-menu/composer-add-menu';
 import { ComposerMentionRows } from '@/components/chat-ui/add-menu/composer-mention-rows';
-import { ConfirmProvider } from '@/components/ui/confirm-dialog';
+import { ConfirmProvider } from '@/components/system/confirm-dialog';
 import { WorkContext, type WorkActivity, type WorkNavigation } from '@/contexts/work-context';
 import { ModelMenuContent, ModelMenuLabel } from '@/components/chat-ui/model-menu/model-menu';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
@@ -170,7 +169,7 @@ function SharedConversation() {
               size="xs"
               className="inline-flex items-center gap-1.5"
             ><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></Button></Tip></PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="start"><ModelMenuContent disabled={off}>
+            <PopoverContent padding="none" className="w-80" align="start"><ModelMenuContent disabled={off}>
               <ModelMenuProvider harness="claude" models={models} additionalModels={[]} selectedModel={model} disabled={off} onSelect={option => { setModel(option.id); setModelMenuOpen(false); }} />
             </ModelMenuContent></PopoverContent>
           </Popover>
@@ -306,8 +305,6 @@ function RichFiles() {
 }
 
 function ArtifactCollection() {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [query, setQuery] = useState('');
   const items: ArtifactListItem[] = config.state === 'empty' ? [] : ['budget.xlsx', 'review.docx', 'files.zip'].map((name, index) => ({
     key: name, name, source: { kind: 'session', sessionId: CHAT_ID, path: name }, mimeType: null,
@@ -320,7 +317,6 @@ function ArtifactCollection() {
       value={query}
       onChange={(event) => setQuery(event.target.value)}
       className="mt-2 block w-full"
-      size={compactFieldSize}
     /></label>
     <ArtifactList items={items} query={query} />
   </div>;

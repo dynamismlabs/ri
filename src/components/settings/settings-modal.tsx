@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Dialog } from '@/components/ui/dialog';
+import { Dialog } from '@/components/system/dialog';
 import { SettingsPanel } from './settings-panel';
 import { SettingsNav } from './settings-nav';
 import {

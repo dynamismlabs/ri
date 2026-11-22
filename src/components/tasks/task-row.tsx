@@ -21,10 +21,10 @@ import {
 } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from '@/components/system/menu';
 import { BUCKET_OPTIONS, type Bucket } from '@/lib/utils/bucket-placement';
-import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from '@/components/ui/popover';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from '@/components/system/popover';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/system/tooltip';
 import { AreaSelect } from '@/components/shared/area-select';
 import { LifecycleStatusControl } from '@/components/tasks/lifecycle-status-control';
 import { TaskBadges } from '@/components/tasks/task-badges';
@@ -347,7 +347,7 @@ export function TaskRow({
                   <AlignLeft size={8} />
                 </MetaItem>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="max-w-[300px] whitespace-pre-wrap text-xs leading-relaxed line-clamp-5">
+              <TooltipContent side="bottom" className="max-w-[300px] whitespace-pre-wrap line-clamp-5">
                 {task.bodyExcerpt}
               </TooltipContent>
             </Tooltip>
@@ -361,7 +361,7 @@ export function TaskRow({
                   <ListTree size={8} /> {task.subtaskCount}
                 </MetaItem>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="block max-w-[280px] text-xs">
+              <TooltipContent side="bottom" className="block max-w-[280px]">
                 <p className="font-semibold mb-1">{task.subtaskCount} subtask{task.subtaskCount === 1 ? '' : 's'}</p>
                 <ul className="space-y-0.5">
                   {task.subtaskPreview?.split('|||').map((title, i) => (
@@ -490,7 +490,7 @@ export function TaskRow({
           <PopoverTrigger asChild>
             <span />
           </PopoverTrigger>
-          <PopoverContent className="w-56 p-2" align="end">
+          <PopoverContent padding="sm" className="w-56" align="end">
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">Blocked on</p>
             <form onSubmit={(e) => {
               e.preventDefault();

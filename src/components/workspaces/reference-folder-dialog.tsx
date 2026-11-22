@@ -1,6 +1,8 @@
 'use client';
 import { Callout } from '@/components/system/callout';
 
+import { FormLabel, FormDescription } from '@/components/system/form-label';
+
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
 import { TextArea } from '@/components/system/text-area';
@@ -27,11 +29,12 @@ import slugify from '@sindresorhus/slugify';
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/system/dialog';
 import { Switch } from '@/components/ui/switch';
 import { FolderPickerDialog } from './folder-picker-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
@@ -94,7 +97,7 @@ function aliasFromPath(p: string): string {
 export function ReferenceFolderDialog(props: ReferenceFolderDialogProps) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="overflow-hidden sm:max-w-lg">
         {/* Mounted each time it opens, so a previous add doesn't bleed into the next one. */}
         {props.open && <ReferenceFolderForm {...props} />}
       </DialogContent>
@@ -186,7 +189,7 @@ function ReferenceFolderForm({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-4">
+      <DialogBody className="space-y-4">
         {!editing && (
           <SegmentedControl mode="choice" ariaLabel="Linked folder source" value={mode} onChange={setMode} size={phone ? 'touch' : 'compact'} stretch options={[{value:'folder',label:'A folder'},{value:'workspace',label:'Another agent'}]} />
         )}
@@ -296,37 +299,37 @@ function ReferenceFolderForm({
         />
 
         <label className="flex cursor-pointer items-start justify-between gap-3">
-          <span className="text-[11px] leading-relaxed text-muted-foreground/85">
-            Read only
-            <span className="block text-muted-foreground/60">
+          <span>
+            <FormLabel>Read only</FormLabel>
+            <FormDescription>
               Agents can read and search it, and are told not to change anything there. Claude&apos;s file
               edits there are blocked too.
-            </span>
+            </FormDescription>
           </span>
           <Switch checked={readOnly} onCheckedChange={setReadOnly} className="mt-0.5" />
         </label>
 
         <label className="flex cursor-pointer items-start justify-between gap-3">
-          <span className="text-[11px] leading-relaxed text-muted-foreground/85">
-            For every agent
-            <span className="block text-muted-foreground/60">
+          <span>
+            <FormLabel>For every agent</FormLabel>
+            <FormDescription>
               Use for something shared, like a design system several apps consume. Every agent
               on a device uses the same place for it.
-            </span>
+            </FormDescription>
           </span>
           <Switch checked={global} onCheckedChange={setGlobal} className="mt-0.5" />
         </label>
 
         {canAddReverse && (
           <label className="flex cursor-pointer items-start justify-between gap-3">
-            <span className="text-[11px] leading-relaxed text-muted-foreground/85">
-              Also link back
-              <span className="block text-muted-foreground/60">
+            <span>
+              <FormLabel>Also link back</FormLabel>
+              <FormDescription>
                 Adds{' '}
                 <span className="font-mono">@{slugify(workspaceName ?? '', { separator: '-' })}</span>{' '}
                 inside {reverseTargetName ?? 'that agent'}, read only if this one is, so each can use the
                 other&apos;s folder.
-              </span>
+              </FormDescription>
             </span>
             <Switch checked={addReverse} onCheckedChange={setAddReverse} className="mt-0.5" />
           </label>
@@ -345,7 +348,7 @@ function ReferenceFolderForm({
           </Notice>
         )}
         {error && <Notice tone="error">{error}</Notice>}
-      </div>
+      </DialogBody>
 
       <DialogFooter>
         {editing && onRemove && (

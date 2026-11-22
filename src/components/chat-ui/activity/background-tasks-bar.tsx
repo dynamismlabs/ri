@@ -26,7 +26,7 @@ import {
 	SheetContent,
 	SheetHeader,
 	SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/system/sheet';
 import { BACKGROUND_DOT } from '@/components/workspaces/activity-style';
 import {
 	deriveTaskDetail,
@@ -173,7 +173,7 @@ function BackgroundTasksSheet({
         ) : (
           <>
             <SheetHeader className="border-b">
-              <SheetTitle className="text-sm">Background tasks</SheetTitle>
+              <SheetTitle className="">Background tasks</SheetTitle>
             </SheetHeader>
             <ul className="flex-1 overflow-y-auto">
               {running.map((t) => (
@@ -281,7 +281,7 @@ function TaskDetail({
         >
           <ChevronLeft className="size-3.5" /> All tasks
         </Button>
-        <SheetTitle className="flex items-center gap-2 text-sm">
+        <SheetTitle className="flex items-center gap-2">
           <TaskTypeIcon taskType={task.taskType} className="size-4 text-muted-foreground" />
           <span className="truncate">{task.description ?? task.taskId}</span>
         </SheetTitle>

@@ -7,9 +7,9 @@ import { useTeam } from './team-context';
 import { useTeamMembers } from './use-team';
 import { MemberAvatar } from './member-avatar';
 import { useUpdateTask } from '@/hooks/use-tasks';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/system/menu';
 import { EntityHistoryButton } from '@/components/chat-ui/edits/entity-history-button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 
 export function TeamAudience() {
   const { team } = useTeam();

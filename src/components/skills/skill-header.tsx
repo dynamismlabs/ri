@@ -13,8 +13,8 @@ import { apiErrorText } from '@/lib/api/client';
 import type { SkillView } from '@/lib/api/skills';
 import { useArchiveSkill, useCommitSkill } from '@/hooks/use-skills';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useConfirm } from '@/components/system/confirm-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 
 import { SkillLocationControl } from './skill-location-control';
 import { Tip } from '@/components/ui/tip';

@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { Card } from '@/components/system/card';
 
 import { TextArea } from '@/components/system/text-area';
@@ -6,7 +7,7 @@ import { TextArea } from '@/components/system/text-area';
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { X, Mic, Square, Loader2, Zap, ImagePlus, ArrowUp, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreateStream } from '@/hooks/use-stream';
@@ -172,8 +173,8 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
 
   return <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm" />
-      <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
+      <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50" />
+      <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
         className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 outline-none"
         onPaste={event => {
           const files = transferFiles(event.clipboardData);

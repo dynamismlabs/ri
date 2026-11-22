@@ -4,7 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { MetaItem } from '@/components/system/meta';
 import type { ContentTone } from '@/components/system/callout';
 import { ChevronDown } from 'lucide-react';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/system/menu';
 import { useTaskLifecycle } from '@/hooks/use-task-lifecycle';
 import {
   availableCommands,

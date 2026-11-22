@@ -5,7 +5,7 @@ import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import type { ReactNode } from 'react';
 import { Check, Timer } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { useInactivity, useSetInactiveAfterDays } from '@/hooks/use-inactivity';
 import { useFoldShown } from '@/lib/client/rail-fold';
 import {
@@ -145,7 +145,7 @@ export function InactiveAfterPopover({ className, touch = false, reveal = false 
           </IconButton>
 
       </PopoverTrigger>
-      <PopoverContent align="start" sideOffset={4} className="w-60 p-1" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent padding="xs" align="start" sideOffset={4} className="w-60" onClick={(e) => e.stopPropagation()}>
         <InactiveAfterOptions stored={stored} />
       </PopoverContent>
     </Popover>

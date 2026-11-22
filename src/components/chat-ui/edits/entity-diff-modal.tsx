@@ -1,5 +1,6 @@
 'use client';
 
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { SegmentedControl } from '@/components/system/segmented-control';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -21,7 +22,7 @@ import { lineDiff, splitDiff, type SplitRow } from '@/lib/executions/edit-diff';
 import { cn } from '@/lib/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, History, Loader2, Undo2, X } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useMemo, useState } from 'react';
 import { Tip } from '@/components/ui/tip';
 import { toast } from 'sonner';
@@ -141,13 +142,13 @@ export function EntityDiffModal({ open, onClose, entityType, entityId, expectedB
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
           data-slot="dialog-overlay"
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
         />
-        <DialogPrimitive.Content
+        <DialogPrimitive.Content placement="custom" padding="none"
           data-slot="dialog-content"
           // Fixed frame — width/height don't shift with content while paging
           // through changes. Body scrolls internally.
-          className="fixed left-1/2 top-1/2 z-50 flex h-[min(820px,86vh)] w-[min(1100px,92vw)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+          className="fixed left-1/2 top-1/2 z-50 flex h-[min(820px,86vh)] w-[min(1100px,92vw)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           <VisuallyHidden.Root>
             <DialogPrimitive.Title>Changes to this {noun}</DialogPrimitive.Title>

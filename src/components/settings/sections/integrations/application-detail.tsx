@@ -25,8 +25,8 @@ import { AlertCircle, Bot, CalendarDays, Check, ChevronDown, ExternalLink, Loade
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useConfirm } from '@/components/system/confirm-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 
 import { Switch } from '@/components/ui/switch';
 

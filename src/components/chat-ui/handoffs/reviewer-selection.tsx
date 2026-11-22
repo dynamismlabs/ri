@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { ModelList } from '@/components/settings/model-list';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { useUserState } from '@/hooks/use-user-state';
 import { useUpdateWorkspace } from '@/hooks/use-workspaces';
 import { useHarnessModels } from '@/hooks/use-harness-models';

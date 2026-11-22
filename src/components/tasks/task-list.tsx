@@ -44,7 +44,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import {
   ListToolbar,
   ToolbarActiveDot,
@@ -298,7 +298,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
       onValueChange={(v) => { setLaneFilter(v as LaneFilter); dismissSwitchBanner(); }}
     >
       {/* Combined views — spelled out so they don't read as a status */}
-      <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Views</DropdownMenuLabel>
+      <DropdownMenuLabel className="uppercase tracking-widest">Views</DropdownMenuLabel>
       <DropdownMenuRadioItem value="all" className="text-xs">
         <span className="flex flex-1 flex-col gap-0.5">
           <span>All</span>
@@ -314,7 +314,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
       </DropdownMenuRadioItem>
       <DropdownMenuSeparator />
       {/* Actual statuses */}
-      <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Status</DropdownMenuLabel>
+      <DropdownMenuLabel className="uppercase tracking-widest">Status</DropdownMenuLabel>
       {TASK_LANES.map((l) => {
         const c = counts?.[laneStatus(l.key)];
         return (
@@ -383,7 +383,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
             </>}
             {sourceTeams.length > 0 && (
               <>
-                <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Source</DropdownMenuLabel>
+                <DropdownMenuLabel className="uppercase tracking-widest">Source</DropdownMenuLabel>
                 <DropdownMenuRadioGroup value={source ?? 'all'} onValueChange={(v) => { setSourceFilter(v); dismissSwitchBanner(); }}>
                   <DropdownMenuRadioItem value="all" className="text-xs">All sources</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="personal" className="text-xs">My Ri</DropdownMenuRadioItem>
@@ -397,7 +397,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
               </>
             )}
             {privatePlanning && <>
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Energy</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Energy</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={energyFilter}
               onValueChange={(v) => { setEnergyFilter(v as Energy | 'all'); dismissSwitchBanner(); }}
@@ -408,7 +408,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
             </>}
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaFilter} onValueChange={(v) => { setAreaFilter(v); dismissSwitchBanner(); }}>
               <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
               {areas?.map(area => (
@@ -426,7 +426,7 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
             <span className="hidden @md/lt:inline">{SORT_LABELS[sortBy]}</span>
           </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Sort by</DropdownMenuLabel>
             {sortOptions}
           </DropdownMenuContent>
         </DropdownMenu> : <DropdownMenu>
@@ -444,12 +444,12 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
             </Tip>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Group by</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Group by</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={groupBy} onValueChange={group => setPreferences(previous => ({ ...previous, group: group as TaskListGrouping }))}>
               {Object.entries(GROUP_LABELS).map(([value, label]) => <DropdownMenuRadioItem key={value} value={value} className="text-xs">{label}</DropdownMenuRadioItem>)}
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Sort by</DropdownMenuLabel>
             {sortOptions}
           </DropdownMenuContent>
         </DropdownMenu>}

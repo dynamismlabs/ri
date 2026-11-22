@@ -4,7 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { usePersonalServices } from '@/components/home/use-personal-services';
 import { useQuery } from '@tanstack/react-query';
 import { Check, X } from 'lucide-react';
-import { DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenuLabel, DropdownMenuSeparator } from '@/components/system/menu';
 import { EntrypointIcon } from '@/components/mcp-apps/entrypoint-icon';
 import { useConnectedCompanion, type ConnectedTab } from '@/lib/client/mcp-app-panel';
 import { trpc } from '@/lib/trpc/client';
@@ -30,7 +30,7 @@ export function AppCompanionRows({ chatId }: { chatId: string }) {
   return (
     <>
       <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <DropdownMenuLabel className="uppercase tracking-wider">
         Beside this chat
       </DropdownMenuLabel>
       {tabs.map((item) => (

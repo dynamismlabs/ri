@@ -4,7 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState } from 'react';
 import { History } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileIcon } from '@/components/file-icon';
 import { useSessionTree } from '@/hooks/use-execution';
@@ -79,7 +79,7 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
           </IconButton>
 
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={6} className="w-80 p-0">
+      <PopoverContent padding="none" align="end" sideOffset={6} className="w-80">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
           <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Recent files

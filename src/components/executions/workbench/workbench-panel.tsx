@@ -21,7 +21,7 @@ import {
   NotebookPen,
   Play,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { cn } from '@/lib/utils';
 
 import type { Workbench } from './use-workbench';

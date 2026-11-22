@@ -1,7 +1,8 @@
 'use client';
+import { HoverCardPrimitive as HoverCardPrimitive } from '@/components/system/hover-preview';
 import { InlineAction } from '@/components/system/inline-action';
 
-import { HoverCard as HoverCardPrimitive } from 'radix-ui';
+
 import { FileIcon } from '@/components/file-icon';
 import { cn } from '@/lib/utils';
 import { basename } from '@/lib/executions/tool-display';
@@ -87,12 +88,12 @@ export function FileChip({ path, diff, label, className }: FileChipProps) {
     <HoverCardPrimitive.Root openDelay={120} closeDelay={60}>
       <HoverCardPrimitive.Trigger asChild>{chip}</HoverCardPrimitive.Trigger>
       <HoverCardPrimitive.Portal>
-        <HoverCardPrimitive.Content
+        <HoverCardPrimitive.Content padding="none"
           side="top"
           align="start"
           sideOffset={6}
           collisionPadding={12}
-          className="z-50 w-[min(40rem,calc(100vw-2rem))] rounded-lg border border-border bg-popover p-0 shadow-xl outline-none"
+          className="z-50 w-[min(40rem,calc(100vw-2rem))] outline-none"
         >
           <div className="flex items-center gap-2 border-b border-border px-2.5 py-1.5 text-[11px]">
             <FileIcon name={name} size={13} />

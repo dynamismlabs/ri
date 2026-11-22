@@ -2,7 +2,6 @@
 import { Callout } from '@/components/system/callout';
 import { MenuAction } from '@/components/system/menu-action';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -10,8 +9,8 @@ import { SegmentedControl } from '@/components/system/segmented-control';
 
 import { Button } from '@/components/system/button';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverTrigger } from '@/components/system/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/system/tooltip';
 import { useWorkspaceBranches } from '@/hooks/use-workspaces';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { workspacesApi } from '@/lib/api/workspaces';
@@ -249,8 +248,6 @@ export function BaseControl({
   onClear: () => void;
   disabled?: boolean;
 }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const { data: branches, isLoading } = useWorkspaceBranches(open ? workspaceId : null);
@@ -313,7 +310,6 @@ export function BaseControl({
               purpose="embedded"
               leading={<Search />}
               aria-label={'Filter branches'}
-              size={compactFieldSize}
             /></div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (

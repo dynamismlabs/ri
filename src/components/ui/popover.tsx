@@ -46,3 +46,7 @@ function PopoverClose({
 }
 
 export { Popover, PopoverTrigger, PopoverContent, PopoverClose }
+
+export const PopoverContentPrimitive = PopoverPrimitive.Content
+export const PopoverPortal = PopoverPrimitive.Portal
+export const PopoverAnchor = PopoverPrimitive.Anchor

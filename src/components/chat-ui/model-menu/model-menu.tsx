@@ -26,7 +26,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import { HarnessIcon } from '@/components/settings/harness-connection-ui';
 import { Tip } from '@/components/ui/tip';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
@@ -340,13 +340,13 @@ function OptionRow({
           />
         </MenuAction>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
+      <DropdownMenuContent padding="xs"
         ref={content}
         side={viewport === 'phone' ? 'bottom' : 'right'}
         align="start"
         sideOffset={8}
         collisionPadding={8}
-        className="w-52 max-w-[calc(100vw-1rem)] rounded-lg p-1"
+        className="w-52 max-w-[calc(100vw-1rem)]"
         onPointerEnter={cancelHover}
         onPointerLeave={leave}
         onCloseAutoFocus={(event) => { if (!restoreFocus) event.preventDefault(); }}

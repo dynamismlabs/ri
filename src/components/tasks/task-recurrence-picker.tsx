@@ -6,7 +6,7 @@ import { Check, Repeat } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { Field } from '@/components/system/field';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import {
   RECURRENCE_PRESETS,
@@ -73,9 +73,9 @@ function RecurrencePanel({ value, onChange, onClose }: {
   };
 
   return (
-    <PopoverContent
+    <PopoverContent padding="sm"
       align="start"
-      className="w-60 p-2"
+      className="w-60"
       data-cancel-on-escape=""
       onOpenAutoFocus={(event) => {
         event.preventDefault();
@@ -92,7 +92,6 @@ function RecurrencePanel({ value, onChange, onClose }: {
       <div onClick={keepFromRow} onTouchStart={keepFromRow} className="flex flex-col gap-1">
         <Field
           inlineMessage
-          size={phone ? 'touch' : 'sm'}
           error={unreadable ? 'Not a repeat' : undefined}
           description={edited && !empty && typed ? describeRecurrence(typed) : undefined}
           ref={input}

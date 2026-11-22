@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/system/dialog';
 import {
   ModelMenuContent,
   ModelMenuLabel,

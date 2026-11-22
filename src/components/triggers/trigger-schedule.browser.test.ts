@@ -314,8 +314,8 @@ for (const theme of ['light', 'dark'] as const) {
       await page.evaluate(theme => { document.documentElement.classList.toggle('dark', theme === 'dark'); }, theme);
       await page.getByRole('button', { name: 'Open schedules' }).click();
       const dialog = page.getByRole('dialog', { name: 'Schedules and Triggers' });
-      expect(await dialog.evaluate(el => { const s = getComputedStyle(el); return [s.backgroundColor, s.backdropFilter]; })).toEqual(['rgba(0, 0, 0, 0.4)', 'none']);
-      expect(await dialog.locator('[data-slot="dialog-content"]').evaluate(el => getComputedStyle(el).borderRadius)).toBe('20px');
+      expect(await page.locator('[data-slot="dialog-overlay"]').evaluate(el => { const s = getComputedStyle(el); return [s.backgroundColor, s.backdropFilter]; })).toEqual(['rgba(0, 0, 0, 0.4)', 'none']);
+      expect(await dialog.evaluate(el => getComputedStyle(el).borderRadius)).toBe('20px');
     } finally { await page.close(); }
   });
 }

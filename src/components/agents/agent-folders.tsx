@@ -25,11 +25,11 @@ import { AlertTriangle, Bot, Check, CircleSlash, CornerUpLeft, Folder, FolderOpe
 import { toast } from 'sonner';
 import slugify from '@sindresorhus/slugify';
 import { Button } from '@/components/system/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { FolderPickerDialog } from '@/components/workspaces/folder-picker-dialog';
 import { folderName } from '@/lib/folders/folder-name';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useAgentFolders, useChangeAgentFolders } from '@/hooks/use-workspaces';
 import {
   useArchiveReferenceFolder,

@@ -1,4 +1,5 @@
 'use client';
+import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Field } from '@/components/system/field';
@@ -8,7 +9,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Popover as PopoverPrimitive } from 'radix-ui';
+
 import { Plus, X, List, Loader2, Check } from 'lucide-react';
 import {
   DndContext,
@@ -422,12 +423,12 @@ export function ExecutionChatsMenu({
         </Tip>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
+        <PopoverPrimitive.Content padding="xs"
           side="bottom"
           align="start"
           sideOffset={6}
           collisionPadding={12}
-          className="z-50 max-h-[360px] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-border bg-popover p-1 shadow-xl outline-none"
+          className="z-50 max-h-[360px] w-[min(19rem,calc(100vw-1.5rem))] overflow-y-auto outline-none"
         >
           {onNewChat && (
             <>

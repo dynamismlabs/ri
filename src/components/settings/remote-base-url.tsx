@@ -6,7 +6,7 @@ import { Field } from '@/components/system/field';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import { APP_SHORT_ID } from '@/constants/app';
 import { usePreviewSettings } from '@/hooks/use-preview';

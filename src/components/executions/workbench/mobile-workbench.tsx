@@ -7,8 +7,8 @@ import { IconButton } from '@/components/system/icon-button';
 
 import { Button } from '@/components/system/button';
 import { ChevronLeft, MoreHorizontal } from 'lucide-react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { sessionFolder } from '@/lib/folders/source';
 
 import { FileTree } from '../file-tree/file-tree';
@@ -29,7 +29,7 @@ export function MobileToolsSheet({
 }: Omit<ToolsListProps, 'terminal' | 'touch'> & { open: boolean; onOpenChange: (open: boolean) => void }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" showCloseButton={false} className="max-h-[88dvh] rounded-t-2xl px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
+      <SheetContent side="bottom" showCloseButton={false} className="max-h-[88dvh] px-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
         <SheetTitle className="sr-only">Tools</SheetTitle>
         <div aria-hidden className="mx-auto mb-3 h-1 w-9 rounded-full bg-muted-foreground/30" />
         <div className="overflow-y-auto">

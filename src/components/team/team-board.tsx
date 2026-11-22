@@ -9,7 +9,7 @@ import { useTaskCounts } from '@/hooks/use-tasks';
 import { TaskSurface } from '@/components/tasks/task-surface';
 import { ToolbarToggle } from '@/components/shared/list-toolbar';
 import { Tip } from '@/components/ui/tip';
-import { DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuCheckboxItem } from '@/components/system/menu';
 import { useTeam, useTeamNav } from './team-context';
 import { useTeamMembers } from './use-team';
 import { MemberAvatar } from './member-avatar';

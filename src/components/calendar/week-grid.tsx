@@ -36,7 +36,7 @@ import {
 import { formatMinutes } from '@/lib/deck/calendar';
 import { formatDayLabel } from '@/lib/calendar/dates';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
 import { NowLine } from './now-line';
@@ -205,7 +205,7 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
                           +{group.events.length}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent side="left" className="p-1 w-64">
+                      <PopoverContent padding="xs" side="left" className="w-64">
                         {group.events.map((e) => (
                           <OverflowRow key={e.id} event={e} />
                         ))}
@@ -262,7 +262,7 @@ function GridEvent({ placed, bounds }: { placed: PlacedEvent; bounds: MinuteWind
           </p>
         </button>
       </PopoverTrigger>
-      <PopoverContent side="right" align="start" className="p-0 w-auto">
+      <PopoverContent padding="none" side="right" align="start" className="w-auto">
         <EventPopoverContent event={event} />
       </PopoverContent>
     </Popover>
@@ -284,7 +284,7 @@ function OverflowRow({ event }: { event: CalendarEvent }) {
           </span>
         </MenuAction>
       </PopoverTrigger>
-      <PopoverContent side="left" className="p-0 w-auto">
+      <PopoverContent padding="none" side="left" className="w-auto">
         <EventPopoverContent event={event} />
       </PopoverContent>
     </Popover>

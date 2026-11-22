@@ -39,7 +39,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import { KANBAN_COLUMNS, LANE_BY_KEY, laneStatus, columnDropCommand, laneForStatus, type TaskLane } from '@/lib/tasks/lanes';
 import { STATUS_COLOR } from './lifecycle-status-control';
 import { TaskBadges } from './task-badges';
@@ -540,7 +540,7 @@ export function TaskKanban({
             {areaMode !== 'all' && <ToolbarActiveDot />}
           </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaMode} onValueChange={setAreaMode}>
               <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="none" className="text-xs">No Area</DropdownMenuRadioItem>

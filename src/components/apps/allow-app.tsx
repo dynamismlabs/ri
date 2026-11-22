@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Loader2, MonitorSmartphone } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { APP_NAME } from '@/constants/app';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
 import { isLocalViewer } from '@/lib/preview/resolve-iframe-src';

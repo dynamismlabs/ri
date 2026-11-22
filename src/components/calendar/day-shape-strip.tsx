@@ -29,7 +29,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '@/components/system/tooltip';
 
 interface DayShapeStripProps {
   /** Today's deck items in rank order — pairing input only, never rendered
@@ -173,7 +173,7 @@ export function DayShapeStrip({
                     style={{ left: `${seg.startPct}%`, width: `${Math.max(seg.widthPct, 0.75)}%` }}
                   />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-[11px]">
+                <TooltipContent side="bottom" className="">
                   {seg.detail}
                 </TooltipContent>
               </Tooltip>

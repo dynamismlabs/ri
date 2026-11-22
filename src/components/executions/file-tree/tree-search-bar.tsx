@@ -77,7 +77,6 @@ export function TreeSearchBar({
         aria-label="Search files"
         aria-describedby={showingCount ? matchDescriptionId : undefined}
         className="@container/tree-search flex-1 min-w-0"
-        size={compactFieldSize}
         leading={<Search aria-hidden />}
         trailing={
           <>

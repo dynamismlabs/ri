@@ -15,7 +15,7 @@ import { Button } from '@/components/system/button';
 
 import { useState } from 'react';
 import { Check, Laptop, Loader2 } from 'lucide-react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
 import { START_RI } from '@/lib/executions/location';
 import { useRunOn, useSetDefaultDevice } from '@/hooks/use-workspaces';
@@ -37,9 +37,9 @@ export function RunOnSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" showCloseButton={false} className="rounded-t-2xl px-5 pb-8 pt-4">
+        <SheetContent side="bottom" showCloseButton={false} className="px-5 pb-8 pt-4">
           <div className="mx-auto mb-4 h-1 w-8 rounded-full bg-muted-foreground/30" />
-          <SheetTitle className="mb-2 text-[15px] font-semibold">New chat in {workspace.name}, on…</SheetTitle>
+          <SheetTitle className="mb-2">New chat in {workspace.name}, on…</SheetTitle>
           {isLoading || !runOn ? (
             <p className="flex items-center gap-2 py-4 text-[13px] text-muted-foreground">
               <Loader2 size={14} className="animate-spin" /> Checking where it can run…

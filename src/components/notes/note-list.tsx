@@ -18,7 +18,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import {
   ListToolbar,
   ToolbarActiveDot,
@@ -128,7 +128,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
               Decisions only
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaFilter} onValueChange={setAreaFilter}>
               <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
               {areas?.map(area => (
@@ -147,7 +147,7 @@ export function NoteList({ onOpenNote: openNote, privatePlanning = true, areaFil
             <span className="hidden @md/lt:inline">{NOTE_SORT_LABELS[sortBy]}</span>
           </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-40">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="uppercase tracking-widest">Sort by</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as NoteSortOption)}>
               <DropdownMenuRadioItem value="lastViewedAt" className="text-xs">Last viewed</DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="createdAt" className="text-xs">Created</DropdownMenuRadioItem>

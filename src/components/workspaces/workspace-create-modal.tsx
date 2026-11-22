@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { InlineAction } from '@/components/system/inline-action';
@@ -27,7 +28,7 @@ import { Button } from '@/components/system/button';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight, Folder, FolderPlus, ImagePlus, Loader2, Monitor, SmilePlus, Trash2, X } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { EmojiPicker } from '@/components/shared/emoji-picker';
 import { SharedComputerWarning } from '@/components/home/shared-computer-warning';
 import { Switch } from '@/components/ui/switch';
@@ -229,13 +230,13 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
   return (
     <DialogPrimitive.Root open={open && canConfigure} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
           className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           <div className="flex max-h-[88vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
             <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3">
-              <DialogPrimitive.Title className="text-lg font-semibold text-foreground">New agent</DialogPrimitive.Title>
+              <DialogPrimitive.Title className="">New agent</DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>
                 <IconButton
                   label="Close"

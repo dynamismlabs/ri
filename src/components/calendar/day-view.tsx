@@ -31,7 +31,7 @@ import {
   type PlacedEvent,
 } from '@/lib/calendar/layout';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { AllDayRow } from './all-day-row';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
@@ -154,7 +154,7 @@ export function DayView({ date, day, workday, isToday, work }: DayViewProps) {
                       +{group.events.length} more
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent side="left" className="p-1 w-64">
+                  <PopoverContent padding="xs" side="left" className="w-64">
                     {group.events.map((e) => (
                       <OverflowRow key={e.id} event={e} date={date} />
                     ))}
@@ -211,7 +211,7 @@ function EventCard({ placed, bounds }: { placed: PlacedEvent; bounds: MinuteWind
           )}
         </button>
       </PopoverTrigger>
-      <PopoverContent side="right" align="start" className="p-0 w-auto">
+      <PopoverContent padding="none" side="right" align="start" className="w-auto">
         <EventPopoverContent event={event} />
       </PopoverContent>
     </Popover>
@@ -237,7 +237,7 @@ function OverflowRow({ event, date }: { event: CalendarEvent; date: string }) {
           </span>
         </MenuAction>
       </PopoverTrigger>
-      <PopoverContent side="left" className="p-0 w-auto">
+      <PopoverContent padding="none" side="left" className="w-auto">
         <EventPopoverContent event={event} />
       </PopoverContent>
     </Popover>

@@ -36,3 +36,5 @@ Search, Settings and Schedules share the same quiet backdrop.
 On a phone, filters have more room to tap. The message controls stay together. The model shows its name, with its settings in the model menu. On a narrow screen, the mode uses its icon. Run summaries sit above their smaller details, and the full calendar wraps its controls so you can reach them all.
 
 The desktop app's setup and recovery screens use the same colors and rounded controls as the rest of Ri. They use your computer's font too, including while Ri is starting or finding text on a page.
+
+On a phone, a form keeps its main action visible while you scroll its fields. Field labels and choice titles use the same readable type.

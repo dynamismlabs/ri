@@ -10,7 +10,7 @@ import { Button } from '@/components/system/button';
  */
 
 import { Flag, MapPin, Video } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { eventWindowOnDate } from '@/lib/calendar/layout';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
 import { formatMinutes, minutesToLabel } from '@/lib/deck/calendar';
@@ -76,7 +76,7 @@ export function DayList({
                     {e.title}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent side="bottom" align="start" className="w-auto p-0">
+                <PopoverContent padding="none" side="bottom" align="start" className="w-auto">
                   <EventPopoverContent event={e} />
                 </PopoverContent>
               </Popover>
@@ -160,7 +160,7 @@ function EventRow({ event, start, end }: { event: CalendarEvent; start: number; 
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" className="w-auto p-0">
+        <PopoverContent padding="none" side="right" align="start" className="w-auto">
           <EventPopoverContent event={event} />
         </PopoverContent>
       </Popover>

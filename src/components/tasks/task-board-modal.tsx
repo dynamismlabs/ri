@@ -1,11 +1,12 @@
 'use client';
 
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { SegmentedControl } from '@/components/system/segmented-control';
 
 import { useEffect, useRef } from 'react';
-import { Dialog as DialogPrimitive } from 'radix-ui';
+
 import { SquareKanban, X } from 'lucide-react';
-import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/system/dialog';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { viewKey } from '@/lib/client/active-view';
 import { closeCalendarModal } from '@/lib/client/calendar-modal';
@@ -62,9 +63,9 @@ export function TaskBoardModal() {
     <Dialog open={open} onOpenChange={(next) => (next ? openBoard() : closeTaskBoard())}>
       <DialogPortal>
         <DialogOverlay className="z-40" />
-        <DialogPrimitive.Content data-slot="dialog-content"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
           className={cn(
-            'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl outline-none',
+            'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden outline-none',
             'md:inset-x-4 md:top-12 md:bottom-4',
             'duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
           )}
@@ -93,7 +94,7 @@ export function TaskBoardModal() {
             Switch between live agent activity and tasks. Choose which columns to show.
           </DialogDescription>
           <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-border px-3 py-2">
-            <DialogTitle className="mr-1 flex items-center gap-1.5 text-sm font-semibold">
+            <DialogTitle className="mr-1 flex items-center gap-1.5">
               <SquareKanban className="size-4 text-muted-foreground" />Board
             </DialogTitle>
             <SegmentedControl mode="choice" ariaLabel="Board view" value={view} onChange={(next) => openBoard({ view: next })}

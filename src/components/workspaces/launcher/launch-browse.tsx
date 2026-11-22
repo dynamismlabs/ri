@@ -3,7 +3,6 @@ import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -126,8 +125,6 @@ export function LaunchBrowse({
   onPick: (item: LaunchSourceItem) => void;
   onClose: () => void;
 }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const connectSettings = useSettingsLink('plugins');
   const qc = useQueryClient();
   const now = useMemo(() => new Date(), []);
@@ -329,7 +326,6 @@ export function LaunchBrowse({
           </>
         }
         aria-label={'Search everything'}
-        size={compactFieldSize}
       /></div>
 
       <div className="flex flex-shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border/70 px-1.5 py-1">

@@ -9,7 +9,7 @@ import { TextArea } from '@/components/system/text-area';
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { EmojiPicker } from '@/components/shared/emoji-picker';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import { FilesToCopySection } from '@/components/workspaces/files-to-copy-section';
 import { WorkspaceIntegrationsSection } from '@/components/workspaces/workspace-integrations-section';

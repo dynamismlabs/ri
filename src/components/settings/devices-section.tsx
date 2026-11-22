@@ -18,7 +18,7 @@ import { PAIRING_TOKEN_FRAGMENT_KEY, APP_NAME, APP_SHORT_ID } from '@/constants/
 import type { DeviceKind } from '@/db/types';
 import { tokenDisplay } from '@/lib/auth/token-display';
 import { Button } from '@/components/system/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { QrCode } from '@/components/settings/qr-code';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 

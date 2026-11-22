@@ -1,4 +1,5 @@
 'use client';
+import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
 import { Switch } from '@/components/ui/switch';
 import { ChoiceRow } from '@/components/system/choice-row';
 
@@ -13,7 +14,7 @@ import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/system/tooltip';
 import { useWorkNavigation } from '@/contexts/work-context';
 import type { WorkspaceRecord } from '@/db/types';
 import { useArchiveExecution } from '@/hooks/use-archive-execution';
@@ -33,7 +34,7 @@ import { harnessDefinition, isKnownHarnessId, resumeCommandForHarness } from '@/
 import { cn } from '@/lib/utils';
 import { isSessionUnread } from '@/lib/utils/session-sort';
 import { Archive, ArrowUpRight, Check, ChevronLeft, Copy, Eye, EyeOff, FolderOpen, Loader2, MoreHorizontal, Pin, PinOff, Rows3, SquareArrowOutUpRight, Zap } from 'lucide-react';
-import { Popover as PopoverPrimitive } from 'radix-ui';
+
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 import { ExecutionActionBar } from './action-bar/execution-action-bar';
@@ -228,12 +229,12 @@ export function ExecutionHeader({
 
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
+        <PopoverPrimitive.Content padding="none"
           side="bottom"
           align={align}
           sideOffset={6}
           collisionPadding={12}
-          className="z-50 max-h-[min(80vh,640px)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-border bg-popover shadow-xl pointer-events-auto outline-none"
+          className="z-50 max-h-[min(80vh,640px)] w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto pointer-events-auto outline-none"
         >
           <div className="p-1">
             <MenuAction density="compact"

@@ -15,7 +15,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowUpRight, BookOpen, Check, ChevronDown, Hammer, LayoutGrid, Loader2, MessageCircle, Plug, Plus, Search, Server, X } from 'lucide-react';
 import { Button } from '@/components/system/button';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { IntegrationsSection } from '@/components/settings/sections/integrations-section';
 import { connectedAppsQuery } from '@/components/mcp-apps/catalog';
@@ -68,8 +68,6 @@ export function AppLibrary({ query, navigate }: {
 }
 
 function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const tier = useViewportTier();
   const sources = useLibrary();
   const connected = useQuery(connectedAppsQuery());
@@ -195,7 +193,6 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
                 </>
               }
               className="relative"
-              size={compactFieldSize}
             />
             <SegmentedControl
               mode="choice"

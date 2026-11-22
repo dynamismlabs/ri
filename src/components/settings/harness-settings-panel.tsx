@@ -1,7 +1,6 @@
 'use client';
 import { StatusBadge } from '@/components/system/status-badge';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 import { SelectField } from '@/components/system/select-field';
@@ -104,8 +103,6 @@ function HarnessPane({
   /** The global default model, when it's on this harness. It stays visible. */
   globalDefaultModel: string | null;
 }) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const catalog = useHarnessModels(harness.id, { catalog: true });
   const save = useSaveHarnessModels();
   const removeCustom = useRemoveCustomModel();
@@ -192,7 +189,6 @@ function HarnessPane({
           leading={<Search />}
           className="relative"
           aria-label={'Search models'}
-          size={compactFieldSize}
         />
         {/* Pinning saves on its own (the id has to exist before anything can
             validate against it), so the pending local edits mirror it rather

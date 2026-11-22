@@ -12,7 +12,7 @@ import {
   Copy,
   AtSign,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 
 interface TreeRowActionsProps {
   kind: 'file' | 'dir';

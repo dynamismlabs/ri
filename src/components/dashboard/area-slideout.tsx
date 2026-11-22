@@ -1,5 +1,7 @@
 'use client';
+import { SheetFrame } from '@/components/system/sheet';
 
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
 import { InlineAction } from '@/components/system/inline-action';
 
 import { MenuAction } from '@/components/system/menu-action';
@@ -10,7 +12,7 @@ import { TextArea } from '@/components/system/text-area';
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useRef, useState } from 'react'
-import { Dialog } from 'radix-ui'
+
 import {
   ChevronLeft, X, MoreHorizontal, Archive, RotateCcw,
   Check, FileText, CheckSquare, Plus,
@@ -22,7 +24,7 @@ import { LifecycleStatusControl } from '@/components/tasks/lifecycle-status-cont
 import type { TaskStatus } from '@/db/types'
 import { useNotes, useCreateNote } from '@/hooks/use-notes'
 import { useDashboard } from '@/contexts/dashboard-context'
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/system/menu'
 import { NoteIcon } from '@/components/shared/note-icon'
 import { DecisionLabel } from '@/components/notes/note-kind'
 import { coverAttachmentUrl } from '@/lib/attachments/view'
@@ -181,13 +183,13 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
         {/* Overlay — clicking closes everything */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-40 bg-black/30 transition-opacity duration-150',
+            'fixed inset-0 z-40 transition-opacity duration-150',
             isVisible ? 'opacity-100' : 'opacity-0'
           )}
         />
 
         {/* Slideout panel */}
-        <Dialog.Content
+        <SheetFrame padding="none"
           data-slot="sheet-content" data-side="right"
           ref={containerRef}
           className={cn(
@@ -544,7 +546,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
               )}
             </div>
           </div>
-        </Dialog.Content>
+        </SheetFrame>
       </Dialog.Portal>
     </Dialog.Root>
   )

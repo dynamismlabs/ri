@@ -2,7 +2,7 @@
 
 import { StatusBadge } from '@/components/system/status-badge';
 import { useState, type ReactNode } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import { cn } from '@/lib/utils';
 import { ChipButton } from '@/components/system/chip-button';
@@ -53,7 +53,7 @@ function ActiveStatusPill({ label, count, icon, tone = 'neutral', accentClass, h
           </ChipButton>
         </Tip>
       </PopoverTrigger>
-      <PopoverContent align="start" sideOffset={6} className="w-72 p-0 overflow-hidden">
+      <PopoverContent padding="none" align="start" sideOffset={6} className="w-72 overflow-hidden">
         <div className={cn('flex items-center gap-1.5 px-3 py-2 border-b border-border/40', headerBgClass)}>
           <span className="flex items-center justify-center">{icon}</span>
           <span className={cn('flex-1 text-[10.5px] font-bold uppercase tracking-[0.12em]', accentClass)}>{label}</span>

@@ -19,7 +19,7 @@ import { Button } from '@/components/system/button';
 import { Field } from '@/components/system/field';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import type { SettingField, SettingValue, SettingsItem, SettingsView } from '@/lib/mcp-apps/settings-model';
@@ -328,7 +328,7 @@ function SettingsAppDialog({ serverId, tool, title, onClose }: { serverId: strin
     >Try again</Button>
   </div>;
   return <Dialog open onOpenChange={next => { if (!next) onClose(); }}>
-    <DialogContent className="flex h-[min(85vh,760px)] max-w-[min(960px,calc(100%-2rem))] flex-col gap-3 p-4 sm:max-w-[min(960px,calc(100%-2rem))]">
+    <DialogContent padding="lg" className="flex h-[min(85vh,760px)] max-w-[min(960px,calc(100%-2rem))] flex-col gap-3 sm:max-w-[min(960px,calc(100%-2rem))]">
       {/* Once the interface is open, its own header names it. */}
       <DialogHeader className={opened ? 'sr-only' : undefined}>
         <DialogTitle>{title}</DialogTitle>

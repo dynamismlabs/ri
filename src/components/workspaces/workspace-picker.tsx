@@ -6,7 +6,7 @@ import { Bot, ChevronDown, Search } from 'lucide-react';
 import type { WorkspaceRecord } from '@/db/types';
 import { cn } from '@/lib/utils';
 import { AgentIcon } from '@/components/agents/agent-icon';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverTrigger } from '@/components/system/popover';
 import { LauncherPopoverContent } from './launcher/launcher-popover';
 
 export function WorkspacePicker({

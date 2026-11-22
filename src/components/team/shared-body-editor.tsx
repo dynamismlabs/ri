@@ -11,7 +11,7 @@ import { bodyForDocument, bodyForTeam, currentSpaceId } from '@/lib/spaces/docum
 import { SharedBodySaver, sharedDraftKey, type SharedBody, type SharedBodyStatus, type WriteFailure } from '@/lib/team/shared-body';
 import { trpcClient } from '@/lib/trpc/client';
 import { documentSaves } from '@/lib/client/document-saves';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { cn } from '@/lib/utils';
 import { useOptionalTeam } from './team-context';
 import { getAuthToken } from '@/lib/api/client';

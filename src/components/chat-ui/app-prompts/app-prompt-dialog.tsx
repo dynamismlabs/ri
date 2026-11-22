@@ -4,7 +4,7 @@ import { Field } from '@/components/system/field';
 import { useState, type FormEvent } from 'react';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
 
 import type { ChatAppPrompt } from '@/lib/integrations/app-prompts';
 import { promptArgumentLabel } from '@/lib/integrations/prompt-argument-label';

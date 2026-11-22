@@ -4,7 +4,6 @@ import { MenuAction } from '@/components/system/menu-action';
 import { Card } from '@/components/system/card';
 import { Callout } from '@/components/system/callout';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 import { NativeSelect } from '@/components/system/native-select';
@@ -23,8 +22,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export function OpenCodeProviderPanel() {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const queryClient = useQueryClient();
   const providers = useQuery({
     queryKey: ['opencode-providers'],
@@ -80,7 +77,6 @@ export function OpenCodeProviderPanel() {
         leading={<Search />}
         className="relative"
         aria-label={'Search providers'}
-        size={compactFieldSize}
       />
       <div className="max-h-72 space-y-1 overflow-y-auto [scrollbar-width:thin]">
         {visibleProviders.map((provider) => (

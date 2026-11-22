@@ -38,7 +38,7 @@ import { cn } from '@/lib/utils';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { FileIcon } from '@/components/file-icon';
 import type { TreeEntry } from '@/lib/api/sessions';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { FileSkeleton } from '../skeletons';
 import { FileView, type FileViewHandle } from './file-view';
 import { DiffView } from './diff-view';

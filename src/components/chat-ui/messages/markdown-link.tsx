@@ -1,10 +1,11 @@
 'use client';
 
+import { PopoverPrimitive as Popover } from '@/components/system/popover';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Popover } from 'radix-ui';
+
 import { Check, Copy, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/system/dialog';
 import { cn } from '@/lib/utils';
 import { FileSourceTip } from '@/components/chat-ui/artifacts/file-source-tip';
 import { markdownLinkTarget, markdownWebUrl } from './markdown-link-target';
@@ -108,7 +109,7 @@ function WebLink({ description, children, ...props }: ComponentProps<'a'> & { de
       >{children}</a>
     </Popover.Anchor>
     <Popover.Portal>
-      <Popover.Content ref={panel} side="top" align="start" sideOffset={6} collisionPadding={12}
+      <Popover.Content padding="none" ref={panel} side="top" align="start" sideOffset={6} collisionPadding={12}
         aria-label="Link destination" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}
         onEscapeKeyDown={() => {
           if (panel.current?.contains(document.activeElement)) anchor.current?.focus();
@@ -124,7 +125,7 @@ function WebLink({ description, children, ...props }: ComponentProps<'a'> & { de
             if (!event.shiftKey) changeOpen(false);
           }
         }}
-        className="z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))] rounded-lg border border-border bg-popover p-2.5 text-popover-foreground shadow-lg outline-none"
+        className="z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))] p-2.5 outline-none"
       >
         {description && <p className="mb-1 text-xs">{description}</p>}
         <div className="flex items-start gap-2">

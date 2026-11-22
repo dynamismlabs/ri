@@ -1,4 +1,5 @@
 'use client';
+import { FormActions } from '@/components/system/form-actions';
 import { Card } from '@/components/system/card';
 import { Callout } from '@/components/system/callout';
 import { MenuAction } from '@/components/system/menu-action';
@@ -17,7 +18,7 @@ import { Field } from '@/components/system/field';
  * accounts, where the button that opened it is.
  */
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import { ChevronDown, ExternalLink, KeyRound, Loader2, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -294,6 +295,7 @@ export function ConnectPanel(props: ProviderDetailProps) {
 }
 
 function ConnectPanelContent(props: ProviderDetailProps) {
+  const formId=useId();
   const { provider: p, toolkits, busy } = props;
   const setup = p.mcp?.endpointConfig;
   const selfHosted = setup?.kind === 'deployment' && (setup.locked ? setup.selectedId : props.endpointSelection?.endpointId) === 'selfhosted';
@@ -315,14 +317,14 @@ function ConnectPanelContent(props: ProviderDetailProps) {
           {meta.helpLinks?.map(link => <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{link.label} <ExternalLink size={11} /></a>)}
         </div>
       </div> : selfHosted ? <div className="space-y-2 text-xs text-muted-foreground"><p>{meta.setup?.[0]}</p><a href={meta.docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Setup guide <ExternalLink size={11} /></a></div> : <p className="text-xs text-muted-foreground">{p.displayName} does not require an account or a token.</p>}
-      <Button
+      <FormActions><Button
         onClick={() => props.onConnectDirect()}
         disabled={busy || !endpointReady || props.connectDisabled}
         variant="primary"
         size="md"
       >
         <Plus size={14} /> {again ? 'Reconnect' : `Connect ${p.displayName}`}
-      </Button>
+      </Button></FormActions>
     </div>;
   }
 
@@ -374,14 +376,14 @@ function ConnectPanelContent(props: ProviderDetailProps) {
           </div>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <Button
+          <FormActions><Button
             onClick={() => props.onConnectOAuth()}
             disabled={busy || !endpointReady || props.connectDisabled || (multi && selected.length === 0)}
             variant="primary"
             size="md"
           >
             <ExternalLink size={13} /> {again ? hosted ? 'Sign in to reconnect' : 'Sign in to another account' : `Connect ${p.displayName}`}
-          </Button>
+          </Button></FormActions>
           <span className="text-[11px] text-muted-foreground">
             Opens {p.displayName} to approve access, then brings you back here.
           </span>
@@ -402,7 +404,7 @@ function ConnectPanelContent(props: ProviderDetailProps) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form id={formId} onSubmit={submit} className="space-y-3">
       {hasHelp && (
         <Card padding="sm" className="space-y-2">
           {meta.setup && meta.setup.length > 0 && (
@@ -443,14 +445,14 @@ function ConnectPanelContent(props: ProviderDetailProps) {
       <p className="text-[11px] leading-normal text-muted-foreground">
         Your credentials are stored encrypted and never shown to agents.
       </p>
-      <Button
-        type="submit"
+      <FormActions><Button
+        type="submit" form={formId}
         disabled={busy || !filled || !endpointReady || props.connectDisabled}
         variant="primary"
         size="md"
       >
         <Plus size={14} /> {hosted && again ? 'Update token' : `Connect ${p.displayName}`}
-      </Button>
+      </Button></FormActions>
     </form>
   );
 }

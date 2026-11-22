@@ -6,7 +6,7 @@ import { Card } from '@/components/system/card';
 import { Button } from '@/components/system/button';
 import { IconButton } from '@/components/system/icon-button';
 import { languageFor } from '@/components/executions/viewer/language-for';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
 import { skillKey, useSkillFile } from '@/hooks/use-skills';
 import { apiErrorText } from '@/lib/api/client';

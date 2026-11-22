@@ -15,8 +15,8 @@ import { toast } from 'sonner';
 import { apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { forgetTeamSignIn } from '@/lib/team/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
-import { Dialog } from '@/components/ui/dialog';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Dialog } from '@/components/system/dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 
 import { useTeam, useTeamNav } from './team-context';
 import { useTeamMembers } from './use-team';

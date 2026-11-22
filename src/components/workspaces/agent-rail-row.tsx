@@ -22,7 +22,7 @@ import {
   type VoiceTone,
 } from '@/lib/utils/agent-rail';
 import { AgentIcon } from '@/components/agents/agent-icon';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { cn } from '@/lib/utils';
 import type { WorkspaceWithCounts } from '@/db/types';
 import { SessionRow } from './session-row';
@@ -381,7 +381,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                 <MoreHorizontal size={13} />
               </IconButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-[11px] min-w-[170px]" onPointerDown={stop} onClick={stop}>
+            <DropdownMenuContent align="end" className="min-w-[170px]" onPointerDown={stop} onClick={stop}>
               {chat && (
                 <>
                   {unread ? (

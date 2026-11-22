@@ -1,5 +1,6 @@
 "use client";
 
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import {
   SegmentedControl,
   SegmentedRoot,
@@ -43,9 +44,9 @@ import { Button } from '@/components/system/button';
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dialog as DialogPrimitive } from 'radix-ui';
+
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-react';
-import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/system/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -147,9 +148,9 @@ export function CalendarModal() {
     <Dialog open={open} onOpenChange={(next) => (next ? openCalendarModal() : closeCalendarModal())}>
       <DialogPortal>
         <DialogOverlay className="z-40" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="calendar"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="calendar"
           className={cn(
-            'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl outline-none',
+            'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden outline-none',
             'md:inset-x-4 md:top-12 md:bottom-4',
             'duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
           )}
@@ -286,7 +287,7 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
           data-slot="calendar-toolbar"
           className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2"
         >
-          <DialogTitle className="flex items-center gap-1.5 px-1 text-sm font-semibold">
+          <DialogTitle className="flex items-center gap-1.5 px-1">
             <CalendarIcon className="size-4 text-muted-foreground" />
             Calendar
           </DialogTitle>

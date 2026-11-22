@@ -12,7 +12,7 @@ import { Button } from '@/components/system/button';
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useReviewOn, useStartTransfer, useWorkingState } from '@/hooks/use-execution';
 import { apiErrorText } from '@/lib/api/client';

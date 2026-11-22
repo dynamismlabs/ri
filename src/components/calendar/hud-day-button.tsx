@@ -23,7 +23,7 @@ import { useDayShape, usePrefetchDayShape } from '@/hooks/use-day-shape';
 import { hudLabel } from '@/lib/calendar/hud';
 import { todayLocalDate } from '@/lib/deck/date';
 import { mondayOf } from '@/lib/calendar/dates';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { dismissCalendarInvite, readInviteDismissed, subscribeInviteDismissed } from './invite';
 import { HudDayPeek } from './hud-day-peek';
 import { openCalendarModal } from '@/lib/client/calendar-modal';
@@ -70,7 +70,7 @@ export function HudDayButton() {
             </Button>
           </Tip>
         </PopoverTrigger>
-        <PopoverContent align="end" sideOffset={6} className="w-72 p-3">
+        <PopoverContent padding="md" align="end" sideOffset={6} className="w-72">
           <p className="text-sm font-medium text-foreground">Your day, at a glance</p>
           <p className="mt-1 text-xs text-muted-foreground">
             Connect a calendar and this becomes a live glance: your next event, a
@@ -155,7 +155,7 @@ export function HudDayButton() {
             </ChipButton>
           </Tip>
         </PopoverTrigger>
-        <PopoverContent align="start" sideOffset={6} className="w-[21rem] p-0">
+        <PopoverContent padding="none" align="start" sideOffset={6} className="w-[21rem]">
           <HudDayPeek data={data} onOpenDay={openDay} onOpenWeek={openWeek} />
         </PopoverContent>
       </Popover>

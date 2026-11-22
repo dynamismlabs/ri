@@ -1,4 +1,5 @@
 'use client';
+import { FormActions } from '@/components/system/form-actions';
 import { Callout } from '@/components/system/callout';
 import { Card } from '@/components/system/card';
 import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
@@ -14,7 +15,7 @@ import { IconButton } from '@/components/system/icon-button';
  * with server-wide permissions and individual On and Ask first switches.
  */
 import dynamic from 'next/dynamic';
-import type { FormEvent, ReactNode } from 'react';
+import { useId, type FormEvent, type ReactNode } from 'react';
 import { AlertCircle, Loader2, LogIn, Plus, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
@@ -284,6 +285,7 @@ export function McpServerForm({
   onSubmit: () => void;
   onBack: () => void;
 }) {
+  const formId = useId();
   const url = form.url.trim();
   const detected = detectionFor(detection, url);
   const { authKind, header } = resolveMcpFormAuth(form, detected);
@@ -317,7 +319,7 @@ export function McpServerForm({
 
       <PluginSetupHelpButton target={{ kind: 'mcp-new', form: { ...form, authKind, header } }} disabled={busy} />
 
-      <Card as="form" padding="lg" onSubmit={submit} className="space-y-3">
+      <Card as="form" id={formId} padding="lg" onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
           <Field
             id="mcp-name"
@@ -367,14 +369,17 @@ export function McpServerForm({
         <p className="text-[11px] leading-normal text-muted-foreground">
           If an agent session is already running, restart it to use newly added tools.
         </p>
+        <FormActions>
         <Button
           type="submit"
+          form={formId}
           disabled={busy || !ready}
           variant="primary"
           size="md"
         >
           <Plus size={14} /> {selected === 'oauth' ? 'Add and sign in' : 'Add and connect'}
         </Button>
+        </FormActions>
       </Card>
     </div>
   );

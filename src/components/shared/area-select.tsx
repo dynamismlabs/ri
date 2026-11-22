@@ -5,7 +5,7 @@ import { MetaItem, useInMeta } from '@/components/system/meta';
 import { Button } from '@/components/system/button';
 import { ChevronDown } from 'lucide-react';
 import { useAreas } from '@/hooks/use-areas';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 
 interface AreaSelectProps {
   value: string | null;

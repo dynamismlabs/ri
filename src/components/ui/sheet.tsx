@@ -145,3 +145,9 @@ export {
   SheetTitle,
   SheetDescription,
 }
+
+export const SheetContentPrimitive = SheetPrimitive.Content
+export const SheetOverlayPrimitive = SheetPrimitive.Overlay
+export const SheetPortalPrimitive = SheetPrimitive.Portal
+export const SheetTitlePrimitive = SheetPrimitive.Title
+export const SheetDescriptionPrimitive = SheetPrimitive.Description

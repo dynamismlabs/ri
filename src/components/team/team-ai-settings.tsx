@@ -10,7 +10,7 @@ import { useHomeContext } from '@/components/home/home-context';
 import { SharedComputerWarning } from '@/components/home/shared-computer-warning';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { apiErrorText } from '@/lib/api/client';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useTeamAiStatus } from './team-chat';
 
 

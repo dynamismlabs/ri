@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/system/button';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { Pause, Play, MessagesSquare, ChevronDown } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { useCoordinationState, useCoordinationHold, useCoordinationPolicy, useCoordinationDecision } from '@/hooks/use-coordination';
 import { Tip } from '@/components/ui/tip';
 import { ChatMessageLink } from '@/components/chat-ui/messages/chat-message-link';

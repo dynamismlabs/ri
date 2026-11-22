@@ -16,7 +16,7 @@ import {
   AlertCircle,
   Settings2,
 } from 'lucide-react';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { previewApi, type PreviewState } from '@/lib/api/preview';
 import { usePreviewSettings, useUpdatePreviewSettings } from '@/hooks/use-preview';
 import { QrCode } from '@/components/settings/qr-code';
@@ -131,7 +131,7 @@ export function OpenOnDevice({
           </Button>
         </Tip>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0">
+      <PopoverContent padding="none" align="end" className="w-80">
         <div className="border-b border-border px-3.5 py-2.5">
           <h3 className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
             <Smartphone size={13} className="text-muted-foreground" />

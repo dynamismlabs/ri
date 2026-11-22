@@ -1,5 +1,6 @@
 "use client";
 
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { TextArea } from '@/components/system/text-area';
 
 import { IconButton } from '@/components/system/icon-button';
@@ -12,7 +13,7 @@ import { matchesSendKey } from "@/constants/commands";
 import { uploadAttachment } from "@/lib/attachments/client";
 import { cn } from "@/lib/utils";
 import { ImagePlus, Loader2, SmilePlus, Trash2, X } from "lucide-react";
-import { Dialog as DialogPrimitive, VisuallyHidden } from "radix-ui";
+import { VisuallyHidden } from 'radix-ui';
 import { useCallback, useRef, useState, type FormEvent } from "react";
 
 interface AreaCreateModalProps {
@@ -121,8 +122,8 @@ export function AreaCreateModal({ open, onOpenChange }: AreaCreateModalProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] duration-200">
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] duration-200">
           <VisuallyHidden.Root>
             <DialogPrimitive.Title>New Area</DialogPrimitive.Title>
             <DialogPrimitive.Description>Create a new area</DialogPrimitive.Description>

@@ -3,7 +3,6 @@ import { MenuAction } from '@/components/system/menu-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -19,7 +18,7 @@ import { parseLocalDate } from '@/lib/dates';
 import { useTasks } from '@/hooks/use-tasks';
 import { useAreas } from '@/hooks/use-areas';
 import { isClientReadyTodo } from '@/lib/deck/client-ready';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 import type { TaskListDTO } from '@/lib/api/dto/entity-list';
 
 const EFFORT_SHORT: Record<string, string> = {
@@ -39,8 +38,6 @@ interface DeckTaskBrowserProps {
 }
 
 export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, onClose }: DeckTaskBrowserProps) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [query, setQuery] = useState('');
   const [areaFilter, setAreaFilter] = useState<string | null>(null);
   const [energyFilter, setEnergyFilter] = useState<'deep' | 'light' | null>(null);
@@ -107,7 +104,6 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
           autoFocus
           leading={<Search />}
           aria-label={'Search tasks'}
-          size={compactFieldSize}
         />
 
         {/* Energy toggle */}

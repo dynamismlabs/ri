@@ -28,7 +28,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '@/components/system/tooltip';
 import { CalendarConnectPrompt } from './calendar-connect-prompt';
 import { DayView } from './day-view';
 
@@ -134,7 +134,7 @@ export function CalendarPanel() {
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-[11px]">
+            <TooltipContent side="bottom" className="">
               {data ? `Updated ${formatAsOf(data.asOf)}${degraded ? ' · some calendars unreachable' : ''}` : 'Refresh'}
             </TooltipContent>
           </Tooltip>

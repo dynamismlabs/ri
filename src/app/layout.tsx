@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { TipProvider } from "@/components/ui/tip";
-import { Toaster } from "@/components/ui/sonner";
-import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { Toaster } from "@/components/system/toast";
+import { ConfirmProvider } from "@/components/system/confirm-dialog";
 import { QueryProvider } from "@/providers/query-provider";
 import { PairingBootstrap } from "@/components/auth/pairing-bootstrap";
 import { HomeReachabilityBanner } from "@/components/app/home-reachability-banner";

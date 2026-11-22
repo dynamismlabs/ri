@@ -17,7 +17,7 @@ import {
   Loader2,
   Info,
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { type OpenTarget, type InstalledApp } from '@/lib/api/fs';
 import { useEditorPreference } from '@/lib/client/editor-preference';
 import { useOpener } from '@/hooks/use-opener';

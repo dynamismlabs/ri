@@ -166,3 +166,9 @@ export {
   DialogTitle,
   DialogTrigger,
 }
+
+// Composition seams for product adapters that own drawing and portal placement.
+export const DialogContentPrimitive = DialogPrimitive.Content
+export const DialogOverlayPrimitive = DialogPrimitive.Overlay
+export const DialogTitlePrimitive = DialogPrimitive.Title
+export const DialogDescriptionPrimitive = DialogPrimitive.Description

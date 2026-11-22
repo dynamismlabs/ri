@@ -19,7 +19,7 @@ import { formatMinutes, minutesToLabel, parseHhMm } from '@/lib/deck/calendar';
 import { eventWindowOnDate } from '@/lib/calendar/layout';
 import { formatDayLabel } from '@/lib/calendar/dates';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
 import { WorkWorth } from './work/work-worth';
@@ -149,7 +149,7 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent side="bottom" align="start" className="p-0 w-auto">
+                <PopoverContent padding="none" side="bottom" align="start" className="w-auto">
                   <EventPopoverContent event={event} />
                 </PopoverContent>
               </Popover>

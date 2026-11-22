@@ -7,7 +7,7 @@ import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react'
 import { Calendar } from '@/components/ui/calendar';
 import { Field } from '@/components/system/field';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { parseTypedDate } from '@/lib/date-input';
 import { describeLocalDate, formatLocalDate, isPastDate, parseLocalDate, toDateOnly } from '@/lib/dates';
 import { todayLocalDate } from '@/lib/deck/date';
@@ -67,9 +67,9 @@ function DatePanel({ label, value, onChange, onClose }: {
   };
 
   return (
-    <PopoverContent
+    <PopoverContent padding="sm"
       align="start"
-      className="w-auto p-2"
+      className="w-auto"
       data-cancel-on-escape=""
       onOpenAutoFocus={(event) => {
         event.preventDefault();
@@ -86,7 +86,6 @@ function DatePanel({ label, value, onChange, onClose }: {
       <div onClick={keepFromRow} onTouchStart={keepFromRow} className="flex flex-col gap-2">
         <Field
           inlineMessage
-          size={phone ? 'touch' : 'sm'}
           error={unreadable ? 'Not a date' : undefined}
           description={edited && !empty && !unreadable ? describeLocalDate(picked!) : undefined}
           ref={input}

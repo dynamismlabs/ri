@@ -182,3 +182,8 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 }
+
+export const AlertDialogContentPrimitive = AlertDialogPrimitive.Content
+export const AlertDialogOverlayPrimitive = AlertDialogPrimitive.Overlay
+export const AlertDialogTitlePrimitive = AlertDialogPrimitive.Title
+export const AlertDialogDescriptionPrimitive = AlertDialogPrimitive.Description

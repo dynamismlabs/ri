@@ -27,7 +27,7 @@ import { PersonalTaskDocument } from '@/components/tasks/personal-task-document'
 import { SharedTaskBody } from '@/components/spaces/shared-task-body';
 import { removeFromMyWork } from '@/components/spaces/my-work';
 
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { DropdownMenuItem } from '@/components/system/menu';
 
 import type { Attachment } from '@/db/types';
 

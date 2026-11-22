@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/system/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useAllowApp } from '@/components/apps/allow-app';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
 import { trpc, trpcClient } from '@/lib/trpc/client';

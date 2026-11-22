@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { ChoiceRow } from '@/components/system/choice-row';
@@ -13,7 +14,7 @@ import { ENTITY_HEADER_LABEL } from '@/components/entities/entity-header';
 import { cn } from '@/lib/utils';
 import { Bot, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Dialog } from 'radix-ui';
+
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { apiErrorText } from '@/lib/api/client';
@@ -102,10 +103,10 @@ export function StartWithAgentButton({
   const chooserDialog = (
     <Dialog.Root open={!!chooser} onOpenChange={(o) => { if (!o) { setChooser(null); onCancel?.(); onHandled?.(); } }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
-          <Dialog.Title className="text-sm font-semibold text-foreground">Continue which workstream?</Dialog.Title>
-          <Dialog.Description className="mt-1 text-xs text-muted-foreground">
+        <Dialog.Overlay className="fixed inset-0 z-[60]" />
+        <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
+          <Dialog.Title className="">Continue which workstream?</Dialog.Title>
+          <Dialog.Description className="mt-1">
             Several agent workstreams are working this task. Resume one, or start another.
           </Dialog.Description>
           <div className="mt-3 space-y-1.5">

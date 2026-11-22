@@ -6,7 +6,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { Archive, MoreHorizontal, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ENTITY_HEADER } from './entity-header';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 
 /** Shared task/note chrome. Audience, navigation and contextual controls are slots. */
 export function EntityDetailHeader({ children, className }: { children: ReactNode; className?: string }) {
@@ -30,7 +30,7 @@ export function EntityActionsMenu({ onArchive, onDelete, archiveLabel = 'Archive
 }) {
   return <DropdownMenu>
     <DropdownMenuTrigger asChild><IconButton label="More actions" size="sm"><MoreHorizontal /></IconButton></DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="w-48 text-xs">
+    <DropdownMenuContent align="end" className="w-48">
       {children}
       {onArchive && <MenuAction kind="menu" onSelect={onArchive}><Archive size={13} /> {archiveLabel}</MenuAction>}
       {onDelete && <MenuAction tone="error" kind="menu" onSelect={onDelete} ><Trash2 size={13} /> {deleteLabel}</MenuAction>}

@@ -1,11 +1,12 @@
 'use client';
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { StatusBadge } from '@/components/system/status-badge';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Command } from 'cmdk';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { GitBranch, Loader2, TextSearch, X } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useSessionSearch } from '@/hooks/use-session-search';

@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { Callout } from '@/components/system/callout';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -81,7 +82,7 @@ import {
 	SquareCheckBig,
 	X,
 } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { uuidv7 } from 'uuidv7';
@@ -651,7 +652,7 @@ function LaunchModalInner({
     <>
     <DialogPrimitive.Root open onOpenChange={(o) => !o && closeLauncher()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         {/* Anchored near the top rather than vertically centered. The panel
             grows downward as browse opens and chips accumulate, so centering
             made it drift upward as it filled — and pushed the footer's popovers
@@ -662,7 +663,7 @@ function LaunchModalInner({
             (including an animated one) would become the containing block for
             the launcher's `position: fixed` popovers, which re-clips them
             inside the panel's `overflow-hidden`. See `launcher-popover.tsx`. */}
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped"
           className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl px-3"
           onOpenAutoFocus={(e) => {
             // Land in the prompt, not on the first focusable (the workspace

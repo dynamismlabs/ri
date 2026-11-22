@@ -20,7 +20,7 @@ import {
 } from 'react';
 import { ArrowUp, Mic, Square, Loader2, Check, X } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { LiveWaveform } from '@/components/ui/live-waveform';
 import { useVoiceInput } from '@/hooks/use-voice-input';
 import { useConversationAudience } from '@/hooks/use-conversation-audience';
@@ -999,7 +999,7 @@ function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, c
           </ChipButton>
         </Tip>
       </PopoverTrigger>
-      <PopoverContent align="start" sideOffset={6} className="w-72 p-1">
+      <PopoverContent padding="xs" align="start" sideOffset={6} className="w-72">
         <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold">
           Permission mode
         </div>

@@ -2,13 +2,12 @@
 import { MenuAction } from '@/components/system/menu-action';
 
 import { MetaItem } from '@/components/system/meta';
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { Search, Target, X } from 'lucide-react';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { useTasks } from '@/hooks/use-tasks';
 
 import { Tip } from '@/components/ui/tip';
@@ -20,8 +19,6 @@ interface TaskPickerProps {
 }
 
 export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -46,7 +43,7 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
           </MetaItem>
         </Tip>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0" align="start">
+      <PopoverContent padding="none" className="w-64" align="start">
         <div className="p-2 border-b border-border">
           <Field
             autoFocus
@@ -58,7 +55,6 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
             onClick={(e) => e.stopPropagation()}
             leading={<Search />}
             aria-label={'Search tasks'}
-            size={compactFieldSize}
           />
         </div>
         <div className="max-h-48 overflow-y-auto p-1">

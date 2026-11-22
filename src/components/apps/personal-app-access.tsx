@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Bot, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/system/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
 import { removeAppDescription, removedNotice } from '@/lib/apps/remove-copy';

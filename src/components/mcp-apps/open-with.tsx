@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AppWindow, ChevronDown, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/system/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { Tip } from '@/components/ui/tip';
 import { useOptionalDashboard } from '@/contexts/dashboard-context';
 import {

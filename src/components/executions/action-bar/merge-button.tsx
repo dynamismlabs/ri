@@ -1,4 +1,5 @@
 'use client';
+import { DialogPrimitive as DialogPrimitive } from '@/components/system/dialog';
 import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
 import { Card } from '@/components/system/card';
 import { Callout } from '@/components/system/callout';
@@ -8,7 +9,7 @@ import { useMergePr, useSessionPr, useSetAutoMerge } from '@/hooks/use-execution
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 
 import { AlertTriangle, GitMerge } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useState } from 'react';
 import { ActionButton } from './action-button';
 
@@ -109,8 +110,8 @@ export function MergeButton({
       />
       <DialogPrimitive.Root open={open} onOpenChange={(o) => !o && setOpen(false)}>
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+          <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
             <VisuallyHidden.Root>
               <DialogPrimitive.Title>Merge PR #{prNumber}</DialogPrimitive.Title>
               <DialogPrimitive.Description>Confirm merge of pull request</DialogPrimitive.Description>

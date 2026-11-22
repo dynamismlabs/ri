@@ -1,4 +1,5 @@
 'use client';
+import { FormActions } from '@/components/system/form-actions';
 import { Card } from '@/components/system/card';
 
 import { MenuAction } from '@/components/system/menu-action';
@@ -21,7 +22,7 @@ import { Button } from '@/components/system/button';
  * they have keeps their edit (`rebase`).
  */
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { ChevronDown, ChevronRight, FolderOpen, Save } from 'lucide-react';
 import { APP_NAME } from '@/constants/app';
 import type { TriggerConcurrencyPolicy, TriggerRecord, TriggerView } from '@/db/types';
@@ -193,6 +194,7 @@ function patchFor(trigger: TriggerView, base: Values, next: Values): UpdateTrigg
 }
 
 export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: TriggerFormProps) {
+  const formId=useId();
   const createTrigger = useCreateTrigger();
   const updateTrigger = useUpdateTrigger({ carriesInput: true });
   const { data: workspaces } = useWorkspaces();
@@ -282,7 +284,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
   const noWorkspaces = target === 'workspace' && workspaces && workspaces.length === 0;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-5">
       <SystemField
         type="text"
         value={values.name}
@@ -396,7 +398,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
 
       {error && <p role="alert" className="text-sm text-destructive">{error.message}</p>}
 
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <FormActions className="flex items-center justify-end gap-3 pt-2">
         {trigger ? (
           dirty && (
             <Button
@@ -422,7 +424,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
           )
         )}
         <Button
-          type="submit"
+          type="submit" form={formId}
           disabled={!canSave}
           variant="primary"
           size="md"
@@ -431,7 +433,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
           <Save size={14} />
           {pending ? 'Saving…' : trigger ? 'Save changes' : 'Save'}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

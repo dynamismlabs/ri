@@ -1,8 +1,9 @@
 "use client";
 
+import { PopoverPrimitive as PopoverPrimitive } from '@/components/system/popover';
 import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Popover as PopoverPrimitive } from "radix-ui";
+
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
@@ -58,7 +59,7 @@ export function EmojiPicker({ onSelect, children, actions }: EmojiPickerProps) {
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>{children}</PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
+        <PopoverPrimitive.Content padding="none"
           side="bottom"
           align="center"
           sideOffset={8}

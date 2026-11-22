@@ -5,7 +5,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown, House, Plus, Settings, User, UserPlus } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 
 import { currentSpaceId, spacePath, spaceApiBase, spacePlaceKey } from '@/lib/spaces/document';
 import { myRiClient } from '@/lib/spaces/my-ri-client';

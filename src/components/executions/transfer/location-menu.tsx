@@ -18,7 +18,7 @@ import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
  */
 
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import type { WorkspaceRecord } from '@/db/types';
 import { useDevices, useThisDevice } from '@/hooks/use-devices';
 import { useTransfer } from '@/hooks/use-execution';
@@ -158,7 +158,7 @@ export function LocationMenu({
           </Tip>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">
-          <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">Runs on {name}</DropdownMenuLabel>
+          <DropdownMenuLabel className="font-normal">Runs on {name}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {moves.map((move) => {
             const note = hint(move, workspace?.name ?? 'The agent');

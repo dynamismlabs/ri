@@ -24,7 +24,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 
 import { dismissOpenSuggestions } from '@/components/chat/editor/suggestion/escape-guard';
 import { useTouchFirst } from '@/hooks/use-touch-first';

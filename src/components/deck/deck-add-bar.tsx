@@ -1,7 +1,6 @@
 "use client";
 import { MenuAction } from '@/components/system/menu-action';
 
-import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 import { Field } from '@/components/system/field';
 
@@ -35,8 +34,6 @@ const MAX_MATCHES = 6;
  * tasks +]"). It never starts work; new tasks are created as Todo.
  */
 export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExisting }: DeckAddBarProps) {
-  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
-
   const [query, setQuery] = useState('');
   const [focused, setFocused] = useState(false);
   const [highlight, setHighlight] = useState(0);
@@ -141,7 +138,6 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
         // Typed text clears on Escape before a slideout around the deck closes.
         data-cancel-on-escape={q ? '' : undefined}
         className="min-w-0 flex-1"
-        size={compactFieldSize}
         leading={<Plus className="h-4 w-4 shrink-0 text-primary" />}
         trailing={
           <>

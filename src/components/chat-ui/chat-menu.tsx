@@ -5,7 +5,7 @@ import { MoreHorizontal } from 'lucide-react';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { CoordinationSettings } from '@/components/chat-ui/coordination/controls';
 import { RestartMenuItem } from '@/components/executions/restart-menu-item';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 
 import { useRuntimeStatus } from '@/hooks/use-execution';
 
@@ -40,7 +40,7 @@ function SessionChatMenu({ sessionId }: { sessionId: string }) {
           </IconButton>
 
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 max-w-[calc(100vw-2rem)] p-0">
+      <PopoverContent padding="none" align="end" className="w-80 max-w-[calc(100vw-2rem)]">
         {coordination && <div className="p-4"><CoordinationSettings sessionId={sessionId} /></div>}
         {restart && <div className={coordination ? 'border-t p-1' : 'p-1'}><RestartMenuItem sessionId={sessionId} /></div>}
       </PopoverContent>

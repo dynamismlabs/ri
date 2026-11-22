@@ -18,7 +18,7 @@ import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import { Switch } from '@/components/ui/switch';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
 import { APPLICATIONS } from '@/lib/integrations/sources/applications';
 import { sourceErrorMessage, useSourceMutations, useSourcesOverview } from '@/hooks/use-integration-sources';

@@ -7,7 +7,7 @@ import { Button } from '@/components/system/button';
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui';
 import { GitCompareArrows } from 'lucide-react';
 import { FileIcon, FolderIcon } from '@/components/file-icon';
-import type { ConfirmOptions } from '@/components/ui/confirm-dialog';
+import type { ConfirmOptions } from '@/components/system/confirm-dialog';
 import type { DirtyArchive } from '@/hooks/use-workspaces';
 import type { UncommittedFile } from '@/lib/workspaces/uncommitted-files';
 import { cn } from '@/lib/utils';

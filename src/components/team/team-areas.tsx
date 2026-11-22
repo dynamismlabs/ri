@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { apiErrorText } from '@/lib/api/client';
 import { useCreateArea } from '@/hooks/use-areas';
 import { AreaSelect } from '@/components/shared/area-select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 
 /**
  * A team's Areas (docs/homes-spec.md §9.1): how the team organizes its

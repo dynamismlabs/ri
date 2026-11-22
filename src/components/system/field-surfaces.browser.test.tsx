@@ -110,7 +110,7 @@ for (const theme of ["light", "dark"]) {
       await search.waitFor({ state: "visible" });
       await expect
         .poll(async () => (await search.locator("..").boundingBox())!.height)
-        .toBe(28);
+        .toBe(32);
       await search.fill("Plugins");
       expect(
         await page
@@ -140,7 +140,7 @@ for (const theme of ["light", "dark"]) {
           name: "Add a task, or find an existing one",
           exact: true,
         });
-        const target = width === 900 ? 28 : 40;
+        const target = width === 900 ? 32 : 40;
         for (const input of [tree, deck]) {
           await input.waitFor();
           const shell = input.locator("xpath=..");
@@ -158,7 +158,7 @@ for (const theme of ["light", "dark"]) {
           name: "Clear search",
           exact: true,
         });
-        expect((await clear.boundingBox())!.height).toBe(target);
+        expect((await clear.boundingBox())!.height).toBe(width === 900 ? 28 : 40);
         await clear.click();
         expect(await tree.inputValue()).toBe("");
         expect(await tree.evaluate((el) => el === document.activeElement)).toBe(
@@ -249,7 +249,7 @@ for (const theme of ["light", "dark"]) {
         await dialog.evaluate(
           (el) =>
             el.scrollWidth <= el.clientWidth &&
-            getComputedStyle(el).overflowY === "auto",
+            getComputedStyle(el.querySelector('[data-slot="dialog-body"]')!).overflowY === "auto",
         ),
       ).toBe(true);
       const save = page.getByRole("button", { name: "Add", exact: true });
@@ -348,5 +348,60 @@ for (const theme of ["light", "dark"]) {
     } finally {
       await page.close();
     }
+  });
+}
+
+for (const theme of ['light', 'dark']) {
+  it(`gives standalone Deck and Settings search fields md desktop height (${theme})`, async () => {
+    const page = await fixture.browser.newPage({viewport:{width:900,height:844}});
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}&narrow`);
+      const deck = page.getByRole('textbox',{name:'Add a task, or find an existing one',exact:true});
+      await deck.waitFor();
+      expect((await deck.locator('..').boundingBox())!.height).toBe(32);
+      await page.goto(`${fixture.url}/?theme=${theme}&surface=nav`);
+      const search = page.getByRole('textbox',{name:'Search test settings',exact:true});
+      await search.waitFor();
+      expect((await search.locator('..').boundingBox())!.height).toBe(32);
+    } finally { await page.close(); }
+  });
+
+  for (const width of [360,390]) it(`pins linked-folder actions above the phone fold with body-first focus at ${width}px (${theme})`, async () => {
+    const page = await fixture.browser.newPage({viewport:{width,height:844}});
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}&surface=reference`);
+      const dialog=page.getByRole('dialog'); await dialog.waitFor();
+      const primary=page.getByRole('button',{name:'Add',exact:true});
+      // Invalid copy must not push the footer out of the visible dialog either.
+      await page.getByRole('textbox',{name:'Alias',exact:true}).fill('bad alias');
+      const visible=await primary.evaluate(el=>{
+        const box=el.getBoundingClientRect(),frame=el.closest('[role="dialog"]')!.getBoundingClientRect();
+        const hit=document.elementFromPoint(box.x+box.width/2,box.y+box.height/2);
+        return box.top>=frame.top&&box.bottom<=Math.min(frame.bottom,innerHeight)&&!!hit&&(el===hit||el.contains(hit));
+      });
+      expect(visible).toBe(true);
+      await page.getByRole('textbox',{name:'Alias',exact:true}).fill('backend');
+      await page.getByRole('textbox',{name:/Where it is/}).fill('/Users/example/backend');
+      const lastBody=page.getByRole('switch').last(); await lastBody.focus();
+      await page.keyboard.press('Tab');
+      expect(await page.getByRole('button',{name:'Cancel',exact:true}).evaluate(el=>el===document.activeElement)).toBe(true);
+      await page.keyboard.press('Tab');
+      expect(await primary.evaluate(el=>el===document.activeElement)).toBe(true);
+      await primary.click();
+      expect(await page.evaluate(()=>(window as unknown as {drafts:unknown[]}).drafts.length)).toBe(1);
+    } finally { await page.close(); }
+  });
+
+  it(`uses the same title style for linked-folder field and switch labels (${theme})`, async () => {
+    const page=await fixture.browser.newPage({viewport:{width:360,height:844}});
+    try {
+      await page.goto(`${fixture.url}/?theme=${theme}&surface=reference`);
+      await page.getByRole('dialog').waitFor();
+      const style=(el:Element)=>{const s=getComputedStyle(el);return [s.fontSize,s.fontWeight,s.color];};
+      const field=await page.locator('.ri-field-label').first().evaluate(style);
+      for(const toggle of await page.getByRole('switch').all()) {
+        expect(await toggle.locator('..').locator('[data-slot="form-label"]').evaluate(style)).toEqual(field);
+      }
+    } finally { await page.close(); }
   });
 }
