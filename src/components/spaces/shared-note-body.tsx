@@ -1,4 +1,7 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
+import { Button } from '@/components/system/button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { Lock, PencilLine, Users } from 'lucide-react';
@@ -37,9 +40,9 @@ export function SharedNoteBody({ note }: { note: NoteRecord }) {
   return (
     <div className="space-y-6 px-4 pb-10 pt-2 md:px-12">
       {gone && (
-        <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+        <Callout as="p" padding="md" density="row" tone={"warning"} role="status" >
           This note is no longer at {teamName}. How you organized it is kept.
-        </p>
+        </Callout>
       )}
       <section aria-label={`Shared with ${teamName}`} className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -55,9 +58,9 @@ export function SharedNoteBody({ note }: { note: NoteRecord }) {
             </span>
           )}
           {href && !gone && (
-            <a data-slot="action-button" href={href} className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 font-medium text-foreground hover:bg-muted">
+            <Button asChild variant="secondary" size="sm" className="ml-auto inline-flex items-center gap-1"><a href={href}>
               <PencilLine size={12} aria-hidden /> Edit in {teamName}
-            </a>
+            </a></Button>
           )}
         </div>
         <h1 className="note-title text-2xl font-semibold leading-tight">{note.title?.trim() || 'Untitled note'}</h1>

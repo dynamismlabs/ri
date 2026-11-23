@@ -1,5 +1,7 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { apiErrorCode, apiErrorDetails, apiErrorStatus, apiErrorText } from '@/lib/api/client';
@@ -9,7 +11,7 @@ import { bodyForDocument, bodyForTeam, currentSpaceId } from '@/lib/spaces/docum
 import { SharedBodySaver, sharedDraftKey, type SharedBody, type SharedBodyStatus, type WriteFailure } from '@/lib/team/shared-body';
 import { trpcClient } from '@/lib/trpc/client';
 import { documentSaves } from '@/lib/client/document-saves';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { cn } from '@/lib/utils';
 import { useOptionalTeam } from './team-context';
 import { getAuthToken } from '@/lib/api/client';
@@ -182,7 +184,7 @@ export function SharedBodyState({ shared }: { shared: ReturnType<typeof useShare
   const { status } = shared;
   if (status.status === 'conflict') {
     return (
-      <div role="alert" className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+      <Callout padding="md" density="row" tone={"warning"} role="alert" >
         <p className="font-medium">Someone else changed this while you were editing. Your text is kept.</p>
         <p className="mt-0.5 text-amber-700/80 dark:text-amber-300/80">Saving is paused until you choose which to keep.</p>
         <div className="mt-2 flex flex-wrap gap-2">
@@ -191,13 +193,18 @@ export function SharedBodyState({ shared }: { shared: ReturnType<typeof useShare
           <ConflictButton onClick={shared.keepMine}>Keep mine</ConflictButton>
         </div>
         <CompareDialog open={comparing} onOpenChange={setComparing} theirs={status.theirs.body} mine={status.mine} />
-      </div>
+      </Callout>
     );
   }
   if (status.status === 'failed') {
     return (
       <p role="alert" className="text-xs text-red-600 dark:text-red-300">
-        {status.message} <button type="button" className="underline" onClick={shared.retry}>Try again</button>
+        {status.message} <Button
+          type="button"
+          onClick={shared.retry}
+          variant="link"
+          size="xs"
+        >Try again</Button>
       </p>
     );
   }
@@ -225,13 +232,14 @@ export function SaveStatus({ status }: { status: SharedBodyStatus }) {
 
 function ConflictButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button data-slot="action-button"
+    <Button
       type="button"
       onClick={onClick}
-      className="rounded-md border border-amber-500/40 bg-background px-2.5 py-1 text-[11px] font-medium text-foreground hover:bg-muted/60"
+      variant="secondary"
+      size="xs"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -246,11 +254,11 @@ function CompareDialog({ open, onOpenChange, theirs, mine }: { open: boolean; on
         </DialogHeader>
         <div ref={scroll} className="grid max-h-[60vh] grid-cols-1 gap-3 overflow-y-auto md:grid-cols-2">
           <section>
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Theirs (shared now)</h3>
+            <h3 className="mb-1 text-[11px] font-semibold text-muted-foreground">Theirs (shared now)</h3>
             <pre className="whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs">{theirs || 'Empty'}</pre>
           </section>
           <section>
-            <h3 className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Yours (kept here)</h3>
+            <h3 className="mb-1 text-[11px] font-semibold text-muted-foreground">Yours (kept here)</h3>
             <pre className="whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs">{mine || 'Empty'}</pre>
           </section>
         </div>

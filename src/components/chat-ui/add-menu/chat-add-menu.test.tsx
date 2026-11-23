@@ -24,7 +24,7 @@ vi.mock('./composer-add-menu', () => ({
 }));
 vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: { items: [], total: h.connectors } }) }));
 vi.mock('@/lib/trpc/client', () => ({ trpc: { chatSources: { search: { queryOptions: () => ({}) } } } }));
-vi.mock('@/components/ui/dropdown-menu', () => ({ DropdownMenuSeparator: () => createElement('hr') }));
+vi.mock('@/components/system/menu', () => ({ DropdownMenuSeparator: () => createElement('hr') }));
 vi.mock('@/components/agents/agent-folders', () => ({ LinkedFolderDefiner: () => null }));
 vi.mock('@/components/home/use-personal-services', () => ({ usePersonalServices: () => h.personal }));
 vi.mock('@/components/apps/app-companion-rows', () => ({ AppCompanionRows: () => createElement('button', null, 'Example app') }));

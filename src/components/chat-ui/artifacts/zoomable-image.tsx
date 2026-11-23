@@ -1,8 +1,9 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { ZoomIn, ZoomOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 import { cn } from '@/lib/utils';
@@ -264,7 +265,7 @@ export function ZoomableImage({ src, alt, onLoad, onError }: { src: string; alt:
  * so focus stays on it and the keys go on working.
  */
 function ZoomControls({ percent, zoomed, atMost, onZoom, onFit }: { percent: number; zoomed: boolean; atMost: boolean; onZoom: (factor: number) => void; onFit: () => void }) {
-  const unavailable = 'aria-disabled:opacity-50 aria-disabled:hover:bg-transparent';
+
   return (
     <div
       role="group"
@@ -274,23 +275,41 @@ function ZoomControls({ percent, zoomed, atMost, onZoom, onFit }: { percent: num
         zoomed ? 'opacity-100' : 'opacity-0 group-hover/zoom:opacity-100 focus-within:opacity-100 pointer-coarse:opacity-100',
       )}
     >
-      <Tip label="Zoom out" shortcut={HOTKEYS.previewZoomOut.label}>
-        <Button variant="ghost" size="icon-xs" className={cn('rounded-full', unavailable)} aria-label="Zoom out" aria-disabled={!zoomed || undefined} onClick={() => { if (zoomed) onZoom(1 / ZOOM_STEP); }}><ZoomOut /></Button>
-      </Tip>
+
+        <IconButton
+          aria-disabled={!zoomed || undefined}
+          onClick={() => { if (zoomed) onZoom(1 / ZOOM_STEP); }}
+          label="Zoom out"
+          tooltip="Zoom out"
+          shortcut={HOTKEYS.previewZoomOut.label}
+          variant="ghost"
+          size="xs"
+        ><ZoomOut /></IconButton>
+
       <Tip label="Fit to window" shortcut={HOTKEYS.previewZoomFit.label}>
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           aria-label={`Fit to window, zoom ${percent}%`}
           aria-disabled={!zoomed || undefined}
           onClick={() => { if (zoomed) onFit(); }}
-          className={cn('h-6 min-w-12 rounded-full px-1.5 text-center text-[11px] tabular-nums text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', 'aria-disabled:hover:bg-transparent aria-disabled:hover:text-muted-foreground')}
+          variant="ghost"
+          size="xs"
+          className="min-w-12"
         >
           {percent}%
-        </button>
+        </Button>
       </Tip>
-      <Tip label="Zoom in" shortcut={HOTKEYS.previewZoomIn.label}>
-        <Button variant="ghost" size="icon-xs" className={cn('rounded-full', unavailable)} aria-label="Zoom in" aria-disabled={atMost || undefined} onClick={() => { if (!atMost) onZoom(ZOOM_STEP); }}><ZoomIn /></Button>
-      </Tip>
+
+        <IconButton
+          aria-disabled={atMost || undefined}
+          onClick={() => { if (!atMost) onZoom(ZOOM_STEP); }}
+          label="Zoom in"
+          tooltip="Zoom in"
+          shortcut={HOTKEYS.previewZoomIn.label}
+          variant="ghost"
+          size="xs"
+        ><ZoomIn /></IconButton>
+
     </div>
   );
 }

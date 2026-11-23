@@ -73,7 +73,7 @@ function SheetContent({
             <Button
               variant="ghost"
               className="absolute top-4 right-4"
-              size="icon-sm"
+              size="sm" icon
             >
               <XIcon
               />
@@ -145,3 +145,9 @@ export {
   SheetTitle,
   SheetDescription,
 }
+
+export const SheetContentPrimitive = SheetPrimitive.Content
+export const SheetOverlayPrimitive = SheetPrimitive.Overlay
+export const SheetPortalPrimitive = SheetPrimitive.Portal
+export const SheetTitlePrimitive = SheetPrimitive.Title
+export const SheetDescriptionPrimitive = SheetPrimitive.Description

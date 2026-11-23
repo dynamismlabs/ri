@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Attachment } from '../src/db/types';
 import { acceptance, api, eventually, hotkey, openWithHotkey } from './acceptance-fixture';
+import { noteTitleField } from './renderer-locators';
 
 interface NativeDownloadState { phase: string; fileName?: string; totalBytes?: number; receivedBytes?: number; url?: string }
 type DownloadFixtureGlobal = typeof globalThis & { riDownloadAcceptance: NativeDownloadState };
@@ -20,7 +21,7 @@ void acceptance('interaction-smoke', async fixture => {
   await openWithHotkey(page, 'search', page.getByRole('combobox'), fixture.report);
   await page.getByRole('combobox').fill('> Create note');
   await page.getByRole('option', { name: 'Create note' }).click();
-  const title = page.locator('textarea.note-title');
+  const title = noteTitleField(page);
   await title.waitFor();
   const initialTitle = 'Desktop acceptance keyboard note';
   await title.fill(initialTitle);

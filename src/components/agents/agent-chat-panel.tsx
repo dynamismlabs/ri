@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import type { ReactNode } from 'react';
 import { Loader2, Plus } from 'lucide-react';
 import { HarnessChat, HarnessChatSession } from '@/components/chat/harness-chat';
@@ -48,7 +50,7 @@ export function AgentChatPanel({
     <div className="flex flex-col h-full min-h-0">
       <div className="shrink-0 flex items-center justify-between gap-2 px-3 py-1 border-b border-border/50">
         <span className="flex min-w-0 items-center gap-1.5">
-          <span className="text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{sessionId ? saved?.label ?? 'Chat' : 'Main chat'}</span>
+          <span className="text-[9.5px] font-bold text-muted-foreground">{sessionId ? saved?.label ?? 'Chat' : 'Main chat'}</span>
           {elsewhere && (
             <Tip
               label={
@@ -73,17 +75,23 @@ export function AgentChatPanel({
           <ReadStateButton sessionId={sessionId ?? current?.session?.id ?? null} />
           <ScheduleChatButton sessionId={sessionId ?? current?.session?.id ?? null} />
           <ChatMenu sessionId={sessionId ?? current?.session?.id ?? null} />
-          {sessionId ? <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => openAgent(workspace.id)}>Agent chat</button> : <MainChatHistoryMenu scope={workspace.id} />}
+          {sessionId ? <Button
+            onClick={() => openAgent(workspace.id)}
+            variant="ghost"
+            size="sm"
+          >Agent chat</Button> : <MainChatHistoryMenu scope={workspace.id} />}
           {!archived && (
             <Tip label="Earlier conversations stay in History">
-              <button
+              <ChipButton
                 onClick={() => newChat.mutate(sessionId ? { sourceChatId: sessionId } : undefined, { onSuccess: data => { if (sessionId) openExecution(data.session.id); } })}
                 disabled={newChat.isPending}
-                data-slot="chip-button" className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all disabled:opacity-50"
+                variant="secondary"
+                size="compact"
+                className="flex items-center gap-1"
               >
                 {newChat.isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
                 New
-              </button>
+              </ChipButton>
             </Tip>
           )}
         </div>

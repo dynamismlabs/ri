@@ -1,8 +1,10 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState } from 'react';
 import { History } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileIcon } from '@/components/file-icon';
 import { useSessionTree } from '@/hooks/use-execution';
@@ -15,7 +17,6 @@ import {
 import type { TreeEntryStatus } from '@/lib/api/sessions';
 import type { FileHistoryEntry } from '@/hooks/use-file-history';
 import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
 
 interface FileHistoryMenuProps {
   sessionId: string;
@@ -64,22 +65,23 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Tip label="Recently opened files">
-          <button
+
+          <IconButton
             type="button"
-            aria-label="Recently opened files"
-            className={cn(
-              'flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground',
-              open && 'bg-muted text-foreground',
-            )}
+            label="Recently opened files"
+            tooltip="Recently opened files"
+            variant="ghost"
+            size="sm"
+            focus="inside"
+            className="flex items-center justify-center"
           >
             <History size={13} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={6} className="w-80 p-0">
+      <PopoverContent padding="none" align="end" sideOffset={6} className="w-80">
         <div className="flex items-center justify-between border-b border-border px-3 py-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <span className="text-[11px] font-semibold text-muted-foreground">
             Recent files
           </span>
           <div className="flex items-center gap-1.5">
@@ -110,15 +112,10 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
               const isActive = entry.path === selectedPath;
               return (
                 <li key={entry.path}>
-                  <button
+                  <MenuAction selected={!!((isActive))} density="compact"
                     type="button"
                     onClick={() => handleOpen(entry.path)}
-                    className={cn(
-                      'flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors',
-                      isActive
-                        ? 'bg-primary/10 text-foreground'
-                        : 'text-foreground/80 hover:bg-muted/60',
-                    )}
+                    className="flex w-full items-center gap-2 text-left"
                   >
                     <FileIcon name={entry.path} size={13} className="shrink-0" />
                     <span className="flex min-w-0 flex-1 flex-col">
@@ -151,7 +148,7 @@ export function FileHistoryMenu({ sessionId, history, selectedPath }: FileHistor
                     <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground/60">
                       {formatCompactRelative(new Date(entry.openedAt).toISOString())}
                     </span>
-                  </button>
+                  </MenuAction>
                 </li>
               );
             })}

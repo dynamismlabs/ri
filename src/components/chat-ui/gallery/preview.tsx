@@ -1,11 +1,17 @@
+import { Card } from '@/components/system/card';
+
+
+import { Field } from '@/components/system/field';
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 /** Bundled independently for the opaque gallery iframe. Never imported by the app shell. */
 import { useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Tip, TipProvider } from '@/components/ui/tip';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { CoordinationControls } from '@/components/chat-ui/coordination/controls';
 import { ChatMenu } from '@/components/chat-ui/chat-menu';
 import { CoordinationApproval } from '@/components/chat-ui/coordination/approval-card';
@@ -31,7 +37,7 @@ import { ChatComposer } from '@/components/chat-ui/chat-composer';
 import { ChatAddMenu } from '@/components/chat-ui/add-menu/chat-add-menu';
 import { ComposerAddMenu } from '@/components/chat-ui/add-menu/composer-add-menu';
 import { ComposerMentionRows } from '@/components/chat-ui/add-menu/composer-mention-rows';
-import { ConfirmProvider } from '@/components/ui/confirm-dialog';
+import { ConfirmProvider } from '@/components/system/confirm-dialog';
 import { WorkContext, type WorkActivity, type WorkNavigation } from '@/contexts/work-context';
 import { ModelMenuContent, ModelMenuLabel } from '@/components/chat-ui/model-menu/model-menu';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
@@ -155,12 +161,26 @@ function SharedConversation() {
         <ChatInputEditor ref={editor} ariaLabel="Example shared message" placeholder="Write an example message" disabled={off} attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
         <div className="flex items-center gap-2 px-1.5 pb-1.5">
           <Popover open={modelMenuOpen} onOpenChange={setModelMenuOpen}>
-            <PopoverTrigger asChild><Tip label="Choose an example model"><button data-slot="action-button" type="button" disabled={off} aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs disabled:opacity-50"><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></button></Tip></PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="start"><ModelMenuContent disabled={off}>
+            <PopoverTrigger asChild><Tip label="Choose an example model"><Button
+              type="button"
+              disabled={off}
+              aria-label={`Model and settings: ${models.find(option => option.id === model)!.label}`}
+              variant="secondary"
+              size="xs"
+              className="inline-flex items-center gap-1.5"
+            ><HarnessMark id="claude" /><ModelMenuLabel model={models.find(option => option.id === model)!.label} /></Button></Tip></PopoverTrigger>
+            <PopoverContent padding="none" className="w-80" align="start"><ModelMenuContent disabled={off}>
               <ModelMenuProvider harness="claude" models={models} additionalModels={[]} selectedModel={model} disabled={off} onSelect={option => { setModel(option.id); setModelMenuOpen(false); }} />
             </ModelMenuContent></PopoverContent>
           </Popover>
-          <button data-slot="action-button" data-variant="primary" type="button" className="ml-auto rounded bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50" onClick={send} disabled={off || !hasContent}>Send example</button>
+          <Button
+            type="button"
+            onClick={send}
+            disabled={off || !hasContent}
+            variant="primary"
+            size="xs"
+            className="ml-auto"
+          >Send example</Button>
         </div>
       </ChatComposer>
     </div>
@@ -176,10 +196,10 @@ function AppContext() {
     ] },
     { viewId: 'board', app: 'Planning Board', items: [{ kind: 'text', text: 'Column: This week, 4 cards' }] },
   ]);
-  return <section aria-label="Composer" className="rounded-xl border border-border bg-card">
+  return <Card as="section" padding="none" aria-label="Composer" >
     <AppContextStrip groups={groups} onRemove={viewId => setGroups(current => current.filter(group => group.viewId !== viewId))} />
     <p className="px-3 pb-3 pt-2 text-[13px] text-muted-foreground">Ask about the selected part</p>
-  </section>;
+  </Card>;
 }
 
 function ServerForm() {
@@ -200,19 +220,51 @@ function FilesBeside({ children }: { children?: ReactNode } = {}) {
   const file = useBesidePreview(host);
   const shown = fileShown && !!file;
   useBesideRegion(host, { available: true, side: 'right', showing: shown, show: () => setFileShown(true) });
-  return <div className="flex h-[580px] overflow-hidden rounded-lg border border-border">
-    <div {...{ [PREVIEW_HOST_ATTRIBUTE]: host }} role="log" aria-label="Chat" className="min-w-0 flex-1 overflow-y-auto p-4">{children ?? <FileChips />}</div>
-    <aside aria-label="Beside the chat" className="flex w-[55%] min-w-0 flex-col border-l border-border">
-      <div className="flex h-9 shrink-0 items-stretch border-b border-border">
-        <button type="button" aria-pressed={!shown} onClick={() => setFileShown(false)} className={`border-b-2 px-3 text-[11px] font-medium ${shown ? 'border-transparent text-muted-foreground' : 'border-primary text-primary'}`}>Deck</button>
-        <BesideFileTab host={host} active={shown} onSelect={() => setFileShown(true)} className={`border-b-2 px-3 text-[11px] font-medium ${shown ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`} />
+  return (
+    <div className="flex h-[580px] overflow-hidden rounded-lg border border-border">
+      <div
+        {...{ [PREVIEW_HOST_ATTRIBUTE]: host }}
+        role="log"
+        aria-label="Chat"
+        className="min-w-0 flex-1 overflow-y-auto p-4"
+      >
+        {children ?? <FileChips />}
       </div>
-      <div className="relative min-h-0 flex-1">
-        <div inert={shown} className="space-y-2 p-4 text-sm text-muted-foreground"><p className="font-medium text-foreground">Today</p><p>Prepare the Friday review</p><p>Reply to Alex about the agenda</p></div>
-        {file && <div inert={!shown} className={`absolute inset-0 ${shown ? '' : 'pointer-events-none opacity-0'}`}><BesideFileView host={host} /></div>}
-      </div>
-    </aside>
-  </div>;
+      <aside aria-label="Beside the chat" className="flex w-[55%] min-w-0 flex-col border-l border-border">
+        <div className="flex h-9 shrink-0 items-stretch border-b border-border">
+          <ChipButton
+            variant="ghost"
+            className="self-center"
+            pressed={!shown}
+            onClick={() => setFileShown(false)}
+          >
+            Deck
+          </ChipButton>
+          <BesideFileTab
+            host={host}
+            active={shown}
+            onSelect={() => setFileShown(true)}
+            className={`border-b-2 px-3 text-[11px] font-medium ${shown ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          />
+        </div>
+        <div className="relative min-h-0 flex-1">
+          <div inert={shown} className="space-y-2 p-4 text-sm text-muted-foreground">
+            <p className="font-medium text-foreground">Today</p>
+            <p>Prepare the Friday review</p>
+            <p>Reply to Alex about the agenda</p>
+          </div>
+          {file && (
+            <div
+              inert={!shown}
+              className={`absolute inset-0 ${shown ? '' : 'pointer-events-none opacity-0'}`}
+            >
+              <BesideFileView host={host} />
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
 }
 
 /** Where a chat link or Archive chat would go in the app. The example stays on the receiving chat. */
@@ -259,7 +311,13 @@ function ArtifactCollection() {
     sessionId: CHAT_ID, eventId: `artifact-${index}`, createdAt: NOW, chatLabel: index ? 'Prepare the handoff' : 'Research the options',
   }));
   return <div className="rounded-lg border border-border p-2">
-    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<input data-slot="field" aria-label="Filter artifacts" placeholder="Filter by filename, path or chat" value={query} onChange={event => setQuery(event.target.value)} className="mt-2 block w-full rounded-md border border-border bg-background p-2 text-sm" /></label>
+    <label className="mb-2 block px-3 text-xs text-muted-foreground">Files from every chat<Field
+      aria-label="Filter artifacts"
+      placeholder="Filter by filename, path or chat"
+      value={query}
+      onChange={(event) => setQuery(event.target.value)}
+      className="mt-2 block w-full"
+    /></label>
     <ArtifactList items={items} query={query} />
   </div>;
 }
@@ -277,7 +335,13 @@ function CoordinationComposer() {
   return <ChatComposer hint="⇧⇥ to cycle modes">
     <CoordinationControls sessionId={CHAT_ID} />
     <ChatInputEditor ref={editor} ariaLabel="Example message" placeholder="Message your agent" attachmentsEnabled={false} onContentChange={setHasContent} onSubmit={send} />
-    <div className="flex justify-end px-2 pb-2"><button data-slot="action-button" data-variant="primary" type="button" onClick={send} disabled={!hasContent} className="rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground disabled:opacity-50">Send example</button></div>
+    <div className="flex justify-end px-2 pb-2"><Button
+      type="button"
+      onClick={send}
+      disabled={!hasContent}
+      variant="primary"
+      size="xs"
+    >Send example</Button></div>
   </ChatComposer>;
 }
 
@@ -361,7 +425,7 @@ function Example() {
     {__GALLERY_EXAMPLE__ === 'handoffs' && <ResultRenderer resultId={RECORD_ID} />}
     {__GALLERY_EXAMPLE__ === 'activity' && <div className="space-y-5"><ExecutionEvent event={event('tool_call', { toolName: 'Bash', toolInput: { command: 'pnpm test --filter=calendar' } })} /><ExecutionEvent event={event('tool_result', { content: config.state === 'error' ? 'The calendar test failed. Friday overlaps with the existing review.' : 'All 12 calendar tests passed.', toolIsError: config.state === 'error' })} /><ExecutionEvent event={event(config.state === 'error' ? 'error' : 'agent', { content: config.state === 'error' ? 'The schedule needs one more adjustment.' : 'The review plan is ready.' })} handoffActions={false} /></div>}
     {__GALLERY_EXAMPLE__ === 'connected-app' && <div className="h-[580px]"><ConnectedCompanion chatId={CHAT_ID}>{() => <div className="p-2"><p className="text-sm text-muted-foreground">The estimate is $960 for eight hours. Try changing the hours in the app.</p><ConnectedView captureId={DRAFT_ID} chatId={CHAT_ID} /></div>}</ConnectedCompanion></div>}
-    {runtime.logs.length > 0 && <div className="mt-6 space-y-1 rounded-lg border border-border bg-muted/30 p-3 text-xs text-muted-foreground" aria-live="polite" key={`log-${revision}`}><p className="font-medium text-foreground">In this example</p>{runtime.logs.map((line, index) => <p key={index}>{line}</p>)}</div>}
+    {runtime.logs.length > 0 && <Card padding="md" className="mt-6 space-y-1" aria-live="polite" key={`log-${revision}`}><p className="font-medium text-foreground">In this example</p>{runtime.logs.map((line, index) => <p key={index}>{line}</p>)}</Card>}
   </div>;
 }
 

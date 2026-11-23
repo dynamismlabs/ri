@@ -1,4 +1,6 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
+import { Field } from '@/components/system/field';
 
 import { useStackDetection } from '@/hooks/use-workspaces';
 
@@ -52,7 +54,7 @@ export function WorktreeScriptsSection({
         hint={
           <>
             Runs once after the worktree is created. A fresh worktree has no installed dependencies. Install or copy what
-            it needs here. <code className="font-mono">$RI_SOURCE_CHECKOUT_PATH</code> points at the original checkout.
+            it needs here. <code className="font-mono">{'$RI_SOURCE_CHECKOUT_PATH'}</code> points at the original checkout.
           </>
         }
       />
@@ -64,7 +66,7 @@ export function WorktreeScriptsSection({
         hint={
           <>
             The dev command Ri runs in each worktree to start its preview. Ri assigns a stable port (injected as{' '}
-            <code className="font-mono">PORT</code>) and waits for it to listen.
+            <code className="font-mono">{'PORT'}</code>) and waits for it to listen.
           </>
         }
       />
@@ -97,30 +99,33 @@ function ScriptField({
 }) {
   return (
     <div>
-      <label className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">
-        {label}
-      </label>
       {multiline ? (
-        <textarea
+        <TextArea
+          label={label}
+          description={hint}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
           rows={2}
-          className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full"
+          purpose="code"
+          resize="vertical"
         />
       ) : (
-        <input
+        <Field
+          label={label}
+          description={hint}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           spellCheck={false}
           autoCorrect="off"
           autoCapitalize="off"
-          className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+          className="w-full"
+          purpose="code"
         />
       )}
-      <p className="mt-1 text-[10px] text-muted-foreground/70 leading-snug">{hint}</p>
     </div>
   );
 }

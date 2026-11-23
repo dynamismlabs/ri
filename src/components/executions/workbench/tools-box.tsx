@@ -1,5 +1,8 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Button } from '@/components/system/button';
 import {
   AppWindow,
   ChevronDown,
@@ -245,12 +248,12 @@ export const TOOLS_BOX_CLEARANCE = '@max-[1390px]/chat:pr-[308px] @max-[1060px]/
 export function FloatingToolsBox({ list, strip, label = 'Tools' }: { list: React.ReactNode; strip: React.ReactNode; label?: string }) {
   return (
     <>
-      <div data-slot="floating-tools" role="group" aria-label={label} className="absolute right-4 top-3 z-20 w-[288px] rounded-2xl bg-card p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.28)] @max-[1060px]/chat:hidden dark:shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+      <OverlaySurface kind="toolbar" padding="xs" role="group" aria-label={label} className="absolute right-4 top-3 z-20 w-[288px] @max-[1060px]/chat:hidden">
         {list}
-      </div>
-      <div data-slot="floating-tools" role="group" aria-label={label} className="absolute right-3 top-3 z-20 hidden flex-col gap-0.5 rounded-xl bg-card p-1 shadow-[0_12px_32px_rgba(0,0,0,0.28)] @max-[1060px]/chat:flex dark:shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+      </OverlaySurface>
+      <OverlaySurface kind="toolbar" padding="xs" role="group" aria-label={label} className="absolute right-3 top-3 z-20 hidden flex-col gap-0.5 @max-[1060px]/chat:flex">
         {strip}
-      </div>
+      </OverlaySurface>
     </>
   );
 }
@@ -274,19 +277,16 @@ export function ToolsRow({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <MenuAction size={touch ? "touch" : "compact"}
         type="button"
         onClick={onClick}
-        className={cn(
-          'group flex w-full items-center gap-2.5 rounded-lg px-2.5 text-left font-medium text-foreground/85 transition-colors hover:bg-muted/60 hover:text-foreground',
-          touch ? 'h-11 text-[14.5px]' : 'h-9 text-[13px]',
-        )}
+        className="group flex w-full items-center gap-2.5 text-left"
       >
         <span className="flex-shrink-0 text-muted-foreground group-hover:text-foreground">{icon}</span>
         <span className="min-w-0 truncate">{label}</span>
         <span className="ml-auto flex min-w-0 flex-shrink-0 items-center gap-2 text-[11.5px] font-normal text-muted-foreground/80">{right}</span>
         <RowChevron />
-      </button>
+      </MenuAction>
     </Tip>
   );
 }
@@ -299,14 +299,10 @@ export function ToolsRow({
 export function TerminalToolsRow({ open, onToggle, touch = false }: { open: boolean; onToggle: () => void; touch?: boolean }) {
   return (
     <Tip label={open ? 'Hide the terminal. Shells keep running.' : undefined}>
-      <button
+      <MenuAction selected={open} size={touch ? "touch" : "compact"}
         type="button"
         onClick={onToggle}
-        className={cn(
-          'group flex w-full items-center gap-2.5 rounded-lg px-2.5 text-left font-medium text-foreground/85 transition-colors hover:bg-muted/60 hover:text-foreground',
-          touch ? 'h-11 text-[14.5px]' : 'h-9 text-[13px]',
-          open && 'bg-muted/50 text-foreground',
-        )}
+        className="group flex w-full items-center gap-2.5 text-left"
       >
         <SquareTerminal size={15} className="flex-shrink-0 text-muted-foreground group-hover:text-foreground" />
         Terminal
@@ -314,7 +310,7 @@ export function TerminalToolsRow({ open, onToggle, touch = false }: { open: bool
           {open ? 'Open below' : <Kbd aria-hidden>{HOTKEYS.toggleTerminal.label}</Kbd>}
         </span>
         {open ? <ChevronDown size={13} className="flex-shrink-0 text-muted-foreground/60" /> : <RowChevron />}
-      </button>
+      </MenuAction>
     </Tip>
   );
 }
@@ -347,18 +343,18 @@ export function ToolsMini({
 }) {
   return (
     <Tip label={label}>
-      <button
+      <Button
         type="button"
         onClick={onClick}
         aria-label={label}
-        className={cn(
-          'relative inline-flex size-9 items-center justify-center rounded-lg text-foreground/80 transition-colors hover:bg-muted/70 hover:text-foreground',
-          active && 'bg-muted/70 text-foreground',
-        )}
+        variant="secondary"
+        size="sm"
+        pressed={active}
+        className="relative inline-flex items-center justify-center"
       >
         {icon}
         {badge && <span aria-hidden className={cn('absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full', badge)} />}
-      </button>
+      </Button>
     </Tip>
   );
 }
@@ -409,7 +405,7 @@ function ActionButton({
 }) {
   return (
     <Tip label={title}>
-      <button data-slot="action-button"
+      <Button
         type="button"
         disabled={disabled}
         onClick={(e) => {
@@ -418,10 +414,12 @@ function ActionButton({
           onClick();
         }}
         onKeyDown={(e) => e.stopPropagation()}
-        className="inline-flex h-7 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+        variant="secondary"
+        size="sm"
+        className="inline-flex flex-shrink-0 items-center gap-1.5"
       >
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }

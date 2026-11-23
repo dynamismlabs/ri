@@ -1,5 +1,12 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Card } from '@/components/system/card';
 
+import { ChoiceRow } from '@/components/system/choice-row';
+
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
 import { HelpCircle, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { useResolvePendingInput } from '@/hooks/use-execution';
@@ -88,7 +95,7 @@ export function QuestionCard({
   };
 
   return (
-    <div className="rounded-xl border border-foreground/20 bg-card overflow-hidden animate-in fade-in slide-in-from-bottom-1 duration-200">
+    <Card padding="none" className="overflow-hidden animate-in fade-in slide-in-from-bottom-1 duration-200">
       <div className="flex items-center gap-2.5 px-3.5 py-2 bg-foreground/5 border-b border-foreground/15">
         <HelpCircle size={12} className="text-foreground/80 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -102,9 +109,9 @@ export function QuestionCard({
           </span>
         )}
         {isMulti && (
-          <span className="text-[9px] uppercase tracking-wider text-foreground/70 font-semibold px-1.5 py-0.5 rounded bg-foreground/10 border border-foreground/20">
+          <StatusBadge >
             multi
-          </span>
+          </StatusBadge>
         )}
       </div>
 
@@ -121,27 +128,13 @@ export function QuestionCard({
         {q.options.map((opt) => {
           const isSelected = selected.includes(opt.label);
           return (
-            <button data-slot="choice-row"
+            <ChoiceRow indicator={isMulti ? "checkbox" : "radio"}
               key={opt.label}
               type="button"
               aria-pressed={isSelected}
               onClick={() => toggleOption(opt.label)}
-              className={cn(
-                'flex items-start gap-2.5 px-3 py-2 rounded-lg text-left transition-all border',
-                isSelected
-                  ? 'bg-primary/10 border-primary/40 text-foreground'
-                  : 'bg-background border-border hover:border-foreground/30 hover:bg-muted/30 text-foreground/90',
-              )}
+              className="flex items-start gap-2.5 text-left"
             >
-              <div
-                className={cn(
-                  'mt-0.5 w-4 h-4 flex items-center justify-center shrink-0 transition-colors border-2',
-                  isMulti ? 'rounded' : 'rounded-full',
-                  isSelected ? 'border-primary bg-primary' : 'border-border',
-                )}
-              >
-                {isSelected && <Check size={10} className="text-primary-foreground" strokeWidth={3} />}
-              </div>
               <div className="flex-1 min-w-0">
                 <div className="text-[12.5px] font-medium leading-snug">{opt.label}</div>
                 {opt.description && (
@@ -150,7 +143,7 @@ export function QuestionCard({
                   </div>
                 )}
               </div>
-            </button>
+            </ChoiceRow>
           );
         })}
 
@@ -160,42 +153,26 @@ export function QuestionCard({
             automatically"). Replaces the dismiss-X that used to live
             in the header — the Stop button on the composer is the
             mechanism for actually cancelling the agent. */}
-        <button data-slot="choice-row"
+        <ChoiceRow indicator={isMulti ? "checkbox" : "radio"}
           type="button"
           aria-pressed={otherActive}
           onClick={() => toggleOption(OTHER_VALUE)}
-          className={cn(
-            'flex items-start gap-2.5 px-3 py-2 rounded-lg text-left transition-all border',
-            otherActive
-              ? 'bg-primary/10 border-primary/40 text-foreground'
-              : 'bg-background border-border hover:border-foreground/30 hover:bg-muted/30 text-foreground/90',
-          )}
+          className="flex items-start gap-2.5 text-left"
         >
-          <div
-            className={cn(
-              'mt-0.5 w-4 h-4 flex items-center justify-center shrink-0 transition-colors border-2',
-              isMulti ? 'rounded' : 'rounded-full',
-              otherActive ? 'border-primary bg-primary' : 'border-border',
-            )}
-          >
-            {otherActive && <Check size={10} className="text-primary-foreground" strokeWidth={3} />}
-          </div>
           <div className="flex-1 min-w-0">
             <div className="text-[12.5px] font-medium leading-snug">Other</div>
             <div className="text-[11px] text-muted-foreground/80 mt-0.5 leading-snug">
               Type a free-form answer.
             </div>
           </div>
-        </button>
+        </ChoiceRow>
 
         {otherActive && (
-          <input data-slot="field"
+          <Field
             ref={otherInputRef}
             type="text"
             value={otherTyped}
-            onChange={(e) =>
-              setOtherText((prev) => ({ ...prev, [currentIdx]: e.target.value }))
-            }
+            onChange={(e) => setOtherText((prev) => ({ ...prev, [currentIdx]: e.target.value }))}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && currentAnswered && !resolve.isPending) {
                 e.preventDefault();
@@ -204,12 +181,8 @@ export function QuestionCard({
             }}
             placeholder="Your answer…"
             disabled={resolve.isPending}
-            className={cn(
-              'w-full text-[12.5px] bg-background border border-primary/40 rounded-lg px-3 py-2',
-              'text-foreground placeholder:text-muted-foreground/50',
-              'focus:outline-none focus:border-primary/70',
-              'disabled:opacity-60',
-            )}
+            className="w-full"
+            aria-label={'Your answer'}
           />
         )}
       </div>
@@ -218,7 +191,7 @@ export function QuestionCard({
         {pending.questions.length > 1 ? (
           <div className="flex gap-1">
             {pending.questions.map((_, i) => (
-              <button data-slot="action-button" data-tone="status"
+              <button data-native-action="ri-question-progress"
                 key={i}
                 type="button"
                 onClick={() => setCurrentIdx(i)}
@@ -238,15 +211,13 @@ export function QuestionCard({
           <div />
         )}
 
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           type="button"
           disabled={!currentAnswered || resolve.isPending || (isLast && !allAnswered)}
           onClick={handleNext}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-1 rounded-md text-[11.5px] font-medium transition-colors',
-            'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.98]',
-            'disabled:bg-muted disabled:text-muted-foreground/50 disabled:cursor-not-allowed',
-          )}
+          variant="primary"
+          size="xs"
+          className="flex items-center gap-1.5"
         >
           {resolve.isPending ? (
             <><Loader2 size={11} className="animate-spin" /> Sending</>
@@ -255,8 +226,8 @@ export function QuestionCard({
           ) : (
             <>Next <ChevronRight size={11} /></>
           )}
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

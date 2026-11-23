@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { FilePenLine } from 'lucide-react';
 import { EntityDiffModal } from './entity-diff-modal';
@@ -20,13 +21,15 @@ export function EntityEditChip({
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button data-slot="action-button" data-variant="ghost"
+      <Button
         onClick={() => setOpen(true)}
-        className="inline-flex min-w-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-px text-[10.5px] font-medium text-primary hover:bg-primary/20 transition-colors"
+        variant="ghost"
+        size="xs"
+        className="inline-flex min-w-0 items-center gap-1"
       >
         <FilePenLine size={10} className="flex-shrink-0" />
         <span>Edited {entityType} · view changes</span>
-      </button>
+      </Button>
       {open && (
         <EntityDiffModal
           open={open}

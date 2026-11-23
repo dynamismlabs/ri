@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
@@ -34,11 +37,11 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
   const unlimited = value == null;
 
   return (
-    <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+    <Card padding="md" className="space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-foreground">Monthly budget</p>
         {unlimited && (
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">Unlimited</span>
+          <span className="text-[10px] font-medium text-muted-foreground/70">Unlimited</span>
         )}
       </div>
       <p className="text-[11px] text-muted-foreground/60">
@@ -47,7 +50,7 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
       </p>
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">$</span>
-        <input
+        <Field
           type="number"
           inputMode="decimal"
           min={0}
@@ -68,11 +71,12 @@ function BudgetField({ value, onSave }: { value: number | null; onSave: (next: n
             }
             if (parsed !== value) onSave(parsed);
           }}
-          className="w-32 rounded-md border border-border bg-card px-2 py-1 text-sm tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-32"
+          aria-label={'Monthly budget'}
         />
         <span className="text-[11px] text-muted-foreground/60">/ month</span>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -84,7 +88,7 @@ function SpendingSummary() {
   const hasBudget = data.budget != null && data.budget > 0;
   const pct = data.budgetFraction != null ? Math.round(data.budgetFraction * 100) : null;
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-background p-3">
+    <Card padding="md" className="space-y-3">
       <SpendRow label="Today" value={data.todaySpend} />
       <SpendRow
         label="This month"
@@ -105,7 +109,7 @@ function SpendingSummary() {
           ) : null
         }
       />
-    </div>
+    </Card>
   );
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ComponentProps, ReactNode, Ref } from 'react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
 
 /** One detail frame, focus boundary and close protocol for every Home. */
 export function EntitySheet({ open, label, onClose, onCloseAll = onClose, width = 672, fullWidth = false, contentRef, resizing = false, showCloseButton = true, onOpenAutoFocus, onCloseAutoFocus, children }: {
@@ -20,8 +20,8 @@ export function EntitySheet({ open, label, onClose, onCloseAll = onClose, width 
 }) {
   return (
     <Sheet open={open} onOpenChange={(next) => !next && onCloseAll()}>
-      <SheetContent side="right" ref={contentRef} showCloseButton={showCloseButton}
-        className="flex-row gap-0 overflow-y-auto p-0 data-[side=right]:sm:max-w-none"
+      <SheetContent padding="none" side="right" ref={contentRef} showCloseButton={showCloseButton}
+        className="flex-row gap-0 overflow-y-auto data-[side=right]:sm:max-w-none"
         style={{ width: fullWidth ? '100vw' : `min(${width}px, 100vw)` }}
         onOpenAutoFocus={onOpenAutoFocus}
         onCloseAutoFocus={onCloseAutoFocus}

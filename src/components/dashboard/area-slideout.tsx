@@ -1,7 +1,18 @@
-'use client'
+'use client';
+import { SheetFrame } from '@/components/system/sheet';
 
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useRef, useState } from 'react'
-import { Dialog } from 'radix-ui'
+
 import {
   ChevronLeft, X, MoreHorizontal, Archive, RotateCcw,
   Check, FileText, CheckSquare, Plus,
@@ -13,12 +24,7 @@ import { LifecycleStatusControl } from '@/components/tasks/lifecycle-status-cont
 import type { TaskStatus } from '@/db/types'
 import { useNotes, useCreateNote } from '@/hooks/use-notes'
 import { useDashboard } from '@/contexts/dashboard-context'
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/system/menu'
 import { NoteIcon } from '@/components/shared/note-icon'
 import { DecisionLabel } from '@/components/notes/note-kind'
 import { coverAttachmentUrl } from '@/lib/attachments/view'
@@ -77,7 +83,6 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
       setDescValue(areaFields.description ?? '')
     }
   }
-
 
   // Drag to resize
   const handleResizeStart = useCallback(
@@ -178,17 +183,17 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
         {/* Overlay — clicking closes everything */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-40 bg-black/30 transition-opacity duration-150',
+            'fixed inset-0 z-40 transition-opacity duration-150',
             isVisible ? 'opacity-100' : 'opacity-0'
           )}
         />
 
         {/* Slideout panel */}
-        <Dialog.Content
+        <SheetFrame padding="none"
           data-slot="sheet-content" data-side="right"
           ref={containerRef}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out outline-none',
+            "fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out",
             isVisible ? 'translate-x-0' : 'translate-x-full'
           )}
           style={{ width: `min(${width}px, 100vw)` }}
@@ -219,46 +224,55 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
             {/* Header */}
             <div className="flex items-center justify-between px-4 h-11 flex-shrink-0 border-b border-border">
               <div className="flex items-center gap-1.5 group/nav">
-                <button data-slot="action-button" data-variant="ghost"
+                <Button
                   onClick={onClose}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
                   aria-label="Back"
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5"
                 >
                   <ChevronLeft size={16} />
                   <kbd className="hidden group-hover/nav:inline px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                     esc
                   </kbd>
-                </button>
+                </Button>
                 {hasHistory && (
-                  <button data-slot="action-button" data-variant="ghost"
+                  <Button
                     onClick={onCloseAll}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-0 group-hover/nav:opacity-100 flex items-center gap-1.5"
                     aria-label="Close all"
+                  reveal="nav"
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1.5"
                   >
                     <X size={14} />
                     <kbd className="px-1.5 py-0.5 bg-muted rounded text-[9px] text-muted-foreground/60 font-sans">
                       ⇧esc
                     </kbd>
-                  </button>
+                  </Button>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button data-slot="action-button" data-variant="ghost" className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                    <IconButton
+                      label="More area actions"
+                      variant="ghost"
+                      size="xs"
+                    >
                       <MoreHorizontal size={16} />
-                    </button>
+                    </IconButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-44">
                     {isArchived ? (
-                      <DropdownMenuItem onClick={handleRestore} className="text-xs">
+                      <MenuAction kind="menu" onClick={handleRestore} >
                         <RotateCcw size={12} className="mr-2" /> Restore
-                      </DropdownMenuItem>
+                      </MenuAction>
                     ) : (
-                      <DropdownMenuItem onClick={handleArchive} className="text-xs text-destructive">
+                      <MenuAction tone="error" kind="menu" onClick={handleArchive} >
                         <Archive size={12} className="mr-2" /> Archive
-                      </DropdownMenuItem>
+                      </MenuAction>
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -272,11 +286,11 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   {/* Area header */}
                   <div className="px-8 pt-4 pb-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60 uppercase">
+                      <span className="text-[10px] font-bold text-muted-foreground/60">
                         Area
                       </span>
                       <span className="text-muted-foreground/30">·</span>
-                      <button data-slot="action-button" data-tone="status"
+                      <Button
                         onClick={() => {
                           if (!areaId || !area) return
                           const cycle = ['active', 'inactive'] as const
@@ -284,17 +298,12 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           const next = cycle[(idx + 1) % cycle.length]
                           updateArea.mutate({ id: areaId, status: next })
                         }}
-                        className={cn(
-                          'text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md cursor-pointer transition-colors',
-                          area?.status === 'active'
-                            ? 'text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20'
-                            : area?.status === 'inactive'
-                              ? 'text-amber-500 bg-amber-500/10 hover:bg-amber-500/20'
-                              : 'text-muted-foreground bg-muted hover:bg-muted/80'
-                        )}
+                        variant="ghost"
+                        size="sm"
+                        tone={area?.status === "active" ? "success" : area?.status === "inactive" ? "warning" : "neutral"}
                       >
                         {area?.status}
-                      </button>
+                      </Button>
                     </div>
                     <div className="flex items-center gap-3">
                       {(() => {
@@ -314,20 +323,24 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                         return null
                       })()}
 
-                      <input
+                      <Field
                         value={nameValue}
                         onChange={(e) => saveName(e.target.value)}
-                        className="flex-1 text-xl font-bold bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                        className="flex-1"
                         placeholder="Area name"
+                        purpose="embedded"
+                        aria-label={'Area name'}
                       />
                     </div>
 
-                    <textarea
+                    <TextArea
                       value={descValue}
                       onChange={(e) => saveDescription(e.target.value)}
                       placeholder="What does this area cover?"
-                      className="w-full text-sm bg-transparent border-none outline-none resize-none text-foreground/70 placeholder:text-muted-foreground/30 leading-relaxed"
+                      className="w-full"
                       rows={2}
+                      purpose="embedded"
+                      aria-label={'Area description'}
                     />
                   </div>
 
@@ -344,7 +357,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   <div className="px-8 pb-6">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckSquare size={13} className="text-muted-foreground/50" />
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                      <h3 className="text-[10px] font-bold text-muted-foreground/60">
                         Tasks
                       </h3>
                     </div>
@@ -356,7 +369,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-colors hover:bg-card group"
                         >
                           <Tip label="Complete">
-                            <button
+                            <button data-slot="completion-control" type="button"
                               onClick={() => lifecycle.toggle(task.id, task.status as TaskStatus)}
                               aria-label="Complete task"
                               className="flex-shrink-0"
@@ -364,11 +377,11 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                               <div className="w-3.5 h-3.5 rounded-full border border-muted-foreground/30 transition-colors hover:border-primary" />
                             </button>
                           </Tip>
-                          <button onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
+                          <InlineAction  onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
                             <span className="text-[12px] font-medium text-foreground truncate block">
                               {task.title}
                             </span>
-                          </button>
+                          </InlineAction>
                           <span onClick={(e) => e.stopPropagation()}>
                             <LifecycleStatusControl taskId={task.id} status={task.status as TaskStatus} size="xs" />
                           </span>
@@ -389,34 +402,42 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                       {addingTask ? (
                         <div className="flex items-center gap-2.5 px-3 py-1.5">
                           <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full border border-dashed border-muted-foreground/30" />
-                          <input
+                          <Field
                             ref={taskInputRef}
                             autoFocus
                             value={newTaskTitle}
                             onChange={(e) => setNewTaskTitle(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddTask()
-                              if (e.key === 'Escape') { setAddingTask(false); setNewTaskTitle('') }
+                              if (e.key === 'Enter') handleAddTask();
+                              if (e.key === 'Escape') {
+                                setAddingTask(false);
+                                setNewTaskTitle('');
+                              }
                             }}
-                            onBlur={() => { setAddingTask(false); setNewTaskTitle('') }}
+                            onBlur={() => {
+                              setAddingTask(false);
+                              setNewTaskTitle('');
+                            }}
                             placeholder="Task title..."
-                            className="flex-1 text-[12px] bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                            className="flex-1"
+                            purpose="embedded"
+                            aria-label={'Task title'}
                           />
                         </div>
                       ) : (
-                        <button data-slot="menu-action"
+                        <MenuAction density="compact"
                           onClick={() => setAddingTask(true)}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-muted-foreground/40 hover:text-muted-foreground transition-colors hover:bg-card"
+                          className="w-full flex items-center gap-2 text-left"
                         >
                           <Plus size={12} />
                           <span className="text-[11px]">Add task</span>
-                        </button>
+                        </MenuAction>
                       )}
 
                       {doneTasks.length > 0 && (
                         <>
                           <div className="pt-2 pb-1 pl-3">
-                            <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/40">
+                            <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground/40">
                               Completed ({doneTasks.length})
                             </span>
                           </div>
@@ -434,11 +455,11 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                                   <Check size={8} strokeWidth={3} className="text-primary-foreground" />
                                 </button>
                               </Tip>
-                              <button onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
+                              <InlineAction  onClick={() => openTask(task.id)} className="min-w-0 flex-1 text-left">
                                 <span className="text-[12px] font-medium text-muted-foreground line-through truncate block">
                                   {task.title}
                                 </span>
-                              </button>
+                              </InlineAction>
                             </div>
                           ))}
                         </>
@@ -450,17 +471,17 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   <div className="px-8 pb-8">
                     <div className="flex items-center gap-2 mb-2">
                       <FileText size={13} className="text-muted-foreground/50" />
-                      <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                      <h3 className="text-[10px] font-bold text-muted-foreground/60">
                         Notes
                       </h3>
                     </div>
 
                     <div className="space-y-0.5">
                       {notes.map((note) => (
-                        <button data-slot="menu-action"
+                        <MenuAction
                           key={note.id}
                           onClick={() => openNote(note.id)}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-card"
+                          className="w-full flex items-center gap-2.5 text-left"
                         >
                           <NoteIcon body={note.bodyExcerpt} size={13} className="text-muted-foreground/40 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
@@ -477,35 +498,43 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           <span className="text-[9px] text-muted-foreground/40 flex-shrink-0">
                             {new Date(note.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                           </span>
-                        </button>
+                        </MenuAction>
                       ))}
 
                       {/* Inline add note */}
                       {addingNote ? (
                         <div className="flex items-center gap-2.5 px-3 py-1.5">
                           <FileText size={13} className="text-muted-foreground/20 flex-shrink-0" />
-                          <input
+                          <Field
                             ref={noteInputRef}
                             autoFocus
                             value={newNoteTitle}
                             onChange={(e) => setNewNoteTitle(e.target.value)}
                             onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddNote()
-                              if (e.key === 'Escape') { setAddingNote(false); setNewNoteTitle('') }
+                              if (e.key === 'Enter') handleAddNote();
+                              if (e.key === 'Escape') {
+                                setAddingNote(false);
+                                setNewNoteTitle('');
+                              }
                             }}
-                            onBlur={() => { setAddingNote(false); setNewNoteTitle('') }}
+                            onBlur={() => {
+                              setAddingNote(false);
+                              setNewNoteTitle('');
+                            }}
                             placeholder="Note title..."
-                            className="flex-1 text-[12px] bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground/40"
+                            className="flex-1"
+                            purpose="embedded"
+                            aria-label={'Note title'}
                           />
                         </div>
                       ) : (
-                        <button data-slot="menu-action"
+                        <MenuAction density="compact"
                           onClick={() => setAddingNote(true)}
-                          className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-muted-foreground/40 hover:text-muted-foreground transition-colors hover:bg-card"
+                          className="w-full flex items-center gap-2 text-left"
                         >
                           <Plus size={12} />
                           <span className="text-[11px]">Add note</span>
-                        </button>
+                        </MenuAction>
                       )}
                     </div>
                   </div>
@@ -517,7 +546,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
               )}
             </div>
           </div>
-        </Dialog.Content>
+        </SheetFrame>
       </Dialog.Portal>
     </Dialog.Root>
   )

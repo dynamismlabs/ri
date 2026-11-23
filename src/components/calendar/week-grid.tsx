@@ -1,5 +1,8 @@
 "use client";
+import { StatusBadge } from '@/components/system/status-badge';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Button } from '@/components/system/button';
 /**
  * The week as an hour-by-day grid — the familiar calendar encoding, for
  * reading the SHAPE of the week: when things cluster, which mornings are
@@ -33,7 +36,7 @@ import {
 import { formatMinutes } from '@/lib/deck/calendar';
 import { formatDayLabel } from '@/lib/calendar/dates';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
 import { NowLine } from './now-line';
@@ -120,24 +123,27 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
               <WorkWorth stats={work?.days.get(day.date)?.stats} className="truncate text-[10px]" />
               {day.allDay.map((e) => (
                 <Tip key={e.id} label={e.calendar ? `${e.title} (${e.calendar.name})` : e.title}>
-                  <span
-                    className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground truncate"
+                  <StatusBadge
+                    className="truncate"
                     style={stripeStyle(e.color, 2)}
                   >
                     {e.title}
-                  </span>
+                  </StatusBadge>
                 </Tip>
               ))}
               {deadlines.map((d) => (
                 <Tip key={d.taskId} label={`Due: ${d.title}`}>
-                  <button data-slot="action-button" data-tone="warning"
+                  <Button
                     type="button"
                     onClick={() => onOpenTask(d.taskId)}
-                    className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[10px] font-medium text-amber-600 dark:text-amber-400 text-left"
+                    variant="secondary"
+                    size="sm"
+                    tone="warning"
+                    className="flex items-center gap-1"
                   >
                     <Flag size={9} className="shrink-0" />
                     <span className="truncate">{d.title}</span>
-                  </button>
+                  </Button>
                 </Tip>
               ))}
             </div>
@@ -191,7 +197,7 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
                   {p.overflow.map((group, gi) => (
                     <Popover key={`ov-${day.date}-${gi}`}>
                       <PopoverTrigger asChild>
-                        <button data-slot="action-button"
+                        <button data-native-action="ri-calendar-overflow"
                           type="button"
                           className="absolute z-20 right-0 w-1/3 min-h-4 rounded border border-border bg-muted px-1 text-[9px] text-muted-foreground hover:text-foreground transition-colors"
                           style={toStyle(windowPct(group, bounds))}
@@ -199,7 +205,7 @@ export function WeekGrid({ days, workday, today, deadlinesByDate, onSelectDay, o
                           +{group.events.length}
                         </button>
                       </PopoverTrigger>
-                      <PopoverContent side="left" className="p-1 w-64">
+                      <PopoverContent padding="xs" side="left" className="w-64">
                         {group.events.map((e) => (
                           <OverflowRow key={e.id} event={e} />
                         ))}
@@ -256,7 +262,7 @@ function GridEvent({ placed, bounds }: { placed: PlacedEvent; bounds: MinuteWind
           </p>
         </button>
       </PopoverTrigger>
-      <PopoverContent side="right" align="start" className="p-0 w-auto">
+      <PopoverContent padding="none" side="right" align="start" className="w-auto">
         <EventPopoverContent event={event} />
       </PopoverContent>
     </Popover>
@@ -267,18 +273,18 @@ function OverflowRow({ event }: { event: CalendarEvent }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button data-slot="menu-action"
+        <MenuAction density="compact"
           type="button"
-          className="w-full flex items-center gap-2 rounded px-2 py-1 text-left hover:bg-muted/60 transition-colors"
+          className="w-full flex items-center gap-2 text-left"
         >
           <span
             className={cn('flex-1 truncate text-xs', !event.countsAsBusy && 'opacity-50', event.rsvp === 'declined' && 'line-through')}
           >
             {event.title}
           </span>
-        </button>
+        </MenuAction>
       </PopoverTrigger>
-      <PopoverContent side="left" className="p-0 w-auto">
+      <PopoverContent padding="none" side="left" className="w-auto">
         <EventPopoverContent event={event} />
       </PopoverContent>
     </Popover>

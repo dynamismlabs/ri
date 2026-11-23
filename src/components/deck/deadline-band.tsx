@@ -1,13 +1,18 @@
 'use client';
 
+import { MetaItem } from '@/components/system/meta';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
 import { TeamLabel } from '@/components/spaces/team-label';
 import { useState } from 'react';
-import { AlertTriangle, CalendarClock, Ban, Loader2, ListTree } from 'lucide-react';
+import { CalendarClock, Ban, Loader2, ListTree } from 'lucide-react';
 import { useDeadlines } from '@/hooks/use-tasks';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { formatLocalDate } from '@/lib/dates';
 import type { DeadlineTask } from '@/db/types';
-import { cn } from '@/lib/utils';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 /**
  * Deadline band — the always-on trust floor above the deck.
@@ -50,10 +55,10 @@ export function DeadlineBand() {
   const showSoon = soonExpanded || urgent.length === 0;
 
   return (
-    <section data-slot="deadline-band" className="px-4 pt-3">
+    <section className="px-4 pt-3">
       <div data-slot="deadline-head" className="mb-1.5 flex items-center gap-2 px-1">
         <CalendarClock size={12} className="text-amber-600 dark:text-amber-500" />
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
+        <h3 className="text-[10px] font-bold text-amber-600 dark:text-amber-500">
           Deadlines
         </h3>
         <span className="text-[10px] text-muted-foreground">
@@ -73,12 +78,12 @@ export function DeadlineBand() {
 
         {hiddenUrgent > 0 && (
           <li>
-            <button
+            <InlineAction purpose="caption"
               onClick={() => setUrgentExpanded(true)}
-              className="w-full rounded-md px-2.5 py-1 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              className="w-full text-left"
             >
               +{hiddenUrgent} more overdue or due today
-            </button>
+            </InlineAction>
           </li>
         )}
 
@@ -86,12 +91,12 @@ export function DeadlineBand() {
           ? soon.map((d) => <DeadlineRow key={d.id} d={d} onOpen={openTask} />)
           : soon.length > 0 && (
               <li>
-                <button
+                <InlineAction purpose="caption"
                   onClick={() => setSoonExpanded(true)}
-                  className="w-full rounded-md px-2.5 py-1 text-left text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  className="w-full text-left"
                 >
                   {soon.length} more due soon
-                </button>
+                </InlineAction>
               </li>
             )}
       </ul>
@@ -107,37 +112,25 @@ function deadlineUrgency(d: DeadlineTask): 'late' | 'today' | 'soon' {
 }
 
 function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => void }) {
-  const tint = d.overdue
-    ? 'border-red-500/25 bg-red-500/[0.05] hover:border-red-500/45'
-    : d.dueToday
-      ? 'border-amber-500/25 bg-amber-500/[0.05] hover:border-amber-500/45'
-      : 'border-border bg-muted/20 hover:border-border/80';
-
   return (
-    <li
-      data-slot="deadline-row"
-      data-urgency={deadlineUrgency(d)}
-      className={cn(
-        'group flex items-center gap-2 rounded-md border px-2.5 py-1.5 transition-colors',
-        tint,
-      )}
-    >
-      <button onClick={() => onOpen(d.id)} className="min-w-0 flex-1 text-left">
-        <span className="block truncate text-[12px] font-medium text-foreground">
+    <ChoiceRow asChild surface="plain" density="compact">
+    <li className="group flex items-center gap-2">
+      <InlineAction  onClick={() => onOpen(d.id)} className="min-w-0 flex-1 text-left">
+        <span className="block truncate text-[13.5px] font-medium text-foreground">
           {d.title || 'Untitled'}
         </span>
         <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
           <DeadlinePill d={d} />
           <TeamLabel teamId={d.sourceTeamId} sourceArea={d.sourceArea} />
           {d.blocked && (
-            <span className="inline-flex items-center gap-0.5 rounded-sm bg-red-500/10 px-1 py-px text-[9px] font-medium text-red-600 dark:text-red-400">
+            <StatusBadge tone={"error"} className="inline-flex items-center gap-0.5">
               <Ban size={9} /> Blocked
-            </span>
+            </StatusBadge>
           )}
           {d.status === 'in_progress' && (
-            <span className="inline-flex items-center gap-0.5 rounded-sm bg-violet-500/10 px-1 py-px text-[9px] font-medium text-violet-600 dark:text-violet-400">
+            <StatusBadge tone={"status-progress"} className="inline-flex items-center gap-0.5">
               <Loader2 size={9} /> In progress
-            </span>
+            </StatusBadge>
           )}
           {d.parentId && (
             <span className="inline-flex items-center gap-0.5 text-[9px] text-muted-foreground">
@@ -145,8 +138,9 @@ function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => v
             </span>
           )}
         </span>
-      </button>
+      </InlineAction>
     </li>
+    </ChoiceRow>
   );
 }
 
@@ -155,23 +149,18 @@ function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => v
 function DeadlinePill({ d }: { d: DeadlineTask }) {
   const date = formatLocalDate(d.hardDeadline) ?? d.hardDeadline;
   let label: string;
-  let cls: string;
   if (d.overdue) {
     const n = Math.abs(d.daysUntil);
     label = `${n} day${n === 1 ? '' : 's'} late`;
-    cls = 'bg-red-500/15 text-red-600 dark:text-red-400';
   } else if (d.dueToday) {
     label = 'Due today';
-    cls = 'bg-amber-500/15 text-amber-700 dark:text-amber-400';
   } else {
     label = d.daysUntil === 1 ? 'Due tomorrow' : `Due in ${d.daysUntil} days`;
-    cls = 'bg-muted text-muted-foreground';
   }
   return (
-    <span data-slot="deadline-when" data-urgency={deadlineUrgency(d)} className={cn('inline-flex items-center gap-1 rounded-sm px-1 py-px text-[9px] font-medium', cls)}>
-      {d.overdue && <AlertTriangle size={9} />}
+    <MetaItem kind="deadline" urgency={deadlineUrgency(d)} className="inline-flex items-center gap-1">
       {label}
-      <span className="opacity-60">· {date}</span>
-    </span>
+      <span>· {date}</span>
+    </MetaItem>
   );
 }

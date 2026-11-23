@@ -1,4 +1,8 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+
+import { TextArea } from '@/components/system/text-area';
+
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { SHARED_TASK_FIELDS } from '@/lib/spaces/shared-fields';
@@ -83,7 +87,7 @@ function SourceNotice({ task, teamName, lastSyncedAt, lastError }: { task: TaskR
   else if (task.sourceState === 'released') text = `This is no longer assigned to you at ${teamName}. Your private planning is kept.`;
   else if (lastError) text = `${lastError}${lastSyncedAt ? ` Shown as of ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}.` : ''}`;
   if (!text) return null;
-  return <p role="status" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">{text}</p>;
+  return <Callout as="p" padding="md" density="row" tone={"warning"} role="status" >{text}</Callout>;
 }
 
 /** Text that follows the shared value while nobody is typing in it. */
@@ -101,8 +105,9 @@ function useFollowedDraft(value: string) {
 function PrivateNotes({ task, onSave }: { task: TaskRecord; onSave: (value: string | null) => void }) {
   const { draft, setDraft, setEditing } = useFollowedDraft(task.userContext ?? '');
   return (
-    <textarea
+    <TextArea
       aria-label="Private notes"
+      rows={2}
       value={draft}
       placeholder="Private notes, like what to try first."
       onFocus={() => setEditing(true)}
@@ -111,7 +116,9 @@ function PrivateNotes({ task, onSave }: { task: TaskRecord; onSave: (value: stri
         onSave(e.target.value.trim() ? e.target.value : null);
       }}
       onBlur={() => setEditing(false)}
-      className="min-h-[3.5rem] w-full resize-y rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-primary/60 field-sizing-content"
+      className="w-full"
+      autoSize
+      resize="vertical"
     />
   );
 }

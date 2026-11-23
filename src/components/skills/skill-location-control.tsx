@@ -1,5 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Button } from '@/components/system/button';
 import { documentSaves } from '@/lib/client/document-saves';
 import { AlertCircle, Check, ChevronDown, Copy, FileClock, FolderGit2, Globe, Loader2, ScrollText, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,18 +9,7 @@ import { apiErrorText } from '@/lib/api/client';
 import type { MoveSkillBody, ProjectInfo, SkillView } from '@/lib/api/skills';
 import { useMoveSkill, useSkills } from '@/hooks/use-skills';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from '@/components/system/menu';
 import { WHO_USES, displayPath, locationLabel } from './location-copy';
 import { Tip } from '@/components/ui/tip';
 
@@ -62,24 +53,28 @@ export function SkillLocationControl({ skill }: { skill: SkillView }) {
 
   const trigger = draft ? (
     <Tip label="A draft. No agent uses it until it's installed.">
-      <button
-        className="flex h-7 flex-shrink-0 items-center gap-1 rounded-lg bg-primary px-2.5 text-[11px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+      <Button
+        variant="primary"
+        size="md"
+        className="flex flex-shrink-0 items-center gap-1"
       >
         {move.isPending && <Loader2 size={11} className="animate-spin" />}
         Install
         <ChevronDown size={11} strokeWidth={2.5} />
-      </button>
+      </Button>
     </Tip>
   ) : (
     <Tip label={`Installed in ${locationLabel(here)}: ${displayPath(skill.dir)}`}>
-      <button data-slot="action-button"
-        className="flex h-7 max-w-48 flex-shrink-0 items-center gap-1 rounded-lg border border-border px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:border-muted-foreground/40 hover:text-foreground"
+      <Button
         aria-label={`Installed in ${locationLabel(here)}`}
+        variant="secondary"
+        size="sm"
+        className="flex max-w-48 flex-shrink-0 items-center gap-1"
       >
         {move.isPending ? <Loader2 size={11} className="animate-spin" /> : <PlaceIcon kind={here.kind} />}
         <span className="truncate">{locationLabel(here)}</span>
         <ChevronDown size={11} />
-      </button>
+      </Button>
     </Tip>
   );
 
@@ -172,7 +167,7 @@ function PlaceIcon({ kind }: { kind: SkillView['location']['kind'] }) {
 
 function MenuLabel({ children }: { children: React.ReactNode }) {
   return (
-    <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</DropdownMenuLabel>
+    <DropdownMenuLabel className="">{children}</DropdownMenuLabel>
   );
 }
 
@@ -203,19 +198,19 @@ function PlaceItem({
   onSelect: () => void;
 }) {
   return (
-    <DropdownMenuItem
+    <MenuAction kind="menu"
       onSelect={(e) => {
         if (current) return e.preventDefault();
         onSelect();
       }}
       disabled={disabled && !current}
       aria-current={current || undefined}
-      className="items-start gap-2 py-1.5"
+      className="items-start gap-2"
     >
       <span className="mt-0.5 text-muted-foreground">{icon ?? (kind && <PlaceIcon kind={kind} />)}</span>
       <ItemText label={label} detail={detail} />
       {current && <Check size={13} className="mt-0.5 flex-shrink-0 text-primary" />}
-    </DropdownMenuItem>
+    </MenuAction>
   );
 }
 
@@ -240,19 +235,19 @@ function ProjectsSub({
   if (!projects.length && !current) return null;
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger disabled={disabled} className={cn('items-start gap-2 py-1.5', disabled && 'opacity-50')}>
+      <DropdownMenuSubTrigger disabled={disabled} className="items-start gap-2">
         <span className="mt-0.5 text-muted-foreground">{icon ?? <FolderGit2 size={13} />}</span>
         <ItemText label={label} detail={detail} />
         {current && <Check size={13} className="mt-0.5 flex-shrink-0 text-primary" />}
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="max-h-80 w-64 overflow-y-auto">
         {projects.length === 0 ? (
-          <DropdownMenuItem disabled className="text-[11px]">
+          <MenuAction kind="menu" disabled >
             {current ? 'No other agent has a folder on this computer.' : 'No agent has a folder on this computer yet.'}
-          </DropdownMenuItem>
+          </MenuAction>
         ) : (
           projects.map((p) => (
-            <DropdownMenuItem key={p.workspaceId} onSelect={() => onPick(p)} className="items-start py-1.5">
+            <MenuAction kind="menu" key={p.workspaceId} onSelect={() => onPick(p)} className="items-start">
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="truncate text-[12px] text-foreground">{p.name}</span>
                 <span className="truncate font-mono text-[10.5px] text-muted-foreground">
@@ -260,7 +255,7 @@ function ProjectsSub({
                   {!p.isGit && ' · not a git repo'}
                 </span>
               </span>
-            </DropdownMenuItem>
+            </MenuAction>
           ))
         )}
       </DropdownMenuSubContent>

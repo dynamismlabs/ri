@@ -1,5 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useActivityBuckets } from '@/hooks/use-activity-buckets';
@@ -50,7 +52,12 @@ export function AgentActivityBoard({ focusBucket }: { focusBucket: BucketId | nu
       Showing {BUCKET_CONFIG[focusBucket].label} for this visit. Your saved columns are unchanged.
     </p>}
     {error && <div role="alert" className="px-4 py-2 text-xs text-destructive">
-      Activity could not be refreshed. <button type="button" className="underline" onClick={() => void Promise.all([rail.refetch(), agents.refetch()])}>Try again</button>
+      Activity could not be refreshed. <Button
+        type="button"
+        onClick={() => void Promise.all([rail.refetch(), agents.refetch()])}
+        variant="link"
+        size="sm"
+      >Try again</Button>
     </div>}
     <div className="min-h-0 flex-1 overflow-x-auto p-3">
       <div className="flex h-full gap-3">
@@ -89,11 +96,11 @@ function ActivityCard({ row, bucket }: { row: ActivityItem; bucket: BucketId }) 
     : session?.waitingOn ?? (session?.label !== title ? session?.label : null);
   const at = main ? latestActivityAt(main.chat) : session?.lastActivityAt ?? session?.startedAt;
   const destination = activityDestination(row);
-  return <button data-slot="content-card" type="button" onClick={() => {
+  return <Card as="button" padding="md" shadow  type="button" onClick={() => {
     closeTaskBoard();
     if (destination.kind === 'agent') openAgent(destination.id);
     else openExecution(destination.id);
-  }} className="w-full rounded-lg border border-border bg-card p-3 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+  }} className="w-full text-left">
     <span className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><AgentIcon workspace={identity} size="sm" /><span className="truncate">{name}</span></span>
     <span className="line-clamp-3 block text-sm font-medium">{title}</span>
     {context && <span className="mt-2 block line-clamp-3 whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">{context}</span>}
@@ -101,5 +108,5 @@ function ActivityCard({ row, bucket }: { row: ActivityItem; bucket: BucketId }) 
       <span className={BUCKET_CONFIG[bucket].accentClass}>{BUCKET_CONFIG[bucket].label}</span>
       {at && <span>{formatCompactRelative(at)}</span>}
     </span>
-  </button>;
+  </Card>;
 }

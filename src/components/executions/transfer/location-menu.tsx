@@ -1,5 +1,10 @@
 'use client';
 
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { Button } from '@/components/system/button';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
 /**
  * Where an execution runs, and moving it (docs/homes-model.md, spec §3.4):
@@ -13,14 +18,7 @@ import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
  */
 
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import type { WorkspaceRecord } from '@/db/types';
 import { useDevices, useThisDevice } from '@/hooks/use-devices';
 import { useTransfer } from '@/hooks/use-execution';
@@ -130,10 +128,10 @@ export function LocationMenu({
   const flow = useMoveFlow(session, workspace);
 
   const chip = (
-    <span className="inline-flex min-w-0 flex-shrink items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+    <StatusBadge className="inline-flex min-w-0 flex-shrink items-center gap-1">
       <Laptop size={9} className="flex-shrink-0" />
       <span className="max-w-[9rem] truncate">{name}</span>
-    </span>
+    </StatusBadge>
   );
   if (moves.length === 0) {
     return (
@@ -150,29 +148,33 @@ export function LocationMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Tip label={`Runs on ${name}. Move it to another device.`}>
-            <button type="button" className="rounded hover:bg-muted/80">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+            >
               {chip}
-            </button>
+            </Button>
           </Tip>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-72">
-          <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">Runs on {name}</DropdownMenuLabel>
+          <DropdownMenuLabel>Runs on {name}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {moves.map((move) => {
             const note = hint(move, workspace?.name ?? 'The agent');
             return (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 key={move.key}
                 disabled={!!move.problem}
                 onSelect={() => flow.start(move)}
-                className="flex-col items-start gap-0.5 text-[12.5px]"
+                className="flex-col items-start gap-0.5"
               >
                 <span className="inline-flex items-center gap-1.5">
                   <ArrowRightLeft size={12} />
                   {move.label}
                 </span>
                 {note && <span className="pl-[18px] text-[11px] text-muted-foreground">{note}</span>}
-              </DropdownMenuItem>
+              </MenuAction>
             );
           })}
         </DropdownMenuContent>
@@ -198,19 +200,19 @@ export function MoveActions({
   const flow = useMoveFlow(session, workspace);
   if (moves.length === 0) return null;
   const item =
-    'w-full flex flex-col items-start gap-0.5 rounded-md px-2 py-1.5 text-left text-[12px] text-foreground hover:bg-muted/50 disabled:cursor-not-allowed disabled:opacity-60';
+    'w-full flex flex-col items-start gap-0.5 text-left';
   return (
     <>
       {moves.map((move) => {
         const note = hint(move, workspace?.name ?? 'The agent');
         return (
-          <button key={move.key} type="button" disabled={!!move.problem} onClick={() => flow.start(move)} className={item}>
+          <MenuAction density="compact" key={move.key} type="button" disabled={!!move.problem} onClick={() => flow.start(move)} className={item}>
             <span className="inline-flex items-center gap-2">
               <ArrowRightLeft size={12} />
               {move.label}
             </span>
             {note && <span className="pl-5 text-[11px] text-muted-foreground">{note}</span>}
-          </button>
+          </MenuAction>
         );
       })}
       {flow.dialogs}

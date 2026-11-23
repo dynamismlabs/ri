@@ -1,4 +1,13 @@
 'use client';
+
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Callout } from '@/components/system/callout';
+import { ChoiceRow } from '@/components/system/choice-row';
+
+import { Button } from '@/components/system/button';
 import { parseSourceMarkers } from '@/lib/chat-sources/reference';
 import { SourceText, SourceMetadataProvider, type SourceChipTone } from '@/components/chat-ui/references/source-chip';
 import { ConnectedView } from '@/components/mcp-apps/view';
@@ -196,7 +205,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const isFailed = clientStatus?.status === 'failed';
       const isSending = clientStatus?.status === 'sending';
       return (
-        <div className={cn('group flex flex-col', origin && 'max-w-[95%] rounded-xl border border-border bg-muted/20')}>
+        <Card padding="none" surface={origin ? "track" : "plain"} className={cn("group flex flex-col", origin && "max-w-[95%]")}>
           {sourceId ? <SenderChip senderSessionId={sourceId} eventId={metadata?.sourceEventId} label={origin?.label ?? 'Message from'} action={returned && <ReturnedChatArchive sessionId={returned.sessionId} />} /> : origin && <p className="px-3 py-2 text-xs text-muted-foreground">{origin.label}{metadata?.senderKind !== 'system' && ' · Source chat unavailable'}</p>}
           {metadata?.directions && <div className="border-t px-3 py-2 text-xs"><p className="mb-1 font-medium">Your directions</p><CoordinationText text={metadata.directions} /></div>}
           {metadata?.senderKind === 'human' && <p className="px-3 pt-2 text-[11px] font-medium text-muted-foreground">Quoted source material</p>}
@@ -246,7 +255,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               className={origin ? 'mx-3 mb-2' : undefined}
             />
           )}
-        </div>
+        </Card>
       );
     }
 
@@ -281,9 +290,9 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       // transcript also filters these, this is a belt-and-suspenders guard.
       if (!content) return null;
       return (
-        <button
+        <InlineAction purpose="caption"
           onClick={() => setExpanded((v) => !v)}
-          className="group/row w-full text-left text-[11px] text-muted-foreground/70 italic"
+          className="group/row w-full text-left italic"
         >
           <div className="flex items-center gap-1.5">
             <RowDisclosure expanded={expanded}>
@@ -296,7 +305,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {content}
             </div>
           )}
-        </button>
+        </InlineAction>
       );
     }
 
@@ -345,8 +354,10 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       return (
         <div className="group/row w-full text-[11px]">
           <div className="flex items-center gap-1.5 min-w-0">
-            <button
+            <Button
               onClick={() => setExpanded((v) => !v)}
+              variant="ghost"
+              size="xs"
               className="flex flex-shrink-0 items-center gap-1.5"
             >
               <RowDisclosure expanded={expanded}>
@@ -355,7 +366,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               <span className={cn(d.mono ? 'font-mono text-foreground/90' : 'font-medium text-foreground/90')}>
                 {d.verb}
               </span>
-            </button>
+            </Button>
             {entityEdit ? (
               <EntityEditChip entityType={entityEdit.entityType} entityId={entityEdit.entityId} />
             ) : filePath ? (
@@ -363,14 +374,14 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
             ) : (
               <>
                 {d.target && (
-                  <span className="flex-shrink-0 truncate max-w-[40%] rounded bg-muted/60 px-1.5 py-px font-mono text-[10.5px] text-muted-foreground">
+                  <StatusBadge code className="flex-shrink-0 truncate max-w-[40%]">
                     {d.target}
-                  </span>
+                  </StatusBadge>
                 )}
                 {d.detail && d.detail !== d.target && (
-                  <button onClick={() => setExpanded((v) => !v)} className="flex-1 truncate text-left font-mono text-[10.5px] text-muted-foreground/55">
+                  <InlineAction code  onClick={() => setExpanded((v) => !v)} className="flex-1 truncate text-left">
                     {d.detail}
-                  </button>
+                  </InlineAction>
                 )}
               </>
             )}
@@ -438,9 +449,9 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const isError = event.toolIsError === true;
       const text = event.content ?? '';
       return (
-        <button
+        <InlineAction purpose="caption"
           onClick={() => setExpanded((v) => !v)}
-          className="w-full text-left text-[11px]"
+          className="w-full text-left"
         >
           <div className="flex items-center gap-1.5 min-w-0 text-muted-foreground/70">
             <ChevronRight size={11} className={cn('flex-shrink-0 transition-transform text-muted-foreground/40', expanded && 'rotate-90')} />
@@ -454,7 +465,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {text}
             </pre>
           )}
-        </button>
+        </InlineAction>
       );
     }
 
@@ -485,10 +496,10 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
           : 'text-emerald-500';
 
       return (
-        <button
+        <InlineAction purpose="caption"
           type="button"
           onClick={() => setExpanded((value) => !value)}
-          className="group/row w-full text-left text-[11px]"
+          className="group/row w-full text-left"
         >
           <div className="flex min-w-0 items-center gap-1.5 text-muted-foreground/80">
             <RowDisclosure expanded={expanded}>
@@ -507,7 +518,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {summary}
             </div>
           )}
-        </button>
+        </InlineAction>
       );
     }
 
@@ -517,7 +528,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const info = (event.raw ?? {}) as { from?: string; checkpoint?: { sha?: string }; handoff?: string };
       return (
         <div className="my-2 text-[11px] text-muted-foreground">
-          <button type="button" onClick={() => setExpanded((v) => !v)} className="flex w-full items-center gap-2">
+          <InlineAction purpose="caption" type="button" onClick={() => setExpanded((v) => !v)} className="flex w-full items-center gap-2">
             <div className="h-px flex-1 bg-border/60" />
             <span className="inline-flex items-center gap-1.5 font-medium text-foreground/80">
               <ArrowRightLeft size={11} />
@@ -526,7 +537,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
             {info.from && <span className="text-muted-foreground/70">from {info.from}</span>}
             {info.checkpoint?.sha && <span className="font-mono text-muted-foreground/60">{info.checkpoint.sha.slice(0, 7)}</span>}
             <div className="h-px flex-1 bg-border/60" />
-          </button>
+          </InlineAction>
           {expanded && info.handoff && (
             <div className="mx-auto mt-1.5 max-w-2xl whitespace-pre-wrap break-words rounded-md border border-border/60 px-3 py-2 text-[11.5px] text-muted-foreground/90">
               {info.handoff}
@@ -570,13 +581,13 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
 
     case 'error':
       return (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
+        <Callout padding="sm" density="compact" tone={"error"} >
           <div className="flex items-center gap-1.5 font-medium">
             <AlertTriangle size={11} />
             <span>Error</span>
           </div>
           {event.content && <div className="mt-1 text-foreground/80">{event.content}</div>}
-        </div>
+        </Callout>
       );
 
     case 'auth_required':
@@ -651,7 +662,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const tool = event.toolName ? toolDisplayName(event.toolName) : 'tool';
       const summary = summarizeToolInput(event.toolInput);
       return (
-        <div className="rounded-md border border-blue-500/30 bg-blue-500/5 px-2.5 py-1.5">
+        <Callout padding="sm" density="compact" tone={"info"} >
           <div className="flex items-center gap-1.5 text-[11px]">
             <ShieldCheck size={11} className="text-blue-500" />
             <span className="text-foreground/90">Permission requested</span>
@@ -663,7 +674,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {event.content}
             </div>
           )}
-        </div>
+        </Callout>
       );
     }
 
@@ -691,7 +702,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const questions = extractQuestions(event.toolInput);
       const first = questions[0];
       return (
-        <div className="rounded-md border border-foreground/20 bg-foreground/5 px-2.5 py-1.5">
+        <Card padding="sm" density="compact" >
           <div className="flex items-center gap-1.5 text-[11px]">
             <HelpCircle size={11} className="text-foreground/80" />
             <span className="text-foreground/90">Question</span>
@@ -704,16 +715,16 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {first.header || first.question}
             </div>
           )}
-        </div>
+        </Card>
       );
     }
 
     case 'question_response': {
       const text = event.content ?? '';
       return (
-        <button data-slot="choice-row" aria-expanded={expanded}
+        <ChoiceRow density="compact"  aria-expanded={expanded}
           onClick={() => setExpanded((v) => !v)}
-          className="group/row w-full text-left rounded-md border border-foreground/15 bg-foreground/5 px-2.5 py-1.5"
+          className="group/row w-full text-left"
         >
           <div className="flex items-center gap-1.5 text-[11px]">
             <RowDisclosure expanded={expanded}>
@@ -729,7 +740,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               {text}
             </pre>
           )}
-        </button>
+        </ChoiceRow>
       );
     }
 
@@ -856,7 +867,7 @@ function ClaudeAuthRequiredBanner({
   }
 
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px]">
+    <Callout padding="md" density="row" tone={"warning"} >
       <div className="flex items-start gap-2">
         <AlertTriangle size={12} className="mt-0.5 text-amber-500" />
         <div className="flex-1 min-w-0">
@@ -866,11 +877,13 @@ function ClaudeAuthRequiredBanner({
             <div className="mt-1 text-destructive">{errorMessage}</div>
           )}
         </div>
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           type="button"
           onClick={() => login.mutate()}
           disabled={login.isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-2.5 py-1 text-[11px] font-medium hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed"
+          variant="primary"
+          size="xs"
+          className="inline-flex items-center gap-1.5"
         >
           {login.isPending ? (
             <>
@@ -883,9 +896,9 @@ function ClaudeAuthRequiredBanner({
               <span>Log in</span>
             </>
           )}
-        </button>
+        </Button>
       </div>
-    </div>
+    </Callout>
   );
 }
 
@@ -920,7 +933,7 @@ function CliSignInBanner({
   if (signedIn && sessionId) return <AuthRestoredBanner sessionId={sessionId} />;
 
   return (
-    <div className="rounded-md border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px]">
+    <Callout padding="md" density="row" tone={"warning"} >
       <div className="flex items-start gap-2">
         <AlertTriangle size={12} className="mt-0.5 text-amber-500" />
         <div className="flex-1 min-w-0">
@@ -940,11 +953,13 @@ function CliSignInBanner({
           )}
         </div>
         {harness && (
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => recheck.mutate(harness)}
             disabled={recheck.isPending}
-            className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-2.5 py-1 text-[11px] font-medium hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed"
+            variant="primary"
+            size="xs"
+            className="inline-flex items-center gap-1.5"
           >
             {recheck.isPending ? (
               <>
@@ -957,17 +972,17 @@ function CliSignInBanner({
                 <span>Check again</span>
               </>
             )}
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Callout>
   );
 }
 
 /** Sign-in is back: the only thing left is to retry the message that failed. */
 function AuthRestoredBanner({ sessionId }: { sessionId: string }) {
   return (
-    <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-[11px]">
+    <Callout padding="md" density="row" tone={"success"} >
       <div className="flex items-start gap-2">
         <ShieldCheck size={12} className="mt-0.5 text-emerald-500" />
         <div className="flex-1 min-w-0">
@@ -978,7 +993,7 @@ function AuthRestoredBanner({ sessionId }: { sessionId: string }) {
         </div>
         <ResendLastMessageButton sessionId={sessionId} />
       </div>
-    </div>
+    </Callout>
   );
 }
 
@@ -1004,11 +1019,13 @@ function ResendLastMessageButton({ sessionId }: { sessionId: string }) {
   if (!lastUser || !(lastUser.content ?? '').trim()) return null;
 
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <Button
       type="button"
       onClick={() => resend.mutate()}
       disabled={resend.isPending}
-      className="inline-flex items-center gap-1.5 rounded-md bg-foreground text-background px-2.5 py-1 text-[11px] font-medium hover:bg-foreground/90 disabled:opacity-60 disabled:cursor-not-allowed"
+      variant="primary"
+      size="xs"
+      className="inline-flex items-center gap-1.5"
     >
       {resend.isPending ? (
         <>
@@ -1021,7 +1038,7 @@ function ResendLastMessageButton({ sessionId }: { sessionId: string }) {
           <span>Resend</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -1047,11 +1064,14 @@ function FailedSendBadge({
         <AlertTriangle size={11} />
         <span>{error ? `Send failed: ${error}` : 'Send failed'}</span>
       </div>
-      <button data-slot="action-button" data-tone="status"
+      <Button
         type="button"
         onClick={() => retry.mutate({ eventId })}
         disabled={retry.isPending}
-        className="inline-flex items-center gap-1 rounded-md border border-destructive/40 px-1.5 py-0.5 text-[10.5px] text-destructive hover:bg-destructive/10 disabled:opacity-60 disabled:cursor-not-allowed"
+        variant="secondary"
+        size="xs"
+        tone="danger"
+        className="inline-flex items-center gap-1"
       >
         {retry.isPending ? (
           <>
@@ -1064,7 +1084,7 @@ function FailedSendBadge({
             <span>Retry</span>
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -1128,25 +1148,28 @@ function DeliveryLine({
       {tone === 'warn' && <AlertTriangle size={10} />}
       <span>{text}</span>
       {delivery.cancellable && (
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => cancel.mutate(eventId)}
           disabled={cancel.isPending}
-          className="rounded px-1 py-0.5 font-medium text-foreground/80 hover:bg-muted/60 disabled:opacity-50"
+          variant="ghost"
+          size="xs"
         >
           {cancel.isPending ? 'Withdrawing…' : 'Cancel'}
-        </button>
+        </Button>
       )}
       {again && (
-        <button data-slot="action-button"
+        <Button
           type="button"
           onClick={() => send.mutate({ content, attachments })}
           disabled={send.isPending}
-          className="inline-flex items-center gap-1 rounded border border-current/30 px-1.5 py-0.5 font-medium hover:bg-muted/60 disabled:opacity-50"
+          variant="secondary"
+          size="xs"
+          className="inline-flex items-center gap-1"
         >
           <RefreshCw size={9} />
           Send again
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -1224,16 +1247,13 @@ function RowDisclosure({ children, expanded }: { children: ReactNode; expanded: 
 /** "PR #N ↗" external link — opens the pull request in a new tab. */
 function PrLink({ url, number }: { url: string; number: number }) {
   return (
-    <a data-slot="action-button"
-      href={url}
+    <Button asChild variant="secondary" size="xs" className="inline-flex flex-shrink-0 items-center gap-0.5"><a href={url}
       target="_blank"
       rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className="inline-flex flex-shrink-0 items-center gap-0.5 rounded border border-border bg-background px-1.5 py-px text-[10.5px] font-medium text-foreground/90 hover:bg-muted/50 transition-colors"
-    >
+      onClick={(e) => e.stopPropagation()}>
       PR #{number}
       <ArrowUpRight size={10} className="text-muted-foreground/70" />
-    </a>
+    </a></Button>
   );
 }
 
@@ -1312,14 +1332,16 @@ function CollapsedToolInput({ input }: { input: unknown }) {
   const text = typeof input === 'string' ? input : JSON.stringify(input, null, 2);
   return (
     <div>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 text-[10.5px] text-muted-foreground/55 hover:text-muted-foreground transition-colors"
+        variant="ghost"
+        size="xs"
+        className="flex items-center gap-1"
       >
         <ChevronRight size={10} className={cn('transition-transform', open && 'rotate-90')} />
         Prompt
-      </button>
+      </Button>
       {open && (
         <pre className="mt-1 text-[10.5px] text-muted-foreground bg-muted/30 rounded p-2 overflow-x-auto whitespace-pre-wrap break-words">
           {text}
@@ -1395,13 +1417,13 @@ function UserMessageBody({
     <>
       {leadingSlash.leadingSpace}
       <Tip label={matchedCommand.description?.trim() || `/${matchedCommand.name}`} onlyWhenTextHidden={!matchedCommand.description?.trim()}>
-        <span
+        <InlineAction asChild appearance="chip" bubble><span
           data-slash-command={matchedCommand.name}
-          className="inline-flex items-center align-baseline gap-1 px-1.5 py-0.5 mr-0.5 rounded-md border border-current/20 bg-current/10 text-[12px] font-medium select-none"
+          className="inline-flex items-center align-baseline gap-1 mr-0.5 select-none"
         >
           <Terminal size={11} className="shrink-0 opacity-75" />
           <span className="self-baseline font-mono text-[11px]">{`/${matchedCommand.name}`}</span>
-        </span>
+        </span></InlineAction>
       </Tip>
     </>
   );

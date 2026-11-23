@@ -1,8 +1,9 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { Columns3 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { toolbarButtonClass } from '@/components/shared/list-toolbar';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuCheckboxItem, DropdownMenuSeparator } from '@/components/system/menu';
 
 export function ColumnPicker<T extends string>({ columns, visible, onChange }: {
   columns: readonly { id: T; label: string }[];
@@ -11,10 +12,10 @@ export function ColumnPicker<T extends string>({ columns, visible, onChange }: {
 }) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={toolbarButtonClass()} aria-label={`Columns, ${visible.length} of ${columns.length} visible`}>
+      <DropdownMenuTrigger asChild><ChipButton aria-label={`Columns, ${visible.length} of ${columns.length} visible`}>
         <Columns3 className="size-3.5 shrink-0" />
         Columns <span className="text-muted-foreground tabular-nums">{visible.length}/{columns.length}</span>
-      </DropdownMenuTrigger>
+      </ChipButton></DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuLabel>Visible columns</DropdownMenuLabel>
         {columns.map(({ id, label }) => (
@@ -24,7 +25,7 @@ export function ColumnPicker<T extends string>({ columns, visible, onChange }: {
           </DropdownMenuCheckboxItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={() => onChange(columns.map((c) => c.id))}>Show all columns</DropdownMenuItem>
+        <MenuAction kind="menu" onSelect={() => onChange(columns.map((c) => c.id))}>Show all columns</MenuAction>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -35,6 +36,11 @@ export function HiddenColumnsEmpty({ onShowAll }: { onShowAll: () => void }) {
     <Columns3 className="size-6 text-muted-foreground" />
     <p className="text-sm font-medium">All columns are hidden</p>
     <p className="text-xs text-muted-foreground">Choose columns above to focus your board.</p>
-    <button type="button" onClick={onShowAll} className={toolbarButtonClass()}>Show all columns</button>
+    <ChipButton
+      type="button"
+      onClick={onShowAll}
+      variant="secondary"
+      size="compact"
+    >Show all columns</ChipButton>
   </div>;
 }

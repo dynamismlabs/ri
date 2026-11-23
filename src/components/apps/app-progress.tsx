@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { AlertCircle, CheckCircle2, Circle, CircleDashed, Hand, Loader2, MinusCircle, XCircle } from 'lucide-react';
 import { APP_NAME } from '@/constants/app';
@@ -89,8 +90,7 @@ export function AppProgress({
           </ol>
         )}
         {outcome && (
-          <div role={outcome.tone === 'error' ? 'alert' : 'status'} className={cn('space-y-3 rounded-xl border p-4 text-sm',
-            outcome.tone === 'error' ? 'border-destructive/30 bg-destructive/5' : 'border-border bg-muted/30')}>
+          <Callout padding="lg" tone={(outcome.tone === 'error' ? "error" : "neutral")} role={outcome.tone === 'error' ? 'alert' : 'status'} className="space-y-3">
             <p className="flex items-start gap-2">
               {outcome.tone === 'error' ? <AlertCircle size={15} className="mt-0.5 shrink-0 text-destructive" />
                 : outcome.tone === 'done' ? <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
@@ -100,7 +100,7 @@ export function AppProgress({
             </p>
             {job?.state === 'failed' && job.result?.log && <p className="text-xs text-muted-foreground">The full log is at <span className="break-all font-mono">{job.result.log}</span>.</p>}
             {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-          </div>
+          </Callout>
         )}
       </div>
     </div>

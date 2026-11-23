@@ -1,5 +1,7 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronRight, FileSearch, Loader2, RotateCw } from 'lucide-react';
@@ -72,17 +74,20 @@ export function ChangesView({ sessionId, baseBranch, onOpenFile }: ChangesViewPr
           </span>
         </Tip>
         <span className="flex-1" />
-        <Tip label="Refresh">
-          <button
+
+          <IconButton
             type="button"
             onClick={refresh}
             disabled={diff.isFetching}
-            aria-label="Refresh changes"
-            className="inline-flex size-7 flex-shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+            label="Refresh changes"
+            tooltip="Refresh"
+            variant="ghost"
+            size="sm"
+            className="inline-flex flex-shrink-0 items-center justify-center"
           >
             {diff.isFetching ? <Loader2 size={13} className="animate-spin" /> : <RotateCw size={13} />}
-          </button>
-        </Tip>
+          </IconButton>
+
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -128,7 +133,7 @@ function ChangeRow({
     <div className="border-b border-border">
       <div className="group flex h-9 items-center gap-2 pl-2 pr-2 hover:bg-muted/30">
         <Tip label={open ? 'Hide the diff' : 'Show the diff'}>
-          <button
+          <InlineAction
             type="button"
             onClick={onToggle}
             aria-expanded={open}
@@ -144,7 +149,7 @@ function ChangeRow({
               <span className="text-muted-foreground/70">{dir}</span>
               <span className="text-foreground">{name}</span>
             </span>
-          </button>
+          </InlineAction>
         </Tip>
         <span className="flex-shrink-0 font-mono text-[11px] tabular-nums">
           {additions > 0 && <span className="text-emerald-600 dark:text-emerald-400">+{additions}</span>}
@@ -152,16 +157,18 @@ function ChangeRow({
           {deletions > 0 && <span className="text-rose-600 dark:text-rose-400">−{deletions}</span>}
         </span>
         {onOpenFile ? (
-          <Tip label="Open in Files">
-            <button
+            <IconButton
               type="button"
               onClick={onOpenFile}
-              aria-label={`Open ${name} in Files`}
-              className="inline-flex size-6 flex-shrink-0 items-center justify-center rounded text-muted-foreground/70 opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+              label={`Open ${name} in Files`}
+              tooltip="Open in Files"
+              variant="ghost"
+              size="sm"
+              reveal
+              className="inline-flex flex-shrink-0 items-center justify-center"
             >
               <FileSearch size={13} />
-            </button>
-          </Tip>
+            </IconButton>
         ) : (
           <span className="w-6 flex-shrink-0" />
         )}

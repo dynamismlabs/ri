@@ -160,7 +160,7 @@ it('shows real capabilities, exact accounts and setup in Apps without opening Se
     await page.getByRole('heading', { name: 'Linear', exact: true }).waitFor();
     await page.goBack();
     await page.getByRole('textbox', { name: 'Search library' }).waitFor();
-    expect(await page.getByRole('button', { name: 'Discover', exact: true }).getAttribute('aria-current')).toBe('page');
+    expect(await page.getByRole('button', { name: 'Discover', exact: true }).getAttribute('aria-pressed')).toBe('true');
     expect(errors).toEqual([]);
   } finally { await page.close(); }
 });

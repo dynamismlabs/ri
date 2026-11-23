@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FileX } from 'lucide-react';
@@ -35,7 +36,12 @@ function Failure({ message, onRetry }: { message: string; onRetry: () => void })
     <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center text-sm text-muted-foreground">
       <FileX size={20} />
       <p className="max-w-lg wrap-anywhere">{message}</p>
-      <button type="button" onClick={onRetry} className="underline">Try again</button>
+      <Button
+        type="button"
+        onClick={onRetry}
+        variant="link"
+        size="xs"
+      >Try again</Button>
     </div>
   );
 }

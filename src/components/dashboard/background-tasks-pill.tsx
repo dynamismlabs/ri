@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Boxes, Info } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -6,7 +7,7 @@ import { AgentIcon } from '@/components/agents/agent-icon';
 import { Tip } from '@/components/ui/tip';
 import type { RailResponse } from '@/lib/api/sessions';
 import { executionView } from '@/lib/client/active-view';
-import { cn } from '@/lib/utils';
+
 import { StatusPill } from './status-pill';
 
 /** Global visibility for detached work. The chat's existing strip owns task details. */
@@ -16,10 +17,10 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
   return (
     <StatusPill
       label="Background tasks"
+      tone="working"
       count={count}
       icon={<Boxes aria-hidden size={13} className="text-sky-500" />}
       accentClass="text-sky-600 dark:text-sky-400"
-      countBgClass="bg-sky-500/15 text-sky-600 dark:text-sky-400"
       headerBgClass="bg-sky-500/[0.06]"
       footer={(
         <p className="flex items-start gap-1.5 border-t border-border/40 px-3 py-2 text-[10px] leading-relaxed text-muted-foreground">
@@ -35,16 +36,13 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
             const location = chat.location && !chat.location.isHome ? chat.location.name : 'This server';
             return (
               <Tip key={chat.id} label={label} onlyWhenTextHidden>
-                <button
+                <MenuAction selected={!!((activeSessionId === chat.id))} density="compact"
                   type="button"
                   onClick={() => {
                     setActiveView(executionView(chat.id));
                     close();
                   }}
-                  className={cn(
-                    'flex w-full items-start gap-1.5 rounded-md px-2.5 py-1.5 text-left transition-colors',
-                    activeSessionId === chat.id ? 'bg-secondary' : 'hover:bg-muted/50',
-                  )}
+                  className="flex w-full items-start gap-1.5 text-left"
                 >
                   <AgentIcon workspace={{ name: chat.workspaceName ?? 'Main chat', emoji: chat.workspaceEmoji, attachments: chat.workspaceAttachments, areaId: chat.workspaceAreaId }} size="sm" />
                   <span className="min-w-0 flex-1 leading-tight">
@@ -56,7 +54,7 @@ export function BackgroundTasksPill({ chats }: { chats: RailResponse['background
                   <span className="shrink-0 text-[10px] text-sky-600 dark:text-sky-400">
                     {chat.taskCount} {chat.taskCount === 1 ? 'task' : 'tasks'}
                   </span>
-                </button>
+                </MenuAction>
               </Tip>
             );
           })}

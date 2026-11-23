@@ -1,12 +1,15 @@
 'use client';
+import { PopoverPrimitive } from '@/components/system/popover';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Button } from '@/components/system/button';
 import { useWorkNavigation } from '@/contexts/work-context';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Link as LinkIcon, MessageSquare } from 'lucide-react';
-import { Popover as PopoverPrimitive } from 'radix-ui';
+
 import { useState } from 'react';
 import { Tip } from '@/components/ui/tip';
 
@@ -45,43 +48,39 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>
         <Tip label={`Referenced in ${count} session${count === 1 ? '' : 's'}`}>
-          <button
+          <Button
             type="button"
-            className={cn(
-              'inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[11px] font-medium',
-              'text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors',
-            )}
             aria-label={`${count} sessions reference this`}
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             <LinkIcon size={11} />
             <span>{count}</span>
-          </button>
+          </Button>
         </Tip>
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
+        <PopoverPrimitive.Content padding="none"
           side="bottom"
           align="end"
           sideOffset={6}
           collisionPadding={12}
-          className="z-50 w-[min(20rem,calc(100vw-1.5rem))] rounded-lg border border-border bg-popover shadow-xl pointer-events-auto outline-none"
+          className="z-50 w-[min(20rem,calc(100vw-1.5rem))] pointer-events-auto outline-none"
         >
-          <div className="px-3 py-2 text-[10px] uppercase tracking-wider text-muted-foreground/70 font-semibold border-b border-border">
+          <div className="px-3 py-2 text-[10px] text-muted-foreground/70 font-semibold border-b border-border">
             Referenced in {count} session{count === 1 ? '' : 's'}
           </div>
           <ul className="max-h-[300px] overflow-y-auto py-1">
             {query.data?.sessions.map((s) => (
               <li key={s.id}>
-                <button
+                <MenuAction density="compact"
                   type="button"
                   onClick={() => {
                     setOpen(false);
                     openExecution(s.id);
                   }}
-                  className={cn(
-                    'group flex items-center gap-2 w-full px-3 py-1.5 text-left',
-                    'hover:bg-muted/60 transition-colors',
-                  )}
+                  className={cn("group flex items-center gap-2 w-full text-left", "")}
                 >
                   <MessageSquare size={11} className="text-muted-foreground/70 shrink-0" />
                   <span className="flex-1 min-w-0 text-[12px] text-foreground truncate">
@@ -91,7 +90,7 @@ export function ReferencingSessionsButton({ entityType, entityId }: ReferencingS
                     size={11}
                     className="text-muted-foreground/40 group-hover:text-foreground shrink-0"
                   />
-                </button>
+                </MenuAction>
               </li>
             ))}
           </ul>

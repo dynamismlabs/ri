@@ -1,5 +1,7 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Trigger detail at /triggers/<id>: a header over `TriggerDetail`, the same
  * view the Schedules window shows beside the schedule's builder chat. Every
@@ -33,20 +35,21 @@ export default function TriggerDetailPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           onClick={() => router.push('/triggers')}
-          aria-label="Back to schedules"
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+          label="Back to schedules"
+          variant="ghost"
+          size="sm"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-base font-semibold truncate">{trigger.name}</h1>
             {managed && (
-              <span className="flex-shrink-0 px-1.5 py-0.5 text-[10px] rounded-md bg-muted text-muted-foreground">
+              <StatusBadge className="flex-shrink-0">
                 Managed
-              </span>
+              </StatusBadge>
             )}
           </div>
           {trigger.description && (

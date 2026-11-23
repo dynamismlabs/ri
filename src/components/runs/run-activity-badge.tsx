@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 /**
  * Live activity badge for a run row. Renders the structured
@@ -12,7 +13,6 @@
 
 import { AlertTriangle, Hourglass, MessageSquare, Skull, Wrench } from 'lucide-react';
 import { useRunObservation } from '@/hooks/use-run-observation';
-import { cn } from '@/lib/utils';
 
 export function RunActivityBadge({
   runId,
@@ -101,24 +101,14 @@ function Pill({
   icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const cls: Record<PillTone, string> = {
-    active: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
-    info: 'bg-muted text-muted-foreground border-border',
-    warn: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
-    destructive: 'bg-destructive/10 text-destructive border-destructive/30',
-    success: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
-    mute: 'bg-muted text-muted-foreground border-border',
-  };
+
   return (
-    <span data-slot="status-badge"
-      className={cn(
-        'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider font-medium border',
-        cls[tone],
-      )}
+    <StatusBadge tone={({active:"info",info:"neutral",warn:"warning",destructive:"error",success:"success",mute:"neutral"} as const)[tone]}
+      className="inline-flex items-center gap-1"
     >
       {icon}
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 

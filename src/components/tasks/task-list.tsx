@@ -1,5 +1,10 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Field } from '@/components/system/field';
+
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 import { cn } from '@/lib/utils';
 import { entityKeys } from '@/lib/query/entity-keys';
@@ -39,13 +44,12 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import {
   ListToolbar,
   ToolbarActiveDot,
   ToolbarSearchButton,
-  toolbarButtonClass,
-} from '@/components/shared/list-toolbar';
+  } from '@/components/shared/list-toolbar';
 import { TaskViewToggle, type TaskView } from './task-view';
 import { TaskRow } from './task-row';
 import { todayLocalDate } from '@/lib/deck/date';
@@ -294,14 +298,14 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
       onValueChange={(v) => { setLaneFilter(v as LaneFilter); dismissSwitchBanner(); }}
     >
       {/* Combined views — spelled out so they don't read as a status */}
-      <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Views</DropdownMenuLabel>
-      <DropdownMenuRadioItem value="all" className="text-xs">
+      <DropdownMenuLabel className="">Views</DropdownMenuLabel>
+      <DropdownMenuRadioItem value="all" className="">
         <span className="flex flex-1 flex-col gap-0.5">
           <span>All</span>
           <span className="text-[10px] font-normal text-muted-foreground">Every status</span>
         </span>
       </DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value="active" className="text-xs">
+      <DropdownMenuRadioItem value="active" className="">
         <span className="flex flex-1 flex-col gap-0.5">
           <span>Active</span>
           <span className="text-[10px] font-normal text-muted-foreground">In progress, Todo, Consider</span>
@@ -310,11 +314,11 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
       </DropdownMenuRadioItem>
       <DropdownMenuSeparator />
       {/* Actual statuses */}
-      <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Status</DropdownMenuLabel>
+      <DropdownMenuLabel className="">Status</DropdownMenuLabel>
       {TASK_LANES.map((l) => {
         const c = counts?.[laneStatus(l.key)];
         return (
-          <DropdownMenuRadioItem key={l.key} value={l.key} className="text-xs">
+          <DropdownMenuRadioItem key={l.key} value={l.key} className="">
             <span className="flex-1">{l.label}</span>
             {c != null && c > 0 && <span className="ml-2 tabular-nums text-muted-foreground">{c}</span>}
           </DropdownMenuRadioItem>
@@ -324,11 +328,11 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
   );
   const sortOptions = (
     <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => { setSortBy(v as SortOption); dismissSwitchBanner(); }}>
-      <DropdownMenuRadioItem value="sortKey" className="text-xs">Priority Order<span className="ml-auto text-[10px] text-muted-foreground">Manual</span></DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value="lastViewedAt" className="text-xs">Last viewed<span className="ml-auto text-[10px] text-muted-foreground">Recent first</span></DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value="hardDeadline" className="text-xs">Deadline<span className="ml-auto text-[10px] text-muted-foreground">Earliest first</span></DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value="createdAt" className="text-xs">Created<span className="ml-auto text-[10px] text-muted-foreground">Newest first</span></DropdownMenuRadioItem>
-      <DropdownMenuRadioItem value="updatedAt" className="text-xs">Updated<span className="ml-auto text-[10px] text-muted-foreground">Recent first</span></DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="sortKey" className="">Priority Order<span className="ml-auto text-[10px] text-muted-foreground">Manual</span></DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="lastViewedAt" className="">Last viewed<span className="ml-auto text-[10px] text-muted-foreground">Recent first</span></DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="hardDeadline" className="">Deadline<span className="ml-auto text-[10px] text-muted-foreground">Earliest first</span></DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="createdAt" className="">Created<span className="ml-auto text-[10px] text-muted-foreground">Newest first</span></DropdownMenuRadioItem>
+      <DropdownMenuRadioItem value="updatedAt" className="">Updated<span className="ml-auto text-[10px] text-muted-foreground">Recent first</span></DropdownMenuRadioItem>
     </DropdownMenuRadioGroup>
   );
   const teamFilterSummary = [laneFilter !== 'all' ? laneLabel : null, assigneeMemberId ? 'Assigned to me' : null, areaFilter !== 'all' ? areaLabel : null].filter(Boolean).join(', ');
@@ -343,11 +347,11 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
 
         {/* Personal keeps its primary status selector. Team filters share one menu. */}
         {privatePlanning && <DropdownMenu>
-          <DropdownMenuTrigger aria-label={`Status: ${laneLabel}`} className={toolbarButtonClass({ className: 'font-semibold' })}>
+          <DropdownMenuTrigger asChild><ChipButton aria-label={`Status: ${laneLabel}`} >
             <span className="max-w-[130px] truncate">{laneLabel}</span>
             {laneCount != null && laneCount > 0 && <span className="tabular-nums opacity-60">{laneCount}</span>}
             <ChevronDown className="size-3.5 shrink-0 opacity-60" />
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">{statusOptions}</DropdownMenuContent>
         </DropdownMenu>}
 
@@ -357,12 +361,17 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Tip label="Filter tasks" onlyWhenTextHidden>
-              <button type="button" aria-label={filterActive ? `Filter, active: ${privatePlanning ? filterSummary : teamFilterSummary}` : 'Filter tasks'}
-                className={toolbarButtonClass({ active: filterActive, className: privatePlanning ? undefined : 'w-8 px-0 @lg/lt:w-auto @lg/lt:px-3' })}>
+              <ChipButton
+                type="button"
+                aria-label={filterActive ? `Filter, active: ${privatePlanning ? filterSummary : teamFilterSummary}` : 'Filter tasks'}
+                variant="ghost"
+                size="compact"
+                pressed={filterActive}
+              >
                 <Filter className="size-3.5 shrink-0" />
                 <span className={cn('hidden max-w-[120px] truncate', privatePlanning ? '@sm/lt:inline' : '@lg/lt:inline')}>{privatePlanning ? filterSummary : 'Filter'}</span>
                 {filterActive && <ToolbarActiveDot />}
-              </button>
+              </ChipButton>
             </Tip>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
@@ -374,12 +383,12 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
             </>}
             {sourceTeams.length > 0 && (
               <>
-                <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Source</DropdownMenuLabel>
+                <DropdownMenuLabel className="">Source</DropdownMenuLabel>
                 <DropdownMenuRadioGroup value={source ?? 'all'} onValueChange={(v) => { setSourceFilter(v); dismissSwitchBanner(); }}>
-                  <DropdownMenuRadioItem value="all" className="text-xs">All sources</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="personal" className="text-xs">My Ri</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="all" className="">All sources</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="personal" className="">My Ri</DropdownMenuRadioItem>
                   {sourceTeams.map((team) => (
-                    <DropdownMenuRadioItem key={team.id} value={team.id} className="text-xs">
+                    <DropdownMenuRadioItem key={team.id} value={team.id} className="">
                       {teamDisplayName(team.id, sourceTeams)}
                     </DropdownMenuRadioItem>
                   ))}
@@ -388,22 +397,22 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
               </>
             )}
             {privatePlanning && <>
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Energy</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Energy</DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={energyFilter}
               onValueChange={(v) => { setEnergyFilter(v as Energy | 'all'); dismissSwitchBanner(); }}
             >
-              <DropdownMenuRadioItem value="all" className="text-xs">All energies</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="deep" className="text-xs">Deep</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="light" className="text-xs">Light</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all" className="">All energies</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="deep" className="">Deep</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="light" className="">Light</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
             </>}
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaFilter} onValueChange={(v) => { setAreaFilter(v); dismissSwitchBanner(); }}>
-              <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all" className="">All Areas</DropdownMenuRadioItem>
               {areas?.map(area => (
-                <DropdownMenuRadioItem key={area.id} value={area.id} className="text-xs">
+                <DropdownMenuRadioItem key={area.id} value={area.id} className="">
                   {area.name}
                 </DropdownMenuRadioItem>
               ))}
@@ -412,31 +421,35 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
         </DropdownMenu>
 
         {privatePlanning ? <DropdownMenu>
-          <DropdownMenuTrigger aria-label={`Sort by ${SORT_LABELS[sortBy]}`} className={toolbarButtonClass()}>
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={`Sort by ${SORT_LABELS[sortBy]}`}>
             <ArrowDownAz className="size-3.5 shrink-0" />
             <span className="hidden @md/lt:inline">{SORT_LABELS[sortBy]}</span>
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Sort by</DropdownMenuLabel>
             {sortOptions}
           </DropdownMenuContent>
         </DropdownMenu> : <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Tip label="Grouping and sorting">
-              <button type="button" aria-label="Task view options"
-                className={toolbarButtonClass({ className: 'w-8 px-0 @lg/lt:w-auto @lg/lt:px-3' })}>
+              <ChipButton
+                type="button"
+                aria-label="Task view options"
+                variant="ghost"
+                size="compact"
+              >
                 <SlidersHorizontal className="size-3.5" />
                 <span className="hidden @lg/lt:inline">View</span>
-              </button>
+              </ChipButton>
             </Tip>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Group by</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Group by</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={groupBy} onValueChange={group => setPreferences(previous => ({ ...previous, group: group as TaskListGrouping }))}>
-              {Object.entries(GROUP_LABELS).map(([value, label]) => <DropdownMenuRadioItem key={value} value={value} className="text-xs">{label}</DropdownMenuRadioItem>)}
+              {Object.entries(GROUP_LABELS).map(([value, label]) => <DropdownMenuRadioItem key={value} value={value} className="">{label}</DropdownMenuRadioItem>)}
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Sort by</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Sort by</DropdownMenuLabel>
             {sortOptions}
           </DropdownMenuContent>
         </DropdownMenu>}
@@ -460,12 +473,13 @@ export function TaskList({ view, onViewChange, onOpenTask: openTask, privatePlan
           <span>
             Switched to <span className="font-bold">Priority Order</span> so you can reorder.
           </span>
-          <button
+          <Button
             onClick={handleSwitchBack}
-            className="px-2.5 py-1 rounded bg-primary-foreground/15 hover:bg-primary-foreground/25 text-primary-foreground text-[10px] font-semibold uppercase tracking-wider transition-colors"
+            variant="ghost"
+            size="sm"
           >
             Back to {SORT_LABELS[switchedFromSort]}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -528,7 +542,7 @@ function QuickCreateRow({ lane, onCreate }: { lane: TaskLane; onCreate: (title: 
   return (
     <div className="flex items-center gap-2 border-t border-border px-3 py-1.5">
       <Plus size={13} className="text-muted-foreground flex-shrink-0" />
-      <input
+      <Field
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
@@ -537,7 +551,7 @@ function QuickCreateRow({ lane, onCreate }: { lane: TaskLane; onCreate: (title: 
         }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1" purpose="embedded"
       />
     </div>
   );
@@ -650,13 +664,13 @@ function VirtualTaskList({
                       transform: `translateY(${virtualRow.start}px)`,
                     }}
                   >
-                    {row.kind === 'group' ? <button type="button"
+                    {row.kind === 'group' ? <MenuAction type="button"
                       aria-label={`${row.label}, ${row.count} ${row.count === 1 ? 'task' : 'tasks'}`} aria-expanded={!collapsed.has(row.key)}
                       onClick={() => setCollapsed(previous => { const next = new Set(previous); if (next.has(row.key)) next.delete(row.key); else next.add(row.key); return next; })}
-                      className="flex h-9 w-full items-center gap-2 border-b border-border px-2 text-left text-[11px] font-semibold text-foreground hover:bg-muted/50">
+                      className="flex w-full items-center gap-2 text-left">
                       <ChevronDown size={13} className={cn('shrink-0 transition-transform', collapsed.has(row.key) && '-rotate-90')} />
                       <span className="truncate">{row.label}</span><span className="tabular-nums font-normal text-muted-foreground">{row.count}</span>
-                    </button> : task && <TaskRow
+                    </MenuAction> : task && <TaskRow
                       task={task}
                       privatePlanning={privatePlanning}
                       contextMeta={rowMeta?.(task)}

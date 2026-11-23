@@ -15,8 +15,8 @@ export async function browserFixture(contents: string, plugins: Plugin[] = [], o
     css = (await postcss([require('@tailwindcss/postcss')({ base: process.cwd() })]).process(fs.readFileSync(file, 'utf8'), { from: file })).css;
   }
   const server = http.createServer((req, res) => {
-    res.setHeader('content-type', req.url === '/bundle.js' ? 'text/javascript' : req.url === '/style.css' ? 'text/css' : 'text/html');
-    res.end(req.url === '/bundle.js' ? bundle.outputFiles[0].text : req.url === '/style.css' ? css : '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>');
+    res.setHeader('content-type', req.url === '/bundle.js' ? 'text/javascript; charset=utf-8' : req.url === '/style.css' ? 'text/css; charset=utf-8' : 'text/html; charset=utf-8');
+    res.end(req.url === '/bundle.js' ? bundle.outputFiles[0].text : req.url === '/style.css' ? css : '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/style.css"></head><body><div id="root"></div><script src="/bundle.js"></script></body></html>');
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`;

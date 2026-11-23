@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, LayoutGrid, Server } from 'lucide-react';
@@ -28,7 +29,7 @@ export function AppsRailList() {
   return (
     <>
       <div className="flex min-h-[32px] flex-shrink-0 items-center gap-2 border-b border-border/40 px-3">
-        <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-foreground">Apps</span>
+        <span className="text-[11px] leading-[1.4] font-medium text-foreground">Apps</span>
       </div>
       <nav aria-label="Apps" className="flex min-h-0 flex-col gap-0.5 overflow-y-auto px-2 py-1.5">
         <Row
@@ -87,20 +88,15 @@ function Row({
   ...props
 }: React.ComponentProps<'button'> & { active?: boolean; icon: React.ReactNode; trailing?: React.ReactNode }) {
   return (
-    <button
+    <MenuAction density="compact"
       type="button"
       aria-current={active ? 'page' : undefined}
       {...props}
-      className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[12px] font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-        active ? 'bg-muted/60 text-foreground' : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground',
-        className,
-      )}
+      className={cn("flex w-full items-center gap-2", className)}
     >
       {icon}
       <span className="min-w-0 flex-1 truncate text-left">{children}</span>
       {trailing}
-    </button>
+    </MenuAction>
   );
 }

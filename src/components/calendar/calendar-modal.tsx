@@ -1,5 +1,15 @@
 "use client";
 
+import { DialogPrimitive } from '@/components/system/dialog';
+import {
+  SegmentedControl,
+  SegmentedRoot,
+  SegmentedList,
+  SegmentedPanel,
+} from "@/components/system/segmented-control";
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * The calendar, nearly full screen, over whatever is on screen: the rail's
  * Calendar, the header's next-event peek, the deck's day strip and "Open
@@ -34,9 +44,9 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dialog as DialogPrimitive } from 'radix-ui';
+
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, RefreshCw, X } from 'lucide-react';
-import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogDescription, DialogOverlay, DialogPortal, DialogTitle } from '@/components/system/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -138,9 +148,9 @@ export function CalendarModal() {
     <Dialog open={open} onOpenChange={(next) => (next ? openCalendarModal() : closeCalendarModal())}>
       <DialogPortal>
         <DialogOverlay className="z-40" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="calendar"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" data-kind="calendar"
           className={cn(
-            'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl outline-none',
+            'fixed inset-x-2 top-2 bottom-2 z-40 flex flex-col overflow-hidden outline-none',
             'md:inset-x-4 md:top-12 md:bottom-4',
             'duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0',
           )}
@@ -271,218 +281,208 @@ function CalendarBody({ initialView, initialDate }: { initialView: CalendarView;
   const showConnect = noCalendar && !workOn;
 
   return (
-    <>
-      <header data-slot="calendar-toolbar" className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-        <DialogTitle className="flex items-center gap-1.5 px-1 text-sm font-semibold">
-          <CalendarIcon className="size-4 text-muted-foreground" />
-          Calendar
-        </DialogTitle>
+    <SegmentedRoot mode="tabs" value={tab} onChange={setTab}>
+      <>
+        <header
+          data-slot="calendar-toolbar"
+          className="flex flex-shrink-0 items-center gap-2 border-b border-border px-3 py-2"
+        >
+          <DialogTitle className="flex items-center gap-1.5">
+            <CalendarIcon className="size-4 text-muted-foreground" />
+            Calendar
+          </DialogTitle>
 
-        {!showConnect && (
-          <>
-            <Segmented
-              label="View"
-              value={view}
-              options={[
-                { value: 'week', label: 'Week' },
-                { value: 'day', label: 'Day' },
-              ]}
-              onChange={setView}
-            />
+          {!showConnect && (
+            <>
+              <SegmentedControl
+                mode="choice"
+                className="shrink-0"
+                ariaLabel="View"
+                value={view}
+                onChange={setView}
+                options={[
+                  { value: "week", label: "Week" },
+                  { value: "day", label: "Day" },
+                ]}
+              />
 
-            <div data-slot="calendar-navigation" className="flex items-center">
-              <button
-                type="button"
-                onClick={() => step(-1)}
-                aria-label={view === 'day' ? 'Previous day' : 'Previous week'}
-                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              >
-                <ChevronLeft size={15} />
-              </button>
-              <button
-                type="button"
-                onClick={() => setAnchor(today)}
-                disabled={showingToday}
-                className="rounded-md px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:cursor-default disabled:text-muted-foreground/50 disabled:hover:bg-transparent"
-              >
-                Today
-              </button>
-              <button
-                type="button"
-                onClick={() => step(1)}
-                aria-label={view === 'day' ? 'Next day' : 'Next week'}
-                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-              >
-                <ChevronRight size={15} />
-              </button>
-            </div>
+              <div data-slot="calendar-navigation" className="flex items-center">
+                <IconButton
+                  type="button"
+                  onClick={() => step(-1)}
+                  label={view === "day" ? "Previous day" : "Previous week"}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <ChevronLeft size={15} />
+                </IconButton>
+                <Button
+                  type="button"
+                  onClick={() => setAnchor(today)}
+                  disabled={showingToday}
+                  variant="secondary"
+                  size="sm"
+                >
+                  Today
+                </Button>
+                <IconButton
+                  type="button"
+                  onClick={() => step(1)}
+                  label={view === "day" ? "Next day" : "Next week"}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <ChevronRight size={15} />
+                </IconButton>
+              </div>
 
-            <span data-slot="calendar-date" className="truncate text-sm font-medium text-foreground">
-              {view === 'day' ? formatDayLabel(anchor) : formatWeekLabel(monday)}
-            </span>
-          </>
-        )}
+              <span data-slot="calendar-date" className="truncate text-sm font-medium text-foreground">
+                {view === "day" ? formatDayLabel(anchor) : formatWeekLabel(monday)}
+              </span>
+            </>
+          )}
 
-        <div data-slot="calendar-spacer" className="flex-1" />
+          <div data-slot="calendar-spacer" className="flex-1" />
 
-        {noCalendar && workOn && (
-          <button
-            type="button"
-            onClick={() => {
-              closeCalendarModal();
-              openSettings('plugins');
-            }}
-            className="text-[11px] text-muted-foreground hover:text-foreground"
-          >
-            Connect your calendar
-          </button>
-        )}
-
-        {!showConnect && <Segmented label="Show" value={tab} options={tabs} onChange={setTab} />}
-
-        <Tip label="What you and your agents did: the numbers, a ribbon of work beside your meetings, and the report. Also today's total in the header.">
-          <label data-slot="calendar-work-toggle"
-            className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <Switch size="sm" checked={workOn} onCheckedChange={setWorkOn} />
-            <span className={cn(workOn && 'text-foreground')}>Agent work</span>
-          </label>
-        </Tip>
-
-        {!showConnect && (
-          <>
-            <Tip
-              label={
-                data
-                  ? `Updated ${formatAsOf(data.asOf)}${degraded ? ', some calendars unreachable' : ''}`
-                  : 'Refresh'
-              }
+          {noCalendar && workOn && (
+            <Button
+              type="button"
+              onClick={() => {
+                closeCalendarModal();
+                openSettings("plugins");
+              }}
+              variant="ghost"
+              size="sm"
             >
-              <button
+              Connect your calendar
+            </Button>
+          )}
+
+          {!showConnect && <SegmentedList className="shrink-0" ariaLabel="Show" options={tabs} />}
+
+          <Tip label="What you and your agents did: the numbers, a ribbon of work beside your meetings, and the report. Also today's total in the header.">
+            <label
+              data-slot="calendar-work-toggle"
+              className="flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Switch size="sm" checked={workOn} onCheckedChange={setWorkOn} />
+              <span className={cn(workOn && "text-foreground")}>Agent work</span>
+            </label>
+          </Tip>
+
+          {!showConnect && (
+            <>
+              <IconButton
                 type="button"
+                label="Refresh calendar"
+                tooltip={
+                  data
+                    ? `Updated ${formatAsOf(data.asOf)}${degraded ? ", some calendars unreachable" : ""}`
+                    : "Refresh"
+                }
                 onClick={handleRefresh}
-                data-slot="icon-button"
-                aria-label="Refresh calendar"
-                className="relative flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                variant="ghost"
+                size="sm"
+                className="relative"
               >
-                <RefreshCw size={14} className={cn(refreshing && 'animate-spin')} />
+                <RefreshCw size={14} className={cn(refreshing && "animate-spin")} />
                 {(stale || degraded) && (
-                  <span className="absolute top-1 right-1 size-1.5 rounded-full bg-amber-500/80" aria-hidden />
+                  <span
+                    className="absolute top-1 right-1 size-1.5 rounded-full bg-amber-500/80"
+                    aria-hidden
+                  />
                 )}
-              </button>
-            </Tip>
-          </>
-        )}
+              </IconButton>
+            </>
+          )}
 
-        <Tip label="Close calendar" shortcut="Esc">
-          <DialogPrimitive.Close
-            data-slot="icon-button" data-kind="close"
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Close calendar"
-          >
-            <X className="size-4" />
+          <DialogPrimitive.Close asChild>
+            <IconButton label="Close calendar" shortcut="Esc" data-kind="close" size="sm">
+              <X />
+            </IconButton>
           </DialogPrimitive.Close>
-        </Tip>
-      </header>
+        </header>
 
-      <div className={cn('flex min-h-0 flex-1 flex-col', !showConnect && 'px-4 pt-3')}>
-        {workOn && !showConnect && <WorkStats range={workRange} stale={workStale} legend={tab === 'calendar'} />}
-        <div className="min-h-0 flex-1">
-        {showConnect ? (
-          <CalendarConnectPrompt onConnect={closeCalendarModal} />
-        ) : tab === 'report' ? (
-          // Until the work arrives, the numbers above say it's adding up.
-          workRange ? <WorkReport range={workRange} today={today} /> : null
-        ) : view === 'day' && tab === 'list' ? (
-          <DayList
-            day={days_?.[0]}
-            deadlines={deadlinesByDate.get(anchor) ?? []}
-            onOpenTask={openTask}
-            isToday={anchor === today}
-            showGaps={!noCalendar}
-          />
-        ) : view === 'day' ? (
-          <DayView
-            date={anchor}
-            day={days_?.[0]}
-            workday={data?.workday ?? { start: '09:00', end: '18:00' }}
-            isToday={anchor === today}
-            work={work}
-          />
-        ) : !days_ ? (
-          // Loading and failure never render as an empty week: "no data"
-          // and "no meetings" are different facts.
-          <WeekSkeleton />
-        ) : data?.status === 'error' ? (
-          <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
-            <p className="text-sm font-medium text-foreground">Calendar unreachable</p>
-            <p className="text-xs text-muted-foreground">
-              Could not read your calendars just now. Refresh to try again.
-            </p>
-          </div>
-        ) : tab === 'calendar' ? (
-          <WeekGrid
-            days={days_}
-            workday={data?.workday ?? { start: '09:00', end: '18:00' }}
-            today={today}
-            deadlinesByDate={deadlinesByDate}
-            onSelectDay={openDay}
-            onOpenTask={openTask}
-            work={work}
-            showOpen={!noCalendar}
-          />
-        ) : (
-          <WeekView
-            days={days_}
-            workday={data?.workday ?? { start: '09:00', end: '18:00' }}
-            today={today}
-            deadlinesByDate={deadlinesByDate}
-            onSelectDay={openDay}
-            onOpenTask={openTask}
-            work={work}
-            showOpen={!noCalendar}
-          />
-        )}
+        <div className={cn("flex min-h-0 flex-1 flex-col", !showConnect && "px-4 pt-3")}>
+          {workOn && !showConnect && (
+            <WorkStats range={workRange} stale={workStale} legend={tab === "calendar"} />
+          )}
+          <SegmentedPanel
+            value={tab}
+            asChild
+            {...(showConnect
+              ? { role: "region", "aria-labelledby": undefined, "aria-label": "Calendar" }
+              : {})}
+          >
+            <div className="min-h-0 flex-1">
+              {showConnect ? (
+                <CalendarConnectPrompt onConnect={closeCalendarModal} />
+              ) : tab === "report" ? (
+                // Until the work arrives, the numbers above say it's adding up.
+                workRange ? (
+                  <WorkReport range={workRange} today={today} />
+                ) : null
+              ) : view === "day" && tab === "list" ? (
+                <DayList
+                  day={days_?.[0]}
+                  deadlines={deadlinesByDate.get(anchor) ?? []}
+                  onOpenTask={openTask}
+                  isToday={anchor === today}
+                  showGaps={!noCalendar}
+                />
+              ) : view === "day" ? (
+                <DayView
+                  date={anchor}
+                  day={days_?.[0]}
+                  workday={data?.workday ?? { start: "09:00", end: "18:00" }}
+                  isToday={anchor === today}
+                  work={work}
+                />
+              ) : !days_ ? (
+                // Loading and failure never render as an empty week: "no data"
+                // and "no meetings" are different facts.
+                <WeekSkeleton />
+              ) : data?.status === "error" ? (
+                <div className="flex h-full flex-col items-center justify-center gap-1 text-center">
+                  <p className="text-sm font-medium text-foreground">Calendar unreachable</p>
+                  <p className="text-xs text-muted-foreground">
+                    Could not read your calendars just now. Refresh to try again.
+                  </p>
+                </div>
+              ) : tab === "calendar" ? (
+                <WeekGrid
+                  days={days_}
+                  workday={data?.workday ?? { start: "09:00", end: "18:00" }}
+                  today={today}
+                  deadlinesByDate={deadlinesByDate}
+                  onSelectDay={openDay}
+                  onOpenTask={openTask}
+                  work={work}
+                  showOpen={!noCalendar}
+                />
+              ) : (
+                <WeekView
+                  days={days_}
+                  workday={data?.workday ?? { start: "09:00", end: "18:00" }}
+                  today={today}
+                  deadlinesByDate={deadlinesByDate}
+                  onSelectDay={openDay}
+                  onOpenTask={openTask}
+                  work={work}
+                  showOpen={!noCalendar}
+                />
+              )}
+            </div>
+          </SegmentedPanel>
         </div>
-      </div>
-    </>
+      </>
+    </SegmentedRoot>
   );
 }
 
 /** A day with nothing booked, for drawing work without a calendar connected. */
 function emptyDay(date: string): CalendarDay {
   return { date, allDay: [], events: [], gaps: [], freeMinutes: 0, largestGapMinutes: 0, busyMinutes: 0, complete: true };
-}
-
-function Segmented<T extends string>({
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  label: string;
-  value: T;
-  options: readonly { value: T; label: string }[];
-  onChange: (next: T) => void;
-}) {
-  return (
-    <div data-slot="segmented" role="group" aria-label={label} className="flex items-center overflow-hidden rounded-md border border-border">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          aria-pressed={value === o.value}
-          onClick={() => onChange(o.value)}
-          className={cn(
-            'px-2 py-0.5 text-[11px] font-medium transition-colors',
-            value === o.value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:text-foreground',
-          )}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 function WeekSkeleton() {

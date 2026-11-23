@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { SLACK_ACCOUNT_USER_SCOPES, slackAccountCreateUrl } from '@/lib/integrations/slack-account-setup';
 
@@ -25,21 +25,34 @@ export function SlackAccountSetup({ redirectUri, callbackFields, credentials, sa
         <h4 className="font-medium">1. Create or open your Slack app</h4>
         <p className="text-muted-foreground">The button opens Slack with Ri’s callback address and permissions already filled in. Choose your Slack workspace, review the app and click <strong>Create</strong>. The app can stay internal to that workspace.</p>
         <div className="flex flex-wrap items-center gap-3">
-          {createUrl ? <Button asChild size="sm"><a href={createUrl} target="_blank" rel="noopener noreferrer">Create Slack app <ExternalLink size={13} /></a></Button>
-            : <Button size="sm" disabled>Create Slack app</Button>}
+          {createUrl ? <Button
+            asChild
+            variant="primary"
+            size="md"
+          ><a href={createUrl} target="_blank" rel="noopener noreferrer">Create Slack app <ExternalLink size={13} /></a></Button>
+            : <Button
+              disabled
+              variant="primary"
+              size="md"
+            >Create Slack app</Button>}
           <a className="text-xs font-medium text-primary underline-offset-4 hover:underline" href="https://api.slack.com/apps" target="_blank" rel="noopener noreferrer">Open existing Slack apps</a>
           <a className="text-xs text-muted-foreground underline-offset-4 hover:underline" href={meta.docsUrl} target="_blank" rel="noopener noreferrer">Slack reference docs</a>
         </div>
         {!redirectUri && <p role="status" className="text-muted-foreground">Ri’s callback address is unavailable. Reload these settings before creating the app.</p>}
         <p className="text-xs text-muted-foreground">Slack requests account permissions for reading conversations, sending messages and editing content. You will review access when signing in.</p>
-        <details className="space-y-3 rounded-lg border border-border/60 p-3">
+        <details className="ri-slack-account-setup-frame-plain space-y-3 rounded-lg border border-border/60 p-3">
           <summary className="cursor-pointer font-medium">Use an app I already created</summary>
           <p className="text-muted-foreground">Open your app using <strong>Open existing Slack apps</strong> above. You can reuse the internal app you use to talk to Ri in Slack.</p>
           <p className="text-muted-foreground">In <strong>OAuth &amp; Permissions → Redirect URLs</strong>, add this callback address and save it.</p>
           {callbackFields}
           <p className="text-muted-foreground">Open <strong>App Manifest</strong>. Under <code>oauth_config.scopes.user</code>, add any missing permissions from the list below and save the manifest. Keep your existing user scopes, <code>bot</code> scopes and other app settings.</p>
           <pre className="max-h-44 overflow-auto rounded-md bg-muted p-3 text-xs" aria-label="Slack user scopes">{scopesJson}</pre>
-          <Button type="button" size="sm" variant="outline" onClick={() => void navigator.clipboard.writeText(scopesJson).then(() => setCopyStatus('User scopes copied')).catch(() => setCopyStatus('Copy failed. Select and copy the list above.'))}>Copy user scopes</Button>
+          <Button
+            type="button"
+            onClick={() => void navigator.clipboard.writeText(scopesJson).then(() => setCopyStatus('User scopes copied')).catch(() => setCopyStatus('Copy failed. Select and copy the list above.'))}
+            variant="secondary"
+            size="md"
+          >Copy user scopes</Button>
           {copyStatus && <p role="status" className="text-xs text-muted-foreground">{copyStatus}</p>}
           <p className="text-xs text-muted-foreground">This uses Ri’s web callback. Leave Slack’s public-client PKCE setting unchanged.</p>
           <p className="text-muted-foreground">In <strong>App Manifest</strong>, set <code>settings.is_mcp_enabled</code> to <code>true</code>. Keep the other settings. This enables Slack account tools for the app.</p>

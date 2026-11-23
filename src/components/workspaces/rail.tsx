@@ -8,7 +8,7 @@ import { openSchedulesWindow, useSchedulesWindow } from '@/lib/client/schedules-
 import { RailHome } from './rail-home';
 import { RailFooter } from './rail-footer';
 import { RailIconButton, RailPlaceRows, RailVerbRows, useRailPlaces, type RailPlace } from './rail-nav';
-import { RailListBody, RailListHeader } from './rail-list';
+import { RailListBody, RailListHeader, RailListRoot } from './rail-list';
 import { RailStrip } from './rail-strip';
 import { SessionHoverProvider } from './session-hover-context';
 import { SessionHoverPreview } from './session-hover-preview';
@@ -63,29 +63,33 @@ function WideRail({ places, onToggle }: { places: readonly RailPlace[]; onToggle
   return (
     <SessionHoverProvider>
       <WorkspaceSelectionProvider>
-        <RailLayout header={
-          <RailHome
-            collapsed={false}
-            action={
-              onToggle && (
-                <RailIconButton
-                  icon={PanelLeft}
-                  label="Collapse rail"
-                  shortcut={HOTKEYS.toggleRail.label}
-                  onClick={onToggle}
-                />
-              )
+        <RailListRoot tab={tab} onSelect={setTab}>
+          <RailLayout
+            header={
+              <RailHome
+                collapsed={false}
+                action={
+                  onToggle && (
+                    <RailIconButton
+                      icon={PanelLeft}
+                      label="Collapse rail"
+                      shortcut={HOTKEYS.toggleRail.label}
+                      onClick={onToggle}
+                    />
+                  )
+                }
+              />
             }
-          />
-          } actions={<RailVerbRows />} footer={<RailFooter collapsed={false}/>} >
-
-
+            actions={<RailVerbRows />}
+            footer={<RailFooter collapsed={false} />}
+          >
             <RailPlaceRows places={places} />
             <div className="sticky top-0 z-30 bg-background">
-              <RailListHeader tab={tab} onSelect={setTab} />
+              <RailListHeader tab={tab} />
             </div>
             <RailListBody tab={tab} stickyHeaderHeight={32} />
-        </RailLayout>
+          </RailLayout>
+        </RailListRoot>
       </WorkspaceSelectionProvider>
       <SessionHoverPreview />
     </SessionHoverProvider>

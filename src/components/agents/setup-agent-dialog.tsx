@@ -1,4 +1,8 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
+import { ChoiceRow } from '@/components/system/choice-row';
+
+import { Field } from '@/components/system/field';
 
 /**
  * Set an agent up on one of your devices, from the app
@@ -12,13 +16,12 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
+
 import { useSetUpAgent, useSetupPlan } from '@/hooks/use-workspaces';
 import { FolderField } from './folder-field';
 import { apiErrorText } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
 
 type Missing = { alias: string; description: string | null };
 
@@ -131,7 +134,8 @@ function SetupAgentBody({
         </DialogDescription>
       </DialogHeader>
 
-      {plan.isLoading && (
+      <DialogBody className="space-y-4">
+{plan.isLoading && (
         <p className="flex items-center gap-2 text-[13px] text-muted-foreground">
           <Loader2 size={14} className="animate-spin" /> Checking {device.name}…
         </p>
@@ -146,17 +150,24 @@ function SetupAgentBody({
               {!changing && <span className="block break-all">Into {data.defaultFolder}</span>}
               {how === 'copy' &&
                 (changing ? (
-                  <Input
+                  <Field
                     autoFocus
                     value={copyTo}
                     onChange={(e) => setCopyTo(e.target.value)}
                     placeholder={data.defaultFolder}
-                    className="mt-1.5 h-8 text-[12.5px]"
+                    className="mt-1.5"
+                    aria-label={'Destination folder'}
                   />
                 ) : (
-                  <button type="button" onClick={() => setChanging(true)} className="mt-0.5 text-[12px] text-primary hover:underline">
+                  <Button
+                    type="button"
+                    onClick={() => setChanging(true)}
+                    variant="link"
+                    size="md"
+                    className="mt-0.5"
+                  >
                     Put it somewhere else
-                  </button>
+                  </Button>
                 ))}
               {along.length > 0 && (
                 <span className="mt-1 block">
@@ -193,9 +204,14 @@ function SetupAgentBody({
               {answers[m.alias] === SKIP ? (
                 <p className="text-[12.5px] text-muted-foreground">
                   Going without it.{' '}
-                  <button type="button" className="text-primary hover:underline" onClick={() => setAnswers((a) => ({ ...a, [m.alias]: '' }))}>
+                  <Button
+                    type="button"
+                    onClick={() => setAnswers((a) => ({ ...a, [m.alias]: '' }))}
+                    variant="link"
+                    size="md"
+                  >
                     Give a folder instead
-                  </button>
+                  </Button>
                 </p>
               ) : (
                 <div className="flex items-center gap-2">
@@ -208,7 +224,12 @@ function SetupAgentBody({
                       placeholder={`Where ${m.alias} is on ${device.name}`}
                     />
                   </div>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setAnswers((a) => ({ ...a, [m.alias]: SKIP }))}>
+                  <Button
+                    type="button"
+                    onClick={() => setAnswers((a) => ({ ...a, [m.alias]: SKIP }))}
+                    variant="ghost"
+                    size="md"
+                  >
                     Go without it
                   </Button>
                 </div>
@@ -225,12 +246,23 @@ function SetupAgentBody({
         </p>
       )}
       {problem && <p className="text-[12.5px] text-destructive">{problem}</p>}
+</DialogBody>
 
       <DialogFooter>
-        <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>
+        <Button
+          onClick={() => onOpenChange(false)}
+          disabled={pending}
+          variant="ghost"
+          size="md"
+        >
           Cancel
         </Button>
-        <Button onClick={submit} disabled={pending || (!data && !followUp)}>
+        <Button
+          onClick={submit}
+          disabled={pending || (!data && !followUp)}
+          variant="primary"
+          size="md"
+        >
           {followUp ? 'Save' : 'Set up'}
         </Button>
       </DialogFooter>
@@ -253,20 +285,17 @@ function Choice({
   children?: React.ReactNode;
 }) {
   return (
-    <div
+    <ChoiceRow asChild density="comfortable" selected={selected}><div
       role="radio"
       aria-checked={selected}
       tabIndex={0}
       onClick={onSelect}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect()}
-      className={cn(
-        'w-full min-w-0 cursor-pointer overflow-hidden rounded-lg border px-3 py-2.5 text-left transition-colors',
-        selected ? 'border-primary/60 bg-primary/5' : 'border-border hover:bg-muted/40',
-      )}
+      onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(); } }}
+      className="w-full min-w-0 cursor-pointer overflow-hidden text-left"
     >
       <p className="text-[13px] font-medium">{title}</p>
       <div className="text-[12px] text-muted-foreground">{children}</div>
-    </div>
+    </div></ChoiceRow>
   );
 }
 

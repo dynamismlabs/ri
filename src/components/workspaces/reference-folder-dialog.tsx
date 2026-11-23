@@ -1,5 +1,15 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
+import { FormLabel, FormDescription } from '@/components/system/form-label';
+
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
+
+import { Button } from '@/components/system/button';
+import { SegmentedControl } from '@/components/system/segmented-control';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 /**
  * Add or edit one linked folder (docs/reference-folders-spec.md §9,
  * docs/homes-spec.md §4.2).
@@ -19,15 +29,16 @@ import slugify from '@sindresorhus/slugify';
 import {
   Dialog,
   DialogContent,
+  DialogBody,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/system/dialog';
 import { Switch } from '@/components/ui/switch';
 import { FolderPickerDialog } from './folder-picker-dialog';
 import { useWorkspaces } from '@/hooks/use-workspaces';
-import { cn } from '@/lib/utils';
+
 import type { ReferenceFolderRecord } from '@/db/types';
 import { Tip } from '@/components/ui/tip';
 import { READ_ONLY_DEFAULT } from '@/lib/reference-folders/read-only';
@@ -86,7 +97,7 @@ function aliasFromPath(p: string): string {
 export function ReferenceFolderDialog(props: ReferenceFolderDialogProps) {
   return (
     <Dialog open={props.open} onOpenChange={props.onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="overflow-hidden sm:max-w-lg">
         {/* Mounted each time it opens, so a previous add doesn't bleed into the next one. */}
         {props.open && <ReferenceFolderForm {...props} />}
       </DialogContent>
@@ -107,6 +118,7 @@ function ReferenceFolderForm({
   browsable = true,
   onRemove,
 }: ReferenceFolderDialogProps) {
+  const phone = useViewportTier() === 'phone';
   const { data: workspaces } = useWorkspaces({ status: 'active' });
   const [mode, setMode] = useState<Mode>(editing?.targetWorkspaceId ? 'workspace' : 'folder');
   const [path, setPath] = useState('');
@@ -177,138 +189,147 @@ function ReferenceFolderForm({
         </DialogDescription>
       </DialogHeader>
 
-      <div className="space-y-4">
+      <DialogBody className="space-y-4">
         {!editing && (
-          <div className="flex gap-1 rounded-lg bg-muted/50 p-1">
-            <ModeTab active={mode === 'folder'} onClick={() => setMode('folder')}>
-              A folder
-            </ModeTab>
-            <ModeTab active={mode === 'workspace'} onClick={() => setMode('workspace')}>
-              Another agent
-            </ModeTab>
-          </div>
+          <SegmentedControl mode="choice" ariaLabel="Linked folder source" value={mode} onChange={setMode} size={phone ? 'touch' : 'compact'} stretch options={[{value:'folder',label:'A folder'},{value:'workspace',label:'Another agent'}]} />
         )}
 
         {mode === 'folder' ? (
           editing ? null : (
-            <Field label={device ? `Where it is on ${device.name}` : 'Folder'}>
-              <div className="flex gap-2">
-                <input
-                  value={path}
-                  onChange={(e) => setPath(e.target.value)}
-                  placeholder="/Users/you/code/api"
-                  spellCheck={false}
-                  className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-                <Tip label={browsable ? undefined : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`}>
-                  <button data-slot="action-button"
+            <Field
+              value={path}
+              onChange={(e) => setPath(e.target.value)}
+              placeholder="/Users/you/code/api"
+              spellCheck={false}
+              className="min-w-0 flex-1"
+              purpose="code"
+              label={device ? `Where it is on ${device.name}` : 'Folder'}
+              description={
+                <>
+                  Anything with a path works: a sibling repo, a docs folder, even an installed
+                  dependency under <code className="font-mono">node_modules</code>.
+                  {device && ' Your other devices each choose their own place for it.'}
+                </>
+              }
+              trailing={
+                <Tip
+                  label={
+                    browsable
+                      ? undefined
+                      : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`
+                  }
+                >
+                  <Button
                     type="button"
                     onClick={() => setPickerOpen(true)}
                     disabled={!browsable}
-                    className="flex shrink-0 items-center gap-1.5 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+                    variant="secondary"
+                    size={phone ? 'touch' : 'sm'}
+                    className="flex shrink-0 items-center gap-1.5"
                   >
                     <FolderOpen size={13} />
                     Browse
-                  </button>
+                  </Button>
                 </Tip>
-              </div>
-              <FieldHint>
-                Anything with a path works: a sibling repo, a docs folder, even an installed
-                dependency under <code className="font-mono">node_modules</code>.
-                {device && ' Your other devices each choose their own place for it.'}
-              </FieldHint>
-            </Field>
+              }
+            />
           )
         ) : (
-          <Field label="Agent">
-            <select
-              value={targetWorkspaceId}
-              onChange={(e) => setTargetWorkspaceId(e.target.value)}
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">Choose an agent…</option>
-              {selectableWorkspaces.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.emoji ? `${w.emoji} ${w.name}` : w.name}
-                </option>
-              ))}
-            </select>
-            <FieldHint>
-              Its own folder on each device, so it follows that agent wherever it&apos;s set
-              up. This agent reads whatever is checked out there, not any in-progress worktree.
-            </FieldHint>
-          </Field>
+          <NativeSelect
+            value={targetWorkspaceId}
+            onChange={(e) => setTargetWorkspaceId(e.target.value)}
+            className="w-full"
+            label="Agent"
+            description={
+              <>
+                Its own folder on each device, so it follows that agent wherever it&apos;s set up.
+                This agent reads whatever is checked out there, not any in-progress worktree.
+              </>
+            }
+          >
+            <option value="">Choose an agent…</option>
+            {selectableWorkspaces.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.emoji ? `${w.emoji} ${w.name}` : w.name}
+              </option>
+            ))}
+          </NativeSelect>
         )}
 
-        <Field label="Alias">
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-muted-foreground">@</span>
-            <input
-              value={alias}
-              onChange={(e) => setTypedAlias(e.target.value)}
-              placeholder="backend"
-              spellCheck={false}
-              autoCorrect="off"
-              autoCapitalize="off"
-              className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            />
-          </div>
-          {normalizedAlias && !aliasValid ? (
-            <FieldHint tone="error">
-              Lowercase letters, digits, dot, dash or underscore. Must start with a letter or
-              digit.
-            </FieldHint>
-          ) : (
-            <FieldHint>What you type after @ in chat to point the agent here.</FieldHint>
-          )}
-        </Field>
+        <Field
+          value={alias}
+          onChange={(e) => setTypedAlias(e.target.value)}
+          placeholder="backend"
+          spellCheck={false}
+          autoCorrect="off"
+          autoCapitalize="off"
+          className="min-w-0 flex-1"
+          purpose="code"
+          label="Alias"
+          leading={<span aria-hidden>@</span>}
+          error={
+            normalizedAlias && !aliasValid ? (
+              <>
+                Lowercase letters, digits, dot, dash or underscore. Must start with a letter or
+                digit.
+              </>
+            ) : undefined
+          }
+          description={
+            !(normalizedAlias && !aliasValid) ? (
+              <>What you type after @ in chat to point the agent here.</>
+            ) : undefined
+          }
+        />
 
-        <Field label="Why you'd look there">
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={2}
-            placeholder="Go API server this app calls. HTTP routes live in internal/http/."
-            className="w-full resize-y rounded-md border border-border bg-background px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          <FieldHint>
-            Optional. Worth a line when the name alone doesn&apos;t say why the agent would
-            open it.
-          </FieldHint>
-        </Field>
+        <TextArea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          placeholder="Go API server this app calls. HTTP routes live in internal/http/."
+          className="w-full"
+          resize="vertical"
+          label="Why you'd look there"
+          description={
+            <>
+              Optional. Worth a line when the name alone doesn&apos;t say why the agent would open
+              it.
+            </>
+          }
+        />
 
         <label className="flex cursor-pointer items-start justify-between gap-3">
-          <span className="text-[11px] leading-relaxed text-muted-foreground/85">
-            Read only
-            <span className="block text-muted-foreground/60">
+          <span>
+            <FormLabel>Read only</FormLabel>
+            <FormDescription>
               Agents can read and search it, and are told not to change anything there. Claude&apos;s file
               edits there are blocked too.
-            </span>
+            </FormDescription>
           </span>
           <Switch checked={readOnly} onCheckedChange={setReadOnly} className="mt-0.5" />
         </label>
 
         <label className="flex cursor-pointer items-start justify-between gap-3">
-          <span className="text-[11px] leading-relaxed text-muted-foreground/85">
-            For every agent
-            <span className="block text-muted-foreground/60">
+          <span>
+            <FormLabel>For every agent</FormLabel>
+            <FormDescription>
               Use for something shared, like a design system several apps consume. Every agent
               on a device uses the same place for it.
-            </span>
+            </FormDescription>
           </span>
           <Switch checked={global} onCheckedChange={setGlobal} className="mt-0.5" />
         </label>
 
         {canAddReverse && (
           <label className="flex cursor-pointer items-start justify-between gap-3">
-            <span className="text-[11px] leading-relaxed text-muted-foreground/85">
-              Also link back
-              <span className="block text-muted-foreground/60">
+            <span>
+              <FormLabel>Also link back</FormLabel>
+              <FormDescription>
                 Adds{' '}
                 <span className="font-mono">@{slugify(workspaceName ?? '', { separator: '-' })}</span>{' '}
                 inside {reverseTargetName ?? 'that agent'}, read only if this one is, so each can use the
                 other&apos;s folder.
-              </span>
+              </FormDescription>
             </span>
             <Switch checked={addReverse} onCheckedChange={setAddReverse} className="mt-0.5" />
           </label>
@@ -327,35 +348,41 @@ function ReferenceFolderForm({
           </Notice>
         )}
         {error && <Notice tone="error">{error}</Notice>}
-      </div>
+      </DialogBody>
 
       <DialogFooter>
         {editing && onRemove && (
-          <button
+          <Button
             type="button"
             onClick={onRemove}
-            className="mr-auto flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10"
+            variant="ghost"
+            size="md"
+            tone="danger"
+            className="mr-auto flex items-center gap-1.5"
           >
             <Trash2 size={12} />
             Remove
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="button"
           onClick={() => onOpenChange(false)}
-          className="rounded-lg px-4 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          variant="ghost"
+          size="md"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={handleSubmit}
           disabled={!canSubmit}
-          className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-40"
+          variant="primary"
+          size="md"
+          className="flex items-center gap-1.5"
         >
           {saving && <Loader2 size={13} className="animate-spin" />}
           {editing ? 'Save' : 'Add'}
-        </button>
+        </Button>
       </DialogFooter>
 
       <FolderPickerDialog
@@ -372,61 +399,6 @@ function ReferenceFolderForm({
   );
 }
 
-function ModeTab({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors',
-        active
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function FieldHint({
-  children,
-  tone = 'muted',
-}: {
-  children: React.ReactNode;
-  tone?: 'muted' | 'error';
-}) {
-  return (
-    <p
-      className={cn(
-        'mt-1 text-[10px] leading-snug',
-        tone === 'error' ? 'text-destructive' : 'text-muted-foreground/70',
-      )}
-    >
-      {children}
-    </p>
-  );
-}
-
 function Notice({
   children,
   tone,
@@ -435,16 +407,11 @@ function Notice({
   tone: 'warning' | 'error';
 }) {
   return (
-    <div
-      className={cn(
-        'flex items-start gap-2 rounded-lg border p-2.5 text-[11px]',
-        tone === 'error'
-          ? 'border-destructive/20 bg-destructive/10 text-destructive'
-          : 'border-amber-500/30 bg-amber-500/10 text-amber-500',
-      )}
+    <Callout padding="sm" tone={(tone === 'error' ? "error" : "warning")}
+      className="flex items-start gap-2"
     >
       <AlertTriangle size={13} className="mt-px shrink-0" />
       <span>{children}</span>
-    </div>
+    </Callout>
   );
 }

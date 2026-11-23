@@ -1,14 +1,18 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useId } from 'react';
 import { ChevronLeft, ChevronRight, Copy, Download, Expand, File, FileArchive, FileAudio, FileCode2, FileText, FileVideo, ImageIcon, PanelLeft, PanelRight, Sheet } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Tip } from '@/components/ui/tip';
+import { Button } from '@/components/system/button';
+
 import { HtmlView } from '@/components/chat-ui/artifacts/html-view';
 import { HOTKEYS } from '@/constants/commands';
 import { sessionFolder } from '@/lib/folders/source';
 import type { PreviewPlace } from '@/lib/client/preview-place';
-import { cn } from '@/lib/utils';
+
 import { previewCopySource, previewDownload, type ArtifactPreview } from './artifact-previews';
 import { PreviewImage } from './preview-image';
 import { PdfView } from './pdf-view';
@@ -59,8 +63,20 @@ export function PreviewDownload({ preview, compact = false }: { preview: Artifac
       anchor.click();
     });
   }}><Download />{!compact && 'Download'}</a>;
-  if (!compact) return <Button asChild variant="ghost" size="sm" className="shrink-0">{link}</Button>;
-  return <Tip label="Download"><Button asChild variant="ghost" size="icon-sm" className="shrink-0">{link}</Button></Tip>;
+  if (!compact) return <Button
+    asChild
+    variant="ghost"
+    size="xs"
+    className="shrink-0"
+  >{link}</Button>;
+  return <IconButton
+    asChild
+    label="Download"
+    tooltip="Download"
+    variant="ghost"
+    size="xs"
+    className="shrink-0"
+  >{link}</IconButton>;
 }
 
 /** The destination and its explicit copy action stay together in both preview headers. */
@@ -69,8 +85,8 @@ export function PreviewSource({ preview }: { preview: ArtifactPreview }) {
   const source = previewCopySource(preview);
   if (!source) return <span className="text-xs text-muted-foreground">Embedded image</span>;
   return <FileSourceTip source={source.value} onlyWhenTextHidden>
-    <button data-slot="choice-row" type="button" aria-label={source.label} aria-describedby={descriptionId}
-      className="flex w-full min-w-0 items-center gap-3 rounded-md border border-border bg-muted/30 px-2.5 py-2 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    <ChoiceRow type="button" aria-label={source.label} aria-describedby={descriptionId}
+      className="flex w-full min-w-0 items-center gap-3 text-left"
       onClick={() => {
         let value = source.value;
         if (source.label === 'Copy link') {
@@ -80,7 +96,7 @@ export function PreviewSource({ preview }: { preview: ArtifactPreview }) {
       }}>
       <span id={descriptionId} className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted-foreground">{source.value}</span>
       <span className="flex shrink-0 items-center gap-1.5 text-xs font-medium text-foreground"><Copy size={12} aria-hidden />{source.label}</span>
-    </button>
+    </ChoiceRow>
   </FileSourceTip>;
 }
 
@@ -89,13 +105,29 @@ export function PreviewSteps({ index, count, onStep }: { index: number; count: n
   if (count < 2 || index < 0) return null;
   return (
     <div className="flex shrink-0 items-center gap-1">
-      <Tip label="Previous" shortcut={HOTKEYS.previewPrevious.label}>
-        <Button variant="ghost" size="icon-sm" aria-label="Previous preview" disabled={index === 0} onClick={() => onStep(-1)}><ChevronLeft /></Button>
-      </Tip>
+
+        <IconButton
+          disabled={index === 0}
+          onClick={() => onStep(-1)}
+          label="Previous preview"
+          tooltip="Previous"
+          shortcut={HOTKEYS.previewPrevious.label}
+          variant="ghost"
+          size="xs"
+        ><ChevronLeft /></IconButton>
+
       <span className="min-w-12 text-center text-[11px] text-muted-foreground tabular-nums">{index + 1} of {count}</span>
-      <Tip label="Next" shortcut={HOTKEYS.previewNext.label}>
-        <Button variant="ghost" size="icon-sm" aria-label="Next preview" disabled={index === count - 1} onClick={() => onStep(1)}><ChevronRight /></Button>
-      </Tip>
+
+        <IconButton
+          disabled={index === count - 1}
+          onClick={() => onStep(1)}
+          label="Next preview"
+          tooltip="Next"
+          shortcut={HOTKEYS.previewNext.label}
+          variant="ghost"
+          size="xs"
+        ><ChevronRight /></IconButton>
+
     </div>
   );
 }
@@ -107,26 +139,19 @@ export function PreviewSteps({ index, count, onStep }: { index: number; count: n
  */
 export function PlaceSwitch({ place, side, onMove }: { place: PreviewPlace; side: 'left' | 'right'; onMove: () => void }) {
   const Beside = side === 'left' ? PanelLeft : PanelRight;
-  const option = (value: PreviewPlace, label: string, icon: React.ReactNode) => (
-    <Tip label={label}>
-      <button data-slot="segmented-option"
-        type="button"
-        aria-label={label}
-        aria-pressed={place === value}
-        onClick={place === value ? undefined : onMove}
-        className={cn(
-          'inline-flex size-6 items-center justify-center rounded transition-colors',
-          place === value ? 'bg-muted text-foreground' : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
-        )}
-      >
-        {icon}
-      </button>
-    </Tip>
-  );
   return (
-    <div role="group" aria-label="Where files open" data-slot="segmented" className="flex shrink-0 items-center gap-0.5 rounded-md border border-border p-0.5">
-      {option('large', 'Show large', <Expand size={13} />)}
-      {option('beside', 'Show beside the chat', <Beside size={13} />)}
-    </div>
+    <SegmentedControl
+      mode="choice"
+      ariaLabel="Where files open"
+      value={place}
+      onChange={(next) => {
+        if (next !== place) onMove();
+      }}
+      iconOnly
+      options={[
+        { value: 'large', label: 'Show large', icon: <Expand /> },
+        { value: 'beside', label: 'Show beside the chat', icon: <Beside /> },
+      ]}
+    />
   );
 }

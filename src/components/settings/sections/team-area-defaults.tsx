@@ -1,4 +1,7 @@
 'use client';
+import { Checkbox } from '@/components/ui/checkbox';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +9,7 @@ import { toast } from 'sonner';
 import { useAreas } from '@/hooks/use-areas';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { apiErrorText } from '@/lib/api/client';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { invalidateTeamContent } from '@/lib/spaces/client-cache';
 
 /** Private rules live in the personal document and use its authenticated client. */
@@ -50,29 +53,69 @@ export function TeamAreaDefaults({ teamId, connected }: { teamId: string; connec
         const rule = rules.data?.find((r) => r.sourceAreaId === s.id);
         const unavailable = !!rule && !active.some((a) => a.id === rule.areaId);
         return (
-          <label key={s.id ?? 'team'} className="flex flex-wrap items-center justify-between gap-2">
-            <span>{s.name}{s.inactive ? ' (inactive)' : ''}</span>
-            <select aria-label={`Personal Area default for ${s.name}`} className="max-w-full rounded border bg-background p-1.5" value={rule?.areaId ?? ''} disabled={save.isPending || apply.isPending} onChange={(e) => save.mutate({ sourceAreaId: s.id, areaId: e.target.value || null })}>
-              <option value="">No default</option>
-              {unavailable && <option value={rule.areaId}>Unavailable personal Area (inactive)</option>}
-              {active.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-            </select>
-          </label>
+          <NativeSelect
+            aria-label={`Personal Area default for ${s.name}`}
+            controlClassName={cn('max-w-full', 'w-auto')}
+            value={rule?.areaId ?? ''}
+            disabled={save.isPending || apply.isPending}
+            onChange={(e) => save.mutate({ sourceAreaId: s.id, areaId: e.target.value || null })}
+            label={
+              <>
+                {s.name}
+                {s.inactive ? ' (inactive)' : ''}
+              </>
+            }
+            orientation="horizontal"
+            className="flex-wrap w-auto"
+            key={s.id ?? 'team'}
+          >
+            <option value="">No default</option>
+            {unavailable && (
+              <option value={rule.areaId}>Unavailable personal Area (inactive)</option>
+            )}
+            {active.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </NativeSelect>
         );
       })}
-      {sources.error && <p role="alert">Team Areas could not be loaded. <button className="underline" onClick={() => void sources.refetch()}>Retry</button></p>}
-      {!review && connected && <Button size="sm" variant="outline" onClick={() => { setSelected([]); setReview(true); void preview.refetch(); }}>Review existing unorganized work</Button>}
+      {sources.error && <p role="alert">Team Areas could not be loaded. <Button
+        onClick={() => void sources.refetch()}
+        variant="link"
+        size="sm"
+      >Retry</Button></p>}
+      {!review && connected && <Button
+        onClick={() => { setSelected([]); setReview(true); void preview.refetch(); }}
+        variant="secondary"
+        size="sm"
+      >Review existing unorganized work</Button>}
       {review && (
-        <div className="space-y-2 rounded border p-3">
+        <div className="ri-team-area-defaults-frame space-y-2 rounded border p-3">
           <p>{preview.isFetching ? 'Checking references…' : `${preview.data?.length ?? 0} unorganized references in this team.`} Select the work to organize. Deliberately cleared Areas are excluded.</p>
-          {preview.error && <p role="alert">Could not load the preview. <button className="underline" onClick={() => void preview.refetch()}>Retry</button></p>}
+          {preview.error && <p role="alert">Could not load the preview. <Button
+            onClick={() => void preview.refetch()}
+            variant="link"
+            size="sm"
+          >Retry</Button></p>}
           <div className="max-h-64 space-y-2 overflow-y-auto">
             {(preview.data ?? []).map((r) => {
               const key = `${r.entityType}:${r.id}`;
-              return <label key={key} className="flex items-start gap-2"><input type="checkbox" checked={selected.includes(key)} disabled={apply.isPending} onChange={(e) => setSelected((old) => e.target.checked ? [...old, key] : old.filter((k) => k !== key))} /><span>{r.title || 'Untitled note'} → {active.find((a) => a.id === r.areaId)?.name ?? 'Area'}{r.requiresReview && <span className="block text-muted-foreground">Earlier choice unknown. Review before selecting.</span>}</span></label>;
+              return <label key={key} className="flex items-start gap-2"><Checkbox checked={selected.includes(key)} disabled={apply.isPending} onCheckedChange={(checked) => setSelected((old) => (checked === true) ? [...old, key] : old.filter((k) => k !== key))} /><span>{r.title || 'Untitled note'} → {active.find((a) => a.id === r.areaId)?.name ?? 'Area'}{r.requiresReview && <span className="block text-muted-foreground">Earlier choice unknown. Review before selecting.</span>}</span></label>;
             })}
           </div>
-          <div className="flex gap-2"><Button size="sm" disabled={!selected.length || apply.isPending || preview.isFetching} onClick={() => apply.mutate()}>Apply to {selected.length} selected</Button><Button size="sm" variant="ghost" disabled={apply.isPending} onClick={() => setReview(false)}>Cancel</Button></div>
+          <div className="flex gap-2"><Button
+            disabled={!selected.length || apply.isPending || preview.isFetching}
+            onClick={() => apply.mutate()}
+            variant="primary"
+            size="md"
+          >Apply to {selected.length} selected</Button><Button
+            disabled={apply.isPending}
+            onClick={() => setReview(false)}
+            variant="ghost"
+            size="sm"
+          >Cancel</Button></div>
         </div>
       )}
     </div>

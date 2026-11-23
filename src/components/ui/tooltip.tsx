@@ -55,3 +55,7 @@ function TooltipContent({
 }
 
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger }
+
+export const TooltipContentPrimitive = TooltipPrimitive.Content
+export const TooltipPortal = TooltipPrimitive.Portal
+export const TooltipArrow = TooltipPrimitive.Arrow

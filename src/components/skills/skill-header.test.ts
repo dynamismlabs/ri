@@ -22,13 +22,13 @@ vi.mock('@/hooks/use-skills', () => ({
   useCommitSkill: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 vi.mock('@/lib/client/document-saves', () => ({ documentSaves: { flushAll: fixtures.flushAll } }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => fixtures.confirm }));
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => fixtures.confirm }));
 vi.mock('sonner', () => ({ toast: { success: fixtures.success, error: fixtures.error } }));
 vi.mock('@/components/plugins/setup-help-button', () => ({ PluginSetupHelpButton: () => null }));
 vi.mock('./skill-location-control', () => ({ SkillLocationControl: () => null }));
 vi.mock('@/components/ui/tip', () => ({ Tip: ({ children }: { children: ReactNode }) => children }));
 // The menu's items as plain buttons, so a click is the item's select.
-vi.mock('@/components/ui/dropdown-menu', () => {
+vi.mock('@/components/system/menu', () => {
   const pass = ({ children }: { children?: ReactNode }) => children;
   return {
     DropdownMenu: pass, DropdownMenuTrigger: pass, DropdownMenuContent: pass, DropdownMenuSeparator: () => null,

@@ -12,6 +12,7 @@ import { _electron, type ElectronApplication, type Page } from 'playwright-core'
 import { waitForHome } from './first-run';
 import { demoEnvironment } from './config';
 import { ensureGeneratedTls } from '../src/lib/config/tls';
+import { noteTitleField } from './renderer-locators';
 
 const repo = path.resolve(__dirname, '..');
 const root = fs.mkdtempSync(path.join(repo, '.electron-demo/audit-'));
@@ -121,7 +122,7 @@ async function main() {
       if (request.url().includes(`/api/notes/${note}`) && request.method() === 'PATCH') noteWrites.push(request.postDataJSON());
     });
     results.noteWrites = noteWrites;
-    const title = page.locator('textarea.note-title');
+    const title = noteTitleField(page);
     if (!await title.count()) {
       const editorButton = page.getByRole('button', { name: /document|editor/i });
       if (await editorButton.count()) await editorButton.first().click();

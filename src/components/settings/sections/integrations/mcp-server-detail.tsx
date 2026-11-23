@@ -1,5 +1,13 @@
 'use client';
+import { FormActions } from '@/components/system/form-actions';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
+import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { Field } from '@/components/system/field';
+
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Detail + add views for remote MCP servers. An ingested server's tools become
  * integrations behind the same approval gate, so they get the same drill-in
@@ -7,11 +15,11 @@
  * with server-wide permissions and individual On and Ask first switches.
  */
 import dynamic from 'next/dynamic';
-import type { FormEvent, ReactNode } from 'react';
+import { useId, type FormEvent, type ReactNode } from 'react';
 import { AlertCircle, Loader2, LogIn, Plus, RefreshCw, RotateCcw, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { BackLink, Chip, DetailHeader, GroupHeading, McpLogo, type Tone } from './parts';
 import type { McpForm, McpServerEntry } from './types';
@@ -119,26 +127,36 @@ export function McpServerDetail({
           }
         />
         {s.lastStatus && s.lastStatus !== 'ok' && s.lastError && (
-          <p className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] leading-normal text-amber-600 dark:text-amber-400">
+          <Callout as="p" padding="sm" tone={"warning"} >
             {s.lastError}
-          </p>
+          </Callout>
         )}
         {s.lastCheckedAt && <p className="text-[11px] text-muted-foreground">Last checked <time dateTime={s.lastCheckedAt} suppressHydrationWarning>{new Date(s.lastCheckedAt).toLocaleString()}</time></p>}
         <div className="flex flex-wrap items-center gap-1.5">
           {needsSignIn && (
-            <Button size="xs" onClick={onAuthorize} disabled={busy} className="text-xs font-semibold">
+            <Button
+              onClick={onAuthorize}
+              disabled={busy}
+              variant="primary"
+              size="md"
+            >
               <LogIn size={12} /> Sign in
             </Button>
           )}
-          <Button variant="outline" size="xs" onClick={onRetest} disabled={busy} className="text-xs">
+          <Button
+            onClick={onRetest}
+            disabled={busy}
+            variant="secondary"
+            size="xs"
+          >
             <RefreshCw size={12} /> Re-test
           </Button>
           <Button
-            variant="ghost"
-            size="xs"
             onClick={onRemove}
             disabled={busy}
-            className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+            variant="ghost"
+            size="xs"
+            tone="danger"
           >
             <Trash2 size={12} /> Remove server
           </Button>
@@ -147,19 +165,24 @@ export function McpServerDetail({
 
       <CapabilityReview changes={s.capabilityChanges} busy={busy} onReview={onReviewCapabilities} />
 
-      {onSetPolicy && <section aria-label={`Server permissions for ${s.displayName}`} className="@container space-y-3 rounded-xl border border-border bg-card/20 p-4">
+      {onSetPolicy && <Card as="section" padding="lg" aria-label={`Server permissions for ${s.displayName}`} className="@container space-y-3">
         <h3 className="break-words text-xs font-medium">Permissions for {s.displayName}</h3>
         <McpPermissionControls label={`Permission choice and bulk action for ${s.displayName}`}>
           <McpPermissionSelect value={s.approvalPolicy ?? null} inheritedLabel="Use global default"
             label={`Permissions for ${s.displayName}`} busy={busy} onChange={onSetPolicy} />
           {Object.values(s.toolOverrides ?? {}).some(override => mcpToolApprovalOverride(override) !== undefined) &&
-            <Button variant="outline" size="sm" className="h-9 text-xs" disabled={busy} onClick={() => onSetPolicy(s.approvalPolicy ?? null)}>Apply to all tools</Button>}
+            <Button
+              disabled={busy}
+              onClick={() => onSetPolicy(s.approvalPolicy ?? null)}
+              variant="secondary"
+              size="sm"
+            >Apply to all tools</Button>}
         </McpPermissionControls>
         <p className="text-[11px] leading-normal text-muted-foreground">
           {s.approvalPolicy == null && <>Global default: {MCP_POLICY_LABELS[defaultPolicy]}. </>}
           Changing this applies immediately to this server&apos;s tools, including new tools, and clears individual approval choices. Disabled tools stay off.
         </p>
-      </section>}
+      </Card>}
 
       <McpServerSettings serverId={s.id} name={s.displayName} enabled={s.enabled && s.lastStatus === 'ok' && !!settingsCapability(s.protocol?.extensions)} />
 
@@ -173,8 +196,8 @@ export function McpServerDetail({
           <p className="text-[11px] leading-normal text-muted-foreground">
             Turn off tools agents should never call. Ask first pauses each call for approval. Individual switches override the server setting.
           </p>
-          <div className="overflow-hidden rounded-xl border border-border bg-card/20 py-1">
-            <div className="grid grid-cols-[1fr_2.5rem_3.5rem_1.25rem] items-center gap-x-2 px-3 pb-1 pt-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <Card padding="none" density="compact" className="overflow-hidden">
+            <div className="grid grid-cols-[1fr_2.5rem_3.5rem_1.25rem] items-center gap-x-2 px-3 pb-1 pt-1.5 text-[11px] leading-[1.4] font-medium text-muted-foreground">
               <span>Tool</span>
               <span className="text-center">On</span>
               <span className="text-center">Ask first</span>
@@ -219,15 +242,21 @@ export function McpServerDetail({
                     aria-label={`Ask before ${t.name} runs`}
                     className="justify-self-center"
                   />
-                  {mcpToolApprovalOverride(ov) !== undefined && <Tip label="Use server permissions">
-                    <button type="button" aria-label={`Use server permissions for ${t.name}`} disabled={busy}
+                  {mcpToolApprovalOverride(ov) !== undefined &&
+                    <IconButton
+                      type="button"
+                      disabled={busy}
                       onClick={() => onToolOverride(t.name, { approvalMode: null })}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-50"><RotateCcw size={12} /></button>
-                  </Tip>}
+                      label={`Use server permissions for ${t.name}`}
+                      tooltip="Use server permissions"
+                      variant="ghost"
+                      size="sm"
+                    ><RotateCcw size={12} /></IconButton>
+                  }
                 </div>
               );
             })}
-          </div>
+          </Card>
         </section>
       )}
     </div>
@@ -256,6 +285,7 @@ export function McpServerForm({
   onSubmit: () => void;
   onBack: () => void;
 }) {
+  const formId = useId();
   const url = form.url.trim();
   const detected = detectionFor(detection, url);
   const { authKind, header } = resolveMcpFormAuth(form, detected);
@@ -289,52 +319,48 @@ export function McpServerForm({
 
       <PluginSetupHelpButton target={{ kind: 'mcp-new', form: { ...form, authKind, header } }} disabled={busy} />
 
-      <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card/20 p-4">
+      <Card as="form" id={formId} padding="lg" onSubmit={submit} className="space-y-3">
         <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
-          <Field label="Name" htmlFor="mcp-name">
-            <Input
-              id="mcp-name"
-              value={form.name}
-              onChange={(e) => onChange({ name: e.target.value })}
-              placeholder="Sentry"
-              className="h-8 rounded-lg text-xs"
-              autoFocus
-            />
-          </Field>
-          <Field label="Server URL" htmlFor="mcp-url">
-            <Input
-              id="mcp-url"
-              value={form.url}
-              onChange={(e) => onChange({ url: e.target.value })}
-              placeholder="https://mcp.example.com"
-              className="h-8 rounded-lg font-mono text-xs"
-            />
-          </Field>
+          <Field
+            id="mcp-name"
+            value={form.name}
+            onChange={(e) => onChange({ name: e.target.value })}
+            placeholder="Sentry"
+            autoFocus
+            label="Name"
+          />
+          <Field
+            id="mcp-url"
+            value={form.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+            placeholder="https://mcp.example.com"
+            purpose="code"
+            label="Server URL"
+          />
           <div className="pt-1 @lg:col-span-2">
             <McpAuthChoice detection={detection} url={url} selected={selected} busy={busy} onChoose={choose} fields={usesSecret && (
               <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
                 {selected === 'header' && (
-                  <Field label="Header name" htmlFor="mcp-header">
-                    <Input
-                      id="mcp-header"
-                      value={form.header}
-                      onChange={(e) => onChange({ header: e.target.value })}
-                      placeholder={headerHint ?? 'X-API-Key'}
-                      className="h-8 rounded-lg font-mono text-xs"
-                    />
-                  </Field>
-                )}
-                <Field label="Secret" htmlFor="mcp-secret" wide={selected !== 'header'}>
-                  <Input
-                    id="mcp-secret"
-                    type="password"
-                    autoComplete="off"
-                    value={form.secret}
-                    onChange={(e) => onChange({ secret: e.target.value })}
-                    placeholder="Token or key"
-                    className="h-8 rounded-lg font-mono text-xs"
+                  <Field
+                    id="mcp-header"
+                    value={form.header}
+                    onChange={(e) => onChange({ header: e.target.value })}
+                    placeholder={headerHint ?? 'X-API-Key'}
+                    purpose="code"
+                    label="Header name"
                   />
-                </Field>
+                )}
+                <Field
+                  id="mcp-secret"
+                  type="password"
+                  autoComplete="off"
+                  value={form.secret}
+                  onChange={(e) => onChange({ secret: e.target.value })}
+                  placeholder="Token or key"
+                  purpose="code"
+                  label="Secret"
+                  className={selected !== 'header' ? '@lg:col-span-2' : undefined}
+                />
                 <p className="text-[11px] leading-normal text-muted-foreground @lg:col-span-2">The secret is sealed in your Ri and never shown to the model.</p>
               </div>
             )} />
@@ -343,10 +369,18 @@ export function McpServerForm({
         <p className="text-[11px] leading-normal text-muted-foreground">
           If an agent session is already running, restart it to use newly added tools.
         </p>
-        <Button type="submit" size="sm" disabled={busy || !ready} className="text-xs font-semibold">
+        <FormActions>
+        <Button
+          type="submit"
+          form={formId}
+          disabled={busy || !ready}
+          variant="primary"
+          size="md"
+        >
           <Plus size={14} /> {selected === 'oauth' ? 'Add and sign in' : 'Add and connect'}
         </Button>
-      </form>
+        </FormActions>
+      </Card>
     </div>
   );
 }
@@ -382,7 +416,7 @@ function McpAuthChoice({ detection, url, selected, busy, onChoose, fields }: {
   return (
     <div className="space-y-1.5">
       <div className="flex min-h-4 flex-wrap items-center gap-x-2 gap-y-1">
-        <span id="mcp-auth-label" className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Authentication</span>
+        <span id="mcp-auth-label" className="text-[10px] font-semibold text-muted-foreground">Authentication</span>
         {!detected && (
           <span role="status" className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="shrink-0 animate-spin" aria-hidden />
@@ -391,66 +425,36 @@ function McpAuthChoice({ detection, url, selected, busy, onChoose, fields }: {
         )}
       </div>
       {detected?.method === 'unknown' && summary && (
-        <p role="status" className="flex items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 p-2.5 text-[11px] leading-normal text-amber-700 dark:text-amber-400">
+        <Callout as="p" padding="sm" tone={"warning"} role="status" className="flex items-start gap-2">
           <AlertCircle size={14} className="mt-px shrink-0" aria-hidden />
           <span><span className="font-semibold">{summary.title}.</span> {summary.detail}</span>
-        </p>
+        </Callout>
       )}
       {/* A group, not a radiogroup: the selected method's text fields sit inside it. */}
-      <div role="group" aria-labelledby="mcp-auth-label" className="-mx-2 space-y-0.5">
+      <ChoiceGroup asChild name="mcp-auth" value={selected} disabled={busy} onValueChange={value => onChoose(value as Exclude<typeof selected, null>)}><div role="group" aria-labelledby="mcp-auth-label" className="-mx-2 space-y-0.5">
         {MCP_AUTH_OPTIONS.map((option) => {
           const isDetected = option.kind === detectedKind;
           const warn = isDetected && summary?.tone === 'warn';
           return (
             <div key={option.kind}>
-              <label className={cn('flex items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors', busy ? 'opacity-60' : 'cursor-pointer hover:bg-muted/40')}>
-                <input
-                  type="radio"
-                  name="mcp-auth"
-                  value={option.kind}
-                  checked={selected === option.kind}
-                  disabled={busy}
-                  onChange={() => onChoose(option.kind)}
-                  className="mt-px size-3.5 shrink-0 appearance-none rounded-full border border-muted-foreground/50 transition-[border-color,border-width] checked:border-4 checked:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring enabled:cursor-pointer"
-                />
+              <ChoiceRow selection="radio" value={option.kind} density="compact" surface="plain" className="flex items-start gap-2.5">
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-1.5 text-xs font-medium leading-4 text-foreground">
                     {option.title}
-                    {isDetected && <span className="rounded-full border border-border px-1.5 text-[10px] font-medium leading-4 text-muted-foreground">Detected</span>}
+                    {isDetected && <StatusBadge >Detected</StatusBadge>}
                   </span>
                   <span className={cn('mt-0.5 flex items-start gap-1 text-[11px] leading-normal', warn ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground')}>
                     {warn && <AlertCircle size={12} className="mt-0.5 shrink-0" aria-hidden />}
                     <span>{isDetected && summary ? summary.detail : option.description}</span>
                   </span>
                 </span>
-              </label>
+              </ChoiceRow>
               {/* Indented to the option's text: padding, radio and gap. */}
               {selected === option.kind && fields && <div className="pb-2 pl-8 pr-2 pt-1">{fields}</div>}
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  wide,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  wide?: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div className={wide ? 'space-y-1 @lg:col-span-2' : 'space-y-1'}>
-      <label htmlFor={htmlFor} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {label}
-      </label>
-      {children}
+      </div></ChoiceGroup>
     </div>
   );
 }

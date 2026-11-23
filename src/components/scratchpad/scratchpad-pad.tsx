@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { Editor } from '@tiptap/core';
 import { Loader2, Maximize2, MessageSquare, NotebookPen, Radio, Square, StickyNote, X } from 'lucide-react';
@@ -7,6 +9,7 @@ import { toast } from 'sonner';
 import { RichEditor } from '@/components/editor/rich-editor';
 import { Tip } from '@/components/ui/tip';
 import { useScratchpad } from '@/hooks/use-scratchpad';
+import { useTouchFirst } from '@/hooks/use-touch-first';
 import type { ScratchpadSaver } from '@/lib/client/scratchpad-saver';
 import { useCreateTask } from '@/hooks/use-tasks';
 import { useCreateNote } from '@/hooks/use-notes';
@@ -39,27 +42,45 @@ export function ScratchpadPad({ onClose, closeShortcut, expanded = false, onExpa
         <h2 className="mr-auto shrink-0 text-xs font-semibold">Scratchpad</h2>
         <SaveState saving={snapshot.saving} error={snapshot.error} updatedAt={snapshot.updatedAt} />
         {onExpand && (
-          <Tip label="Open in a slideout">
-            <button type="button" onClick={onExpand} onMouseDown={(e) => e.preventDefault()}
-              aria-label="Expand the scratchpad"
-              className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+            <IconButton
+              type="button"
+              onClick={onExpand}
+              onMouseDown={(e) => e.preventDefault()}
+              label="Expand the scratchpad"
+              tooltip="Open in a slideout"
+              variant="ghost"
+              size="sm"
+              className="flex shrink-0 items-center justify-center"
+            >
               <Maximize2 size={14} />
-            </button>
-          </Tip>
+            </IconButton>
         )}
-        <Tip label="Close" shortcut={closeShortcut}>
-          <button type="button" onClick={onClose} aria-label="Close the scratchpad"
-            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground">
+
+          <IconButton
+            type="button"
+            onClick={onClose}
+            label="Close the scratchpad"
+            tooltip="Close"
+            shortcut={closeShortcut}
+            variant="ghost"
+            size="sm"
+            className="flex shrink-0 items-center justify-center"
+          >
             <X size={15} />
-          </button>
-        </Tip>
+          </IconButton>
+
       </header>
       {snapshot.ready ? (
         <PadBody saver={saver} draft={snapshot.draft} revision={snapshot.revision} expanded={expanded} onEditor={onEditor} onSendToChat={onSendToChat} />
       ) : loadError ? (
         <div role="alert" className="flex flex-1 flex-col items-center justify-center gap-2 p-6 text-center text-xs text-muted-foreground">
           <p>Your scratchpad could not be loaded.</p>
-          <button type="button" onClick={retry} className="underline hover:text-foreground">Try again</button>
+          <Button
+            type="button"
+            onClick={retry}
+            variant="link"
+            size="sm"
+          >Try again</Button>
         </div>
       ) : (
         <div className="flex flex-1 items-center justify-center text-muted-foreground" aria-label="Loading the scratchpad">
@@ -243,17 +264,22 @@ function MoveButton({ label, tip, icon: Icon, busy = false, disabled, onClick }:
   disabled: boolean;
   onClick: () => void;
 }) {
+  const touchFirst = useTouchFirst();
   return (
     <Tip label={tip}>
       {/* Keep the editor's caret where it is, so the line stays the target. */}
-      <button data-slot="action-button" type="button" disabled={disabled} onMouseDown={(e) => e.preventDefault()} onClick={onClick}
-        className={cn(
-          'inline-flex h-8 min-w-0 items-center justify-center gap-1.5 rounded-md border border-border/70 bg-background px-1 text-[11px] font-medium transition-colors pointer-coarse:h-10',
-          'hover:bg-muted/60 disabled:cursor-not-allowed disabled:text-muted-foreground disabled:opacity-40',
-        )}>
+      <Button
+        type="button"
+        disabled={disabled}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={onClick}
+        variant="secondary"
+        size={touchFirst ? "touch" : "sm"}
+        className="inline-flex min-w-0 items-center justify-center gap-1.5"
+      >
         {busy ? <Loader2 size={13} className="shrink-0 animate-spin" /> : <Icon size={13} className="shrink-0" />}
         {label}
-      </button>
+      </Button>
     </Tip>
   );
 }

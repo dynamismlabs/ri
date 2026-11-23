@@ -1,5 +1,7 @@
 'use client';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
 import { X, Camera, AlertCircle, Loader2 } from 'lucide-react';
 import QrScanner from 'qr-scanner';
@@ -95,13 +97,14 @@ export function QrScannerModal({ open, onClose, onDecoded }: QrScannerModalProps
           <Camera size={16} />
           <span className="text-sm font-medium">Scan pairing QR</span>
         </div>
-        <button
+        <IconButton
           onClick={onClose}
-          className="p-1.5 rounded-md hover:bg-white/10 transition-colors"
-          aria-label="Close scanner"
+          label="Close scanner"
+          variant="ghost"
+          size="sm"
         >
           <X size={18} />
-        </button>
+        </IconButton>
       </div>
 
       {/* Video / status */}
@@ -128,12 +131,14 @@ export function QrScannerModal({ open, onClose, onDecoded }: QrScannerModalProps
               <AlertCircle size={22} className="text-red-400" />
             </div>
             <p className="text-sm text-white/90 max-w-xs leading-relaxed">{status.message}</p>
-            <button
+            <Button
               onClick={onClose}
-              className="mt-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors"
+              variant="ghost"
+              size="sm"
+              className="mt-2"
             >
               Close
-            </button>
+            </Button>
           </div>
         )}
 

@@ -1,56 +1,16 @@
 'use client';
 
 import { FileText, Bot } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { ENTITY_HEADER_TOGGLE_LABEL } from './entity-header';
-import type { EntityViewMode } from '@/lib/client/entity-view-mode';
-import { Tip } from '@/components/ui/tip';
+import { SegmentedList } from '@/components/system/segmented-control';
+import { useElementWidth } from '@/hooks/use-element-width';
 
-/**
- * Agent / Document switch for a note or task. Only rendered while the
- * agent-first trial is on (Settings > General > Notes and tasks), so the
- * default UI is untouched. "Document" is the existing editor surface; the
- * user's "jump into the note" to see and edit the actual words.
- */
-export function EntityViewToggle({
-  value,
-  onChange,
-  className,
-  compact = false,
-}: {
-  value: EntityViewMode;
-  onChange: (next: EntityViewMode) => void;
-  className?: string;
-  /** Icon-only. Hosts pass this when their header is cramped (a narrow
-   *  slideout). Below the `sm` viewport, or in a task or note header without
-   *  room for them, the labels hide on their own. */
-  compact?: boolean;
-}) {
-  return (
-    <div
-      role="tablist"
-      aria-label="View"
-      data-slot="segmented"
-      className={cn('inline-flex rounded-md border border-border p-0.5 text-[10.5px]', className)}
-    >
-      {(['agent', 'editor'] as const).map((m) => (
-        <Tip key={m} label={m === 'agent' ? 'Agent view' : 'Document view'} onlyWhenTextHidden>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={value === m}
-            onClick={() => onChange(m)}
-            aria-label={m === 'agent' ? 'Agent view' : 'Document view'}
-            className={cn(
-              'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition-colors',
-              value === m ? 'bg-accent text-foreground' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {m === 'agent' ? <Bot size={10} /> : <FileText size={10} />}
-            <span className={cn(compact ? 'hidden' : cn('hidden sm:inline', ENTITY_HEADER_TOGGLE_LABEL))}>{m === 'agent' ? 'Agent' : 'Document'}</span>
-          </button>
-        </Tip>
-      ))}
-    </div>
-  );
+/** The two entity panels share the surrounding sheet's segmented root. */
+export function EntityViewToggle({ className, compact = false }: { className?: string; compact?: boolean }) {
+  const [measure, width] = useElementWidth<HTMLElement>();
+  return <div className="contents" ref={node => measure(node?.closest<HTMLElement>('[data-entity-header]') ?? null)}>
+    <SegmentedList ariaLabel="View" className={className} iconOnly={compact || (width ?? 0) < 704} options={[
+      {value:'agent',label:'Agent',ariaLabel:'Agent view',icon:<Bot/>},
+      {value:'editor',label:'Document',ariaLabel:'Document view',icon:<FileText/>},
+    ]}/>
+  </div>;
 }

@@ -1,7 +1,15 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
 
+import { Field as SystemField } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { EmojiPicker } from '@/components/shared/emoji-picker';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import { FilesToCopySection } from '@/components/workspaces/files-to-copy-section';
 import { WorkspaceIntegrationsSection } from '@/components/workspaces/workspace-integrations-section';
@@ -18,7 +26,7 @@ import { trpc, trpcClient } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import type { GhStatus } from '@/lib/workspaces/gh';
 import { useQuery } from '@tanstack/react-query';
-import { Archive, ChevronDown, ImagePlus, Loader2, SmilePlus, Trash2 } from 'lucide-react';
+import { Archive, ImagePlus, Loader2, SmilePlus, Trash2 } from 'lucide-react';
 import { useRef, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { AgentFoldersSection } from './agent-folders';
@@ -260,14 +268,13 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
         <fieldset disabled={!canConfigure} className="mx-auto max-w-2xl min-w-0 px-5 py-5 space-y-8">
           {!canConfigure && <p className="text-xs text-muted-foreground">Only the team owner can change this agent&apos;s setup. Members can start chats and use its approved tools.</p>}
           <Section title="Basics">
-            <Field label="Name">
-              <input data-slot="field"
-                value={form.name}
-                onChange={(e) => set('name', e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </Field>
-            <Field label="Icon" hint="If empty and linked to an area, the area's icon shows instead.">
+            <SystemField
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              className="w-full"
+              label="Name"
+            />
+            <LabeledSetting label="Icon" hint="If empty and linked to an area, the area's icon shows instead.">
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
               {form.attachment ? (
                 <div className="relative group inline-block">
@@ -319,40 +326,32 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                   </button>
                 </div>
               )}
-            </Field>
-            <Field label="Area">
-              <div className="relative">
-                <select data-slot="field"
-                  value={form.areaId}
-                  onChange={(e) => set('areaId', e.target.value)}
-                  className="w-full appearance-none pl-3 pr-9 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="">None</option>
-                  {areas?.map((area) => (
-                    <option key={area.id} value={area.id}>
-                      {area.emoji ? `${area.emoji} ${area.name}` : area.name}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              </div>
-            </Field>
-            <Field
-              label="Purpose"
-              hint="What this agent is for, in a sentence or two. Its main chat keeps this in mind."
-              counter={{ value: form.purpose.trim().length, max: PURPOSE_MAX }}
+            </LabeledSetting>
+            <NativeSelect
+              value={form.areaId}
+              onChange={(e) => set('areaId', e.target.value)}
+              className="w-full"
+              label="Area"
             >
-              <textarea data-slot="field" aria-invalid={purposeOver}
-                value={form.purpose}
-                onChange={(e) => set('purpose', e.target.value)}
-                rows={2}
-                placeholder="Ship Ri: the app, its CLI and its docs"
-                className={cn(
-                  'w-full px-3 py-2 text-sm bg-background border rounded-md focus:outline-none focus:ring-1 resize-y',
-                  purposeOver ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary',
-                )}
-              />
-            </Field>
+              <option value="">None</option>
+              {areas?.map((area) => (
+                <option key={area.id} value={area.id}>
+                  {area.emoji ? `${area.emoji} ${area.name}` : area.name}
+                </option>
+              ))}
+            </NativeSelect>
+            <TextArea
+              aria-invalid={purposeOver}
+              value={form.purpose}
+              onChange={(e) => set('purpose', e.target.value)}
+              rows={2}
+              placeholder="Ship Ri: the app, its CLI and its docs"
+              className="w-full"
+              resize="vertical"
+              label="Purpose"
+              description="What this agent is for, in a sentence or two. Its main chat keeps this in mind."
+              counter={{ value: form.purpose.trim().length, max: PURPOSE_MAX }}
+            />
           </Section>
 
           <AgentFoldersSection workspace={workspace} />
@@ -361,56 +360,61 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             title="Instructions"
             description="Standing instructions every chat in this agent receives when it starts. The agent's main chat follows them too."
           >
-            <Field counter={{ value: form.instructions.trim().length, max: INSTRUCTIONS_MAX }}>
-              <textarea data-slot="field" aria-invalid={instructionsOver}
-                value={form.instructions}
-                onChange={(e) => set('instructions', e.target.value)}
-                rows={8}
-                placeholder="Run pnpm ts before every commit. Keep changes small."
-                className={cn(
-                  'w-full px-3 py-2 text-[12.5px] leading-relaxed font-mono bg-background border rounded-md focus:outline-none focus:ring-1 resize-y',
-                  instructionsOver ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary',
-                )}
-              />
-            </Field>
+            <TextArea
+              aria-invalid={instructionsOver}
+              value={form.instructions}
+              onChange={(e) => set('instructions', e.target.value)}
+              rows={8}
+              placeholder="Run pnpm ts before every commit. Keep changes small."
+              className="w-full"
+              purpose="code"
+              resize="vertical"
+              counter={{ value: form.instructions.trim().length, max: INSTRUCTIONS_MAX }}
+              aria-label="Instructions"
+            />
           </Section>
 
           <AgentSkillsSection workspace={workspace} />
 
           <Section title="Handoff review" description="Reviewer preferences apply only to work produced by this agent. They leave your authoring model and normal defaults unchanged.">
-            <Field
-              label="Handoff and review preferences"
-              htmlFor="agent-work-result-guidance"
-              counter={{ value: form.workResultGuidance.length, max: WORK_RESULT_GUIDANCE_MAX }}
-            >
-              <textarea data-slot="field"
-                id="agent-work-result-guidance"
-                aria-describedby="agent-work-result-guidance-description agent-work-result-guidance-status"
-                aria-invalid={guidanceOver || undefined}
-                value={form.workResultGuidance}
-                onChange={(e) => set('workResultGuidance', e.target.value)}
-                maxLength={WORK_RESULT_GUIDANCE_MAX}
-                rows={5}
-                placeholder="e.g. Include links to the finished work and explain what needs my review."
-                className={cn(
-                  'w-full px-3 py-2 text-[12.5px] leading-relaxed bg-background border rounded-md focus:outline-none focus:ring-1 resize-y',
-                  guidanceOver ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary',
-                )}
-              />
-              <p id="agent-work-result-guidance-description" className="mt-1 text-[11px] leading-relaxed text-muted-foreground/70">
-                Adds to your shared preferences in Settings. This agent&apos;s preferences take precedence when they
-                conflict. Leave blank to inherit shared preferences. Used only for handoffs and reviews, not ordinary chat.
-              </p>
-              <p id="agent-work-result-guidance-status" role="status" aria-live="polite" className="mt-1 text-[11px] text-muted-foreground/60">
+            <>
+<TextArea
+  id="agent-work-result-guidance"
+  aria-describedby="agent-work-result-guidance-description agent-work-result-guidance-status"
+  aria-invalid={guidanceOver || undefined}
+  value={form.workResultGuidance}
+  onChange={(e) => set('workResultGuidance', e.target.value)}
+  maxLength={WORK_RESULT_GUIDANCE_MAX}
+  rows={5}
+  placeholder="e.g. Include links to the finished work and explain what needs my review."
+  className="w-full"
+  resize="vertical"
+  label="Handoff and review preferences"
+  counter={{ value: form.workResultGuidance.length, max: WORK_RESULT_GUIDANCE_MAX }}
+  descriptionId="agent-work-result-guidance-description"
+  description={
+    <>
+      Adds to your shared preferences in Settings. This agent&apos;s preferences take precedence
+      when they conflict. Leave blank to inherit shared preferences. Used only for handoffs and
+      reviews, not ordinary chat.
+    </>
+  }
+/>
+<p id="agent-work-result-guidance-status" role="status" aria-live="polite" className="mt-1 text-[11px] text-muted-foreground/60">
                 {guidanceStatus}
               </p>
-            </Field>
+</>
             <ReviewerSelection
               value={Object.fromEntries(Object.entries(form.reviewDefaults ?? {}).filter(([, value]) => value != null)) as ReviewerOverrides}
               inheritedDefaults={null}
               onChange={(value) => set('reviewDefaults', Object.keys(value).length ? value : null)}
             />
-            {form.reviewDefaults && <button type="button" onClick={() => set('reviewDefaults', null)} className="text-xs text-primary hover:underline">Reset reviewer to normal settings</button>}
+            {form.reviewDefaults && <Button
+              type="button"
+              onClick={() => set('reviewDefaults', null)}
+              variant="link"
+              size="md"
+            >Reset reviewer to normal settings</Button>}
             <label className="flex items-start justify-between gap-3 cursor-pointer">
               <span className="text-[12px] text-muted-foreground leading-relaxed">
                 Review before handoff
@@ -438,29 +442,30 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
             </label>
           </Section>}
 
-
           <Section title="Git">
             {workspace.isGit && (
               <>
-                <Field label="Base branch">
-                  <input data-slot="field"
-                    value={form.baseBranch}
-                    onChange={(e) => set('baseBranch', e.target.value)}
-                    placeholder="main"
-                    className="w-full px-3 py-2 text-sm font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </Field>
-                <Field
+                <SystemField
+                  value={form.baseBranch}
+                  onChange={(e) => set('baseBranch', e.target.value)}
+                  placeholder="main"
+                  className="w-full"
+                  purpose="code"
+                  label="Base branch"
+                />
+                <SystemField
+                  value={form.worktreeRoot}
+                  onChange={(e) => set('worktreeRoot', e.target.value)}
+                  placeholder={`Ri folder/.work/worktrees/${workspace.slug}`}
+                  className="w-full"
+                  purpose="code"
                   label="Worktree root"
-                  hint={personalTools ? `Where ${homeName} puts this agent's worktrees. Empty uses its Ri folder. Other devices always use their own.` : "Where this team's server puts this agent's worktrees. Empty uses its Ri folder."}
-                >
-                  <input data-slot="field"
-                    value={form.worktreeRoot}
-                    onChange={(e) => set('worktreeRoot', e.target.value)}
-                    placeholder={`Ri folder/.work/worktrees/${workspace.slug}`}
-                    className="w-full px-3 py-2 text-xs font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </Field>
+                  description={
+                    personalTools
+                      ? `Where ${homeName} puts this agent's worktrees. Empty uses its Ri folder. Other devices always use their own.`
+                      : "Where this team's server puts this agent's worktrees. Empty uses its Ri folder."
+                  }
+                />
                 <label className="flex items-start justify-between gap-3 cursor-pointer">
                   <span className="text-[12px] text-muted-foreground/85 leading-relaxed">
                     Confirm before Live sessions
@@ -477,11 +482,11 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
                 </label>
               </>
             )}
-            <div className="rounded-md border border-border bg-muted/30 p-3 space-y-1.5 text-[11px]">
+            <Card padding="md" className="space-y-1.5">
               <InfoRow label="Repository" value={workspace.isGit ? 'yes' : 'no, a plain folder'} />
               {workspace.isGit && <InfoRow label="Remote" value={workspace.remoteName ?? 'none'} mono />}
               <GhRow gh={gh ?? null} />
-            </div>
+            </Card>
           </Section>
 
           <Section
@@ -507,10 +512,16 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
 
           {workspace.status !== 'archived' && (
             <div className="pt-2 border-t border-border/60">
-              <button onClick={handleArchive} className="flex items-center gap-1.5 text-[11px] text-destructive hover:underline">
+              <Button
+                onClick={handleArchive}
+                variant="link"
+                size="md"
+                tone="danger"
+                className="flex items-center gap-1.5"
+              >
                 <Archive size={11} />
                 Archive agent
-              </button>
+              </Button>
             </div>
           )}
         </fieldset>
@@ -521,7 +532,7 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
           <span className="mr-auto text-[11px] text-muted-foreground" role={saveError ? 'alert' : undefined}>
             {saveError ? 'Could not save. Your changes are still here. Try again.' : saving ? 'Saving...' : 'Unsaved changes'}
           </span>
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             onClick={() => {
               setSavedWorkspace(workspace);
               setPendingWorkspace(null);
@@ -530,18 +541,21 @@ export function AgentSetup({ workspace }: { workspace: WorkspaceRecord }) {
               setGuidanceFeedback(null);
             }}
             disabled={saving || update.isPending}
-            className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground rounded-lg hover:bg-accent transition-colors"
+            variant="ghost"
+            size="md"
           >
             Discard
-          </button>
-          <button data-slot="action-button" data-variant="primary"
+          </Button>
+          <Button
             onClick={save}
             disabled={saving || update.isPending || purposeOver || instructionsOver || guidanceOver}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-lg hover:opacity-90 transition-all disabled:opacity-40"
+            variant="primary"
+            size="md"
+            className="flex items-center gap-1.5"
           >
             {(saving || update.isPending) && <Loader2 size={13} className="animate-spin" />}
             Save
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -560,52 +574,29 @@ function Section({ title, description, children }: { title: string; description?
   );
 }
 
-function Field({
-  label,
-  htmlFor,
-  hint,
-  counter,
-  children,
-}: {
-  label?: string;
-  htmlFor?: string;
-  hint?: string;
-  counter?: { value: number; max: number };
-  children: ReactNode;
-}) {
-  const over = counter && counter.value > counter.max;
-  return (
-    <div>
-      {(label || counter) && (
-        <div className="flex items-baseline justify-between mb-1.5">
-          {label ? (
-            <label htmlFor={htmlFor} className="block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</label>
-          ) : (
-            <span />
-          )}
-          {counter && (
-            <span className={cn('text-[10px] tabular-nums', over ? 'text-destructive' : 'text-muted-foreground/60')}>
-              {counter.value.toLocaleString()} / {counter.max.toLocaleString()}
-            </span>
-          )}
-        </div>
-      )}
-      {children}
-      {hint && <p className="mt-1 text-[10.5px] text-muted-foreground/70">{hint}</p>}
-    </div>
-  );
+// Holds image and emoji controls. Text fields use their own label and help API.
+function LabeledSetting({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
+  return <div>
+    <p className="mb-1.5 text-xs font-medium">{label}</p>
+    {children}
+    {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+  </div>;
 }
 
 function RemoveBadge({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <IconButton
       type="button"
       onClick={onClick}
-      aria-label={label}
-      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+      label={label}
+      variant="ghost"
+      size="xs"
+      tone="danger"
+      reveal
+      className="absolute -top-1.5 -right-1.5 flex items-center justify-center"
     >
       <Trash2 size={10} />
-    </button>
+    </IconButton>
   );
 }
 
@@ -622,22 +613,22 @@ function GhRow({ gh }: { gh: GhStatus | null }) {
   if (gh === null) return null;
   if (!gh.installed) {
     return (
-      <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 mt-1">
+      <Callout padding="sm" density="row" tone={"warning"} className="mt-1">
         <p className="text-amber-500 font-medium">gh not found</p>
         <p className="text-muted-foreground mt-0.5">
           Install with <code className="font-mono">brew install gh</code> to enable PR creation.
         </p>
-      </div>
+      </Callout>
     );
   }
   if (!gh.authenticated) {
     return (
-      <div className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 mt-1">
+      <Callout padding="sm" density="row" tone={"warning"} className="mt-1">
         <p className="text-amber-500 font-medium">gh installed but not signed in</p>
         <p className="text-muted-foreground mt-0.5">
           Run <code className="font-mono">gh auth login</code> to enable GitHub features.
         </p>
-      </div>
+      </Callout>
     );
   }
   return (

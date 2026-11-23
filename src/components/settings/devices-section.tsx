@@ -1,5 +1,13 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useCallback, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Copy, KeyRound, Link2, Pencil, Plus, Trash2, Check, Loader2 } from 'lucide-react';
@@ -9,12 +17,11 @@ import { useDevices } from '@/hooks/use-devices';
 import { PAIRING_TOKEN_FRAGMENT_KEY, APP_NAME, APP_SHORT_ID } from '@/constants/app';
 import type { DeviceKind } from '@/db/types';
 import { tokenDisplay } from '@/lib/auth/token-display';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Button } from '@/components/system/button';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { QrCode } from '@/components/settings/qr-code';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 const DEVICE_KINDS: { value: DeviceKind; label: string }[] = [
@@ -103,12 +110,12 @@ export function DevicesSection() {
           <h3 className="text-sm font-medium text-foreground">Devices</h3>
         </div>
         <Button
-          size="xs"
-          variant="outline"
           onClick={() => {
             setFormOpen((v) => !v);
             setPairing(null);
           }}
+          variant="secondary"
+          size="xs"
         >
           <Plus size={12} />
           Add device
@@ -116,35 +123,42 @@ export function DevicesSection() {
       </div>
 
       {formOpen && (
-        <div className="rounded-lg border border-border bg-background p-3 space-y-2">
-          <label className="block">
-            <span className="text-[11px] text-muted-foreground/70">Name</span>
-            <input
-              autoFocus
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="iPhone 15"
-              className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handlePair();
-              }}
-            />
-          </label>
+        <Card padding="md" className="space-y-2">
+          <Field
+            autoFocus
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="iPhone 15"
+            controlClassName="mt-1 w-full"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handlePair();
+            }}
+            label="Name"
+          />
           <KindSelect value={kind} onChange={setKind} />
           <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" onClick={handlePair} disabled={!name.trim() || pairMutation.isPending}>
+            <Button
+              onClick={handlePair}
+              disabled={!name.trim() || pairMutation.isPending}
+              variant="primary"
+              size="md"
+            >
               {pairMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
               Create pairing link
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setFormOpen(false)}>
+            <Button
+              onClick={() => setFormOpen(false)}
+              variant="ghost"
+              size="sm"
+            >
               Cancel
             </Button>
           </div>
           {pairMutation.isError && (
             <p className="text-[11px] text-destructive">Couldn&apos;t add the device. Try again.</p>
           )}
-        </div>
+        </Card>
       )}
 
       {pairing && !pairing.inCard && <PairingPanel pairing={pairing.res} baseUrls={baseUrls} onDone={() => setPairing(null)} />}
@@ -175,20 +189,18 @@ export function DevicesSection() {
 
 function KindSelect({ value, onChange }: { value: DeviceKind; onChange: (kind: DeviceKind) => void }) {
   return (
-    <label className="block">
-      <span className="text-[11px] text-muted-foreground/70">Type</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value as DeviceKind)}
-        className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-      >
-        {DEVICE_KINDS.map((k) => (
-          <option key={k.value} value={k.value}>
-            {k.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <NativeSelect
+      value={value}
+      onChange={(e) => onChange(e.target.value as DeviceKind)}
+      controlClassName="mt-1 w-full"
+      label="Type"
+    >
+      {DEVICE_KINDS.map((k) => (
+        <option key={k.value} value={k.value}>
+          {k.label}
+        </option>
+      ))}
+    </NativeSelect>
   );
 }
 
@@ -247,10 +259,11 @@ function PairingPanel({
     return { tabs, defaultValue };
   }, [pairing, baseUrls]);
 
+  const [pairingTab, setPairingTab] = useState<string | null>(null);
   if (pairingTabs.tabs.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-3">
+    <Card padding="md" className="space-y-3">
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="text-xs font-medium text-foreground">Pairing link for {pairing.device.name}</p>
@@ -258,42 +271,47 @@ function PairingPanel({
           <p className="text-[11px] text-muted-foreground/70">
             A phone or computer reaches {APP_NAME} at the address in the link. It works while the computer
             running {APP_NAME} is awake and that address is reachable. On a computer, paste the link into{' '}
-            <code className="font-mono text-foreground/80">{APP_SHORT_ID} connect</code> to use this {APP_NAME} there.
+            <code className="font-mono text-foreground/80">{APP_SHORT_ID} connect</code> to use this{' '}
+            {APP_NAME} there.
           </p>
         </div>
-        <Button size="xs" variant="ghost" onClick={onDone}>
+        <Button onClick={onDone} variant="ghost" size="xs">
           Done
         </Button>
       </div>
-      <Tabs defaultValue={pairingTabs.defaultValue}>
-        <TabsList>
-          {pairingTabs.tabs.map((t) => (
-            <TabsTrigger key={t.id} value={t.id}>
-              {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <SegmentedRoot
+        mode="tabs"
+        value={pairingTab ?? pairingTabs.defaultValue}
+        onChange={setPairingTab}
+        className="flex flex-col gap-2"
+      >
+        <SegmentedList
+          ariaLabel="Device connection address"
+          options={pairingTabs.tabs.map((t) => ({ value: t.id, label: t.label }))}
+        />
         {pairingTabs.tabs.map((t) => (
-          <TabsContent key={t.id} value={t.id} className="mt-3">
+          <SegmentedPanel key={t.id} value={t.id} className="mt-3">
             <p className="text-[11px] text-muted-foreground/70 mb-2">{t.hint}</p>
             <div className="flex gap-3 items-start">
               <QrCode value={t.url} size={140} />
               <div className="flex-1 min-w-0 space-y-2">
-                <input
+                <Field
                   readOnly
                   value={t.url}
-                  className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
+                  className="w-full"
                   onFocus={(e) => e.currentTarget.select()}
+                  purpose="code"
+                  aria-label={'Pairing link'}
                 />
-                <Button size="sm" variant="outline" onClick={() => handleCopy(t.id, t.url)}>
+                <Button onClick={() => handleCopy(t.id, t.url)} variant="secondary" size="sm">
                   {copiedLabel === t.id ? <Check size={12} /> : <Copy size={12} />}
                   {copiedLabel === t.id ? 'Copied' : 'Copy URL'}
                 </Button>
               </div>
             </div>
-          </TabsContent>
+          </SegmentedPanel>
         ))}
-      </Tabs>
+      </SegmentedRoot>
 
       {/* The raw token, the same for every URL above: for a device that
           already has Ri open, or a paste target that drops the fragment. */}
@@ -303,34 +321,31 @@ function PairingPanel({
           <code className="font-mono text-foreground/80">/#{PAIRING_TOKEN_FRAGMENT_KEY}=&lt;token&gt;</code>.
         </p>
         <div className="flex items-center gap-2">
-          <input
+          <Field
             readOnly
             value={pairing.plaintext}
-            className="flex-1 min-w-0 rounded-md border border-border bg-background px-2.5 py-1.5 text-[11px] font-mono"
+            className="flex-1 min-w-0"
             onFocus={(e) => e.currentTarget.select()}
+            purpose="code"
+            aria-label={'Pairing token'}
           />
-          <Button size="sm" variant="outline" onClick={() => handleCopy('token', pairing.plaintext)}>
+          <Button onClick={() => handleCopy('token', pairing.plaintext)} variant="secondary" size="sm">
             {copiedLabel === 'token' ? <Check size={12} /> : <Copy size={12} />}
             {copiedLabel === 'token' ? 'Copied' : 'Copy token'}
           </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function Marker({ children, tone = 'muted' }: { children: React.ReactNode; tone?: 'muted' | 'agents' }) {
   return (
-    <span
-      className={cn(
-        'rounded px-1.5 py-0.5 text-[10px] font-medium',
-        tone === 'agents'
-          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-          : 'bg-muted text-muted-foreground',
-      )}
+    <StatusBadge tone={(tone === 'agents' ? "success" : "neutral")}
+
     >
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -440,30 +455,38 @@ function DeviceCard({
   const status = workerLine(device);
 
   return (
-    <div className="rounded-lg border border-border bg-background p-3 space-y-2.5">
+    <Card padding="md" className="space-y-2.5">
       {editing ? (
         <div className="space-y-2">
-          <label className="block">
-            <span className="text-[11px] text-muted-foreground/70">Name</span>
-            <input
-              autoFocus
-              type="text"
-              value={draftName}
-              onChange={(e) => setDraftName(e.target.value)}
-              className="mt-1 w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') commitEdit();
-                if (e.key === 'Escape') setEditing(false);
-              }}
-            />
-          </label>
+          <Field
+            autoFocus
+            type="text"
+            value={draftName}
+            onChange={(e) => setDraftName(e.target.value)}
+            controlClassName="mt-1 w-full"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') commitEdit();
+              if (e.key === 'Escape') setEditing(false);
+            }}
+            label="Name"
+          />
           <KindSelect value={draftKind} onChange={setDraftKind} />
           <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" onClick={commitEdit} disabled={updateMutation.isPending || !draftName.trim()}>
+            <Button
+              onClick={commitEdit}
+              disabled={updateMutation.isPending || !draftName.trim()}
+              variant="primary"
+              size="md"
+            >
               {updateMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
               Save
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={updateMutation.isPending}>
+            <Button
+              onClick={() => setEditing(false)}
+              disabled={updateMutation.isPending}
+              variant="ghost"
+              size="sm"
+            >
               Cancel
             </Button>
           </div>
@@ -474,7 +497,7 @@ function DeviceCard({
           <div className="min-w-0 flex-1 space-y-0.5">
             <div className="flex flex-wrap items-center gap-1.5">
               <p className="text-sm font-medium text-foreground truncate">{device.name}</p>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">{kindLabel(device.kind)}</span>
+              <span className="text-[10px] text-muted-foreground/70">{kindLabel(device.kind)}</span>
               {device.isHome && <Marker tone="agents">Runs Ri and agents</Marker>}
               {!device.isHome && device.runsAgents && <Marker tone="agents">Runs agents</Marker>}
               {device.isThisDevice && <Marker>This device</Marker>}
@@ -488,22 +511,39 @@ function DeviceCard({
             )}
           </div>
           <div className="flex items-center gap-1">
-            <Tip label="New pairing link">
-              <Button size="xs" variant="ghost" onClick={onPairAgain} disabled={pairingAgain} aria-label={`New pairing link for ${device.name}`}>
+
+              <IconButton
+                onClick={onPairAgain}
+                disabled={pairingAgain}
+                label={`New pairing link for ${device.name}`}
+                tooltip="New pairing link"
+                variant="ghost"
+                size="xs"
+              >
                 {pairingAgain ? <Loader2 size={12} className="animate-spin" /> : <Link2 size={12} />}
-              </Button>
-            </Tip>
-            <Tip label="Edit">
-              <Button size="xs" variant="ghost" onClick={beginEdit} aria-label={`Edit ${device.name}`}>
+              </IconButton>
+
+              <IconButton
+                onClick={beginEdit}
+                label={`Edit ${device.name}`}
+                tooltip="Edit"
+                variant="ghost"
+                size="xs"
+              >
                 <Pencil size={12} />
-              </Button>
-            </Tip>
+              </IconButton>
+
             {!device.isHome && (
-              <Tip label="Remove">
-                <Button size="xs" variant="ghost" onClick={remove} disabled={removeMutation.isPending} aria-label={`Remove ${device.name}`}>
+                <IconButton
+                  onClick={remove}
+                  disabled={removeMutation.isPending}
+                  label={`Remove ${device.name}`}
+                  tooltip="Remove"
+                  variant="ghost"
+                  size="xs"
+                >
                   {removeMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-                </Button>
-              </Tip>
+                </IconButton>
             )}
           </div>
         </div>
@@ -525,7 +565,7 @@ function DeviceCard({
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -555,11 +595,16 @@ function KeyRow({ keyView, onRevoke, revoking }: { keyView: DeviceKeyView; onRev
         </p>
       </div>
       {keyView.role !== 'home' && (
-        <Tip label="Revoke">
-          <Button size="xs" variant="ghost" onClick={onRevoke} disabled={revoking} aria-label={`Revoke ${keyView.name}`}>
+          <IconButton
+            onClick={onRevoke}
+            disabled={revoking}
+            label={`Revoke ${keyView.name}`}
+            tooltip="Revoke"
+            variant="ghost"
+            size="xs"
+          >
             {revoking ? <Loader2 size={10} className="animate-spin" /> : <Trash2 size={12} />}
-          </Button>
-        </Tip>
+          </IconButton>
       )}
     </li>
   );

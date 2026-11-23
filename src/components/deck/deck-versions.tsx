@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -54,12 +55,13 @@ export function DeckVersionList({
                 <Check className="w-2.5 h-2.5" /> current
               </span>
             ) : (
-              <button
+              <Button
                 onClick={() => onRevert?.(v.id)}
-                className="px-2 py-0.5 rounded-md text-primary hover:bg-primary/10 transition-colors font-medium"
+                variant="ghost"
+                size="xs"
               >
                 Use this
-              </button>
+              </Button>
             )}
           </div>
         );

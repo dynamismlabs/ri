@@ -1,11 +1,14 @@
 'use client';
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
 import { trpc } from '@/lib/trpc/client';
 
 import { entityKeys } from '@/lib/query/entity-keys';
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { Dialog } from 'radix-ui';
+
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { AlertTriangle, Loader2, Bot, ListTree } from 'lucide-react';
@@ -169,20 +172,20 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
   return (
     <Dialog.Root open={!!ask} onOpenChange={(o) => !o && ask?.resolve(false)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-[60]" />
+        <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
           <div className="flex items-start gap-3">
             <ListTree className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
-              <Dialog.Title className="text-sm font-semibold text-foreground">
+              <Dialog.Title>
                 {verb === 'complete' ? 'Complete this task?' : verb === 'archive' ? 'Archive this task?' : 'Return this task to Todo?'}
               </Dialog.Title>
-              <Dialog.Description className="mt-1 text-xs text-muted-foreground">
+              <Dialog.Description className="mt-1">
                 It has {n} open subtask{n > 1 ? 's' : ''}, which will be left unchanged.
               </Dialog.Description>
             </div>
           </div>
-          <div className="mt-3 max-h-40 overflow-y-auto rounded border border-border bg-muted/40 p-2">
+          <Card padding="sm" className="mt-3 max-h-40 overflow-y-auto">
             <ul className="space-y-0.5">
               {(ask?.openChildren ?? []).map((c) => (
                 <li key={c.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -191,17 +194,23 @@ function ChildrenConfirmDialog({ ask }: { ask: ChildAsk | null }) {
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
           <div className="mt-4 flex justify-end gap-2">
-            <button onClick={() => ask?.resolve(false)} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Button
+              onClick={() => ask?.resolve(false)}
+              variant="secondary"
+              size="md"
+            >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => ask?.resolve(true)}
-              className="inline-flex items-center gap-1.5 rounded bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:opacity-90"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {verb === 'complete' ? 'Complete anyway' : verb === 'archive' ? 'Archive anyway' : 'Return anyway'}
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -224,13 +233,13 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
   return (
     <Dialog.Root open={!!ask} onOpenChange={(o) => !o && ask?.resolve(null)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-[60]" />
+        <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
           <div className="flex items-start gap-3">
             <AlertTriangle className="mt-0.5 flex-shrink-0 text-amber-500" size={18} />
             <div className="min-w-0">
-              <Dialog.Title className="text-sm font-semibold text-foreground">An agent is actively working this task</Dialog.Title>
-              <Dialog.Description className="mt-1 text-xs text-muted-foreground">
+              <Dialog.Title>An agent is actively working this task</Dialog.Title>
+              <Dialog.Description className="mt-1">
                 You can {verb} it and keep the workstream running, or stop the running agent first. Keeping it running
                 changes only this task and tells the agent its scope changed. A turn already in flight cannot be
                 partially interrupted, and code or artifacts already produced in a shared worktree are not undone.
@@ -238,7 +247,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
             </div>
           </div>
 
-          <div className="mt-3 max-h-48 overflow-y-auto rounded border border-border bg-muted/40 p-2">
+          <Card padding="sm" className="mt-3 max-h-48 overflow-y-auto">
             <ul className="space-y-1.5">
               {workstreams.map((w) => (
                 <li key={w.executionId} className="text-xs">
@@ -248,7 +257,7 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
                   </div>
                   {w.otherTasks.length > 0 && (
                     <div className="mt-1 ml-5 space-y-0.5">
-                      <div className="text-[10px] uppercase tracking-wide text-amber-600 dark:text-amber-400">Stopping also affects</div>
+                      <div className="text-[10px] text-amber-600 dark:text-amber-400">Stopping also affects</div>
                       {w.otherTasks.map((t) => (
                         <div key={t.id} className="flex items-center gap-1.5 text-muted-foreground">
                           <ListTree size={10} className="flex-shrink-0" />
@@ -260,27 +269,36 @@ function RunningWorkstreamDialog({ ask }: { ask: WorkstreamAsk | null }) {
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
 
           <div className="mt-4 flex flex-wrap justify-end gap-2">
-            <button onClick={() => choose(null)} disabled={busy} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            <Button
+              onClick={() => choose(null)}
+              disabled={busy}
+              variant="secondary"
+              size="md"
+            >
               Cancel
-            </button>
-            <button data-slot="action-button"
+            </Button>
+            <Button
               onClick={() => choose('keep_running')}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-60"
+              variant="secondary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               Keep running and {verb}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => choose('stop_running_agent')}
               disabled={busy}
-              className="inline-flex items-center gap-1.5 rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              variant="ghost"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {busy && <Loader2 size={12} className="animate-spin" />}
               Stop agent and {verb}
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

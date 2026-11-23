@@ -1,8 +1,13 @@
 'use client';
+import { OverlaySurface, OverlayScrim } from '@/components/system/overlay';
+import { DialogPrimitive } from '@/components/system/dialog';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Command } from 'cmdk';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { GitBranch, Loader2, TextSearch, X } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useSessionSearch } from '@/hooks/use-session-search';
@@ -31,7 +36,7 @@ type SourceFacet = 'all' | 'native' | 'imported';
 const RECENT_LIMIT = 8;
 
 const GROUP_CLASS =
-  'px-2 pb-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-muted-foreground/60';
+  'px-2 pb-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-muted-foreground/60';
 
 /**
  * Search every chat's title and transcript, in a modal. It used to be a box in
@@ -121,11 +126,11 @@ function ChatSearchPanel() {
 
   return (
     <>
-      <div data-slot="dialog-overlay" className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={closeChatSearch} />
+      <OverlayScrim className="absolute inset-0" onClick={closeChatSearch} />
 
       {/* The whole screen on a phone, where the keyboard takes half of it,
           and a card over the page from the phone breakpoint up. */}
-      <div data-slot="dialog-content" data-kind="search-page" className="relative flex h-dvh w-full flex-col overflow-hidden bg-card pt-[env(safe-area-inset-top)] md:mx-auto md:mt-[15vh] md:block md:h-auto md:max-w-2xl md:rounded-xl md:border md:border-border md:pt-0 md:shadow-2xl">
+      <OverlaySurface height="search" kind="dialog" padding="none" phonePage data-slot="dialog-content" className="relative flex w-full flex-col overflow-hidden md:mx-auto md:mt-[15vh] md:block md:max-w-2xl">
         <div className="flex items-center gap-3 border-b border-border px-4 py-3">
           <TextSearch size={16} className="flex-shrink-0 text-muted-foreground" />
           <Command.Input
@@ -146,14 +151,16 @@ function ChatSearchPanel() {
             label={agent ? `Searching chats in ${agent.name}. Change agent` : 'Search chats in one agent'}
             dialogInput={inputRef}
           />
-          <button
+          <IconButton
             type="button"
             onClick={closeChatSearch}
-            aria-label="Close search"
-            className="-mr-1.5 p-2 text-muted-foreground hover:text-foreground md:mr-0 md:p-1"
+            label="Close search"
+            variant="ghost"
+            size="sm"
+            className="-mr-1.5 md:mr-0"
           >
             <X size={14} className="size-[18px] md:size-3.5" />
-          </button>
+          </IconButton>
         </div>
 
         {/* The rail's controls, shown while there's a query to narrow. */}
@@ -240,10 +247,10 @@ function ChatSearchPanel() {
             <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">{'⏎'}</kbd> open
           </span>
           <span>
-            <kbd className="rounded bg-muted px-1 py-0.5 text-[8px] uppercase">Esc</kbd> close
+            <kbd className="rounded bg-muted px-1 py-0.5 text-[8px]">Esc</kbd> close
           </span>
         </div>
-      </div>
+      </OverlaySurface>
     </>
   );
 }
@@ -306,9 +313,9 @@ function ChatResultItem({
         </div>
         <div className="mt-0.5 flex min-w-0 items-center gap-1.5 text-[12px] text-muted-foreground/70 md:text-[10px]">
           {archived && (
-            <span className="flex-shrink-0 rounded bg-muted px-1 text-[8.5px] font-semibold uppercase tracking-wide">
+            <StatusBadge className="flex-shrink-0">
               Archived
-            </span>
+            </StatusBadge>
           )}
           <span className="truncate">{wsName}</span>
           {session.branchName && (
@@ -343,22 +350,18 @@ function Segmented<T extends string>({
   return (
     <div role="group" aria-label={label} className="flex items-center gap-0.5 rounded-md bg-muted/40 p-0.5">
       {options.map((opt) => (
-        <button
+        <Button
           key={opt.value}
           type="button"
           aria-pressed={value === opt.value}
           // Keep focus in the query, so arrows and Enter still drive the list.
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onChange(opt.value)}
-          className={cn(
-            'rounded px-2 py-0.5 text-[10px] font-medium transition-colors',
-            value === opt.value
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground/70 hover:text-foreground',
-          )}
+          variant="secondary"
+          size="sm"
         >
           {opt.label}
-        </button>
+        </Button>
       ))}
     </div>
   );

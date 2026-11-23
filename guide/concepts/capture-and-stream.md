@@ -27,6 +27,8 @@ Your assistant sorts it for you. A little while after you capture something, and
 
 Every choice can be undone. Use **Bring it back** on any item to sort it again yourself. Use **Triage** to have your assistant sort what's waiting right now. Each week it writes a short digest of what it did.
 
+On a narrow panel, Review and Triage use icons to keep Recent and Needs your call readable. Hover over an icon, or move to it with the keyboard, to see its label.
+
 ## How much it decides on its own
 
 In **Settings**, under **General**, **Capture triage** sets how much your assistant does without asking:

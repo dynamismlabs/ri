@@ -1,8 +1,10 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
 import { useEffect, useState } from 'react';
 import { CheckCircle2, Download, Smartphone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { APP_NAME } from '@/constants/app';
 import { promptWebAppInstall, startWebAppInstall, useWebAppInstall } from '@/lib/client/web-app-install';
 import { setSettingsSection } from './settings-store';
@@ -42,16 +44,16 @@ export function PhoneInstall() {
         Keep using the same URL so this device keeps its sign-in and drafts.
       </p>
       {install.ready && !install.secure && (
-        <p className="rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5 text-xs">
+        <Callout as="p" padding="sm" tone={"warning"} >
           This connection is not secure. Open your HTTPS remote URL to install Ri and use microphone access and browser notifications.
-        </p>
+        </Callout>
       )}
       {install.installed && !install.desktop ? (
         <p className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
           <CheckCircle2 size={14} /> Ri is running as an installed web app on this device.
         </p>
       ) : (
-        <div className="space-y-3 rounded-lg border border-border/60 bg-muted/20 p-3 text-xs">
+        <Card padding="md" className="space-y-3">
           <div>
             <p className="font-medium">iPhone and iPad</p>
             <p className="mt-1 leading-relaxed text-muted-foreground">
@@ -66,11 +68,16 @@ export function PhoneInstall() {
             </p>
           </div>
           {install.canPrompt && install.secure && !install.desktop && (
-            <Button variant="outline" size="sm" onClick={() => void prompt()} disabled={busy}>
+            <Button
+              onClick={() => void prompt()}
+              disabled={busy}
+              variant="secondary"
+              size="sm"
+            >
               <Download size={14} /> {busy ? 'Opening installation…' : 'Install Ri on this device'}
             </Button>
           )}
-        </div>
+        </Card>
       )}
       {message && <p role="status" className="text-xs text-muted-foreground">{message}</p>}
       <p className="text-xs leading-relaxed text-muted-foreground">
@@ -82,7 +89,11 @@ export function PhoneInstall() {
         If the installed app asks to pair again, create a device pairing link on your Ri computer.
         Browser and installed-app storage can be separate.
       </p>
-      <Button size="sm" variant="outline" onClick={() => setSettingsSection('notifications')}>Set up notifications</Button>
+      <Button
+        onClick={() => setSettingsSection('notifications')}
+        variant="secondary"
+        size="sm"
+      >Set up notifications</Button>
     </section>
   );
 }

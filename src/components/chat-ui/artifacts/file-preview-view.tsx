@@ -1,4 +1,10 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
 
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -7,7 +13,7 @@ import { trpc } from '@/lib/trpc/client';
 import { filePreviewUrl, fileSizeLabel, type FilePreviewSource } from '@/lib/files/preview-types';
 import type { FilePreviewData } from '@/lib/files/preview';
 import { AgentResponse } from '@/components/chat-ui/messages/agent-response';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { FileSkeleton } from '@/components/executions/skeletons';
 import { useSessionCookieReady } from '@/hooks/use-session-cookie-ready';
 
@@ -27,7 +33,7 @@ export function FilePreviewView({ source, name }: { source: FilePreviewSource; n
   if (data.kind === 'document') return <iframe className="h-full w-full border-0 bg-white" title="Document preview" sandbox="" referrerPolicy="no-referrer" srcDoc={documentHtml(data.html)} />;
   if (data.kind === 'slides') return <div className="h-full overflow-auto bg-muted/30 p-4">
     <p className="mb-4 text-xs text-muted-foreground">Slide content preview. Download the presentation for its original layout.</p>
-    {data.slides.map((slide, index) => <section key={index} aria-label={slide.title} className="mx-auto mb-4 min-h-48 max-w-3xl rounded-lg border border-border bg-background p-6 shadow-sm"><h2 className="mb-4 text-sm font-semibold">{slide.title}</h2><p className="whitespace-pre-wrap text-sm leading-relaxed">{slide.text || 'This slide has no text.'}</p></section>)}
+    {data.slides.map((slide, index) => <Card as="section" padding="xl" key={index} aria-label={slide.title} className="mx-auto mb-4 max-w-3xl"><h2 className="mb-4 text-sm font-semibold">{slide.title}</h2><p className="whitespace-pre-wrap text-sm leading-relaxed">{slide.text || 'This slide has no text.'}</p></Card>)}
     {!data.slides.length && <p className="text-sm text-muted-foreground">No slides could be read. Download the presentation to open it.</p>}
     {data.truncated && <p role="status" className="text-xs text-muted-foreground">Showing part of this presentation.</p>}
   </div>;
@@ -44,20 +50,63 @@ function MediaView({ source, kind, url }: { source: FilePreviewSource; kind: 'vi
   return <div className="flex h-full min-h-0 flex-col items-center justify-center gap-4 overflow-auto p-4">
     {kind === 'video' ? <video {...props} ref={element => { ref.current = element; }} playsInline className="max-h-[calc(100%-5rem)] w-full min-h-0 object-contain" aria-label="Video player" />
       : <audio {...props} ref={element => { ref.current = element; }} className="w-full max-w-xl" aria-label="Audio player" />}
-    <label className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">Playback speed<select aria-label="Playback speed" defaultValue="1" className="rounded border border-border bg-background px-2 py-1 text-foreground" onChange={event => { if (ref.current) ref.current.playbackRate = Number(event.target.value); }}>{[0.5, 0.75, 1, 1.25, 1.5, 2].map(rate => <option key={rate} value={rate}>{rate}×</option>)}</select></label>
+    <NativeSelect
+      aria-label="Playback speed"
+      defaultValue="1"
+      controlClassName="w-auto"
+      onChange={(event) => {
+        if (ref.current) ref.current.playbackRate = Number(event.target.value);
+      }}
+      label="Playback speed"
+      orientation="horizontal"
+      className="shrink-0 w-auto"
+    >
+      {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+        <option key={rate} value={rate}>
+          {rate}×
+        </option>
+      ))}
+    </NativeSelect>
     {failed && <p role="status" className="max-w-md shrink-0 text-center text-sm text-muted-foreground">This browser cannot play this file or the file is unavailable. Download it to open it in another player.</p>}
   </div>;
 }
 
 function TableView({ data }: { data: Extract<FilePreviewData, { kind: 'table' }> }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const [sheet, setSheet] = useState(0);
   const [source, setSource] = useState(false);
   const current = data.sheets[sheet] ?? data.sheets[0];
   const columns = current?.rows.reduce((max, row) => Math.max(max, row.length), 0) ?? 0;
   return <div className="flex h-full min-h-0 flex-col">
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border px-3 py-2 text-xs">
-      {data.sheets.length > 1 && <label className="flex min-w-0 items-center gap-2">Sheet<select aria-label="Sheet" value={sheet} onChange={event => setSheet(Number(event.target.value))} className="min-w-0 max-w-48 rounded border border-border bg-background p-1">{data.sheets.map((item, index) => <option key={index} value={index}>{item.name}</option>)}</select></label>}
-      {data.source !== undefined && <div role="group" aria-label="Table view" className="flex gap-1"><Button variant="ghost" size="xs" aria-pressed={!source} onClick={() => setSource(false)}>Table</Button><Button variant="ghost" size="xs" aria-pressed={source} onClick={() => setSource(true)}>Source</Button></div>}
+      {data.sheets.length > 1 && <NativeSelect
+        aria-label="Sheet"
+        value={sheet}
+        onChange={(event) => setSheet(Number(event.target.value))}
+        controlClassName={cn('min-w-0 max-w-48', 'w-auto')}
+        label="Sheet"
+        orientation="horizontal"
+        className="min-w-0 w-auto"
+        size={compactFieldSize}
+      >
+        {data.sheets.map((item, index) => (
+          <option key={index} value={index}>
+            {item.name}
+          </option>
+        ))}
+      </NativeSelect>}
+      {data.source !== undefined && <div role="group" aria-label="Table view" className="flex gap-1"><Button
+        aria-pressed={!source}
+        onClick={() => setSource(false)}
+        variant="ghost"
+        size="xs"
+      >Table</Button><Button
+        aria-pressed={source}
+        onClick={() => setSource(true)}
+        variant="ghost"
+        size="xs"
+      >Source</Button></div>}
       <span className="text-muted-foreground">{current?.rows.length ?? 0} rows · {columns} columns</span>
     </div>
     <div className="min-h-0 flex-1 overflow-auto">{source ? <pre tabIndex={0} aria-label="File source" className="whitespace-pre p-4 font-mono text-xs">{data.source}</pre>
@@ -75,5 +124,15 @@ function documentHtml(html: string) {
 
 function TextView({ data, source }: { data: Extract<FilePreviewData, { kind: 'text' }>; source: FilePreviewSource }) {
   const [raw, setRaw] = useState(false);
-  return <div className="flex h-full min-h-0 flex-col">{data.markdown && <div className="flex shrink-0 gap-1 border-b border-border p-2"><Button variant="ghost" size="xs" aria-pressed={!raw} onClick={() => setRaw(false)}>Rendered</Button><Button variant="ghost" size="xs" aria-pressed={raw} onClick={() => setRaw(true)}>Source</Button></div>}<div className="min-h-0 flex-1 overflow-auto">{data.markdown && !raw ? <div className="mx-auto max-w-3xl p-6"><AgentResponse mode="static" text={data.content} sessionId={source.kind === 'session' ? source.sessionId : undefined} fileBasePath={source.kind === 'session' ? source.path : undefined} /></div> : <pre tabIndex={0} aria-label="File source" className="whitespace-pre p-4 font-mono text-xs">{data.content}</pre>}</div>{data.truncated && <p role="status" className="shrink-0 border-t border-border p-3 text-xs text-muted-foreground">Showing part of this document. Download it to read everything.</p>}</div>;
+  return <div className="flex h-full min-h-0 flex-col">{data.markdown && <div className="flex shrink-0 gap-1 border-b border-border p-2"><Button
+    aria-pressed={!raw}
+    onClick={() => setRaw(false)}
+    variant="ghost"
+    size="xs"
+  >Rendered</Button><Button
+    aria-pressed={raw}
+    onClick={() => setRaw(true)}
+    variant="ghost"
+    size="xs"
+  >Source</Button></div>}<div className="min-h-0 flex-1 overflow-auto">{data.markdown && !raw ? <div className="mx-auto max-w-3xl p-6"><AgentResponse mode="static" text={data.content} sessionId={source.kind === 'session' ? source.sessionId : undefined} fileBasePath={source.kind === 'session' ? source.path : undefined} /></div> : <pre tabIndex={0} aria-label="File source" className="whitespace-pre p-4 font-mono text-xs">{data.content}</pre>}</div>{data.truncated && <p role="status" className="shrink-0 border-t border-border p-3 text-xs text-muted-foreground">Showing part of this document. Download it to read everything.</p>}</div>;
 }

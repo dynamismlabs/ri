@@ -1,4 +1,9 @@
 'use client';
+
+import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { EntityPageBoundary } from '@/components/home/entity-page-boundary';
 import { HomeBoundary } from '@/components/home/home-context';
 
@@ -24,7 +29,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import { cn } from '@/lib/utils';
 import { useDocumentAutosave, usePendingDocument } from '@/hooks/use-document-autosave';
 import type { Attachment } from '@/db/types';
@@ -121,7 +126,6 @@ function NotePageContent({ params }: { params: Promise<{ id: string }> }) {
     router.push('/');
   }, [noteId, deleteNote, router]);
 
-
   const goBack = useCallback(() => {
     if (window.history.length > 1) router.back();
     else router.push('/');
@@ -143,152 +147,176 @@ function NotePageContent({ params }: { params: Promise<{ id: string }> }) {
   }, [goBack]);
 
   const header = (
-        <div className={cn('flex items-center justify-between gap-2 h-11 sticky top-0 z-10 bg-background/80 backdrop-blur-sm', ENTITY_HEADER)}>
-          <button
-            onClick={goBack}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5 shrink-0"
-            aria-label="Back"
-          >
-            <ChevronLeft size={16} />
-            <span className="text-xs">Back</span>
-          </button>
+    <div
+      data-entity-header
+      className={cn(
+        'flex items-center justify-between gap-2 h-11 sticky top-0 z-10 bg-background/80 backdrop-blur-sm',
+        ENTITY_HEADER,
+      )}
+    >
+      <Button
+        onClick={goBack}
+        aria-label="Back"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1.5 shrink-0"
+      >
+        <ChevronLeft size={16} />
+        <span className="text-xs">Back</span>
+      </Button>
 
-          <div className="flex items-center gap-3 min-w-0 overflow-x-auto no-scrollbar [&>*]:shrink-0">
-            {agentFirst && !shared && <EntityViewToggle value={view} onChange={setView} />}
-            {note && !shared && <EntityHistoryButton entityType="note" entityId={note.id} />}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-                  <MoreHorizontal size={16} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                {note?.url && (
+      <div className="flex items-center gap-3 min-w-0 overflow-x-auto no-scrollbar [&>*]:shrink-0">
+        {agentFirst && !shared && <EntityViewToggle />}
+        {note && !shared && <EntityHistoryButton entityType="note" entityId={note.id} />}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <IconButton label="More note actions" variant="ghost" size="xs">
+              <MoreHorizontal size={16} />
+            </IconButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            {note?.url && (
+              <>
+                <DropdownMenuItem asChild className="">
+                  <a href={note.url} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink size={12} className="mr-2" /> Open link
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            {shared ? (
+              note?.sourceTeamId &&
+              note.sourceNoteId && (
+                <DropdownMenuItem
+                  onClick={() =>
+                    void removeFromMyNotes(note.sourceTeamId!, note.sourceNoteId!).then(() =>
+                      router.push('/'),
+                    )
+                  }
+                  className=""
+                >
+                  <X size={12} className="mr-2" /> Remove from my notes
+                </DropdownMenuItem>
+              )
+            ) : (
+              <>
+                {note && (
                   <>
-                    <DropdownMenuItem asChild className="text-xs">
-                      <a href={note.url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink size={12} className="mr-2" /> Open link
-                      </a>
-                    </DropdownMenuItem>
+                    <NoteKindMenuItem
+                      kind={note.kind}
+                      onChange={(kind) => updateNote.mutate({ id: note.id, kind })}
+                    />
                     <DropdownMenuSeparator />
                   </>
                 )}
-                {shared ? (
-                  note?.sourceTeamId && note.sourceNoteId && (
-                    <DropdownMenuItem
-                      onClick={() => void removeFromMyNotes(note.sourceTeamId!, note.sourceNoteId!).then(() => router.push('/'))}
-                      className="text-xs"
-                    >
-                      <X size={12} className="mr-2" /> Remove from my notes
-                    </DropdownMenuItem>
-                  )
-                ) : (
-                  <>
-                    {note && (
-                      <>
-                        <NoteKindMenuItem kind={note.kind} onChange={(kind) => updateNote.mutate({ id: note.id, kind })} />
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    <DropdownMenuItem onClick={handleArchive} className="text-xs">
-                      <Archive size={12} className="mr-2" /> Archive
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleDelete} className="text-xs text-destructive">
-                      <Trash2 size={12} className="mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
+                <DropdownMenuItem onClick={handleArchive} className="">
+                  <Archive size={12} className="mr-2" /> Archive
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDelete} className="">
+                  <Trash2 size={12} className="mr-2" /> Delete
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
   );
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
-      {/* Content + Chat */}
-      <div className="flex-1 flex overflow-hidden">
-        {view === 'agent' && note ? (
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <div className="max-w-3xl mx-auto w-full px-6 flex-shrink-0">{header}</div>
-            <EntityAgentView
-              entityType="note"
-              entityId={note.id}
-              chat={chat}
-              onOpenDocument={() => setView('editor')}
-            />
-          </div>
-        ) : (
-        <>
-        <div className="flex-1 overflow-y-auto min-w-0">
-          <div className="max-w-3xl mx-auto px-6">
-            {header}
-            {note && shared ? (
-              <div className="-mx-4 md:-mx-12">
-                <SharedNoteBody note={note} />
-              </div>
-            ) : note ? (
-              <>
-                <EntityChangeBanner entityType="note" entityId={note.id} />
-                <div className="pt-6 flex items-center gap-2">
-                  <NoteKindHeading kind={note.kind} />
-                  <span className="text-muted-foreground/30">&middot;</span>
-                  <AreaSelect value={note.areaId} onChange={handleAreaChange} />
+    <SegmentedRoot mode="tabs" value={view} onChange={setView}>
+      <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
+        {/* Content + Chat */}
+        <div className="flex-1 flex overflow-hidden">
+          {view === 'agent' && note ? (
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+              <div className="max-w-3xl mx-auto w-full px-6 flex-shrink-0">{header}</div>
+              <SegmentedPanel value="agent" className="flex min-h-0 flex-1 flex-col">
+                <EntityAgentView
+                  entityType="note"
+                  entityId={note.id}
+                  chat={chat}
+                  onOpenDocument={() => setView('editor')}
+                />
+              </SegmentedPanel>
+            </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto min-w-0">
+                <div className="max-w-3xl mx-auto px-6">
+                  {header}
+                  <SegmentedPanel value="editor" className="contents">
+                    {note && shared ? (
+                      <div className="-mx-4 md:-mx-12">
+                        <SharedNoteBody note={note} />
+                      </div>
+                    ) : note ? (
+                      <>
+                        <EntityChangeBanner entityType="note" entityId={note.id} />
+                        <div className="pt-6 flex items-center gap-2">
+                          <NoteKindHeading kind={note.kind} />
+                          <span className="text-muted-foreground/30">&middot;</span>
+                          <AreaSelect value={note.areaId} onChange={handleAreaChange} />
+                        </div>
+                        <div className="pb-16">
+                          <NoteEditor
+                            key={note.id}
+                            title={note.title ?? ''}
+                            body={note.body}
+                            onTitleChange={handleTitleChange}
+                            onBodyChange={handleBodyChange}
+                            onAttachment={handleAttachment}
+                            foldedHeadings={note.foldedHeadings ?? []}
+                            onFoldedHeadingsChange={handleFoldedHeadingsChange}
+                            autoFocusTitle={!note.title && note.body.trim().length === 0}
+                            disabled={aiBusy}
+                            hideFooter
+                            metadata={
+                              <p className="text-[10px] text-muted-foreground/50 mt-1">
+                                Created{' '}
+                                {new Date(note.createdAt).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                                {note.updatedAt !== note.createdAt && (
+                                  <>
+                                    {' '}
+                                    &middot; Edited{' '}
+                                    {new Date(note.updatedAt).toLocaleDateString('en-US', {
+                                      month: 'short',
+                                      day: 'numeric',
+                                      year: 'numeric',
+                                    })}
+                                  </>
+                                )}
+                                <>
+                                  {' '}
+                                  &middot; {wordCount} words &middot; {charCount} chars
+                                </>
+                              </p>
+                            }
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
+                        Loading...
+                      </div>
+                    )}
+                  </SegmentedPanel>
                 </div>
-                <div className="pb-16">
-                  <NoteEditor
-                    key={note.id}
-                    title={note.title ?? ''}
-                    body={note.body}
-                    onTitleChange={handleTitleChange}
-                    onBodyChange={handleBodyChange}
-                    onAttachment={handleAttachment}
-                    foldedHeadings={note.foldedHeadings ?? []}
-                    onFoldedHeadingsChange={handleFoldedHeadingsChange}
-                    autoFocusTitle={!note.title && note.body.trim().length === 0}
-                    disabled={aiBusy}
-                    hideFooter
-                    metadata={
-                      <p className="text-[10px] text-muted-foreground/50 mt-1">
-                        Created{' '}
-                        {new Date(note.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        })}
-                        {note.updatedAt !== note.createdAt && (
-                          <>
-                            {' '}
-                            &middot; Edited{' '}
-                            {new Date(note.updatedAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })}
-                          </>
-                        )}
-                        <>
-                          {' '}
-                          &middot; {wordCount} words &middot; {charCount} chars
-                        </>
-                      </p>
-                    }
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
-                Loading...
               </div>
-            )}
-          </div>
-        </div>
 
-        {!shared && <SlideoutChat slideoutWidth={9999} contextLabel="this note" chat={chat} disabled={!note} />}
-        </>
-        )}
+              {!shared && (
+                <SlideoutChat slideoutWidth={9999} contextLabel="this note" chat={chat} disabled={!note} />
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </SegmentedRoot>
   );
 }
 

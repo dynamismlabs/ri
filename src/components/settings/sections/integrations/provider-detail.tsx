@@ -1,4 +1,12 @@
 'use client';
+import { FormActions } from '@/components/system/form-actions';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+import { MenuAction } from '@/components/system/menu-action';
+import { StatusBadge } from '@/components/system/status-badge';
+
+
+import { Field } from '@/components/system/field';
 
 /**
  * Detail view for one integration provider. Everything the catalog tile used to
@@ -9,11 +17,11 @@
  * accounts, where the button that opened it is.
  */
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import { ChevronDown, ExternalLink, KeyRound, Loader2, Plus, Search, ShieldCheck, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
+
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -125,7 +133,11 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       <GroupHeading
         action={
           opened && (
-            <Button variant="ghost" size="xs" onClick={() => setAddOpen(false)} className="text-xs">
+            <Button
+              onClick={() => setAddOpen(false)}
+              variant="ghost"
+              size="xs"
+            >
               Cancel
             </Button>
           )
@@ -133,13 +145,18 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       >
         {connected ? hosted ? 'Reconnect' : 'Add another account' : 'Connect'}
       </GroupHeading>
-      <div className="space-y-4 rounded-xl border border-border bg-card/20 p-4">
+      <Card padding="lg" className="space-y-4">
         {hosted && p.mcp?.endpointConfig && <HostedEndpointFields setup={p.mcp.endpointConfig} value={props.endpointSelection} disabled={busy} onChange={props.onEndpointChange} />}
         <ConnectPanel {...props} />
         {!connected && (p.mcp?.endpointConfig?.locked || registered) && p.mcp?.serverId && props.onCancelSetup && (
-          <Button variant="ghost" size="xs" onClick={() => props.onCancelSetup?.()} disabled={busy}>Cancel setup</Button>
+          <Button
+            onClick={() => props.onCancelSetup?.()}
+            disabled={busy}
+            variant="ghost"
+            size="xs"
+          >Cancel setup</Button>
         )}
-      </div>
+      </Card>
     </ConnectFormSection>
   );
 
@@ -185,7 +202,12 @@ function SingleProviderDetail(props: ProviderDetailProps) {
               canConnect &&
               !hosted &&
               !addOpen && (
-                <Button variant="outline" size="xs" onClick={() => setAddOpen(true)} disabled={busy} className="text-xs">
+                <Button
+                  onClick={() => setAddOpen(true)}
+                  disabled={busy}
+                  variant="secondary"
+                  size="xs"
+                >
                   <Plus size={12} /> Add account
                 </Button>
               )
@@ -194,7 +216,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
             Accounts
           </GroupHeading>
           {opened && connectForm}
-          <div className="divide-y divide-border/60 rounded-xl border border-border bg-card/20">
+          <Card padding="none" className="divide-y divide-border/60">
             {conns.map((c) => (
               <AccountRow
                 key={c.id}
@@ -209,14 +231,14 @@ function SingleProviderDetail(props: ProviderDetailProps) {
                 reconnectLabel={authKind === 'oauth' ? 'Sign-in needed' : authKind === 'bearer' ? 'Token needed' : 'Reconnect needed'}
               />
             ))}
-          </div>
+          </Card>
         </section>
       )}
 
       {hosted && p.mcp?.error && !needsReconnect && (
-        <p role="status" className="rounded-xl border border-border bg-card/20 p-3 text-xs text-muted-foreground">
+        <Callout as="p" padding="md" role="status" >
           {p.displayName} could not be reached. {p.mcp.error}
-        </p>
+        </Callout>
       )}
 
       {hosted && p.mcp?.endpointConfig && !showConnect && (
@@ -234,12 +256,12 @@ function SingleProviderDetail(props: ProviderDetailProps) {
       )}
 
       {(p.method === 'oauth2' || registered) && p.configured && canConnect && (
-        <section className="rounded-xl border border-border/70">
-          <button data-slot="menu-action"
+        <section className="ri-provider-detail-frame-plain rounded-xl border border-border/70">
+          <MenuAction density="comfortable"
             type="button"
             aria-expanded={props.advancedOpen}
             onClick={props.onToggleAdvanced}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/30"
+            className="flex w-full items-center gap-3 text-left"
           >
             <KeyRound size={14} className="shrink-0 text-muted-foreground" />
             <span className="min-w-0 flex-1">
@@ -252,7 +274,7 @@ function SingleProviderDetail(props: ProviderDetailProps) {
               size={14}
               className={cn('shrink-0 text-muted-foreground transition-transform', props.advancedOpen && 'rotate-180')}
             />
-          </button>
+          </MenuAction>
           {props.advancedOpen && (
             <div className="border-t border-border/60 p-3">
               <Byo {...props} />
@@ -272,6 +294,7 @@ export function ConnectPanel(props: ProviderDetailProps) {
 }
 
 function ConnectPanelContent(props: ProviderDetailProps) {
+  const formId=useId();
   const { provider: p, toolkits, busy } = props;
   const setup = p.mcp?.endpointConfig;
   const selfHosted = setup?.kind === 'deployment' && (setup.locked ? setup.selectedId : props.endpointSelection?.endpointId) === 'selfhosted';
@@ -293,9 +316,14 @@ function ConnectPanelContent(props: ProviderDetailProps) {
           {meta.helpLinks?.map(link => <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">{link.label} <ExternalLink size={11} /></a>)}
         </div>
       </div> : selfHosted ? <div className="space-y-2 text-xs text-muted-foreground"><p>{meta.setup?.[0]}</p><a href={meta.docsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary hover:underline">Setup guide <ExternalLink size={11} /></a></div> : <p className="text-xs text-muted-foreground">{p.displayName} does not require an account or a token.</p>}
-      <Button size="sm" onClick={() => props.onConnectDirect()} disabled={busy || !endpointReady || props.connectDisabled} className="text-xs font-semibold">
+      <FormActions><Button
+        onClick={() => props.onConnectDirect()}
+        disabled={busy || !endpointReady || props.connectDisabled}
+        variant="primary"
+        size="md"
+      >
         <Plus size={14} /> {again ? 'Reconnect' : `Connect ${p.displayName}`}
-      </Button>
+      </Button></FormActions>
     </div>;
   }
 
@@ -347,14 +375,14 @@ function ConnectPanelContent(props: ProviderDetailProps) {
           </div>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <Button
-            size="sm"
+          <FormActions><Button
             onClick={() => props.onConnectOAuth()}
             disabled={busy || !endpointReady || props.connectDisabled || (multi && selected.length === 0)}
-            className="text-xs font-semibold"
+            variant="primary"
+            size="md"
           >
             <ExternalLink size={13} /> {again ? hosted ? 'Sign in to reconnect' : 'Sign in to another account' : `Connect ${p.displayName}`}
-          </Button>
+          </Button></FormActions>
           <span className="text-[11px] text-muted-foreground">
             Opens {p.displayName} to approve access, then brings you back here.
           </span>
@@ -375,9 +403,9 @@ function ConnectPanelContent(props: ProviderDetailProps) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
+    <form id={formId} onSubmit={submit} className="space-y-3">
       {hasHelp && (
-        <div className="space-y-2 rounded-lg border border-border/50 bg-muted/30 p-2.5">
+        <Card padding="sm" className="space-y-2">
           {meta.setup && meta.setup.length > 0 && (
             <ol className="list-decimal space-y-1 pl-4 text-[11px] leading-normal text-muted-foreground">
               {meta.setup.map((step, i) => (
@@ -396,35 +424,34 @@ function ConnectPanelContent(props: ProviderDetailProps) {
               <ExternalLink size={11} />
             </a>
           )}
-        </div>
+        </Card>
       )}
       <div className="grid grid-cols-1 gap-2 @lg:grid-cols-2">
         {fields.map((f) => (
-          <div key={f} className="space-y-1">
-            <label
-              htmlFor={`cred-${p.id}-${f}`}
-              className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              {fieldLabel(f)}
-            </label>
-            <Input
-              id={`cred-${p.id}-${f}`}
-              type={SECRETY.test(f) ? 'password' : 'text'}
-              autoComplete="off"
-              value={props.creds[f] ?? ''}
-              onChange={(e) => props.onCredChange(f, e.target.value)}
-              placeholder={fieldLabel(f)}
-              className="h-8 rounded-lg font-mono text-xs"
-            />
-          </div>
+          <Field
+            id={`cred-${p.id}-${f}`}
+            type={SECRETY.test(f) ? 'password' : 'text'}
+            autoComplete="off"
+            value={props.creds[f] ?? ''}
+            onChange={(e) => props.onCredChange(f, e.target.value)}
+            placeholder={fieldLabel(f)}
+            purpose="code"
+            label={fieldLabel(f)}
+            key={f}
+          />
         ))}
       </div>
       <p className="text-[11px] leading-normal text-muted-foreground">
         Your credentials are stored encrypted and never shown to agents.
       </p>
-      <Button type="submit" size="sm" disabled={busy || !filled || !endpointReady || props.connectDisabled} className="text-xs font-semibold">
+      <FormActions><Button
+        type="submit" form={formId}
+        disabled={busy || !filled || !endpointReady || props.connectDisabled}
+        variant="primary"
+        size="md"
+      >
         <Plus size={14} /> {hosted && again ? 'Update token' : `Connect ${p.displayName}`}
-      </Button>
+      </Button></FormActions>
     </form>
   );
 }
@@ -497,20 +524,30 @@ function AccountRow({
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-1">
         {onReconnect && (
-          <Button variant="ghost" size="xs" onClick={onReconnect} disabled={busy} className="text-xs">
+          <Button
+            onClick={onReconnect}
+            disabled={busy}
+            variant="ghost"
+            size="xs"
+          >
             <ExternalLink size={12} /> Reconnect
           </Button>
         )}
-        <Button variant="ghost" size="xs" onClick={onTest} disabled={busy || testing} className="text-xs">
+        <Button
+          onClick={onTest}
+          disabled={busy || testing}
+          variant="secondary"
+          size="xs"
+        >
           {testing ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}
           Test
         </Button>
         <Button
-          variant="ghost"
-          size="xs"
           onClick={onDisconnect}
           disabled={busy}
-          className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+          variant="ghost"
+          size="xs"
+          tone="danger"
         >
           <Trash2 size={12} /> Disconnect
         </Button>
@@ -535,6 +572,7 @@ export function ToolList({
   writePolicy: Record<string, WritePolicyAction>;
   onSetApproval: (actionId: string, mode: ApprovalMode) => void;
 }) {
+
   const [filter, setFilter] = useState('');
   const q = filter.trim().toLowerCase();
   const total = toolkits.reduce((n, t) => n + t.actions.length, 0);
@@ -553,19 +591,14 @@ export function ToolList({
         count={total}
         action={
           total > TOOL_FILTER_THRESHOLD && (
-            <div className="relative">
-              <Search
-                size={11}
-                className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-              <Input
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter tools"
-                aria-label="Filter tools"
-                className="h-7 w-44 rounded-lg pl-6 text-[11px]"
-              />
-            </div>
+            <Field
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter tools"
+              aria-label="Filter tools"
+              className={cn('w-44', 'relative')}
+              leading={<Search />}
+            />
           )
         }
       >
@@ -575,7 +608,7 @@ export function ToolList({
         Review available tools and choose which writes need your approval. Switch{' '}
         <span className="font-medium text-foreground/80">Ask first</span> on or off for any write.
       </p>
-      <div className="overflow-hidden rounded-xl border border-border bg-card/20">
+      <Card padding="none" className="overflow-hidden">
         {groups.map(({ toolkit: t, actions }) => (
           <div key={t.id} className="border-b border-border/60 py-1 last:border-b-0">
             {toolkits.length > 1 && (
@@ -589,7 +622,7 @@ export function ToolList({
         {groups.length === 0 && (
           <p className="px-3 py-3 text-[11px] text-muted-foreground">No tools match “{filter}”.</p>
         )}
-      </div>
+      </Card>
     </section>
   );
 }
@@ -606,14 +639,11 @@ function ToolRow({
   const gated = policy ? policy.mode === 'ask' : true; // gated until the policy loads
   return (
     <div className="flex items-center gap-2.5 px-3 py-1.5 hover:bg-muted/30">
-      <span
-        className={cn(
-          'w-10 shrink-0 rounded px-1 py-0.5 text-center text-[8px] font-semibold uppercase',
-          a.mutating ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-muted text-muted-foreground',
-        )}
+      <StatusBadge tone={(a.mutating ? "warning" : "neutral")}
+        className="w-10 shrink-0 text-center"
       >
         {a.mutating ? 'Write' : 'Read'}
-      </span>
+      </StatusBadge>
       <div className="min-w-0 flex-1">
         <Tip label={a.id} onlyWhenTextHidden>
           <div className="truncate font-mono text-[11px] text-foreground">

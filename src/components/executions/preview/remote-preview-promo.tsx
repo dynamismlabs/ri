@@ -1,5 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
 import { Smartphone, Globe } from 'lucide-react';
 import { useSettingsLink } from '@/components/settings/settings-destination';
 
@@ -19,19 +21,21 @@ export function RemotePreviewPromo({ prominent }: { prominent: boolean }) {
   if (!settings) return null;
   if (!prominent) {
     return (
-      <button data-slot="action-button"
+      <Button
         type="button"
         onClick={settings}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card/40 px-2.5 py-1.5 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center gap-1.5"
       >
         <Smartphone size={12} className="text-primary" />
         Preview on any device with Beamd →
-      </button>
+      </Button>
     );
   }
 
   return (
-    <div className="w-full space-y-2 rounded-md border border-border bg-card/40 p-3">
+    <Card padding="md" className="w-full space-y-2">
       <h4 className="flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
         <Smartphone size={13} className="text-primary" />
         Preview on any device
@@ -40,14 +44,16 @@ export function RemotePreviewPromo({ prominent }: { prominent: boolean }) {
         Open your preview on your phone or tablet, or share a live link, no deploy. Running on a server or
         Mac&nbsp;Mini? Review your apps from your laptop, without shuffling code between machines.
       </p>
-      <button data-slot="action-button" data-variant="primary"
+      <Button
         type="button"
         onClick={settings}
-        className="flex items-center gap-1.5 rounded-md border border-border bg-foreground px-3 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90"
+        variant="primary"
+        size="md"
+        className="flex items-center gap-1.5"
       >
         <Globe size={13} />
         Set up Beamd
-      </button>
-    </div>
+      </Button>
+    </Card>
   );
 }

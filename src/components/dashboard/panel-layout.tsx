@@ -1,5 +1,6 @@
 "use client";
 
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useState } from 'react';
 import {
   useDefaultLayout,
@@ -14,7 +15,7 @@ import { RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useHomeStorageScope } from '@/components/home/home-context';
 import { homeStorageIdentity } from '@/lib/home/document-scope';
-import { Tip } from '@/components/ui/tip';
+
 
 // Split-panel sizing lives entirely inside react-resizable-panels — it owns
 // percentages and the keyboard-accessible handle. `useDefaultLayout` handles
@@ -106,20 +107,18 @@ export function PanelLayout() {
       </ResizablePanelGroup>
 
       {/* Reset layout — context.resetLayout snaps tabs + focus + panel split */}
-      {!expandedPanel && <Tip label="Reset layout to default">
-        <button data-slot="action-button"
+      {!expandedPanel &&
+        <IconButton
           onClick={resetLayout}
-          aria-label="Reset layout to default"
-          className={cn(
-            'absolute bottom-3 left-1/2 -translate-x-1/2 z-40',
-            'p-1.5 rounded-lg border border-border bg-card text-muted-foreground',
-            'hover:text-foreground hover:border-primary/30 transition-all',
-            'opacity-0 hover:opacity-100 focus:opacity-100',
-          )}
+          label="Reset layout to default"
+          tooltip="Reset layout to default"
+          variant="ghost"
+          size="sm"
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40"
         >
           <RotateCcw size={12} />
-        </button>
-      </Tip>}
+        </IconButton>
+      }
     </div>
   );
 }

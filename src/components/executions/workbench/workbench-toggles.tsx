@@ -1,7 +1,8 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { HOTKEYS } from '@/constants/commands';
-import { cn } from '@/lib/utils';
+
 import { Kbd } from '@/components/ui/kbd';
 import { Tip } from '@/components/ui/tip';
 
@@ -76,22 +77,21 @@ function ToggleButton({
 }) {
   return (
     <Tip label={title} shortcut={shortcut}>
-      <button data-slot="action-button" data-variant="ghost"
+      <Button
         type="button"
         onClick={onClick}
         aria-label={label}
         aria-pressed={on}
-        className={cn(
-          'flex h-7 flex-shrink-0 items-center gap-1.5 rounded-md px-2 text-[12.5px] font-medium transition-colors',
-          on ? 'bg-muted/70 text-foreground' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-        )}
+        variant="ghost"
+        size="sm"
+        className="flex flex-shrink-0 items-center gap-1.5"
       >
         {icon}
         <span className={fold.label}>{label}</span>
         <Kbd aria-hidden className={fold.kbd}>
           {shortcut}
         </Kbd>
-      </button>
+      </Button>
     </Tip>
   );
 }

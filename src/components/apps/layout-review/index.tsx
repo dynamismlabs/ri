@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useAppsLayoutReview, type AppsReviewProps } from '@/hooks/use-apps-layout-review';
 import { LibraryChat } from '../library-chat';
 import { AppsReviewContext } from './context';
@@ -16,7 +16,12 @@ export function AppsLibraryScreen(props: AppsReviewProps) {
         {review.failures.map(failure => (
           <div className={s.error} role="alert" key={failure.name}>
             {failure.name} could not load. {failure.error?.message}
-            <Button className="ml-2" size="xs" variant="outline" onClick={failure.retry}>Retry</Button>
+            <Button
+              onClick={failure.retry}
+              variant="secondary"
+              size="xs"
+              className="ml-2"
+            >Retry</Button>
           </div>
         ))}
         <SplitLibrary />

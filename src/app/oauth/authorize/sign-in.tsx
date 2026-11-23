@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
@@ -64,29 +66,44 @@ export function SignInToContinue({ client }: { client: string | null }) {
           {client ? `${client} wants to connect to your Ri.` : 'An app wants to connect to your Ri.'} This browser isn’t one of your Ri devices yet.
         </p>
       </div>
-      <label className="block space-y-1.5">
-        <span className="text-xs text-muted-foreground">
-          On a device where you use Ri, open Settings → Devices, choose Add device and create its pairing link. Copy the token it shows and paste it here. This browser then stays signed in to Ri.
-        </span>
-        <input
-          ref={inputRef}
-          value={pasted}
-          onChange={event => { setPasted(event.target.value); if (state === 'refused') setState('idle'); }}
-          autoComplete="off"
-          spellCheck={false}
-          placeholder="ri_live_…"
-          aria-invalid={state === 'refused'}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-      </label>
-      {state === 'refused' && <p role="alert" className="text-xs text-destructive">That token didn’t work. Make a new one with Add device.</p>}
-      <button
+      <Field
+        ref={inputRef}
+        description={
+          <>
+            {' '}
+            On a device where you use Ri, open Settings → Devices, choose Add device and create its
+            pairing link. Copy the token it shows and paste it here. This browser then stays signed
+            in to Ri.{' '}
+          </>
+        }
+        messagePosition="before-control"
+        errorPosition="after-control"
+        value={pasted}
+        onChange={(event) => {
+          setPasted(event.target.value);
+          if (state === 'refused') setState('idle');
+        }}
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="ri_live_…"
+        aria-label="Pairing token"
+        error={
+          state === 'refused'
+            ? 'That token didn’t work. Make a new one with Add device.'
+            : undefined
+        }
+        className="w-full"
+        purpose="code"
+      />
+      <Button
         type="submit"
         disabled={!pasted.trim() || state === 'busy'}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        variant="primary"
+        size="md"
+        className="inline-flex w-full items-center justify-center gap-2"
       >
         {state === 'busy' && <Loader2 size={14} className="animate-spin" aria-hidden />} Continue
-      </button>
+      </Button>
     </form>
   );
 }

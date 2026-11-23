@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, expect, it, vi } from 'vitest';
 const state=vi.hoisted(()=>({owner:true,enabled:false,hasKey:false,shared:true}));
 vi.mock('@tanstack/react-query',()=>({useQueryClient:()=>({}),useMutation:()=>({mutate:vi.fn(),isPending:false})}));
-vi.mock('@/components/ui/confirm-dialog',()=>({useConfirm:()=>vi.fn()}));
+vi.mock('@/components/system/confirm-dialog',()=>({useConfirm:()=>vi.fn()}));
 vi.mock('@/components/home/home-context',()=>({useHomeContext:()=>({sharedComputer:state.shared,capabilities:{manageSignIns:state.owner,configureAgents:state.owner}}),useOptionalHomeContext:()=>({sharedComputer:state.shared,capabilities:{manageSignIns:state.owner,configureAgents:state.owner}})}));
 vi.mock('./team-chat',()=>({useTeamAiStatus:()=>({data:{enabled:state.enabled,state:state.enabled?'ready':'off',hasApiKey:state.hasKey}})}));
 vi.mock('@/components/results/result-pilot-settings',()=>({ResultPilotSettings:()=>null}));

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Bot } from 'lucide-react';
@@ -11,7 +12,7 @@ import { WorkWithPersonalAgent } from '@/components/spaces/work-with-personal-ag
 import { myRiClient } from '@/lib/spaces/my-ri-client';
 import { trpc } from '@/lib/trpc/client';
 import { isTerminal } from '@/lib/tasks/lifecycle';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { Tip } from '@/components/ui/tip';
 import { useHomeExecutionChoices } from '@/hooks/use-home-execution-choices';
 
@@ -30,18 +31,28 @@ export function TeamTaskAgentAction({ task }: { task: TaskLike }) {
   const personalReady = !!space && personal.data?.some(choice => choice.audience === 'personal' && choice.available);
   if (terminal) return null;
   if (!teamReady && !personalReady) {
-    if (team.error || personal.error) return <button type="button" className="text-xs text-muted-foreground underline" onClick={() => {
+    if (team.error || personal.error) return <Button
+      type="button"
+      onClick={() => {
       if (team.error) void team.refetch();
       if (personal.error) void personal.refetch();
-    }}>Retry agent availability</button>;
+    }}
+      variant="link"
+      size="sm"
+    >Retry agent availability</Button>;
     if (team.isFetching || personal.isFetching) return <span role="status" className="text-xs text-muted-foreground">Checking agents…</span>;
     return null;
   }
   if (!teamReady) return <WorkWithPersonalAgent taskId={task.id} label="Work in My Ri" />;
   if (!personalReady) return <Tip label="Runs on this team's server. Everyone on the team can read the chat."><span><StartWithAgentButton task={task} label="Work on team's server" /></span></Tip>;
   return <DropdownMenu open={open} onOpenChange={setOpen}>
-    <DropdownMenuTrigger asChild><button data-slot="action-button" type="button" className="inline-flex h-7 items-center gap-1.5 rounded border px-2 text-[11px] font-medium hover:bg-muted"><Bot size={13}/>Work with agent</button></DropdownMenuTrigger>
-    <DropdownMenuContent align="end" className="space-y-2 p-3">
+    <DropdownMenuTrigger asChild><Button
+      type="button"
+      variant="secondary"
+      size="sm"
+      className="inline-flex items-center gap-1.5"
+    ><Bot size={13}/>Work with agent</Button></DropdownMenuTrigger>
+    <DropdownMenuContent padding="md" align="end" className="space-y-2">
       <div><StartWithAgentButton task={task} label="Work on team's server"/><p className="mt-1 text-[11px] text-muted-foreground">Everyone on the team can read the chat.</p></div>
       <div><WorkWithPersonalAgent taskId={task.id} label="Work in My Ri"/><p className="mt-1 text-[11px] text-muted-foreground">Your personal agents. Only you can read the chat.</p></div>
     </DropdownMenuContent>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useQuery } from '@tanstack/react-query';
 import { useUserState } from '@/hooks/use-user-state';
 import { APP_NAME } from '@/constants/app';
@@ -55,16 +56,27 @@ export function ExternalAiSection() {
         <p className="text-xs text-muted-foreground">
           {`Connected agents can search, read and update your tasks, notes, areas and deck, private notes included, with their own model. They can’t start ${APP_NAME} chats, change settings or reach this computer’s files. Each agent gets its own key, and you can disconnect it here any time.`}
         </p>
-        <div className="rounded-md border border-border p-3 text-xs">
+        <div className="ri-external-ai-section-frame rounded-md border border-border p-3 text-xs">
           {address.data?.reachable ? <>
             <p>Agents on other computers use your remote address. The computer running {APP_NAME} must stay on and reachable.</p>
             <p className="mt-1 break-all font-mono text-muted-foreground">{address.data.mcpUrl}</p>
           </> : <p>Agents on this computer connect without anything else. To connect one on another computer, set a remote address first.</p>}
-          <button type="button" className="mt-2 underline" onClick={() => setSettingsSection('devices')}>Remote access in Devices</button>
+          <Button
+            type="button"
+            onClick={() => setSettingsSection('devices')}
+            variant="link"
+            size="sm"
+            className="mt-2"
+          >Remote access in Devices</Button>
         </div>
         {(keys.isError || address.isError || local.isError) && <p role="alert" className="text-xs text-destructive">
           {apiErrorText(keys.error ?? address.error ?? local.error)}{' '}
-          <button type="button" className="underline" onClick={() => { refresh(); void address.refetch(); }}>Retry</button>
+          <Button
+            type="button"
+            onClick={() => { refresh(); void address.refetch(); }}
+            variant="link"
+            size="sm"
+          >Retry</Button>
         </p>}
       </ConnectAgents>
       <AgentSkillFooter />

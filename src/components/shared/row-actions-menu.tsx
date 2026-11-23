@@ -1,8 +1,10 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { MoreHorizontal, type LucideIcon } from 'lucide-react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
 import { cn } from '@/lib/utils';
 
 export interface RowAction {
@@ -27,40 +29,37 @@ export function RowActionsMenu({ actions, title = 'Actions', className, iconSize
 
   return (
     <>
-      <button
+      <IconButton
         onClick={(e) => {
           e.stopPropagation();
           setOpen(true);
         }}
-        className={cn(
-          'md:hidden p-1.5 rounded-md text-muted-foreground active:bg-muted transition-colors',
-          className,
-        )}
-        aria-label={title}
+        label={title}
+        variant="ghost"
+        size="xs"
+        focus="inside"
+        className={cn("md:hidden", className)}
       >
         <MoreHorizontal size={iconSize} />
-      </button>
+      </IconButton>
 
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" showCloseButton={false} className="rounded-t-2xl px-3 pb-6 pt-3">
+        <SheetContent side="bottom" showCloseButton={false} padding="md" safeArea>
           <SheetTitle className="sr-only">{title}</SheetTitle>
           <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto mb-3" />
           <div className="flex flex-col">
             {actions.map((action) => (
-              <button
+              <MenuAction tone={action.destructive ? "error" : "neutral"}
                 key={action.id}
                 onClick={() => {
                   setOpen(false);
                   action.onClick();
                 }}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-3.5 rounded-lg active:bg-muted transition-colors text-left',
-                  action.destructive ? 'text-red-500' : 'text-foreground',
-                )}
+                className="flex items-center gap-3 text-left"
               >
                 <action.icon size={18} className="flex-shrink-0" />
                 <span className="text-sm font-medium">{action.label}</span>
-              </button>
+              </MenuAction>
             ))}
           </div>
         </SheetContent>

@@ -1,5 +1,10 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { SegmentedList } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { ChevronLeft, GitBranch, Plus } from 'lucide-react';
 import { useAgentExecutions } from '@/hooks/use-agent';
 import { useRunOn } from '@/hooks/use-workspaces';
@@ -48,79 +53,69 @@ export function AgentHeader({
   return (
     <header className="@container flex-shrink-0 border-b border-border min-w-0">
       <div className="flex items-center gap-3 px-4 py-2 min-w-0">
-      {onBack && (
-        <button
-          onClick={onBack}
-          aria-label="Back"
-          className="p-1.5 -ml-2 rounded-md text-muted-foreground active:bg-muted/40 hover:text-foreground"
-        >
-          <ChevronLeft size={20} />
-        </button>
-      )}
-      <AgentIcon workspace={workspace} size="md" />
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <h1 className="truncate text-[13px] font-semibold text-foreground">{workspace.name}</h1>
-          {archived && (
-            <span className="flex-shrink-0 rounded border border-border px-1.5 py-px text-[9.5px] font-medium uppercase tracking-wide text-muted-foreground">
-              Archived
-            </span>
-          )}
+        {onBack && (
+          <IconButton onClick={onBack} label="Back" variant="ghost" size="sm" className="-ml-2">
+            <ChevronLeft size={20} />
+          </IconButton>
+        )}
+        <AgentIcon workspace={workspace} size="md" />
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="truncate text-[13px] font-semibold text-foreground">{workspace.name}</h1>
+            {archived && (
+              <StatusBadge className="flex-shrink-0">
+                Archived
+              </StatusBadge>
+            )}
+          </div>
+          <AgentFolderLine workspace={workspace} />
         </div>
-        <AgentFolderLine workspace={workspace} />
-      </div>
 
-      {/* Beside the name, so it reads as this agent's action. The app-wide
+        {/* Beside the name, so it reads as this agent's action. The app-wide
           CREATE owns the top-right corner. */}
-      {!archived && (
-        <button
-          onClick={() => openLauncher(workspace.id)}
-          className="flex flex-shrink-0 items-center gap-1.5 h-7 px-2.5 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90 transition-opacity"
-          aria-label="New chat"
-        >
-          <Plus size={12} strokeWidth={2.5} />
-          <span className="hidden @[520px]:inline">New chat</span>
-        </button>
-      )}
+        {!archived && (
+          <Button
+            onClick={() => openLauncher(workspace.id)}
+            aria-label="New chat"
+            variant="primary"
+            size="sm"
+            className="flex flex-shrink-0 items-center gap-1.5"
+          >
+            <Plus size={12} strokeWidth={2.5} />
+            <span className="hidden @[520px]:inline">New chat</span>
+          </Button>
+        )}
 
-      <div className="flex-1" />
+        <div className="flex-1" />
 
-      <div className="hidden @[420px]:flex items-center gap-1.5 flex-shrink-0">
-        <CountPill count={working.length} label="working" tone="working" />
-        <CountPill count={needsYou.length} label="need you" singular="needs you" tone="attention" />
-      </div>
-
-      {(terminal || tools) && (
-        // Badges fold below 900px of header, labels below 640px, as the
-        // execution header's do at its own widths.
-        <div className="flex flex-shrink-0 items-center gap-2">
-          <WorkbenchToggles terminal={terminal} tools={tools} fold={{ label: '@max-[640px]:hidden', kbd: '@max-[900px]:hidden' }} />
+        <div className="hidden @[420px]:flex items-center gap-1.5 flex-shrink-0">
+          <CountPill count={working.length} label="working" tone="working" />
+          <CountPill count={needsYou.length} label="need you" singular="needs you" tone="attention" />
         </div>
-      )}
+
+        {(terminal || tools) && (
+          // Badges fold below 900px of header, labels below 640px, as the
+          // execution header's do at its own widths.
+          <div className="flex flex-shrink-0 items-center gap-2">
+            <WorkbenchToggles
+              terminal={terminal}
+              tools={tools}
+              fold={{ label: '@max-[640px]:hidden', kbd: '@max-[900px]:hidden' }}
+            />
+          </div>
+        )}
       </div>
       {pane && (
-        <div role="tablist" aria-label="Chat or tools" className="flex gap-1 px-4 pb-2">
-          <div data-slot="segmented" data-size="touch" className="contents">
-          {(['chat', 'tools'] as const).map((p) => (
-            <button data-slot="segmented-option"
-              key={p}
-              role="tab"
-              aria-selected={pane.value === p}
-              onClick={() => pane.onChange(p)}
-              className={cn(
-                'flex flex-1 items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition-colors',
-                pane.value === p ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground active:bg-muted/50',
-              )}
-            >
-              {p === 'chat' ? 'Chat' : 'Tools'}
-              {p === 'tools' && needsYou.length > 0 && (
-                <span className="rounded-full bg-amber-500/15 px-1.5 text-[10px] text-amber-600 dark:text-amber-400">
-                  {needsYou.length}
-                </span>
-              )}
-            </button>
-          ))}
-          </div>
+        <div className="flex gap-1 px-4 pb-2">
+          <SegmentedList
+            ariaLabel="Chat or tools"
+            size="touch"
+            stretch
+            options={[
+              { value: 'chat', label: 'Chat' },
+              { value: 'tools', label: 'Tools', count: needsYou.length, tone: 'attention' },
+            ]}
+          />
         </div>
       )}
     </header>
@@ -140,13 +135,8 @@ function CountPill({
 }) {
   if (count === 0) return null;
   return (
-    <span
-      className={cn(
-        'flex items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium',
-        tone === 'working'
-          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-      )}
+    <StatusBadge tone={(tone === 'working' ? "success" : "warning")}
+      className="flex items-center gap-1"
     >
       <span
         className={cn(
@@ -155,7 +145,7 @@ function CountPill({
         )}
       />
       {count} {count === 1 && singular ? singular : label}
-    </span>
+    </StatusBadge>
   );
 }
 

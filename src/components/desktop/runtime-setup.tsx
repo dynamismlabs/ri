@@ -1,6 +1,8 @@
 'use client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
+
 import { apiErrorText } from '@/lib/api/client';
 import { HARNESS_IDS, HARNESS_REGISTRY } from '@/lib/harness/registry';
 import { trpcClient } from '@/lib/trpc/client';
@@ -36,14 +38,33 @@ export function RuntimeSetup() {
       {fields.map(([name, label]) => {
         const secret = name === 'GROQ_API_KEY' || name === 'OPENAI_API_KEY';
         const configured = secret && query.data?.secrets[name];
-        return <label key={name} className="block space-y-1"><span>{label}{configured ? ' (configured)' : ''}</span>
-          <Input type={secret ? 'password' : 'text'} autoComplete="off" value={patch[name] ?? (secret ? '' : String((!secret ? query.data?.values[name] : undefined) ?? ''))}
-            placeholder={secret && configured ? 'Leave unchanged, or enter a replacement' : undefined}
-            onChange={event => setPatch(previous => ({ ...previous, [name]: event.target.value }))} />
-        </label>;
+        return <Field
+          type={secret ? 'password' : 'text'}
+          autoComplete="off"
+          value={
+            patch[name] ??
+            (secret ? '' : String((!secret ? query.data?.values[name] : undefined) ?? ''))
+          }
+          placeholder={secret && configured ? 'Leave unchanged, or enter a replacement' : undefined}
+          onChange={(event) =>
+            setPatch((previous) => ({ ...previous, [name]: event.target.value }))
+          }
+          label={
+            <>
+              {label}
+              {configured ? ' (configured)' : ''}
+            </>
+          }
+          key={name}
+        />;
       })}
       <p className="text-muted-foreground">Install optional local speech in Voice settings, or configure an external Parakeet service here. The embeddings key enables semantic search. Keyword search works without it.</p>
-      <Button disabled={saving || !Object.keys(patch).length} onClick={() => void save()}>Save runtime settings</Button>
+      <Button
+        disabled={saving || !Object.keys(patch).length}
+        onClick={() => void save()}
+        variant="primary"
+        size="md"
+      >Save runtime settings</Button>
     </div>
   </details>;
 }

@@ -1,3 +1,4 @@
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Inline slash-command badge — a Tiptap atom node rendered as a compact
  * pill (`/name`) at the start of the composer. Inserted by the `/`
@@ -119,15 +120,18 @@ function SlashChipView({ node, editor, getPos, selected }: NodeViewProps) {
         <span className="self-baseline font-mono text-[11px] truncate max-w-[200px]">
           {label}
         </span>
-        <button
+        <IconButton
           type="button"
           onMouseDown={handleRemove}
-          className="ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-colors"
-          aria-label={`Remove ${label}`}
           tabIndex={-1}
+          label={`Remove ${label}`}
+          variant="ghost"
+          size="xs"
+          focus="inside"
+          className="ml-0.5 inline-flex items-center justify-center"
         >
           <X size={10} />
-        </button>
+        </IconButton>
       </NodeViewWrapper>
     </Tip>
   )

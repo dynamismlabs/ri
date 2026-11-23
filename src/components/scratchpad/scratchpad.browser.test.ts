@@ -14,6 +14,7 @@ beforeAll(async () => {
     import {createRoot} from 'react-dom/client';
     import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
     import {DeckBesideButton, ScratchpadButton, ScratchpadColumn, ScratchpadSheet, ScratchpadShortcut} from '@/components/scratchpad/scratchpad-host';
+    import {ButtonGroup} from '@/components/system/button-group';
     import {registerComposer} from '@/components/chat/editor/composer-focus';
     function App() {
       const message=useRef(null);
@@ -23,7 +24,7 @@ beforeAll(async () => {
       }}),[]);
       return <QueryClientProvider client={new QueryClient()}>
         <div className="flex h-dvh flex-col">
-          <header className="flex h-12 shrink-0 items-center justify-end gap-2 border-b p-2"><DeckBesideButton /><ScratchpadButton /></header>
+          <header className="flex h-12 shrink-0 items-center justify-end gap-2 border-b p-2"><ButtonGroup variant="toolbar"><DeckBesideButton /><ScratchpadButton /></ButtonGroup></header>
           <div className="flex min-h-0 flex-1 overflow-hidden">
             <main className="flex min-w-0 flex-1 flex-col">
               <header className="border-b px-6 py-4 text-sm font-semibold">Launch review <span className="ml-2 font-normal text-muted-foreground">Sample chat</span></header>
@@ -84,8 +85,15 @@ beforeAll(async () => {
 
 afterAll(async () => { await fixture?.close(); });
 
-async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
+async function open(viewport = { width: 1440, height: 900 }, slowFrames = false): Promise<Page> {
   const page = await fixture.browser.newPage({ viewport, hasTouch: viewport.width < 1024 });
+  if (slowFrames) {
+    // Reproduce input arriving before the pad's deferred opening focus on a busy renderer.
+    await page.addInitScript(() => {
+      const frame = window.requestAnimationFrame.bind(window);
+      window.requestAnimationFrame = callback => frame(time => { setTimeout(() => callback(time), 80); });
+    });
+  }
   // Short of the test's own limit, so a step that can't happen says which and why.
   testTimeouts(page, 10_000);
   await page.goto(fixture.url);
@@ -94,6 +102,9 @@ async function open(viewport = { width: 1440, height: 900 }): Promise<Page> {
   if (viewport.width < 1024) {
     await settle(page.getByRole('dialog'));
   }
+  // Mounted text precedes the pad's opening focus. Wait for that real readiness
+  // before test input can compete with its deferred focus('end') transaction.
+  await expect.poll(() => editor(page).evaluate(el => el === document.activeElement)).toBe(true);
   return page;
 }
 
@@ -125,6 +136,10 @@ async function clear(page: Page) {
 async function expand(page: Page) {
   await page.getByRole('button', { name: 'Expand the scratchpad' }).click();
   await settle(page.getByRole('dialog', { name: 'Scratchpad' }));
+  // The slideout starts listening for presses outside it on a timer after it opens. Chrome runs
+  // input ahead of timers, so a test's keys and click could all land first and the backdrop
+  // press went unheard. A timer of our own fires after the slideout's, once it's listening.
+  await page.evaluate(() => new Promise(resolve => setTimeout(resolve)));
 }
 
 async function capture(page: Page, name: string) {
@@ -146,7 +161,7 @@ describe('scratchpad quick view and expansion', () => {
       for (const name of ['Task', 'Note', 'Stream', 'Chat']) {
         const button = page.getByRole('button', { name, exact: true });
         const action = await button.boundingBox();
-        expect(action!.height).toBeGreaterThanOrEqual(32);
+        expect(action!.height).toBe(28);
         expect(action!.y + action!.height).toBeLessThanOrEqual(900);
         expect(action!.x).toBeGreaterThanOrEqual(box!.x);
         expect(action!.x + action!.width).toBeLessThanOrEqual(box!.x + box!.width);
@@ -243,7 +258,8 @@ describe('scratchpad quick view and expansion', () => {
       await page.mouse.click(100, 300);
       await expect.poll(() => page.getByRole('dialog').count()).toBe(0);
       expect(await page.getByRole('button', { name: 'Expand the scratchpad' }).count()).toBe(1);
-      expect(await editor(page).evaluate(el => el === document.activeElement)).toBe(true);
+      // Focus comes back after the slideout leaves the page: Radix hands it over on a timer.
+      await expect.poll(() => editor(page).evaluate(el => el === document.activeElement)).toBe(true);
     } finally { await page.close(); }
   });
 
@@ -308,8 +324,9 @@ describe('scratchpad quick view and expansion', () => {
   });
 
   it.each([320, 390, 1440])('keeps the empty placeholder on one line at %ipx', async width => {
-    const page = await open({ width, height: 780 });
+    const page = await open({ width, height: 780 }, width === 320);
     try {
+      expect(await editor(page).evaluate(el => el === document.activeElement)).toBe(true);
       await clear(page);
       const placeholder = editor(page).locator('.is-empty[data-placeholder]').first();
       expect(await placeholder.getAttribute('data-placeholder')).toBe('Write a note…');
@@ -331,7 +348,7 @@ describe('scratchpad quick view and expansion', () => {
       // Where the sheet and its editor were, for a failure only one platform's fonts show.
       console.error('scratchpad layout', JSON.stringify(await page.evaluate(() => {
         const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect().toJSON() ?? null;
-        return { viewport: [innerWidth, innerHeight], sheet: box('[data-scratchpad]'), editor: box('[data-scratchpad] .tiptap'), placeholder: box('[data-scratchpad] .is-empty') };
+        return { viewport: [innerWidth, innerHeight], sheet: box('[data-scratchpad]'), editor: box('[data-scratchpad] .tiptap'), placeholder: box('[data-scratchpad] .is-empty'), text: document.querySelector('[data-scratchpad] .tiptap')?.textContent, active: document.activeElement?.getAttribute('class') };
       }).catch(() => null)));
       throw error;
     } finally { await page.close(); }
@@ -341,6 +358,36 @@ describe('scratchpad quick view and expansion', () => {
 describe('the deck beside', () => {
   const pressed = (page: Page, name: string) => page.getByRole('button', { name, exact: true }).getAttribute('aria-pressed');
   const deck = (page: Page) => page.locator('[data-deck-stub]');
+
+  for (const theme of ['light', 'dark']) it(`shows the actual HUD pressed thumb against its track (${theme})`, async () => {
+    const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });
+    try {
+      await page.goto(fixture.url);
+      await page.evaluate(dark => document.documentElement.classList.toggle('dark', dark), theme === 'dark');
+      const button = page.getByRole('button', { name: 'Deck', exact: true });
+      await button.click();
+      await deck(page).waitFor();
+      expect(await button.getAttribute('aria-pressed')).toBe('true');
+      await page.mouse.move(10, 100);
+      // Measure the pressed state after its fill and ink transitions finish.
+      await button.evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
+      const state = await button.evaluate(el => {
+        const style = getComputedStyle(el), track = getComputedStyle(el.closest('.ri-button-group')!);
+        const canvas = document.createElement('canvas'), context = canvas.getContext('2d')!;
+        const rgb = (...layers: string[]) => { context.clearRect(0, 0, 1, 1); for (const layer of layers) { context.fillStyle = layer; context.fillRect(0, 0, 1, 1); } return [...context.getImageData(0, 0, 1, 1).data].slice(0, 3); };
+        const luminance = (color: number[]) => { const [r, g, b] = color.map(value => { const s = value / 255; return s <= .03928 ? s / 12.92 : ((s + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+        const ratio = (a: number[], b: number[]) => { const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x); return (high + .05) / (low + .05); };
+        const pane = style.getPropertyValue('--pane');
+        return { fill: style.backgroundColor, track: track.backgroundColor, shadow: style.boxShadow, textContrast: ratio(rgb(style.backgroundColor), rgb(style.color)), fillContrast: ratio(rgb(pane, style.backgroundColor), rgb(pane, track.backgroundColor)) };
+      });
+      expect(state.fill).not.toBe(state.track);
+      expect(state.shadow).not.toBe('none');
+      expect(state.textContrast).toBeGreaterThanOrEqual(4.5);
+      expect(state.fillContrast).toBeGreaterThan(1.05);
+      await page.keyboard.press('Tab');await button.focus();
+      expect(await button.evaluate(el => getComputedStyle(el).outlineOffset)).toBe('-2px');
+    } finally { await page.close(); }
+  });
 
   it('shares the column with the pad and keeps both as they were left', async () => {
     const page = await fixture.browser.newPage({ viewport: { width: 1440, height: 900 } });

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import { build } from 'esbuild';
+import { createRequire } from 'node:module';
 import { afterAll, beforeAll, expect, it } from 'vitest';
 import { chromium, type Browser } from 'playwright-core';
 
@@ -46,7 +47,11 @@ beforeAll(async () => {
       ` }));
     } }],
   });
-  const css = (await fs.readFile('public/chat-ui-gallery/email.html', 'utf8')).match(/<style>([\s\S]*?)<\/style>/)?.[1] ?? '';
+  const require = createRequire(import.meta.url);
+  const postcss = createRequire(require.resolve('@tailwindcss/postcss'))('postcss');
+  const tailwind = require('@tailwindcss/postcss');
+  const cssFile = path.resolve('src/app/globals.css');
+  const css = (await postcss([tailwind({ base: process.cwd() })]).process(await fs.readFile(cssFile, 'utf8'), { from: cssFile })).css;
   server = http.createServer((request, response) => {
     const url = new URL(request.url!, 'http://fixture');
     const input = JSON.parse(url.searchParams.get('input') || '{}');

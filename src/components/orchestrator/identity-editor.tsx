@@ -1,5 +1,9 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import { useRef, useState } from 'react';
 import { ImagePlus, Loader2, Palette, Shuffle, Smile, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -152,7 +156,7 @@ export function IdentityEditor({
           className="shadow-sm"
         />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <input data-slot="field"
+          <Field
             autoFocus={autoFocusName}
             value={draft.name}
             maxLength={ORCHESTRATOR_NAME_MAX}
@@ -165,7 +169,7 @@ export function IdentityEditor({
             }}
             placeholder={APP_NAME}
             aria-label="Assistant name"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-[14px] font-semibold text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+            className="w-full"
           />
           <div className="flex flex-wrap items-center gap-1">
             <EmojiPicker onSelect={(emoji) => set({ emoji, image: null })}>
@@ -189,14 +193,16 @@ export function IdentityEditor({
               {draft.image?.kind === 'art' ? <Shuffle size={12} /> : <Palette size={12} />}
             </LookButton>
             {(draft.image || draft.emoji) && (
-              <button data-slot="action-button" data-variant="ghost"
+              <Button
                 type="button"
                 onClick={() => set(draft.image ? { image: null } : { emoji: null })}
-                className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                variant="ghost"
+                size="xs"
+                className="inline-flex items-center gap-1"
               >
                 <X size={11} />
                 {draft.image ? 'Remove picture' : 'Remove emoji'}
-              </button>
+              </Button>
             )}
             <input
               ref={fileRef}
@@ -216,7 +222,7 @@ export function IdentityEditor({
       <ColorRow color={draft.color} disabled={!!draft.image} onPick={(color) => set({ color })} />
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">Ideas</span>
+        <span className="text-[10px] font-semibold text-muted-foreground/70">Ideas</span>
         <div
           className="-mx-1 flex snap-x gap-1.5 overflow-x-auto px-1 pb-1.5 [scrollbar-width:thin]"
           style={{ maskImage: 'linear-gradient(to right, black calc(100% - 24px), transparent)' }}
@@ -225,21 +231,18 @@ export function IdentityEditor({
             const selected = matchesPreset(draft, preset);
             return (
               <Tip key={preset.name} label={preset.note} onlyWhenTextHidden>
-                <button data-slot="choice-row"
+                <ChoiceRow density="compact"
                   type="button"
                   aria-pressed={selected}
                   onClick={() => onChange({ name: preset.name, emoji: preset.emoji, color: preset.color, image: null })}
-                  className={cn(
-                    'flex w-36 flex-shrink-0 snap-start items-center gap-2 rounded-lg border px-2 py-1.5 text-left transition-colors',
-                    selected ? 'border-primary/60 bg-primary/5' : 'border-border hover:bg-muted/50',
-                  )}
+                  className="flex w-36 flex-shrink-0 snap-start items-center gap-2 text-left"
                 >
                   <OrchestratorMark name={preset.name} emoji={preset.emoji} color={preset.color} size="md" />
                   <span className="flex min-w-0 flex-col leading-tight">
                     <span className="truncate text-[12px] font-medium text-foreground">{preset.name}</span>
                     <span className="truncate text-[10px] text-muted-foreground">{preset.note}</span>
                   </span>
-                </button>
+                </ChoiceRow>
               </Tip>
             );
           })}
@@ -258,18 +261,17 @@ function LookButton({
   ...rest
 }: React.ComponentProps<'button'> & { label: string; active?: boolean }) {
   return (
-    <button data-slot="action-button" aria-pressed={active}
+    <Button
+      aria-pressed={active}
       type="button"
       {...rest}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors disabled:opacity-50',
-        active ? 'border-primary/50 bg-primary/5 text-foreground' : 'border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-        className,
-      )}
+      variant="secondary"
+      size="xs"
+      className={cn("inline-flex items-center gap-1.5", className)}
     >
       {children}
       {label}
-    </button>
+    </Button>
   );
 }
 
@@ -314,7 +316,7 @@ function Swatch({
 }) {
   return (
     <Tip label={label}>
-      <button data-slot="action-button" data-variant="ghost"
+      <button data-native-action="ri-identity-swatch"
         type="button"
         role="radio"
         aria-checked={selected}

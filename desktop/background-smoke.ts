@@ -11,7 +11,8 @@ import type { Notification } from 'electron';
 import type { DesktopNotificationStatus } from '../src/lib/notifications/desktop-contract';
 import { serviceStatus } from '../src/lib/service/client';
 import { acceptance, api, assertNoAlertsWithoutSignature, bounded, eventually, needsSignedBuild } from './acceptance-fixture';
-import { localPage, nativeWindowSnapshot } from './acceptance-surfaces';
+import { clickClosingPage, localPage, nativeWindowSnapshot } from './acceptance-surfaces';
+import { noteTitleField } from './renderer-locators';
 
 interface PresentationState {
   shown: { notification: Notification; hidden: boolean }[];
@@ -98,7 +99,7 @@ void acceptance('background-smoke', async fixture => {
 
   try {
     await fixture.navigate(`/note/${note.id}`);
-    const title = page.locator('textarea.note-title'); await title.waitFor();
+    const title = noteTitleField(page); await title.waitFor();
     const baseline = await page.evaluate(() => performance.timeOrigin);
     const hiddenTitle = 'Dirty note saved while the window is hidden';
     const hiddenBody = 'The real editor stays mounted and its pending document save completes in the background.';
@@ -212,7 +213,7 @@ void acceptance('background-smoke', async fixture => {
     const covered = await nativeWindowSnapshot(app);
     assert.equal(covered.id, windowId, 'Recovery opened in another native window');
     assert.equal(covered.local.filter(local => local.visible).length, 1);
-    await recoveryPage.locator('#back').click();
+    await clickClosingPage(recoveryPage, recoveryPage.locator('#back'));
     await eventually(async () => (await nativeWindowSnapshot(app)).local.every(local => !local.visible), 'recovery view left by its Back');
     await foreground(); await unchangedDocument(recoveryDocument);
     assert.equal(await title.inputValue(), readNote().title);

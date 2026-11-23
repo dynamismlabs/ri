@@ -1,5 +1,14 @@
 'use client';
+import { Dialog, DialogContent, DialogTitle } from '@/components/system/dialog';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+import { FormFooterHost } from '@/components/system/form-actions';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 /**
  * The Schedules window. Opened from the rail and from a chat's Schedule
  * button (src/lib/client/schedules-window.ts), mounted once in the
@@ -56,6 +65,7 @@ export function TriggersModal() {
 
 function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
   const [view, setView] = useState<View>(() => triggerId ? { kind: 'edit', id: triggerId } : { kind: 'list' });
+  const returnFocus = useRef<HTMLElement | null>(typeof document === 'undefined' ? null : document.activeElement as HTMLElement);
   const listButton = useRef<HTMLButtonElement | null>(null);
   const backButton = useRef<HTMLButtonElement | null>(null);
 
@@ -64,39 +74,20 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
     else backButton.current?.focus({ preventScroll: true });
   }, [view.kind]);
 
-  // Escape closes the window, unless something inside it (a menu, the
-  // chat's composer) already used the key.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !e.defaultPrevented) closeSchedulesWindow();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, []);
-
   const withChat = view.kind === 'new' || view.kind === 'edit';
   const toList = () => setView({ kind: 'list' });
 
   return (
-    <div data-slot="dialog-overlay"
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={closeSchedulesWindow}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Schedules and Triggers"
-    >
-      <div
-        data-slot="dialog-content"
-        // Height: capped at 88% of the viewport and ~896px, floored for short
-        // screens, in rem so it scales with the user's font size. A steady
-        // height keeps the window from jumping between views; the body
-        // scrolls instead. Wider with the chat beside the form.
-        className={cn(
-          'w-full h-[min(88vh,56rem)] min-h-[36rem] bg-background border border-border rounded-lg shadow-2xl flex flex-col',
-          withChat ? 'max-w-6xl' : 'max-w-4xl',
-        )}
-        onClick={(e) => e.stopPropagation()}
+    <Dialog open onOpenChange={(next) => { if (!next) closeSchedulesWindow(); }}>
+      <DialogContent height="window"
+        showCloseButton={false}
+        padding="none"
+        size="wide"
+        aria-describedby={undefined}
+        className={cn(' gap-0 overflow-hidden', withChat ? 'max-w-6xl' : 'max-w-4xl')}
+        onCloseAutoFocus={(event) => { event.preventDefault(); if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true }); }}
       >
+        <DialogTitle className="sr-only">Schedules and Triggers</DialogTitle>
         <Header view={view} onBack={toList} backButton={backButton} />
 
         {/* Keep the list's scroll position and buttons when switching to a detail. */}
@@ -129,20 +120,23 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
             />
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
 /** The form on the left and the schedule's chat on the right; stacked on a phone. */
 function WithChat({ children, chat }: { children: React.ReactNode; chat: React.ReactNode }) {
+  const phone=useViewportTier()==='phone';
   return (
+    <FormFooterHost enabled={phone}>
     <div className="flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row">
-      <div className="md:flex-1 md:min-w-0 md:overflow-y-auto px-6 py-5">{children}</div>
+      <div className="shrink-0 md:shrink md:flex min-h-0 md:flex-1 flex-col md:min-w-0"><FormFooterHost enabled={!phone}><div className="min-h-0 md:flex-1 md:overflow-y-auto px-6 py-5">{children}</div></FormFooterHost></div>
       <div className="h-[32rem] md:h-auto md:w-[26rem] flex-shrink-0 border-t md:border-t-0 md:border-l border-border min-h-0">
         {chat}
       </div>
     </div>
+    </FormFooterHost>
   );
 }
 
@@ -187,9 +181,14 @@ function EditBody({ id, onGone }: { id: string; onGone: () => void }) {
       ) : (
         <div className="space-y-2 text-sm text-muted-foreground">
           <p>{error ? 'This schedule could not be loaded.' : 'This schedule no longer exists.'}</p>
-          <button type="button" onClick={onGone} className="font-medium text-foreground hover:underline">
+          <Button
+            type="button"
+            onClick={onGone}
+            variant="link"
+            size="sm"
+          >
             Back to all schedules
-          </button>
+          </Button>
         </div>
       )}
     </WithChat>
@@ -217,15 +216,17 @@ function Header({ view, onBack, backButton }: {
   return (
     <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
       {view.kind !== 'list' ? (
-        <button
+        <Button
           ref={backButton}
           type="button"
           onClick={onBack}
-          className="flex shrink-0 items-center gap-1.5 p-1.5 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted"
+          variant="secondary"
+          size="sm"
+          className="flex shrink-0 items-center gap-1.5"
         >
           <ArrowLeft size={16} />
           All schedules
-        </button>
+        </Button>
       ) : (
         <Clock size={16} className="text-primary mx-1.5" />
       )}
@@ -237,14 +238,15 @@ function Header({ view, onBack, backButton }: {
         </span>
       )}
       <div className="flex-1" />
-      <button
+      <IconButton
         type="button"
         onClick={closeSchedulesWindow}
-        className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted"
-        aria-label="Close"
+        label="Close"
+        variant="ghost"
+        size="sm"
       >
         <X size={16} />
-      </button>
+      </IconButton>
     </div>
   );
 }
@@ -283,7 +285,7 @@ function ListBody({
         // a header strip — auto-width, right-aligned so it doesn't
         // dominate the visual hierarchy.
         <div className="flex items-center justify-between">
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider">
+          <p className="text-[11px] text-muted-foreground">
             {triggers.length} trigger{triggers.length === 1 ? '' : 's'}
           </p>
           <NewTriggerButton onClick={onNew} />
@@ -319,16 +321,16 @@ function ListBody({
 
 function NewTriggerButton({ onClick }: { onClick: MouseEventHandler<HTMLButtonElement> }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      data-slot="action-button"
-      data-variant="primary"
-      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+      variant="primary"
+      size="md"
+      className="inline-flex items-center gap-1.5"
     >
       <Plus size={14} />
       New scheduled task
-    </button>
+    </Button>
   );
 }
 
@@ -369,27 +371,24 @@ function Row({
   });
   const overdue = overdueLabel(trigger);
   return (
-    <div data-slot="schedule-row" className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted/40 transition-colors">
-      <Tip label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}>
-        <button
+    <Card padding="md" shadow  className="flex items-center gap-3">
+
+        <IconButton
           type="button"
           onClick={(e) => {
             e.stopPropagation();
             onToggle(!trigger.enabled);
           }}
-          className={cn(
-            'flex-shrink-0 p-1.5 rounded-md transition-colors',
-            trigger.enabled
-              ? 'bg-primary/10 text-primary hover:bg-primary/20'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80',
-          )}
-          aria-label={trigger.enabled ? 'Pause' : 'Resume'}
+          label={trigger.enabled ? 'Pause' : 'Resume'}
+          tooltip={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}
+          variant="ghost"
+          size="sm"
+          className="flex-shrink-0"
         >
           {trigger.enabled ? <Play size={12} /> : <Pause size={12} />}
-        </button>
-      </Tip>
+        </IconButton>
 
-      <button
+      <InlineAction
         type="button"
         onClick={onOpen}
         className="flex-1 min-w-0 text-left"
@@ -398,25 +397,20 @@ function Row({
           <p className="text-sm font-medium truncate">{trigger.name}</p>
           {isReservedTrigger(trigger.id) && (
             <Tip label="Managed by the app. Its schedule and who runs it can change, the rest is fixed.">
-              <span
-                data-slot="status-badge"
-                className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-medium bg-muted text-muted-foreground"
+              <StatusBadge
+
+                className="flex-shrink-0"
               >
                 Managed
-              </span>
+              </StatusBadge>
             </Tip>
           )}
           {trigger.lastRunStatus && (
-            <span data-slot="status-badge"
-              className={cn(
-                'px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-medium',
-                trigger.lastRunStatus === 'completed' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-                trigger.lastRunStatus === 'failed' && 'bg-destructive/10 text-destructive',
-                trigger.lastRunStatus === 'skipped' && 'bg-muted text-muted-foreground',
-              )}
+            <StatusBadge tone={(trigger.lastRunStatus === 'completed' ? "success" : 'neutral')}
+
             >
               {trigger.lastRunStatus}
-            </span>
+            </StatusBadge>
           )}
         </div>
         <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
@@ -427,9 +421,9 @@ function Row({
           {trigger.lastFiredAt && ` · ran ${ranAgo(trigger.lastFiredAt)}`}
         </p>
         {overdue && <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 truncate">{overdue}</p>}
-      </button>
+      </InlineAction>
 
-    </div>
+    </Card>
   );
 }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { MessageSquarePlus } from 'lucide-react';
 import {
@@ -8,8 +9,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+} from '@/components/system/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { RailIconButton } from '@/components/workspaces/rail-icon-button';
 import { FeedbackPanel } from './feedback-panel';
 import { setFeedbackOpen, useFeedbackStore } from './feedback-store';
@@ -34,23 +35,25 @@ export function FeedbackRailButton({ collapsed }: { collapsed: boolean }) {
             active={open}
           />
         ) : (
-          <button data-slot="action-button"
+          <Button
             type="button"
             aria-label="Feedback & bugs"
             aria-expanded={open}
-            className="w-full flex items-center gap-1.5 rounded-lg border border-border/60 px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:border-muted-foreground/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 transition-colors"
+            variant="secondary"
+            size="sm"
+            className="w-full flex items-center gap-1.5 justify-start"
           >
             <MessageSquarePlus size={13} className="shrink-0" />
             <span className="truncate">Feedback & bugs</span>
-          </button>
+          </Button>
         )}
       </PopoverTrigger>
-      <PopoverContent
+      <PopoverContent padding="none"
         side="right"
         align="end"
         sideOffset={10}
         collisionPadding={12}
-        className="flex max-h-[min(40rem,var(--radix-popover-content-available-height))] w-[min(24rem,calc(100vw-1.5rem))] flex-col overflow-hidden p-0"
+        className="flex max-h-[min(40rem,var(--radix-popover-content-available-height))] w-[min(24rem,calc(100vw-1.5rem))] flex-col overflow-hidden"
       >
         <FeedbackPanel onClose={() => setOpen(false)} />
       </PopoverContent>
@@ -68,9 +71,9 @@ export function FeedbackDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setFeedbackOpen}>
-      <DialogContent
+      <DialogContent placement="viewport" padding="none"
         showCloseButton={false}
-        className="flex max-h-[calc(100dvh-1.5rem)] flex-col gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-md"
+        className="flex max-h-[calc(100dvh-1.5rem)] flex-col gap-0 overflow-hidden sm:max-w-md"
         style={
           bottom === null
             ? undefined

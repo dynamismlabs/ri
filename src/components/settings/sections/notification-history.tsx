@@ -1,7 +1,11 @@
 'use client';
+import { Card } from '@/components/system/card';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { NativeSelect } from '@/components/system/native-select';
+import { cn } from '@/lib/utils';
+
+import { StatusBadge as Badge } from '@/components/system/status-badge';
+import { Button } from '@/components/system/button';
 import { NOTIFICATION_HISTORY_CHANNEL_LABELS, NOTIFICATION_HISTORY_STATUS_LABELS, type NotificationHistoryStatus } from '@/lib/notifications/history';
 import { trpcClient } from '@/lib/trpc/client';
 import { rpcOptions } from '@/lib/trpc/request-options';
@@ -30,37 +34,42 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
   // Removing a destination removes its history. Do not retain a vanished filter.
   const selectedChannel = channels.some(channel => channel.id === channelId) ? channelId : 'all';
   const visible = deliveries.filter(item => (status === 'all' || item.status === status) && (selectedChannel === 'all' || item.channel.id === selectedChannel));
-  const filterClass = 'rounded-md border border-border bg-background px-2 py-1.5 text-xs';
 
   return (
     <section className="space-y-3" aria-labelledby={`${id}-heading`}>
       <div className="flex items-center justify-between gap-3">
-        <h2 id={`${id}-heading`} className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Recent delivery history</h2>
-        <Button type="button" variant="ghost" size="sm" disabled={query.isFetching} onClick={() => void query.refetch()}>
+        <h2 id={`${id}-heading`} className="text-[10px] font-semibold text-muted-foreground">Recent delivery history</h2>
+        <Button
+          type="button"
+          disabled={query.isFetching}
+          onClick={() => void query.refetch()}
+          variant="ghost"
+          size="sm"
+        >
           {query.isFetching ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />} Refresh history
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">Latest 100 deliveries across your notification channels. Filters apply to this recent list. Removing a channel also removes its history.</p>
       <div className="flex flex-wrap items-center gap-2">
         <label htmlFor={`${id}-status`} className="text-xs text-muted-foreground">Status</label>
-        <select id={`${id}-status`} value={status} onChange={event => setStatus(event.target.value as NotificationHistoryStatus | 'all')} className={filterClass}>
+        <NativeSelect id={`${id}-status`} value={status} onChange={event => setStatus(event.target.value as NotificationHistoryStatus | 'all')} className="w-auto">
           <option value="all">All statuses</option>
           {Object.entries(NOTIFICATION_HISTORY_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </select>
+        </NativeSelect>
         <label htmlFor={`${id}-channel`} className="text-xs text-muted-foreground">Channel</label>
-        <select id={`${id}-channel`} value={selectedChannel} onChange={event => setChannelId(event.target.value)} className={`${filterClass} max-w-56`}>
+        <NativeSelect id={`${id}-channel`} value={selectedChannel} onChange={event => setChannelId(event.target.value)} className={cn("max-w-56", 'w-auto')}>
           <option value="all">All channels</option>
           {channels.map(channel => <option key={channel.id} value={channel.id}>{channel.label}</option>)}
-        </select>
+        </NativeSelect>
       </div>
       {query.isPending && <p role="status" className="text-xs text-muted-foreground">Loading delivery history…</p>}
       {query.isError && <p role="alert" className="text-xs text-destructive">Could not refresh delivery history. Try again shortly.{query.data ? ' Showing the last loaded results.' : ''}</p>}
       {!query.isPending && !query.isError && visible.length === 0 && <p className="rounded-lg border border-dashed border-border p-4 text-xs text-muted-foreground">{deliveries.length ? 'No recent deliveries match these filters.' : 'No deliveries yet. Alerts and channel tests will appear here.'}</p>}
-      {visible.length > 0 && <ol aria-label="Recent notification deliveries" className="max-h-[32rem] divide-y divide-border overflow-y-auto rounded-xl border border-border">
+      {visible.length > 0 && <Card as="ol" padding="none" aria-label="Recent notification deliveries" className="max-h-[32rem] divide-y divide-border overflow-y-auto">
         {visible.map(item => <li key={item.id} className="space-y-1.5 p-3">
           <div className="flex items-start justify-between gap-3">
             <p className="min-w-0 break-words text-sm font-medium">{item.title}</p>
-            <Badge variant={item.status === 'failed' ? 'destructive' : 'secondary'} className="shrink-0">{NOTIFICATION_HISTORY_STATUS_LABELS[item.status]}</Badge>
+            <Badge tone={item.status === 'failed' ? 'error' : 'neutral'} className="shrink-0">{NOTIFICATION_HISTORY_STATUS_LABELS[item.status]}</Badge>
           </div>
           <p className="break-words text-xs text-muted-foreground">{item.channel.label} · {NOTIFICATION_HISTORY_CHANNEL_LABELS[item.channel.type]} · {item.eventLabel}</p>
           <p className="text-xs text-muted-foreground">{item.detail}</p>
@@ -69,7 +78,7 @@ export function NotificationHistory({ refreshKey = 0 }: { refreshKey?: number })
             {item.sentAt ? <> · Sent <time dateTime={item.sentAt}>{displayTime(item.sentAt)}</time></> : item.updatedAt !== item.createdAt ? <> · Updated <time dateTime={item.updatedAt}>{displayTime(item.updatedAt)}</time></> : null}
           </p>
         </li>)}
-      </ol>}
+      </Card>}
     </section>
   );
 }

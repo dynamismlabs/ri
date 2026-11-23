@@ -1,11 +1,12 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { Command } from 'cmdk';
 import { Bot, ChevronDown, Search } from 'lucide-react';
 import type { WorkspaceRecord } from '@/db/types';
 import { cn } from '@/lib/utils';
 import { AgentIcon } from '@/components/agents/agent-icon';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverTrigger } from '@/components/system/popover';
 import { LauncherPopoverContent } from './launcher/launcher-popover';
 
 export function WorkspacePicker({
@@ -28,19 +29,16 @@ export function WorkspacePicker({
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <button data-slot="action-button"
+        <Button
           type="button"
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-md px-1.5 py-1 text-[12px] font-semibold transition-colors',
-            current
-              ? 'text-foreground hover:bg-muted/60'
-              : 'border border-dashed border-primary/50 text-primary hover:bg-primary/5',
-          )}
+          variant="secondary"
+          size="sm"
+          className="inline-flex items-center gap-1.5"
         >
           {current ? <AgentIcon workspace={current} size="xs" /> : <Bot size={12} className="text-primary/80" />}
           {current?.name ?? 'Pick an agent'}
           <ChevronDown size={11} className={current ? 'text-muted-foreground/60' : 'text-primary/70'} />
-        </button>
+        </Button>
       </PopoverTrigger>
       {/* Radix focuses the first field on open, which is the filter, so
           typing narrows the list straight away. */}

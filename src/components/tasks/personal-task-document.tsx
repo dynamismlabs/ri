@@ -1,4 +1,7 @@
- 'use client';
+'use client';
+
+import { Button } from '@/components/system/button';
+
 import type { ComponentProps } from 'react';
 import type { TaskRecord, UpdateTaskInput } from '@/db/types';
 import { ChevronLeft, Lock } from 'lucide-react';
@@ -21,7 +24,12 @@ export function PersonalTaskDocument({ task, parentTask, openTask, save, autosav
                       onTitleChange={(title) => autosave({ title })}
                       onAreaChange={(areaId) => saveField('areaId', areaId)}
                       onDeadlineChange={(value) => saveField('hardDeadline', value)}
-                      breadcrumb={task.parentId && parentTask ? <button onClick={() => openTask(task.parentId!)} className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"><ChevronLeft size={12} /><span className="max-w-[300px] truncate">{parentTask.title}</span></button> : null}
+                      breadcrumb={task.parentId && parentTask ? <Button
+                        onClick={() => openTask(task.parentId!)}
+                        variant="ghost"
+                        size="sm"
+                        className="mt-1 flex items-center gap-1"
+                      ><ChevronLeft size={12} /><span className="max-w-[300px] truncate">{parentTask.title}</span></Button> : null}
                       properties={<>
                         <TaskPlanningProperties task={task} save={save} />
 
@@ -46,15 +54,16 @@ export function PersonalTaskDocument({ task, parentTask, openTask, save, autosav
                               <span className="inline-flex items-center gap-1 text-amber-500 font-medium">
                                 <Lock size={10} /> {task.blockedOn}
                               </span>
-                              <button
+                              <Button
                                 onClick={() => {
                                   saveField('blockedOn', null);
                                   saveField('blockedSince', null);
                                 }}
-                                className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                                variant="link"
+                                size="sm"
                               >
                                 Unblock
-                              </button>
+                              </Button>
                             </div>
                           </>
                         )}

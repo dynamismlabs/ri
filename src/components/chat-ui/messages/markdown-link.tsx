@@ -1,10 +1,12 @@
 'use client';
 
+import { DialogBody } from '@/components/system/dialog';
+import { PopoverPrimitive as Popover } from '@/components/system/popover';
 import { useEffect, useRef, useState, type ComponentProps } from 'react';
-import { Popover } from 'radix-ui';
+
 import { Check, Copy, ExternalLink } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/system/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/system/dialog';
 import { cn } from '@/lib/utils';
 import { FileSourceTip } from '@/components/chat-ui/artifacts/file-source-tip';
 import { markdownLinkTarget, markdownWebUrl } from './markdown-link-target';
@@ -17,14 +19,20 @@ function CopyLink({ value }: { value: string }) {
     return () => clearTimeout(timer);
   }, [status]);
   const label = status === 'copied' ? 'Copied' : status === 'error' ? 'Could not copy' : 'Copy';
-  return <Button type="button" size="xs" variant="ghost" aria-label={label} onClick={async () => {
+  return <Button
+    type="button"
+    aria-label={label}
+    onClick={async () => {
     try {
       await navigator.clipboard.writeText(value);
       setStatus('copied');
     } catch {
       setStatus('error');
     }
-  }}>
+  }}
+    variant="ghost"
+    size="xs"
+  >
     {status === 'copied' ? <Check aria-hidden /> : <Copy aria-hidden />}
     <span role="status">{label}</span>
   </Button>;
@@ -43,7 +51,12 @@ export function MarkdownLink({ href: renderedHref, children, className, title, n
   return <Dialog>
     <DialogTrigger asChild>
       <FileSourceTip source={href} onlyWhenTextHidden={children === href}>
-        <button type="button" className={style}>{children}</button>
+        <Button
+          type="button"
+          variant="link"
+          size="xs"
+          className={className}
+        >{children}</Button>
       </FileSourceTip>
     </DialogTrigger>
     <DialogContent>
@@ -51,10 +64,16 @@ export function MarkdownLink({ href: renderedHref, children, className, title, n
         <DialogTitle>Open link</DialogTitle>
         <DialogDescription>{title || 'Copy this destination or open it in a new tab.'}</DialogDescription>
       </DialogHeader>
-      <p className="max-h-48 overflow-y-auto break-all font-mono text-xs select-text">{href}</p>
+      <DialogBody className="space-y-4">
+<p className="max-h-48 overflow-y-auto break-all font-mono text-xs select-text">{href}</p>
+</DialogBody>
       <DialogFooter>
         <CopyLink value={href} />
-        <Button asChild size="sm"><a href={href} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden />Open in new tab</a></Button>
+        <Button
+          asChild
+          variant="primary"
+          size="md"
+        ><a href={href} target="_blank" rel="noopener noreferrer"><ExternalLink aria-hidden />Open in new tab</a></Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>;
@@ -93,7 +112,7 @@ function WebLink({ description, children, ...props }: ComponentProps<'a'> & { de
       >{children}</a>
     </Popover.Anchor>
     <Popover.Portal>
-      <Popover.Content ref={panel} side="top" align="start" sideOffset={6} collisionPadding={12}
+      <Popover.Content padding="md" ref={panel} side="top" align="start" sideOffset={6} collisionPadding={12}
         aria-label="Link destination" onOpenAutoFocus={event => event.preventDefault()} onCloseAutoFocus={event => event.preventDefault()}
         onEscapeKeyDown={() => {
           if (panel.current?.contains(document.activeElement)) anchor.current?.focus();
@@ -109,7 +128,7 @@ function WebLink({ description, children, ...props }: ComponentProps<'a'> & { de
             if (!event.shiftKey) changeOpen(false);
           }
         }}
-        className="z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))] rounded-lg border border-border bg-popover p-2.5 text-popover-foreground shadow-lg outline-none"
+        className="z-50 w-max max-w-[min(24rem,calc(100vw-1.5rem))]"
       >
         {description && <p className="mb-1 text-xs">{description}</p>}
         <div className="flex items-start gap-2">

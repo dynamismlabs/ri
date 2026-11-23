@@ -1,5 +1,9 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
 import { isAppToolkitId } from '@/lib/integrations/app-ids';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { trpcClient } from '@/lib/trpc/client';
@@ -20,7 +24,7 @@ import {
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import type { WorkspaceIntegrationScope, WorkspaceIntegrationScopeAccount } from '@/db/types';
 import { pinKey, pinMatchesConnection, scopePins, toggleAccountPin } from '@/lib/integrations/scope-pins';
 import { APPLICATIONS, applicationForDirectToolkit, parseManagedToolkitId } from '@/lib/integrations/sources/applications';
@@ -115,18 +119,20 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
     <DropdownMenu>
       <DropdownMenuTrigger asChild disabled={disabled}>
         <Tip label={dormant.length > 0 ? dormantNote : summary} onlyWhenTextHidden={dormant.length === 0}>
-          <button data-slot="action-button"
+          <Button
             aria-label={`Accounts ${serviceName} may use: ${summary}`}
-            className="flex h-7 min-w-0 max-w-[55%] shrink-0 items-center gap-1 rounded-lg border border-border bg-input/30 px-2 text-[11px] text-foreground outline-none transition-colors hover:bg-input/50 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:opacity-50 @sm:max-w-[200px]"
+            variant="secondary"
+            size="sm"
+            className="flex min-w-0 max-w-[55%] shrink-0 items-center gap-1 @sm:max-w-[200px]"
           >
             {dormant.length > 0 && <AlertCircle size={11} className="shrink-0 text-amber-600 dark:text-amber-400" />}
             <span className="truncate">{summary}</span>
             <ChevronDown size={12} className="shrink-0 text-muted-foreground" />
-          </button>
+          </Button>
         </Tip>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64 max-w-[calc(100vw-2rem)]">
-        <DropdownMenuCheckboxItem checked={all} onCheckedChange={selectAll} onSelect={stayOpen} className="items-start text-xs">
+        <DropdownMenuCheckboxItem checked={all} onCheckedChange={selectAll} onSelect={stayOpen} className="items-start">
           <span className="min-w-0">
             <span className="block font-medium">{directOnly ? 'All direct accounts' : 'All accounts'}</span>
             <span className="block text-[10px] text-muted-foreground">{directOnly ? 'Includes future direct accounts. Accounts through a source are chosen below.' : 'Includes accounts you connect later'}</span>
@@ -143,7 +149,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
               disabled={lastOne && checked}
               onCheckedChange={() => toggleAccount(c)}
               onSelect={stayOpen}
-              className="text-xs"
+              className=""
             >
               <span className="truncate">{accountLabel(c)}</span>
             </DropdownMenuCheckboxItem>
@@ -152,7 +158,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
         {dormant.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="py-1.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
+            <DropdownMenuLabel tone="warning">
               Not connected (kept, inactive)
             </DropdownMenuLabel>
             {dormant.map((p) => (
@@ -162,7 +168,7 @@ function AccountMultiSelect({ serviceName, directOnly = false, accounts, pins, d
                 disabled={lastOne}
                 onCheckedChange={() => removePin(p)}
                 onSelect={stayOpen}
-                className="text-xs"
+                className=""
               >
                 <span className="truncate font-mono text-[11px] text-muted-foreground">{p.accountId}</span>
               </DropdownMenuCheckboxItem>
@@ -230,14 +236,20 @@ function ManagedAccountChecks({ routes, scopes, disabled, onChange }: {
             <Checkbox checked={checked} disabled={disabled} onCheckedChange={() => toggle(route, c, !checked)} />
             <span className="truncate text-[11px] text-foreground/90">{accountLabel(c)}</span>
             {c.label && c.email && c.label !== c.email && <span className="truncate text-[10px] text-muted-foreground">{c.label}</span>}
-            <span className="shrink-0 rounded-full bg-muted/70 px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">via {route.sourceLabel}</span>
+            <StatusBadge className="shrink-0">via {route.sourceLabel}</StatusBadge>
           </label>
         );
       })}
       {shown.length > 1 && !allChecked && (
-        <button type="button" disabled={disabled} onClick={selectAll} className="text-[10px] font-medium text-primary hover:underline disabled:opacity-40">
+        <Button
+          type="button"
+          disabled={disabled}
+          onClick={selectAll}
+          variant="link"
+          size="sm"
+        >
           Select all connected accounts
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -352,27 +364,29 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
   return (
     <div className="@container space-y-3">
       {error && (
-        <div className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
+        <Callout padding="sm" tone={"error"} className="flex items-start gap-2">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
-        </div>
+        </Callout>
       )}
 
       {groups.length === 0 && managedOnly.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/10 p-6 text-center">
+        <Card padding="xl" shadow className="flex flex-col items-center justify-center text-center">
           <Plug size={20} className="mb-2 text-muted-foreground" />
           <p className="text-[12px] text-muted-foreground">
             No accounts connected yet. Connect Gmail, Linear, Notion and more, then choose here which this agent can use.
           </p>
-          <button
+          <Button
             type="button"
             onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-            className="mt-3 flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[12.5px] font-medium text-foreground transition-colors hover:bg-accent/70"
+            variant="secondary"
+            size="sm"
+            className="mt-3 flex items-center gap-1.5"
           >
             <Plug size={13} />
             Connect an account
-          </button>
-        </div>
+          </Button>
+        </Card>
       ) : (
         <div className="space-y-3">
           {groups.map(({ providerId, toolkits: tks, accounts }) => {
@@ -381,7 +395,7 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
             const allOn = selectedCount === ids.length;
             const someOn = selectedCount > 0 && !allOn;
             return (
-              <div key={providerId} className="rounded-xl border border-border bg-card/20 p-3">
+              <Card padding="md" shadow key={providerId} >
                 <label className="flex cursor-pointer items-center gap-2.5">
                   <Checkbox
                     checked={allOn ? true : someOn ? 'indeterminate' : false}
@@ -427,11 +441,11 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             );
           })}
           {managedOnly.map(([app, routes]) => (
-            <div key={`app:${app}`} className="rounded-xl border border-border bg-card/20 p-3">
+            <Card padding="md" shadow key={`app:${app}`} >
               <div className="flex items-center gap-2.5">
                 <IntegrationLogo providerId={app === 'gmail' ? 'gmail' : 'google'} name={APPLICATIONS[app].displayName} size={24} />
                 <span className="text-sm font-medium text-foreground">{APPLICATIONS[app].displayName}</span>
@@ -439,13 +453,13 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
               <div className="mt-2 border-t border-border/40 pt-2">
                 <ManagedAccountChecks routes={routes} scopes={scopes} disabled={disabled} onChange={onChange} />
               </div>
-            </div>
+            </Card>
           ))}
         </div>
       )}
 
       {dormant.length > 0 && (
-        <div className="space-y-1.5 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+        <Callout padding="md" tone={"warning"} className="space-y-1.5">
           <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-400">Disconnected (kept, inactive)</p>
           {dormant.map((s) => {
             const pins = scopePins(s);
@@ -457,21 +471,24 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
                     {pins.length === 1 ? ` · ${pins[0]!.accountId}` : pins.length > 1 ? ` · ${pins.length} accounts` : ''}
                   </span>
                 </Tip>
-                <button
+                <Button
                   type="button"
                   onClick={() => removeDormant(s.toolkitId)}
                   disabled={disabled}
-                  className="shrink-0 text-destructive hover:underline disabled:opacity-40"
+                  variant="link"
+                  size="sm"
+                  tone="danger"
+                  className="shrink-0"
                 >
                   Remove
-                </button>
+                </Button>
               </div>
             );
           })}
           <p className="text-[10px] leading-normal text-amber-700/80 dark:text-amber-400/80">
             Reconnect the service to reactivate it, or remove it here.
           </p>
-        </div>
+        </Callout>
       )}
     </div>
   );

@@ -15,7 +15,7 @@ let server: http.Server;
 let browser: Browser;
 let base: string;
 let failPrepare = false;
-let delay = 0;
+let prepareReady: Promise<void> | undefined;
 let uploadDelay = 0;
 let failUpload = false;
 let calls: { path: string; input: Record<string, unknown> }[] = [];
@@ -77,7 +77,7 @@ beforeAll(async () => {
         };
       if (procedure === 'feedback.preparePublicIssue') {
         calls.push({ path: url.pathname, input });
-        if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+        await prepareReady;
         if (failPrepare) {
           res.statusCode = 503;
           res.setHeader('content-type', 'application/json');
@@ -153,7 +153,7 @@ beforeAll(async () => {
 }, 30_000);
 beforeEach(() => {
   failPrepare = false;
-  delay = 0;
+  prepareReady = undefined;
   uploadDelay = 0;
   failUpload = false;
   calls = [];
@@ -213,14 +213,16 @@ it('preserves one draft across rail, collapsed rail, dialog and page reload', as
     await page.close();
   }
 });
-it('supports native radio arrows and returns dialog focus to its trigger', async () => {
+it('supports radio arrows and returns dialog focus to its trigger', async () => {
   const page = await open();
   try {
     await page.locator('[data-dialog]').click();
     const radio = page.getByRole('radio', { name: 'Feedback', exact: true });
     await radio.focus();
-    await page.keyboard.press('ArrowRight');
-    expect(await page.getByRole('radio', { name: 'Bug', exact: true }).isChecked()).toBe(true);
+    // Radix moves radio focus on a queued task. Observe selection before releasing the key.
+    await page.keyboard.down('ArrowRight');
+    await expect.poll(() => page.getByRole('radio', { name: 'Bug', exact: true }).isChecked()).toBe(true);
+    await page.keyboard.up('ArrowRight');
     await page.keyboard.press('Escape');
     await details(page).waitFor({ state: 'detached' });
     await expect
@@ -231,7 +233,10 @@ it('supports native radio arrows and returns dialog focus to its trigger', async
   }
 });
 it('opens a GitHub draft, freezes input during preparation and never claims it was sent', async () => {
-  delay = 250;
+  let releasePrepare!: () => void;
+  prepareReady = new Promise<void>((resolve) => {
+    releasePrepare = resolve;
+  });
   const page = await open();
   try {
     await page.locator('[data-wide]').getByRole('button').click();
@@ -239,7 +244,9 @@ it('opens a GitHub draft, freezes input during preparation and never claims it w
     await snapshot(page, '01-desktop-compose');
     const popup = page.waitForEvent('popup');
     await page.getByRole('button', { name: 'Continue on GitHub', exact: true }).click();
-    expect(await details(page).isDisabled()).toBe(true);
+    // Hold the response until the pending state has actually been observed.
+    await expect.poll(() => details(page).isDisabled()).toBe(true);
+    releasePrepare();
     const tab = await popup;
     await page.getByText('Finish on GitHub', { exact: true }).waitFor();
     await snapshot(page, '03-github-handoff');
@@ -252,6 +259,7 @@ it('opens a GitHub draft, freezes input during preparation and never claims it w
     expect(await details(page).inputValue()).toBe('The rail covers my task');
     await tab.close();
   } finally {
+    releasePrepare();
     await page.close();
   }
 });

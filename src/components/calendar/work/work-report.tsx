@@ -1,5 +1,7 @@
 "use client";
+import { InlineAction } from '@/components/system/inline-action';
 
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { Archive, Check, CheckSquare, Copy, FileText, GitCommitHorizontal, Loader2, MessageSquare } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -61,7 +63,7 @@ function ReportSummary({ range }: { range: WorkRange }) {
         </h3>
         <div className="flex-1" />
         <Tip label="Copy the summary and the numbers as text">
-          <button
+          <Button
             type="button"
             onClick={() => {
               void navigator.clipboard.writeText(text).then(() => {
@@ -69,22 +71,26 @@ function ReportSummary({ range }: { range: WorkRange }) {
                 setTimeout(() => setCopied(false), 1500);
               });
             }}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1"
           >
             {copied ? <Check size={12} /> : <Copy size={12} />}
             {copied ? 'Copied' : 'Copy'}
-          </button>
+          </Button>
         </Tip>
         <Tip label="Save the report as a note, with every commit by agent">
-          <button
+          <Button
             type="button"
             disabled={save.isPending}
             onClick={() => save.mutate({ start: range.start, days: range.days }, { onSuccess: (note) => openNote(note.id) })}
-            className="flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
+            variant="secondary"
+            size="md"
+            className="flex items-center gap-1"
           >
             {save.isPending ? <Loader2 size={12} className="animate-spin" /> : <FileText size={12} />}
             Save as note
-          </button>
+          </Button>
         </Tip>
       </div>
       <div className="mt-2 space-y-2">
@@ -222,15 +228,17 @@ function DaySection({ day, agents, isToday }: { day: WorkDay; agents: ReadonlyMa
             </span>
           ))}
           {day.tasksDone.map((t) => (
-            <button
+            <Button
               key={t.id}
               type="button"
               onClick={() => openTask(t.id)}
-              className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="flex items-center gap-1"
             >
               <CheckSquare size={11} />
               {t.title}
-            </button>
+            </Button>
           ))}
         </div>
       )}
@@ -276,23 +284,28 @@ function AgentGroup({
         ))}
         {group.commits.length > COMMITS_SHOWN && (
           <li>
-            <button type="button" onClick={() => setAll(!all)} className="text-[11px] text-muted-foreground hover:text-foreground">
+            <Button
+              type="button"
+              onClick={() => setAll(!all)}
+              variant="ghost"
+              size="sm"
+            >
               {all ? 'Show fewer' : `Show all ${group.commits.length}`}
-            </button>
+            </Button>
           </li>
         )}
         {group.quietChats.map((chat) => (
           <li key={chat.sessionId}>
-            <button
+            <InlineAction purpose="caption"
               type="button"
               onClick={() => chat.executionId && onOpenChat(chat.sessionId)}
-              className="flex items-start gap-1.5 text-left text-[11.5px] leading-snug text-muted-foreground hover:text-foreground"
+              className="flex items-start gap-1.5 text-left"
             >
               <MessageSquare size={11} className="mt-[3px] shrink-0" />
               <span className="min-w-0">
                 {chat.label} <span className="text-[10px]">· {formatDuration(chat.agentMinutes)}</span>
               </span>
-            </button>
+            </InlineAction>
           </li>
         ))}
       </ul>

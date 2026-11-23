@@ -1,10 +1,13 @@
 'use client';
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
+
 import { trpcClient } from '@/lib/trpc/client';
 
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { HostedEndpointFields } from '@/components/integrations/hosted-endpoint-fields';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { apiErrorText } from '@/lib/api/client';
 import { integrationEndpointReady, type HostedEndpointSelection } from '@/lib/client/integration-endpoint';
 import { openIntegrationAuthorization } from '@/lib/client/desktop';
@@ -64,25 +67,50 @@ export function ConnectionRequest(props: ConnectionRequestProps) {
         ? 'Add or replace your connection token to restore access. Your token is stored encrypted and never shown to agents.'
         : 'Connect this service to make its tools available. No account or token is required.'}</p>
     {oauth && props.scopes.length > 0 && <details><summary>Requested access</summary><ul className="mt-2 break-all text-sm">{props.scopes.map(scope => <li key={scope}>{scope}</li>)}</ul></details>}
-    {(props.accounts?.length ?? 0) > 1 && <div className="space-y-2">
-      <label htmlFor="requested-account" className="text-sm font-medium">Account</label>
-      <select id="requested-account" className="w-full rounded-md border bg-background p-2 text-sm" disabled={busy} value={selectedAccountId} onChange={event => { setSelectedAccountId(event.target.value); setToken(''); setEndpointSelection({}); setMessage(''); }}>
-        <option value="">Choose an account</option>
-        {props.accounts?.map(account => <option key={account.connectionId} value={account.connectionId}>{account.label}</option>)}
-      </select>
-    </div>}
+    {(props.accounts?.length ?? 0) > 1 && <NativeSelect
+      id="requested-account"
+      controlClassName="w-full"
+      disabled={busy}
+      value={selectedAccountId}
+      onChange={(event) => {
+        setSelectedAccountId(event.target.value);
+        setToken('');
+        setEndpointSelection({});
+        setMessage('');
+      }}
+      label="Account"
+    >
+      <option value="">Choose an account</option>
+      {props.accounts?.map((account) => (
+        <option key={account.connectionId} value={account.connectionId}>
+          {account.label}
+        </option>
+      ))}
+    </NativeSelect>}
     {needsSetup ? <Link href="/?settings=plugins" className="text-sm font-medium underline">Set up in Settings</Link> : <form onSubmit={(event) => void connect(event)} className="space-y-4">
       {options.endpointConfig && !needsAccountChoice && <HostedEndpointFields setup={options.endpointConfig} value={endpointSelection} onChange={setEndpointSelection} disabled={busy} />}
       {setup && <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">{setup.map(step => <li key={step}>{step}</li>)}</ol>}
       {oauth && props.endpointConfig && meta.docsUrl && <a href={meta.docsUrl} target="_blank" rel="noopener noreferrer" className="block text-sm underline">Setup guide</a>}
       {bearer && <>
         {props.helpUrl && <a href={props.helpUrl} target="_blank" rel="noopener noreferrer" className="block text-sm underline">Get your {props.displayName} token</a>}
-        <div className="space-y-2">
-          <label htmlFor="connection-token" className="text-sm font-medium">{props.credentialLabel ?? 'Connection token'}</label>
-          <Input id="connection-token" type="password" autoComplete="off" value={token} onChange={event => setToken(event.target.value)} disabled={busy} required />
-        </div>
+        <Field
+          id="connection-token"
+          type="password"
+          autoComplete="off"
+          value={token}
+          onChange={(event) => setToken(event.target.value)}
+          disabled={busy}
+          required
+          label={props.credentialLabel ?? 'Connection token'}
+          purpose="code"
+        />
       </>}
-      <Button type="submit" disabled={busy || needsAccountChoice || !props.providerId || (bearer && !token.trim()) || !integrationEndpointReady(options.endpointConfig, endpointSelection)}>
+      <Button
+        type="submit"
+        disabled={busy || needsAccountChoice || !props.providerId || (bearer && !token.trim()) || !integrationEndpointReady(options.endpointConfig, endpointSelection)}
+        variant="primary"
+        size="md"
+      >
         {busy ? oauth ? 'Preparing sign-in…' : 'Connecting…' : oauth ? 'Continue to sign-in' : `Connect ${props.displayName}`}
       </Button>
     </form>}

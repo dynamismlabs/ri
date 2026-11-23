@@ -23,7 +23,7 @@ export function CommandSearchItems({ commands, query, onSelect, icon = command =
   if (!found.length && empty === null) return null;
   return <>
     {!found.length && <p className="p-8 text-center text-[11px] text-muted-foreground">{empty}</p>}
-    <Command.Group heading={heading} className="px-2 pb-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-muted-foreground/60">
+    <Command.Group heading={heading} className="px-2 pb-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[9px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:text-muted-foreground/60">
       {found.map(command => {
         const Icon = icons[icon(command)];
         return <Command.Item key={command.id} value={command.id} onSelect={() => onSelect(command)} className="flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-left data-[selected=true]:bg-muted/50">

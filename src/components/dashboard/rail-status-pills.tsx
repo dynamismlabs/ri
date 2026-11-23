@@ -1,12 +1,15 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useActivityBuckets } from '@/hooks/use-activity-buckets';
 import type { ActivityItem } from '@/lib/sessions/activity-buckets';
 import { openBoard } from '@/lib/client/task-board';
 import { useRailSessions } from '@/hooks/use-workspaces';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import {
   BUCKET_CONFIG,
   BUCKET_ORDER,
@@ -56,11 +59,17 @@ export function ReviewAttentionPill({ reviews, pendingSessionIds }: { reviews: N
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Tip label="AI review activity"><button data-slot="chip-button" data-tone="status" aria-label={`AI reviews: ${reviews.length}${needsAttention ? ', attention needed' : ''}`} className={cn('flex h-[18px] items-center gap-1 rounded px-1.5 text-[10px]', needsAttention ? 'bg-amber-500/15 text-amber-500' : 'bg-muted text-muted-foreground')}>
+        <Tip label="AI review activity"><ChipButton
+          aria-label={`AI reviews: ${reviews.length}${needsAttention ? ', attention needed' : ''}`}
+          variant="secondary"
+          size="compact"
+          tone="status"
+          status={needsAttention ? "warning" : "neutral"}
+        >
           {needsAttention ? <ShieldAlert size={10} /> : <ClipboardCheck size={10} />}<span className="font-mono font-semibold">{reviews.length}</span>
-        </button></Tip>
+        </ChipButton></Tip>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-72 p-2">
+      <PopoverContent padding="sm" align="start" className="w-72">
         <p className="px-1 pb-2 text-xs font-medium">AI review activity</p>
         <div className="max-h-[min(28rem,60dvh)] overflow-y-auto space-y-1">
           {reviews.map((review) => <Link key={review.reviewId} href={`/results/${review.resultId}`} onClick={() => setOpen(false)} className="block rounded-md px-2 py-2 hover:bg-muted">
@@ -86,13 +95,18 @@ function ActivityStatusPill({ bucketId, items }: ActivityStatusPillProps) {
       count={items.length}
       action={(close) => (
         <Tip label={`Show ${cfg.label} in Agent Activity`}>
-          <button type="button" aria-label={`Expand ${cfg.label} in Board`}
-            className="ml-1 inline-flex items-center gap-1 rounded px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+          <Button
+            type="button"
+            aria-label={`Expand ${cfg.label} in Board`}
             onClick={() => {
               close();
               // Let the popover restore focus before the Board captures its opener.
               requestAnimationFrame(() => openBoard({ focusBucket: bucketId }));
-            }}><Maximize2 className="size-3" />Board</button>
+            }}
+            variant="secondary"
+            size="sm"
+            className="ml-1 inline-flex items-center gap-1"
+          ><Maximize2 className="size-3" />Board</Button>
         </Tip>
       )}
     >
@@ -129,13 +143,10 @@ function PillSessionRow({ session, onPick }: PillSessionRowProps) {
   };
 
   return (
-    <button
+    <MenuAction selected={!!((isActive))} density="compact"
       type="button"
       onClick={handleOpen}
-      className={cn(
-        'w-full flex items-start gap-1.5 px-2.5 py-1.5 text-left rounded-md transition-colors',
-        isActive ? 'bg-secondary' : 'hover:bg-muted/50',
-      )}
+      className="w-full flex items-start gap-1.5 text-left"
     >
       <AgentIcon workspace={{ name: wsName, attachments: session.workspaceAttachments, emoji: session.workspaceEmoji, areaId: session.workspaceAreaId }} size="sm" />
       <div className="flex-1 min-w-0 leading-tight">
@@ -149,6 +160,6 @@ function PillSessionRow({ session, onPick }: PillSessionRowProps) {
           {wsName}
         </div>
       </div>
-    </button>
+    </MenuAction>
   );
 }

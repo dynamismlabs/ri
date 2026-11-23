@@ -20,7 +20,7 @@ import { bitsAndBoltsSettings, bitsAndBoltsTools } from '@/test/fixtures/bits-an
 const viewId = '01900333-3333-7333-8333-333333333333', captureId = '01900222-2222-7222-8222-222222222222', invocationId = captureId;
 // A grid size the layout leaves out, so it lands in Other settings and exercises a typed number.
 const read = { ...bitsAndBoltsSettings,
-  schema: { ...bitsAndBoltsSettings.schema, properties: { ...bitsAndBoltsSettings.schema.properties, gridSize: { type: 'integer', title: 'Grid size', minimum: 1, maximum: 50 } } },
+  schema: { ...bitsAndBoltsSettings.schema, properties: { ...bitsAndBoltsSettings.schema.properties, defaultView: { ...bitsAndBoltsSettings.schema.properties.defaultView, description: 'Choose the starting view' }, gridSize: { type: 'integer', title: 'Grid size', description: 'Spacing between grid lines', minimum: 1, maximum: 50 } } },
   values: { ...bitsAndBoltsSettings.values, gridSize: 10 } };
 const guest = `<html><body><p id="heading">Parts Library</p><script>
 addEventListener('message',event=>{const m=event.data;if(m&&m.jsonrpc==='2.0'&&m.id===1&&m.result)parent.postMessage({jsonrpc:'2.0',method:'ui/notifications/initialized',params:{}},'*')});
@@ -37,6 +37,7 @@ beforeAll(async () => {
   const css = await postcss([require('@tailwindcss/postcss')()]).process(fs.readFileSync('src/app/globals.css', 'utf8'), { from: path.resolve('src/app/globals.css') });
   const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
     import React from 'react';import {createRoot} from 'react-dom/client';import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+    document.documentElement.classList.toggle('dark',new URLSearchParams(location.search).get('theme')!=='light');
     import {McpServerSettings} from '@/components/settings/sections/integrations/mcp-settings';
     createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false}}})}>
       <main className="bg-background p-6 text-foreground" style={{width: 760}}><McpServerSettings serverId="server" name="Bits & Bolts" enabled /></main>
@@ -137,5 +138,23 @@ it('draws Bits & Bolts settings natively, saves only what changes, and opens its
     await page.keyboard.press('Escape');
     await dialog.waitFor({ state: 'detached' });
     expect(errors).toEqual([]);
+  } finally { await page.close(); }
+}, 60_000);
+
+for (const theme of ['light','dark']) it(`associates mixed settings row help and refusals with their controls (${theme})`, async () => {
+  values = { ...read.values };
+  const page = await browser.newPage({ viewport: { width: 900, height: 1000 } });
+  try {
+    await page.goto(origin+'/?theme='+theme);
+    const view = page.getByRole('combobox', { name: 'Default view', exact: true });
+    await view.click();await page.getByRole('option', { name: 'top', exact: true }).click();
+    await page.getByRole('alert').filter({hasText:'The top view is unavailable'}).waitFor();
+    const grid = page.getByRole('spinbutton', { name: 'Grid size', exact: true });
+    await grid.fill('80');await grid.press('Enter');await page.getByRole('alert').filter({hasText:'Grid size must be 50 or less'}).waitFor();
+    for (const [control, help, error] of [[view,'Choose the starting view','The top view is unavailable for this library'],[grid,'Spacing between grid lines','Grid size must be 50 or less']] as const) {
+      expect(await control.getAttribute('aria-invalid')).toBe('true');
+      expect(await control.evaluate(el => (el.getAttribute('aria-describedby')??'').split(/\s+/).filter(Boolean).map(id=>document.getElementById(id)?.textContent))).toEqual([help,error]);
+      await control.focus();expect(await control.evaluate(el=>getComputedStyle(el).outlineWidth)).toBe('2px');
+    }
   } finally { await page.close(); }
 }, 60_000);

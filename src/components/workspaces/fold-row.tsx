@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
@@ -34,16 +35,12 @@ export function FoldRow({
 }) {
   return (
     <div className={cn('group/fold flex items-center gap-0.5', className)}>
-      <button
+      <MenuAction density="compact" size={touch ? "touch" : "compact"}
         type="button"
         onClick={onToggle}
         onPointerDown={(e) => e.stopPropagation()}
         aria-expanded={shown}
-        className={cn(
-          'flex min-w-0 flex-1 items-center justify-between gap-2 rounded-md text-left transition-colors hover:bg-muted/40',
-          touch ? 'py-2 px-2 text-[12px] active:bg-muted/40' : 'py-1 px-1.5 text-[10px]',
-          rowClassName,
-        )}
+        className={cn("flex min-w-0 flex-1 items-center justify-between gap-2 text-left", rowClassName)}
       >
         <span className="truncate text-muted-foreground/60">
           {label} {shown ? 'shown' : 'hidden'}
@@ -51,7 +48,7 @@ export function FoldRow({
         <span className="flex-shrink-0 font-medium text-muted-foreground/80 transition-colors group-hover/fold:text-foreground">
           {shown ? 'Hide' : 'Show'}
         </span>
-      </button>
+      </MenuAction>
       {accessory}
     </div>
   );

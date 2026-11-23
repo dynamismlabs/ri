@@ -1,0 +1,2 @@
+html:root .ri-launch-frame { border-color: transparent; box-shadow: var(--shadow-card); }
+html:root .ri-launch-frame:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

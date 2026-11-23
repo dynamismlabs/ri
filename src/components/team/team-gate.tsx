@@ -1,5 +1,9 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { APP_NAME } from '@/constants/app';
 
@@ -11,7 +15,7 @@ export function TeamGate({ title, children, footer }: { title: string; children:
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-5 py-10">
       <div className="w-full max-w-[400px]">
-        <p className="mb-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{APP_NAME}</p>
+        <p className="mb-6 text-[11px] font-semibold text-muted-foreground">{APP_NAME}</p>
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
         <div className="mt-4 space-y-4 text-sm text-muted-foreground">{children}</div>
         {footer && <div className="mt-8 text-xs text-muted-foreground/80">{footer}</div>}
@@ -24,46 +28,33 @@ export function GateField({
   id,
   label,
   hint,
+  size,
   ...input
-}: React.ComponentProps<'input'> & { id: string; label: string; hint?: string }) {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-xs font-medium text-foreground">
-        {label}
-      </label>
-      <input data-slot="field"
-        id={id}
-        {...input}
-        className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground/50 focus-visible:border-primary/60 focus-visible:ring-[3px] focus-visible:ring-ring/40"
-      />
-      {hint && <p className="text-xs text-muted-foreground/80">{hint}</p>}
-    </div>
-  );
+}: Omit<React.ComponentProps<'input'>, 'children'> & { id: string; label: string; hint?: string }) {
+  return <Field {...input} id={id} label={label} description={hint} htmlSize={size} />;
 }
 
 export function GateButton({ busy, children, ...button }: React.ComponentProps<'button'> & { busy?: boolean }) {
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <Button
       {...button}
       disabled={button.disabled || busy}
-      className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      variant="primary"
+      size="md"
+      className="inline-flex w-full items-center justify-center"
     >
       {busy ? 'One moment…' : children}
-    </button>
+    </Button>
   );
 }
 
 export function GateNotice({ tone = 'info', children }: { tone?: 'info' | 'error'; children: ReactNode }) {
   return (
-    <p
+    <Callout as="p" padding="md" density="row" tone={(tone === 'error' ? "error" : "neutral")}
       role={tone === 'error' ? 'alert' : 'status'}
-      className={
-        tone === 'error'
-          ? 'rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-600 dark:text-red-300'
-          : 'rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground'
-      }
+
     >
       {children}
-    </p>
+    </Callout>
   );
 }

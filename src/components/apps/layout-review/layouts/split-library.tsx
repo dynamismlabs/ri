@@ -1,11 +1,18 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, ArrowRight, BookOpen, LayoutGrid, MoreHorizontal, Plug, Plus, Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/system/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import { Tip } from '@/components/ui/tip';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { AppLibrary } from '../../app-library';
 import { AddAppDialog } from '../../add-app-dialog';
@@ -33,6 +40,7 @@ const GROUPS = [
 const LIBRARY_FILTERS = [{ value: 'all', label: 'All' }, ...GROUPS.map(group => ({ value: group.kind, label: group.label }))];
 
 export function SplitLibrary() {
+  const tier = useViewportTier();
   const review = useReview();
   const library = useRef<HTMLElement>(null);
   const pane = useRef<HTMLElement>(null);
@@ -46,31 +54,57 @@ export function SplitLibrary() {
     if (root && root.clientWidth <= 760) pane.current?.scrollIntoView({ block: 'start' });
   }, [review.query.provider, review.query.mcp, review.trySkill]);
   const setup = !!review.query.provider || !!review.query.mcp;
-  return <>
-    <LibraryHeader />
-    <div className={s.libraryColumns}>
-      <section ref={library} tabIndex={-1} className={s.libraryPane} aria-label="Your library">
-        <Tabs className={s.libraryTabs} value={libraryFilter} onValueChange={value => {
-          review.patch({ libraryType: value === 'all' ? undefined : value });
-          library.current?.scrollTo({ top: 0 });
-        }}>
-          <div className={s.libraryToolbar}>
-            <SectionTitle count={Object.values(review.libraryLoading).some(Boolean) ? undefined : review.library.length}>Your library</SectionTitle>
-            <TabsList data-size="responsive" className={s.libraryFilters} aria-label="Filter your library">
-              {LIBRARY_FILTERS.map(filter => <TabsTrigger key={filter.value} value={filter.value}>{filter.label}</TabsTrigger>)}
-            </TabsList>
+  return (
+    <>
+      <LibraryHeader />
+      <div className={s.libraryColumns}>
+        <section ref={library} tabIndex={-1} className={s.libraryPane} aria-label="Your library">
+          <div className={`${s.libraryTabs} flex flex-col`}>
+            <div className={s.libraryToolbar}>
+              <SectionTitle
+                count={Object.values(review.libraryLoading).some(Boolean) ? undefined : review.library.length}
+              >
+                Your library
+              </SectionTitle>
+              <SegmentedControl
+                mode="choice"
+                stretch
+                distribution="natural"
+                ariaLabel="Filter your library"
+                size={tier === 'phone' ? 'touch' : 'compact'}
+                value={libraryFilter}
+                onChange={(value) => {
+                  review.patch({ libraryType: value === 'all' ? undefined : value });
+                  library.current?.scrollTo({ top: 0 });
+                }}
+                options={LIBRARY_FILTERS}
+              />
+            </div>
+            <div className={`${s.libraryContents} flex-1 text-sm outline-none`}>
+              <GroupedLibrary filter={libraryFilter} />
+            </div>
           </div>
-          <TabsContent className={s.libraryContents} value={libraryFilter}><GroupedLibrary filter={libraryFilter} /></TabsContent>
-        </Tabs>
-      </section>
-      <section ref={pane} className={setup || review.trySkill ? s.workspacePane : s.discoveryPane} aria-label={setup ? 'Connection settings' : 'Discover and details'}>
-        {setup ? <AppLibrary query={review.query} navigate={review.navigate} />
-          : review.trySkill ? <SkillTry item={review.trySkill} />
-          : review.selected ? <ItemDetails item={review.selected} />
-          : review.collection ? <GoalBundle /> : <Discover />}
-      </section>
-    </div>
-  </>;
+        </section>
+        <section
+          ref={pane}
+          className={setup || review.trySkill ? s.workspacePane : s.discoveryPane}
+          aria-label={setup ? 'Connection settings' : 'Discover and details'}
+        >
+          {setup ? (
+            <AppLibrary query={review.query} navigate={review.navigate} />
+          ) : review.trySkill ? (
+            <SkillTry item={review.trySkill} />
+          ) : review.selected ? (
+            <ItemDetails item={review.selected} />
+          ) : review.collection ? (
+            <GoalBundle />
+          ) : (
+            <Discover />
+          )}
+        </section>
+      </div>
+    </>
+  );
 }
 
 function LibraryHeader() {
@@ -85,13 +119,36 @@ function LibraryHeader() {
   return <header className={s.libraryHeader}>
     <div className={s.libraryHeading}><span className={s.mark}><LayoutGrid size={18} /></span><div><h1>Apps</h1><p>Apps, {INTEGRATION_LABELS.plural.toLowerCase()}, and skills for your work.</p></div></div>
     <div className={s.creationActions} aria-label="Create and connect">
-      <Button size="sm" variant="outline" onClick={() => setNewApp(true)}><Plus size={13} />New app</Button>
-      <Button size="sm" variant="outline" onClick={() => setAddingApp(true)}><Plus size={13} />Add app</Button>
-      <Button size="sm" variant="outline" disabled={review.busy} onClick={review.buildSkill}><Plus size={13} />New skill</Button>
-      <Button size="sm" variant="outline" onClick={newServer}><Plus size={13} />Add MCP server</Button>
-      <DropdownMenu><DropdownMenuTrigger asChild><Tip label="Import a skill"><Button className={s.importButton} size="icon-sm" variant="ghost" aria-label="Import options"><MoreHorizontal size={16} /></Button></Tip></DropdownMenuTrigger>
+      <Button
+        onClick={() => setNewApp(true)}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />New app</Button>
+      <Button
+        onClick={() => setAddingApp(true)}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />Add app</Button>
+      <Button
+        disabled={review.busy}
+        onClick={review.buildSkill}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />New skill</Button>
+      <Button
+        onClick={newServer}
+        variant="secondary"
+        size="sm"
+      ><Plus size={13} />Add MCP server</Button>
+      <DropdownMenu><DropdownMenuTrigger asChild><IconButton
+        label="Import options"
+        tooltip="Import a skill"
+        variant="ghost"
+        size="sm"
+        className={s.importButton}
+      ><MoreHorizontal size={16} /></IconButton></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem disabled={review.busy} onSelect={() => skillInput.current?.click()}><Upload size={14} />Import SKILL.md</DropdownMenuItem>
+          <MenuAction kind="menu" disabled={review.busy} onSelect={() => skillInput.current?.click()}><Upload size={14} />Import SKILL.md</MenuAction>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
@@ -139,26 +196,55 @@ function LibraryEntry({ item }: { item: ReviewItem }) {
   const open = () => item.draft || item.kind === 'skills' || !item.view ? review.manage(item) : review.primary(item);
   const selected = review.selected?.key === item.key || review.query.provider === (item.target.kind === 'provider' ? item.target.id : null) || review.query.mcp === (item.target.kind === 'mcp' ? item.target.id : null);
   return <div className={s.libraryEntry} data-item={item.key} data-selected={selected || undefined}>
-    <Tip label={item.name} onlyWhenTextHidden><button data-slot="menu-action" type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
+    <Tip label={item.name} onlyWhenTextHidden><InlineAction   type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
       <ItemMark item={item} small /><span><strong>{item.name}</strong><small className={item.attention ? s.attention : undefined}>{item.enabled === false ? 'Off' : item.attention ? 'Needs attention' : item.target.kind === 'mcp' ? 'Custom MCP' : item.status}</small></span>
-    </button></Tip>
+    </InlineAction></Tip>
     <ManageButton item={item} />
   </div>;
 }
 
 function Discover() {
+  const tier = useViewportTier();
   const review = useReview();
   const types: ReviewFilter[] = ['All', 'Apps', INTEGRATION_LABELS.plural, 'Skills'];
   const sorted = [...review.discovery].sort((a, b) => Number(a.kind === 'connectors') - Number(b.kind === 'connectors'));
   const showGoals = !review.search && review.filter === 'All';
-  return <>
-    <div className={s.discoverHeading}><h2>Discover</h2><p>Find your next useful addition.</p></div>
-    <div className={s.typeTabs} aria-label="Discover types"><div data-slot="segmented" data-size="responsive" data-scroll className="contents">{types.map(type => <button data-slot="segmented-option" type="button" key={type} className={s.filter} aria-pressed={review.filter === type} onClick={() => review.patch({ filter: type === 'All' ? undefined : type, browse: undefined })}>{type}</button>)}</div></div>
-    {showGoals && <section className={s.goalSection} aria-label="Goal bundles"><SectionTitle>Start with a goal</SectionTitle><CollectionTiles /></section>}
-    <SectionTitle count={review.loading ? undefined : sorted.length}>{review.search ? 'Search results' : showGoals ? 'Explore the catalog' : review.filter}</SectionTitle>
-    {review.loading ? <CatalogSkeleton /> : !sorted.length && !review.search ? <Empty>You have everything in this part of the catalog. Try another type or create something of your own.</Empty>
-      : <Cards items={sorted} />}
-  </>;
+  return (
+    <>
+      <div className={s.discoverHeading}>
+        <h2>Discover</h2>
+        <p>Find your next useful addition.</p>
+      </div>
+      <div className={s.typeTabs} aria-label="Discover types">
+        <SegmentedControl
+          mode="choice"
+          ariaLabel="Discover types"
+          size={tier === 'phone' ? 'touch' : 'compact'}
+          value={review.filter}
+          onChange={(type) => review.patch({ filter: type === 'All' ? undefined : type, browse: undefined })}
+          options={types.map((type) => ({ value: type, label: type }))}
+        />
+      </div>
+      {showGoals && (
+        <section className={s.goalSection} aria-label="Goal bundles">
+          <SectionTitle>Start with a goal</SectionTitle>
+          <CollectionTiles />
+        </section>
+      )}
+      <SectionTitle count={review.loading ? undefined : sorted.length}>
+        {review.search ? 'Search results' : showGoals ? 'Explore the catalog' : review.filter}
+      </SectionTitle>
+      {review.loading ? (
+        <CatalogSkeleton />
+      ) : !sorted.length && !review.search ? (
+        <Empty>
+          You have everything in this part of the catalog. Try another type or create something of your own.
+        </Empty>
+      ) : (
+        <Cards items={sorted} />
+      )}
+    </>
+  );
 }
 
 function GoalBundle() {
@@ -169,15 +255,24 @@ function GoalBundle() {
   const added = items.filter(item => item.added && !item.draft).length;
   const back = () => review.patch({ collection: undefined, item: undefined, panel: undefined });
   return <div className={s.goalContents}>
-    <Button size="xs" variant="ghost" onClick={back}><ArrowLeft size={13} />Back to Discover</Button>
+    <Button
+      onClick={back}
+      variant="ghost"
+      size="xs"
+    ><ArrowLeft size={13} />Back to Discover</Button>
     <div className={s.goalHeading}><h2>{collection.name}</h2><p>{collection.description}</p><span>{added} of {items.length} in your library</span></div>
     <p className={`${s.muted} mb-4`}>Choose the pieces that help. Each has its own setup and access.</p>
     {items.map(item => <div className={s.bundleItem} key={item.key}>
-      <button data-slot="menu-action" className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></button>
+      <InlineAction   className={s.flatMain} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}><ItemMark item={item} /><span><h3>{item.name}</h3><p>{item.description}</p><small>{item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular}</small></span></InlineAction>
       <div className={s.bundleItemActions}>{item.added && !item.draft ? <ItemStatus item={item} /> : <span className={s.muted}>Not added</span>}<PrimaryButton item={item} /></div>
     </div>)}
     {!items.length && <Empty>No additions in this bundle are available yet.</Empty>}
     {added === items.length && !!items.length && <p className={`${s.muted} mt-5`}>Everything in this bundle is already in your library.</p>}
-    <Button className="mt-5" size="xs" variant="ghost" onClick={back}>Browse all additions<ArrowRight size={12} /></Button>
+    <Button
+      onClick={back}
+      variant="ghost"
+      size="xs"
+      className="mt-5"
+    >Browse all additions<ArrowRight size={12} /></Button>
   </div>;
 }

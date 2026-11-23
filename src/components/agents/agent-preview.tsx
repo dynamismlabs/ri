@@ -1,8 +1,12 @@
 'use client';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
+import { NativeSelect } from '@/components/system/native-select';
+
+import { Button } from '@/components/system/button';
 import { useAgentConfigurationScope } from '@/components/workspaces/agent-placement-controls';
 import { useMemo, useState } from 'react';
-import { ChevronDown, Loader2, RotateCw } from 'lucide-react';
+import { Loader2, RotateCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAgentExecutions, useAgentPreviews } from '@/hooks/use-agent';
@@ -27,6 +31,8 @@ export function AgentPreview({
   active: boolean;
   onOpenSetup: () => void;
 }) {
+  const compactFieldSize = useViewportTier() === 'phone' ? 'touch' : 'sm';
+
   const { canConfigure } = useAgentConfigurationScope();
   const { all } = useAgentExecutions(workspace.id);
   const { data } = useAgentPreviews(workspace.id, active);
@@ -77,37 +83,37 @@ export function AgentPreview({
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="shrink-0 flex items-center gap-2 border-b border-border px-3 py-1.5">
-        <label className="relative min-w-0 flex-1">
-          <span className="sr-only">Chat to preview</span>
-          <select
-            value={selected ?? ''}
-            onChange={(e) => setPicked(e.target.value || null)}
-            className="w-full appearance-none rounded-md border border-border bg-background py-1 pl-2 pr-7 text-[11.5px] focus:outline-none focus:ring-1 focus:ring-ring"
-          >
-            {all
-              .filter((s) => s.executionId)
-              .map((s) => {
-                const preview = previews.find((p) => p.executionId === s.executionId);
-                const status = preview?.serverStatus === 'running' ? ' (running)' : '';
-                return (
-                  <option key={s.executionId} value={s.executionId!}>
-                    {(s.execution?.label ?? s.label ?? 'Untitled') + status}
-                  </option>
-                );
-              })}
-          </select>
-          <ChevronDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        </label>
+        <NativeSelect
+          aria-label="Chat to preview"
+          value={selected ?? ''}
+          onChange={(e) => setPicked(e.target.value || null)}
+          className="min-w-0 flex-1"
+          size={compactFieldSize}
+        >
+          {all
+            .filter((s) => s.executionId)
+            .map((s) => {
+              const preview = previews.find((p) => p.executionId === s.executionId);
+              const status = preview?.serverStatus === 'running' ? ' (running)' : '';
+              return (
+                <option key={s.executionId} value={s.executionId!}>
+                  {(s.execution?.label ?? s.label ?? 'Untitled') + status}
+                </option>
+              );
+            })}
+        </NativeSelect>
         {canConfigure && hasPinned && (
           <Tip label="Bring up every pinned preview in this agent">
-            <button
+            <Button
               onClick={() => restore.mutate()}
               disabled={restore.isPending}
-              className="flex flex-shrink-0 items-center gap-1 rounded-md px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="flex flex-shrink-0 items-center gap-1"
             >
               {restore.isPending ? <Loader2 size={11} className="animate-spin" /> : <RotateCw size={11} />}
               Restore pinned
-            </button>
+            </Button>
           </Tip>
         )}
       </div>

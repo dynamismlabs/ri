@@ -72,7 +72,7 @@ function DialogContent({
             <Button
               variant="ghost"
               className="absolute top-4 right-4"
-              size="icon-sm"
+              size="sm" icon
             >
               <XIcon
               />
@@ -115,7 +115,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline">Close</Button>
+          <Button variant="secondary" size="md">Close</Button>
         </DialogPrimitive.Close>
       )}
     </div>
@@ -166,3 +166,9 @@ export {
   DialogTitle,
   DialogTrigger,
 }
+
+// Composition seams for product adapters that own drawing and portal placement.
+export const DialogContentPrimitive = DialogPrimitive.Content
+export const DialogOverlayPrimitive = DialogPrimitive.Overlay
+export const DialogTitlePrimitive = DialogPrimitive.Title
+export const DialogDescriptionPrimitive = DialogPrimitive.Description

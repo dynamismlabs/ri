@@ -1,5 +1,9 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useRef } from 'react';
 import { ArrowUpRight, ChevronRight, Plus } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -218,10 +222,13 @@ export function WorkspaceRow({
       >
         <div className="flex-1 flex items-center gap-1 min-w-0">
           {/* Icon swap on hover: emoji/image when idle, the fold chevron on hover. */}
-          <button
+          <IconButton
             onClick={toggleCollapse}
-            className="relative w-5 h-5 flex items-center justify-center flex-shrink-0"
-            aria-label={expanded ? `Fold ${workspace.name}` : `Unfold ${workspace.name}`}
+            label={expanded ? `Fold ${workspace.name}` : `Unfold ${workspace.name}`}
+            variant="ghost"
+            size="sm"
+            focus="inside"
+            className="relative flex items-center justify-center flex-shrink-0"
           >
             <span className="group-hover:hidden flex items-center justify-center">
               <AgentIcon workspace={workspace} size="sm" />
@@ -233,7 +240,7 @@ export function WorkspaceRow({
                 expanded && 'rotate-90',
               )}
             />
-          </button>
+          </IconButton>
           <AgentChatsFlyout
             name={workspace.name}
             enabled={!expanded && childSessions.length > 0 && !isDragging}
@@ -241,14 +248,14 @@ export function WorkspaceRow({
             onClick={open}
             onNewChat={() => onOpenLauncher(workspace.id)}
             trigger={({ ref, onClick }) => (
-              <button
+              <InlineAction purpose="label"
                 ref={ref}
                 onClick={onClick}
-                className="flex-1 min-w-0 text-left text-[11.5px] font-semibold truncate text-foreground"
+                className="flex-1 min-w-0 text-left truncate"
                 aria-current={current}
               >
                 {workspace.name}
-              </button>
+              </InlineAction>
             )}
           >
             {chats}
@@ -260,21 +267,24 @@ export function WorkspaceRow({
             buttons fade in. `pointer-events-none` on the buttons at
             rest keeps clicks under the dots from firing unseen actions. */}
         <div className="relative flex items-center gap-0.5">
-          <Tip label={`Open ${workspace.name}`}>
-            <button
+
+            <IconButton
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 openAgent(workspace.id);
               }}
-              className="p-1 text-muted-foreground/40 hover:text-foreground opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity"
-              aria-label={`Open ${workspace.name}`}
+              label={`Open ${workspace.name}`}
+              tooltip={`Open ${workspace.name}`}
+              variant="ghost"
+              size="sm"
+              reveal
+              focus="inside"
             >
               <ArrowUpRight size={13} />
-            </button>
-          </Tip>
-          <Tip label="New chat (shift-click to start one right away on the last settings)">
-            <button
+            </IconButton>
+
+            <IconButton
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -284,12 +294,15 @@ export function WorkspaceRow({
                 if (e.shiftKey) onCreateExecution(workspace.id);
                 else onOpenLauncher(workspace.id);
               }}
-              className="p-1 text-muted-foreground/40 hover:text-foreground opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity"
-              aria-label="New chat"
+              label="New chat"
+              tooltip="New chat (shift-click to start one right away on the last settings)"
+              variant="ghost"
+              size="sm"
+              reveal
+              focus="inside"
             >
               <Plus size={13} />
-            </button>
-          </Tip>
+            </IconButton>
 
           {hasAnyCount && (
             <div className="absolute inset-y-0 right-1 flex items-center gap-1 pointer-events-none group-hover:opacity-0 transition-opacity">
@@ -318,11 +331,6 @@ export function WorkspaceRow({
 
 type CountVariant = 'working' | 'attention';
 
-const COUNT_VARIANT_CLASSES: Record<CountVariant, string> = {
-  working: 'bg-emerald-500/90 text-white',
-  attention: 'bg-amber-500/90 text-white',
-};
-
 const COUNT_VARIANT_LABELS: Record<CountVariant, string> = {
   working: 'working',
   attention: 'needing attention',
@@ -340,17 +348,12 @@ const COUNT_VARIANT_LABELS: Record<CountVariant, string> = {
 function CountDot({ variant, count }: { variant: CountVariant; count: number }) {
   return (
     <Tip label={`${count} ${COUNT_VARIANT_LABELS[variant]}`}>
-      <span
-        className={cn(
-          'inline-flex items-center justify-center min-w-[14px] h-[14px] px-1 rounded-full',
-          'text-[9px] font-bold font-mono tabular-nums leading-none',
-          COUNT_VARIANT_CLASSES[variant],
-          variant === 'working' && 'animate-pulse',
-        )}
+      <StatusBadge tone={({working:"success",attention:"warning"} as const)[variant]} code
+        className={cn("inline-flex items-center justify-center min-w-[14px]", "tabular-nums", variant === 'working' && "animate-pulse")}
         aria-label={`${count} ${COUNT_VARIANT_LABELS[variant]}`}
       >
         {count}
-      </span>
+      </StatusBadge>
     </Tip>
   );
 }

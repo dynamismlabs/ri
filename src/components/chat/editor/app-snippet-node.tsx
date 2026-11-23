@@ -1,3 +1,4 @@
+import { IconButton } from '@/components/system/icon-button';
 /**
  * A titled item an app put in the composer (OpenAI's `ui/message` titles,
  * docs/connected-mcp-apps.md "Messages"). It shows its title as a chip, is
@@ -99,15 +100,17 @@ function AppSnippetView({ node, editor, getPos, selected }: NodeViewProps) {
       >
         <AppWindow size={11} className="shrink-0 text-muted-foreground/80" aria-hidden />
         <span className="max-w-[200px] truncate text-[11px]">{attrs.title}</span>
-        <button
+        <IconButton
           type="button"
           onMouseDown={remove}
-          className="ml-0.5 inline-flex h-3.5 w-3.5 items-center justify-center rounded text-muted-foreground/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
-          aria-label={`Remove ${attrs.title}`}
           tabIndex={-1}
+          label={`Remove ${attrs.title}`}
+          variant="ghost"
+          size="xs"
+          className="ml-0.5 inline-flex items-center justify-center"
         >
           <X size={10} />
-        </button>
+        </IconButton>
       </NodeViewWrapper>
     </Tip>
   );

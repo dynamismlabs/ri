@@ -1,5 +1,7 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import {
   CheckSquare, FileText, Activity, Layers, LayoutGrid, Calendar, Sun, Moon, Settings, ChevronLeft, FileCheck2, MessageSquarePlus,
@@ -31,9 +33,15 @@ export function MobileMoreView() {
     return (
       <div className="flex flex-col h-full">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0">
-          <button onClick={() => setSubView('menu')} className="p-1 -ml-1 rounded-lg hover:bg-muted/50 transition-colors">
+          <IconButton
+            onClick={() => setSubView('menu')}
+            label="Back"
+            variant="ghost"
+            size="touch"
+            className="-ml-1"
+          >
             <ChevronLeft size={18} className="text-muted-foreground" />
-          </button>
+          </IconButton>
           <span className="text-sm font-bold">{labels[subView]}</span>
         </div>
         <div className="flex-1 min-h-0 overflow-hidden">
@@ -65,10 +73,10 @@ export function MobileMoreView() {
       {/* Navigation items */}
       <div className="px-4 space-y-1">
         {items.map((item) => (
-          <button
+          <MenuAction
             key={item.id}
             onClick={item.action}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-muted/50 active:bg-muted transition-colors"
+            className="w-full flex items-center gap-3 text-left"
           >
             <div className={cn(
               'w-9 h-9 rounded-lg flex items-center justify-center',
@@ -77,7 +85,7 @@ export function MobileMoreView() {
               <item.icon size={18} className="text-muted-foreground" />
             </div>
             <span className="text-sm font-medium text-foreground">{item.label}</span>
-          </button>
+          </MenuAction>
         ))}
       </div>
 
@@ -86,9 +94,9 @@ export function MobileMoreView() {
 
       {/* Settings-like items */}
       <div className="px-4 space-y-1">
-        <button
+        <MenuAction
           onClick={toggleTheme}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-muted/50 active:bg-muted transition-colors"
+          className="w-full flex items-center gap-3 text-left"
         >
           <div className={cn(
             'w-9 h-9 rounded-lg flex items-center justify-center',
@@ -99,11 +107,11 @@ export function MobileMoreView() {
           <span className="text-sm font-medium text-foreground">
             {isDark ? 'Light Mode' : 'Dark Mode'}
           </span>
-        </button>
+        </MenuAction>
 
-        <button
+        <MenuAction
           onClick={() => openSettings()}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-muted/50 active:bg-muted transition-colors"
+          className="w-full flex items-center gap-3 text-left"
         >
           <div className={cn(
             'w-9 h-9 rounded-lg flex items-center justify-center',
@@ -112,11 +120,11 @@ export function MobileMoreView() {
             <Settings size={18} className="text-muted-foreground" />
           </div>
           <span className="text-sm font-medium text-foreground">Settings</span>
-        </button>
+        </MenuAction>
 
-        <button
+        <MenuAction
           onClick={() => openFeedback()}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-muted/50 active:bg-muted transition-colors"
+          className="w-full flex items-center gap-3 text-left"
         >
           <div className={cn(
             'w-9 h-9 rounded-lg flex items-center justify-center',
@@ -125,7 +133,7 @@ export function MobileMoreView() {
             <MessageSquarePlus size={18} className="text-muted-foreground" />
           </div>
           <span className="text-sm font-medium text-foreground">Feedback & bugs</span>
-        </button>
+        </MenuAction>
       </div>
     </div>
   );

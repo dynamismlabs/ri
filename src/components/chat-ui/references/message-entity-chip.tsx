@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { useState } from 'react';
 import { Bot, CheckSquare, Layers, Square, StickyNote, Notebook } from 'lucide-react';
@@ -79,9 +80,7 @@ export function MessageEntityChip({ marker, lookup, onOpen, tone = 'surface' }: 
 // Each chip's label is `self-baseline`, so the chip's baseline is its text's
 // and it sits on the line with the words around it. Otherwise a flex box takes
 // the first item's baseline, the bottom edge of an icon or agent picture.
-const CHIP_BASE =
-  'inline-flex items-center align-baseline gap-1 px-1.5 py-0.5 mx-0.5 ' +
-  'rounded-md border text-[12px] font-medium transition-colors cursor-pointer select-none';
+const CHIP_BASE = 'inline-flex items-center align-baseline gap-1 mx-0.5 cursor-pointer select-none';
 
 /**
  * A chip's colors where it sits. `surface` follows the theme. `bubble` sits
@@ -90,12 +89,14 @@ const CHIP_BASE =
  */
 const LOOKS = {
   surface: {
-    chip: cn(CHIP_BASE, 'border-border bg-muted/40 text-foreground hover:border-foreground/30 hover:bg-muted/60'),
+    chip: CHIP_BASE,
+    bubble: false,
     still: 'cursor-default hover:border-border hover:bg-muted/40',
     icon: 'shrink-0 text-muted-foreground/80',
   },
   bubble: {
-    chip: cn(CHIP_BASE, 'border-current/20 bg-current/10 text-inherit hover:border-current/35 hover:bg-current/15'),
+    chip: CHIP_BASE,
+    bubble: true,
     still: 'cursor-default hover:border-current/20 hover:bg-current/10',
     icon: 'shrink-0 opacity-70',
   },
@@ -121,9 +122,9 @@ export function TeamRecordChip({ kind, id, view, tone = 'surface' }: { kind: Rem
   return (
     <Tip label={record?.reason ?? (record?.team ? `${record.label}, in ${record.team}` : record?.label ?? 'Loading')} onlyWhenTextHidden={!record?.reason}>
       {view && record?.opens ? (
-        <button type="button" onClick={() => open(kind, id, view)} className={cn(chip.chip, dimmed && 'opacity-70')}>{content}</button>
+        <InlineAction appearance="chip" bubble={chip.bubble} type="button" onClick={() => open(kind, id, view)} dimmed={dimmed} className={chip.chip}>{content}</InlineAction>
       ) : (
-        <span className={cn(chip.chip, chip.still, dimmed && 'opacity-70')}>{content}</span>
+        <InlineAction asChild appearance="chip" bubble={chip.bubble} dimmed={dimmed}><span className={chip.chip}>{content}</span></InlineAction>
       )}
     </Tip>
   );
@@ -170,14 +171,14 @@ function TaskChip({
   const Icon = status === 'done' ? CheckSquare : Square;
   return (
     <Tip label={task ? title : missingTip ?? `Task ${marker.id} (not found)`} onlyWhenTextHidden={!!task}>
-      <button
+      <InlineAction appearance="chip" bubble={look.bubble}
         type="button"
         onClick={() => onOpen?.(marker)}
-        className={cn(look.chip, !task && 'opacity-70')}
+        dimmed={!task} className={look.chip}
       >
         <Icon size={11} className={look.icon} />
         <span className="self-baseline text-[11px] truncate max-w-[200px]">{title}</span>
-      </button>
+      </InlineAction>
     </Tip>
   );
 }
@@ -198,14 +199,14 @@ function NoteChip({
   const title = note?.title || (note ? 'Untitled note' : 'Unknown note');
   return (
     <Tip label={note ? title : missingTip ?? `Note ${marker.id} (not found)`} onlyWhenTextHidden={!!note}>
-      <button
+      <InlineAction appearance="chip" bubble={look.bubble}
         type="button"
         onClick={() => onOpen?.(marker)}
-        className={cn(look.chip, !note && 'opacity-70')}
+        dimmed={!note} className={look.chip}
       >
         <StickyNote size={11} className={look.icon} />
         <span className="self-baseline text-[11px] truncate max-w-[200px]">{title}</span>
-      </button>
+      </InlineAction>
     </Tip>
   );
 }
@@ -223,7 +224,7 @@ function ScratchpadChip({
   const preview = lookup.scratchpad?.slice(0, 200) ?? '';
   return (
     <Tip label={hover && preview ? preview : 'Session scratchpad'}>
-      <button
+      <InlineAction appearance="chip" bubble={look.bubble}
         type="button"
         onClick={() => onOpen?.({ kind: 'scratchpad' })}
         onMouseEnter={() => setHover(true)}
@@ -232,7 +233,7 @@ function ScratchpadChip({
       >
         <Notebook size={11} className={look.icon} />
         <span className="self-baseline text-[11px]">Scratchpad</span>
-      </button>
+      </InlineAction>
     </Tip>
   );
 }
@@ -267,15 +268,15 @@ function AgentChip({
   return (
     <Tip label={tip} onlyWhenTextHidden={!!agent && !archived && !purpose}>
       {open ? (
-        <button type="button" onClick={open} className={look.chip}>
+        <InlineAction appearance="chip" bubble={look.bubble}  type="button" onClick={open} className={look.chip}>
           {icon}
           {label}
-        </button>
+        </InlineAction>
       ) : (
-        <span className={cn(look.chip, look.still, (!agent || archived) && 'opacity-70')}>
+        <InlineAction asChild appearance="chip" bubble={look.bubble}><span className={cn(look.chip, look.still, (!agent || archived) && 'opacity-70')}>
           {icon}
           {label}
-        </span>
+        </span></InlineAction>
       )}
     </Tip>
   );

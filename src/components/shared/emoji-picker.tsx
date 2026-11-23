@@ -1,7 +1,9 @@
 "use client";
 
+import { PopoverPrimitive } from '@/components/system/popover';
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Popover as PopoverPrimitive } from "radix-ui";
+
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 
@@ -57,7 +59,7 @@ export function EmojiPicker({ onSelect, children, actions }: EmojiPickerProps) {
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
       <PopoverPrimitive.Trigger asChild>{children}</PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
-        <PopoverPrimitive.Content
+        <PopoverPrimitive.Content padding="none"
           side="bottom"
           align="center"
           sideOffset={8}
@@ -82,22 +84,20 @@ export function EmojiPicker({ onSelect, children, actions }: EmojiPickerProps) {
           {actions && actions.length > 0 && (
             <div className="mb-1.5 flex gap-1 rounded-lg border border-border bg-popover p-1 shadow-md">
               {actions.map((action) => (
-                <button
+                <Button
                   key={action.label}
                   type="button"
                   onClick={() => {
                     setOpen(false);
                     action.onSelect();
                   }}
-                  className={
-                    action.tone === 'destructive'
-                      ? 'flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-destructive transition-colors hover:bg-destructive/10'
-                      : 'flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-foreground transition-colors hover:bg-accent'
-                  }
+                  variant="ghost"
+                  size="xs"
+                  tone="danger"
                 >
                   {action.icon}
                   {action.label}
-                </button>
+                </Button>
               ))}
             </div>
           )}

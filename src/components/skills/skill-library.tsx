@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMemo, useState } from 'react';
 import { useSkill } from '@/hooks/use-skills';
 import { apiErrorText } from '@/lib/api/client';
@@ -20,7 +21,11 @@ export function SkillLibrary({ canManage }: { canManage: boolean }) {
       <p className="text-xs text-muted-foreground">Installed skills are shared with every chat on the team&apos;s approved workers. Owners manage the library. Drafts stay unused until installed.</p>
       {ref ? <div className="flex min-h-[30rem] min-w-0 flex-col overflow-hidden rounded-lg border border-border">
         {selected.data ? <><SkillHeader skill={selected.data} onBack={() => setRef(null)} /><SkillEditor key={selected.data.ref} skill={selected.data} aiWriting={false} /></> :
-          <p role={selected.error ? 'alert' : 'status'} className="p-4 text-xs">{selected.error ? apiErrorText(selected.error) : 'Loading skill…'} <button className="underline" onClick={() => setRef(null)}>Back to skills</button></p>}
+          <p role={selected.error ? 'alert' : 'status'} className="p-4 text-xs">{selected.error ? apiErrorText(selected.error) : 'Loading skill…'} <Button
+            onClick={() => setRef(null)}
+            variant="link"
+            size="sm"
+          >Back to skills</Button></p>}
       </div> : <>
         {canManage && <div className="flex justify-end"><NewSkillButton /></div>}
         <SkillsTab />

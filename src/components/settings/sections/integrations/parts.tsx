@@ -1,5 +1,8 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { Button } from '@/components/system/button';
 /**
  * Shared building blocks for the Integrations pane: the catalog tile, the
  * drill-in chrome (back link + detail header), and the small labels both views
@@ -22,14 +25,6 @@ const DOT: Record<Tone, string> = {
   off: 'bg-muted-foreground/40',
 };
 
-const CHIP: Record<Tone | 'neutral', string> = {
-  ok: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-  warn: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  error: 'bg-destructive/10 text-destructive',
-  off: 'bg-muted text-muted-foreground',
-  neutral: 'bg-muted/70 text-muted-foreground',
-};
-
 /** Small uppercase label over a group of tiles or a detail section. */
 export function GroupHeading({
   children,
@@ -42,7 +37,7 @@ export function GroupHeading({
 }) {
   return (
     <div className="flex min-h-6 items-center justify-between gap-2">
-      <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <h3 className="text-[10px] font-semibold text-muted-foreground">
         {children}
         {typeof count === 'number' && (
           <span className="ml-1.5 font-medium tabular-nums text-muted-foreground/60">{count}</span>
@@ -62,23 +57,20 @@ export function GroupHeading({
  */
 export function ConnectFormSection({ opened, children }: { opened: boolean; children: ReactNode }) {
   return (
-    <section className={cn('space-y-2', opened && 'rounded-xl border border-primary/30 bg-primary/5 p-3')}>
+    <Card as="section" padding={opened ? "md" : "none"} surface={opened ? "raised" : "plain"} className="space-y-2">
       {children}
-    </section>
+    </Card>
   );
 }
 
 /** Rounded pill for status and facts in a detail header or account row. */
 export function Chip({ tone = 'neutral', children }: { tone?: Tone | 'neutral'; children: ReactNode }) {
   return (
-    <span
-      className={cn(
-        'inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[10px] font-medium',
-        CHIP[tone],
-      )}
+    <StatusBadge tone={({ok:"success",warn:"warning",error:"error",off:"neutral",neutral:"neutral"} as const)[tone]}
+      className="inline-flex shrink-0 items-center"
     >
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -104,10 +96,10 @@ export function CatalogTile({
   onOpen: () => void;
 }) {
   return (
-    <button data-slot="content-card"
+    <Card as="button" padding="md" shadow
       type="button"
       onClick={onOpen}
-      className="group flex min-w-0 items-center gap-3 rounded-xl border border-border bg-card/20 p-3 text-left transition-colors hover:border-foreground/15 hover:bg-muted/40 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      className="group flex min-w-0 items-center gap-3 text-left"
     >
       {logo}
       <div className="min-w-0 flex-1">
@@ -127,7 +119,7 @@ export function CatalogTile({
         size={14}
         className="shrink-0 text-muted-foreground/40 transition-colors group-hover:text-foreground/70"
       />
-    </button>
+    </Card>
   );
 }
 
@@ -140,13 +132,15 @@ export function BackLink({ onBack, busy = false, label = `All ${INTEGRATION_LABE
   return (
     <div className="flex min-h-6 items-center justify-between gap-2">
       <Tip label={`Back to ${label.toLowerCase()}`} shortcut={HOTKEYS.slideoutBack.label}>
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={onBack}
-          className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          size="sm"
+          className="-ml-1 inline-flex items-center gap-1"
         >
           <ArrowLeft size={12} /> {label}
-        </button>
+        </Button>
       </Tip>
       {busy && (
         <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">

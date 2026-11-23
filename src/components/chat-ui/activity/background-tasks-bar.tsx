@@ -1,5 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Button } from '@/components/system/button';
 import type { ChatEventRecord } from '@/lib/api/dto/records';
 import { formatSpanSeconds } from '@/lib/executions/duration';
 import { cn } from '@/lib/utils';
@@ -23,7 +25,7 @@ import {
 	SheetContent,
 	SheetHeader,
 	SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/system/sheet';
 import { BACKGROUND_DOT } from '@/components/workspaces/activity-style';
 import {
 	deriveTaskDetail,
@@ -98,14 +100,16 @@ export function BackgroundTasksBar({
 
   return (
     <>
-      {/* A strip attached to the top of the composer card: same column
-          width, inset like a tab, no borders. Render it directly before
-          the composer so the two touch. */}
+      {/* A tab attached to the top of the composer card: inset from its
+          edges, rounded on top only, no borders. Render it directly before
+          the composer so the two touch. Drawing: background-tasks-bar.css. */}
       <div className="mx-auto max-w-3xl px-5">
-        <button data-slot="background-tasks-strip"
+        <Button
           type="button"
           onClick={() => setOpen(true)}
-          className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-t-lg bg-muted/60 px-3 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground/85"
+          variant="secondary"
+          size="xs"
+          className="ri-background-tasks-strip mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 justify-start"
         >
           {/* Sky and still: background work, not the agent working. */}
           <span aria-hidden className={cn('size-1.5 shrink-0', BACKGROUND_DOT)} />
@@ -113,7 +117,7 @@ export function BackgroundTasksBar({
           <span className="ml-auto flex shrink-0 items-center gap-0.5 text-muted-foreground/60">
             running <ChevronRight className="size-3" />
           </span>
-        </button>
+        </Button>
       </div>
 
       <BackgroundTasksSheet
@@ -167,8 +171,8 @@ function BackgroundTasksSheet({
           />
         ) : (
           <>
-            <SheetHeader className="border-b">
-              <SheetTitle className="text-sm">Background tasks</SheetTitle>
+            <SheetHeader divider>
+              <SheetTitle>Background tasks</SheetTitle>
             </SheetHeader>
             <ul className="flex-1 overflow-y-auto">
               {running.map((t) => (
@@ -191,13 +195,13 @@ function BackgroundTasksSheet({
                 ))}
               {done.length > 0 && (
                 <li>
-                  <button
+                  <MenuAction
                     type="button"
                     onClick={() => setShowDone((v) => !v)}
-                    className="flex w-full items-center justify-center gap-1 px-3 py-2 text-[10px] text-muted-foreground/70 transition-colors hover:bg-muted/40 hover:text-muted-foreground"
+                    className="flex w-full items-center justify-center gap-1"
                   >
                     {showDone ? 'Hide finished' : `Show ${done.length} finished`}
-                  </button>
+                  </MenuAction>
                 </li>
               )}
             </ul>
@@ -222,10 +226,10 @@ function TaskListRow({
   return (
     <li className="border-b last:border-b-0">
       <div className={cn('flex items-center gap-2.5 pr-2 text-xs', muted && 'opacity-70')}>
-        <button
+        <MenuAction
           type="button"
           onClick={onSelect}
-          className="flex min-w-0 flex-1 items-center gap-2.5 py-2 pl-3 text-left transition-colors hover:bg-muted/60"
+          className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
         >
           <TaskTypeIcon
             taskType={task.taskType}
@@ -238,7 +242,7 @@ function TaskListRow({
             <div className="truncate text-[10px] text-muted-foreground/70">{metaLine(task)}</div>
           </div>
           <StatusBadge status={task.status} active={task.isActive} />
-        </button>
+        </MenuAction>
         {task.isActive && (
           <StopButton
             sessionId={sessionId}
@@ -266,15 +270,17 @@ function TaskDetail({
   const detail = deriveTaskDetail(events, task);
   return (
     <>
-      <SheetHeader className="gap-2 border-b">
-        <button
+      <SheetHeader divider className="gap-2">
+        <Button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-1 self-start text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          size="xs"
+          className="flex items-center gap-1 self-start"
         >
           <ChevronLeft className="size-3.5" /> All tasks
-        </button>
-        <SheetTitle className="flex items-center gap-2 text-sm">
+        </Button>
+        <SheetTitle className="flex items-center gap-2">
           <TaskTypeIcon taskType={task.taskType} className="size-4 text-muted-foreground" />
           <span className="truncate">{task.description ?? task.taskId}</span>
         </SheetTitle>
@@ -370,19 +376,16 @@ function StopButton({
   if (!canStop || providerType === 'codex') return null;
   return (
     <Tip label={couldntStop ? 'Could not stop (already ended or unsupported)' : undefined}>
-      <button data-slot="action-button" data-tone="status"
+      <Button
         type="button"
         disabled={stop.isPending}
         onClick={(e) => {
           e.stopPropagation();
           stop.mutate(taskId);
         }}
-        className={cn(
-          'flex shrink-0 items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] transition-colors',
-          couldntStop
-            ? 'border-border text-muted-foreground/60'
-            : 'border-red-500/40 text-red-600 hover:bg-red-500/10 dark:text-red-500',
-        )}
+        variant="ghost"
+        size="xs"
+        tone={couldntStop ? "neutral" : "danger"}
       >
         {stop.isPending ? (
           <Loader2 className="size-2.5 animate-spin" />
@@ -390,7 +393,7 @@ function StopButton({
           <Square className="size-2.5 fill-current" />
         )}
         {couldntStop ? 'ended' : 'Stop'}
-      </button>
+      </Button>
     </Tip>
   );
 }
@@ -398,7 +401,7 @@ function StopButton({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">
+      <div className="mb-1 text-[10px] font-medium text-muted-foreground/70">
         {label}
       </div>
       {children}

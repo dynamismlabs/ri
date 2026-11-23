@@ -127,57 +127,45 @@ for (const theme of ['light', 'dark'] as const) {
     try {
       await page.evaluate(theme => {
         document.documentElement.classList.toggle('dark', theme === 'dark');
-        document.documentElement.dataset.look = 'edge';
       }, theme);
       const expected = await page.evaluate(() => {
         const probe = document.createElement('span');
-        probe.style.backgroundColor = 'var(--edge-thumb)'; document.body.append(probe);
+        probe.style.backgroundColor = 'var(--thumb)'; document.body.append(probe);
         const thumb = getComputedStyle(probe).backgroundColor; probe.remove();
         return thumb;
       });
-      const types = page.locator('[aria-label="Discover types"]');
-      expect(await types.locator('[data-slot="segmented"]').count()).toBe(1);
+      const types = page.getByRole('group', {name:'Discover types'});
+      expect(await types.count()).toBe(1);
+      expect(await types.getAttribute('class')).toContain('ri-segment-track');
       const all = types.getByRole('button', { name: 'All', exact: true });
       await all.hover();
-      expect(await all.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
+      await expect.poll(()=>all.evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
       await page.keyboard.press('Tab');
       await all.focus();
       expect(await all.evaluate(el => getComputedStyle(el).outlineStyle)).toBe('solid');
       expect(await all.evaluate(el => parseFloat(getComputedStyle(el).outlineOffset))).toBeLessThan(0);
-      const card = page.locator('button[data-slot="content-card"]').first();
+      const card = page.locator('button.ri-card').first();
       await card.hover();
       expect(await card.evaluate(el => getComputedStyle(el).borderRadius)).toBe('14px');
-      expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe('rgba(0, 0, 0, 0)');
+      // Cards sit on the pane color with a hairline border, not a gray fill.
+      const hairline = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.borderColor = 'var(--line)'; document.body.append(probe);
+        const color = getComputedStyle(probe).borderColor; probe.remove();
+        return color;
+      });
+      expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe(hairline);
+      expect(await card.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('1px');
       await page.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
-      const details = page.locator('[aria-label="Addition details"]');
+      const details = page.getByRole('tablist', {name:'Addition details'});
       await details.waitFor();
-      expect(await details.locator('[data-slot="segmented"]').count()).toBe(1);
-      expect(await details.locator('[aria-pressed="true"]').evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
+      expect(await details.count()).toBe(1);
+      expect(await details.locator('[aria-selected="true"]').evaluate(el => getComputedStyle(el).backgroundColor)).toBe(expected);
       expect(writes).toEqual([]);
     } finally { await page.close(); }
   });
 }
 
-it('keeps catalog contents wrappers transparent to classic layout', async () => {
-  for (const details of [false, true]) {
-    const page = await open();
-    try {
-      if (details) await page.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
-      const row = page.locator(`[aria-label="${details ? 'Addition details' : 'Discover types'}"]`);
-      const state = await row.evaluate(el => {
-        const read = () => Array.from(el.querySelectorAll('button')).map(button => {
-          const { x, y, width, height } = button.getBoundingClientRect();
-          return { x, y, width, height };
-        });
-        const wrapped = read();
-        const track = el.querySelector('[data-slot="segmented"]')!;
-        track.replaceWith(...Array.from(track.childNodes));
-        return { wrapped, original: read() };
-      });
-      expect(state.wrapped).toEqual(state.original);
-    } finally { await page.close(); }
-  }
-});
 
 it('shows one grouped library, visible creation buttons and discovery at desktop and phone widths', async () => {
   // A filter the catalog doesn't know shows everything.
@@ -186,18 +174,19 @@ it('shows one grouped library, visible creation buttons and discovery at desktop
   try {
     const library = page.getByRole('region', { name: 'Your library', exact: true });
     expect(await page.getByRole('button', { name: 'Connect a service', exact: true }).count()).toBe(0);
-    expect(await page.getByRole('button', { name: 'All', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    expect(await page.getByRole('group', {name:'Discover types'}).getByRole('button', { name: 'All', exact: true }).getAttribute('aria-pressed')).toBe('true');
     for (const label of ['Apps', 'Connectors', 'Skills']) await library.getByRole('heading', { name: label, exact: true }).waitFor();
     await library.getByRole('region', { name: 'Your connectors', exact: true }).getByRole('button', { name: 'Manage connection Company data', exact: true }).waitFor();
     await library.getByRole('region', { name: 'Your skills', exact: true }).getByRole('button', { name: 'Edit skill Private workflow', exact: true }).waitFor();
-    for (const width of [1440, 900, 390, 320]) {
+    for (const width of [1440, 900, 390, 360, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       for (const label of ['New skill', 'Add MCP server']) expect(await page.getByRole('button', { name: label, exact: true }).isVisible()).toBe(true);
-      const tabs = library.getByRole('tablist', { name: 'Filter your library' });
+      const tabs = library.getByRole('group', { name: 'Filter your library' });
       for (const label of ['All', 'Apps', 'Connectors', 'Skills']) {
-        const tab = tabs.getByRole('tab', { name: label, exact: true });
+        const tab = tabs.getByRole('button', { name: label, exact: true });
         expect(await tab.isVisible()).toBe(true);
         expect(await tab.evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
+        expect(await tab.locator('.ri-segment-label').evaluate(element => element.scrollWidth <= element.clientWidth + 1), `${label} must stay readable at ${width}px`).toBe(true);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `Apps at ${width}px`).toBe(true);
       if (width === 1440 || width === 390) await page.screenshot({ path: `/tmp/ri-apps-library-filters-${width}.png` });
@@ -219,7 +208,7 @@ it('lists Ri\'s own apps in Discover, People first, and adds one from its detail
     await discover.locator('[data-item="catalog:people"]').waitFor();
     const order = () => discover.getByRole('article').evaluateAll(elements => elements.map(element => element.getAttribute('data-item')));
     expect((await order()).slice(0, 2)).toEqual(['catalog:people', 'catalog:bookmarks']);
-    await page.getByRole('button', { name: 'Apps', exact: true }).click();
+    await page.getByRole('group', {name:'Discover types'}).getByRole('button', { name: 'Apps', exact: true }).click();
     await expect.poll(async () => (await order()).slice(0, 2)).toEqual(['catalog:people', 'catalog:bookmarks']);
     // The library lists only what the person has.
     const library = page.getByRole('region', { name: 'Your library', exact: true });
@@ -329,7 +318,7 @@ it('keeps a large library independently scrollable while discovery stays availab
     await library.getByRole('button', { name: 'Edit skill Workflow 49', exact: true }).scrollIntoViewIfNeeded();
     expect(await discover.boundingBox()).toEqual(before);
     const libraryBounds = (await library.boundingBox())!;
-    const filtersBounds = (await library.getByRole('tablist', { name: 'Filter your library' }).boundingBox())!;
+    const filtersBounds = (await library.getByRole('group', { name: 'Filter your library' }).boundingBox())!;
     expect(filtersBounds.y).toBeGreaterThanOrEqual(libraryBounds.y);
     expect(filtersBounds.y + filtersBounds.height).toBeLessThanOrEqual(libraryBounds.y + libraryBounds.height);
     await library.getByRole('button', { name: 'Edit skill Workflow 49', exact: true }).click();
@@ -346,8 +335,18 @@ it('handles an empty library and recovers a failed source without blocking disco
     await page.getByRole('alert').filter({ hasText: 'Skills could not load' }).waitFor();
     expect(await page.getByRole('heading', { name: 'Discover', exact: true }).isVisible()).toBe(true);
     responses['skills.list'] = { skills: [], projects: [] };
-    await page.getByRole('alert').getByRole('button', { name: 'Retry', exact: true }).click();
-    await page.getByRole('alert').waitFor({ state: 'hidden' });
+    let releaseRetry!: () => void;
+    const retryReady = new Promise<void>(resolve => { releaseRetry = resolve; });
+    await page.route('**/api/trpc/skills.list**', async route => { await retryReady; await route.continue(); });
+    try {
+      await page.getByRole('alert').getByRole('button', { name: 'Retry', exact: true }).click();
+      await page.getByRole('alert').waitFor({ state: 'hidden' });
+      // Clearing the old error starts recovery. Empty rows need the retried data.
+      await page.locator('[data-apps-library][aria-busy="true"]').waitFor();
+      expect(await page.getByRole('heading', { name: 'Discover', exact: true }).isVisible()).toBe(true);
+      expect(await page.getByText('No skills yet.', { exact: true }).isVisible()).toBe(false);
+    } finally { releaseRetry(); }
+    await page.locator('[data-apps-library][aria-busy="false"]').waitFor();
     for (const label of ['No apps yet. Find one in Discover, or make one with New app.', 'No connectors yet.', 'No skills yet.']) expect(await page.getByText(label, { exact: true }).isVisible()).toBe(true);
     await page.getByRole('region', { name: 'Discover and details', exact: true }).getByRole('button', { name: 'Connectors', exact: true }).click();
     await page.getByRole('button', { name: 'Connect Linear', exact: true }).waitFor();
@@ -418,42 +417,46 @@ it('filters the library independently, including drafts, with keyboard and histo
   const page = await open('?filter=Apps');
   try {
     const library = page.getByRole('region', { name: 'Your library', exact: true });
-    const tabs = library.getByRole('tablist', { name: 'Filter your library' });
+    const tabs = library.getByRole('group', { name: 'Filter your library' });
     const discover = page.getByRole('region', { name: 'Discover and details', exact: true });
     const catalogBefore = await discover.getByRole('article').evaluateAll(elements => elements.map(element => element.getAttribute('data-item')));
-    await tabs.getByRole('tab', { name: 'Apps', exact: true }).click();
+    await tabs.getByRole('button', { name: 'Apps', exact: true }).click();
     expect(await library.locator('[data-item]').count()).toBe(1);
     expect(await library.getByRole('button', { name: 'Open Receipts', exact: true }).count()).toBe(1);
     expect(await library.getByRole('region', { name: 'In progress', exact: true }).count()).toBe(0);
-    await tabs.getByRole('tab', { name: 'Connectors', exact: true }).click();
+    await tabs.getByRole('button', { name: 'Connectors', exact: true }).click();
     expect(await library.locator('[data-item]').count()).toBe(2);
     expect(await library.getByRole('button', { name: 'Manage connection Company data', exact: true }).count()).toBe(1);
-    await tabs.getByRole('tab', { name: 'Skills', exact: true }).click();
+    await tabs.getByRole('button', { name: 'Skills', exact: true }).click();
     expect(await library.locator('[data-item]').count()).toBe(2);
     expect(await library.getByRole('button', { name: 'Continue setup Working draft', exact: true }).count()).toBe(1);
     await page.screenshot({ path: '/tmp/ri-apps-library-filters-skills.png', animations: 'disabled' });
     expect(await discover.getByRole('article').evaluateAll(elements => elements.map(element => element.getAttribute('data-item')))).toEqual(catalogBefore);
     await page.reload();
     await page.locator('[data-apps-library][aria-busy="false"]').waitFor();
-    expect(await tabs.getByRole('tab', { name: 'Skills', exact: true }).getAttribute('aria-selected')).toBe('true');
+    expect(await tabs.getByRole('button', { name: 'Skills', exact: true }).getAttribute('aria-pressed')).toBe('true');
     await page.goBack();
-    await expect.poll(() => tabs.getByRole('tab', { name: 'Connectors', exact: true }).getAttribute('aria-selected')).toBe('true');
+    await expect.poll(() => tabs.getByRole('button', { name: 'Connectors', exact: true }).getAttribute('aria-pressed')).toBe('true');
     await discover.getByRole('button', { name: 'Skills', exact: true }).click();
     expect(await library.locator('[data-item]').count()).toBe(2);
-    expect(await tabs.getByRole('tab', { name: 'Connectors', exact: true }).getAttribute('aria-selected')).toBe('true');
+    expect(await tabs.getByRole('button', { name: 'Connectors', exact: true }).getAttribute('aria-pressed')).toBe('true');
     await page.getByRole('searchbox', { name: 'Search additions' }).fill('Company');
     expect(await library.locator('[data-item]').count()).toBe(1);
     await page.getByRole('button', { name: 'Clear search', exact: true }).click();
     expect(await library.locator('[data-item]').count()).toBe(2);
-    await tabs.getByRole('tab', { name: 'Connectors', exact: true }).focus();
+    await tabs.getByRole('button', { name: 'Connectors', exact: true }).focus();
     await page.keyboard.press('Home');
-    await expect.poll(() => tabs.getByRole('tab', { name: 'All', exact: true }).getAttribute('aria-selected')).toBe('true');
+    await expect.poll(() => tabs.getByRole('button', {name:'All',exact:true}).evaluate(el=>el===document.activeElement)).toBe(true);
+    await page.keyboard.press('Space');
+    await expect.poll(() => tabs.getByRole('button', { name: 'All', exact: true }).getAttribute('aria-pressed')).toBe('true');
     expect(await library.locator('[data-item]').count()).toBe(5);
     await page.keyboard.press('End');
-    await expect.poll(() => tabs.getByRole('tab', { name: 'Skills', exact: true }).getAttribute('aria-selected')).toBe('true');
+    await expect.poll(() => tabs.getByRole('button', {name:'Skills',exact:true}).evaluate(el=>el===document.activeElement)).toBe(true);
+    await page.keyboard.press('Enter');
+    await expect.poll(() => tabs.getByRole('button', { name: 'Skills', exact: true }).getAttribute('aria-pressed')).toBe('true');
     expect(await library.locator('[data-item]').count()).toBe(2);
     await library.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
-    expect(await tabs.getByRole('tab', { name: 'Skills', exact: true }).getAttribute('aria-selected')).toBe('true');
+    expect(await tabs.getByRole('button', { name: 'Skills', exact: true }).getAttribute('aria-pressed')).toBe('true');
     await page.getByRole('region', { name: 'Private workflow details', exact: true }).waitFor();
   } finally { await page.close(); }
 });

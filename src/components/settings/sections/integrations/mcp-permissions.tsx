@@ -1,7 +1,10 @@
 'use client';
+import { Card } from '@/components/system/card';
 
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SelectField } from '@/components/system/select-field';
+
+import { Button } from '@/components/system/button';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import { Globe } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { DEFAULT_MCP_APPROVAL_POLICY, MCP_APPROVAL_POLICIES, type McpApprovalPolicy } from '@/lib/integrations/mcp-approval-policy';
@@ -16,12 +19,12 @@ export function McpPermissionSelect({ value, inheritedLabel, label, busy, onChan
 }) {
   return <Select value={value ?? 'inherit'} disabled={busy}
     onValueChange={choice => onChange(choice === 'inherit' ? null : choice as McpApprovalPolicy)}>
-    <SelectTrigger aria-label={label} className="w-full min-w-0 gap-3 rounded-lg text-xs @sm:w-auto [&_[data-slot=select-value]]:min-w-0 [&_[data-slot=select-value]]:truncate">
+    <SelectField aria-label={label} className="w-full min-w-0 @sm:w-auto [&_[data-slot=select-value]]:min-w-0">
       <SelectValue>{value === null ? inheritedLabel : MCP_POLICY_LABELS[value]}</SelectValue>
-    </SelectTrigger>
+    </SelectField>
     <SelectContent position="popper" align="start">
-      <SelectItem value="inherit" className="text-xs">{inheritedLabel}</SelectItem>
-      {MCP_APPROVAL_POLICIES.map(policy => <SelectItem key={policy} value={policy} className="text-xs">{MCP_POLICY_LABELS[policy]}</SelectItem>)}
+      <SelectItem value="inherit" className="">{inheritedLabel}</SelectItem>
+      {MCP_APPROVAL_POLICIES.map(policy => <SelectItem key={policy} value={policy} className="">{MCP_POLICY_LABELS[policy]}</SelectItem>)}
     </SelectContent>
   </Select>;
 }
@@ -35,7 +38,7 @@ export function McpDefaultPermissions({ override, busy, serverCount, onChange, o
   override: McpApprovalPolicy | null; busy: boolean; serverCount: number;
   onChange: (policy: McpApprovalPolicy | null) => void; onApplyToAll: () => void;
 }) {
-  return <section aria-label="Global MCP permissions" className="@container space-y-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+  return <Card as="section" padding="lg" aria-label="Global MCP permissions" className="@container space-y-3">
     <div className="flex flex-col gap-3 @2xl:flex-row @2xl:items-start @2xl:justify-between">
       <div className="flex min-w-0 items-start gap-2">
         <Globe size={15} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden />
@@ -47,12 +50,17 @@ export function McpDefaultPermissions({ override, busy, serverCount, onChange, o
       <McpPermissionControls label="Global MCP default and bulk action">
         <McpPermissionSelect value={override} inheritedLabel="App default"
           label="Default MCP permissions" busy={busy} onChange={onChange} />
-        {serverCount > 0 && <Button variant="outline" size="sm" className="h-9 text-xs" disabled={busy} onClick={onApplyToAll}>Apply to all servers</Button>}
+        {serverCount > 0 && <Button
+          disabled={busy}
+          onClick={onApplyToAll}
+          variant="secondary"
+          size="sm"
+        >Apply to all servers</Button>}
       </McpPermissionControls>
     </div>
     <p className="text-[11px] leading-normal text-muted-foreground">
       {override === null && <>App default: {MCP_POLICY_LABELS[DEFAULT_MCP_APPROVAL_POLICY]}. </>}
       Saves immediately. Apply to all servers also replaces existing server and tool permission exceptions. Disabled tools stay off.
     </p>
-  </section>;
+  </Card>;
 }

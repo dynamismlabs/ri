@@ -1,4 +1,9 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { StatusBadge } from '@/components/system/status-badge';
+
+
+import { Field } from '@/components/system/field';
 
 import { useEffect, useRef, useState } from 'react';
 import { Search, type LucideIcon } from 'lucide-react';
@@ -45,45 +50,35 @@ export function SettingsNavigation<Id extends string>({
         'sm:mr-0 sm:w-56 sm:flex-col sm:overflow-x-visible sm:overflow-y-auto sm:border-b-0 sm:border-r sm:p-3',
       )}
     >
-      <div className="relative mb-1 hidden sm:block">
-        <Search
-          size={13}
-          className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-        />
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search"
-          aria-label={`Search ${label.toLowerCase()}`}
-          className="w-full rounded-lg border border-border bg-background py-1.5 pl-7 pr-2 text-[12px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-      </div>
+      <Field
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Search"
+        aria-label={`Search ${label.toLowerCase()}`}
+        className="relative mb-1 hidden w-full sm:flex"
+        leading={<Search />}
+      />
 
       {matches.map((section) => {
         const Icon = section.icon;
         const isActive = section.id === active;
         return (
-          <button data-slot="settings-nav-item"
+          <MenuAction
             key={section.id}
             type="button"
             onClick={() => onSelect(section.id)}
             ref={isActive ? activeButton : undefined}
             aria-current={isActive ? 'page' : undefined}
-            className={cn(
-              'flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-2.5 py-2 text-left text-[13px] transition-colors',
-              isActive
-                ? 'bg-background font-medium text-foreground shadow-sm ring-1 ring-border'
-                : 'text-muted-foreground hover:bg-background/60 hover:text-foreground',
-            )}
+            className="flex shrink-0 items-center gap-2 whitespace-nowrap text-left"
           >
             <Icon size={15} className={cn('shrink-0', isActive ? 'text-foreground' : 'text-muted-foreground')} />
             <span>{section.label}</span>
             {section.badge && (
-              <span className="ml-auto hidden rounded-full bg-muted px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-muted-foreground sm:inline-block">
+              <StatusBadge className="ml-auto hidden sm:inline-block">
                 {section.badge}
-              </span>
+              </StatusBadge>
             )}
-          </button>
+          </MenuAction>
         );
       })}
 

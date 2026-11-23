@@ -1,4 +1,7 @@
-'use client'
+'use client';
+
+import { MenuSurface } from '@/components/system/menu-surface';
+import { MenuAction } from '@/components/system/menu-action';
 
 import {
   useState,
@@ -103,27 +106,25 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
     if (items.length === 0) {
       if (loading) {
         return (
-          <div className="slash-command-menu chat-slash-menu" aria-busy="true" aria-label="Loading skills">
+          <MenuSurface density="compact" aria-busy="true" aria-label="Loading skills">
             <SlashSkeletonRows />
-          </div>
+          </MenuSurface>
         )
       }
       return (
-        <div className="slash-command-menu px-3 py-2 text-xs text-muted-foreground">
+        <MenuSurface empty>
           No matching skills
-        </div>
+        </MenuSurface>
       )
     }
 
     return (
-      <div ref={listRef} className="slash-command-menu chat-slash-menu">
+      <MenuSurface density="compact" ref={listRef}>
         {items.map((item, index) => (
-          <button
+          <MenuAction selected={!!((index === selectedIndex))} density="compact"
             key={item.command.id}
             type="button"
-            className={`flex items-baseline gap-2 w-full px-2.5 py-1 rounded text-left transition-colors ${
-              index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
-            }`}
+            className="flex items-baseline gap-2 w-full text-left"
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => selectItem(index)}
             onMouseEnter={() => setSelectedIndex(index)}
@@ -139,9 +140,9 @@ export const SlashMenuList = forwardRef<SlashMenuListRef, SlashMenuListProps>(
                 />
               </span>
             )}
-          </button>
+          </MenuAction>
         ))}
-      </div>
+      </MenuSurface>
     )
   },
 )

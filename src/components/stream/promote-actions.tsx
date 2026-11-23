@@ -1,18 +1,23 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
+
+import { Field } from '@/components/system/field';
+
+import { IconButton } from '@/components/system/icon-button';
 
 import { useState, useRef, useCallback } from 'react';
 import {
-  Target, FileText, ChevronDown, Search, Plus, GitMerge,
+  Target, FileText, Search, Plus, GitMerge,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover';
+} from '@/components/system/popover';
 import { useTasks } from '@/hooks/use-tasks';
 import { useNotes } from '@/hooks/use-notes';
-import type { TaskStatus } from '@/db/types';
 
 // ─── Task promote/merge ─────────────────────────────────────
 
@@ -50,68 +55,70 @@ export function TaskActions({ onPromote, onMerge }: TaskActionsProps) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          className="flex items-center gap-0.5 p-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors"
+        <IconButton
+          label="Create task"
+          variant="ghost"
+          size="xs"
+          disclosure
         >
           <Target size={12} />
-          <ChevronDown size={8} className="text-primary/50" />
-        </button>
+        </IconButton>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
+      <PopoverContent padding="none" align="end" className="w-56" sideOffset={4}>
         {mode === 'menu' && (
           <div className="py-1">
-            <button
+            <MenuAction
               onClick={() => { onPromote('todo'); handleOpenChange(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <Plus size={12} className="text-blue-500" />
               <span className="font-medium">Add to Todo</span>
-            </button>
-            <button
+            </MenuAction>
+            <MenuAction
               onClick={() => { onPromote('consider'); handleOpenChange(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <Plus size={12} className="text-amber-500" />
               <span className="font-medium">Save to Consider</span>
-            </button>
-            <button
+            </MenuAction>
+            <MenuAction
               onClick={() => { setMode('search'); setTimeout(() => inputRef.current?.focus(), 0); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <GitMerge size={12} className="text-muted-foreground" />
               <span className="font-medium">Merge into task...</span>
-            </button>
+            </MenuAction>
           </div>
         )}
 
         {mode === 'search' && (
           <div>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tasks..."
-                className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
-              />
-            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border"><Field
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search tasks..."
+              className={'flex-1'}
+              purpose="embedded"
+              leading={<Search />}
+              aria-label={'Search tasks'}
+            /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No tasks found</p>
               )}
               {filtered.map((task) => (
-                <button
+                <MenuAction density="compact"
                   key={task.id}
                   onClick={() => handleMerge(task.id)}
-                  className="w-full flex items-start gap-2 px-3 py-1.5 text-left hover:bg-muted transition-colors"
+                  className="w-full flex items-start gap-2 text-left"
                 >
                   <Target size={10} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span className="text-[10.5px] text-foreground leading-snug line-clamp-2">
                     {task.title}
                   </span>
-                </button>
+                </MenuAction>
               ))}
             </div>
           </div>
@@ -157,61 +164,63 @@ export function NoteActions({ onPromote, onMerge }: NoteActionsProps) {
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
-        <button
-          className="flex items-center gap-0.5 p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+        <IconButton
+          label="Create note"
+          variant="ghost"
+          size="xs"
+          disclosure
         >
           <FileText size={12} />
-          <ChevronDown size={8} className="opacity-50" />
-        </button>
+        </IconButton>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 p-0" sideOffset={4}>
+      <PopoverContent padding="none" align="end" className="w-56" sideOffset={4}>
         {mode === 'menu' && (
           <div className="py-1">
-            <button
+            <MenuAction
               onClick={() => { onPromote(); handleOpenChange(false); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <Plus size={12} className="text-primary" />
               <span className="font-medium">New note</span>
-            </button>
-            <button
+            </MenuAction>
+            <MenuAction
               onClick={() => { setMode('search'); setTimeout(() => inputRef.current?.focus(), 0); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-[11px] text-foreground hover:bg-muted transition-colors"
+              className="w-full flex items-center gap-2.5"
             >
               <GitMerge size={12} className="text-muted-foreground" />
               <span className="font-medium">Append to note...</span>
-            </button>
+            </MenuAction>
           </div>
         )}
 
         {mode === 'search' && (
           <div>
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
-              <Search size={12} className="text-muted-foreground flex-shrink-0" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search notes..."
-                className="flex-1 text-[11px] bg-transparent outline-none placeholder:text-muted-foreground/50"
-              />
-            </div>
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-border"><Field
+              ref={inputRef}
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search notes..."
+              className={'flex-1'}
+              purpose="embedded"
+              leading={<Search />}
+              aria-label={'Search notes'}
+            /></div>
             <div className="max-h-48 overflow-y-auto py-1">
               {filtered.length === 0 && (
                 <p className="px-3 py-2 text-[10px] text-muted-foreground">No notes found</p>
               )}
               {filtered.map((note) => (
-                <button
+                <MenuAction density="compact"
                   key={note.id}
                   onClick={() => handleMerge(note.id)}
-                  className="w-full flex items-start gap-2 px-3 py-1.5 text-left hover:bg-muted transition-colors"
+                  className="w-full flex items-start gap-2 text-left"
                 >
                   <FileText size={10} className="text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span className="text-[10.5px] text-foreground leading-snug line-clamp-2">
                     {note.title ?? (note.bodyExcerpt ?? '').slice(0, 80)}
                   </span>
-                </button>
+                </MenuAction>
               ))}
             </div>
           </div>

@@ -1,14 +1,15 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Field } from '@/components/system/field';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { parseTypedDate } from '@/lib/date-input';
 import { describeLocalDate, formatLocalDate, isPastDate, parseLocalDate, toDateOnly } from '@/lib/dates';
 import { todayLocalDate } from '@/lib/deck/date';
-import { cn } from '@/lib/utils';
 
 const FULL_DATE: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
 
@@ -64,9 +65,9 @@ function DatePanel({ label, value, onChange, onClose }: {
   };
 
   return (
-    <PopoverContent
+    <PopoverContent padding="sm"
       align="start"
-      className="w-auto p-2"
+      className="w-auto"
       data-cancel-on-escape=""
       onOpenAutoFocus={(event) => {
         event.preventDefault();
@@ -81,35 +82,28 @@ function DatePanel({ label, value, onChange, onClose }: {
       }}
     >
       <div onClick={keepFromRow} onTouchStart={keepFromRow} className="flex flex-col gap-2">
-        <InputGroup className="h-8 rounded-md">
-          <InputGroupInput
-            ref={input}
-            aria-label={label}
-            aria-invalid={unreadable}
-            autoComplete="off"
-            placeholder="Type a date, like fri"
-            value={text}
-            className="h-8 px-2 md:text-xs"
-            onChange={(event) => {
-              setText(event.target.value);
-              const next = parseTypedDate(event.target.value);
-              if (next) setMonth(parseLocalDate(next)!);
-            }}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return;
-              event.preventDefault();
-              if (empty) finish(null);
-              else if (picked) finish(picked);
-            }}
-          />
-          {edited && !empty && (
-            <InputGroupAddon align="inline-end" className="py-0 pr-2">
-              <InputGroupText aria-live="polite" className={cn('whitespace-nowrap text-xs', unreadable && 'text-destructive')}>
-                {unreadable ? 'Not a date' : describeLocalDate(picked!)}
-              </InputGroupText>
-            </InputGroupAddon>
-          )}
-        </InputGroup>
+        <Field
+          inlineMessage
+          error={unreadable ? 'Not a date' : undefined}
+          description={edited && !empty && !unreadable ? describeLocalDate(picked!) : undefined}
+          ref={input}
+          aria-label={label}
+          aria-invalid={unreadable}
+          autoComplete="off"
+          placeholder="Type a date, like fri"
+          value={text}
+          onChange={(event) => {
+            setText(event.target.value);
+            const next = parseTypedDate(event.target.value);
+            if (next) setMonth(parseLocalDate(next)!);
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            if (empty) finish(null);
+            else if (picked) finish(picked);
+          }}
+        />
         <Calendar
           mode="single"
           required
@@ -120,13 +114,14 @@ function DatePanel({ label, value, onChange, onClose }: {
           className="p-0"
         />
         {saved && (
-          <button
+          <Button
             type="button"
             onClick={() => finish(null)}
-            className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             Clear date
-          </button>
+          </Button>
         )}
       </div>
     </PopoverContent>
@@ -140,20 +135,18 @@ export function TaskDateField({ label, value, onChange, highlightOverdue = false
   const shown = formatLocalDate(value, FULL_DATE);
   return (
     <TaskDatePicker label={label} value={value} onChange={onChange}>
-      <button
+      <ChipButton
         type="button"
         aria-label={`${label}: ${shown ?? emptyLabel?.toLowerCase() ?? 'not set'}`}
-        data-slot="chip-button"
-        data-urgency={highlightOverdue && isPastDate(value) ? 'late' : undefined}
-        className={cn(
-          'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
-          !shown && 'text-muted-foreground',
-          highlightOverdue && isPastDate(value) && 'border-red-500/50 text-red-500',
-        )}
+        variant="secondary"
+        size="compact"
+        tone="status"
+        status={highlightOverdue && isPastDate(value) ? "danger" : "neutral"}
+        className="inline-flex w-fit items-center gap-1.5"
       >
         <CalendarIcon size={12} />
         {shown ?? emptyLabel ?? 'Set date'}
-      </button>
+      </ChipButton>
     </TaskDatePicker>
   );
 }

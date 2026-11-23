@@ -1,0 +1,12 @@
+/* The background-task strip: a tab on top of the message box, inset from its
+   edges and rounded on top only, so the two read as one piece. */
+html:root .ri-background-tasks-strip {
+  height: auto;
+  min-height: 28px;
+  padding: 6px 12px;
+  border-radius: 10px 10px 0 0;
+  color: var(--t3);
+  font-size: 11.5px;
+  font-weight: 400;
+}
+html:root .ri-background-tasks-strip:hover:not(:disabled) { color: var(--t2); }

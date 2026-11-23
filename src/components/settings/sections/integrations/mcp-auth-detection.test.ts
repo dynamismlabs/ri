@@ -1,3 +1,4 @@
+import { parseHTML } from 'linkedom';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
@@ -24,11 +25,10 @@ const hasSecret = (html: string) => html.includes('id="mcp-secret"');
 /** The method whose radio is checked, or null when none is. */
 const checked = (html: string) => (html.match(/<input type="radio"[^>]*>/g) ?? [])
   .find((input) => input.includes('name="mcp-auth"') && input.includes('checked=""'))?.match(/value="(\w+)"/)?.[1] ?? null;
-/** One method's block: its radio, title, description and any fields under it, up to the next method's radio. */
+/** One method's block, including its sibling fields and Radix's hidden form input. */
 const option = (html: string, kind: string) => {
-  const start = html.indexOf(`value="${kind}"`);
-  const next = html.indexOf('name="mcp-auth"', start);
-  return html.slice(start, next === -1 ? html.indexOf('</form>') : next);
+  const { document } = parseHTML(html);
+  return document.querySelector(`[role="radio"][value="${kind}"]`)?.parentElement?.outerHTML ?? '';
 };
 const submitDisabled = (html: string) => /<button[^>]*type="submit"[^>]*>/.exec(html)?.[0].includes('disabled=""') ?? false;
 /** The methods marked Detected. */

@@ -1,5 +1,10 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
+
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
 import {
@@ -97,76 +102,76 @@ export function ProfileSection() {
   return (
     <div className="space-y-5">
       {/* Why this matters — the pitch, up front and unmuted. */}
-      <div className="rounded-xl border border-primary/20 border-l-2 border-l-primary bg-primary/5 p-4">
+      <Card padding="lg" >
         <p className="text-[12.5px] leading-relaxed text-foreground/90">
           Share your role, how you work, and what you&apos;re focused on to give your daily plan more useful context.
         </p>
-      </div>
+      </Card>
 
       {/* Name */}
-      <section className="space-y-2">
-        <label htmlFor="profile-name" className="block text-[12px] font-medium text-foreground">
-          What should your assistant call you?
-        </label>
-        <input
-          id="profile-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={commitName}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') e.currentTarget.blur();
-          }}
-          placeholder="e.g. Trey"
-          className="w-full max-w-sm rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-      </section>
+      <Field
+        id="profile-name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onBlur={commitName}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+        }}
+        placeholder="e.g. Trey"
+        controlClassName="w-full max-w-sm"
+        label="What should your assistant call you?"
+      />
 
       {/* The assistant (the orchestrator): its name and look */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Your assistant</h3>
-        <div className="max-w-xl rounded-xl border border-border bg-card/40 p-3">
+        <Card padding="md" className="max-w-xl">
           <IdentityEditor draft={identity} onChange={setAssistantDraft} onSubmit={() => void commitIdentity()} />
           {identityDirty && (
             <div className="mt-3 flex items-center justify-end gap-1.5">
-              <button data-slot="action-button" data-variant="ghost"
+              <Button
                 type="button"
                 onClick={() => setAssistantDraft(null)}
-                className="rounded-md px-2.5 py-1 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                variant="ghost"
+                size="sm"
               >
                 Reset
-              </button>
-              <button data-slot="action-button" data-variant="primary"
+              </Button>
+              <Button
                 type="button"
                 onClick={() => void commitIdentity()}
                 disabled={savingIdentity}
-                className="rounded-md bg-primary px-3 py-1 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                variant="primary"
+                size="md"
               >
                 Save
-              </button>
+              </Button>
             </div>
           )}
-        </div>
+        </Card>
         <p className="text-[11px] text-muted-foreground/60">
           The name and face at the top of the rail and in your main chat. It answers to the name.
         </p>
       </section>
 
       {/* About you */}
-      <section className="space-y-2">
-        <label htmlFor="profile-about" className="block text-[12px] font-medium text-foreground">
-          About you
-        </label>
-        <textarea
-          id="profile-about"
-          value={description}
-          onChange={(e) => handleDescriptionChange(e.target.value)}
-          placeholder="e.g. I'm a founder building a B2B SaaS product. I do my best deep work before noon. I tend to procrastinate on financial tasks..."
-          className="h-48 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
-        />
-        <p className="text-[11px] text-muted-foreground/60">
-          {updateUserState.isPending ? 'Saving…' : lastSavedAt ? `Last saved ${timeAgo(lastSavedAt)}` : 'Auto-saved'}
-        </p>
-      </section>
+      <TextArea
+        rows={9}
+        id="profile-about"
+        value={description}
+        onChange={(e) => handleDescriptionChange(e.target.value)}
+        placeholder="e.g. I'm a founder building a B2B SaaS product. I do my best deep work before noon. I tend to procrastinate on financial tasks..."
+        controlClassName="w-full"
+        resize="vertical"
+        label="About you"
+        description={
+          updateUserState.isPending
+            ? 'Saving…'
+            : lastSavedAt
+              ? `Last saved ${timeAgo(lastSavedAt)}`
+              : 'Auto-saved'
+        }
+      />
 
       {/* Deck sources (DECK.md) — which connected services the deck consults. */}
       <DeckSourcesField />

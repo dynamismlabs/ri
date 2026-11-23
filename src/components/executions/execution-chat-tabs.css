@@ -1,0 +1,6 @@
+html:root [data-slot="chat-tabs"] { gap: 4px; }
+html:root [data-slot="chat-tab"] { border-radius: 999px; background-color: transparent; color: var(--t3); }
+html:root [data-slot="chat-tab"]:hover { background-color: var(--hover); color: var(--t1); }
+html:root [data-slot="chat-tab"][data-current="true"] { background-color: var(--selected); color: var(--t1); }
+html:root [data-slot="chat-tab"] > button:not(.ri-button) { border-radius: 999px; }
+html:root :is([data-slot="chat-tab"], [data-slot="chat-tab"] > button:not(.ri-button)):focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }

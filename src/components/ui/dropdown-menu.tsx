@@ -261,3 +261,9 @@ export {
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
 }
+
+export const DropdownMenuContentPrimitive = DropdownMenuPrimitive.Content
+export const DropdownMenuSubContentPrimitive = DropdownMenuPrimitive.SubContent
+export const DropdownMenuSubTriggerPrimitive = DropdownMenuPrimitive.SubTrigger
+export const DropdownMenuLabelPrimitive = DropdownMenuPrimitive.Label
+export const DropdownMenuSeparatorPrimitive = DropdownMenuPrimitive.Separator

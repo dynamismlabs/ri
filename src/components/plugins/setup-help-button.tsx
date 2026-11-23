@@ -2,7 +2,7 @@
 
 import { Loader2, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Tip } from '@/components/ui/tip';
 import { usePluginSetupHelp } from '@/hooks/use-plugin-setup-help';
 import type { PluginSetupHelpTarget } from '@/lib/plugins/setup-help';
@@ -25,22 +25,30 @@ export function PluginSetupHelpButton({ target, disabled = false, compact = fals
   if (compact) {
     return (
       <Tip label={TIP}>
-        <button
+        <Button
           type="button"
           aria-label={label}
           disabled={off}
           onClick={() => void help.ask(target).then((error) => { if (error) toast.error(error); })}
-          className="flex h-7 flex-shrink-0 items-center gap-1.5 rounded-lg px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-40"
+          variant="secondary"
+          size="md"
+          className="flex flex-shrink-0 items-center gap-1.5"
         >
           {help.isPending ? <Loader2 size={13} className="animate-spin" /> : <MessageCircle size={13} />}
           <span className="hidden @lg:inline">{label}</span>
-        </button>
+        </Button>
       </Tip>
     );
   }
   return <div className="space-y-2">
     <Tip label={TIP}>
-      <Button type="button" size="sm" variant="outline" className="text-xs" disabled={off} onClick={() => void help.ask(target)}>
+      <Button
+        type="button"
+        disabled={off}
+        onClick={() => void help.ask(target)}
+        variant="secondary"
+        size="md"
+      >
         {help.isPending ? <Loader2 size={14} className="animate-spin" /> : <MessageCircle size={14} />}
         {label}
       </Button>

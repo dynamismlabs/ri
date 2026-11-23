@@ -1,12 +1,14 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { HomeLink as Link } from '@/components/home/home-link';
 import { FileCheck2 } from 'lucide-react';
 import { useResultCapabilities, useResults } from '@/hooks/use-results';
 
-export function ExecutionResultsShortcut({ executionId }: { executionId: string }) {
+export function ExecutionResultsShortcut({ executionId, size = "sm" }: { executionId: string; size?: "sm" | "touch" }) {
   const capabilities = useResultCapabilities();
   const retained = useResults({ executionId, includeSuperseded: true, limit: 1 });
   if (!capabilities.data?.handoffsEnabled && !retained.data?.length) return null;
-  return <Link href={`/results?executionId=${encodeURIComponent(executionId)}`} className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Saved results for this execution"><FileCheck2 size={14} /><span className="hidden sm:inline">Results</span></Link>;
+  return <Button asChild variant="ghost" size={size} className="inline-flex shrink-0 items-center gap-1.5"><Link href={`/results?executionId=${encodeURIComponent(executionId)}`}
+    aria-label="Saved results for this execution"><FileCheck2 size={14} /><span className="hidden sm:inline">Results</span></Link></Button>;
 }

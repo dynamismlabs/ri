@@ -1,5 +1,12 @@
 'use client';
+import { MetaItem } from '@/components/system/meta';
 
+import { useAutosizeTextarea } from '@/hooks/use-autosize-textarea';
+import { TextArea } from '@/components/system/text-area';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import type { DocumentChatHandle } from '@/components/ai-elements/slideout-chat';
 import { HarnessChatSession } from '@/components/chat/harness-chat';
 import { EntityBriefCard } from '@/components/entities/entity-brief-card';
@@ -15,10 +22,9 @@ import { useTask, useUpdateTask } from '@/hooks/use-tasks';
 import { apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { calendarDaysUntil, formatLocalDate, isPastDate } from '@/lib/dates';
 import { TaskDatePicker } from '@/components/tasks/task-date-field';
-import { cn } from '@/lib/utils';
+
 import { Clock, Flame, Loader2, RefreshCw, Zap } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Tip } from '@/components/ui/tip';
 
 /**
  * The agent-first surface for one note or task.
@@ -92,7 +98,7 @@ export function EntityAgentView({
             <>
               <EntityChangeBanner entityType={entityType} entityId={entityId} />
               <div className="flex items-center gap-2 pt-1">
-                <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">
+                <span className="text-[10px] font-bold text-muted-foreground/60">
                   {entityType === 'task' ? ((task as TaskRecord).parentId ? 'Subtask' : 'Task') : 'Note'}
                 </span>
                 <span className="text-muted-foreground/30">&middot;</span>
@@ -143,12 +149,14 @@ export function EntityAgentView({
               <p className="mt-1 text-[11px] text-muted-foreground/80">
                 {apiErrorStatus(chat.error) !== undefined ? apiErrorText(chat.error) : 'The agent may not be set up yet.'}
               </p>
-              <button
+              <Button
                 onClick={() => chat.refetch()}
-                className="mt-3 inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+                variant="ghost"
+                size="sm"
+                className="mt-3 inline-flex items-center gap-1"
               >
                 <RefreshCw size={11} /> Retry
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -201,17 +209,10 @@ function EntityTitle({
   title: string;
   disabled: boolean;
 }) {
-  const ref = useRef<HTMLTextAreaElement>(null);
+  const { element: ref, ref: attachTitle, resize } = useAutosizeTextarea();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updateTask = useUpdateTask();
   const updateNote = useUpdateNote();
-
-  const resize = useCallback(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, []);
 
   // Seed and sync from the record when it changes elsewhere (agent rename).
   useEffect(() => {
@@ -219,7 +220,7 @@ function EntityTitle({
     if (!el || document.activeElement === el) return;
     if (el.value.trim() !== title.trim()) el.value = title.trim() ? title : '';
     resize();
-  }, [title, entityId, resize]);
+  }, [title, entityId, resize, ref]);
 
   // A brand-new entity: the title owns the caret.
   useEffect(() => {
@@ -240,8 +241,9 @@ function EntityTitle({
   );
 
   return (
-    <textarea
-      ref={ref}
+    <TextArea
+      ref={attachTitle}
+      aria-label={entityType === 'task' ? 'Task title' : 'Note title'}
       rows={1}
       defaultValue={title.trim() ? title : ''}
       disabled={disabled}
@@ -257,13 +259,20 @@ function EntityTitle({
         e.preventDefault();
         if (e.metaKey || e.ctrlKey) return;
         // Hand the caret to the composer; the app's own ⌘I listener owns it.
-        const composer = document.querySelector<HTMLElement>('[data-chat-composer] [contenteditable="true"]');
-        (composer ?? document.querySelector<HTMLElement>('.ProseMirror[contenteditable="true"]'))?.focus();
+        const composer = document.querySelector<HTMLElement>(
+          '[data-chat-composer] [contenteditable="true"]',
+        );
+        (
+          composer ?? document.querySelector<HTMLElement>('.ProseMirror[contenteditable="true"]')
+        )?.focus();
       }}
-      className="mt-1 w-full resize-none overflow-hidden border-none bg-transparent text-2xl font-bold leading-tight text-foreground outline-none placeholder:text-muted-foreground/40 disabled:opacity-70"
+      className="mt-1 w-full"
       data-gramm="false"
       data-gramm_editor="false"
       data-enable-grammarly="false"
+      purpose="title"
+      titleSize="entity"
+      autoSize
     />
   );
 }
@@ -314,53 +323,34 @@ function TaskMetaStrip({ task }: { task: TaskRecord }) {
         value={task.hardDeadline}
         onChange={(hardDeadline) => save({ hardDeadline } as Partial<TaskRecord>)}
       >
-        <button
-          type="button"
-          className={cn(
-            'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition-colors hover:bg-muted',
-            isPastDate(task.hardDeadline) ? 'text-destructive' : 'text-muted-foreground',
-          )}
-        >
-          <Clock size={10} />
-          {deadlineLabel ?? 'Deadline'}
-        </button>
+        <MetaItem as="button" type="button" kind="deadline" urgency={isPastDate(task.hardDeadline) ? "late" : undefined}>
+          <Clock size={10} />{deadlineLabel ?? 'Deadline'}
+        </MetaItem>
       </TaskDatePicker>
 
       <span className="text-muted-foreground/30">&middot;</span>
-      {ENERGY_OPTIONS.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => save({ energy: task.energy === opt.value ? null : opt.value })}
-          className={cn(
-            'inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium transition-colors',
-            task.energy === opt.value
-              ? `${opt.color} bg-current/10 ring-1 ring-current/20`
-              : 'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-          )}
-        >
-          <opt.icon size={10} />
-          {opt.label}
-        </button>
-      ))}
+      <SegmentedControl<Energy>
+        mode="choice"
+        allowEmpty
+        ariaLabel="Energy"
+        value={task.energy}
+        onChange={(energy) => save({ energy })}
+        options={ENERGY_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label, icon: <opt.icon /> }))}
+      />
 
       <span className="text-muted-foreground/30">&middot;</span>
-      {EFFORT_OPTIONS.map((opt) => (
-        <Tip key={opt.value} label={`Effort: ${opt.value}`}>
-          <button
-            type="button"
-            onClick={() => save({ effort: task.effort === opt.value ? null : opt.value })}
-            className={cn(
-              'rounded px-1.5 py-0.5 font-medium transition-colors',
-              task.effort === opt.value
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground',
-            )}
-          >
-            {opt.label}
-          </button>
-        </Tip>
-      ))}
+      <SegmentedControl<Effort>
+        mode="choice"
+        allowEmpty
+        ariaLabel="Effort"
+        value={task.effort}
+        onChange={(effort) => save({ effort })}
+        options={EFFORT_OPTIONS.map((opt) => ({
+          value: opt.value,
+          label: opt.label,
+          hint: 'Effort: ' + opt.value,
+        }))}
+      />
     </div>
   );
 }

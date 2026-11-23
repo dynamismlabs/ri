@@ -21,7 +21,7 @@ vi.mock('./app-status', () => ({ AppStatusLine: () => null }));
 vi.mock('./app-progress', () => ({ AppProgress: () => null }));
 vi.mock('./allow-app', () => ({ useAllowApp: () => ({ dialog: null }) }));
 vi.mock('./use-open-app', () => ({ useOpenApp: () => () => {} }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => () => {} }));
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => () => {} }));
 vi.mock('sonner', () => ({ toast: { error: h.error } }));
 vi.mock('@/lib/trpc/client', () => ({
   trpc: {

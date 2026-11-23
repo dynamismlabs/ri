@@ -8,6 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ExecutionEvent } from './execution-event';
 import { ChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 
+// Delivery assertions do not depend on the host device's input mode.
+vi.mock('@/hooks/use-touch-first', () => ({ useTouchFirst: () => false }));
+
 const deliveries = vi.hoisted(() => vi.fn(() => ({ data: {} })));
 vi.mock('@/hooks/use-harness-connection', () => ({ useHarnessConnection: () => ({}), useRecheckHarnessConnection: () => ({}) }));
 vi.mock('@/hooks/use-claude-login', () => ({ useClaudeLogin: () => ({}), useClaudeAuthStatus: () => ({}) }));

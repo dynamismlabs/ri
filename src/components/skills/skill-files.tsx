@@ -1,7 +1,12 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { Card } from '@/components/system/card';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { languageFor } from '@/components/executions/viewer/language-for';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Tip } from '@/components/ui/tip';
 import { skillKey, useSkillFile } from '@/hooks/use-skills';
 import { apiErrorText } from '@/lib/api/client';
@@ -119,15 +124,17 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
         <span className="text-[12px] font-semibold text-foreground">Files</span>
         {editable && (
           <Tip label="Scripts go in scripts/, docs in references/, the rest in assets/. Up to 1 MB each.">
-            <button
+            <Button
               type="button"
               onClick={() => input.current?.click()}
               disabled={adding}
-              className="flex h-6 items-center gap-1 rounded-md px-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="flex items-center gap-1"
             >
               {adding ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
               {adding ? 'Adding…' : 'Add files'}
-            </button>
+            </Button>
           </Tip>
         )}
         <input
@@ -158,28 +165,31 @@ export function SkillFiles({ skill, editable }: { skill: SkillView; editable: bo
             return (
               <li key={f.path}>
                 <div className="group flex items-center gap-1 rounded-md hover:bg-muted/40">
-                  <button
+                  <InlineAction purpose="caption"
                     type="button"
                     aria-expanded={isOpen}
                     onClick={() => setOpen(isOpen ? null : f.path)}
-                    className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1 text-left text-[11.5px] text-muted-foreground hover:text-foreground"
+                    className="flex min-w-0 flex-1 items-center gap-2 text-left"
                   >
                     <ChevronRight size={12} className={cn('shrink-0 transition-transform', isOpen && 'rotate-90')} />
                     <Icon size={12} className="shrink-0" />
                     <span className="truncate font-mono">{f.path}</span>
                     <span className="ml-auto shrink-0 tabular-nums text-muted-foreground/60">{formatBytes(f.size)}</span>
-                  </button>
+                  </InlineAction>
                   {editable && (
-                    <Tip label="Remove from the skill">
-                      <button
+                      <IconButton
                         type="button"
-                        aria-label={`Remove ${f.path}`}
                         onClick={() => void remove(f.path)}
-                        className="mr-1 shrink-0 rounded p-1 text-muted-foreground/60 opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+                        label={`Remove ${f.path}`}
+                        tooltip="Remove from the skill"
+                        variant="ghost"
+                        size="sm"
+                        reveal
+                        focus="inside"
+                        className="mr-1 shrink-0"
                       >
                         <Trash2 size={12} />
-                      </button>
-                    </Tip>
+                      </IconButton>
                   )}
                 </div>
                 {isOpen && <FileContents skillRef={skill.ref} file={f} />}
@@ -211,9 +221,9 @@ function FileContents({ skillRef, file }: { skillRef: string; file: { path: stri
     );
   }
   return (
-    <div className="mb-2 ml-5 mt-1 max-h-96 overflow-auto rounded-lg border border-border bg-card/30">
+    <Card padding="none" shadow className="mb-2 ml-5 mt-1 max-h-96 overflow-auto">
       <SkillMarkdownEditor value={data.text} onChange={NOOP} onSave={NOOP} ariaLabel={file.path} minHeight="0" readOnly language={language} />
-    </div>
+    </Card>
   );
 }
 

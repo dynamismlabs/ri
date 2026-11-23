@@ -1,4 +1,7 @@
 "use client";
+import { ChoiceRow } from '@/components/system/choice-row';
+import { Card } from '@/components/system/card';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useCallback, useState } from 'react';
 import { CheckSquare, FileText, Layers, MessageSquarePlus, Plus, Zap } from 'lucide-react';
@@ -6,7 +9,7 @@ import {
   Sheet,
   SheetContent,
   SheetTitle,
-} from '@/components/ui/sheet';
+} from '@/components/system/sheet';
 import { AreaCreateModal } from '@/components/dashboard/area-create-modal';
 import { useCreateNote } from '@/hooks/use-notes';
 import { useCreateTask } from '@/hooks/use-tasks';
@@ -54,7 +57,7 @@ export function MobileCreateSheet() {
   return (
     <>
       <Sheet open={mobileCreateOpen} onOpenChange={setMobileCreateOpen}>
-        <SheetContent side="bottom" showCloseButton={false} className="gap-0 rounded-t-2xl px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3">
+        <SheetContent side="bottom" showCloseButton={false} padding="md" safeArea className="gap-0">
           <SheetTitle className="sr-only">Create</SheetTitle>
           <div className="mx-auto mb-3 h-1 w-8 rounded-full bg-muted-foreground/30" />
 
@@ -88,7 +91,7 @@ export function MobileCreateSheet() {
 
 function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label: string; hint: string; onClick: () => void }) {
   return (
-    <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClick} className="flex items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors active:bg-accent">
+    <ChoiceRow surface="plain" density="comfortable" size="touch"   type="button" onClick={onClick} className="flex items-center gap-3 text-left">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground">
         <Icon size={19} />
       </span>
@@ -96,23 +99,29 @@ function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label
         <span className="block text-[15px] font-medium text-foreground">{label}</span>
         <span className="block text-xs text-muted-foreground">{hint}</span>
       </span>
-    </button>
+    </ChoiceRow>
   );
 }
 
 function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: string; onClick: () => void }) {
   return (
-    <button data-slot="action-button" type="button" onClick={onClick} className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-3.5 transition-colors active:bg-accent">
+    <Card as="button" padding="md" surface="track" type="button" onClick={onClick} className="ri-create-tile flex flex-col items-center gap-1.5">
       <Icon size={20} className="text-foreground" />
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
-    </button>
+    </Card>
   );
 }
 
 function SetupRow({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClick} disabled={disabled} className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm text-foreground/90 transition-colors active:bg-accent disabled:opacity-50">
+    <MenuAction
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      size="touch"
+      className="flex w-full items-center gap-3 text-left"
+    >
       <Plus size={17} className="shrink-0 text-muted-foreground" /> {label}
-    </button>
+    </MenuAction>
   );
 }

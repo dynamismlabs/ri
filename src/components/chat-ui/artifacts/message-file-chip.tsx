@@ -1,4 +1,5 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, FileText, Download, Loader2 } from 'lucide-react';
@@ -106,15 +107,10 @@ function TextExpandChip({ url, display, variant, tone, size }: {
   return (
     <span className={cn(variant === 'block' && 'block my-1')}>
       <Tip label={`${display} · ${formatSize(size)}`} onlyWhenTextHidden>
-        <button data-slot="attachment-chip" data-tone={tone} aria-expanded={open}
+        <InlineAction appearance="chip" bubble={tone === "bubble"}   aria-expanded={open}
           type="button"
           onClick={handleToggle}
-          className={cn(
-            'inline-flex items-center align-baseline gap-1 px-1.5 py-0.5 mx-0.5',
-            'rounded-md border text-[12px] font-medium transition-colors',
-            tone === 'bubble' ? 'border-current/20 bg-current/10 text-inherit hover:border-current/35 hover:bg-current/15' : 'border-border bg-muted/40 text-foreground hover:border-foreground/30 hover:bg-muted/60',
-            'cursor-pointer',
-          )}
+          className={cn("inline-flex items-center align-baseline gap-1 mx-0.5", "cursor-pointer")}
         >
           <FileText size={11} className="opacity-70 shrink-0" />
           <span className="font-mono text-[11px] truncate max-w-[200px]">{display}</span>
@@ -124,7 +120,7 @@ function TextExpandChip({ url, display, variant, tone, size }: {
           ) : (
             <ChevronRight size={10} className="opacity-70" />
           )}
-        </button>
+        </InlineAction>
       </Tip>
       {open && (
         <span className={cn('block mt-1 mb-2 rounded-md border max-h-72 overflow-y-auto', tone === 'bubble' ? 'border-current/20 bg-current/5' : 'border-border bg-muted/30')}>
@@ -154,22 +150,17 @@ function DownloadChip({ url, display, variant, tone, size }: {
   return (
     <span className={cn(variant === 'block' && 'block my-1')}>
       <Tip label={`${display} · ${formatSize(size)}`} onlyWhenTextHidden>
-        <a data-slot="attachment-chip" data-tone={tone}
+        <InlineAction asChild appearance="chip" bubble={tone === "bubble"}><a
           href={url}
           download={display}
           target="_blank"
           rel="noopener noreferrer"
-          className={cn(
-            'inline-flex items-center align-baseline gap-1 px-1.5 py-0.5 mx-0.5',
-            'rounded-md border text-[12px] font-medium transition-colors',
-            tone === 'bubble' ? 'border-current/20 bg-current/10 text-inherit hover:border-current/35 hover:bg-current/15' : 'border-border bg-muted/40 text-foreground hover:border-foreground/30 hover:bg-muted/60',
-            'cursor-pointer no-underline',
-          )}
+          className="items-center align-baseline gap-1 mx-0.5"
         >
           <Download size={11} className="opacity-70 shrink-0" />
           <span className="font-mono text-[11px] truncate max-w-[200px]">{display}</span>
           <span className="text-[10px] opacity-70 ml-0.5">{formatSize(size)}</span>
-        </a>
+        </a></InlineAction>
       </Tip>
     </span>
   );

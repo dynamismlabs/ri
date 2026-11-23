@@ -93,10 +93,10 @@ beforeAll(async () => {
       import {trpc} from '@/lib/trpc/client';
       import {createRoot} from 'react-dom/client';
       import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
-      import {TooltipProvider} from '@/components/ui/tooltip';
+      import {TipProvider} from '@/components/ui/tip';
       import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {WorkContext} from '@/contexts/work-context';
-      import {RailListBody,RailListHeader} from '@/components/workspaces/rail-list';
+      import {RailListBody,RailListHeader,RailListRoot} from '@/components/workspaces/rail-list';
       import {WorkspaceSelectionProvider} from '@/components/workspaces/workspace-selection-context';
       import {SessionHoverProvider} from '@/components/workspaces/session-hover-context';
       import {ReadStateButton} from '@/components/chat-ui/read-state-button';
@@ -181,20 +181,20 @@ beforeAll(async () => {
       // The tab lives where the real rail keeps it, so an agent's Show chats can switch it.
       function Rail(){
         const {tab,setTab}=useRailTab();
-        return <WorkspaceSelectionProvider>
-          <RailListHeader tab={tab} onSelect={setTab}/>
+        return <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}>
+          <RailListHeader tab={tab}/>
           <RailListBody tab={tab}/>
-        </WorkspaceSelectionProvider>;
+        </RailListRoot></WorkspaceSelectionProvider>;
       }
       // The wide rail's scroller as the rail lays it out: the header sticks in
       // the same scroller as the list.
       function ScrollingRail(){
         const [tab,setTab]=useState('workspace');
-        return <WorkspaceSelectionProvider>
+        return <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}>
           <div className="h-32">Places</div>
-          <div className="sticky top-0 z-30 bg-background"><RailListHeader tab={tab} onSelect={setTab}/></div>
+          <div className="sticky top-0 z-30 bg-background"><RailListHeader tab={tab}/></div>
           <RailListBody tab={tab} stickyHeaderHeight={32}/>
-        </WorkspaceSelectionProvider>;
+        </RailListRoot></WorkspaceSelectionProvider>;
       }
       // The wide rail's list, or the collapsed strip's Agents button.
       const railKind=new URLSearchParams(location.search).get('rail');
@@ -202,7 +202,7 @@ beforeAll(async () => {
       // The agent view's Chats tab, for one agent, beside the rail.
       const chatsTab=new URLSearchParams(location.search).get('panel')==='chats';
       createRoot(document.getElementById('root')).render(
-        <QueryClientProvider client={client}><TooltipProvider><ConfirmProvider>
+        <QueryClientProvider client={client}><TipProvider><ConfirmProvider>
           <Work><SessionHoverProvider disabled>
             {strip
               ? <aside className="flex h-screen w-[44px] flex-col items-center pt-2 border-r border-border bg-background"><AgentsFlyout/></aside>
@@ -212,7 +212,7 @@ beforeAll(async () => {
             <div data-chat-bar className="fixed left-[300px] top-4 flex items-center gap-1.5"><ReadStateButton sessionId="notes-main"/></div>
             {chatsTab && <div data-chats-tab className="fixed left-[300px] top-12 w-[320px] bg-background"><AgentOverview workspace={workspaces.find(w=>w.id==='fin')} onSelectTab={noop}/></div>}
           </SessionHoverProvider></Work>
-        </ConfirmProvider></TooltipProvider></QueryClientProvider>);
+        </ConfirmProvider></TipProvider></QueryClientProvider>);
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', logLevel: 'silent',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },
@@ -722,7 +722,7 @@ it('narrows Unread to one agent from the flyout, and lets go when that agent has
     await listClosed();
     expect(await titles()).toEqual(['Reconcile Amex', 'Import Chase CSV']);
     const header = narrowed.locator('xpath=..');
-    expect((await header.innerText()).replace(/\s+/g, ' ').trim()).toBe('UNREAD 💵 Finances 2');
+    expect((await header.innerText()).replace(/\s+/g, ' ').trim()).toBe('Unread 💵 Finances 2');
     expect(await flyout.locator('nav').innerText()).not.toContain('· Finances');
     expect((await row.innerText()).replace(/\s+/g, ' ').trim()).toBe('Unread 3');
     expect(await flyout.locator('nav').innerText()).not.toContain('inactive');

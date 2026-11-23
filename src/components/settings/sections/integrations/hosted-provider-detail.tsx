@@ -1,12 +1,16 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
 
 import dynamic from 'next/dynamic';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Loader2, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import { HostedEndpointFields } from '@/components/integrations/hosted-endpoint-fields';
@@ -57,7 +61,12 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
   // With accounts, a button in their section opened the form, so it goes under that heading, above them.
   const hasAccounts = accounts.length > 0 || previousConnections.length > 0;
   const form = showForm && (!slack || provider.configured) && <ConnectFormSection opened={hasAccounts}>
-    <GroupHeading action={hasAccounts && <Button size="xs" variant="ghost" disabled={busy} onClick={() => setTarget(null)}>Cancel</Button>}>
+    <GroupHeading action={hasAccounts && <Button
+      disabled={busy}
+      onClick={() => setTarget(null)}
+      variant="ghost"
+      size="xs"
+    >Cancel</Button>}>
       {active ? `Reconnect ${active.label || provider.displayName}` : previousActive ? `Reconnect ${connectionIdentity(previousActive)}` : hasAccounts ? 'Add another account' : 'Connect'}
     </GroupHeading>
     <div ref={signInRef} tabIndex={-1} id={slack ? 'slack-account-sign-in' : undefined} className="scroll-mt-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -80,7 +89,12 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
     {!showForm && <PluginSetupHelpButton target={{ kind: 'integration', provider }} disabled={busy} />}
 
     {(accounts.length > 0 || previousConnections.length > 0) && <section className="space-y-2">
-      <GroupHeading count={local ? undefined : accounts.length + previousConnections.length} action={kind !== 'none' && <Button size="xs" variant="outline" disabled={busy} onClick={() => setTarget('new')}><Plus size={12} /> Add account</Button>}>{local ? 'Connection' : 'Accounts'}</GroupHeading>
+      <GroupHeading count={local ? undefined : accounts.length + previousConnections.length} action={kind !== 'none' && <Button
+        disabled={busy}
+        onClick={() => setTarget('new')}
+        variant="secondary"
+        size="xs"
+      ><Plus size={12} /> Add account</Button>}>{local ? 'Connection' : 'Accounts'}</GroupHeading>
       {form}
       <div className="space-y-3">{accounts.map(account => {
         const accountKind = account.authKind ?? kind;
@@ -90,17 +104,42 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
         const checking = !!connection && props.testing === connection.id;
         const problem = result?.ok === false ? result.error : account.error;
         const accessBlocked = slack && slackMcpAccessIssue(problem);
-        return <div key={account.serverId} className="space-y-3 rounded-xl border border-border bg-card/20 p-3">
+        return <Card padding="md" key={account.serverId} className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="min-w-0"><p className="truncate text-sm font-medium">{label}</p>
               <p role={checking ? 'status' : undefined} className="text-xs text-muted-foreground">{checking ? slack ? 'Checking Slack access…' : 'Checking connection…' : accessBlocked ? 'Enable access in Slack' : account.enabled === false ? 'Off' : account.requiresAuth ? accountKind === 'bearer' ? 'Token needed' : 'Sign-in needed' : account.status === 'ok' ? 'Connected' : 'Needs attention'}{!checking && account.toolCount !== undefined ? ` · ${account.toolCount} tools` : ''}</p>
             </div>
             <div className="flex flex-wrap gap-1">
-              <Button size="xs" variant="ghost" disabled={busy} onClick={() => setTarget(account.serverId)}>{accountKind === 'bearer' ? 'Update token' : 'Reconnect'}</Button>
-              {connection && <Button size="xs" variant="ghost" disabled={busy || checking} onClick={() => props.onTest(connection.id)}>{checking && <Loader2 size={12} className="animate-spin" />}{checking ? 'Checking…' : slack ? 'Test connection' : 'Test'}</Button>}
-              {!connection && accessBlocked && <Button size="xs" variant="outline" disabled={busy} onClick={() => props.onConnectOAuth(account.authConfigId, {serverId:account.serverId,label:account.label})}>Continue setup</Button>}
-              {connection ? <Button size="xs" variant="ghost" disabled={busy} onClick={() => props.onDisconnect(connection.id)}>Disconnect</Button>
-                : <Button size="xs" variant="ghost" disabled={busy} onClick={() => props.onCancelSetup?.(account.serverId)}>Cancel setup</Button>}
+              <Button
+                disabled={busy}
+                onClick={() => setTarget(account.serverId)}
+                variant="ghost"
+                size="xs"
+              >{accountKind === 'bearer' ? 'Update token' : 'Reconnect'}</Button>
+              {connection && <Button
+                disabled={busy || checking}
+                onClick={() => props.onTest(connection.id)}
+                variant="ghost"
+                size="xs"
+              >{checking && <Loader2 size={12} className="animate-spin" />}{checking ? 'Checking…' : slack ? 'Test connection' : 'Test'}</Button>}
+              {!connection && accessBlocked && <Button
+                disabled={busy}
+                onClick={() => props.onConnectOAuth(account.authConfigId, {serverId:account.serverId,label:account.label})}
+                variant="secondary"
+                size="xs"
+              >Continue setup</Button>}
+              {connection ? <Button
+                disabled={busy}
+                onClick={() => props.onDisconnect(connection.id)}
+                variant="ghost"
+                size="xs"
+              >Disconnect</Button>
+                : <Button
+                  disabled={busy}
+                  onClick={() => props.onCancelSetup?.(account.serverId)}
+                  variant="ghost"
+                  size="xs"
+                >Cancel setup</Button>}
             </div>
           </div>
           {account.endpointConfig && <HostedEndpointFields setup={account.endpointConfig} disabled />}
@@ -113,21 +152,36 @@ export function HostedProviderDetail(props: ProviderDetailProps) {
           <CapabilityReview changes={account.capabilityChanges} busy={busy} onReview={props.onReviewCapabilities ? revision => props.onReviewCapabilities!(account.serverId, revision) : undefined} />
           <McpServerSettings serverId={account.serverId} name={label} enabled={!!account.settings && !!connection && account.enabled !== false && !account.requiresAuth && account.status === 'ok'} />
           <McpAppNetwork serverId={account.serverId} name={label} enabled={!!connection && account.enabled !== false && !account.requiresAuth && account.status === 'ok'} />
-        </div>;
+        </Card>;
       })}</div>
-      {previousConnections.map(connection => <div key={connection.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card/20 p-3">
+      {previousConnections.map(connection => <Card padding="md" key={connection.id} className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0"><p className="truncate text-sm font-medium">{connectionIdentity(connection)}</p><p className="text-xs text-muted-foreground">Reconnect this saved account to use the current {INTEGRATION_LABELS.singular.toLowerCase()}.</p></div>
         <div className="flex gap-1">
-          <Button size="xs" variant="ghost" disabled={busy} onClick={() => setTarget(`previous:${connection.id}`)}>Reconnect</Button>
-          <Button size="xs" variant="ghost" disabled={busy} onClick={() => props.onDisconnect(connection.id)}>Disconnect</Button>
+          <Button
+            disabled={busy}
+            onClick={() => setTarget(`previous:${connection.id}`)}
+            variant="ghost"
+            size="xs"
+          >Reconnect</Button>
+          <Button
+            disabled={busy}
+            onClick={() => props.onDisconnect(connection.id)}
+            variant="ghost"
+            size="xs"
+          >Disconnect</Button>
         </div>
-      </div>)}
+      </Card>)}
     </section>}
 
     {!hasAccounts && form}
 
     {isRegisteredMcp(provider) && !slack && !showForm && <section className="space-y-2">
-      <Button variant="ghost" size="xs" onClick={props.onToggleAdvanced} aria-expanded={props.advancedOpen}>OAuth apps</Button>
+      <Button
+        onClick={props.onToggleAdvanced}
+        aria-expanded={props.advancedOpen}
+        variant="ghost"
+        size="xs"
+      >OAuth apps</Button>
       {props.advancedOpen && <Byo {...props} provider={providerForHostedAccount(provider, { addAccount: true })} usedAuthConfigIds={usedAuthConfigIds} connectDisabled />}
     </section>}
     {toolCount > 0 && <ToolList toolkits={props.toolkits} writePolicy={props.writePolicy} onSetApproval={props.onSetApproval} />}
@@ -167,18 +221,59 @@ function HostedAccountForm(props: ProviderDetailProps & { account?: HostedMcpAcc
     onConnectOAuth: selected => { if (ready) props.onConnectOAuth(selected ?? (chooseApp ? authConfigId : undefined), intent()); },
     onConnectDirect: () => { if (ready) props.onConnectDirect(intent()); },
   };
-  return <div className="space-y-4 rounded-xl border border-border bg-card/20 p-4">
+  return <Card padding="lg" className="space-y-4">
     {tokenAuth && !account && !previousConnection && <div className="flex gap-2" aria-label="Connection method">
-      <Button type="button" size="xs" variant={method === 'oauth' ? 'secondary' : 'ghost'} disabled={props.busy} onClick={() => { setMethod('oauth'); setCreds({}); }}>Sign in</Button>
-      <Button type="button" size="xs" variant={method === 'bearer' ? 'secondary' : 'ghost'} disabled={props.busy} onClick={() => { setMethod('bearer'); setCreds({}); }}>Use API key</Button>
+      <Button
+        type="button"
+        disabled={props.busy}
+        onClick={() => { setMethod('oauth'); setCreds({}); }}
+        variant={method === 'oauth' ? 'secondary' : 'ghost'}
+        size="xs"
+      >Sign in</Button>
+      <Button
+        type="button"
+        disabled={props.busy}
+        onClick={() => { setMethod('bearer'); setCreds({}); }}
+        variant={method === 'bearer' ? 'secondary' : 'ghost'}
+        size="xs"
+      >Use API key</Button>
     </div>}
-    {chooseApp && props.provider.configured && <div className="space-y-1"><label htmlFor={appSelectId} className="text-xs font-medium">Slack app</label><select id={appSelectId} value={authConfigId} onChange={event => setAuthConfigId(event.target.value)} disabled={props.busy} className="w-full rounded-md border border-border bg-background p-2 text-sm"><option value="">Choose a Slack app</option>{props.byoConfigs.filter(config => config.status === 'active').map(config => <option key={config.id} value={config.id}>{config.label ?? config.id}</option>)}</select></div>}
-    {showLabel && <div className="space-y-1"><label htmlFor="hosted-account-label" className="text-xs font-medium">Account label</label><Input id="hosted-account-label" value={label} onChange={event => setLabel(event.target.value)} placeholder="Work or Personal" disabled={props.busy} required /></div>}
+    {chooseApp && props.provider.configured && <NativeSelect
+      id={appSelectId}
+      value={authConfigId}
+      onChange={(event) => setAuthConfigId(event.target.value)}
+      disabled={props.busy}
+      controlClassName="w-full"
+      label="Slack app"
+    >
+      <option value="">Choose a Slack app</option>
+      {props.byoConfigs
+        .filter((config) => config.status === 'active')
+        .map((config) => (
+          <option key={config.id} value={config.id}>
+            {config.label ?? config.id}
+          </option>
+        ))}
+    </NativeSelect>}
+    {showLabel && <Field
+      id="hosted-account-label"
+      value={label}
+      onChange={(event) => setLabel(event.target.value)}
+      placeholder="Work or Personal"
+      disabled={props.busy}
+      required
+      label="Account label"
+    />}
     {provider.mcp?.endpointConfig && <HostedEndpointFields setup={provider.mcp.endpointConfig} value={endpoint} onChange={selection => { setEndpoint(selection); setMethod('oauth'); setCreds({}); }} disabled={props.busy} />}
     <ConnectPanel {...formProps} />
     {isRegisteredMcp(provider) && provider.configured && !slack && <div className="space-y-2">
-      <Button variant="ghost" size="xs" onClick={props.onToggleAdvanced} aria-expanded={props.advancedOpen}>OAuth apps</Button>
+      <Button
+        onClick={props.onToggleAdvanced}
+        aria-expanded={props.advancedOpen}
+        variant="ghost"
+        size="xs"
+      >OAuth apps</Button>
       {props.advancedOpen && <Byo {...formProps} />}
     </div>}
-  </div>;
+  </Card>;
 }

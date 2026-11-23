@@ -1,5 +1,16 @@
 'use client';
+import { DialogFooter } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
+import { Callout } from '@/components/system/callout';
 
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { Field } from '@/components/system/field';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { FileIcon, FolderIcon } from '@/components/file-icon';
 import { apiErrorBody, apiErrorStatus } from '@/lib/api/client';
 import { fsApi, type FsBrowseEntry, type FsBrowseResponse } from '@/lib/api/fs';
@@ -16,9 +27,8 @@ import {
 	Loader2,
 	X,
 } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Tip } from '@/components/ui/tip';
 
 interface FolderPickerDialogProps {
   open: boolean;
@@ -252,8 +262,8 @@ export function FolderPickerDialog({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-[60] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
           className="fixed left-1/2 top-1/2 z-[60] w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
           onOpenAutoFocus={(e) => {
             // Don't auto-focus the close button; we want the list to be
@@ -268,42 +278,48 @@ export function FolderPickerDialog({
               Browse the filesystem and pick a folder for your agent.
             </DialogPrimitive.Description>
           </VisuallyHidden.Root>
-          <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col h-[640px] max-h-[85vh]">
+          <div className="overflow-hidden flex flex-col h-[640px] max-h-[85vh]">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
               <span className="text-xs font-semibold tracking-wide text-foreground">
                 {device ? `Choose a folder on ${device.name}` : 'Choose a folder'}
               </span>
               <DialogPrimitive.Close asChild>
-                <button className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                <IconButton
+                  label="Close folder picker"
+                  variant="ghost"
+                  size="xs"
+                >
                   <X size={14} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
 
             {/* Navigation row */}
             <div className="flex items-center gap-1 px-3 py-2 border-b border-border bg-muted/20">
-              <Tip label="Up one folder">
-                <button
+
+                <IconButton
                   type="button"
                   onClick={goUp}
                   disabled={!browse?.parent}
-                  aria-label="Up one folder"
-                  className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  label="Up one folder"
+                  tooltip="Up one folder"
+                  variant="ghost"
+                  size="sm"
                 >
                   <ArrowLeft size={13} />
-                </button>
-              </Tip>
-              <Tip label="Home">
-                <button
+                </IconButton>
+
+                <IconButton
                   type="button"
                   onClick={goHome}
-                  aria-label="Home"
-                  className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  label="Home"
+                  tooltip="Home"
+                  variant="ghost"
+                  size="sm"
                 >
                   <HomeIcon size={13} />
-                </button>
-              </Tip>
+                </IconButton>
 
               <div className="flex items-center gap-0.5 overflow-x-auto whitespace-nowrap text-[11px] font-mono ml-1 flex-1 min-w-0">
                 {breadcrumbs.length === 0 && loading && (
@@ -314,21 +330,17 @@ export function FolderPickerDialog({
                     {i > 0 && (
                       <ChevronRight size={11} className="text-muted-foreground/50 shrink-0" />
                     )}
-                    <button
+                    <Button
                       type="button"
                       onClick={() => {
                         setCwd(c.path);
                         setSelected(null);
                       }}
-                      className={cn(
-                        'px-1.5 py-0.5 rounded transition-colors',
-                        i === breadcrumbs.length - 1
-                          ? 'text-foreground font-semibold'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                      )}
+                      variant="ghost"
+                      size="sm"
                     >
                       {c.label}
-                    </button>
+                    </Button>
                   </span>
                 ))}
               </div>
@@ -347,9 +359,9 @@ export function FolderPickerDialog({
                 </div>
               )}
               {error && !loading && (
-                <div className="m-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+                <Callout tone="error" padding="md" className="m-3">
                   {error}
-                </div>
+                </Callout>
               )}
               {!loading && !error && browse?.entries.length === 0 && (
                 <div className="flex items-center justify-center h-40 text-muted-foreground/60 text-[11px] italic">
@@ -360,7 +372,7 @@ export function FolderPickerDialog({
                 const isSelected = selected === entry.path;
                 const isDir = entry.kind === 'dir';
                 return (
-                  <button
+                  <MenuAction selected={isSelected} density="compact"
                     key={entry.path}
                     type="button"
                     onClick={() => {
@@ -369,14 +381,8 @@ export function FolderPickerDialog({
                     }}
                     onDoubleClick={() => enterFolder(entry)}
                     disabled={!isDir}
-                    className={cn(
-                      'w-full flex items-center gap-2 px-3 py-1.5 text-[12px] text-left',
-                      'border-b border-border/30 last:border-b-0',
-                      isDir
-                        ? 'hover:bg-muted/40 cursor-pointer'
-                        : 'opacity-50 cursor-default',
-                      isSelected && 'bg-primary/10 hover:bg-primary/15',
-                    )}
+                    className={cn("w-full flex items-center gap-2 text-left", isDir
+    ? "cursor-pointer" : "cursor-default")}
                   >
                     {isDir ? (
                       <FolderIcon name={entry.name} opened={false} size={14} />
@@ -392,11 +398,11 @@ export function FolderPickerDialog({
                       {entry.name}
                     </span>
                     {entry.git && (
-                      <span
-                        className="ml-auto flex shrink-0 items-center gap-0.5 rounded bg-accent px-1 py-px text-[9px] text-muted-foreground"
+                      <StatusBadge
+                        className="ml-auto flex shrink-0 items-center gap-0.5"
                       >
                         <GitBranch size={8} /> git
-                      </span>
+                      </StatusBadge>
                     )}
                     {isDir && (
                       <ChevronRight
@@ -404,7 +410,7 @@ export function FolderPickerDialog({
                         className={cn('shrink-0 text-muted-foreground/40', !entry.git && 'ml-auto')}
                       />
                     )}
-                  </button>
+                  </MenuAction>
                 );
               })}
             </div>
@@ -414,7 +420,7 @@ export function FolderPickerDialog({
               <div className="px-3 py-2 border-t border-border bg-muted/10 space-y-1.5">
                 <div className="flex items-center gap-2">
                   <FolderIcon name="" opened={false} size={14} />
-                  <input
+                  <Field
                     ref={newFolderInputRef}
                     value={newFolderName}
                     onChange={(e) => setNewFolderName(e.target.value)}
@@ -432,25 +438,29 @@ export function FolderPickerDialog({
                     autoCapitalize="off"
                     autoCorrect="off"
                     disabled={submittingNew}
-                    className="flex-1 px-2 py-1 text-[12px] font-mono bg-background border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex-1"
+                    purpose="code"
+                    aria-label={'New folder name'}
                   />
-                  <button
+                  <Button
                     type="button"
                     onClick={cancelCreateFolder}
                     disabled={submittingNew}
-                    className="px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
+                    variant="ghost"
+                    size="sm"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={submitCreateFolder}
                     disabled={!newFolderName.trim() || submittingNew}
-                    className="px-2 py-1 text-[11px] font-semibold bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity disabled:opacity-40"
+                    variant="primary"
+                    size="md"
                   >
                     {submittingNew && <Loader2 size={11} className="animate-spin inline mr-1" />}
                     Create
-                  </button>
+                  </Button>
                 </div>
                 {newFolderError && (
                   <p className="text-[10px] text-destructive">{newFolderError}</p>
@@ -465,44 +475,52 @@ export function FolderPickerDialog({
             )}
 
             {/* Footer */}
-            <div className="flex items-center gap-2 px-3 py-2.5 border-t border-border">
+            <DialogFooter divider padding="md" className="flex-row flex-wrap items-center justify-start">
               {!device && (
                 <>
-                  <button
+                  <Button
                     type="button"
                     onClick={startCreateFolder}
                     disabled={creatingFolder || !browse}
-                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1"
                   >
                     <FolderPlus size={12} />
                     New Folder
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => setShowHidden((v) => !v)}
-                    className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1"
                   >
                     {showHidden ? <Eye size={12} /> : <EyeOff size={12} />}
                     Hidden files
-                  </button>
+                  </Button>
                 </>
               )}
               <div className="ml-auto flex items-center gap-2">
                 <DialogPrimitive.Close asChild>
-                  <button className="px-3 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                  >
                     Cancel
-                  </button>
+                  </Button>
                 </DialogPrimitive.Close>
-                <button
+                <Button
                   type="button"
                   onClick={handleChoose}
                   disabled={!browse}
-                  className="px-3 py-1 text-[11px] font-semibold bg-primary text-primary-foreground rounded-md hover:opacity-90 transition-opacity disabled:opacity-40"
+                  variant="primary"
+                  size="md"
                 >
                   Choose
-                </button>
+                </Button>
               </div>
-            </div>
+            </DialogFooter>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

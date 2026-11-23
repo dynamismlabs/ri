@@ -1,4 +1,5 @@
 'use client';
+import { OverlaySurface } from '@/components/system/overlay';
 import { api } from '@/lib/api/client';
 import { reportNetworkFailure } from '@/lib/api/connectivity';
 import { getApiCompatibilityIssue, reportApiCompatibility, subscribeApiCompatibility } from '@/lib/client/api-compatibility';
@@ -12,7 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type ReactNode } from 'react';
 import { SERVICE_STATUS_KEY } from '@/hooks/use-service-status';
 import { CircleArrowUp, CircleCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 import { readyUpdateNotice } from '@/lib/service/update-presentation';
 
@@ -129,17 +130,17 @@ export function ServiceConnection() {
   if (refresh === 'updated' && settings.open && settings.section === 'updates') return null;
   if (message) {
     return <UpdateNotice title={refresh === 'updated' ? 'Ri was updated' : refresh === 'required' ? 'Refresh Ri' : 'Ri update'} complete={refresh === 'updated'} actions={<>
-      {refresh === 'updated' && <Button size="sm" variant="outline" onClick={viewUpdate}>View update</Button>}
-      {refresh && <Button size="sm" disabled={reloading} onClick={() => void reload()}>{reloading ? 'Saving drafts…' : 'Refresh'}</Button>}
+      {refresh === 'updated' && <Button size="sm" variant="secondary" onClick={viewUpdate}>View update</Button>}
+      {refresh && <Button size="sm" variant="primary" disabled={reloading} onClick={() => void reload()}>{reloading ? 'Saving drafts…' : 'Refresh'}</Button>}
     </>}>
       <p>{message === 'Ri was updated.' ? 'Refresh to use the latest version. Your drafts will be saved before reloading.' : message}</p>
     </UpdateNotice>;
   }
   if (!readyUpdate || (settings.open && settings.section === 'updates')) return null;
   return <UpdateNotice title={`Ri ${readyUpdate.version} is ready to update`} actions={<>
-    <Button size="sm" variant="outline" onClick={viewUpdate}>View update</Button>
+    <Button size="sm" variant="secondary" onClick={viewUpdate}>View update</Button>
     <Button size="sm" variant="ghost" disabled={answering} onClick={() => void answer('later')}>Not now</Button>
-    <Button size="sm" disabled={answering} onClick={() => void answer('apply')}>Update now</Button>
+    <Button size="sm" variant="primary" disabled={answering} onClick={() => void answer('apply')}>Update now</Button>
   </>}>
     <p>{readyUpdate.automatic ? 'Ri will install it after a minute of inactivity. Running chats will finish first.' : 'The update is downloaded and verified. Ri is waiting for running work to finish.'}</p>
     {readyUpdate.notes.trim() && <p className="mt-3 line-clamp-3 whitespace-pre-line border-t border-border/60 pt-3 text-foreground/80">{readyUpdate.notes}</p>}
@@ -148,11 +149,11 @@ export function ServiceConnection() {
 
 function UpdateNotice({ title, children, actions, complete = false }: { title: string; children: ReactNode; actions: ReactNode; complete?: boolean }) {
   const Icon = complete ? CircleCheck : CircleArrowUp;
-  return <section role="status" aria-label={title} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[100] w-[calc(100vw-2rem)] max-w-sm rounded-2xl border border-border bg-background p-5 text-sm shadow-xl">
+  return <OverlaySurface as="section" kind="toast" padding="xl" role="status" aria-label={title} className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-[100] w-[calc(100vw-2rem)] max-w-sm">
     <div className="flex items-start gap-3">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted"><Icon size={19} aria-hidden /></div>
       <div className="min-w-0 flex-1"><p className="font-semibold leading-snug">{title}</p><div className="mt-2 text-xs leading-relaxed text-muted-foreground">{children}</div></div>
     </div>
     <div className="mt-4 flex flex-wrap justify-end gap-2">{actions}</div>
-  </section>;
+  </OverlaySurface>;
 }

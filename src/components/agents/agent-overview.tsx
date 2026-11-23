@@ -1,5 +1,9 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { AppWindow, ExternalLink, ListTodo, Loader2, Moon, Pin, Plus } from 'lucide-react';
 import { useWorkNavigation, useWorkActivity } from '@/contexts/work-context';
@@ -63,13 +67,15 @@ export function AgentOverview({
               : `Start a chat in ${workspace.name}, or ask its main chat to start one for you.`}
           </p>
           {!archived && (
-            <button
+            <Button
               onClick={() => openLauncher(workspace.id)}
-              className="mt-3 inline-flex items-center gap-1.5 h-7 px-3 rounded-lg bg-primary text-primary-foreground text-[11px] font-semibold hover:opacity-90"
+              variant="primary"
+              size="md"
+              className="mt-3 inline-flex items-center gap-1.5"
             >
               <Plus size={12} strokeWidth={2.5} />
               New chat
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -187,22 +193,15 @@ function Section({
 }) {
   return (
     <section>
-      {title && <h3 className="flex items-center gap-1.5 px-1 mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+      {title && <h3 className="flex items-center gap-1.5 px-1 mb-1 text-[10px] font-semibold text-muted-foreground">
         {icon}
         {title}
         {count > 0 && (
-          <span
-            className={cn(
-              'rounded-full px-1.5 text-[9.5px] font-semibold normal-case tracking-normal',
-              tone === 'attention'
-                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-                : tone === 'working'
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-muted text-muted-foreground',
-            )}
+          <StatusBadge tone={(tone === 'attention' ? "warning" : (tone === 'working' ? "success" : "neutral"))}
+
           >
             {count}
-          </span>
+          </StatusBadge>
         )}
       </h3>}
       {count === 0 && empty && !showBody ? (
@@ -316,19 +315,15 @@ function AgentTasksSection({ workspaceId }: { workspaceId: string }) {
       <div className="flex flex-wrap gap-1.5 px-1 pt-0.5">
         {tasks.map((t) => (
           <Tip key={t.id} label={t.title || 'Untitled'} onlyWhenTextHidden>
-            <button
+            <Button variant="secondary" size="xs"
               onClick={() => openTask(t.id)}
-              data-slot="task-chip"
+
               data-status={t.status}
-              className={cn(
-                'inline-flex max-w-[16rem] items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] transition-colors',
-                t.status === 'in_progress'
-                  ? 'border-violet-500/30 bg-violet-500/[0.06] text-foreground hover:border-violet-500/50'
-                  : 'border-border bg-muted/40 text-muted-foreground hover:text-foreground',
-              )}
+              className="inline-flex max-w-[16rem] items-center gap-1"
             >
+              {t.status === 'in_progress' && <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-working" />}
               <span className="truncate">{t.title || 'Untitled'}</span>
-            </button>
+            </Button>
           </Tip>
         ))}
       </div>
@@ -369,13 +364,13 @@ function PreviewRow({ preview, onOpen }: { preview: AgentPreview; onOpen: () => 
           running ? 'bg-emerald-500' : preview.serverStatus === 'crashed' ? 'bg-rose-500' : 'bg-muted-foreground/30',
         )}
       />
-      <button onClick={onOpen} className="min-w-0 flex-1 text-left">
+      <InlineAction  onClick={onOpen} className="min-w-0 flex-1 text-left">
         <div className="truncate text-[12px] font-medium text-foreground/90">
           {preview.label ?? preview.previewName}
           {preview.service ? <span className="text-muted-foreground/70"> · {preview.service}</span> : null}
         </div>
         <div className="text-[10px] text-muted-foreground/70">{statusLabel}</div>
-      </button>
+      </InlineAction>
       {running && url && (
         <a
           href={url}

@@ -1,9 +1,17 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { SelectField } from '@/components/system/select-field';
+
+import { IconButton } from '@/components/system/icon-button';
 import { invalidateWorkspaceViews } from '@/lib/query/work-view-invalidation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import type {
 	ExternalAgentDiscovery,
 	ExternalAgentImportResult,
@@ -233,7 +241,7 @@ export function ExternalAgentImportPanel() {
           const summary = discovery.data?.sources[source];
           const meta = SOURCE_META[source];
           return (
-            <div key={source} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+            <Card padding="md" key={source} className="flex items-center gap-3">
               <div className={cn(
                 'flex size-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold',
                 meta.cardClassName,
@@ -251,7 +259,7 @@ export function ExternalAgentImportPanel() {
                 </p>
               </div>
               {summary?.available && <CheckCircle2 size={15} className="text-emerald-500" />}
-            </div>
+            </Card>
           );
         })}
       </div>
@@ -270,9 +278,9 @@ export function ExternalAgentImportPanel() {
         <div className="flex items-center gap-2">
           {elsewhere.length > 0 && (
             <Select value={source} onValueChange={chooseSource}>
-              <SelectTrigger size="sm" className="h-8 w-44 text-[12px]" aria-label="Whose history">
+              <SelectField className="w-44" aria-label="Whose history">
                 <SelectValue />
-              </SelectTrigger>
+              </SelectField>
               <SelectContent>
                 <SelectItem value={THIS_DEVICE}>This device</SelectItem>
                 {elsewhere.map((c) => (
@@ -283,7 +291,13 @@ export function ExternalAgentImportPanel() {
               </SelectContent>
             </Select>
           )}
-          <Button type="button" variant="outline" size="sm" onClick={refresh} disabled={discovery.isFetching}>
+          <Button
+            type="button"
+            onClick={refresh}
+            disabled={discovery.isFetching}
+            variant="secondary"
+            size="sm"
+          >
             <RefreshCw className={cn(discovery.isFetching && 'animate-spin')} />
             Refresh list
           </Button>
@@ -295,12 +309,12 @@ export function ExternalAgentImportPanel() {
           {[0, 1, 2].map((row) => <div key={row} className="h-16 animate-pulse rounded-lg bg-muted/50" />)}
         </div>
       ) : discovery.isError ? (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+        <Callout padding="lg" tone={"error"} >
           {deviceName ? `Could not read the history on ${deviceName}.` : 'Could not scan local agent history.'}{' '}
           {discovery.error instanceof Error ? discovery.error.message : ''}
-        </div>
+        </Callout>
       ) : !hasRows ? (
-        <div className="rounded-lg border border-dashed border-border p-6 text-center">
+        <div className="ri-imports-section-frame rounded-lg border border-dashed border-border p-6 text-center">
           <MessageSquare className="mx-auto size-5 text-muted-foreground" />
           <p className="mt-2 text-sm font-medium text-foreground">{deviceName ? `No chats found on ${deviceName}` : 'No local chats found'}</p>
           <p className="mt-1 text-[11px] text-muted-foreground">
@@ -329,20 +343,15 @@ export function ExternalAgentImportPanel() {
       )}
 
       {lastResult && (
-        <div className={cn(
-          'rounded-lg border p-3 text-[12px]',
-          lastResult.failures.length > 0
-            ? 'border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-300'
-            : 'border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300',
-        )}>
+        <Callout padding="md" tone={(lastResult.failures.length > 0 ? "warning" : "success")} >
           {formatImportResultSummary(lastResult)}
-        </div>
+        </Callout>
       )}
 
       {importMutation.isError && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-[12px] text-destructive">
+        <Callout padding="md" tone={"error"} >
           Update failed. {importMutation.error instanceof Error ? importMutation.error.message : ''}
-        </div>
+        </Callout>
       )}
 
       <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background/95 pt-4 backdrop-blur">
@@ -355,6 +364,8 @@ export function ExternalAgentImportPanel() {
           type="button"
           onClick={() => importMutation.mutate([...selected])}
           disabled={selected.size === 0 || importMutation.isPending}
+          variant="primary"
+          size="md"
         >
           <Download />
           {submitLabel}
@@ -392,7 +403,7 @@ function ProjectRow({
   const visibleSessions = expanded ? project.sessions : project.sessions.slice(0, 3);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-background">
+    <Card padding="none" className="overflow-hidden">
       <div className="flex items-start gap-3 p-3">
         <Checkbox
           checked={checkState}
@@ -402,12 +413,12 @@ function ProjectRow({
           className="mt-0.5"
         />
         <Folder size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
-        <button type="button" onClick={onToggleExpanded} className="min-w-0 flex-1 text-left">
+        <InlineAction  type="button" onClick={onToggleExpanded} className="min-w-0 flex-1 text-left">
           <span className="flex items-center gap-2">
             <span className="truncate text-sm font-medium text-foreground">{project.name}</span>
-            <span className="shrink-0 rounded-full bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground">
+            <StatusBadge className="shrink-0">
               {project.sessions.length} {project.sessions.length === 1 ? 'chat' : 'chats'}
-            </span>
+            </StatusBadge>
           </span>
           <span className="mt-0.5 block truncate font-mono text-[10px] text-muted-foreground/70">{project.cwd}</span>
           {project.agent && (
@@ -418,10 +429,16 @@ function ProjectRow({
               <AlertTriangle size={10} /> Folder missing. The chat can still be imported or synced.
             </span>
           )}
-        </button>
-        <button type="button" onClick={onToggleExpanded} aria-label={expanded ? 'Collapse chats' : 'Expand chats'}>
+        </InlineAction>
+        <IconButton
+          type="button"
+          onClick={onToggleExpanded}
+          label={expanded ? 'Collapse chats' : 'Expand chats'}
+          variant="ghost"
+          size="sm"
+        >
           <ChevronDown size={15} className={cn('text-muted-foreground transition-transform', expanded && 'rotate-180')} />
-        </button>
+        </IconButton>
       </div>
 
       <div className="border-t border-border/70 bg-muted/10">
@@ -439,7 +456,7 @@ function ProjectRow({
                 aria-label={`Select ${session.label} to ${session.imported ? 'sync' : 'import'}`}
               />
               <MessageSquare size={13} className="shrink-0 text-muted-foreground" />
-              <button
+              <InlineAction
                 type="button"
                 onClick={() => onToggleSession(session.key)}
                 disabled={syncDisabled || session.importable === false}
@@ -456,7 +473,7 @@ function ProjectRow({
                   </span>
                   {session.branchName && <span className="max-w-36 truncate">{session.branchName}</span>}
                 </span>
-              </button>
+              </InlineAction>
               <span className={cn(
                 'shrink-0 text-[10px] text-muted-foreground',
                 session.importStatus === 'changed' && 'text-amber-600 dark:text-amber-400',
@@ -467,12 +484,12 @@ function ProjectRow({
               {session.imported && session.importable !== false && (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
                   onClick={() => onSyncSession(session.key)}
                   disabled={syncDisabled}
-                  className="h-7 gap-1 px-2 text-[10px]"
                   aria-label={`Sync ${session.label}`}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1"
                 >
                   <RefreshCw className={cn('size-3', isSyncing && 'animate-spin')} />
                   {isSyncing ? 'Syncing' : session.importStatus === 'error' || session.importStatus === 'missing' ? 'Retry' : 'Sync'}
@@ -482,12 +499,18 @@ function ProjectRow({
           );
         })}
         {!expanded && project.sessions.length > 3 && (
-          <button type="button" onClick={onToggleExpanded} className="w-full px-3 py-2 text-[11px] font-medium text-primary hover:bg-muted/30">
+          <Button
+            type="button"
+            onClick={onToggleExpanded}
+            variant="secondary"
+            size="sm"
+            className="w-full"
+          >
             Show {project.sessions.length - 3} more chats
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 

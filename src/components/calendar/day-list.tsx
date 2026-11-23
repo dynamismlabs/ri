@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * One day as a list, the List tab in Day: what the hour grid can't fit. Each
  * meeting with its whole time range, calendar (its color down the left edge),
@@ -9,7 +10,7 @@
  */
 
 import { Flag, MapPin, Video } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { eventWindowOnDate } from '@/lib/calendar/layout';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
 import { formatMinutes, minutesToLabel } from '@/lib/deck/calendar';
@@ -75,21 +76,24 @@ export function DayList({
                     {e.title}
                   </button>
                 </PopoverTrigger>
-                <PopoverContent side="bottom" align="start" className="w-auto p-0">
+                <PopoverContent padding="none" side="bottom" align="start" className="w-auto">
                   <EventPopoverContent event={e} />
                 </PopoverContent>
               </Popover>
             ))}
             {deadlines.map((d) => (
-              <button data-slot="action-button" data-tone="warning"
+              <Button
                 key={d.taskId}
                 type="button"
                 onClick={() => onOpenTask(d.taskId)}
-                className="flex max-w-64 items-center gap-1 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400"
+                variant="secondary"
+                size="sm"
+                tone="warning"
+                className="flex max-w-64 items-center gap-1"
               >
                 <Flag size={10} className="shrink-0" />
                 <span className="truncate">{d.title}</span>
-              </button>
+              </Button>
             ))}
           </div>
         )}
@@ -156,22 +160,19 @@ function EventRow({ event, start, end }: { event: CalendarEvent; start: number; 
             </span>
           </button>
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" className="w-auto p-0">
+        <PopoverContent padding="none" side="right" align="start" className="w-auto">
           <EventPopoverContent event={event} />
         </PopoverContent>
       </Popover>
       {/* Always the same width, so every card ends at the same edge. */}
       <div className="flex w-16 shrink-0 items-center justify-end">
         {event.joinUrl && !declined && (
-          <a data-slot="action-button"
-            href={event.joinUrl}
+          <Button asChild variant="secondary" size="sm" className="flex items-center gap-1.5"><a href={event.joinUrl}
             target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
+            rel="noreferrer">
             <Video size={12} />
             Join
-          </a>
+          </a></Button>
         )}
       </div>
     </div>

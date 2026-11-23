@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { Tooltip as TooltipPrimitive } from 'radix-ui';
 import { Kbd } from '@/components/ui/kbd';
-import { Tooltip, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider } from '@/components/system/tooltip';
 
 /** Hover time before the first tooltip opens. Once one is showing, the next
  *  opens at once (Radix's skip delay), so moving along a toolbar reads it. */
@@ -78,6 +78,8 @@ type TipProps = Omit<ComponentProps<typeof TooltipPrimitive.Trigger>, 'asChild' 
  * - Opens on hover after the app-wide delay (`TipProvider`) and on focus
  *   from the keyboard. Not on the focus a click, a dialog's autofocus or a
  *   menu closed by a click hands back.
+ *   Entering a dialog from outside keeps its first tooltip quiet. Tab within
+ *   that dialog still opens tooltips, including in popovers and sheets.
  * - Closes on press and stays closed while the element's own menu or
  *   popover is open (`aria-expanded`).
  * - An empty `label` (`undefined`, `null`, `false`, `''`) shows nothing, so a
@@ -132,7 +134,9 @@ function TipBody({ label, shortcut, side, align, onlyWhenTextHidden, children, r
           // Radix opens on any focus. Preventing the default skips its
           // handler. `:focus-visible` alone isn't enough: browsers set it
           // on the trigger a menu hands focus back to, even after a click.
-          if (!(lastInputWasKey?.current && e.currentTarget.matches(':focus-visible'))) e.preventDefault();
+          const layer = e.currentTarget.closest('[role="dialog"]');
+          const enteredLayer = !!layer && !(e.relatedTarget instanceof Node && layer.contains(e.relatedTarget));
+          if (!(lastInputWasKey?.current && !enteredLayer && e.currentTarget.matches(':focus-visible'))) e.preventDefault();
         }}
         onPointerDown={(e) => {
           onPointerDown?.(e);

@@ -1,5 +1,10 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useRef } from 'react';
 import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Eye, EyeOff, MessagesSquare, MoreHorizontal, Plus, SlidersHorizontal } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
@@ -17,13 +22,7 @@ import {
   type VoiceTone,
 } from '@/lib/utils/agent-rail';
 import { AgentIcon } from '@/components/agents/agent-icon';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { cn } from '@/lib/utils';
 import type { WorkspaceWithCounts } from '@/db/types';
 import { SessionRow } from './session-row';
@@ -255,11 +254,13 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
           current ? 'bg-secondary' : 'hover:bg-muted/40',
         )}
       >
-        <button
+        <Button
           onClick={open}
-          className="relative flex-shrink-0 rounded-md"
           aria-label={activity ? `${workspace.name}: ${PRESENCE[activity].label}` : `Open ${workspace.name}`}
           aria-current={current}
+          variant="ghost"
+          size="sm"
+          className="relative flex-shrink-0"
         >
           <AgentIcon workspace={workspace} size="md" />
           {activity && (
@@ -271,7 +272,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
               )}
             />
           )}
-        </button>
+        </Button>
         <AgentChatsFlyout
           name={workspace.name}
           enabled={hasThreads && !expanded && !agentsOnly && !isDragging}
@@ -279,7 +280,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
           onClick={open}
           onNewChat={() => onOpenLauncher(workspace.id)}
           trigger={({ ref, onClick }) => (
-            <button
+            <InlineAction
               ref={ref}
               onClick={onClick}
               className="flex-1 min-w-0 text-left"
@@ -298,7 +299,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                   {voice.text}
                 </span>
               )}
-            </button>
+            </InlineAction>
           )}
         >
           {threads}
@@ -310,19 +311,20 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
             get the full width. Stays while its menu is open. */}
         <div className="hidden group-hover:flex group-focus-within:flex has-[[data-state=open]]:flex items-center gap-0.5 flex-shrink-0">
           {hasThreads && !agentsOnly && (
-            <Tip label={expanded ? 'Hide chats' : 'Show chats'}>
-              <button
+              <IconButton
                 onPointerDown={stop}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleThreads();
                 }}
-                className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
-                aria-label={expanded ? 'Hide chats' : 'Show chats'}
+                label={expanded ? 'Hide chats' : 'Show chats'}
+                tooltip={expanded ? 'Hide chats' : 'Show chats'}
+                variant="ghost"
+                size="sm"
+                focus="inside"
               >
                 {expanded ? <ChevronsDownUp size={13} /> : <ChevronsUpDown size={13} />}
-              </button>
-            </Tip>
+              </IconButton>
           )}
           {hasThreads && agentsOnly && (
             // A click, never a rest, slides its chats out beside the rail.
@@ -333,70 +335,73 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
               previews
               onNewChat={() => onOpenLauncher(workspace.id)}
               trigger={({ ref, open: chatsOpen }) => (
-                <Tip label={chatsOpen ? undefined : "View agent's chats"}>
-                  <button
+                  <IconButton
                     ref={ref}
                     onPointerDown={stop}
-                    className={cn(
-                      'p-1 rounded hover:text-foreground hover:bg-muted/50',
-                      chatsOpen ? 'bg-muted/60 text-foreground' : 'text-muted-foreground/60',
-                    )}
-                    aria-label={`${workspace.name} chats`}
+                    label={`${workspace.name} chats`}
+                    tooltip={chatsOpen ? undefined : "View agent's chats"}
+                    variant="ghost"
+                    size="sm"
+                    focus="inside"
                   >
                     <MessagesSquare size={13} />
-                  </button>
-                </Tip>
+                  </IconButton>
               )}
             >
               {threads}
             </AgentChatsFlyout>
           )}
-          <Tip label="New chat (shift-click to start one right away on the last settings)">
-            <button
+
+            <IconButton
               onPointerDown={stop}
               onClick={(e) => {
                 e.stopPropagation();
                 if (e.shiftKey) onCreateExecution(workspace.id);
                 else onOpenLauncher(workspace.id);
               }}
-              className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
-              aria-label="New chat"
+              label="New chat"
+              tooltip="New chat (shift-click to start one right away on the last settings)"
+              variant="ghost"
+              size="sm"
+              focus="inside"
             >
               <Plus size={13} />
-            </button>
-          </Tip>
+            </IconButton>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
+              <IconButton
                 onPointerDown={stop}
                 onClick={stop}
-                aria-label={`${workspace.name} actions`}
-                className="p-1 rounded text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
+                label={`${workspace.name} actions`}
+                variant="ghost"
+                size="sm"
+                focus="inside"
               >
                 <MoreHorizontal size={13} />
-              </button>
+              </IconButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-[11px] min-w-[170px]" onPointerDown={stop} onClick={stop}>
+            <DropdownMenuContent align="end" className="min-w-[170px]" onPointerDown={stop} onClick={stop}>
               {chat && (
                 <>
                   {unread ? (
-                    <DropdownMenuItem onSelect={() => markRead.mutate(chat.id)}>
+                    <MenuAction kind="menu" onSelect={() => markRead.mutate(chat.id)}>
                       <Eye size={12} /> Mark as read
-                    </DropdownMenuItem>
+                    </MenuAction>
                   ) : (
-                    <DropdownMenuItem onSelect={() => markUnread.mutate(chat.id)}>
+                    <MenuAction kind="menu" onSelect={() => markUnread.mutate(chat.id)}>
                       <EyeOff size={12} /> Mark as unread
-                    </DropdownMenuItem>
+                    </MenuAction>
                   )}
                   <DropdownMenuSeparator />
                 </>
               )}
-              <DropdownMenuItem onSelect={() => onOpenLauncher(workspace.id)}>
+              <MenuAction kind="menu" onSelect={() => onOpenLauncher(workspace.id)}>
                 <Plus size={12} /> New chat
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onOpenSettings(workspace.id)}>
+              </MenuAction>
+              <MenuAction kind="menu" onSelect={() => onOpenSettings(workspace.id)}>
                 <SlidersHorizontal size={12} /> Agent setup
-              </DropdownMenuItem>
+              </MenuAction>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -412,10 +417,10 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
 
       {hasThreads && !expanded && !agentsOnly && (
         <Tip label="Show chats">
-          <button
+          <InlineAction purpose="caption"
             onPointerDown={stop}
             onClick={toggleThreads}
-            className="mb-1.5 flex h-8 w-full items-center gap-1.5 rounded-md pl-4 pr-1.5 text-left text-[10.5px] hover:bg-muted/40 transition-colors"
+            className="mb-1.5 flex w-full items-center gap-1.5 text-left"
             aria-label={`Show ${workspace.name}'s chats`}
           >
             <ChevronRight size={11} className="flex-shrink-0 text-muted-foreground/60" />
@@ -427,7 +432,7 @@ export function AgentRailRow({ workspace, onOpenSettings, onCreateExecution, onO
                 </span>
               ))}
             </span>
-          </button>
+          </InlineAction>
         </Tip>
       )}
     </div>

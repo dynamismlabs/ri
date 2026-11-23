@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { TipProvider } from "@/components/ui/tip";
-import { Toaster } from "@/components/ui/sonner";
-import { ConfirmProvider } from "@/components/ui/confirm-dialog";
+import { Toaster } from "@/components/system/toast";
+import { ConfirmProvider } from "@/components/system/confirm-dialog";
 import { QueryProvider } from "@/providers/query-provider";
 import { PairingBootstrap } from "@/components/auth/pairing-bootstrap";
 import { HomeReachabilityBanner } from "@/components/app/home-reachability-banner";
@@ -57,10 +57,9 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} dark`}
-      // The defaults: dark, and the one look (docs/ui-system.md). APPEARANCE_SCRIPT
+      // The default is dark. APPEARANCE_SCRIPT
       // applies this browser's light theme before first paint, so the server's class
       // can differ from the document's by the time React hydrates.
-      data-look="edge"
       suppressHydrationWarning
       data-ri-authority={team ? 'team' : space ? 'space' : 'personal'}
       data-ri-home={documentHome}

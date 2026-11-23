@@ -1,5 +1,10 @@
-'use client'
+'use client';
 
+import { StatusBadge } from '@/components/system/status-badge';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
+import { Button } from '@/components/system/button';
 import { useState } from 'react'
 import { ChevronRight, Wrench, Search, Pencil, Circle, CheckCircle2, Trash2, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -28,7 +33,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
   const errored = state === 'output-error'
 
   return (
-    <div className="rounded-md border border-border/60 bg-muted/30 my-1.5 text-xs">
+    <Card padding="none" className="my-1.5">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -45,19 +50,19 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
         <div className="border-t border-border/60 px-2 py-2 space-y-2">
           {/* Message */}
           <div>
-            <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Message</div>
-            <div className="rounded bg-background/60 border border-border/60 p-1.5 font-mono text-[11px] break-words whitespace-pre-wrap">
+            <div className="text-[10px] text-muted-foreground mb-0.5">Message</div>
+            <Card padding="xs" purpose="code" className="break-words whitespace-pre-wrap">
               {inputMessage || JSON.stringify(input, null, 2)}
-            </div>
+            </Card>
           </div>
 
           {/* Context (optional) */}
           {inputContext && (
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Context</div>
-              <div className="rounded bg-background/60 border border-border/60 p-1.5 font-mono text-[11px] break-words whitespace-pre-wrap text-muted-foreground">
+              <div className="text-[10px] text-muted-foreground mb-0.5">Context</div>
+              <Card padding="xs" purpose="code" className="break-words whitespace-pre-wrap">
                 {inputContext}
-              </div>
+              </Card>
             </div>
           )}
 
@@ -69,10 +74,10 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {/* Error */}
           {errored && (
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-destructive mb-0.5">Error</div>
-              <div className="rounded bg-destructive/10 border border-destructive/30 p-1.5 font-mono text-[11px] text-destructive break-words whitespace-pre-wrap">
+              <div className="text-[10px] text-destructive mb-0.5">Error</div>
+              <Callout padding="xs" tone={"error"} purpose="code" className="break-words whitespace-pre-wrap">
                 {errorText || 'Tool call failed.'}
-              </div>
+              </Callout>
             </div>
           )}
 
@@ -80,15 +85,15 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {parsed && (
             <>
               <div>
-                <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Response</div>
-                <div className="rounded bg-background/60 border border-border/60 p-1.5 text-[11px] break-words whitespace-pre-wrap">
+                <div className="text-[10px] text-muted-foreground mb-0.5">Response</div>
+                <Card padding="xs" className="break-words whitespace-pre-wrap">
                   {parsed.response}
-                </div>
+                </Card>
               </div>
 
               {parsed.entities.length > 0 && (
                 <div>
-                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">
+                  <div className="text-[10px] text-muted-foreground mb-0.5">
                     Entities ({parsed.entities.length})
                   </div>
                   <div className="flex flex-wrap gap-1">
@@ -106,7 +111,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           {/* Raw output fallback when we couldn't parse */}
           {output && !parsed && !errored && (
             <div>
-              <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-0.5">Raw output</div>
+              <div className="text-[10px] text-muted-foreground mb-0.5">Raw output</div>
               <pre className="rounded bg-background/60 border border-border/60 p-1.5 font-mono text-[11px] break-words whitespace-pre-wrap overflow-x-auto">
                 {output}
               </pre>
@@ -114,7 +119,7 @@ export function McpToolDisplay({ toolName, input, state, output, errorText }: Mc
           )}
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -125,15 +130,13 @@ function StatusPill({ state }: { state: string }) {
     : state === 'output-error' ? 'error'
     : state
 
-  const color = state === 'output-error' ? 'text-destructive bg-destructive/10'
-    : state === 'output-available' ? 'text-green-600 bg-green-500/10'
-    : 'text-muted-foreground bg-muted'
+  const tone = state === 'output-error' ? 'error'
+    : state === 'output-available' ? 'success'
+    : state === 'input-available' || state === 'input-streaming' ? 'working'
+    : 'neutral'
 
-  return (
-    <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-mono', color)}>
-      {label}
-    </span>
-  )
+  return <StatusBadge tone={tone} code>{label}</StatusBadge>
+
 }
 
 function EntityPill({ entity }: { entity: McpEntity }) {
@@ -144,12 +147,12 @@ function EntityPill({ entity }: { entity: McpEntity }) {
     : <Circle size={10} />
 
   return (
-    <span className="inline-flex items-center gap-1 rounded border border-border/60 bg-background/60 px-1.5 py-0.5 text-[10px] font-mono">
+    <StatusBadge code className="inline-flex items-center gap-1">
       {icon}
       <span className="text-muted-foreground">{entity.type}</span>
       <span className="text-foreground">{entity.title ?? entity.id.slice(0, 8)}</span>
       <span className="text-muted-foreground/60">· {entity.action}</span>
-    </span>
+    </StatusBadge>
   )
 }
 
@@ -157,15 +160,17 @@ function InnerStepsList({ steps }: { steps: McpInnerStep[] }) {
   const [open, setOpen] = useState(false)
   return (
     <div>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-muted-foreground hover:text-foreground transition-colors mb-0.5"
+        variant="ghost"
+        size="sm"
+        className="flex items-center gap-1.5 mb-0.5"
       >
         <ChevronRight size={10} className={cn('transition-transform', open && 'rotate-90')} />
         <Wrench size={10} />
         Inner server tool calls ({steps.length})
-      </button>
+      </Button>
       {open && (
         <div className="pl-3 space-y-1 border-l border-border/60">
           {steps.map((step, i) => <InnerStepRow key={i} step={step} index={i} />)}
@@ -178,7 +183,7 @@ function InnerStepsList({ steps }: { steps: McpInnerStep[] }) {
 function InnerStepRow({ step, index }: { step: McpInnerStep; index: number }) {
   const [open, setOpen] = useState(false)
   return (
-    <div className="rounded border border-border/40 bg-background/40">
+    <Card padding="none" >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -191,20 +196,20 @@ function InnerStepRow({ step, index }: { step: McpInnerStep; index: number }) {
       {open && (
         <div className="px-2 pb-1.5 pt-0.5 space-y-1">
           <div>
-            <div className="text-[9px] uppercase tracking-wide text-muted-foreground">Input</div>
+            <div className="text-[11px] leading-[1.4] font-medium text-muted-foreground">Input</div>
             <pre className="font-mono text-[10px] break-words whitespace-pre-wrap overflow-x-auto">
               {JSON.stringify(step.input, null, 2)}
             </pre>
           </div>
           <div>
-            <div className="text-[9px] uppercase tracking-wide text-muted-foreground">Output</div>
+            <div className="text-[11px] leading-[1.4] font-medium text-muted-foreground">Output</div>
             <pre className="font-mono text-[10px] break-words whitespace-pre-wrap overflow-x-auto">
               {JSON.stringify(step.output, null, 2)}
             </pre>
           </div>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 

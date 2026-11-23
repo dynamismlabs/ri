@@ -1,19 +1,19 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
+
+import { Field } from '@/components/system/field';
+import { SelectField } from '@/components/system/select-field';
+
+import { IconButton } from '@/components/system/icon-button';
 import { HarnessPermissionNotice } from './harness-permission-notice';
 
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
+
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/system/select';
 import type { EffortLevel } from '@/db/types';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import {
@@ -168,8 +168,6 @@ function HarnessPane({
           </div>
           <Button
             type="button"
-            size="xs"
-            variant="outline"
             disabled={refreshing}
             onClick={() => {
               setRefreshing(true);
@@ -177,20 +175,21 @@ function HarnessPane({
                 toast.error('Could not refresh models', { description: error instanceof Error ? error.message : String(error) });
               }).finally(() => setRefreshing(false));
             }}
+            variant="secondary"
+            size="xs"
           >
             {refreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />}
             Refresh
           </Button>
         </div>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search models"
-            className="h-8 rounded-md pl-8 text-[11px]"
-          />
-        </div>
+        <Field
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search models"
+          leading={<Search />}
+          className="relative"
+          aria-label={'Search models'}
+        />
         {/* Pinning saves on its own (the id has to exist before anything can
             validate against it), so the pending local edits mirror it rather
             than overwrite it on the next Save. */}
@@ -294,7 +293,13 @@ function HarnessPane({
       )}
 
       <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-3">
-        <Button type="button" size="sm" disabled={save.isPending || !dirty || !defaultModel} onClick={() => void persist()}>
+        <Button
+          type="button"
+          disabled={save.isPending || !dirty || !defaultModel}
+          onClick={() => void persist()}
+          variant="primary"
+          size="md"
+        >
           {save.isPending && <Loader2 className="animate-spin" />}
           Save models
         </Button>
@@ -315,15 +320,14 @@ function LabeledSelect({
   onValue: (value: string) => void;
 }) {
   return (
-    <label className="space-y-1 text-[10.5px] text-muted-foreground">
-      {label}
-      <Select value={value} onValueChange={onValue}>
-        <SelectTrigger size="sm" className="mt-1 w-full rounded-md text-[11px]"><SelectValue /></SelectTrigger>
+    <Select value={value} onValueChange={onValue}>
+        <SelectField className="w-full" label={label}>
+          <SelectValue />
+        </SelectField>
         <SelectContent>
           {options.map((option) => <SelectItem key={option.id} value={option.id} disabled={option.disabled}>{option.label}</SelectItem>)}
         </SelectContent>
       </Select>
-    </label>
   );
 }
 
@@ -365,7 +369,7 @@ function VirtualModelChecklist({
   });
 
   return (
-    <div ref={scrollRef} className="max-h-72 min-h-0 overflow-y-auto rounded-md border border-border [scrollbar-width:thin]">
+    <div ref={scrollRef} className="ri-harness-settings-panel-frame max-h-72 min-h-0 overflow-y-auto rounded-md border border-border [scrollbar-width:thin]">
       <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const model = rows[virtualRow.index]!;
@@ -392,15 +396,15 @@ function VirtualModelChecklist({
                   <span className="flex items-center gap-1.5 text-[11.5px] font-medium text-foreground">
                     <span className="truncate">{model.label}</span>
                     {model.custom && (
-                      <span className="rounded bg-muted px-1 py-px text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
+                      <StatusBadge >
                         pinned
-                      </span>
+                      </StatusBadge>
                     )}
                     {isGlobalDefault && (
                       <Tip label="Your global default model stays visible. Change the default model to hide this one.">
-                        <span className="rounded bg-primary/10 px-1 py-px text-[9px] font-medium uppercase tracking-wide text-primary">
+                        <StatusBadge >
                           global default
-                        </span>
+                        </StatusBadge>
                       </Tip>
                     )}
                     {model.providerName && <span className="truncate text-[10px] font-normal text-muted-foreground">{model.providerName}</span>}
@@ -411,19 +415,19 @@ function VirtualModelChecklist({
                 </span>
               </label>
               {model.custom && (
-                <Tip label={`Unpin ${model.id}`}>
-                  <button data-slot="action-button" data-variant="ghost"
+                  <IconButton
                     type="button"
                     disabled={removing === model.id}
                     onClick={() => onRemove(model.id)}
-                    aria-label={`Unpin ${model.id}`}
-                    className="rounded p-1 text-muted-foreground/60 hover:bg-muted hover:text-foreground disabled:opacity-50"
+                    label={`Unpin ${model.id}`}
+                    tooltip={`Unpin ${model.id}`}
+                    variant="ghost"
+                    size="sm"
                   >
                     {removing === model.id
                       ? <Loader2 size={11} className="animate-spin" />
                       : <X size={11} />}
-                  </button>
-                </Tip>
+                  </IconButton>
               )}
             </div>
           );

@@ -1,5 +1,12 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Card } from '@/components/system/card';
+
+import { TextArea } from '@/components/system/text-area';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Schedule this chat: the clock in a chat's header. It opens a small form
  * (how often, the message, and whether each run starts a new chat) and,
@@ -13,8 +20,8 @@
 import { useState } from 'react';
 import { Clock, Loader2, Pause, Pencil, Play } from 'lucide-react';
 import { toast } from 'sonner';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Dialog, DialogContent, DialogTitle } from '@/components/system/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
 import { APP_NAME } from '@/constants/app';
@@ -45,11 +52,13 @@ function nextRunLabel(trigger: Pick<TriggerWithLastRun, 'kind' | 'nextRunAt' | '
 export function ScheduleChatButton({
   sessionId,
   compact = false,
+  size = "sm",
   className,
 }: {
   sessionId: string | null;
   /** A phone header: the clock alone, lit while scheduled, so the title keeps its room. */
   compact?: boolean;
+  size?: "xs" | "sm" | "md" | "touch";
   className?: string;
 }) {
   const { data: chat } = useSession(sessionId);
@@ -70,23 +79,21 @@ export function ScheduleChatButton({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Tip label={chip ? 'This chat is scheduled. Change or pause it.' : 'Send this chat a message on a schedule'}>
-          <button
+          <Button
             type="button"
             aria-label={chip ? `Scheduled: ${chip}` : 'Schedule'}
-            className={cn(
-              'flex min-w-0 flex-shrink-0 items-center gap-1 rounded-md text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground',
-              chip && !compact ? 'px-1.5 py-0.5 text-[11px] text-foreground/80 bg-primary/10' : 'p-1.5',
-              chip && compact && 'bg-primary/10',
-              className,
-            )}
+            variant={chip && !compact ? "secondary" : "ghost"}
+            size={size}
+            icon={compact || !chip}
+            className={cn("flex min-w-0 flex-shrink-0 items-center gap-1", className)}
           >
             <Clock size={compact ? 16 : 13} className={chip ? 'text-primary' : undefined} />
             {chip && !compact && <span className="max-w-[12rem] truncate">{chip}</span>}
-          </button>
+          </Button>
         </Tip>
       </PopoverTrigger>
       {/* Built only while open: every chat header carries this button. */}
-      {open && <PopoverContent align="end" className="w-[22rem] max-w-[calc(100vw-2rem)] max-h-[min(80vh,40rem)] overflow-y-auto p-0">
+      {open && <PopoverContent padding="none" align="end" className="w-[22rem] max-w-[calc(100vw-2rem)] max-h-[min(80vh,40rem)] overflow-y-auto">
         <ChatSchedules chat={chat} mine={mine} onDone={() => setOpen(false)} />
       </PopoverContent>}
     </Popover>
@@ -101,7 +108,7 @@ export function ScheduleChatDialog({ sessionId, open, onOpenChange }: {
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-0 overflow-hidden rounded-2xl p-0 sm:max-w-sm">
+      <DialogContent padding="none" className="gap-0 overflow-hidden sm:max-w-sm">
         <DialogTitle className="sr-only">Schedule this chat</DialogTitle>
         {open && <ScheduleDialogBody sessionId={sessionId} onDone={() => onOpenChange(false)} />}
       </DialogContent>
@@ -129,7 +136,7 @@ function ChatSchedules({ chat, mine, onDone }: {
     <>
       {mine.length > 0 && (
         <div className="border-b border-border p-3 space-y-2">
-          <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Scheduled for this chat</p>
+          <p className="text-[11px] font-medium text-muted-foreground">Scheduled for this chat</p>
           {mine.map((t) => <ScheduledRow key={t.id} trigger={t} onEdit={() => { onDone(); openSchedulesWindow({ triggerId: t.id }); }} />)}
         </div>
       )}
@@ -142,7 +149,7 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
   const update = useUpdateTrigger();
   const next = trigger.enabled ? nextRunLabel(trigger) : null;
   return (
-    <div className="flex items-start gap-2 rounded-md border border-border bg-card p-2">
+    <Card padding="sm" shadow className="flex items-start gap-2">
       <div className="min-w-0 flex-1">
         <p className="text-[12px] font-medium text-foreground">
           {describeFrequency(trigger)}
@@ -150,28 +157,31 @@ function ScheduledRow({ trigger, onEdit }: { trigger: TriggerWithLastRun; onEdit
         </p>
         <p className="mt-0.5 line-clamp-2 text-[11px] text-muted-foreground">{trigger.prompt}</p>
       </div>
-      <Tip label={trigger.enabled ? 'Pause' : 'Resume'}>
-        <button
+
+        <IconButton
           type="button"
-          aria-label={trigger.enabled ? 'Pause schedule' : 'Resume schedule'}
           onClick={() => update.mutate({ id: trigger.id, enabled: !trigger.enabled })}
           disabled={update.isPending}
-          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+          label={trigger.enabled ? 'Pause schedule' : 'Resume schedule'}
+          tooltip={trigger.enabled ? 'Pause' : 'Resume'}
+          variant="ghost"
+          size="sm"
         >
           {trigger.enabled ? <Pause size={12} /> : <Play size={12} />}
-        </button>
-      </Tip>
-      <Tip label="Change everything about it in Schedules">
-        <button
+        </IconButton>
+
+        <IconButton
           type="button"
-          aria-label="Edit schedule"
           onClick={onEdit}
-          className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+          label="Edit schedule"
+          tooltip="Change everything about it in Schedules"
+          variant="ghost"
+          size="sm"
         >
           <Pencil size={12} />
-        </button>
-      </Tip>
-    </div>
+        </IconButton>
+
+    </Card>
   );
 }
 
@@ -197,13 +207,13 @@ function NewChatSchedule({
   if (!expanded) {
     return (
       <div className="p-2">
-        <button
+        <MenuAction density="compact"
           type="button"
           onClick={() => setExpanded(true)}
-          className="w-full rounded-md px-2 py-1.5 text-left text-[12px] text-foreground hover:bg-muted/60"
+          className="w-full text-left"
         >
           Add another schedule
-        </button>
+        </MenuAction>
       </div>
     );
   }
@@ -228,19 +238,20 @@ function NewChatSchedule({
 
   return (
     <form onSubmit={save} className="space-y-3 p-3">
-      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Schedule this chat</p>
+      <p className="text-[11px] font-medium text-muted-foreground">Schedule this chat</p>
       <TriggerScheduleFields value={schedule} onChange={setSchedule} kinds={CHAT_KINDS} disabled={create.isPending} />
-      <label className="block space-y-1 text-[12px] font-medium">
-        <span>Message</span>
-        <textarea data-slot="field"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          rows={3}
-          required
-          placeholder={freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'}
-          className="block w-full resize-y rounded-md border border-border bg-card px-3 py-2 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        />
-      </label>
+      <TextArea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        rows={3}
+        required
+        placeholder={
+          freshChat ? 'What should each new chat do?' : 'What should this chat do each time?'
+        }
+        controlClassName="block w-full"
+        resize="vertical"
+        label="Message"
+      />
       <div className="flex items-start gap-2">
         <Switch
           id={`fresh-chat-${chat.id}`}
@@ -266,18 +277,25 @@ function NewChatSchedule({
       {create.error && <p role="alert" className="text-[12px] text-destructive">{(create.error as Error).message}</p>}
       <div className="flex items-center justify-end gap-2">
         {!startOpen && (
-          <button type="button" onClick={() => setExpanded(false)} className="rounded-md px-3 py-1.5 text-[12px] text-muted-foreground hover:text-foreground">
+          <Button
+            type="button"
+            onClick={() => setExpanded(false)}
+            variant="ghost"
+            size="sm"
+          >
             Cancel
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
           disabled={!result.schedule || !prompt.trim() || create.isPending}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="inline-flex items-center gap-1.5"
         >
           {create.isPending && <Loader2 size={12} className="animate-spin" />}
           Schedule it
-        </button>
+        </Button>
       </div>
     </form>
   );

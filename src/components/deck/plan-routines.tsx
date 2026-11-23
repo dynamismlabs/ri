@@ -16,7 +16,7 @@ export function PlanRoutines({ items, onComplete }: PlanRoutinesProps) {
     <div className="px-4 pb-3 pt-1">
       <div className="flex items-center gap-2 mb-2">
         <div className="h-px flex-1 bg-border" />
-        <span className="text-[8.5px] font-bold text-muted-foreground uppercase tracking-[0.15em]">
+        <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground">
           Today&apos;s Routines
         </span>
         <div className="h-px flex-1 bg-border" />

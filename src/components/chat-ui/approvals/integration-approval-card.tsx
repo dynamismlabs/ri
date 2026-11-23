@@ -1,5 +1,12 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
+import { InlineAction } from '@/components/system/inline-action';
 
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { ApprovalDetails } from './approval-details';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
@@ -23,7 +30,6 @@ import { Check, ChevronRight, Clock, Loader2, RotateCcw, ShieldAlert, ShieldChec
 import { useMemo, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { Tip } from '@/components/ui/tip';
-
 
 /** Items shown before "Show N more" on a large batch. */
 const VISIBLE_ITEMS = 5;
@@ -94,11 +100,8 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
   const hidden = views.length - visible.length;
 
   return (
-    <div
-      className={cn(
-        'overflow-hidden rounded-xl border bg-card text-[11px]',
-        isPending ? 'border-amber-500/40' : 'border-border',
-      )}
+    <Card padding="none"
+      className="overflow-hidden"
     >
       {/* Two lines, so the account the call acts as stays readable in a narrow panel. */}
       <div
@@ -137,13 +140,13 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
         ))}
       </ul>
       {hidden > 0 && (
-        <button
+        <MenuAction density="compact"
           type="button"
           onClick={() => setShowAll(true)}
-          className="w-full border-t border-border/40 px-3 py-1.5 text-left text-[10.5px] text-muted-foreground hover:bg-muted/30"
+          className="w-full text-left"
         >
           Show {hidden} more
-        </button>
+        </MenuAction>
       )}
 
       {isPending ? (
@@ -178,15 +181,15 @@ export function IntegrationApprovalCard({ rows, sessionId, isLatest }: Integrati
       ) : (
         <CardStatus states={states} actionLabel={head.actionLabel} toolName={head.toolName} sessionId={sessionId} isLatest={isLatest} />
       )}
-    </div>
+    </Card>
   );
 }
 
 function RiskChip({ children }: { children: ReactNode }) {
   return (
-    <span className="shrink-0 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9.5px] font-medium text-amber-600 dark:text-amber-400">
+    <StatusBadge tone={"warning"} className="shrink-0">
       {children}
-    </span>
+    </StatusBadge>
   );
 }
 
@@ -207,10 +210,10 @@ function ApprovalItem({
     <li className="px-3 py-1.5">
       <div className="flex items-center gap-2">
         <ItemStateIcon state={state} />
-        <button
+        <InlineAction
           type="button"
           onClick={() => hasDetails && setExpanded((v) => !v)}
-          className={cn('flex min-w-0 flex-1 items-center gap-1 text-left', !hasDetails && 'cursor-default')}
+          className={cn("flex min-w-0 flex-1 items-center gap-1 text-left", !hasDetails && "cursor-default")}
           aria-expanded={hasDetails ? expanded : undefined}
         >
           <span className={cn('truncate', state === 'expired' ? 'text-muted-foreground' : 'text-foreground/90')}>
@@ -222,31 +225,34 @@ function ApprovalItem({
               className={cn('shrink-0 text-muted-foreground/50 transition-transform', expanded && 'rotate-90')}
             />
           )}
-        </button>
+        </InlineAction>
         {onDecide && state === 'pending' && (
           <span className="flex shrink-0 items-center gap-0.5">
-            <Tip label="Approve this one">
-              <button data-slot="action-button" data-tone="status"
+
+              <IconButton
                 type="button"
                 disabled={disabled}
                 onClick={() => onDecide('approve')}
-                aria-label={`Approve ${view.summary}`}
-                className="rounded p-1 text-muted-foreground/70 hover:bg-emerald-500/10 hover:text-emerald-600 disabled:opacity-50"
+                label={`Approve ${view.summary}`}
+                tooltip="Approve this one"
+                variant="ghost"
+                size="xs"
               >
                 <Check size={11} />
-              </button>
-            </Tip>
-            <Tip label="Deny this one">
-              <button data-slot="action-button" data-tone="status"
+              </IconButton>
+
+              <IconButton
                 type="button"
                 disabled={disabled}
                 onClick={() => onDecide('deny')}
-                aria-label={`Deny ${view.summary}`}
-                className="rounded p-1 text-muted-foreground/70 hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                label={`Deny ${view.summary}`}
+                tooltip="Deny this one"
+                variant="ghost"
+                size="xs"
               >
                 <X size={11} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </span>
         )}
       </div>
@@ -285,19 +291,16 @@ function FooterButton({
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <Tip label={title}>
-      <button data-slot="action-button" data-variant={tone === "primary" ? "primary" : undefined} data-tone={tone === "deny" ? "status" : undefined}
+      <Button
         type="button"
         {...props}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-          tone === 'primary' && 'bg-primary text-primary-foreground hover:opacity-90',
-          tone === 'secondary' && 'border border-border bg-background text-foreground hover:bg-muted/60',
-          tone === 'deny' && 'border border-destructive/40 text-destructive hover:bg-destructive/10',
-        )}
+        variant={tone === "primary" ? "primary" : tone === "deny" ? "destructive" : "secondary"}
+        size="xs"
+        className="inline-flex items-center gap-1.5"
       >
         {busy && <Loader2 size={11} className="animate-spin" />}
         {children}
-      </button>
+      </Button>
     </Tip>
   );
 }
@@ -365,15 +368,17 @@ function CardStatus({
       <span className="shrink-0">{icon}</span>
       <span className="min-w-0 flex-1">{text}</span>
       {canRetry && (
-        <button data-slot="action-button"
+        <Button
           type="button"
           disabled={retry.isPending || retry.isSuccess}
           onClick={() => retry.mutate()}
-          className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-[10.5px] font-medium text-foreground hover:bg-muted/60 disabled:opacity-50"
+          variant="secondary"
+          size="xs"
+          className="inline-flex shrink-0 items-center gap-1"
         >
           {retry.isPending ? <Loader2 size={10} className="animate-spin" /> : <RotateCcw size={10} />}
           {retry.isSuccess ? 'Asked' : 'Ask the agent to retry'}
-        </button>
+        </Button>
       )}
     </div>
   );

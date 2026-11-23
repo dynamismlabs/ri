@@ -1,9 +1,14 @@
 "use client";
+import { OverlaySurface } from '@/components/system/overlay';
+import { MenuAction } from '@/components/system/menu-action';
+
+
+import { Field } from '@/components/system/field';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Plus, Loader2, CornerDownLeft, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+
 import { useCreateTask } from '@/hooks/use-tasks';
 import { apiErrorText } from '@/lib/api/client';
 import type { TaskRecord } from '@/db/types';
@@ -118,88 +123,77 @@ export function DeckAddBar({ candidates, excludeIds, onTaskCreated, onAddExistin
     // Sized by its own width: the hint gives way to the placeholder in the
     // narrow column beside other screens (docs/scratchpad.md).
     <div className="@container/addbar relative">
-      <div
-        className={cn(
-          // A quiet fill (not a bare outline) so it reads as the deck's one input
-          // at a glance; it lifts to the panel color while you type.
-          'group flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 transition-colors',
-          'border-border hover:border-muted-foreground/40 focus-within:border-ring focus-within:bg-background focus-within:ring-1 focus-within:ring-ring',
-        )}
-      >
-        <Plus className="h-4 w-4 shrink-0 text-primary" />
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setHighlight(0);
-          }}
-          onKeyDown={onKeyDown}
-          onFocus={() => setFocused(true)}
-          // Delay so a mousedown on an option is handled before we close.
-          onBlur={() => setTimeout(() => setFocused(false), 120)}
-          placeholder="Add a task, or find an existing one"
-          aria-label="Add a task, or find an existing one"
-          // Typed text clears on Escape before a slideout around the deck closes.
-          data-cancel-on-escape={q ? '' : undefined}
-          className="min-w-0 flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-        />
-        {createTask.isPending ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-        ) : (
-          <span className="shrink-0 text-[10px] text-muted-foreground/50 @max-sm/addbar:hidden">
-            {q ? '↑↓ to choose · ↵ to add' : 'Enter to add'}
-          </span>
-        )}
-      </div>
+      <Field
+        ref={inputRef}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setHighlight(0);
+        }}
+        onKeyDown={onKeyDown}
+        onFocus={() => setFocused(true)}
+        // Delay so a mousedown on an option is handled before we close.
+        onBlur={() => setTimeout(() => setFocused(false), 120)}
+        placeholder="Add a task, or find an existing one"
+        aria-label="Add a task, or find an existing one"
+        // Typed text clears on Escape before a slideout around the deck closes.
+        data-cancel-on-escape={q ? '' : undefined}
+        className="min-w-0 flex-1"
+        leading={<Plus className="h-4 w-4 shrink-0 text-primary" />}
+        trailing={
+          <>
+            {createTask.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
+            ) : (
+              <span className="shrink-0 @max-sm/addbar:hidden">
+                {q ? '↑↓ to choose · ↵ to add' : 'Enter to add'}
+              </span>
+            )}
+          </>
+        }
+      />
 
       {open && (
-        <div className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden rounded-lg border border-border bg-popover shadow-md">
+        <OverlaySurface kind="menu" padding="none" className="absolute left-0 right-0 top-full z-20 mt-1 overflow-hidden">
           {/* Create new */}
-          <button
+          <MenuAction selected={!!((highlight === 0))}
             type="button"
             onMouseDown={(e) => e.preventDefault()}
             onMouseEnter={() => setHighlight(0)}
             onClick={() => choose(0)}
-            className={cn(
-              'flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
-              highlight === 0 ? 'bg-muted' : 'hover:bg-muted/60',
-            )}
+            className="flex w-full items-center gap-2 text-left"
           >
             <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-primary" />
             <span className="min-w-0 flex-1 truncate">
               Create task <span className="font-medium text-foreground">“{q}”</span>
             </span>
             <span className="shrink-0 text-[10px] text-muted-foreground">new</span>
-          </button>
+          </MenuAction>
 
           {matches.length > 0 && (
             <>
-              <div className="border-t border-border/60 px-3 py-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <div className="border-t border-border/60 px-3 py-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/60">
                 Add existing
               </div>
               {matches.map((t, i) => {
                 const idx = i + 1;
                 return (
-                  <button
+                  <MenuAction selected={!!((highlight === idx))}
                     key={t.id}
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onMouseEnter={() => setHighlight(idx)}
                     onClick={() => choose(idx)}
-                    className={cn(
-                      'flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors',
-                      highlight === idx ? 'bg-muted' : 'hover:bg-muted/60',
-                    )}
+                    className="flex w-full items-center gap-2 text-left"
                   >
                     <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate text-foreground">{t.title}</span>
-                  </button>
+                  </MenuAction>
                 );
               })}
             </>
           )}
-        </div>
+        </OverlaySurface>
       )}
     </div>
   );

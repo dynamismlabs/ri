@@ -3,7 +3,20 @@
  * native BrowserWindows, so it cannot establish the single-window contract. */
 import assert from 'node:assert/strict';
 import { isDeepStrictEqual } from 'node:util';
-import type { ElectronApplication, Page } from 'playwright-core';
+import type { ElectronApplication, Locator, Page } from 'playwright-core';
+
+/** A local page's Back destroys its renderer while the authenticated view stays alive. */
+export async function clickClosingPage(page: Page, control: Locator) {
+  await Promise.all([
+    page.waitForEvent('close'),
+    control.click({ noWaitAfter: true }).catch(error => {
+      // Electron can destroy this local renderer before acknowledging mouse-up.
+      // The caller still verifies the authenticated window and document survive.
+      if (!page.isClosed() || !(error instanceof Error)
+        || !error.message.includes('Target page, context or browser has been closed')) throw error;
+    }),
+  ]);
+}
 
 export type LocalSurface = 'companion' | 'maintenance';
 

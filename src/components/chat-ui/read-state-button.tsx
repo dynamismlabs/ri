@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { EyeOff } from 'lucide-react';
 import { Tip } from '@/components/ui/tip';
 import { useSession } from '@/hooks/use-execution';
@@ -26,35 +28,33 @@ export function ReadStateButton({ sessionId, className }: { sessionId: string | 
   if (isSessionUnread(chat)) {
     return (
       <Tip label="Mark read">
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => markRead.mutate(chat.id)}
           aria-label="Unread, mark read"
-          className={cn(
-            'flex flex-shrink-0 items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-600 transition-colors hover:bg-amber-500/20 dark:text-amber-400',
-            className,
-          )}
+          variant="ghost"
+          size="xs"
+          tone="warning"
+          className={cn("flex flex-shrink-0 items-center gap-1", className)}
         >
           <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-amber-500" />
           Unread
-        </button>
+        </Button>
       </Tip>
     );
   }
 
   return (
-    <Tip label="Mark unread to come back to it. It stays lit until you open it again.">
-      <button data-slot="action-button" data-variant="ghost"
+      <IconButton
         type="button"
         onClick={() => markUnread.mutate(chat.id)}
-        aria-label="Mark unread"
-        className={cn(
-          'flex-shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground',
-          className,
-        )}
+        label="Mark unread"
+        tooltip="Mark unread to come back to it. It stays lit until you open it again."
+        variant="ghost"
+        size="xs"
+        className={cn("flex-shrink-0", className)}
       >
         <EyeOff size={13} />
-      </button>
-    </Tip>
+      </IconButton>
   );
 }

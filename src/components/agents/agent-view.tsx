@@ -1,5 +1,8 @@
 'use client';
 
+import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { apiErrorStatus } from '@/lib/api/client';
 import { ChatLookupState, ChatRefreshBoundary } from '@/components/chat/chat-lookup-state';
@@ -10,7 +13,7 @@ import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { DEFAULT_AGENT_TAB, readLastAgentTab, writeLastAgentTab } from '@/lib/client/agent-view-tab';
 import { workspaceFolder } from '@/lib/folders/source';
 import type { AgentTab } from '@/types/dashboard';
-import { cn } from '@/lib/utils';
+
 import { AgentHeader } from './agent-header';
 import { AgentChatPanel } from './agent-chat-panel';
 import { AGENT_TOOL_TABS, AgentTools, type BesideChatTab } from './agent-tools';
@@ -313,12 +316,14 @@ export function AgentView({
         <div>
           <p className="text-[13px] font-semibold text-foreground">This agent isn&apos;t here anymore.</p>
           <p className="text-[11px] text-muted-foreground/80 mt-1">It may have been deleted, or the link is wrong.</p>
-          <button
+          <Button
             onClick={goHome}
-            className="mt-3 inline-flex items-center px-3 py-1.5 rounded-md text-[11px] font-medium text-primary hover:bg-primary/10"
+            variant="ghost"
+            size="sm"
+            className="mt-3 inline-flex items-center"
           >
             Back to Home
-          </button>
+          </Button>
         </div>
       </div>,
     );
@@ -376,7 +381,7 @@ export function AgentView({
   } : null;
 
   return frame(
-    <>
+    <SegmentedRoot mode="tabs" value={pane} onChange={setPane}>
       <AgentHeader
         workspace={workspace}
         terminal={terminalToggle}
@@ -388,13 +393,14 @@ export function AgentView({
         {narrow ? (
           <div className="relative flex-1 min-h-0">
             {(['chat', 'tools'] as const).map((p) => (
-              <div
+              <SegmentedPanel
                 key={p}
-                inert={pane !== p}
-                className={cn('absolute inset-0 flex flex-col min-h-0', pane === p ? 'z-10' : 'opacity-0')}
+                value={p}
+                preserveLayout
+                className="absolute inset-0 flex flex-col min-h-0"
               >
                 {p === 'chat' ? chat : tools}
-              </div>
+              </SegmentedPanel>
             ))}
           </div>
         ) : (
@@ -405,9 +411,12 @@ export function AgentView({
             chatHost={besideHost}
             chatStrip={{
               label: chatSessionId ? 'Chat' : 'Main chat',
-              status: mainChatId && activity.pendingInputSessionIds.has(mainChatId)
-                ? 'needsInput'
-                : mainChatId && activity.streamingSessionIds.has(mainChatId) ? 'working' : null,
+              status:
+                mainChatId && activity.pendingInputSessionIds.has(mainChatId)
+                  ? 'needsInput'
+                  : mainChatId && activity.streamingSessionIds.has(mainChatId)
+                    ? 'working'
+                    : null,
               onRestore: () => dispatch({ type: 'toggleMaximize' }),
             }}
             panel={{
@@ -421,6 +430,6 @@ export function AgentView({
           />
         )}
       </TerminalSplit>
-    </>,
+    </SegmentedRoot>,
   );
 }

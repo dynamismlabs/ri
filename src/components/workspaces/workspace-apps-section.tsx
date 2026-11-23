@@ -1,10 +1,13 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { Callout } from '@/components/system/callout';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, AppWindow, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Button } from '@/components/system/button';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useAllowApp } from '@/components/apps/allow-app';
 import { allowConsequence } from '@/lib/integrations/app-access-copy';
 import { trpc, trpcClient } from '@/lib/trpc/client';
@@ -68,10 +71,10 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
       </div>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
+        <Callout padding="sm" tone={"error"} role="alert" className="flex items-start gap-2">
           <AlertCircle size={14} className="mt-0.5 shrink-0" />
           <span>{error}</span>
-        </div>
+        </Callout>
       )}
 
       {apps.isPending ? (
@@ -79,7 +82,7 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
       ) : list.length === 0 ? (
         <p className="text-xs text-muted-foreground">No apps yet. Add one from Apps.</p>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border border-border">
+        <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
           {list.map((app) => {
             const mine = app.agents.find((place) => place.place.kind === 'agent' && place.place.workspaceId === workspaceId);
             const busy = (allow.isPending && allow.variables?.id === app.id) || (remove.isPending && remove.variables?.id === app.id);
@@ -93,17 +96,32 @@ export function WorkspaceAppsSection({ workspaceId, workspaceName }: { workspace
                   </p>
                 </div>
                 {mine && mine.status !== 'connected' && (
-                  <Button size="xs" variant="outline" disabled={busy || allowApp.checking} onClick={() => allow.mutate({ id: app.id, name: app.name, serverId: mine.serverId })}>
+                  <Button
+                    disabled={busy || allowApp.checking}
+                    onClick={() => allow.mutate({ id: app.id, name: app.name, serverId: mine.serverId })}
+                    variant="secondary"
+                    size="xs"
+                  >
                     {mine.status === 'sign_in' ? 'Continue' : 'Reconnect'}
                   </Button>
                 )}
                 {mine
-                  ? <Button size="xs" variant="ghost" disabled={busy} onClick={() => remove.mutate({ id: app.id, name: app.name })}>Remove</Button>
-                  : <Button size="xs" variant="outline" disabled={busy} onClick={() => allow.mutate({ id: app.id, name: app.name })}>Allow</Button>}
+                  ? <Button
+                    disabled={busy}
+                    onClick={() => remove.mutate({ id: app.id, name: app.name })}
+                    variant="ghost"
+                    size="xs"
+                  >Remove</Button>
+                  : <Button
+                    disabled={busy}
+                    onClick={() => allow.mutate({ id: app.id, name: app.name })}
+                    variant="secondary"
+                    size="xs"
+                  >Allow</Button>}
               </li>
             );
           })}
-        </ul>
+        </Card>
       )}
       {allowApp.dialog}
     </div>

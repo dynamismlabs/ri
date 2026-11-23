@@ -1,4 +1,5 @@
 'use client'
+import { TextArea } from '@/components/system/text-area';
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
@@ -480,9 +481,9 @@ export function NoteEditor({
   return (
     <div className="note-editor w-full mx-auto pb-16">
       {/* Title */}
-      <textarea
+      <TextArea
         ref={attachTitle}
-        className="note-title w-full text-[2.5rem] font-bold leading-tight bg-transparent border-none outline-none resize-none overflow-hidden text-foreground placeholder:text-muted-foreground/40"
+        className="w-full"
         placeholder="Note title"
         defaultValue={title}
         onInput={handleTitleInput}
@@ -493,6 +494,10 @@ export function NoteEditor({
         data-gramm="false"
         data-gramm_editor="false"
         data-enable-grammarly="false"
+        purpose="title"
+        titleSize="document"
+        autoSize
+        aria-label={'Note title'}
       />
 
       {metadata}

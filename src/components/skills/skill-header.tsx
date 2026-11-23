@@ -1,5 +1,10 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { SegmentedList } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { PluginSetupHelpButton } from '@/components/plugins/setup-help-button';
 import { documentSaves } from '@/lib/client/document-saves';
 import { Archive, ChevronLeft, Copy, GitCommitHorizontal, Loader2, MoreHorizontal, ScrollText } from 'lucide-react';
@@ -8,15 +13,9 @@ import { apiErrorText } from '@/lib/api/client';
 import type { SkillView } from '@/lib/api/skills';
 import { useArchiveSkill, useCommitSkill } from '@/hooks/use-skills';
 import { useSkillNavigation } from '@/components/skills/skill-navigation';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { useConfirm } from '@/components/system/confirm-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
+
 import { SkillLocationControl } from './skill-location-control';
 import { Tip } from '@/components/ui/tip';
 
@@ -76,13 +75,9 @@ export function SkillHeader({
     <header className="@container flex-shrink-0 min-w-0 border-b border-border">
       <div className="flex min-w-0 items-center gap-3 px-4 py-2">
         {onBack && (
-          <button
-            onClick={onBack}
-            aria-label="Back"
-            className="-ml-2 rounded-md p-1.5 text-muted-foreground hover:text-foreground active:bg-muted/40"
-          >
+          <IconButton onClick={onBack} label="Back" variant="ghost" size="sm" className="-ml-2">
             <ChevronLeft size={20} />
-          </button>
+          </IconButton>
         )}
         <span className="flex size-8 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
           <ScrollText size={16} />
@@ -91,20 +86,28 @@ export function SkillHeader({
 
         {showCommit && (
           <Tip label="Commit only this skill's files. Other changes in the repo are left alone.">
-            <button
+            <Button
               onClick={() =>
                 commit.mutate(undefined, {
                   onSuccess: ({ commit: done }) =>
-                    toast.success(`Committed to ${done.branch ?? 'the repo'} (${done.sha}). Push it to share it with your team.`),
+                    toast.success(
+                      `Committed to ${done.branch ?? 'the repo'} (${done.sha}). Push it to share it with your team.`,
+                    ),
                   onError: (err) => toast.error(apiErrorText(err)),
                 })
               }
               disabled={commit.isPending}
-              className="flex h-7 flex-shrink-0 items-center gap-1.5 rounded-lg bg-primary px-2.5 text-[11px] font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              variant="primary"
+              size="sm"
+              className="flex flex-shrink-0 items-center gap-1.5"
             >
-              {commit.isPending ? <Loader2 size={12} className="animate-spin" /> : <GitCommitHorizontal size={12} strokeWidth={2.5} />}
+              {commit.isPending ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <GitCommitHorizontal size={12} strokeWidth={2.5} />
+              )}
               {skill.git?.branch ? `Commit to ${skill.git.branch}` : 'Commit'}
-            </button>
+            </Button>
           </Tip>
         )}
 
@@ -115,48 +118,43 @@ export function SkillHeader({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              aria-label="More"
-              className="flex-shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-            >
+            <IconButton label="More" variant="ghost" size="sm" className="flex-shrink-0">
               <MoreHorizontal size={15} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
+            <MenuAction kind="menu"
               onSelect={() => {
                 void navigator.clipboard.writeText(skill.dir).then(() => toast.success('Folder path copied'));
               }}
             >
               <Copy size={13} /> Copy folder path
-            </DropdownMenuItem>
+            </MenuAction>
             {skill.editable && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => void onArchive()} className="text-destructive focus:text-destructive">
+                <MenuAction tone="error" kind="menu"
+                  onSelect={() => void onArchive()}
+
+                >
                   <Archive size={13} /> Archive
-                </DropdownMenuItem>
+                </MenuAction>
               </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       {pane && (
-        <div role="tablist" aria-label="Chat or skill" className="flex gap-1 px-4 pb-2">
-          {(['chat', 'skill'] as const).map((p) => (
-            <button
-              key={p}
-              role="tab"
-              aria-selected={pane.value === p}
-              onClick={() => pane.onChange(p)}
-              className={cn(
-                'flex flex-1 items-center justify-center rounded-md py-1.5 text-[12px] font-medium transition-colors',
-                pane.value === p ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground active:bg-muted/50',
-              )}
-            >
-              {p === 'chat' ? 'Chat' : 'Skill'}
-            </button>
-          ))}
+        <div className="flex gap-1 px-4 pb-2">
+          <SegmentedList
+            ariaLabel="Chat or skill"
+            size="touch"
+            stretch
+            options={[
+              { value: 'chat', label: 'Chat' },
+              { value: 'skill', label: 'Skill' },
+            ]}
+          />
         </div>
       )}
     </header>

@@ -1,5 +1,12 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { StatusBadge } from '@/components/system/status-badge';
+
+
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -302,44 +309,37 @@ export function LaunchBrowse({
       // search field over no results.
       className={cn('flex flex-1 flex-col rounded-lg border border-border bg-background/60', touch ? 'min-h-[50vh]' : 'min-h-0')}
     >
-      <div className="relative flex-shrink-0 border-b border-border/70">
-        <Search
-          size={12}
-          className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-        />
-        <input
-          // On touch, focusing would raise the keyboard over the list it's
-          // meant to show. A tap on the field searches.
-          autoFocus={!touch}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Search everything…"
-          className="w-full bg-transparent py-2 pl-8 pr-3 text-[12px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
-        />
-        {anyLoading && (
-          <Loader2
-            size={12}
-            className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground/60"
-          />
-        )}
-      </div>
+      <div className="relative flex-shrink-0 border-b border-border/70"><Field
+        // On touch, focusing would raise the keyboard over the list it's
+        // meant to show. A tap on the field searches.
+        autoFocus={!touch}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Search everything…"
+        className={'w-full'}
+        purpose="embedded"
+        leading={<Search />}
+        trailing={
+          <>
+            {anyLoading && <Loader2 size={12} className="animate-spin text-muted-foreground/60" />}
+          </>
+        }
+        aria-label={'Search everything'}
+      /></div>
 
       <div className="flex flex-shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border/70 px-1.5 py-1">
         {tabs.map((t) => (
-          <button
+          <Button
             key={t.id}
             type="button"
             onClick={() => setTab(t.id)}
-            className={cn(
-              'flex-shrink-0 rounded px-2 py-0.5 text-[11px] font-medium transition-colors',
-              t.id === activeTab.id
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-            )}
+            variant="secondary"
+            size="sm"
+            className="flex-shrink-0"
           >
             {t.label}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -350,20 +350,17 @@ export function LaunchBrowse({
           someone here. */}
       {showArchivedToggle && (
         <div className="flex flex-shrink-0 items-center gap-1 border-b border-border/70 px-1.5 py-1">
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={() => setShowArchivedChats((prev) => !prev)}
             aria-pressed={showArchivedChats}
-            className={cn(
-              'inline-flex flex-shrink-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10.5px] font-medium transition-colors',
-              showArchivedChats
-                ? 'border-primary/40 bg-primary/10 text-foreground'
-                : 'border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-            )}
+            variant="secondary"
+            size="sm"
+            className="inline-flex flex-shrink-0 items-center gap-1.5"
           >
             <Archive size={10} />
             Show archived
-          </button>
+          </Button>
           <span className="truncate text-[10px] text-muted-foreground/60">
             Typing searches everything either way
           </span>
@@ -383,36 +380,34 @@ export function LaunchBrowse({
             const selected = s.id === effectiveScope;
             return (
               <Tip key={s.id} label={isIntegration && !selected ? (isTaskTab ? s.label : `Show ${s.label} tasks`) : undefined}>
-                <button data-slot="action-button"
+                <Button
                   type="button"
                   onClick={() => selectScope(s.id)}
                   aria-label={s.label}
                   aria-pressed={selected}
-                  className={cn(
-                    'inline-flex flex-shrink-0 items-center gap-1.5 rounded-full border py-0.5 text-[10.5px] font-medium transition-colors',
-                    isIntegration && !selected ? 'px-1.5' : 'px-2',
-                    selected
-                      ? 'border-primary/40 bg-primary/10 text-foreground'
-                      : 'border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-                  )}
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex flex-shrink-0 items-center gap-1.5"
                 >
                   {isIntegration && <IntegrationLogo providerId={s.id} name={s.label} size={12} />}
                   {(!isIntegration || selected) && s.label}
-                </button>
+                </Button>
               </Tip>
             );
           })}
 
           {connectSettings && connectMore.length > 0 && (
             <Tip label={`Connect ${connectMore.map((s) => s.providerLabel).join(', ')}`}>
-              <button data-slot="action-button"
+              <Button
                 type="button"
                 onClick={connectSettings ?? undefined}
-                className="inline-flex flex-shrink-0 items-center gap-1 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10.5px] font-medium text-muted-foreground transition-colors hover:border-solid hover:bg-muted/50 hover:text-foreground"
+                variant="secondary"
+                size="sm"
+                className="inline-flex flex-shrink-0 items-center gap-1"
               >
                 <Plus size={10} />
                 {connectMore.length === 1 ? connectMore[0].providerLabel : connectMore.length}
-              </button>
+              </Button>
             </Tip>
           )}
         </div>
@@ -436,14 +431,14 @@ export function LaunchBrowse({
             leaving it invisible. Someone who has never opened integration
             settings has no way to learn this list can span Todoist and Jira. */}
         {connectSettings && activeTab.id === 'task' && integrationSources.length === 0 && !anyLoading && (
-          <button
+          <MenuAction density="compact"
             type="button"
             onClick={connectSettings ?? undefined}
-            className="mt-1 flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-left text-[10.5px] text-muted-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+            className="mt-1 flex w-full items-center gap-1.5 text-left"
           >
             <Plug size={11} className="flex-shrink-0 text-sky-500/70" />
             Connect {connectMore.map((s) => s.providerLabel).join(', ')} to pull tasks in from there
-          </button>
+          </MenuAction>
         )}
 
         {rendered.map(({ group, shown, hidden, more }) => (
@@ -452,7 +447,7 @@ export function LaunchBrowse({
               {group.toolkitId && (
                 <IntegrationLogo providerId={group.toolkitId} name={group.label} size={11} />
               )}
-              <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground/70">
+              <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
                 {group.label}
               </span>
               {group.isLoading && (
@@ -463,13 +458,15 @@ export function LaunchBrowse({
                   group is "I just finished a session and want it here". A
                   manual rescan is the escape hatch for that window. */}
               {group.kind === 'external' && !group.isLoading && (
-                <button
+                <Button
                   type="button"
                   onClick={() => qc.invalidateQueries({ queryKey: ['imports', 'external-agents'] })}
-                  className="ml-1 rounded px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60 transition-colors hover:bg-muted/60 hover:text-foreground"
+                  variant="secondary"
+                  size="sm"
+                  className="ml-1"
                 >
                   Rescan
-                </button>
+                </Button>
               )}
             </div>
 
@@ -500,16 +497,13 @@ export function LaunchBrowse({
                 const due = dueLabel(item.due, now);
                 const band = dueBand(item.due, now);
                 return (
-                  <button
+                  <MenuAction selected={!!((active))} density="compact"
                     key={`${item.kind}:${item.key}`}
                     type="button"
                     data-active={active}
                     onMouseEnter={() => setCursor(index)}
                     onClick={() => onPick(item)}
-                    className={cn(
-                      'flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors',
-                      active ? 'bg-muted' : 'hover:bg-muted/50',
-                    )}
+                    className="flex w-full items-start gap-2 text-left"
                   >
                     {item.toolkitId ? (
                       <span className="mt-0.5 flex-shrink-0">
@@ -544,9 +538,9 @@ export function LaunchBrowse({
                             bigger thing than opening a live chat. Say so on the
                             row rather than after the fact. */}
                         {item.archived && (
-                          <span className="flex-shrink-0 rounded-sm bg-muted px-1 py-px text-[9px] font-medium uppercase tracking-wide text-muted-foreground/80">
+                          <StatusBadge className="flex-shrink-0">
                             archived
-                          </span>
+                          </StatusBadge>
                         )}
                       </span>
                       {(due || item.subtitle) && (
@@ -572,7 +566,7 @@ export function LaunchBrowse({
                         </span>
                       )}
                     </span>
-                  </button>
+                  </MenuAction>
                 );
               })
             )}
@@ -580,7 +574,7 @@ export function LaunchBrowse({
             {/* Sharing the list with other sources: the rest of this one is a
                 tab away, not a page away. */}
             {more === 'jump' && (
-              <button
+              <MenuAction density="compact"
                 type="button"
                 onClick={() => {
                   // Jump to the tab that owns this group. Integration groups all
@@ -595,18 +589,18 @@ export function LaunchBrowse({
                     group.toolkitId ?? (group.kind === 'task' ? SCOPE_LOCAL : SCOPE_ALL),
                   );
                 }}
-                className="w-full rounded-md px-2 py-1 text-left text-[10.5px] text-muted-foreground/70 transition-colors hover:bg-muted/50 hover:text-foreground"
+                className="w-full text-left"
               >
                 {jumpLabel(hidden, group.truncated, group.label)}
-              </button>
+              </MenuAction>
             )}
 
             {/* This source owns the list, so the rest of it arrives here. */}
             {more === 'page' && (
-              <button
+              <MenuAction density="compact"
                 type="button"
                 onClick={() => showMore(group.id)}
-                className="flex w-full items-center gap-1.5 rounded-md px-2 py-1 text-left text-[10.5px] font-medium text-muted-foreground/80 transition-colors hover:bg-muted/50 hover:text-foreground"
+                className="flex w-full items-center gap-1.5 text-left"
               >
                 {group.isFetching ? (
                   <Loader2 size={10} className="flex-shrink-0 animate-spin" />
@@ -614,7 +608,7 @@ export function LaunchBrowse({
                   <ChevronDown size={10} className="flex-shrink-0" />
                 )}
                 {showMoreLabel(hidden, group.truncated)}
-              </button>
+              </MenuAction>
             )}
           </div>
         ))}
@@ -622,13 +616,14 @@ export function LaunchBrowse({
 
       {touch ? (
         <div className="flex flex-shrink-0 justify-end border-t border-border/70 px-1.5 py-1">
-          <button
+          <Button
             type="button"
             onClick={onClose}
-            className="rounded-md px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            variant="secondary"
+            size="sm"
           >
             Done
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="flex flex-shrink-0 items-center gap-3 border-t border-border/70 px-2.5 py-1.5 text-[9.5px] text-muted-foreground/60">

@@ -80,6 +80,7 @@ beforeAll(async () => {
     stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
       import React from 'react';
       import {createRoot} from 'react-dom/client';
+      import {TipProvider} from '@/components/ui/tip';
       import {DndContext, PointerSensor, useSensor, useSensors} from '@dnd-kit/core';
       import {SortableContext} from '@dnd-kit/sortable';
       import {FixtureProvider,useFixture} from 'fixture-hooks';
@@ -113,7 +114,8 @@ beforeAll(async () => {
           </>}
         </aside><button id="outside">Outside</button>
       </SessionHoverProvider></FixtureProvider>;}
-      createRoot(document.getElementById('root')).render(<App/>);
+      // Match layout.tsx so keyboard modality exists before a flyout mounts.
+      createRoot(document.getElementById('root')).render(<TipProvider><App/></TipProvider>);
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },

@@ -1,4 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { Field } from '@/components/system/field';
 
 import { useConnectedTeams } from '@/components/spaces/space-selector';
 import { teamDisplayName } from '@/lib/home/team-display-name';
@@ -8,9 +11,9 @@ import { TEAM_ROLE_LABELS } from '@/lib/team/capabilities';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Button } from '@/components/system/button';
+
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { apiErrorText } from '@/lib/api/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/router';
@@ -35,9 +38,9 @@ export function TeamsSection() {
       {list.length > 0 && (
         <section className="space-y-2">
           <h3 className="text-[12px] font-medium">Your teams</h3>
-          <ul className="divide-y rounded-lg border">
+          <Card as="ul" padding="none" className="divide-y">
             {list.map((connection) => <ConnectedTeam key={connection.id} connection={connection} />)}
-          </ul>
+          </Card>
         </section>
       )}
       <JoinTeam hasTeams={list.length > 0} />
@@ -81,12 +84,14 @@ function ConnectedTeam({ connection }: { connection: Connection }) {
       </div>
       {connection.status === 'active' && (
         <div className="flex shrink-0 gap-2">
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            asChild
+            variant="secondary"
+            size="sm"
+          >
             <a href={`/space/${encodeURIComponent(connection.id)}`}>Open</a>
           </Button>
           <Button
-            variant="ghost"
-            size="sm"
             disabled={disconnect.isPending}
             onClick={async () => {
               const ok = await confirm({
@@ -97,6 +102,8 @@ function ConnectedTeam({ connection }: { connection: Connection }) {
               });
               if (ok) disconnect.mutate();
             }}
+            variant="ghost"
+            size="sm"
           >
             Disconnect
           </Button>
@@ -179,45 +186,51 @@ function JoinTeam({ hasTeams }: { hasTeams: boolean }) {
         <h3 className="text-[12px] font-medium">{hasTeams ? 'Join or connect another team' : 'Join a team'}</h3>
         <p className="mt-1 text-xs text-muted-foreground">Paste an invitation, or a sign-in link from a team you already joined.</p>
       </div>
-      <form
-        className="space-y-3 rounded-lg border p-3"
+      <Card as="form" padding="md"
+        className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
           if (shown?.usable && (!joining || name.trim())) connect.mutate();
         }}
       >
-        <label className="block space-y-1">
-          <span className="text-xs font-medium">Team link</span>
-          <Input
-            value={link}
-            onChange={(e) => {
-              setLink(e.target.value);
-              setProblem(null);
-              if (!e.target.value.trim()) setSummary(null);
-            }}
-            placeholder="https://…/join#invite=…"
-            spellCheck={false}
-            autoComplete="off"
-          />
-        </label>
+        <Field
+          value={link}
+          onChange={(e) => {
+            setLink(e.target.value);
+            setProblem(null);
+            if (!e.target.value.trim()) setSummary(null);
+          }}
+          placeholder="https://…/join#invite=…"
+          spellCheck={false}
+          autoComplete="off"
+          label="Team link"
+        />
         {shown && (
           <p role="status" className={cn('border-l-2 pl-3 text-sm', shown.usable ? 'border-primary font-medium' : 'border-amber-500 text-muted-foreground')}>
             {shown.text}
           </p>
         )}
         {joining && shown?.usable && (
-          <label className="block space-y-1">
-            <span className="text-xs font-medium">Your name</span>
-            <Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoComplete="name" />
-            <span className="block text-xs text-muted-foreground">What the team sees on your work.</span>
-          </label>
+          <Field
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={80}
+            autoComplete="name"
+            label="Your name"
+            description="What the team sees on your work."
+          />
         )}
         {shown?.usable && <p className="text-xs text-muted-foreground">Your assigned tasks will appear in My Ri. Your personal work stays private.</p>}
         {problem && <p role="alert" className="text-xs text-destructive">{problem}</p>}
-        <Button type="submit" size="sm" disabled={!shown?.usable || (joining && !name.trim()) || connect.isPending}>
+        <Button
+          type="submit"
+          disabled={!shown?.usable || (joining && !name.trim()) || connect.isPending}
+          variant="primary"
+          size="md"
+        >
           {connect.isPending ? 'Connecting…' : joining ? 'Join team' : 'Connect'}
         </Button>
-      </form>
+      </Card>
     </section>
   );
 }
@@ -239,7 +252,11 @@ function CreateTeam() {
         )}
       </p>
       {desktop && (
-        <Button variant="outline" size="sm" onClick={() => void window.riDesktop?.connection?.('create-team')}>
+        <Button
+          onClick={() => void window.riDesktop?.connection?.('create-team')}
+          variant="secondary"
+          size="sm"
+        >
           Create a team
         </Button>
       )}

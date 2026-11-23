@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { workResultsApi } from '@/lib/api/results';
 import { apiErrorText } from '@/lib/api/client';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import type { ChatEventRecord } from '@/lib/api/dto/records';
 
 export function PreparationStatus({ event }: { event: ChatEventRecord }) {
@@ -17,7 +17,12 @@ export function PreparationStatus({ event }: { event: ChatEventRecord }) {
   if (operation?.kind !== 'handoff_preparation') return null;
   return <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
     <span>Handoff preparation: {operation.status ?? 'queued'}{operation.statusReason ? ` (${operation.statusReason.replaceAll('_', ' ')})` : ''}</span>
-    {(!operation.status || operation.status === 'queued') && <Button size="xs" variant="ghost" disabled={cancel.isPending} onClick={() => cancel.mutate()}>Cancel preparation</Button>}
+    {(!operation.status || operation.status === 'queued') && <Button
+      disabled={cancel.isPending}
+      onClick={() => cancel.mutate()}
+      variant="ghost"
+      size="xs"
+    >Cancel preparation</Button>}
     {!!cancel.error && <span role="alert" className="text-destructive">{apiErrorText(cancel.error)}</span>}
   </div>;
 }

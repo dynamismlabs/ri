@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 /**
  * Creating a schedule: `TriggerForm` with no schedule, plus the panel that
  * shows a new webhook's credentials once. Used by the Schedules window and
@@ -44,13 +45,15 @@ export function WebhookCredentialsPanel({
         <p>Endpoint:</p>
         <code className="font-mono break-all">POST /api/webhooks/triggers/{publicId}</code>
       </div>
-      <button
+      <Button
         type="button"
         onClick={onContinue}
-        className="w-full px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium"
+        variant="primary"
+        size="md"
+        className="w-full"
       >
         I&apos;ve saved the secret, continue
-      </button>
+      </Button>
     </div>
   );
 }
@@ -58,7 +61,7 @@ export function WebhookCredentialsPanel({
 function CredentialRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p className="text-[11px] text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="text-[11px] text-muted-foreground">{label}</p>
       <div className="flex items-center gap-2 mt-1">
         <code
           className={cn(
@@ -68,13 +71,14 @@ function CredentialRow({ label, value, mono = false }: { label: string; value: s
         >
           {value}
         </code>
-        <button data-slot="action-button"
+        <Button
           type="button"
           onClick={() => navigator.clipboard.writeText(value)}
-          className="px-2 py-1.5 rounded-md text-xs border border-border hover:bg-muted"
+          variant="secondary"
+          size="sm"
         >
           Copy
-        </button>
+        </Button>
       </div>
     </div>
   );

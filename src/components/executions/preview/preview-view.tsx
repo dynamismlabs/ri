@@ -1,11 +1,14 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle2, Globe, Loader2, Play, Smartphone, X } from 'lucide-react';
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { usePreviewSettings } from '@/hooks/use-preview';
 import type { PreviewManualUrl } from '@/lib/api/preview';
-import { cn } from '@/lib/utils';
+
 import { OpenOnDevice } from './open-on-device';
 import { RemotePreviewPromo } from './remote-preview-promo';
 import { PreviewHeader } from './preview-header';
@@ -242,14 +245,16 @@ function PreviewBody({ controller: c, processControls, onOpenRun, onOpenWorkspac
             <p className="text-[13px] leading-relaxed text-muted-foreground">{c.remoteError!.hint}</p>
           )}
           {settings && (c.remoteError!.code === 'beamd_not_configured' || c.remoteError!.code === 'no_remote_provider') ? (
-            <button data-slot="action-button" data-variant="primary"
+            <Button
               type="button"
               onClick={settings}
-              className="flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:bg-foreground/90"
+              variant="primary"
+              size="md"
+              className="flex items-center gap-2"
             >
               <Globe size={13} />
               Set up remote preview
-            </button>
+            </Button>
           ) : null}
           <div className="w-full space-y-4 border-t border-border pt-4">
             {automaticProviderLabel && (
@@ -461,29 +466,30 @@ function Subtle({ children }: { children: React.ReactNode }) {
 
 function PrimaryButton({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
-    <button data-slot="action-button" data-variant="primary"
+    <Button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        'flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:bg-foreground/90',
-        disabled && 'opacity-60',
-      )}
+      variant="primary"
+      size="md"
+      className="flex items-center gap-2"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
 function SecondaryButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
-    <button data-slot="action-button"
+    <Button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-[13px] font-medium text-foreground hover:bg-muted"
+      variant="secondary"
+      size="sm"
+      className="flex items-center gap-2"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -494,9 +500,9 @@ function RemoteProviderStatus({ providerLabel, hasManualUrl }: { providerLabel: 
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[12px] font-medium text-foreground">{providerLabel} connected</span>
-          <span className="rounded-full border border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <StatusBadge >
             {hasManualUrl ? 'Override active' : 'Automatic'}
-          </span>
+          </StatusBadge>
         </div>
         <p className="text-[11px] leading-relaxed text-muted-foreground">
           {hasManualUrl
@@ -543,24 +549,27 @@ function OpenOnDeviceNudge({ onShow }: { onShow: () => void }) {
     <div className="flex items-center gap-2 border-b border-border bg-primary/5 px-3 py-1.5 text-[11px]">
       <Smartphone size={12} className="shrink-0 text-primary" />
       <span className="flex-1 text-muted-foreground">See this on your real phone: one scan, no deploy.</span>
-      <button data-slot="action-button"
+      <Button
         type="button"
         onClick={() => {
           onShow();
           close();
         }}
-        className="rounded border border-border bg-background px-2 py-0.5 font-medium text-foreground hover:bg-muted"
+        variant="secondary"
+        size="sm"
       >
         Show me
-      </button>
-      <button
+      </Button>
+      <IconButton
         type="button"
         onClick={close}
-        aria-label="Dismiss"
-        className="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+        label="Dismiss"
+        variant="ghost"
+        size="sm"
+        className="flex items-center justify-center"
       >
         <X size={12} />
-      </button>
+      </IconButton>
     </div>
   );
 }

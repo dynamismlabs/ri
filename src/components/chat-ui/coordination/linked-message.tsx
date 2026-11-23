@@ -1,4 +1,6 @@
 'use client';
+import { Card } from '@/components/system/card';
+
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -17,5 +19,5 @@ function AvailableLinkedCoordinationMessage({ sessionId }: { sessionId: string }
   const eventId = onScreen ? params.get('message') : null;
   const { data, isLoading } = useQuery({ queryKey: ['coordination-linked-message', sessionId, eventId], queryFn: () => trpcClient.coordination.message.query({ sessionId, eventId: eventId! }), enabled: !!eventId });
   if (!eventId) return null;
-  return <section className="rounded-xl border border-primary/30 bg-primary/5 p-3" aria-label="Linked message"><p className="mb-3 text-xs font-medium text-muted-foreground">Linked message</p>{isLoading ? <p className="text-xs">Loading message…</p> : data ? <ExecutionEvent event={data} sessionId={sessionId} /> : <p className="text-xs text-muted-foreground">This source message is no longer available.</p>}</section>;
+  return <Card as="section" padding="md" surface="track"  aria-label="Linked message"><p className="mb-3 text-xs font-medium text-muted-foreground">Linked message</p>{isLoading ? <p className="text-xs">Loading message…</p> : data ? <ExecutionEvent event={data} sessionId={sessionId} /> : <p className="text-xs text-muted-foreground">This source message is no longer available.</p>}</Card>;
 }

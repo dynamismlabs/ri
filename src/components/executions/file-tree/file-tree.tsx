@@ -1,5 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { IconButton } from '@/components/system/icon-button';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -9,14 +11,9 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/alert-dialog';
+import { Button } from '@/components/system/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
 import {
 	useCreateDir,
 	useCreateFile,
@@ -56,7 +53,6 @@ import { TreeCollapseAllButton } from './tree-collapse-all-button';
 import { TreeList, type PendingCreate, type PendingError } from './tree-list';
 import { TreeSearchBar } from './tree-search-bar';
 import { TreeViewToggle, type TreeViewMode } from './tree-view-toggle';
-import { Tip } from '@/components/ui/tip';
 
 interface FileTreeProps {
   /**
@@ -674,21 +670,25 @@ export function FileTree({
       {titleRow && (
         <div className="flex items-center justify-between gap-2 border-b border-border px-2 py-1.5 min-w-0">
           <div className="flex items-center gap-1 min-w-0">
-            <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground/70 px-1">
+            <span className="text-[10px] font-medium text-muted-foreground/70 px-1">
               Files
             </span>
             {writable && (
             // Non-modal so the new-name field can take focus as it closes.
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
-                <Tip label="Create or upload files">
-                  <button
-                    className="inline-flex items-center justify-center p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
-                    aria-label="Create new"
+
+                  <IconButton
+                    label="Create new"
+                    tooltip="Create or upload files"
+                    variant="ghost"
+                    size="sm"
+                    focus="inside"
+                    className="inline-flex items-center justify-center"
                   >
                     <Plus size={13} />
-                  </button>
-                </Tip>
+                  </IconButton>
+
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="start"
@@ -698,18 +698,18 @@ export function FileTree({
                 // to this trigger on close, or it steals it from the field.
                 onCloseAutoFocus={(e) => e.preventDefault()}
               >
-                <DropdownMenuItem onClick={() => beginCreate('', 'file')}>
+                <MenuAction kind="menu" onClick={() => beginCreate('', 'file')}>
                   <FilePlus size={14} />
                   New file
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => beginCreate('', 'dir')}>
+                </MenuAction>
+                <MenuAction kind="menu" onClick={() => beginCreate('', 'dir')}>
                   <FolderPlus size={14} />
                   New folder
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled={!worktreePath || !!uploadProgress} onClick={pickFiles}>
+                </MenuAction>
+                <MenuAction kind="menu" disabled={!worktreePath || !!uploadProgress} onClick={pickFiles}>
                   <Upload size={14} />
                   Upload files
-                </DropdownMenuItem>
+                </MenuAction>
               </DropdownMenuContent>
             </DropdownMenu>
             )}
@@ -763,7 +763,11 @@ export function FileTree({
           <div className="flex flex-col items-start gap-2 p-3 text-[12px] min-w-0">
             <p className="font-medium text-foreground">Couldn&apos;t list these files</p>
             <p className="break-words text-muted-foreground min-w-0 max-w-full">{errorMessage(error)}</p>
-            <Button variant="outline" size="sm" className="h-7 text-[12px]" onClick={() => void refetch()}>
+            <Button
+              onClick={() => void refetch()}
+              variant="secondary"
+              size="sm"
+            >
               Try again
             </Button>
           </div>

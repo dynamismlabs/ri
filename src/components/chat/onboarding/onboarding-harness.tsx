@@ -1,4 +1,5 @@
 'use client';
+import { Callout } from '@/components/system/callout';
 
 import { trpc } from '@/lib/trpc/client';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -168,18 +169,18 @@ function HarnessPicker({
   return (
     <Card>
       {problem && (
-        <p className="mb-3 rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+        <Callout as="p" padding="sm" density="compact" tone={"warning"} className="mb-3">
           {problem}
-        </p>
+        </Callout>
       )}
       <HarnessSetup
         state={state}
         update={(patch) => setState((s) => ({ ...s, ...(typeof patch === 'function' ? patch(s) : patch) }))}
       />
       {error && (
-        <p className="mt-3 rounded-md border border-destructive/30 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
+        <Callout as="p" padding="sm" density="compact" tone={"error"} className="mt-3">
           {error}
-        </p>
+        </Callout>
       )}
       <div className="mt-3 flex justify-end border-t border-border pt-3">
         <PrimaryButton disabled={!ready} busy={saving} onClick={() => void save()}>

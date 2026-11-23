@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMemo, useState } from 'react';
 import { X } from 'lucide-react';
 import { useHistorySessions, useRailSessions } from '@/hooks/use-workspaces';
@@ -131,12 +132,14 @@ export function HistoryView() {
               />
             ))}
             {selectedWs.size > 0 && (
-              <button
+              <Button
                 onClick={() => setSelectedWs(new Set())}
-                className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-medium text-muted-foreground/80 hover:text-foreground hover:bg-muted/40 transition-colors flex-shrink-0"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1 flex-shrink-0"
               >
                 <X size={9} /> Clear
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -179,7 +182,7 @@ function DateGroups({
     <>
       {groups.map((group) => (
         <section key={group.id} className="flex flex-col">
-          <h3 className="px-3 pt-2 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+          <h3 className="px-3 pt-2 pb-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
             {group.label}
             <span className="ml-1.5 text-muted-foreground/50 font-normal lowercase tracking-normal">
               {group.sessions.length}
@@ -218,14 +221,12 @@ function WorkspacePill({
 }) {
   return (
     <Tip label={name} onlyWhenTextHidden>
-      <button
+      <Button
         onClick={onClick}
-        className={cn(
-          'flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9.5px] font-medium transition-colors flex-shrink-0 max-w-[120px]',
-          selected
-            ? 'bg-foreground text-background'
-            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground',
-        )}
+        variant="secondary"
+        size="sm"
+        pressed={selected}
+        className="flex items-center gap-1 flex-shrink-0 max-w-[120px]"
       >
         <span className="w-3 h-3 flex items-center justify-center flex-shrink-0">
           {image ? (
@@ -243,7 +244,7 @@ function WorkspacePill({
           )}
         </span>
         <span className="truncate">{name}</span>
-      </button>
+      </Button>
     </Tip>
   );
 }

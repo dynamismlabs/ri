@@ -38,7 +38,7 @@ beforeAll(async () => {
       import {TooltipProvider} from '@/components/ui/tooltip';
       import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {WorkContext} from '@/contexts/work-context';
-      import {RailListHeader} from '@/components/workspaces/rail-list';
+      import {RailListHeader,RailListRoot} from '@/components/workspaces/rail-list';
       import {WorkspaceSelectionProvider,useWorkspaceSelection} from '@/components/workspaces/workspace-selection-context';
       import {Toaster} from 'sonner';
       window.actions=[];
@@ -59,8 +59,8 @@ beforeAll(async () => {
       function Fixture(){
         const [tab,setTab]=useState('workspace');
         return <aside className="w-[256px] border-r border-border bg-background">
-          <WorkspaceSelectionProvider><RailListHeader tab={tab} onSelect={setTab}/><Pick/></WorkspaceSelectionProvider>
-          <span data-group-label className="text-[8.5px] font-bold uppercase tracking-[0.15em] text-muted-foreground">Pinned</span>
+          <WorkspaceSelectionProvider><RailListRoot tab={tab} onSelect={setTab}><RailListHeader tab={tab}/><Pick/></RailListRoot></WorkspaceSelectionProvider>
+          <span data-group-label className="text-[11px] leading-[1.4] font-medium text-muted-foreground">Pinned</span>
         </aside>;
       }
       createRoot(document.getElementById('root')).render(
@@ -141,8 +141,8 @@ for (const theme of ['dark', 'light'] as const) {
       expect(await tabs.evaluateAll(els => els.map(el => el.getAttribute('aria-selected')))).toEqual(['true', 'false']);
 
       const look = await looks(page);
-      // Group labels (Pinned, Needs you) are small caps. The switch isn't.
-      expect(look.groupLabel).toBe('uppercase');
+      // Labels keep sentence case. The selected option is distinguished by its thumb.
+      expect(look.groupLabel).toBe('none');
       expect(look.agents.transform).toBe('none');
       expect(look.recent.transform).toBe('none');
       // Both lists sit on one visible track, and the open one is raised on it.

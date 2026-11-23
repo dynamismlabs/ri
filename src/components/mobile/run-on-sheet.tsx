@@ -1,5 +1,7 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
+import { Button } from '@/components/system/button';
 /**
  * Where a new execution starts, when it isn't the usual place (spec §3.3,
  * P3.1 on the phone). A plain + starts on the agent's default, the home
@@ -13,11 +15,10 @@
 
 import { useState } from 'react';
 import { Check, Laptop, Loader2 } from 'lucide-react';
-import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTitle } from '@/components/system/sheet';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
 import { START_RI } from '@/lib/executions/location';
 import { useRunOn, useSetDefaultDevice } from '@/hooks/use-workspaces';
-import { cn } from '@/lib/utils';
 
 export function RunOnSheet({
   workspace,
@@ -36,9 +37,9 @@ export function RunOnSheet({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" showCloseButton={false} className="rounded-t-2xl px-5 pb-8 pt-4">
+        <SheetContent side="bottom" showCloseButton={false} padding="md" safeArea>
           <div className="mx-auto mb-4 h-1 w-8 rounded-full bg-muted-foreground/30" />
-          <SheetTitle className="mb-2 text-[15px] font-semibold">New chat in {workspace.name}, on…</SheetTitle>
+          <SheetTitle className="mb-2">New chat in {workspace.name}, on…</SheetTitle>
           {isLoading || !runOn ? (
             <p className="flex items-center gap-2 py-4 text-[13px] text-muted-foreground">
               <Loader2 size={14} className="animate-spin" /> Checking where it can run…
@@ -50,14 +51,11 @@ export function RunOnSheet({
                 const canSetUp = choice.needsSetup && choice.connected;
                 return (
                   <li key={choice.deviceId} className="flex items-center gap-2">
-                    <button
+                    <ChoiceRow selected={isDefault}
                       type="button"
                       disabled={!choice.ready && !canSetUp}
                       onClick={() => (canSetUp ? setSettingUp({ id: choice.deviceId, name: choice.name }) : onPick(choice.deviceId))}
-                      className={cn(
-                        'flex flex-1 items-start gap-3 rounded-xl px-3 py-2.5 text-left active:bg-muted/60 disabled:opacity-50',
-                        isDefault && 'bg-muted/40',
-                      )}
+                      className="flex flex-1 items-start gap-3 text-left"
                     >
                       <Laptop size={16} className="mt-0.5 flex-shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1">
@@ -80,16 +78,18 @@ export function RunOnSheet({
                         </span>
                       </span>
                       {isDefault && <Check size={15} className="mt-0.5 text-foreground/70" />}
-                    </button>
+                    </ChoiceRow>
                     {!isDefault && choice.ready && (
-                      <button
+                      <Button
                         type="button"
                         disabled={setDefault.isPending}
                         onClick={() => setDefault.mutate(choice.deviceId)}
-                        className="flex-shrink-0 rounded-lg px-2 py-1.5 text-[12px] text-primary active:bg-primary/10 disabled:opacity-50"
+                        variant="ghost"
+                        size="touch"
+                        className="flex-shrink-0"
                       >
                         Make default
-                      </button>
+                      </Button>
                     )}
                   </li>
                 );

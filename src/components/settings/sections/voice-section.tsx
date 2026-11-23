@@ -1,4 +1,11 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { ChoiceRow } from '@/components/system/choice-row';
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
 import { usePersonalServices } from '@/components/home/use-personal-services';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -52,28 +59,24 @@ function ModelCard({
   const needsServer = model.provider === 'local' && !isAvailable;
 
   return (
-    <button
+    <ChoiceRow
       onClick={onSelect}
-      data-slot="choice-row"
+
       aria-pressed={isSelected}
-      className={`w-full rounded-lg border p-3 text-left transition-all ${
-        isSelected
-          ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-          : 'border-border bg-background hover:border-muted-foreground/30'
-      }`}
+      className={`w-full text-left ${""}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium text-foreground">{model.label}</p>
             {isSelected && (
-              <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">Active</span>
+              <StatusBadge >Active</StatusBadge>
             )}
             {needsSetup && (
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">Setup Required</span>
+              <StatusBadge tone={"warning"} >Setup Required</StatusBadge>
             )}
             {needsServer && (
-              <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">{needsExternal ? 'External service required' : 'Server Offline'}</span>
+              <StatusBadge tone={"warning"} >{needsExternal ? 'External service required' : 'Server Offline'}</StatusBadge>
             )}
           </div>
           <div className="mt-1 flex items-center gap-3 text-[11px] text-muted-foreground/70">
@@ -107,7 +110,7 @@ function ModelCard({
           {needsExternal ? 'The managed helper includes Parakeet V3 INT8. Disable managed speech to use this model on an external service.' : 'Install optional local speech above, or configure an external Parakeet service in Runtime setup.'}
         </div>
       )}
-    </button>
+    </ChoiceRow>
   );
 }
 
@@ -168,7 +171,7 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
     <div className="space-y-4">
       {manageHost && serverSpeech && <ManagedSpeechSettings />}
       {!serverSpeech && <p className="text-sm text-muted-foreground">Team voice uses speech recognition in your browser. Audio is handled by the speech service in your browser.</p>}
-      <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
+      <Card as="label" padding="md" className="flex cursor-pointer items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
             <Mic size={16} className="text-primary" />
@@ -185,15 +188,15 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
           onCheckedChange={(next) => update.mutate({ voiceAutoSend: next })}
           aria-label="Auto-send voice messages"
         />
-      </label>
+      </Card>
 
-      <button data-slot="choice-row" aria-expanded={modelPickerOpen}
+      <ChoiceRow aria-expanded={modelPickerOpen}
         onClick={() => setModelPickerOpen((v) => !v)}
-        className="w-full rounded-lg border border-border bg-background p-3 text-left transition-all hover:border-muted-foreground/30"
+        className="w-full text-left"
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/60">Default model</p>
+            <p className="text-[11px] text-muted-foreground/60">Default model</p>
             <p className="mt-0.5 text-sm font-medium text-foreground">{selectedModel?.label ?? selectedModelId}</p>
           </div>
           <ChevronDown size={14} className={`text-muted-foreground transition-transform ${modelPickerOpen ? 'rotate-180' : ''}`} />
@@ -205,26 +208,11 @@ export function VoiceSection({ manageHost = true }: { manageHost?: boolean } = {
             <span>{PROVIDER_LABELS[selectedModel.provider]?.label}</span>
           </div>
         )}
-      </button>
+      </ChoiceRow>
 
       {modelPickerOpen && (
         <div className="space-y-3">
-          <div data-slot="segmented" className="flex gap-1">
-            {(serverSpeech ? PROVIDER_TABS : ['web'] as const).map((tab) => (
-              <button data-slot="segmented-option"
-                key={tab}
-                aria-pressed={!serverSpeech || activeTab === tab}
-                onClick={() => setActiveTab(tab)}
-                className={`rounded-full border px-3 py-1 text-[11px] font-medium transition-all ${
-                  (!serverSpeech || activeTab === tab)
-                    ? 'border-primary bg-primary/5 text-primary'
-                    : 'border-border text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab === 'all' ? 'All' : tab === 'cloud' ? 'Cloud' : tab === 'local' ? 'Local' : 'Browser'}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl mode="choice" ariaLabel="Voice provider" value={serverSpeech ? activeTab : 'web'} onChange={setActiveTab} options={(serverSpeech ? PROVIDER_TABS : ['web'] as const).map(tab => ({value:tab,label:tab === 'all' ? 'All' : tab === 'cloud' ? 'Cloud' : tab === 'local' ? 'Local' : 'Browser'}))} />
           <div className="space-y-2">
             {filteredModels.map((model) => (
               <ModelCard

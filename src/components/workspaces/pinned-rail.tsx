@@ -61,7 +61,7 @@ export function PinnedRail() {
     <section className="flex flex-col pb-1 mb-0.5 border-b border-border/40">
       <div className="flex items-center gap-1.5 px-2.5 pt-1.5 pb-1">
         <Pin size={9} className="fill-current text-muted-foreground/60 -rotate-45" aria-hidden />
-        <span className="text-[8.5px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+        <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground">
           Pinned
         </span>
         {/* Active pins only. With every pin folded, no "0": the fold says it. */}

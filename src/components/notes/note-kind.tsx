@@ -1,7 +1,11 @@
 'use client';
+import { MetaItem } from '@/components/system/meta';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { FileText, Gavel } from 'lucide-react';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import { cn } from '@/lib/utils';
 import type { NoteKind } from '@/db/types';
 
@@ -15,25 +19,22 @@ export const NOTE_KIND_LABELS: Record<NoteKind, string> = { note: 'Note', decisi
 export function DecisionLabel({ kind, className }: { kind: NoteKind | null | undefined; className?: string }) {
   if (kind !== 'decision') return null;
   return (
-    <span
-      className={cn(
-        'inline-flex flex-shrink-0 items-center gap-1 rounded bg-foreground/[0.07] px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-foreground/75',
-        className,
-      )}
+    <StatusBadge
+      className={cn("inline-flex flex-shrink-0 items-center gap-1", className)}
     >
       <Gavel size={9} aria-hidden className="flex-shrink-0" />
       Decision
-    </span>
+    </StatusBadge>
   );
 }
 
 /** The type line above an open note: "Note", or "Decision" with its mark. */
 export function NoteKindHeading({ kind }: { kind: NoteKind }) {
   return (
-    <span data-slot="entity-kind-label" className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">
+    <MetaItem kind="entity" className="inline-flex items-center gap-1">
       {kind === 'decision' && <Gavel size={10} aria-hidden />}
       {NOTE_KIND_LABELS[kind]}
-    </span>
+    </MetaItem>
   );
 }
 
@@ -55,7 +56,7 @@ export function NoteKindMenuItem({
 }) {
   const next: NoteKind = kind === 'decision' ? 'note' : 'decision';
   return (
-    <DropdownMenuItem
+    <MenuAction kind="menu"
       onClick={(e) => e.stopPropagation()}
       onSelect={() => onChange(next)}
       className={className}
@@ -63,6 +64,6 @@ export function NoteKindMenuItem({
       {next === 'decision'
         ? <><Gavel size={12} className={iconClassName} /> Mark as decision</>
         : <><FileText size={12} className={iconClassName} /> Make regular note</>}
-    </DropdownMenuItem>
+    </MenuAction>
   );
 }

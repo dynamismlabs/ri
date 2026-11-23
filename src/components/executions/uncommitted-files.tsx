@@ -1,9 +1,13 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Callout } from '@/components/system/callout';
+
+import { Button } from '@/components/system/button';
 import { AlertDialog as AlertDialogPrimitive } from 'radix-ui';
 import { GitCompareArrows } from 'lucide-react';
 import { FileIcon, FolderIcon } from '@/components/file-icon';
-import type { ConfirmOptions } from '@/components/ui/confirm-dialog';
+import type { ConfirmOptions } from '@/components/system/confirm-dialog';
 import type { DirtyArchive } from '@/hooks/use-workspaces';
 import type { UncommittedFile } from '@/lib/workspaces/uncommitted-files';
 import { cn } from '@/lib/utils';
@@ -45,13 +49,15 @@ export function archiveAnywayDialog(dirty: readonly DirtyArchive[], onReview: (i
                 {d.label?.trim() || 'Untitled'}
               </span>
               <AlertDialogPrimitive.Cancel asChild>
-                <button
+                <Button
                   type="button"
                   onClick={() => onReview(d.id)}
-                  className="inline-flex flex-shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[12px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  variant="secondary"
+                  size="sm"
+                  className="inline-flex flex-shrink-0 items-center gap-1"
                 >
                   <GitCompareArrows size={12} /> Review
-                </button>
+                </Button>
               </AlertDialogPrimitive.Cancel>
             </div>
             <UncommittedFileList files={d.files} omitted={d.omitted} />
@@ -87,15 +93,15 @@ export function UncommittedFileList({
 }) {
   if (!files || files.length === 0) {
     return (
-      <p className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-[12.5px] text-muted-foreground">
+      <Callout as="p" padding="md" density="row" >
         The files couldn&apos;t be listed. Review the changes to see them.
-      </p>
+      </Callout>
     );
   }
   return (
-    <ul
+    <Card as="ul" padding="none" surface="track" density="compact"
       aria-label="Files that would be deleted"
-      className={cn('overflow-y-auto rounded-lg border border-border bg-muted/30 py-1', className)}
+      className={cn("overflow-y-auto", className)}
     >
       {files.map((file) => {
         const folder = file.path.endsWith('/');
@@ -129,6 +135,6 @@ export function UncommittedFileList({
           and {omitted.toLocaleString()} more {omitted === 1 ? 'file' : 'files'}
         </li>
       )}
-    </ul>
+    </Card>
   );
 }

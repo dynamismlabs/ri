@@ -1,8 +1,17 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+
+import { Card } from '@/components/system/card';
+import { ChoiceRow, ChoiceIndicator } from '@/components/system/choice-row';
+
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useRef, useState } from 'react';
 import { Box, Eye, File as FileIcon, Folder, Plus, Upload, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/system/button';
+
 import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
 import { pickMcpIcon, type McpIcon } from '@/lib/integrations/mcp-icons';
@@ -74,15 +83,15 @@ function Control(props: FormFieldsProps & {field: FormField}) {
       const type = field.format ? INPUT_TYPE[field.format] : 'text';
       const text = typeof value === 'string' ? (field.format === 'date-time' ? fromDateTime(value) : value) : '';
       return <div className="space-y-1.5">
-        <Input id={id} type={type} value={text} disabled={disabled} aria-label={field.title ?? field.name}
-          className="h-8 text-xs"
+        <Field id={id} type={type} value={text} disabled={disabled} aria-label={field.title ?? field.name}
+
           onChange={event => onChange(field.name, event.target.value === '' ? undefined : field.format === 'date-time' ? toDateTime(event.target.value) : event.target.value)} />
         <Suggestions options={field.suggestions} disabled={disabled} chosen={option => option.value === value} onPick={option => onChange(field.name, option.value)} />
       </div>;
     }
     case 'number':
-      return <Input id={id} type="number" inputMode={field.integer ? 'numeric' : 'decimal'} step={field.integer ? 1 : 'any'}
-        aria-label={field.title ?? field.name} disabled={disabled} className="h-8 w-40 text-xs" value={typeof value === 'number' ? value : ''}
+      return <Field id={id} type="number" inputMode={field.integer ? 'numeric' : 'decimal'} step={field.integer ? 1 : 'any'}
+        aria-label={field.title ?? field.name} disabled={disabled} className="w-40" value={typeof value === 'number' ? value : ''}
         onChange={event => onChange(field.name, event.target.value === '' ? undefined : Number(event.target.value))} />;
     case 'boolean':
       return <label className="flex cursor-pointer items-start gap-2.5">
@@ -110,8 +119,15 @@ function Suggestions({options, chosen, onPick, disabled}: {options: FormOption[]
   if (!options.length) return null;
   return <div className="flex flex-wrap items-center gap-1.5" aria-label="Suggestions">
     {options.map(option => {
-      const button = <button data-slot="action-button" type="button" key={option.value} disabled={disabled} aria-pressed={chosen(option)} onClick={() => onPick(option)}
-        className={cn('rounded-full border px-2 py-0.5 text-[11px] transition-colors disabled:opacity-50', chosen(option) ? 'border-primary/50 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-muted/50')}>{option.title}</button>;
+      const button = <Button
+        type="button"
+        key={option.value}
+        disabled={disabled}
+        aria-pressed={chosen(option)}
+        onClick={() => onPick(option)}
+        variant="secondary"
+        size="sm"
+      >{option.title}</Button>;
       return option.description ? <Tip key={option.value} label={option.description}>{button}</Tip> : button;
     })}
   </div>;
@@ -131,20 +147,19 @@ function Options({options, thumbnails, multiple, chosen, onToggle, disabled, lab
   const role = multiple ? 'checkbox' : 'radio';
   // OpenAI's spec: once any option has a thumbnail, every option shows as an image, with a fallback.
   if (thumbnails) return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
-    {options.map(option => <button data-slot="content-card" key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
-      className={cn('flex min-w-0 flex-col gap-1.5 rounded-lg border p-2 text-left transition-colors disabled:opacity-50', chosen(option) ? 'border-primary bg-primary/5 ring-1 ring-primary/40' : 'border-border hover:bg-muted/40')}>
+    {options.map(option => <Card as="button" padding="sm" shadow  key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+      className="flex min-w-0 flex-col gap-1.5 text-left">
       <Thumbnail icon={option.thumbnail} className="aspect-square w-full" />
       <span className="truncate text-[11px] font-medium">{option.title}</span>
       {option.description && <span className="line-clamp-2 text-[10px] leading-snug text-muted-foreground">{option.description}</span>}
-    </button>)}
+    </Card>)}
   </div>;
   return <div role={multiple ? 'group' : 'radiogroup'} aria-label={label} className="space-y-1">
-    {options.map(option => <button data-slot="choice-row" key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
-      className={cn('flex w-full items-start gap-2 rounded-md border px-2.5 py-1.5 text-left transition-colors disabled:opacity-50', chosen(option) ? 'border-primary/50 bg-primary/5' : 'border-border hover:bg-muted/40')}>
-      <span aria-hidden className={cn('mt-0.5 size-3 shrink-0 border', multiple ? 'rounded-sm' : 'rounded-full', chosen(option) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />
+    {options.map(option => <ChoiceRow density="compact" indicator={multiple ? "checkbox" : "radio"}  key={option.value} type="button" role={role} aria-checked={chosen(option)} disabled={disabled} onClick={() => onToggle(option)}
+      className="flex w-full items-start gap-2 text-left">
       <span className="min-w-0"><span className="block text-xs">{option.title}</span>
         {option.description && <span className="block text-[11px] leading-snug text-muted-foreground">{option.description}</span>}</span>
-    </button>)}
+    </ChoiceRow>)}
   </div>;
 }
 
@@ -163,13 +178,26 @@ function TextsControl({field, values, onChange, disabled}: FormFieldsProps & {fi
   return <div className="space-y-1.5">
     {current.length > 0 && <ul className="flex flex-wrap gap-1.5">{current.map((value, index) => <li key={`${value}-${index}`} className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px]">
       {titled.get(value) ?? value}
-      <button type="button" disabled={disabled} aria-label={`Remove ${titled.get(value) ?? value}`} onClick={() => remove(index)} className="text-muted-foreground hover:text-foreground"><X size={11} /></button>
+      <IconButton
+        type="button"
+        disabled={disabled}
+        onClick={() => remove(index)}
+        label={`Remove ${titled.get(value) ?? value}`}
+        variant="ghost"
+        size="sm"
+      ><X size={11} /></IconButton>
     </li>)}</ul>}
     <Suggestions options={field.suggestions.filter(option => !current.includes(option.value))} disabled={disabled} chosen={() => false} onPick={option => add(option.value)} />
     <div className="flex gap-1.5">
-      <Input value={draft} disabled={disabled} aria-label={`Add to ${field.title ?? field.name}`} placeholder="Add your own" className="h-8 text-xs"
+      <Field value={draft} disabled={disabled} aria-label={`Add to ${field.title ?? field.name}`} placeholder="Add your own"
         onChange={event => setDraft(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); add(draft); } }} />
-      <Button type="button" size="sm" variant="outline" className="h-8 text-xs" disabled={disabled || !draft.trim()} onClick={() => add(draft)}><Plus size={12} />Add</Button>
+      <Button
+        type="button"
+        disabled={disabled || !draft.trim()}
+        onClick={() => add(draft)}
+        variant="secondary"
+        size="sm"
+      ><Plus size={12} />Add</Button>
     </div>
   </div>;
 }
@@ -197,28 +225,56 @@ function ResourceControl(props: FormFieldsProps & {field: Extract<FormField, {ki
     {shown.length > 0 && <ul aria-label={field.title ?? field.name} className="space-y-1">
       {shown.map(option => <li key={option.uri} className={cn('flex items-center gap-2 rounded-md border px-2 py-1.5', !implicit && chosen.includes(option.uri) ? 'border-primary/50 bg-primary/5' : 'border-border')}>
         {/* Implicit selection keeps whatever remains, so its rows are removed rather than ticked. */}
-        <button type="button" disabled={disabled || implicit} onClick={() => toggle(option.uri)} className="flex min-w-0 flex-1 items-center gap-2 text-left"
+        <InlineAction  type="button" disabled={disabled || implicit} onClick={() => toggle(option.uri)} className="flex min-w-0 flex-1 items-center gap-2 text-left"
           {...(implicit ? {} : {role: field.multiple ? 'checkbox' : 'radio', 'aria-checked': chosen.includes(option.uri)})}>
-          {!implicit && <span aria-hidden className={cn('size-3 shrink-0 border', field.multiple ? 'rounded-sm' : 'rounded-full', chosen.includes(option.uri) ? 'border-primary bg-primary' : 'border-muted-foreground/50')} />}
+          {!implicit && <ChoiceIndicator kind={field.multiple ? "checkbox" : "radio"} checked={chosen.includes(option.uri)} />}
           <Thumbnail icon={option.thumbnail} className="size-9 shrink-0" />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-xs">{option.title ?? option.name}</span>
             {option.description && <span className="block truncate text-[11px] text-muted-foreground">{option.description}</span>}
           </span>
-        </button>
-        {option.preview && <Tip label={`Preview ${option.title ?? option.name}`}><Button type="button" size="icon-xs" variant="ghost" aria-label={`Preview ${option.title ?? option.name}`} onClick={() => onPreview(option)}><Eye size={13} /></Button></Tip>}
-        {implicit && <Button type="button" size="icon-xs" variant="ghost" disabled={disabled} aria-label={`Remove ${option.title ?? option.name}`} onClick={() => toggle(option.uri)}><X size={13} /></Button>}
+        </InlineAction>
+        {option.preview && <IconButton
+          type="button"
+          onClick={() => onPreview(option)}
+          label={`Preview ${option.title ?? option.name}`}
+          tooltip={`Preview ${option.title ?? option.name}`}
+          variant="ghost"
+          size="xs"
+        ><Eye size={13} /></IconButton>}
+        {implicit && <IconButton
+          type="button"
+          disabled={disabled}
+          onClick={() => toggle(option.uri)}
+          label={`Remove ${option.title ?? option.name}`}
+          variant="ghost"
+          size="xs"
+        ><X size={13} /></IconButton>}
       </li>)}
     </ul>}
     {removed.length > 0 && <div className="flex flex-wrap items-center gap-1.5">
       <span className="text-[11px] text-muted-foreground">Removed:</span>
-      {removed.map(option => <button data-slot="action-button" key={option.uri} type="button" disabled={disabled} onClick={() => toggle(option.uri)}
-        className="flex items-center gap-1 rounded-full border border-dashed px-2 py-0.5 text-[11px] text-muted-foreground hover:bg-muted/40"><Plus size={11} />{option.title ?? option.name}</button>)}
+      {removed.map(option => <Button
+        key={option.uri}
+        type="button"
+        disabled={disabled}
+        onClick={() => toggle(option.uri)}
+        variant="secondary"
+        size="sm"
+        className="flex items-center gap-1"
+      ><Plus size={11} />{option.title ?? option.name}</Button>)}
     </div>}
     {added.length > 0 && <ul className="space-y-1">{added.map(uri => <li key={uri} className="flex items-center gap-2 rounded-md border border-border px-2 py-1.5 text-xs">
       {field.userOptions?.kind === 'directory' ? <Folder size={13} className="shrink-0 text-muted-foreground" /> : <FileIcon size={13} className="shrink-0 text-muted-foreground" />}
       <span className="min-w-0 flex-1 truncate">{labels[uri] ?? uri}</span>
-      <Button type="button" size="icon-xs" variant="ghost" disabled={disabled} aria-label={`Remove ${labels[uri] ?? uri}`} onClick={() => set(chosen.filter(v => v !== uri))}><X size={13} /></Button>
+      <IconButton
+        type="button"
+        disabled={disabled}
+        onClick={() => set(chosen.filter(v => v !== uri))}
+        label={`Remove ${labels[uri] ?? uri}`}
+        variant="ghost"
+        size="xs"
+      ><X size={13} /></IconButton>
     </li>)}</ul>}
     {field.userOptions && props.files.local && (field.multiple || !added.length) && <AddYourOwn {...props} field={field} onAdd={(uri, name) => { props.onLabel(uri, name); set(field.multiple ? [...chosen, uri] : [uri]); }} />}
   </div>;
@@ -249,19 +305,38 @@ function AddYourOwn({field, files, disabled, onAdd}: FormFieldsProps & {field: E
   const directory = options.kind === 'directory';
   return <div className="space-y-1.5 rounded-md border border-dashed border-border p-2">
     <p className="text-[11px] text-muted-foreground">{directory ? 'Add a folder from this chat\'s agent' : `Add your own file${options.accept.length ? ` (${options.accept.join(', ')})` : ''}`}</p>
-    {!directory && attachments.length > 0 && <div className="flex flex-wrap gap-1.5">{attachments.map(file => <button data-slot="action-button" key={file.fileName} type="button" disabled={disabled || busy} onClick={() => void add({attachment: file.fileName})}
-      className="flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] hover:bg-muted/40 disabled:opacity-50"><FileIcon size={11} />{file.name}</button>)}</div>}
+    {!directory && attachments.length > 0 && <div className="flex flex-wrap gap-1.5">{attachments.map(file => <Button
+      key={file.fileName}
+      type="button"
+      disabled={disabled || busy}
+      onClick={() => void add({attachment: file.fileName})}
+      variant="secondary"
+      size="sm"
+      className="flex items-center gap-1"
+    ><FileIcon size={11} />{file.name}</Button>)}</div>}
     {files.folders.length > 0 && <div className="flex flex-wrap items-center gap-1.5">
-      <select data-slot="field" aria-label="Agent folder" value={folder} disabled={disabled || busy} onChange={event => setFolder(event.target.value)} className="h-8 max-w-44 rounded-md border bg-background px-1.5 text-xs">
+      <NativeSelect aria-label="Agent folder" value={folder} disabled={disabled || busy} onChange={event => setFolder(event.target.value)} className={cn("max-w-44", 'w-auto')}>
         {files.folders.map(option => <option key={option.uri} value={option.uri}>{option.label}</option>)}
-      </select>
-      <Input value={relative} disabled={disabled || busy} aria-label={directory ? 'Folder inside it' : 'File path inside it'} placeholder={directory ? 'Folder inside it (optional)' : 'parts/bracket.step'}
-        className="h-8 min-w-36 flex-1 text-xs" onChange={event => setRelative(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void add({folder, path: relative}); } }} />
-      <Button type="button" size="sm" variant="outline" className="h-8 text-xs" disabled={disabled || busy || !folder || (!directory && !relative.trim())} onClick={() => void add({folder, path: relative})}><Plus size={12} />Add</Button>
+      </NativeSelect>
+      <Field value={relative} disabled={disabled || busy} aria-label={directory ? 'Folder inside it' : 'File path inside it'} placeholder={directory ? 'Folder inside it (optional)' : 'parts/bracket.step'}
+        className="min-w-36 flex-1" onChange={event => setRelative(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); void add({folder, path: relative}); } }} />
+      <Button
+        type="button"
+        disabled={disabled || busy || !folder || (!directory && !relative.trim())}
+        onClick={() => void add({folder, path: relative})}
+        variant="secondary"
+        size="sm"
+      ><Plus size={12} />Add</Button>
     </div>}
     {!directory && <>
       <input ref={input} type="file" hidden accept={options.accept.join(',') || undefined} onChange={event => { void upload(event.target.files?.[0]); event.target.value = ''; }} />
-      <Button type="button" size="sm" variant="ghost" className="h-7 text-xs" disabled={disabled || busy} onClick={() => input.current?.click()}><Upload size={12} />Upload a file</Button>
+      <Button
+        type="button"
+        disabled={disabled || busy}
+        onClick={() => input.current?.click()}
+        variant="ghost"
+        size="sm"
+      ><Upload size={12} />Upload a file</Button>
     </>}
     {directory && !files.folders.length && <p className="text-[11px] text-muted-foreground">This chat has no agent folder to choose from.</p>}
     {failure && <p role="alert" className="text-[11px] text-destructive">{failure}</p>}

@@ -1,14 +1,11 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
+import { MetaItem, useInMeta } from '@/components/system/meta';
+import { Button } from '@/components/system/button';
+import { ChevronDown } from 'lucide-react';
 import { useAreas } from '@/hooks/use-areas';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 
 interface AreaSelectProps {
   value: string | null;
@@ -19,49 +16,46 @@ interface AreaSelectProps {
 }
 
 export function AreaSelect({ value, onChange, className, onNewArea }: AreaSelectProps) {
+  const inMeta = useInMeta();
   const { data: areas } = useAreas();
   const selected = areas?.find(a => a.id === value);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button
-          data-slot="area-select"
-          data-empty={selected ? undefined : true}
-          className={cn(
-            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-colors',
-            'hover:bg-primary/10 cursor-pointer',
-            selected ? 'text-primary/80 bg-primary/5' : 'text-muted-foreground',
-            className,
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {selected ? selected.name : 'No area'}
-        </button>
+        {inMeta ? (
+          <MetaItem as="button" kind="area" type="button" className={className} onClick={(e) => e.stopPropagation()}>
+            {selected ? selected.name : 'No area'}
+          </MetaItem>
+        ) : (
+          <Button type="button" size="xs" variant="secondary" className={className} onClick={(e) => e.stopPropagation()}>
+            {selected ? selected.name : 'No area'}<ChevronDown aria-hidden />
+          </Button>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-44">
-        <DropdownMenuItem
+        <MenuAction kind="menu"
           onClick={(e) => { e.stopPropagation(); onChange(null); }}
-          className={cn('text-xs', !value && 'font-bold')}
+          selected={!!(!value)}
         >
           No area
-        </DropdownMenuItem>
+        </MenuAction>
         <DropdownMenuSeparator />
         {areas?.map(area => (
-          <DropdownMenuItem
+          <MenuAction kind="menu"
             key={area.id}
             onClick={(e) => { e.stopPropagation(); onChange(area.id); }}
-            className={cn('text-xs', area.id === value && 'font-bold')}
+            selected={!!(area.id === value)}
           >
             {area.name}
-          </DropdownMenuItem>
+          </MenuAction>
         ))}
         {onNewArea && (
           <>
             {areas && areas.length > 0 && <DropdownMenuSeparator />}
-            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onNewArea(); }} className="text-xs">
+            <MenuAction kind="menu" onClick={(e) => { e.stopPropagation(); onNewArea(); }} >
               New area…
-            </DropdownMenuItem>
+            </MenuAction>
           </>
         )}
       </DropdownMenuContent>

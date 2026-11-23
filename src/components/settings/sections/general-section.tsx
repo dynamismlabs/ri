@@ -1,5 +1,11 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { ChoiceRow } from '@/components/system/choice-row';
 
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import { DefaultCoordinationSetting } from '@/components/chat-ui/coordination/controls';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
@@ -126,7 +132,7 @@ export function GeneralSection() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-lg border border-border p-3">
+      <section className="ri-general-section-frame rounded-lg border border-border p-3">
         <h3 className="text-[12px] font-medium">Chat UI gallery</h3>
         <p className="mt-1 text-[11px] text-muted-foreground">Explore interactive chat interfaces and see where each comes from.</p>
         <Link href="/gallery" onClick={closeSettings} className="mt-2 inline-block text-xs font-medium text-primary hover:underline">Open gallery</Link>
@@ -144,30 +150,32 @@ export function GeneralSection() {
         <p className="text-[11px] text-muted-foreground/85">
           Used with your working hours to plan the day in your local time.
         </p>
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background p-3">
-          <select
+        <Card padding="md" className="flex flex-wrap items-center gap-2">
+          <NativeSelect
             value={effectiveTz}
             onChange={(e) => update.mutate({ timezone: e.target.value })}
-            className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            className="min-w-0 flex-1"
+            aria-label={'Timezone'}
           >
             {zoneOptions.map((tz) => (
               <option key={tz} value={tz}>
                 {tz.replace(/_/g, ' ')}
               </option>
             ))}
-          </select>
+          </NativeSelect>
           {usingBrowserDefault ? (
             <span className="text-[11px] text-muted-foreground/60">Browser default</span>
           ) : (
-            <button
+            <Button
               type="button"
               onClick={() => update.mutate({ timezone: null })}
-              className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
+              variant="ghost"
+              size="sm"
             >
               Reset to browser ({browserTz.replace(/_/g, ' ')})
-            </button>
+            </Button>
           )}
-        </div>
+        </Card>
       </section>
 
       {/* Working hours */}
@@ -176,11 +184,11 @@ export function GeneralSection() {
         <p className="text-[11px] text-muted-foreground/85">
           The window your deck plans around, used to size the day and pace proactive work.
         </p>
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="flex items-center gap-3">
           <TimeField label="Start" value={start} onChange={(v) => { setStart(v); update.mutate({ workdayStart: v }); }} />
           <span className="mt-4 text-muted-foreground">-</span>
           <TimeField label="End" value={end} onChange={(v) => { setEnd(v); update.mutate({ workdayEnd: v }); }} />
-        </div>
+        </Card>
       </section>
 
       {/* Daily deck refresh */}
@@ -190,7 +198,7 @@ export function GeneralSection() {
           Prepares tomorrow&apos;s deck overnight so it&apos;s ready before you open the app. Your deck is
           always generated the first time you open it each day regardless.
         </p>
-        <div className="space-y-3 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Refresh each morning</span>
             <Switch
@@ -206,30 +214,31 @@ export function GeneralSection() {
               onChange={(v) => { setMorningTime(v); updateMorning.mutate({ time: v }); }}
             />
           )}
-        </div>
+        </Card>
       </section>
 
       {/* Which device an execution names (presentation trial) */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Where work runs</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Show which device runs a chat</span>
-            <select
+            <NativeSelect
               value={deviceLabelMode}
               onChange={(e) => setDeviceLabelMode(e.target.value as DeviceLabelMode)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Show which device runs a chat'}
             >
               <option value="away">Only when it runs elsewhere (trial)</option>
               <option value="always">Always</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {deviceLabelMode === 'away'
               ? 'Work runs on the computer that hosts Ri unless you pick another device, so only the exception is labeled. Its device is always in its details, and moving it is in its … menu.'
               : 'Every chat names its device once more than one runs agents, including the computer that hosts Ri.'}
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Stream triage automation */}
@@ -239,14 +248,12 @@ export function GeneralSection() {
           How much the assistant handles on its own when you capture thoughts. It earns more
           autonomy over time by asking, and everything it does can be undone in one tap.
         </p>
-        <div className="space-y-1 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-1">
           {AUTOMATION_MODES.map((m) => (
-            <button data-slot="choice-row" aria-pressed={autonomyState?.mode === m.id}
+            <ChoiceRow aria-pressed={autonomyState?.mode === m.id}
               key={m.id}
               onClick={() => setAutonomy.mutate({ mode: m.id })}
-              className={`w-full flex items-start gap-2.5 rounded-md px-2.5 py-2 text-left transition-colors ${
-                autonomyState?.mode === m.id ? 'bg-primary/10' : 'hover:bg-muted'
-              }`}
+              className={`w-full flex items-start gap-2.5 text-left ${""}`}
             >
               <span
                 className={`mt-1 w-2 h-2 rounded-full shrink-0 ${
@@ -257,71 +264,74 @@ export function GeneralSection() {
                 <span className="block text-sm text-foreground">{m.label}</span>
                 <span className="block text-[11px] text-muted-foreground/85">{m.description}</span>
               </span>
-            </button>
+            </ChoiceRow>
           ))}
-        </div>
+        </Card>
       </section>
 
       {/* Chat density */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Chat density</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Transcript</span>
-            <select
+            <NativeSelect
               value={density}
               onChange={(e) => setDensity(e.target.value as TranscriptDensity)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Transcript'}
             >
               <option value="condensed">Condensed</option>
               <option value="full">Full feed</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {density === 'condensed'
               ? 'Completed turns fold their thinking, tool calls, and results into a summary you can expand. Every message the agent wrote to you stays visible, along with the live turn.'
               : 'Every event renders as its own row.'}
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Notes and tasks (agent-first trial) */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Notes and tasks</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Open with</span>
-            <select
+            <NativeSelect
               value={entityViewMode}
               onChange={(e) => setEntityViewMode(e.target.value as EntityViewMode)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Open notes and tasks with'}
             >
               <option value="editor">Editor</option>
               <option value="agent">Agent (trial)</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {entityViewMode === 'agent'
               ? 'A note or task opens with the agent: a brief of what is in it, then a conversation to read, add, change, or remove. The editor stays one click away, and every agent edit has a diff and undo. Switch back here at any time.'
               : 'The classic editor with the agent in a side panel.'}
           </p>
-        </div>
+        </Card>
       </section>
 
       {/* Agents (agent view trial) */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Agents</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Clicking an agent</span>
-            <select
+            <NativeSelect
               value={agentViewMode}
               onChange={(e) => setAgentViewMode(e.target.value as AgentViewMode)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Agent view'}
             >
               <option value="view">Opens the agent view (trial)</option>
               <option value="fold">Folds its list</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {agentViewMode === 'view'
@@ -330,14 +340,15 @@ export function GeneralSection() {
           </p>
           <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-2">
             <span className="text-sm text-foreground">Opening a chat from an agent</span>
-            <select
+            <NativeSelect
               value={agentChatPlace}
               onChange={(e) => setAgentChatPlace(e.target.value as AgentChatPlace)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Open chats'}
             >
               <option value="beside">Beside its main chat (trial)</option>
               <option value="full">Full view</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {agentChatPlace === 'beside'
@@ -346,15 +357,16 @@ export function GeneralSection() {
           </p>
           <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-2">
             <span className="text-sm text-foreground">Agents in the rail</span>
-            <select
+            <NativeSelect
               value={railStyle}
               onChange={(e) => setRailStyle(e.target.value as RailStyle)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Sidebar style'}
             >
               <option value="agentsOnly">Agents only (trial)</option>
               <option value="agents">Agents first (trial)</option>
               <option value="classic">Classic</option>
-            </select>
+            </NativeSelect>
           </div>
           <p className="text-[11px] text-muted-foreground/85">
             {railStyle === 'agentsOnly'
@@ -364,7 +376,7 @@ export function GeneralSection() {
                 : 'One line per agent, with every active chat listed under it on two lines.'}
           </p>
           <ChatStatusLinesSetting />
-        </div>
+        </Card>
       </section>
 
       {/* Inactive chats */}
@@ -373,23 +385,24 @@ export function GeneralSection() {
       {/* Editor */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Editor</h3>
-        <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-foreground">Open files in</span>
-            <select
+            <NativeSelect
               value={choice}
               onChange={(e) => setChoice(e.target.value as EditorChoice)}
-              className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-auto"
+              aria-label={'Open files in'}
             >
               {EDITOR_CHOICES.map((key) => (
                 <option key={key} value={key}>
                   {EDITOR_CHOICE_LABELS[key]}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
           </div>
           {choice === 'custom' && (
-            <input
+            <Field
               type="text"
               value={customCommand}
               onChange={(e) => setCustomCommand(e.target.value)}
@@ -397,7 +410,9 @@ export function GeneralSection() {
               spellCheck={false}
               autoCapitalize="off"
               autoCorrect="off"
-              className="w-full rounded-md border border-border bg-background px-2 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full"
+              purpose="code"
+              aria-label={'Custom editor command'}
             />
           )}
           <p className="text-[11px] text-muted-foreground/85">
@@ -405,7 +420,7 @@ export function GeneralSection() {
               ? 'Runs on the host machine. Placeholders: {file}, {line}, {column}, {dir}.'
               : 'Used when you click “Open in editor” on a file or worktree. This preference is saved on this browser.'}
           </p>
-        </div>
+        </Card>
       </section>
     </div>
   );
@@ -413,15 +428,14 @@ export function GeneralSection() {
 
 function TimeField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <label className="flex flex-col gap-1">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70">{label}</span>
-      <input
-        type="time"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-border bg-background px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
-      />
-    </label>
+    <Field
+      type="time"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      controlClassName="w-auto"
+      label={label}
+      className="flex-col w-auto"
+    />
   );
 }
 
@@ -445,29 +459,31 @@ function InactiveExecutionsSetting() {
   return (
     <section className="space-y-2">
       <h3 className="text-[12px] font-medium text-foreground">Inactive chats</h3>
-      <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+      <Card padding="md" className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm text-foreground">Go inactive after</span>
-          <select
+          <NativeSelect
             value={value}
             disabled={stored === undefined}
             onChange={(e) => choose(e.target.value)}
-            className="rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+            className="w-auto"
+            aria-label={'Go inactive after'}
           >
             {options.map((days) => (
               <option key={days} value={String(days)}>
-                {formatInactiveAfter(days)} with no activity{days === DEFAULT_INACTIVE_AFTER_DAYS ? ' (default)' : ''}
+                {formatInactiveAfter(days)} with no activity
+                {days === DEFAULT_INACTIVE_AFTER_DAYS ? ' (default)' : ''}
               </option>
             ))}
             <option value="0">Never</option>
-          </select>
+          </NativeSelect>
         </div>
         <p className="text-[11px] text-muted-foreground/85">
           {stored === 0
             ? 'Every chat stays in its list however long it sits.'
             : 'Chats with no activity for this long fold into an "inactive" row at the bottom of each list, where one click shows them. Pinned ones stay put, marked inactive. Nothing is archived, and new activity brings one back.'}
         </p>
-      </div>
+      </Card>
     </section>
   );
 }

@@ -134,8 +134,8 @@ function AlertDialogDescription({
 
 function AlertDialogAction({
   className,
-  variant = "default",
-  size = "default",
+  variant = "primary",
+  size = "md",
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Action> &
   Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
@@ -152,8 +152,8 @@ function AlertDialogAction({
 
 function AlertDialogCancel({
   className,
-  variant = "outline",
-  size = "default",
+  variant = "secondary",
+  size = "md",
   ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Cancel> &
   Pick<React.ComponentProps<typeof Button>, "variant" | "size">) {
@@ -182,3 +182,8 @@ export {
   AlertDialogTitle,
   AlertDialogTrigger,
 }
+
+export const AlertDialogContentPrimitive = AlertDialogPrimitive.Content
+export const AlertDialogOverlayPrimitive = AlertDialogPrimitive.Overlay
+export const AlertDialogTitlePrimitive = AlertDialogPrimitive.Title
+export const AlertDialogDescriptionPrimitive = AlertDialogPrimitive.Description

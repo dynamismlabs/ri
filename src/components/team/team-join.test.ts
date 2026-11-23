@@ -7,6 +7,9 @@ const mocks = vi.hoisted(() => ({
   previewTeamLink: vi.fn(), readSetupAttempt: vi.fn(), finishTeamSetup: vi.fn(),
   keepTeamSignIn: vi.fn(), replace: vi.fn(),
 }));
+// Desktop business behavior uses a synthetic DOM. Real field sizing is checked in Chromium.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/lib/api/client', () => ({ getAuthToken: () => null }));
 vi.mock('@/lib/trpc/client', () => ({ trpcClient: {} }));
 vi.mock('@/lib/team/client', () => ({

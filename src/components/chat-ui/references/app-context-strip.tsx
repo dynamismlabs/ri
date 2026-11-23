@@ -1,8 +1,11 @@
 'use client';
+import { ButtonGroup } from '@/components/system/button-group';
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { AppWindow, ExternalLink, FileText, Loader2, X } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Tip } from '@/components/ui/tip';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
+
 import type { VisibleContextItem } from '@/lib/client/mcp-app-context';
 import { safeViewThumbnail } from '@/lib/integrations/mcp-icons';
 import { cn } from '@/lib/utils';
@@ -41,16 +44,22 @@ function AppContextChip({ group, onRemove }: { group: AppContextGroupView; onRem
     setBusy(true);
     try { await onRemove(); } finally { setBusy(false); }
   };
-  return <span className="inline-flex max-w-full items-center rounded-md bg-muted/60 text-[11.5px] text-foreground ring-1 ring-inset ring-border">
+  return <ButtonGroup variant="toolbar" className="max-w-full items-center">
     <Popover>
       <PopoverTrigger asChild>
-        <button type="button" className="inline-flex min-w-0 items-center gap-1 py-0.5 pl-1.5 pr-1" aria-label={`Context from ${group.app}`}>
+        <Button
+          type="button"
+          aria-label={`Context from ${group.app}`}
+          variant="ghost"
+          size="xs"
+          className="inline-flex min-w-0 items-center gap-1"
+        >
           <AppWindow size={12} className="shrink-0 text-muted-foreground" aria-hidden />
           <span className="shrink-0 font-medium">{group.app}</span>
           <span className="min-w-0 max-w-[220px] truncate text-muted-foreground">{contextSummary(group.items)}</span>
-        </button>
+        </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 space-y-2 p-3 text-xs" align="start">
+      <PopoverContent padding="md" className="w-80 space-y-2" align="start">
         <p className="font-medium">{group.app} adds this to your next message</p>
         <ul className="max-h-72 space-y-2 overflow-y-auto">
           {group.items.map((item, index) => <li key={index}><ContextItem item={item} /></li>)}
@@ -58,13 +67,21 @@ function AppContextChip({ group, onRemove }: { group: AppContextGroupView; onRem
         <p className="text-muted-foreground">It goes with each message you send until you remove it.</p>
       </PopoverContent>
     </Popover>
-    <Tip label="Nothing from it is sent, and the app is told">
-      <button data-slot="action-button" data-variant="ghost" type="button" disabled={busy} onClick={() => void remove()} aria-label={`Remove context from ${group.app}`}
-        className="mr-0.5 inline-flex h-4 w-4 items-center justify-center rounded text-muted-foreground/80 transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-50">
+
+      <IconButton
+        type="button"
+        disabled={busy}
+        onClick={() => void remove()}
+        label={`Remove context from ${group.app}`}
+        tooltip="Nothing from it is sent, and the app is told"
+        variant="ghost"
+        size="xs"
+        className="mr-0.5 inline-flex items-center justify-center"
+      >
         {busy ? <Loader2 size={10} className="animate-spin" /> : <X size={10} />}
-      </button>
-    </Tip>
-  </span>;
+      </IconButton>
+
+  </ButtonGroup>;
 }
 
 function ContextItem({ item }: { item: VisibleContextItem }) {

@@ -1,3 +1,7 @@
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/components/home/home-context', () => ({ useHomeContext: () => ({ capabilities: { administerMembers: mocks.role === 'owner', configureAgents: mocks.role === 'owner' } }) }));
 import { act, createElement, useState } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
@@ -28,8 +32,8 @@ vi.mock('./team-areas', () => ({ NewAreaDialog: () => null }));
 vi.mock('./use-team', () => ({ useTeamMembers: () => ({ active: [] }) }));
 vi.mock('@/hooks/use-areas', () => ({ useAreas: () => ({ data: [] }), useUpdateArea: () => ({}) }));
 vi.mock('@/components/spaces/space-root', () => ({ useSpace: () => null }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => vi.fn() }));
-vi.mock('@/components/ui/dialog', () => {
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => vi.fn() }));
+vi.mock('@/components/system/dialog', () => {
   const container = ({ children }: { children: React.ReactNode }) => createElement('div', null, children);
   return { Dialog: container, DialogContent: container, DialogHeader: container, DialogTitle: container, DialogDescription: container };
 });

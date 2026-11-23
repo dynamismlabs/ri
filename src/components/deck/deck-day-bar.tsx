@@ -1,5 +1,8 @@
 "use client";
 
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { Circle, CheckCircle2, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -25,42 +28,41 @@ export function DeckDayBar({ items, routines, onRoutineComplete }: DeckDayBarPro
   const routinesDone = routines.filter(r => r.completedCount >= r.targetCount).length;
 
   return (
-    <div className="relative">
+    <Popover open={open} onOpenChange={setOpen}><div className="relative">
       <DayShapeStrip items={items} />
 
       {routines.length > 0 && (
         <div className="flex items-center justify-end px-4 py-1.5 border-b border-border/50">
-          <button
-            onClick={() => setOpen(o => !o)}
-            className={cn(
-              'flex items-center gap-1.5 text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors',
-              open && 'text-muted-foreground',
-            )}
+          <PopoverTrigger asChild><Button
+            variant="ghost"
+            size="xs"
+            className="flex items-center gap-1.5"
           >
             <Circle className="w-3 h-3" />
             {routinesDone}/{routines.length} habits
             <ChevronDown className={cn('w-2.5 h-2.5 transition-transform', open && 'rotate-180')} />
-          </button>
+          </Button></PopoverTrigger>
         </div>
       )}
 
       {open && routines.length > 0 && (
-        <div className="absolute right-4 top-full mt-1 z-10 w-72 bg-popover border border-border rounded-lg shadow-md p-3">
+        <PopoverContent padding="md" align="end" className="w-72">
           <div className="space-y-2">
             {routines.map(routine => {
               const isDone = routine.completedCount >= routine.targetCount;
               return (
                 <div key={routine.id} className="flex items-center gap-2.5">
-                  <button
+                  <IconButton
                     onClick={() => !isDone && onRoutineComplete(routine.id)}
-                    aria-label={isDone ? `${routine.title} done` : `Mark ${routine.title} done`}
-                    className="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                    label={isDone ? `${routine.title} done` : `Mark ${routine.title} done`}
+                    variant="ghost"
+                    size="xs"
                   >
                     {isDone
                       ? <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground/50" />
                       : <Circle className="w-3.5 h-3.5" />
                     }
-                  </button>
+                  </IconButton>
                   <span className="text-xs text-muted-foreground flex-1">{routine.title}</span>
                   <span className="text-[10px] text-muted-foreground/50">
                     {routine.completedCount}/{routine.targetCount} {routine.period}
@@ -72,8 +74,8 @@ export function DeckDayBar({ items, routines, onRoutineComplete }: DeckDayBarPro
               );
             })}
           </div>
-        </div>
+        </PopoverContent>
       )}
-    </div>
+    </div></Popover>
   );
 }

@@ -16,6 +16,7 @@ import { AcceptanceFixture, api, assertNoAlertsWithoutSignature, bounded, eventu
 import { desktopPackageLayout } from './package-layout';
 import { FIRST_START_MS } from './first-run';
 import { assertLocalIsolation, assertSameNativeWindow, localPage, settledWindowSnapshot } from './acceptance-surfaces';
+import { desktopChannelTestButton } from './renderer-locators';
 import { ensureServiceStatus, serviceRequest, serviceStatus, stopService, type ServiceSession } from '../src/lib/service/client';
 import { hasLoginSupervision } from '../src/lib/service/install';
 
@@ -166,7 +167,7 @@ async function remoteNotificationConsent(page: Page, deviceId: string): Promise<
   assert.deepEqual(await questions(), ['Show notifications from Ri on this computer?']);
   assert.equal(await page.evaluate(() => performance.timeOrigin), viewerIdentity, 'Turning alerts on must not reload the viewer');
   // The Desktop channel's Test, on the row for this desktop app.
-  await page.locator('div.rounded-xl', { has: page.getByText('This desktop app') }).getByRole('button', { name: 'Test', exact: true }).click();
+  await desktopChannelTestButton(page).click();
   await eventually(async () => remoteDeliveries(deviceId).length === 1 && remoteDeliveries(deviceId)[0].status === 'sent', 'remote native claim and acknowledgement');
   const first = remoteDeliveries(deviceId)[0];
   assert.equal(first.attempts, 1); assert(first.receipt);

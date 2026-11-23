@@ -1,5 +1,8 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Callout } from '@/components/system/callout';
 
+import { Button } from '@/components/system/button';
 import { useExecutionRuntimeScope } from '@/components/home/execution-runtime-context';
 
 import { HarnessToolSetup } from '@/components/desktop/harness-tool-setup';
@@ -87,33 +90,29 @@ export function ConnectionBadge({ harness, className }: { harness: ProviderId; c
   }
   const meta = badgeMeta(connection);
   return (
-    <span data-slot="status-badge"
-      className={cn(
-        'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10.5px] font-medium',
-        meta.cls,
-        className,
-      )}
+    <StatusBadge tone={meta.tone}
+      className={cn("inline-flex items-center gap-1", className)}
     >
       <span className={cn('h-1.5 w-1.5 rounded-full', meta.dot)} />
       {meta.text}
-    </span>
+    </StatusBadge>
   );
 }
 
-function badgeMeta(c: HarnessConnection): { text: string; cls: string; dot: string } {
+function badgeMeta(c: HarnessConnection): { text: string; tone: 'success' | 'warning' | 'neutral'; dot: string } {
   switch (c.status) {
     case 'subscription':
-      return { text: 'Subscription', cls: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' };
+      return { text: 'Subscription', tone: 'success', dot: 'bg-emerald-500' };
     case 'bedrock':
-      return { text: 'Bedrock', cls: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' };
+      return { text: 'Bedrock', tone: 'success', dot: 'bg-emerald-500' };
     case 'api_key':
-      return { text: 'API key', cls: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' };
+      return { text: 'API key', tone: 'warning', dot: 'bg-amber-500' };
     case 'configured':
-      return { text: 'Connected', cls: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400', dot: 'bg-emerald-500' };
+      return { text: 'Connected', tone: 'success', dot: 'bg-emerald-500' };
     case 'not_installed':
-      return { text: 'Not installed', cls: 'bg-muted text-muted-foreground', dot: 'bg-muted-foreground/50' };
+      return { text: 'Not installed', tone: 'neutral', dot: 'bg-muted-foreground/50' };
     default:
-      return { text: 'Not connected', cls: 'bg-muted text-muted-foreground', dot: 'bg-muted-foreground/50' };
+      return { text: 'Not connected', tone: 'neutral', dot: 'bg-muted-foreground/50' };
   }
 }
 
@@ -160,11 +159,8 @@ export function ConnectionPanel({
   const apiKeyVar = connection.apiKeyVar ?? provider.apiKeyVar;
 
   return (
-    <div
-      className={cn(
-        'space-y-2 rounded-md border p-3 text-[11.5px]',
-        metered ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-card/40',
-      )}
+    <Callout padding="md" tone={(metered ? "warning" : "neutral")}
+      className="space-y-2"
     >
       <div className="flex items-center gap-1.5 font-medium text-foreground">
         <AlertTriangle size={13} className="text-amber-500" />
@@ -206,15 +202,17 @@ export function ConnectionPanel({
         {notInstalled ? provider.installHint : provider.loginCmd}
       </code>
       <HarnessToolSetup harness={harness} installed={!notInstalled} onComplete={() => recheck.mutate(harness)} />
-      <button data-slot="action-button"
+      <Button
         type="button"
         onClick={() => recheck.mutate(harness)}
         disabled={recheck.isPending}
-        className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-foreground hover:bg-muted/50 disabled:opacity-50"
+        variant="secondary"
+        size="sm"
+        className="inline-flex items-center gap-1.5"
       >
         {recheck.isPending ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
         Check again
-      </button>
-    </div>
+      </Button>
+    </Callout>
   );
 }

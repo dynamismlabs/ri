@@ -1,7 +1,12 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
 
-import { Button } from '@/components/ui/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { Field } from '@/components/system/field';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import { APP_SHORT_ID } from '@/constants/app';
 import { usePreviewSettings } from '@/hooks/use-preview';
@@ -262,7 +267,7 @@ export function RemoteBaseUrlSection() {
         The URL a remote device would paste in its browser to reach this machine. Anything works, port and all.
       </p>
 
-      <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
+      <Card padding="sm" density="row" className="flex flex-wrap items-center gap-2">
         {checkingBeamd ? (
           <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
@@ -285,29 +290,33 @@ export function RemoteBaseUrlSection() {
         )}
         <div className="ml-auto flex items-center gap-1.5">
           {!beamdConnected && !checkingBeamd && (
-            <Button size="xs" variant="outline" onClick={() => setSettingsSection('remote-preview')}>
+            <Button
+              onClick={() => setSettingsSection('remote-preview')}
+              variant="secondary"
+              size="xs"
+            >
               Connect Beamd
             </Button>
           )}
           <Tip label="Check whether this machine already has a Beamd login from the terminal">
             <Button
-              size="xs"
-              variant="ghost"
               onClick={() => refetchPreviewSettings()}
               disabled={checkingBeamd}
+              variant="ghost"
+              size="xs"
             >
               <RefreshCw size={11} className={checkingBeamd ? 'animate-spin' : ''} />
               Re-check
             </Button>
           </Tip>
         </div>
-      </div>
+      </Card>
 
       {/* Keep Ri reachable: re-open the Beamd tunnel on every startup so a
           headless/remote box stays accessible across restarts without a manual
           reconnect. Only meaningful for the Beamd tunnel — external tunnels
           (Tailscale, ngrok, Cloudflare) are managed outside Ri. */}
-      <div className="flex items-start justify-between gap-3 rounded-md border border-border/60 bg-muted/20 px-2.5 py-2">
+      <Card padding="sm" density="row" className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[12px] font-medium text-foreground">
             Reconnect automatically on startup
@@ -334,37 +343,39 @@ export function RemoteBaseUrlSection() {
             aria-label="Reconnect automatically on startup"
           />
         </div>
-      </div>
+      </Card>
 
       {!saved && !isLoading && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5">
+        <Callout padding="sm" tone={"warning"} className="flex items-start gap-2">
           <AlertCircle size={12} className="mt-0.5 shrink-0 text-amber-500" />
           <p className="text-[11px] text-foreground/90">
             No remote URL set yet. Devices off your network can&apos;t reach this app, and notification deep links
             won&apos;t open on your phone. Set one below if you use remote access.
           </p>
-        </div>
+        </Callout>
       )}
 
       <div className="flex items-center gap-2">
-        <input
+        <Field
           type="url"
           value={draft}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={`https://${APP_SHORT_ID}.example.com`}
           disabled={busy}
-          className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          className="flex-1"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && dirty && draft.trim()) {
               saveMutation.mutate(draft.trim());
             }
           }}
+          aria-label={'Remote URL'}
+          purpose="code"
         />
         <Button
-          size="sm"
-          variant="outline"
           onClick={() => saveMutation.mutate(draft.trim() || null)}
           disabled={!dirty || busy}
+          variant="secondary"
+          size="sm"
         >
           {saveMutation.isPending ? (
             <Loader2 size={12} className="animate-spin" />
@@ -374,15 +385,15 @@ export function RemoteBaseUrlSection() {
           {justSaved ? 'Saved' : 'Save'}
         </Button>
         {saved && (
-          <Button
-            size="sm"
-            variant="ghost"
+          <IconButton
             onClick={() => saveMutation.mutate(null)}
             disabled={busy}
-            aria-label="Clear remote base URL"
+            label="Clear remote base URL"
+            variant="ghost"
+            size="sm"
           >
             <Trash2 size={12} />
-          </Button>
+          </IconButton>
         )}
       </div>
 
@@ -395,8 +406,6 @@ export function RemoteBaseUrlSection() {
           }
         >
           <Button
-            size="xs"
-            variant="outline"
             onClick={() => {
               if (beamdConnected) {
                 beamdMutation.mutate();
@@ -405,6 +414,8 @@ export function RemoteBaseUrlSection() {
               }
             }}
             disabled={busy || checkingBeamd}
+            variant="secondary"
+            size="xs"
           >
             {beamdMutation.isPending ? (
               <Loader2 size={11} className="animate-spin" />
@@ -415,10 +426,10 @@ export function RemoteBaseUrlSection() {
           </Button>
         </Tip>
         <Button
-          size="xs"
-          variant="outline"
           onClick={handleTest}
           disabled={!canTest || busy}
+          variant="secondary"
+          size="xs"
         >
           {testResult.status === 'testing' ? (
             <Loader2 size={11} className="animate-spin" />
@@ -440,7 +451,7 @@ export function RemoteBaseUrlSection() {
       )}
 
       {testResult.status === 'error' && (
-        <div className="mt-1 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5 space-y-1.5">
+        <Callout padding="sm" tone={"warning"} className="mt-1 space-y-1.5">
           <div className="flex items-start gap-2">
             <AlertCircle size={12} className="mt-0.5 shrink-0 text-amber-500" />
             <p className="text-[11px] text-foreground font-medium break-all">
@@ -452,24 +463,26 @@ export function RemoteBaseUrlSection() {
               <li key={hint}>{hint}</li>
             ))}
           </ul>
-        </div>
+        </Callout>
       )}
 
       {/* Advanced: the Beamd tunnel name. Collapsed by default, auto-opened
           when Beamd rejects the name as taken — which is exactly what happens
           when a second machine on the same account uses the default. */}
       <div className="border-t border-border/60 pt-2">
-        <button
+        <Button
           type="button"
           onClick={() => setAdvancedOpen((v) => !v)}
-          className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
+          variant="ghost"
+          size="sm"
+          className="flex items-center gap-1"
         >
           <ChevronRight size={11} className={cn('transition-transform', advancedOpen && 'rotate-90')} />
           Advanced: Beamd tunnel name
           {!advancedOpen && data?.effectiveTunnelName && (
             <span className="font-mono text-foreground/70">({data.effectiveTunnelName})</span>
           )}
-        </button>
+        </Button>
 
         {advancedOpen && (
           <div className="mt-2 space-y-2">
@@ -481,7 +494,7 @@ export function RemoteBaseUrlSection() {
             </p>
 
             <div className="flex items-center gap-2">
-              <input
+              <Field
                 value={nameDraft}
                 onChange={(e) => {
                   setNameDraftOverride(e.target.value);
@@ -493,34 +506,35 @@ export function RemoteBaseUrlSection() {
                 autoCorrect="off"
                 maxLength={MAX_LABEL_LENGTH}
                 disabled={busy || nameLocked}
-                className="flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-[12px] focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+                className="flex-1"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && nameDirty && nameValid) {
                     nameMutation.mutate(nameNormalized || null);
                   }
                 }}
+                purpose="code"
+                aria-label={'Tunnel name'}
               />
               <Button
-                size="sm"
-                variant="outline"
                 onClick={() => nameMutation.mutate(nameNormalized || null)}
                 disabled={!nameDirty || !nameValid || busy || nameLocked}
+                variant="secondary"
+                size="sm"
               >
                 {nameMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
                 Save name
               </Button>
               {nameSaved && !nameLocked && (
-                <Tip label={`Revert to the default name (${data?.defaultTunnelName ?? APP_SHORT_ID})`}>
-                  <Button
-                    size="sm"
-                    variant="ghost"
+                  <IconButton
                     onClick={() => nameMutation.mutate(null)}
                     disabled={busy}
-                    aria-label="Revert to the default tunnel name"
+                    label="Revert to the default tunnel name"
+                    tooltip={`Revert to the default name (${data?.defaultTunnelName ?? APP_SHORT_ID})`}
+                    variant="ghost"
+                    size="sm"
                   >
                     <Trash2 size={12} />
-                  </Button>
-                </Tip>
+                  </IconButton>
               )}
             </div>
 
@@ -558,7 +572,7 @@ export function RemoteBaseUrlSection() {
       </div>
 
       <div className="pt-1 space-y-0.5">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50">Examples</p>
+        <p className="text-[10px] text-muted-foreground/50">Examples</p>
         <ul className="text-[11px] text-muted-foreground/60 font-mono space-y-0.5">
           <li>https://{APP_SHORT_ID}.example.com <span className="font-sans text-muted-foreground/50">(tunnel on 443)</span></li>
           <li>http://mac.tail-scale.ts.net:4224 <span className="font-sans text-muted-foreground/50">(Tailscale MagicDNS)</span></li>

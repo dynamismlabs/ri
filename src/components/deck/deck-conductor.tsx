@@ -1,18 +1,17 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { ChipButton } from '@/components/system/chip-button';
+import { IconButton } from '@/components/system/icon-button';
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown, RefreshCw, Clock, Check, SlidersHorizontal } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 import { useAreas } from '@/hooks/use-areas';
 import { useMorningDeck, useUpdateMorningDeck } from '@/hooks/use-morning-deck';
 import { openSettings } from '@/components/settings/settings-store';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 import type { WorkMode } from '@/types/dashboard';
 import { Tip } from '@/components/ui/tip';
 
@@ -28,13 +27,6 @@ function getUrgency(generatedAt: string | undefined, now: number): Urgency {
   if (hoursAgo >= 2) return 'medium';
   return 'low';
 }
-
-const URGENCY_STYLES: Record<Urgency, string> = {
-  low: 'text-muted-foreground hover:text-foreground hover:bg-muted',
-  medium: 'text-foreground border border-border hover:bg-muted',
-  high: 'text-primary bg-primary/5 border border-primary/20 hover:bg-primary/10',
-  critical: 'bg-primary text-primary-foreground hover:bg-primary/90',
-};
 
 // ─── Component ──────────────────────────────────────────────────
 
@@ -89,59 +81,38 @@ export function DeckConductor({
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 @max-[30rem]/conductor:gap-x-1.5 @max-[30rem]/conductor:px-3">
       <div className="flex items-center gap-2 @max-[30rem]/conductor:gap-1.5">
         {/* Energy toggle: Light / Deep */}
-        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-card rounded-lg border border-border">
-          <button
-            onClick={() => onWorkModeChange(workMode === 'light' ? null : 'light')}
-            aria-pressed={workMode === 'light'}
-            className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
-              workMode === 'light'
-                ? 'bg-sky-400/15 text-sky-400 shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Light
-          </button>
-          <button
-            onClick={() => onWorkModeChange(workMode === 'deep' ? null : 'deep')}
-            aria-pressed={workMode === 'deep'}
-            className={cn(
-              'px-2.5 py-1 rounded text-[9px] font-bold uppercase transition-all @max-[30rem]/conductor:px-1.5',
-              workMode === 'deep'
-                ? 'bg-orange-500/15 text-orange-500 shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Deep
-          </button>
-        </div>
+        <SegmentedControl mode="choice" allowEmpty ariaLabel="Energy" value={workMode} onChange={onWorkModeChange} options={[{value:'light',label:'Light'},{value:'deep',label:'Deep'}]} />
 
         {/* Area filter dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 bg-card border border-border rounded-lg cursor-pointer hover:border-muted-foreground transition-all @max-[30rem]/conductor:gap-1 @max-[30rem]/conductor:px-2">
-              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest @max-[30rem]/conductor:tracking-wide">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="flex items-center gap-1.5 @max-[30rem]/conductor:gap-1"
+            >
+              <span className="text-[11px] leading-[1.4] font-medium text-muted-foreground">
                 {selectedArea ? selectedArea.name : 'All areas'}
               </span>
               <ChevronDown size={9} className="text-muted-foreground" />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44">
-            <DropdownMenuItem
+            <MenuAction kind="menu"
               onClick={() => onAreaFilterChange(null)}
-              className={cn('text-xs', !areaFilter && 'font-bold')}
+              selected={!!(!areaFilter)}
             >
               All areas
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
             {areas?.map(area => (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 key={area.id}
                 onClick={() => onAreaFilterChange(area.id)}
-                className={cn('text-xs', area.id === areaFilter && 'font-bold')}
+                selected={!!(area.id === areaFilter)}
               >
                 {area.name}
-              </DropdownMenuItem>
+              </MenuAction>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -153,23 +124,16 @@ export function DeckConductor({
             : `${dueTodayCount} hard deadline${dueTodayCount === 1 ? '' : 's'} today`}
           side="bottom"
         >
-          <button
+          <ChipButton
             onClick={() => dueTodayCount > 0 && onFilterDueTodayChange(!filterDueToday)}
             disabled={dueTodayCount === 0}
             aria-pressed={filterDueToday}
-            data-slot="chip-button"
-            data-tone="attention"
-            className={cn(
-              'whitespace-nowrap px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase transition-all border @max-[30rem]/conductor:px-2',
-              filterDueToday
-                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                : dueTodayCount > 0
-                  ? 'bg-card text-muted-foreground border-border hover:border-muted-foreground cursor-pointer'
-                  : 'bg-card text-muted-foreground/30 border-border cursor-not-allowed'
-            )}
+            variant="secondary"
+            size="compact"
+            tone="attention"
           >
             Due today
-          </button>
+          </ChipButton>
         </Tip>
       </div>
 
@@ -177,55 +141,48 @@ export function DeckConductor({
         {/* Morning auto-refresh toggle (opt-in cron) */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Tip label="Morning auto-refresh">
-              <button
-                aria-label="Morning auto-refresh"
-                data-slot="chip-button"
+
+              <IconButton
                 data-on={morning?.enabled || undefined}
-                className={cn(
-                  'flex items-center justify-center w-7 h-7 rounded-md border transition-colors',
-                  morning?.enabled
-                    ? 'text-primary bg-primary/5 border-primary/20'
-                    : 'text-muted-foreground border-border hover:border-muted-foreground',
-                )}
+                label="Morning auto-refresh"
+                tooltip="Morning auto-refresh"
+                variant="ghost"
+                size="xs"
+                className="flex items-center justify-center"
               >
                 <Clock size={12} />
-              </button>
-            </Tip>
+              </IconButton>
+
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onClick={toggleMorning} className="text-xs gap-2">
+            <MenuAction kind="menu" onClick={toggleMorning} className="gap-2">
               <span className="flex-1">Auto-refresh each morning</span>
               {morning?.enabled && <Check size={12} className="text-primary" />}
-            </DropdownMenuItem>
+            </MenuAction>
             <div className="px-2 py-1.5 text-[10px] text-muted-foreground/70 leading-snug">
               {morning?.enabled
                 ? `Reconciles yesterday into today around ${morning.time} (while the app is running).`
                 : 'Off: the deck still deals itself the first time you open it each day.'}
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => openSettings('profile')} className="text-xs gap-2">
+            <MenuAction kind="menu" onClick={() => openSettings('profile')} className="gap-2">
               <SlidersHorizontal size={12} className="text-muted-foreground" />
               <span className="flex-1">Edit deck sources…</span>
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
 
         {onReplan && (
           <Tip label="Generate New Deck" onlyWhenTextHidden>
-            <button
+            <ChipButton
               onClick={onReplan}
               aria-label="Generate New Deck"
-              data-slot="chip-button"
-              data-urgency={urgency}
-              className={cn(
-                'flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1 text-[9px] font-bold rounded-md transition-colors @max-[30rem]/conductor:h-7 @max-[30rem]/conductor:px-2',
-                URGENCY_STYLES[urgency],
-              )}
+              variant={urgency === "critical" ? "primary" : urgency === "low" ? "ghost" : "secondary"}
+              size="compact"
             >
               <RefreshCw size={10} />
               <span className="@max-[30rem]/conductor:hidden">Generate New Deck</span>
-            </button>
+            </ChipButton>
           </Tip>
         )}
       </div>

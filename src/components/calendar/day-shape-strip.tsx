@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Compact proportional day strip: commitments, gaps, and a now line across
  * workday bounds, with a one-line summary — plus the pairing line, the one
@@ -27,7 +29,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from '@/components/system/tooltip';
 
 interface DayShapeStripProps {
   /** Today's deck items in rank order — pairing input only, never rendered
@@ -77,21 +79,25 @@ export function DayShapeStrip({
         <span className="flex-1 truncate text-[10px] text-muted-foreground">
           Connect your calendar to see your day here
         </span>
-        <button
+        <Button
           type="button"
           onClick={() => openSettings('plugins')}
-          className="shrink-0 text-[10px] font-medium text-primary hover:underline"
+          variant="link"
+          size="sm"
+          className="shrink-0"
         >
           Connect
-        </button>
-        <button
+        </Button>
+        <IconButton
           type="button"
-          aria-label="Dismiss"
           onClick={dismissCalendarInvite}
-          className="shrink-0 text-muted-foreground/50 hover:text-foreground transition-colors"
+          label="Dismiss"
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
         >
           <X className="size-3" />
-        </button>
+        </IconButton>
       </div>
     );
   }
@@ -167,7 +173,7 @@ export function DayShapeStrip({
                     style={{ left: `${seg.startPct}%`, width: `${Math.max(seg.widthPct, 0.75)}%` }}
                   />
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-[11px]">
+                <TooltipContent side="bottom">
                   {seg.detail}
                 </TooltipContent>
               </Tooltip>

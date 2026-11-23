@@ -1,5 +1,7 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
+import { Button } from '@/components/system/button';
 import { DISCOVERY_KEY } from '@/components/settings/sections/imports-section';
 import { openSettings } from '@/components/settings/settings-store';
 import type { ExternalAgentDiscovery, ExternalAgentSource } from '@/lib/import/types';
@@ -194,21 +196,13 @@ export function ImportStep({
           const on = selected.has(project.cwd);
           return (
             <Tip key={project.cwd} label={project.cwd}>
-              <button
+              <ChoiceRow indicator="checkbox" surface="plain" density="compact"
                 type="button"
                 role="checkbox"
                 aria-checked={on}
                 onClick={() => toggle(project.cwd)}
-                className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/50"
+                className="flex items-center gap-2.5 text-left"
               >
-                <span
-                  className={cn(
-                    'flex size-4 flex-shrink-0 items-center justify-center rounded border',
-                    on ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/40',
-                  )}
-                >
-                  {on && <Check size={11} />}
-                </span>
                 <Folder size={13} className="flex-shrink-0 text-muted-foreground/70" />
                 <span className="flex min-w-0 flex-1 flex-col leading-tight">
                   <span className="truncate text-[12px] font-medium text-foreground">{project.name}</span>
@@ -219,19 +213,20 @@ export function ImportStep({
                 <span className="flex-shrink-0 text-[10px] text-muted-foreground/70">
                   {formatCompactRelative(project.lastActiveAt)}
                 </span>
-              </button>
+              </ChoiceRow>
             </Tip>
           );
         })}
       </div>
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-3">
-        <button
+        <Button
           type="button"
           onClick={() => openSettings('imports')}
-          className="text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+          variant="link"
+          size="md"
         >
           Everything else, in Settings
-        </button>
+        </Button>
         <div className="flex items-center gap-1.5">
           <QuietButton onClick={() => onDone('Not now')}>Not now</QuietButton>
           <PrimaryButton disabled={chosen.length === 0} onClick={bringIn}>

@@ -1,13 +1,10 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { usePersonalServices } from '@/components/home/use-personal-services';
 import { useQuery } from '@tanstack/react-query';
 import { Check, X } from 'lucide-react';
-import {
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenuLabel, DropdownMenuSeparator } from '@/components/system/menu';
 import { EntrypointIcon } from '@/components/mcp-apps/entrypoint-icon';
 import { useConnectedCompanion, type ConnectedTab } from '@/lib/client/mcp-app-panel';
 import { trpc } from '@/lib/trpc/client';
@@ -33,21 +30,21 @@ export function AppCompanionRows({ chatId }: { chatId: string }) {
   return (
     <>
       <DropdownMenuSeparator />
-      <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <DropdownMenuLabel className="">
         Beside this chat
       </DropdownMenuLabel>
       {tabs.map((item) => (
-        <DropdownMenuItem key={`${item.serverId}:${item.name}`} onSelect={() => void companion?.openTab?.(item)} className="pointer-coarse:py-2.5">
+        <MenuAction kind="menu" key={`${item.serverId}:${item.name}`} onSelect={() => void companion?.openTab?.(item)} >
           <EntrypointIcon icons={item.icons} size={14} />
           <span className="min-w-0 flex-1 truncate">{item.title}</span>
           {item.app.toLocaleLowerCase() !== item.title.toLocaleLowerCase() && <span className="shrink-0 truncate text-[11px] text-muted-foreground">{item.app}</span>}
           {tab?.serverId === item.serverId && tab.name === item.name && <Check size={13} className="text-muted-foreground" aria-label="Open now" />}
-        </DropdownMenuItem>
+        </MenuAction>
       ))}
       {tab && (
-        <DropdownMenuItem className="pointer-coarse:py-2.5" onSelect={() => companion?.open(null)}>
+        <MenuAction kind="menu"  onSelect={() => companion?.open(null)}>
           <X size={13} /> Close app
-        </DropdownMenuItem>
+        </MenuAction>
       )}
     </>
   );

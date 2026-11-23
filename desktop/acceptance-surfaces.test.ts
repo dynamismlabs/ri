@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { assertSameNativeWindow, settledWindowSnapshot } from './acceptance-surfaces';
+import { assertSameNativeWindow, clickClosingPage, settledWindowSnapshot } from './acceptance-surfaces';
 
 type App = Parameters<typeof settledWindowSnapshot>[0];
 
@@ -34,4 +34,47 @@ it('lets a layout still landing arrive, and fails a window that stays moved or r
   await expect(assertSameNativeWindow(app(shown(900)), before, 250)).rejects.toThrow('Local controls must preserve the title bar and content bounds');
   await expect(assertSameNativeWindow(app({ ...shown(953), bounds: { x: 40, y: 22, width: 1280, height: 980 } }), before, 250))
     .rejects.toThrow('Opening local controls must preserve window placement and size');
+});
+
+const closedTarget = 'locator.click: Target page, context or browser has been closed';
+function closingControl({ error, closes = true }: { error?: string; closes?: boolean } = {}) {
+  let isClosed = false;
+  const order: string[] = [];
+  let close!: () => void;
+  const closed = new Promise<void>(resolve => { close = resolve; });
+  const page = {
+    isClosed: () => isClosed,
+    waitForEvent: async () => { order.push('listen'); return closed; },
+  } as unknown as Parameters<typeof clickClosingPage>[0];
+  const control = {
+    click: async () => {
+      order.push('click');
+      if (closes) { isClosed = true; close(); }
+      if (error) throw new Error(error);
+    },
+  } as unknown as Parameters<typeof clickClosingPage>[1];
+  return { page, control, order };
+}
+
+it('accepts the expected local renderer closing before its click acknowledgement', async () => {
+  const { page, control } = closingControl({ error: closedTarget });
+  await clickClosingPage(page, control);
+  expect(page.isClosed()).toBe(true);
+});
+
+it('also waits for the local close after a successful click', async () => {
+  const { page, control, order } = closingControl();
+  await clickClosingPage(page, control);
+  expect(page.isClosed()).toBe(true);
+  expect(order).toEqual(['listen', 'click']);
+});
+
+it('does not excuse a closed-target error while the local page remains open', async () => {
+  const { page, control } = closingControl({ error: closedTarget, closes: false });
+  await expect(clickClosingPage(page, control)).rejects.toThrow(closedTarget);
+});
+
+it('preserves other click failures even if the page also closes', async () => {
+  const { page, control } = closingControl({ error: 'button was not actionable' });
+  await expect(clickClosingPage(page, control)).rejects.toThrow('button was not actionable');
 });

@@ -1,11 +1,18 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { Card } from '@/components/system/card';
+
+
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { integrationMeta } from '@/components/integrations/integration-meta';
 import type { Connection, ProviderStatus } from '@/components/settings/sections/integrations/types';
 import { openSettings, useSettingsStore } from '@/components/settings/settings-store';
 import { trpcClient } from '@/lib/trpc/client';
-import { cn } from '@/lib/utils';
+
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Loader2, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -78,7 +85,7 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
   const connectedNames = (data?.providers ?? []).filter((p) => connected.has(p.id)).map((p) => p.displayName);
 
   return (
-    <div className="rounded-xl border border-border bg-card/60 p-3 shadow-sm">
+    <Card padding="md" shadow >
       {isLoading ? (
         <div className="flex items-center gap-2 px-1 py-6 text-[11px] text-muted-foreground">
           <Loader2 size={12} className="animate-spin" /> Loading apps…
@@ -94,38 +101,37 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
             ))}
           </div>
 
-          <div className="mt-2 flex items-center gap-2 rounded-lg border border-border bg-background px-2.5">
-            <Search size={12} className="flex-shrink-0 text-muted-foreground/60" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
-              aria-label="Search apps"
-              className="h-8 min-w-0 flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
-            />
-          </div>
+          <Field
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={data ? `Search all ${data.providers.length} apps` : 'Search apps'}
+            aria-label="Search apps"
+            className={'min-w-0 flex-1'}
+            leading={<Search />}
+          />
 
           {q && (
             <div className="mt-1.5 flex flex-col">
               {results.length === 0 ? (
                 <p className="px-1 py-2 text-[11px] text-muted-foreground">
                   Nothing by that name.{' '}
-                  <button
+                  <Button
                     type="button"
                     onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-                    className="underline-offset-2 hover:underline"
+                    variant="link"
+                    size="md"
                   >
                     Add your own in Settings
-                  </button>
+                  </Button>
                   , any MCP server works.
                 </p>
               ) : (
                 results.slice(0, SEARCH_LIMIT).map((p) => (
-                  <button data-slot="action-button" data-variant="ghost"
+                  <MenuAction density="compact"
                     key={p.id}
                     type="button"
                     onClick={() => open(p)}
-                    className="flex items-center gap-2.5 rounded-md px-1.5 py-1.5 text-left transition-colors hover:bg-muted/50"
+                    className="flex items-center gap-2.5 text-left"
                   >
                     <IntegrationLogo providerId={p.id} name={p.displayName} size={26} />
                     <span className="flex min-w-0 flex-1 flex-col leading-tight">
@@ -133,17 +139,19 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
                       <span className="truncate text-[10.5px] text-muted-foreground">{integrationMeta(p.id).description}</span>
                     </span>
                     <ConnectState connected={connected.has(p.id)} />
-                  </button>
+                  </MenuAction>
                 ))
               )}
               {results.length > SEARCH_LIMIT && (
-                <button
+                <Button
                   type="button"
                   onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-                  className="self-start px-1.5 py-1 text-[11px] text-muted-foreground underline-offset-2 hover:underline"
+                  variant="link"
+                  size="md"
+                  className="self-start"
                 >
                   {results.length - SEARCH_LIMIT} more in Settings
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -152,44 +160,44 @@ export function OnboardingApps({ onDone }: { onDone: (summary: string) => void }
 
       <div className="mt-3 flex items-center justify-end gap-1.5">
         {connectedNames.length === 0 ? (
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             type="button"
             onClick={() => onDone('Not now')}
-            className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+            variant="ghost"
+            size="md"
           >
             Not now
-          </button>
+          </Button>
         ) : (
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={() => onDone(`Connected ${listJoin(connectedNames)}`)}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             Continue <ArrowRight size={12} />
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
 function AppTile({ provider, connected, onOpen }: { provider: ProviderStatus; connected: boolean; onOpen: () => void }) {
   return (
     <Tip label={integrationMeta(provider.id).description}>
-      <button data-slot="content-card"
+      <Card as="button" padding="sm" shadow
         type="button"
         onClick={onOpen}
-        className={cn(
-          'flex w-[7.5rem] flex-shrink-0 snap-start flex-col items-start gap-2 rounded-lg border p-2 text-left transition-colors',
-          connected ? 'border-emerald-500/40 bg-emerald-500/5' : 'border-border hover:bg-muted/50',
-        )}
+        className="flex w-[7.5rem] flex-shrink-0 snap-start flex-col items-start gap-2 text-left"
       >
         <IntegrationLogo providerId={provider.id} name={provider.displayName} size={30} />
         <span className="flex w-full flex-col leading-tight">
           <span className="truncate text-[12px] font-medium text-foreground">{provider.displayName}</span>
           <ConnectState connected={connected} />
         </span>
-      </button>
+      </Card>
     </Tip>
   );
 }

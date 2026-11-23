@@ -1,4 +1,11 @@
 'use client';
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { ChoiceRow } from '@/components/system/choice-row';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { openLauncher } from '@/components/workspaces/launcher/launcher-store';
@@ -7,7 +14,7 @@ import { ENTITY_HEADER_LABEL } from '@/components/entities/entity-header';
 import { cn } from '@/lib/utils';
 import { Bot, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Dialog } from 'radix-ui';
+
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { apiErrorText } from '@/lib/api/client';
@@ -96,32 +103,41 @@ export function StartWithAgentButton({
   const chooserDialog = (
     <Dialog.Root open={!!chooser} onOpenChange={(o) => { if (!o) { setChooser(null); onCancel?.(); onHandled?.(); } }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[60] bg-black/40" />
-        <Dialog.Content data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-card p-5 shadow-xl focus:outline-none">
-          <Dialog.Title className="text-sm font-semibold text-foreground">Continue which workstream?</Dialog.Title>
-          <Dialog.Description className="mt-1 text-xs text-muted-foreground">
+        <Dialog.Overlay className="fixed inset-0 z-[60]" />
+        <Dialog.Content placement="custom" padding="xl" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-[60] w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 focus:outline-none">
+          <Dialog.Title>Continue which workstream?</Dialog.Title>
+          <Dialog.Description className="mt-1">
             Several agent workstreams are working this task. Resume one, or start another.
           </Dialog.Description>
           <div className="mt-3 space-y-1.5">
             {(chooser ?? []).map((t) => (
-              <button
+              <ChoiceRow
                 key={t.executionId}
-                data-slot="choice-row"
+
                 onClick={() => { setChooser(null); openExecution(t.sessionId); }}
-                className="flex w-full items-center gap-2 rounded border border-border px-2.5 py-2 text-left text-xs hover:border-violet-500/50 hover:bg-violet-500/[0.06]"
+                className="flex w-full items-center gap-2 text-left"
               >
                 <Bot size={13} className="flex-shrink-0 text-violet-500" />
                 <span className="truncate text-foreground">{t.label || 'Agent workstream'}</span>
-              </button>
+              </ChoiceRow>
             ))}
           </div>
           <div className="mt-4 flex justify-between">
-            <button data-slot="action-button" onClick={() => { setChooser(null); launchNew(); }} className="rounded px-3 py-1.5 text-xs font-medium text-violet-600 hover:bg-violet-500/10 dark:text-violet-400">
+            <Button
+              onClick={() => { setChooser(null); launchNew(); }}
+              variant="secondary"
+              size="md"
+              tone="mode-edits"
+            >
               Start another execution
-            </button>
-            <button data-slot="action-button" onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }} className="rounded px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+            </Button>
+            <Button
+              onClick={() => { setChooser(null); onCancel?.(); onHandled?.(); }}
+              variant="secondary"
+              size="md"
+            >
               Cancel
-            </button>
+            </Button>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
@@ -131,16 +147,20 @@ export function StartWithAgentButton({
   if (variant === 'icon') {
     return (
       <>
-        <Tip label={label}>
-          <button
-            aria-label={label}
+
+          <IconButton
             onClick={onClick}
             disabled={busy}
-            className={cn('flex h-7 w-7 items-center justify-center rounded text-violet-600 hover:bg-violet-500/10 disabled:opacity-60 dark:text-violet-400', className)}
+            label={label}
+            tooltip={label}
+            variant="ghost"
+            size="sm"
+            tone="mode-edits"
+            className={cn("flex items-center justify-center", className)}
           >
             {busy ? <Loader2 size={14} className="animate-spin" /> : <Bot size={14} />}
-          </button>
-        </Tip>
+          </IconButton>
+
         {chooserDialog}
       </>
     );
@@ -149,14 +169,14 @@ export function StartWithAgentButton({
   if (variant === 'menuitem') {
     return (
       <>
-        <button
+        <MenuAction density="compact"
           onClick={onClick}
           disabled={busy}
-          className={cn('flex w-full items-center gap-2 px-2 py-1.5 text-left text-xs text-foreground hover:bg-accent disabled:opacity-60', className)}
+          className={cn("flex w-full items-center gap-2 text-left", className)}
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <Bot size={13} className="text-violet-500" />}
           {label}
-        </button>
+        </MenuAction>
         {chooserDialog}
       </>
     );
@@ -165,20 +185,18 @@ export function StartWithAgentButton({
   return (
     <>
       <Tip label={label} onlyWhenTextHidden>
-        <button
+        <Button
           onClick={onClick}
           disabled={busy}
           aria-label={label}
-          data-slot="header-action"
-          data-tone="agent"
-          className={cn(
-            'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded border border-violet-500/30 bg-violet-500/5 px-2 py-1 text-[11px] font-medium text-violet-600 transition-colors hover:bg-violet-500/10 disabled:opacity-60 dark:text-violet-400',
-            className,
-          )}
+          variant="secondary"
+          size="sm"
+          tone="mode-edits"
+          className={cn("inline-flex shrink-0 items-center gap-1.5", className)}
         >
           {busy ? <Loader2 size={13} className="animate-spin" /> : <Bot size={13} />}
           <span className={ENTITY_HEADER_LABEL}>{label}</span>
-        </button>
+        </Button>
       </Tip>
       {chooserDialog}
     </>

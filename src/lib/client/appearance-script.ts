@@ -1,8 +1,7 @@
 /**
  * The browser's theme, applied before first paint.
  *
- * The server renders the defaults on `<html>`: the dark theme, and the one look
- * (`data-look="edge"`, see docs/ui-system.md). This script runs first in the
+ * The server renders the dark theme on `<html>`. This script runs first in the
  * document head, before the page paints, and applies a light theme this browser
  * chose, so a person in light mode never sees a dark frame first.
  * `useClientTheme` keeps it in step afterwards.

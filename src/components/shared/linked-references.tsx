@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Link2, Lock, SquareCheckBig, StickyNote, Unlink } from 'lucide-react';
 import { useWorkNavigation } from '@/contexts/work-context';
@@ -67,14 +68,14 @@ export function LinkedReferences({
               b.title?.trim() || (b.sourceType === 'task' ? 'Untitled task' : 'Untitled note');
             return (
               <li key={`${b.sourceType}:${b.sourceId}`}>
-                <button
+                <MenuAction density="compact"
                   type="button"
                   onClick={() => open(b.sourceType, b.sourceId)}
-                  className="flex items-center gap-2 w-full text-left text-sm rounded px-2 py-1 hover:bg-accent text-foreground/90"
+                  className="flex items-center gap-2 w-full text-left"
                 >
                   <Icon className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                   <span className="truncate">{label}</span>
-                </button>
+                </MenuAction>
               </li>
             );
           })}

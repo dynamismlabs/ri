@@ -1,5 +1,8 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
 /**
  * Reviewing it here (docs/homes-spec.md §8.1, P4.1): this device's checkout
@@ -38,22 +41,24 @@ export function ReviewBar({ session, workspace }: { session: ChatSessionWithExec
   const ownBranch = `git switch -c ${review.branch}-mine`;
 
   return (
-    <div className="mx-auto w-full max-w-3xl rounded-lg border border-border bg-card px-3 py-1.5 text-[11.5px]">
+    <Card padding="md" density="compact" shadow className="mx-auto w-full max-w-3xl">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="text-foreground/85">
           Reviewing <span className="font-mono">{review.sha.slice(0, 7)}</span> from {review.source?.name ?? 'its device'} here
         </span>
         {review.dirty && <span className="text-amber-600 dark:text-amber-400">· has your edits, kept apart from the execution</span>}
         <span className="flex-1" />
-        <button
+        <Button
           type="button"
           onClick={() => open(review.path)}
-          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-foreground/80 hover:bg-muted/60"
+          variant="secondary"
+          size="sm"
+          className="inline-flex items-center gap-1"
         >
           <SquareArrowOutUpRight size={11} /> Open
-        </button>
+        </Button>
         <Tip label={review.dirty ? "It has your edits, so Refresh leaves it as it is." : 'Bring the latest published commit'}>
-          <button
+          <Button
             type="button"
             disabled={refresh.isPending || review.dirty}
             onClick={() =>
@@ -69,21 +74,25 @@ export function ReviewBar({ session, workspace }: { session: ChatSessionWithExec
                 onError: (err) => toast.error("Couldn't refresh it", { description: apiErrorText(err) }),
               })
             }
-            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-foreground/80 hover:bg-muted/60 disabled:opacity-50"
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1"
           >
             {refresh.isPending ? <Loader2 size={11} className="animate-spin" /> : <RefreshCw size={11} />} Refresh
-          </button>
+          </Button>
         </Tip>
         {here && (
           <Tip label={here.problem ?? `Move the execution to ${here.to.name}, into a clean worktree of its own, to work on it here.`}>
-            <button
+            <Button
               type="button"
               disabled={!!here.problem}
               onClick={() => setContinuing(true)}
-              className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-foreground/80 hover:bg-muted/60 disabled:opacity-50"
+              variant="secondary"
+              size="sm"
+              className="inline-flex items-center gap-1"
             >
               <ArrowRightLeft size={11} /> Continue here
-            </button>
+            </Button>
           </Tip>
         )}
       </div>
@@ -91,23 +100,25 @@ export function ReviewBar({ session, workspace }: { session: ChatSessionWithExec
         <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-[11px] text-muted-foreground">
           To keep these edits, put them on a branch of your own:
           <code className="rounded bg-muted px-1 py-px font-mono text-[10.5px] text-foreground/80">{ownBranch}</code>
-          <Tip label="Copy">
-            <button
+
+            <IconButton
               type="button"
-              aria-label="Copy"
               onClick={() => void navigator.clipboard?.writeText(ownBranch).then(() => toast.success('Copied'))}
-              className="rounded p-0.5 hover:bg-muted/60"
+              label="Copy"
+              tooltip="Copy"
+              variant="ghost"
+              size="sm"
             >
               <Copy size={10} />
-            </button>
-          </Tip>
+            </IconButton>
+
           They never go to the execution&apos;s branch.
         </p>
       )}
       {continuing && here && owner && (
         <ContinueDialog sessionId={sessionId} open={continuing} onOpenChange={setContinuing} to={here.to} from={owner.name} />
       )}
-    </div>
+    </Card>
   );
 }
 

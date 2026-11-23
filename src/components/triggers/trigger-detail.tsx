@@ -1,5 +1,9 @@
 'use client';
+import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from '@/components/system/alert-dialog';
+import { Callout } from '@/components/system/callout';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
 /**
  * One schedule, everything about it: the failure banner when it keeps
  * failing, Run now / Pause / Delete, the managed-by-the-app notice, the
@@ -8,7 +12,7 @@
  * chat, and on the /triggers/<id> page.
  */
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, PauseCircle, Play, PlayCircle, RotateCcw, Trash2 } from 'lucide-react';
 import type { RunRecord, TriggerView } from '@/db/types';
@@ -38,6 +42,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
   const runTrigger = useRunTrigger();
   const resetFailures = useResetTriggerFailures();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const deleteReturn=useRef<HTMLButtonElement|null>(null);
 
   const failing = trigger.consecutiveFailures >= 3;
   const lastFailedRun = (recentRuns ?? []).find((r) => r.status === 'failed');
@@ -48,15 +53,15 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
   return (
     <div className="space-y-6">
       {overdue && (
-        <p className="rounded-md px-3 py-2 text-sm bg-amber-500/10 border border-amber-500/30">
+        <Callout as="p" padding="md" density="row" tone={"warning"} >
           {overdue}.{' '}
           {isWaitingForChat(trigger)
             ? 'It goes when the chat is free or its Hold is released.'
             : `Check the computer has free disk space. If this stays, restart ${APP_NAME}.`}
-        </p>
+        </Callout>
       )}
       {failing && (
-        <div className="rounded-md px-3 py-3 bg-destructive/10 border border-destructive/30 flex items-start gap-3">
+        <Callout padding="md" density="comfortable" tone={"error"} className="flex items-start gap-3">
           <AlertTriangle size={16} className="text-destructive mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-destructive">
@@ -69,82 +74,91 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
             )}
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {lastFailedRun && (
-                <Link
-                  href={`/runs/${lastFailedRun.id}`}
-                  onNavigate={onNavigateAway}
-                  className="px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
-                >
+                <Button asChild variant="secondary" size="sm"><Link href={`/runs/${lastFailedRun.id}`}
+                  onNavigate={onNavigateAway}>
                   View last failed run
-                </Link>
+                </Link></Button>
               )}
               {trigger.enabled && (
-                <button data-slot="action-button"
+                <Button
                   onClick={() => update.mutate({ id, enabled: false })}
-                  className="px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
+                  variant="secondary"
+                  size="sm"
                 >
                   Pause it
-                </button>
+                </Button>
               )}
-              <button data-slot="action-button"
+              <Button
                 onClick={() => resetFailures.mutate(id)}
-                className="flex items-center gap-1 px-2 py-1 rounded-md text-[12px] border border-border bg-card hover:bg-muted"
+                variant="secondary"
+                size="sm"
+                className="flex items-center gap-1"
               >
                 <RotateCcw size={11} />
                 Reset failure count
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </Callout>
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           onClick={() => runTrigger.mutate(id)}
           disabled={runTrigger.isPending}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm hover:opacity-90 disabled:opacity-50"
+          variant="primary"
+          size="md"
+          className="flex items-center gap-1.5"
         >
           <Play size={14} />
           {runTrigger.isPending ? 'Starting…' : 'Run now'}
-        </button>
-        <button data-slot="action-button"
+        </Button>
+        <Button
           onClick={() => update.mutate({ id, enabled: !trigger.enabled })}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-border text-sm hover:bg-muted"
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-1.5"
         >
           {trigger.enabled ? <PauseCircle size={14} /> : <PlayCircle size={14} />}
           {trigger.enabled ? 'Pause' : 'Resume'}
-        </button>
+        </Button>
         {!managed && (
-          <button data-slot="action-button" data-tone="status"
-            onClick={() => setConfirmingDelete(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-destructive/30 text-destructive text-sm hover:bg-destructive/10 ml-auto"
+          <Button
+            onClick={(event) => { deleteReturn.current=event.currentTarget; setConfirmingDelete(true); }}
+            variant="secondary"
+            size="sm"
+            tone="danger"
+            className="flex items-center gap-1.5 ml-auto"
           >
             <Trash2 size={14} />
             Delete
-          </button>
+          </Button>
         )}
       </div>
 
       {managed && (
-        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-[12px] text-muted-foreground">
+        <Card padding="md" density="row" className="flex items-center gap-2">
           <span className="flex-1">
             This schedule is managed by the app. {describeLocks(lockedFieldsFor(id))} It is turned off
             rather than deleted.{isHeartbeat ? ' More options are in Settings > Heartbeat.' : ''}
           </span>
-          <button
+          <Button
             onClick={() => openSettings(isHeartbeat ? 'heartbeat' : 'general')}
-            className="flex-shrink-0 font-medium text-foreground hover:underline"
+            variant="link"
+            size="sm"
+            className="flex-shrink-0"
           >
             Open settings
-          </button>
-        </div>
+          </Button>
+        </Card>
       )}
 
       <TriggerForm key={id} trigger={trigger} onNavigateAway={onNavigateAway} />
 
       {trigger.kind === 'webhook' && trigger.webhookPublicId && (
         <section>
-          <h2 className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Webhook endpoint</h2>
-          <code className="block p-3 rounded-md border border-border bg-card text-xs font-mono break-all">
+          <h2 className="text-[11px] text-muted-foreground mb-2">Webhook endpoint</h2>
+          <code className="ri-trigger-secret block p-3 rounded-md border border-border bg-card text-xs font-mono break-all">
             POST /api/webhooks/triggers/{trigger.webhookPublicId}
           </code>
           <p className="text-[11px] text-muted-foreground mt-1">
@@ -155,7 +169,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
       )}
 
       <section>
-        <h2 className="text-[11px] uppercase tracking-wider text-muted-foreground mb-2">Recent runs</h2>
+        <h2 className="text-[11px] text-muted-foreground mb-2">Recent runs</h2>
         {recentRuns && recentRuns.length === 0 && <p className="text-sm text-muted-foreground">No runs yet.</p>}
         {recentRuns && recentRuns.length > 0 && (
           <div className="space-y-1">
@@ -166,31 +180,32 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
         )}
       </section>
 
-      {confirmingDelete && (
-        <div className="fixed inset-0 bg-background/80 z-[60] flex items-center justify-center p-6">
-          <div data-slot="dialog-content" className="bg-card border border-border rounded-lg p-6 max-w-md w-full space-y-4">
-            <h3 className="text-base font-semibold">Delete this schedule?</h3>
-            <p className="text-sm text-muted-foreground">
+      <AlertDialog open={confirmingDelete} onOpenChange={setConfirmingDelete}>
+          <AlertDialogContent onCloseAutoFocus={(event)=>{event.preventDefault();deleteReturn.current?.focus();}}>
+            <AlertDialogTitle>Delete this schedule?</AlertDialogTitle>
+            <AlertDialogDescription>
               Its past runs stay. Only the schedule and its future runs are removed.
-            </p>
-            <div className="flex items-center gap-2 justify-end">
-              <button
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <Button
                 onClick={() => setConfirmingDelete(false)}
-                className="px-3 py-1.5 rounded-md text-sm text-muted-foreground hover:text-foreground"
+                variant="ghost"
+                size="sm"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => deleteTrigger.mutate(id, { onSuccess: onDeleted })}
                 disabled={deleteTrigger.isPending}
-                className="px-3 py-1.5 rounded-md bg-destructive text-destructive-foreground text-sm hover:opacity-90"
+                variant="destructive"
+                size="sm"
+                tone="danger"
               >
                 Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -202,10 +217,10 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
       ? run.status
       : undefined;
   return (
-    <Link
+    <Card as={Link} padding="sm" shadow
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
       onNavigate={onNavigateAway}
-      className="flex items-center gap-3 p-2 rounded-md border border-border bg-card hover:bg-muted text-sm"
+      className="flex items-center gap-3"
     >
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
       <span className="flex-1 truncate text-muted-foreground text-[12px]">
@@ -224,7 +239,7 @@ function RunRowSmall({ run, onNavigateAway }: { run: RunRecord; onNavigateAway?:
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link>
+    </Card>
   );
 }
 

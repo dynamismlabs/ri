@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import type { TerminalApiBase } from '@/lib/folders/source';
 
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
@@ -430,7 +431,14 @@ export function ExecutionTerminalInstance({
           className="absolute inset-x-0 top-0 border-b border-zinc-800 bg-zinc-900/95 px-3 py-1.5 text-[11px] text-zinc-300"
         >
           {offline}{!reviewInput && ' Typing is off until then.'}
-          {reviewInput && <button type="button" disabled={!connected} className="ml-2 underline underline-offset-2 disabled:opacity-50" onClick={() => { resumeInputRef.current?.(); termRef.current?.focus(); }}>Continue typing</button>}
+          {reviewInput && <Button
+            type="button"
+            disabled={!connected}
+            onClick={() => { resumeInputRef.current?.(); termRef.current?.focus(); }}
+            variant="link"
+            size="sm"
+            className="ml-2"
+          >Continue typing</Button>}
         </div>
       )}
     </div>

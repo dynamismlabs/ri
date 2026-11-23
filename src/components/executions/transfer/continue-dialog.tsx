@@ -1,5 +1,8 @@
 'use client';
+import { DialogBody } from '@/components/system/dialog';
+import { Callout } from '@/components/system/callout';
 
+import { Button } from '@/components/system/button';
 /**
  * Move to MacBook (docs/homes-model.md, spec §8.2, P4.2): what the move does,
  * what it takes, and the one choice it asks for. Tracked changes always go,
@@ -10,7 +13,7 @@
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useReviewOn, useStartTransfer, useWorkingState } from '@/hooks/use-execution';
 import { apiErrorText } from '@/lib/api/client';
@@ -58,7 +61,7 @@ export function ContinueDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 text-[12.5px]">
+        <DialogBody compact className="space-y-3 ">
           {isLoading ? (
             <p className="flex items-center gap-2 text-muted-foreground">
               <Loader2 size={12} className="animate-spin" /> Looking at the work on {from}…
@@ -68,9 +71,9 @@ export function ContinueDialog({
           ) : state ? (
             <>
               {state.problem && (
-                <p role="alert" className="rounded-md border border-amber-500/40 bg-amber-500/5 px-2.5 py-2 text-[12px] text-foreground">
+                <Callout as="p" padding="sm" density="row" tone={"warning"} role="alert" >
                   {state.problem}
-                </p>
+                </Callout>
               )}
               <p className="text-muted-foreground">
                 {state.changed.length > 0
@@ -92,11 +95,11 @@ export function ContinueDialog({
                 </fieldset>
               )}
               {review && (
-                <p className="rounded-md border border-border bg-muted/40 px-2.5 py-2 text-[11.5px] text-muted-foreground">
+                <Callout as="p" padding="sm" density="row" >
                   Your review checkout of <span className="font-mono">{review.sha.slice(0, 7)}</span> on {to.name}
                   {review.dirty ? ' has your edits. It' : ''} stays as it is, apart from this work, which continues in a clean
                   worktree of its own there. {review.dirty ? 'Nothing in it is added to the move. Resolve those edits first if you meant them for this work.' : ''}
-                </p>
+                </Callout>
               )}
               {state.localOnly.length > 0 && (
                 <p className="text-[11px] text-muted-foreground/80">
@@ -106,25 +109,28 @@ export function ContinueDialog({
             </>
           ) : null}
           {start.error && <p className="text-destructive">{apiErrorText(start.error)}</p>}
-        </div>
+        </DialogBody>
 
         <DialogFooter>
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="rounded-md border border-border px-3 py-1.5 text-[12.5px] hover:bg-muted/60"
+            variant="secondary"
+            size="md"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
             onClick={go}
             disabled={start.isPending || isLoading || !!error || !!state?.problem}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12.5px] font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             {start.isPending && <Loader2 size={12} className="animate-spin" />}
             Move to {to.name}
-          </button>
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

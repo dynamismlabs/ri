@@ -1,0 +1,6 @@
+html:root [data-slot="calendar-navigation"] { gap: 2px; }
+@media (max-width: 767px) { html:root [data-slot="calendar-toolbar"] { position: relative; flex-wrap: wrap; padding-right: 44px; } }
+@media (max-width: 767px) { html:root [data-slot="calendar-toolbar"] > [data-slot="button"][data-kind="close"] { position: absolute; right: 8px; top: 8px; } }
+@media (max-width: 767px) { html:root [data-slot="calendar-spacer"] { display: none; } }
+@media (max-width: 767px) { html:root [data-slot="calendar-date"] { order: 1; flex: 1 0 100%; white-space: normal; font-size: 12px; } }
+@media (max-width: 767px) { html:root [data-slot="calendar-work-toggle"] { white-space: nowrap; } }

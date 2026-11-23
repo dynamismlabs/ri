@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Power, Loader2, Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -60,11 +61,11 @@ function ChatRestart({ sessionId, active = true }: RestartProps) {
 
   return (
     <Tip label="Stops this chat's harness, interrupting any work in progress. Your next message starts it again with this conversation's history. Use this to recover a stuck chat or pick up a harness update.">
-      <button
+      <MenuAction density="compact"
         type="button"
         onClick={handleClick}
         disabled={isPending}
-        className="w-full flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[12px] text-foreground hover:bg-muted/50 disabled:opacity-60 disabled:cursor-not-allowed text-left"
+        className="w-full flex items-center justify-between gap-2 disabled:cursor-not-allowed text-left"
       >
         <span className="flex items-center gap-2">
           {isPending ? (
@@ -83,7 +84,7 @@ function ChatRestart({ sessionId, active = true }: RestartProps) {
             {error instanceof Error ? error.message : String(error)}
           </span>
         )}
-      </button>
+      </MenuAction>
     </Tip>
   );
 }

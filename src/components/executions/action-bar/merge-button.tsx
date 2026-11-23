@@ -1,10 +1,15 @@
 'use client';
+import { DialogPrimitive } from '@/components/system/dialog';
+import { ChoiceRow, ChoiceGroup } from '@/components/system/choice-row';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
 
+import { Button } from '@/components/system/button';
 import { useMergePr, useSessionPr, useSetAutoMerge } from '@/hooks/use-execution-actions';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
+
 import { AlertTriangle, GitMerge } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useState } from 'react';
 import { ActionButton } from './action-button';
 
@@ -105,13 +110,13 @@ export function MergeButton({
       />
       <DialogPrimitive.Root open={open} onOpenChange={(o) => !o && setOpen(false)}>
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+          <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content" className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
             <VisuallyHidden.Root>
               <DialogPrimitive.Title>Merge PR #{prNumber}</DialogPrimitive.Title>
               <DialogPrimitive.Description>Confirm merge of pull request</DialogPrimitive.Description>
             </VisuallyHidden.Root>
-            <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
+            <div className="overflow-hidden">
               <div className="px-5 py-3 border-b border-border">
                 <div className="flex items-center gap-2">
                   <GitMerge size={14} className="text-primary" />
@@ -131,20 +136,15 @@ export function MergeButton({
 
               <div className="px-5 py-4 space-y-3">
                 {!enabled && reason && (
-                  <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-300">
+                  <Callout padding="md" density="row" tone={"warning"} className="flex items-start gap-2">
                     <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
                     <span>{reason}</span>
-                  </div>
+                  </Callout>
                 )}
 
                 {ciWarn && (
-                  <div
-                    className={cn(
-                      'flex items-start gap-2 rounded-md border px-3 py-2 text-[11px]',
-                      ciWarn.state === 'failing'
-                        ? 'border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300'
-                        : 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300',
-                    )}
+                  <Callout padding="md" density="row" tone={(ciWarn.state === 'failing' ? "error" : "warning")}
+                    className="flex items-start gap-2"
                   >
                     <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
                     <span>
@@ -152,74 +152,62 @@ export function MergeButton({
                         ? `${ciWarn.failed} of ${ciWarn.total} CI ${ciWarn.failed === 1 ? 'check is' : 'checks are'} failing. Merge anyway?`
                         : `${ciWarn.pending} of ${ciWarn.total} CI ${ciWarn.pending === 1 ? 'check is' : 'checks are'} still running. Merge anyway?`}
                     </span>
-                  </div>
+                  </Callout>
                 )}
 
-                <fieldset className="space-y-1.5">
-                  <legend className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground mb-1">
+                <ChoiceGroup asChild name="merge-method" value={method} onValueChange={value => setMethod(value as typeof method)}><fieldset className="space-y-1.5">
+                  <legend className="text-[10px] font-bold text-muted-foreground mb-1">
                     Merge method
                   </legend>
                   {METHODS.map((m) => (
-                    <label
-                      key={m.value}
-                      className={cn(
-                        'flex items-center gap-2 px-2 py-1.5 rounded-md border text-[12px] cursor-pointer',
-                        method === m.value
-                          ? 'border-primary/50 bg-primary/5'
-                          : 'border-border hover:bg-muted/30',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="merge-method"
-                        checked={method === m.value}
-                        onChange={() => setMethod(m.value)}
-                        className="accent-primary"
-                      />
+                    <ChoiceRow key={m.value} selection="radio" value={m.value} density="compact" className="flex items-center gap-2">
                       {m.label}
-                    </label>
+                    </ChoiceRow>
                   ))}
-                </fieldset>
+                </fieldset></ChoiceGroup>
 
                 {error && (
-                  <div className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-[11px] text-rose-700 dark:text-rose-300">
+                  <Callout padding="md" density="row" tone={"error"} >
                     {error}
-                  </div>
+                  </Callout>
                 )}
 
-                <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/20 px-3 py-2">
+                <Card padding="md" density="row" className="flex items-center justify-between gap-2">
                   <span className="text-[11px] text-muted-foreground">
                     {autoMergeEnabled
                       ? 'Auto-merge is on. GitHub merges when checks pass.'
                       : 'Or let GitHub merge automatically once checks pass.'}
                   </span>
-                  <button data-slot="action-button"
+                  <Button
                     type="button"
                     onClick={handleAutoMerge}
                     disabled={autoMerge.isPending}
-                    className="px-2.5 py-1 rounded-md text-[11px] font-medium border border-border hover:bg-muted/40 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                    variant="secondary"
+                    size="sm"
                   >
                     {autoMerge.isPending ? '…' : autoMergeEnabled ? 'Disable auto-merge' : 'Enable auto-merge'}
-                  </button>
-                </div>
+                  </Button>
+                </Card>
               </div>
 
               <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-border bg-muted/20">
-                <button
+                <Button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-3 py-1.5 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                  variant="secondary"
+                  size="md"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={handleMerge}
                   disabled={!enabled || merge.isPending}
-                  className="px-3 py-1.5 rounded-md text-[11px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  variant="secondary"
+                  size="md"
                 >
                   {merge.isPending ? 'Merging…' : 'Merge'}
-                </button>
+                </Button>
               </div>
             </div>
           </DialogPrimitive.Content>

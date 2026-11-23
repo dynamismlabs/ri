@@ -1,13 +1,16 @@
 'use client';
+import { Card } from '@/components/system/card';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Field } from '@/components/system/field';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
+
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { KeyRound, Loader2, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Tip } from '@/components/ui/tip';
 
 export function CursorCredentialPanel() {
   const [key, setKey] = useState('');
@@ -39,7 +42,7 @@ export function CursorCredentialPanel() {
   });
 
   return (
-    <div className="space-y-2 rounded-md border border-border bg-background/50 p-3">
+    <Card padding="md" className="space-y-2">
       <div className="flex items-center gap-1.5 font-medium text-foreground">
         <KeyRound size={13} /> Cursor API key
       </div>
@@ -47,23 +50,34 @@ export function CursorCredentialPanel() {
         Stored locally in Ri&apos;s protected credential store. The key is only opened when Cursor starts.
       </p>
       <div className="flex gap-2">
-        <Input
+        <Field
           type="password"
           autoComplete="off"
           value={key}
           onChange={(event) => setKey(event.target.value)}
           placeholder={status.data?.configured ? 'Replace configured key' : 'Paste API key'}
-          className="h-8 rounded-md text-[11px]"
+          aria-label={'API key'}
+          purpose="code"
         />
-        <Button size="sm" disabled={!key.trim() || save.isPending} onClick={() => save.mutate()}>
+        <Button
+          disabled={!key.trim() || save.isPending}
+          onClick={() => save.mutate()}
+          variant="primary"
+          size="md"
+        >
           {save.isPending && <Loader2 className="animate-spin" />} Save
         </Button>
         {status.data?.source === 'ri_store' && (
-          <Tip label="Remove stored key">
-            <Button size="icon-sm" variant="outline" aria-label="Remove stored key" disabled={clear.isPending} onClick={() => clear.mutate()}>
+            <IconButton
+              disabled={clear.isPending}
+              onClick={() => clear.mutate()}
+              label="Remove stored key"
+              tooltip="Remove stored key"
+              variant="ghost"
+              size="sm"
+            >
               <Trash2 />
-            </Button>
-          </Tip>
+            </IconButton>
         )}
       </div>
       {status.data?.configured && (
@@ -71,6 +85,6 @@ export function CursorCredentialPanel() {
           Configured through {status.data.source === 'ri_store' ? 'Ri' : 'CURSOR_API_KEY'}
         </p>
       )}
-    </div>
+    </Card>
   );
 }

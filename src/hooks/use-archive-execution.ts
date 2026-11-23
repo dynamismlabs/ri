@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { toast } from 'sonner';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { archiveAnywayDialog } from '@/components/executions/uncommitted-files';
 import { requestWorkbenchView } from '@/components/executions/workbench/view-request';
 import { useWorkActivity, useWorkNavigation } from '@/contexts/work-context';

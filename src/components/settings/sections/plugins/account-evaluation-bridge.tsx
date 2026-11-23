@@ -1,8 +1,9 @@
 'use client';
 
+import { OverlaySurface } from '@/components/system/overlay';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { z } from 'zod/v4';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { accountRpcSchema } from '@/lib/plugins/evaluation-contract';
 import { trpcClient } from '@/lib/trpc/client';
 
@@ -88,13 +89,23 @@ export function AccountEvaluationBridge({ handle, url, account, frame }: {
     finally { if (currentChannel.current === value.channel) setBusy(null); }
   }
   if (!pending.length && !error) return null;
-  return <div className="absolute left-4 top-24 z-20 max-h-[60dvh] w-[calc(100%-2rem)] max-w-lg space-y-3 overflow-auto rounded-xl border border-border bg-background p-4 shadow-xl" aria-label="Account view approvals">
+  return <OverlaySurface kind="popover" padding="lg" className="absolute left-4 top-24 z-20 max-h-[60dvh] w-[calc(100%-2rem)] max-w-lg space-y-3 overflow-auto" aria-label="Account view approvals">
     {pending.map(value => <div key={value.id} className="space-y-2">
       <p className="text-sm font-medium">Review app action</p>
       <p className="text-xs text-muted-foreground">{value.input.name} on {account}</p>
       <pre className="max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-2 text-xs">{JSON.stringify(value.input.arguments, null, 2).slice(0, 4000)}</pre>
-      <div className="flex gap-2"><Button size="sm" disabled={busy !== null} onClick={() => void decide(value, true)}>Approve once</Button><Button size="sm" variant="outline" disabled={busy !== null} onClick={() => void decide(value, false)}>Decline</Button></div>
+      <div className="flex gap-2"><Button
+        disabled={busy !== null}
+        onClick={() => void decide(value, true)}
+        variant="primary"
+        size="md"
+      >Approve once</Button><Button
+        disabled={busy !== null}
+        onClick={() => void decide(value, false)}
+        variant="secondary"
+        size="sm"
+      >Decline</Button></div>
     </div>)}
     {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
-  </div>;
+  </OverlaySurface>;
 }

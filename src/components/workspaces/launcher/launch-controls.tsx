@@ -1,8 +1,16 @@
 'use client';
+import { Callout } from '@/components/system/callout';
+import { MenuAction } from '@/components/system/menu-action';
 
+
+import { Field } from '@/components/system/field';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { Button } from '@/components/system/button';
 import { SetupAgentDialog } from '@/components/agents/setup-agent-dialog';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverTrigger } from '@/components/system/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/system/tooltip';
 import { useWorkspaceBranches } from '@/hooks/use-workspaces';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { workspacesApi } from '@/lib/api/workspaces';
@@ -42,83 +50,42 @@ export function ModeControl({
   disabled?: boolean;
 }) {
   return (
-    <div
-      role="radiogroup"
-      aria-label="Isolation mode"
-      className="inline-flex items-center gap-0.5 rounded-md border border-border p-0.5"
-    >
-      <ModeSegment
-        selected={mode === 'worktree'}
-        disabled={disabled}
-        onSelect={() => onChange('worktree')}
-        icon={<GitBranch size={11} />}
-        label="Worktree"
-        title="Isolated copy on its own branch"
-      />
-      <ModeSegment
-        selected={mode === 'live'}
-        disabled={disabled}
-        onSelect={() => onChange('live')}
-        icon={<Zap size={11} />}
-        label="Live"
-        title="Runs in the agent's own folder, no isolation"
-        tone="warning"
-      />
-    </div>
-  );
-}
-
-function ModeSegment({
-  selected,
-  disabled,
-  onSelect,
-  icon,
-  label,
-  title,
-  tone,
-}: {
-  selected: boolean;
-  disabled?: boolean;
-  onSelect: () => void;
-  icon: React.ReactNode;
-  label: string;
-  title: string;
-  tone?: 'warning';
-}) {
-  return (
-    <Tip label={title}>
-      <button data-slot="action-button" data-variant="ghost"
-        type="button"
-        role="radio"
-        aria-checked={selected}
-        disabled={disabled}
-        onClick={onSelect}
-        className={cn(
-          'inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-40',
-          selected
-            ? tone === 'warning'
-              ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
-              : 'bg-muted text-foreground'
-            : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
-        )}
-      >
-        {icon}
-        {label}
-      </button>
-    </Tip>
+    <SegmentedControl
+      mode="choice"
+      selection="radio"
+      ariaLabel="Isolation mode"
+      value={mode}
+      onChange={onChange}
+      disabled={disabled}
+      options={[
+        {
+          value: 'worktree',
+          label: 'Worktree',
+          icon: <GitBranch />,
+          hint: 'Isolated copy on its own branch',
+        },
+        {
+          value: 'live',
+          label: 'Live',
+          icon: <Zap />,
+          hint: "Runs in the agent's own folder, no isolation",
+          selectedTone: 'warning',
+        },
+      ]}
+    />
   );
 }
 
 /** The Live consequences, shown inline while Live is the armed mode. */
 export function LiveModeNotice() {
   return (
-    <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-2 text-[10.5px] leading-snug text-amber-700 dark:text-amber-400">
+    <Callout padding="sm" density="row" tone={"warning"} className="flex items-start gap-2">
       <Zap size={12} className="mt-px flex-shrink-0" />
       <span>
         This edits the agent&apos;s own folder on whatever branch is checked out. No
         isolation, commits land on that branch, and two Live sessions will race on files.
       </span>
-    </div>
+    </Callout>
   );
 }
 
@@ -180,18 +147,20 @@ export function RunOnControl({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Tip label="Where this chat runs">
-            <button
+            <Button
               type="button"
               disabled={disabled}
-              className={cn(TRIGGER_CLASS, oneOff && 'border-primary/40 text-foreground', !selected.ready && 'border-amber-500/40 text-amber-600 dark:text-amber-400')}
+              variant={oneOff ? "secondary" : "ghost"}
+              size="sm"
+              tone={!selected.ready ? "warning" : "neutral"}
             >
               <Laptop size={11} />
               <span className="max-w-[9rem] truncate">{selected.name}</span>
-            </button>
+            </Button>
           </Tip>
         </PopoverTrigger>
         <LauncherPopoverContent align="start" className="w-[280px] p-1">
-          <div className="px-2 pb-1 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">Run on</div>
+          <div className="px-2 pb-1 pt-1.5 text-[10px] font-medium text-muted-foreground/60">Run on</div>
           {runOn.choices.map((choice) => {
             const isSelected = choice.deviceId === value;
             const canSetUp = choice.needsSetup && choice.connected;
@@ -205,7 +174,7 @@ export function RunOnControl({
                   ? 'Not connected right now. The work starts when it is.'
                   : null;
             return (
-              <button data-slot="menu-action"
+              <MenuAction density="compact"
                 key={choice.deviceId}
                 type="button"
                 disabled={!choice.ready && !canSetUp}
@@ -214,10 +183,7 @@ export function RunOnControl({
                   if (canSetUp) setSettingUp({ id: choice.deviceId, name: choice.name });
                   else onChange(choice.deviceId);
                 }}
-                className={cn(
-                  'flex w-full items-start gap-2 rounded-md px-2 py-1.5 text-left transition-colors disabled:cursor-not-allowed',
-                  isSelected ? 'bg-muted' : 'hover:bg-muted/50',
-                )}
+                className="flex w-full items-start gap-2 text-left disabled:cursor-not-allowed"
               >
                 <Laptop size={11} className={cn('mt-0.5 flex-shrink-0', choice.ready ? 'text-primary/70' : 'text-muted-foreground/50')} />
                 <span className="min-w-0 flex-1">
@@ -234,19 +200,19 @@ export function RunOnControl({
                   )}
                 </span>
                 {isSelected && <Check size={11} className="mt-0.5 flex-shrink-0 text-primary" />}
-              </button>
+              </MenuAction>
             );
           })}
           {oneOff && selected.ready && (
-            <button data-slot="menu-action"
+            <MenuAction density="compact" separator
               type="button"
               disabled={savingDefault}
               onClick={() => onMakeDefault(selected.deviceId)}
-              className="mt-1 flex w-full items-center gap-2 rounded-md border-t border-border/70 px-2 py-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-50"
+              className="mt-1 flex w-full items-center gap-2 text-left"
             >
               {savingDefault ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} className="opacity-0" />}
               Make {selected.name} the default for this agent
-            </button>
+            </MenuAction>
           )}
         </LauncherPopoverContent>
       </Popover>
@@ -303,14 +269,15 @@ export function BaseControl({
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setFilter(''); }}>
       <PopoverTrigger asChild>
         <Tip label={fromPr ? `Forking from pull request #${base.prNumber}` : 'Fork point'}>
-          <button
+          <Button
             type="button"
             disabled={disabled}
-            className={cn(TRIGGER_CLASS, explicit && 'border-primary/40 text-foreground')}
+            variant={explicit ? "secondary" : "ghost"}
+            size="sm"
           >
             <GitBranch size={11} />
             <span className="max-w-[11rem] truncate font-mono">from {label}</span>
-          </button>
+          </Button>
         </Tip>
       </PopoverTrigger>
       <LauncherPopoverContent align="start" className="w-[300px] p-0">
@@ -321,41 +288,40 @@ export function BaseControl({
               <span className="font-mono text-foreground">#{base.prNumber}</span>. Resolved on the
               server, so it works for forks and PRs you have never checked out.
             </p>
-            <button data-slot="action-button" data-variant="ghost"
+            <Button
               type="button"
               onClick={() => { onClear(); setOpen(false); }}
-              className="inline-flex items-center gap-1.5 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              variant="ghost"
+              size="sm"
+              className="inline-flex items-center gap-1.5"
             >
               <X size={11} />
               Use the agent&apos;s default instead
-            </button>
+            </Button>
           </div>
         ) : (
           <>
-            <div className="relative border-b border-border/70">
-              <Search
-                size={11}
-                className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
-              />
-              <input
-                autoFocus
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                placeholder="Filter branches…"
-                className="w-full bg-transparent py-1.5 pl-7 pr-2 text-[11.5px] focus:outline-none"
-              />
-            </div>
+            <div className="relative border-b border-border/70"><Field
+              autoFocus
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter branches…"
+              className={'w-full'}
+              purpose="embedded"
+              leading={<Search />}
+              aria-label={'Filter branches'}
+            /></div>
             <div className="max-h-[240px] overflow-y-auto p-1">
               {base.baseBranch && (
-                <button data-slot="menu-action"
+                <MenuAction density="compact"
                   type="button"
                   onClick={() => { onClear(); setOpen(false); }}
-                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[11.5px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                  className="flex w-full items-center gap-2 text-left"
                 >
                   <X size={11} />
                   Agent default
                   {workspaceDefault && <span className="font-mono opacity-70">({workspaceDefault})</span>}
-                </button>
+                </MenuAction>
               )}
               {isLoading && (
                 <div className="px-2 py-3 text-center text-[11px] text-muted-foreground/70">Loading…</div>
@@ -366,19 +332,16 @@ export function BaseControl({
                 </div>
               )}
               {filtered.map((b) => (
-                <button data-slot="menu-action"
+                <MenuAction density="compact"
                   key={b}
                   type="button"
                   onClick={() => { onPickBranch(b); setOpen(false); }}
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left font-mono text-[11.5px] transition-colors',
-                    b === base.baseBranch ? 'bg-muted text-foreground' : 'text-foreground/90 hover:bg-muted/60',
-                  )}
+                  className="flex w-full items-center gap-2 text-left"
                 >
                   <GitBranch size={11} className="flex-shrink-0 text-muted-foreground/70" />
                   <span className="truncate">{b}</span>
                   {b === base.baseBranch && <Check size={11} className="ml-auto flex-shrink-0 text-primary" />}
-                </button>
+                </MenuAction>
               ))}
             </div>
           </>
@@ -452,15 +415,13 @@ export function LiveFreshnessControl({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
+        <Button
           type="button"
           disabled={disabled || status.isLoading || pull.isPending || current || blocked}
           onClick={() => pull.mutate()}
-          className={cn(
-            TRIGGER_CLASS,
-            behind > 0 && !blocked && 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-            blocked && 'border-border',
-          )}
+          variant="secondary"
+          size="xs"
+          tone={behind > 0 && !blocked ? "warning" : "neutral"}
         >
           {pull.isPending || status.isLoading ? (
             <Loader2 size={11} className="animate-spin" />
@@ -470,7 +431,7 @@ export function LiveFreshnessControl({
             <RefreshCw size={11} />
           )}
           <span className="max-w-[13rem] truncate">{label}</span>
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent side="bottom" sideOffset={4} className="max-w-[280px]">
         {error

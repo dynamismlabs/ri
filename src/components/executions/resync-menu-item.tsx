@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import type { ComponentProps } from 'react';
 import { useOptionalHomeContext } from '@/components/home/home-context';
@@ -67,11 +68,11 @@ function PersonalResyncMenuItem({
         ? 'Pull anything new from the provider transcript this chat was imported from. Use when the terminal running it is ahead of what you see here.'
         : "Force-resync this chat. Stops the process running it (interrupting any turn in flight), replays the transcript from disk, and resends any unanswered message. Use when the chat feels stuck and the automatic recovery hasn't caught up."}
     >
-      <button
+      <MenuAction density="compact"
         type="button"
         onClick={handleClick}
         disabled={isPending}
-        className="w-full flex items-center justify-between gap-2 rounded-md px-2 py-1.5 text-[12px] text-foreground hover:bg-muted/50 disabled:opacity-60 disabled:cursor-not-allowed text-left"
+        className="w-full flex items-center justify-between gap-2 disabled:cursor-not-allowed text-left"
       >
         <span className="flex items-center gap-2">
           {isPending ? (
@@ -90,7 +91,7 @@ function PersonalResyncMenuItem({
             {error instanceof Error ? error.message : String(error)}
           </span>
         )}
-      </button>
+      </MenuAction>
     </Tip>
   );
 }

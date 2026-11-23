@@ -1,5 +1,10 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Field } from '@/components/system/field';
+
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { TEAM_ROLE_LABELS } from '@/lib/team/capabilities';
 import { useHomeContext } from '@/components/home/home-context';
 
@@ -10,9 +15,9 @@ import { toast } from 'sonner';
 import { apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { forgetTeamSignIn } from '@/lib/team/client';
 import { trpc, trpcClient } from '@/lib/trpc/client';
-import { Dialog } from '@/components/ui/dialog';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { cn } from '@/lib/utils';
+import { Dialog } from '@/components/system/dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
+
 import { useTeam, useTeamNav } from './team-context';
 import { useTeamMembers } from './use-team';
 import { MemberAvatar } from './member-avatar';
@@ -94,17 +99,10 @@ export function TeamSettings() {
 function Section({ title, children, hint }: { title: string; children: ReactNode; hint?: string }) {
   return (
     <section className="min-w-0">
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <h3 className="text-[11px] font-semibold text-muted-foreground">{title}</h3>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       <div className="mt-2 space-y-2">{children}</div>
     </section>
-  );
-}
-
-function rowButton(tone: 'default' | 'danger' = 'default') {
-  return cn(
-    'inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted/50 disabled:opacity-50',
-    tone === 'danger' && 'text-red-600 dark:text-red-400',
   );
 }
 
@@ -130,18 +128,23 @@ function NameField({ id, label, value, onSave, disabled }: { id?: string; label:
       }}
     >
       <label className="sr-only" htmlFor={id ?? `name-${label}`}>{label}</label>
-      <input
+      <Field
         id={id ?? `name-${label}`}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         disabled={disabled}
         maxLength={80}
-        className="min-w-0 flex-1 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-sm outline-none focus-visible:border-primary/60 disabled:opacity-70"
+        className="min-w-0 flex-1"
       />
       {!disabled && (
-        <button type="submit" disabled={!changed || busy} className={rowButton()}>
+        <Button
+          type="submit"
+          disabled={!changed || busy}
+          variant="primary"
+          size="md"
+        >
           Save
-        </button>
+        </Button>
       )}
     </form>
   );
@@ -181,23 +184,38 @@ function AreasSection() {
           <div className="min-w-0 flex-1">
             <NameField id={`area-${area.id}`} label={`Name of ${area.name}`} value={area.name} onSave={(name) => update.mutateAsync({ id: area.id, name })} />
           </div>
-          <button type="button" className={rowButton()} onClick={() => update.mutate({ id: area.id, status: 'archived' })}>
+          <Button
+            type="button"
+            onClick={() => update.mutate({ id: area.id, status: 'archived' })}
+            variant="secondary"
+            size="sm"
+          >
             <Archive className="size-3.5" /> Archive
-          </button>
+          </Button>
         </div>
       ))}
-      <button type="button" className={rowButton()} onClick={() => setCreating(true)}>
+      <Button
+        type="button"
+        onClick={() => setCreating(true)}
+        variant="secondary"
+        size="sm"
+      >
         <FolderPlus className="size-3.5" /> New area
-      </button>
+      </Button>
       {archived.length > 0 && (
         <div className="space-y-1.5 pt-2">
           <p className="text-xs text-muted-foreground">Archived</p>
           {archived.map((area) => (
             <div key={area.id} className="flex items-center justify-between gap-2 text-sm">
               <span className="truncate text-muted-foreground">{area.name}</span>
-              <button type="button" className={rowButton()} onClick={() => update.mutate({ id: area.id, status: 'active' })}>
+              <Button
+                type="button"
+                onClick={() => update.mutate({ id: area.id, status: 'active' })}
+                variant="secondary"
+                size="sm"
+              >
                 <RotateCcw className="size-3.5" /> Restore
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -210,36 +228,37 @@ function AreasSection() {
 function CopyLink({ link, note }: { link: string; note?: string }) {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="rounded-md border border-border bg-muted/30 p-2">
+    <Card padding="sm" >
       <div className="flex items-center gap-2">
         <code className="min-w-0 flex-1 truncate text-[11px] select-all">{link}</code>
-        <button
+        <Button
           type="button"
-          className={rowButton()}
           onClick={async () => {
             await navigator.clipboard.writeText(link).catch(() => {});
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}
+          variant="secondary"
+          size="sm"
         >
           {copied ? <Check size={12} /> : <Copy size={12} />} {copied ? 'Copied' : 'Copy'}
-        </button>
+        </Button>
       </div>
       {note && <p className="mt-1.5 text-[11px] text-muted-foreground">{note}</p>}
-    </div>
+    </Card>
   );
 }
 
 /** Keep the original link action in place while its address prerequisite is fixed. */
 function LinkAddressSetup({ action, onReady }: { action: string; onReady: () => void }) {
   const owner = useHomeContext().capabilities.administerMembers;
-  return <section aria-label={`${action}: Team address`} className="space-y-3 rounded-lg border border-border bg-muted/20 p-3">
+  return <Card as="section" padding="md" aria-label={`${action}: Team address`} className="space-y-3">
     <h4 className="text-sm font-medium">{action}</h4>
     {owner ? <>
       <p className="text-xs text-muted-foreground">Set up or reconnect the Team address below. We will finish making your link automatically.</p>
       <TeamAddressSetup onSaved={onReady} />
     </> : <p role="status" className="text-sm text-muted-foreground">Ask a team owner to set up or reconnect the Team address. Then try this action again. Your membership stays the same.</p>}
-  </section>;
+  </Card>;
 }
 
 function PeopleSection() {
@@ -267,7 +286,7 @@ function PeopleSection() {
   const pending = (invitations.data ?? []).filter((i) => i.state === 'valid');
   return (
     <Section title="People">
-      <ul className="divide-y divide-border/60 rounded-md border border-border">
+      <Card as="ul" padding="none" surface="plain" className="divide-y divide-border/60">
         {active.map((m) => (
           <li key={m.id} className="flex items-center gap-2 px-3 py-2 text-sm">
             <MemberAvatar name={m.name} size="sm" />
@@ -277,10 +296,8 @@ function PeopleSection() {
             </span>
             <span className="text-[11px] text-muted-foreground">{TEAM_ROLE_LABELS[m.role]}</span>
             {owner && m.id !== member.id && (
-              <button
+              <IconButton
                 type="button"
-                aria-label={`Remove ${m.name}`}
-                className="rounded p-1 text-muted-foreground hover:bg-muted/50 hover:text-red-600"
                 onClick={async () => {
                   if (!(await confirm({ title: `Remove ${m.name}?`, description: 'They\'re signed out everywhere at once. What they did keeps their name.', confirmLabel: 'Remove', tone: 'destructive' }))) return;
                   try {
@@ -290,18 +307,27 @@ function PeopleSection() {
                     toast.error(apiErrorText(err));
                   }
                 }}
+                label={`Remove ${m.name}`}
+                variant="ghost"
+                size="sm"
               >
                 <UserMinus size={14} />
-              </button>
+              </IconButton>
             )}
           </li>
         ))}
-      </ul>
+      </Card>
       {owner && (
         <>
-          <button type="button" className={rowButton()} onClick={() => invite.mutate()} disabled={invite.isPending}>
+          <Button
+            type="button"
+            onClick={() => invite.mutate()}
+            disabled={invite.isPending}
+            variant="secondary"
+            size="sm"
+          >
             <UserPlus size={13} /> Invite people
-          </button>
+          </Button>
           {needsAddress && <LinkAddressSetup action="Invite people" onReady={() => invite.mutate()} />}
           {latest && (
             <CopyLink
@@ -318,16 +344,17 @@ function PeopleSection() {
               {pending.map((inv) => (
                 <li key={inv.id} className="flex items-center gap-2">
                   <span className="flex-1">Invitation made {new Date(inv.createdAt).toLocaleDateString()}, not used yet</span>
-                  <button
+                  <Button
                     type="button"
-                    className="underline"
                     onClick={async () => {
                       await trpcClient.team.invitations.revoke.mutate({ id: inv.id });
                       void invitations.refetch();
                     }}
+                    variant="link"
+                    size="sm"
                   >
                     Withdraw
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -337,7 +364,6 @@ function PeopleSection() {
     </Section>
   );
 }
-
 
 function YouSection() {
   const { member } = useTeam();
@@ -371,11 +397,24 @@ function YouSection() {
       <Section title="My Ri" hint={space ? undefined : 'Use this Team from your personal Ri with your existing membership.'}>
         {space ? <p className="text-xs text-muted-foreground">
           <span className="font-medium text-foreground">Connected to My Ri.</span> To disconnect it, use My Ri&apos;s{' '}
-          <button type="button" className="underline" onClick={() => window.location.assign('/?settings=teams')}>Settings, Teams</button>.
+          <Button
+            type="button"
+            onClick={() => window.location.assign('/?settings=teams')}
+            variant="link"
+            size="sm"
+          >Settings, Teams</Button>.
         </p> : <>
-          <button type="button" className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50" disabled={makeLink.isPending} aria-busy={makeLink.isPending} onClick={() => makeLink.mutate(true)}>
+          <Button
+            type="button"
+            disabled={makeLink.isPending}
+            aria-busy={makeLink.isPending}
+            onClick={() => makeLink.mutate(true)}
+            variant="primary"
+            size="md"
+            className="inline-flex items-center gap-2"
+          >
             <House size={15} /> Connect to My Ri
-          </button>
+          </Button>
           {needsAddress === true && <LinkAddressSetup action="Connect to My Ri" onReady={() => makeLink.mutate(true)} />}
           {link?.forHome && <CopyLink link={link.value} note="To finish, paste it in your own Ri under Settings, Teams, within 15 minutes. Work assigned to you then appears there too, and nothing personal comes to the team." />}
         </>}
@@ -392,7 +431,7 @@ function YouSection() {
       />
       </Section>
       <Section title="Sign-ins">
-      {(signIns.data?.length ?? 0) > 0 && <ul className="divide-y divide-border/60 rounded-md border border-border">
+      {(signIns.data?.length ?? 0) > 0 && <Card as="ul" padding="none" surface="plain" className="divide-y divide-border/60">
         {(signIns.data ?? []).map((s) => (
           <li key={s.keyId} className="flex items-center gap-2 px-3 py-2 text-xs">
             {s.deviceKind === 'service' ? <House size={13} className="text-muted-foreground" /> : <Smartphone size={13} className="text-muted-foreground" />}
@@ -401,31 +440,44 @@ function YouSection() {
               {s.current && <span className="text-muted-foreground"> (this one)</span>}
             </span>
             {!s.current && (
-              <button
+              <Button
                 type="button"
-                className="underline text-muted-foreground"
                 onClick={async () => {
                   await trpcClient.team.signIns.revoke.mutate({ keyId: s.keyId });
                   void signIns.refetch();
                 }}
+                variant="link"
+                size="sm"
               >
                 Sign out there
-              </button>
+              </Button>
             )}
           </li>
         ))}
-      </ul>}
-        <button type="button" className={rowButton()} disabled={makeLink.isPending} aria-busy={makeLink.isPending} onClick={() => makeLink.mutate(false)}>
+      </Card>}
+        <Button
+          type="button"
+          disabled={makeLink.isPending}
+          aria-busy={makeLink.isPending}
+          onClick={() => makeLink.mutate(false)}
+          variant="secondary"
+          size="sm"
+        >
           <Smartphone size={13} /> Sign in on another device
-        </button>
+        </Button>
         {needsAddress === false && <LinkAddressSetup action="Sign in on another device" onReady={() => makeLink.mutate(false)} />}
         {link && !link.forHome && <CopyLink link={link.value} note="Open it on the other device within 15 minutes. It signs you in there once." />}
       </Section>
-      {!space && <button type="button" className={rowButton('danger')} onClick={async () => {
+      {!space && <Button
+        type="button"
+        onClick={async () => {
         await trpcClient.team.signIns.signOut.mutate().catch(() => {});
         forgetTeamSignIn();
         window.location.assign('/');
-      }}><LogOut size={13} />Sign out here</button>}
+      }}
+        variant="destructive"
+        size="sm"
+      ><LogOut size={13} />Sign out here</Button>}
     </div>
   );
 }

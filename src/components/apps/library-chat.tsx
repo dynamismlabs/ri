@@ -1,10 +1,11 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { MessageCircle, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
+import { Button } from '@/components/system/button';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { mainChatKey } from '@/hooks/use-main-chat';
 import { trpcClient } from '@/lib/trpc/client';
@@ -55,15 +56,23 @@ function SourceChoices({ item, onClose, onOpenChat }: { item: LibraryItem; onClo
     } catch (error) { setFailure(error instanceof Error ? error.message : 'Could not prepare the reference.'); }
   };
   if (sources.isPending) return <p role="status" className="flex items-center gap-2 py-4 text-sm text-muted-foreground"><Loader2 size={14} className="animate-spin" />Finding available accounts…</p>;
-  if (sources.error) return <div role="alert" className="space-y-3 text-sm"><p>{sources.error.message}</p><Button variant="outline" onClick={() => void sources.refetch()}>Retry</Button></div>;
+  if (sources.error) return <div role="alert" className="space-y-3 text-sm"><p>{sources.error.message}</p><Button
+    onClick={() => void sources.refetch()}
+    variant="secondary"
+    size="sm"
+  >Retry</Button></div>;
   return <div className="space-y-3">
     {failure && <p role="alert" className="text-sm text-destructive">{failure}</p>}
     {!sources.data?.items.length ? <p className="text-sm text-muted-foreground">No accounts from this connection are available to reference. Check the connection and its access, then try again.</p>
-      : sources.data.items.map(source => <button data-slot="choice-row" key={source.sourceRef} type="button" disabled={source.status === 'unavailable'} onClick={() => open(source.sourceRef)}
-        className="flex w-full items-center gap-3 rounded-lg border p-3 text-left hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50">
+      : sources.data.items.map(source => <ChoiceRow key={source.sourceRef} type="button" disabled={source.status === 'unavailable'} onClick={() => open(source.sourceRef)}
+        className="flex w-full items-center gap-3 text-left disabled:cursor-not-allowed">
         <MessageCircle size={15} className="shrink-0 text-muted-foreground" /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{source.label}</span><span className="text-xs text-muted-foreground">{SOURCE_STATUS_LABELS[source.status]}</span></span>
-      </button>)}
+      </ChoiceRow>)}
     {sources.data?.items.some(source => source.status === 'unavailable') && <p className="text-xs text-muted-foreground">Some sources are unavailable with this chat’s engine or access. You can choose a supported engine in chat.</p>}
-    {sources.data && !sources.data.items.some(source => source.status !== 'unavailable') && <Button variant="outline" onClick={() => open()}>Open chat</Button>}
+    {sources.data && !sources.data.items.some(source => source.status !== 'unavailable') && <Button
+      onClick={() => open()}
+      variant="secondary"
+      size="sm"
+    >Open chat</Button>}
   </div>;
 }

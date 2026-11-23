@@ -1,4 +1,5 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
 
 import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
 import { AgentIcon } from '@/components/agents/agent-icon';
@@ -55,14 +56,14 @@ export function AgentSelectionSection({
   return (
     <section data-agent-id={workspace.id} aria-label={`${workspace.name} chats`}>
       <div className="sticky top-[var(--rail-sticky-top,0px)] z-20 bg-background">
-        <div
+        <ChoiceRow asChild surface="plain" density="compact"><div
           role="checkbox"
           aria-checked={checked === 'indeterminate' ? 'mixed' : checked}
           aria-label={`All ${workspace.name} chats`}
           tabIndex={0}
           onClick={toggleAll}
           onKeyDown={onKeyDown}
-          className="flex cursor-pointer select-none items-center gap-2 rounded-lg px-1.5 py-1.5 transition-colors hover:bg-muted/40"
+          className="flex cursor-pointer select-none items-center gap-2"
         >
           <AgentIcon workspace={workspace} size="md" />
           <span className="min-w-0 flex-1">
@@ -76,7 +77,7 @@ export function AgentSelectionSection({
           <span className="flex flex-shrink-0 pr-0.5">
             <SelectionCheck checked={checked} />
           </span>
-        </div>
+        </div></ChoiceRow>
       </div>
       <div className="mb-1.5 mt-0.5 space-y-px">{children}</div>
     </section>

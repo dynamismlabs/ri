@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { FileX, RefreshCw, Loader2 } from 'lucide-react';
 import { useSessionCookieReady } from '@/hooks/use-session-cookie-ready';
@@ -60,13 +61,15 @@ function HtmlPreview({ source, path }: { source: FolderSource; path: string }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex shrink-0 justify-end border-b border-border px-3 py-1">
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={() => setGeneration(value => value + 1)}
-          className="inline-flex items-center gap-1.5 rounded px-1.5 py-1 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
+          variant="ghost"
+          size="xs"
+          className="inline-flex items-center gap-1.5"
         >
           {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />} Reload preview
-        </button>
+        </Button>
       </div>
       <iframe
         key={frame}

@@ -40,10 +40,10 @@ export function QrCode({ value, size = 180, className }: QrCodeProps) {
 
   return (
     <div
-      className={cn(
+      className={cn("ri-qr-code-frame", cn(
         'inline-flex items-center justify-center rounded-md border border-border bg-white p-2',
         className,
-      )}
+      ))}
       style={{ width: size + 16, height: size + 16 }}
     >
       {dataUrl ? (

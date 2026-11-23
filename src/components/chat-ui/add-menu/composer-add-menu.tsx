@@ -1,5 +1,7 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { IconButton } from '@/components/system/icon-button';
 /**
  * The composer's +: one door for what you can bring into a message, so none of
  * it needs its own button or has to be known by its typed character. `@` and
@@ -22,8 +24,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tip } from '@/components/ui/tip';
+} from '@/components/system/menu';
+
 import { dismissOpenSuggestions } from '@/components/chat/editor/suggestion/escape-guard';
 import { useTouchFirst } from '@/hooks/use-touch-first';
 import { cn } from '@/lib/utils';
@@ -34,11 +36,11 @@ export function AddMenuRow({ icon: Icon, typed, children, ...props }: ComponentP
   typed?: string;
 }) {
   return (
-    <DropdownMenuItem className="pointer-coarse:py-2.5" {...props}>
+    <MenuAction kind="menu"  {...props}>
       <Icon className="text-muted-foreground" />
       <span className="min-w-0 flex-1 truncate">{children}</span>
       {typed && <kbd className="font-mono text-xs text-muted-foreground">{typed}</kbd>}
-    </DropdownMenuItem>
+    </MenuAction>
   );
 }
 
@@ -62,22 +64,19 @@ export function ComposerAddMenu({ editor, onPick, disabled, skills, mentions, cl
       {/* Opening it closes a `/`, `@` or `#` menu already open over the composer, keeping what was typed. */}
       <DropdownMenu modal={false} onOpenChange={(open) => { if (open) dismissOpenSuggestions(); }}>
         <DropdownMenuTrigger asChild disabled={disabled}>
-          <Tip label="Add files and more">
-            <button data-slot="action-button" data-variant="ghost"
+
+            <IconButton
               type="button"
               disabled={disabled}
-              aria-label="Add to this chat"
-              className={cn(
-                'flex h-7 w-7 items-center justify-center rounded-md transition-colors pointer-coarse:h-9 pointer-coarse:w-9',
-                disabled
-                  ? 'cursor-not-allowed text-muted-foreground/40'
-                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground data-[state=open]:bg-muted/60 data-[state=open]:text-foreground',
-                className,
-              )}
+              label="Add to this chat"
+              tooltip="Add files and more"
+              variant="ghost"
+              size={touchFirst ? "touch" : "sm"}
+              className={cn("flex items-center justify-center", className)}
             >
               <Plus size={16} />
-            </button>
-          </Tip>
+            </IconButton>
+
         </DropdownMenuTrigger>
         <DropdownMenuContent
           side="top"

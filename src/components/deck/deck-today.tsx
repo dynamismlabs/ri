@@ -1,5 +1,10 @@
 "use client";
+import { InlineAction } from '@/components/system/inline-action';
 
+import { Card } from '@/components/system/card';
+
+import { Button } from '@/components/system/button';
+import { ChipButton } from '@/components/system/chip-button';
 import { useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import { Inbox, Activity, History, Check, ListChecks } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -118,18 +123,20 @@ export function DeckToday({
     <section className="px-4 pt-4 pb-3">
       {/* ── Section header: same grammar as DEADLINES ── */}
       <div className="mb-1.5 flex items-center gap-2 px-1">
-        <h3 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Today</h3>
+        <h3 className="text-[10px] font-bold text-muted-foreground">Today</h3>
         {changeLine && <span className="truncate text-[10px] text-muted-foreground/70">{changeLine}</span>}
         <div className="ml-1 h-px min-w-4 flex-1 bg-border" />
         {hasHistory && (
-          <button
+          <Button
             type="button"
             onClick={() => setVersionsOpen((o) => !o)}
-            className="inline-flex shrink-0 items-center gap-1 text-[10px] text-muted-foreground/70 transition-colors hover:text-foreground"
+            variant="ghost"
+            size="xs"
+            className="inline-flex shrink-0 items-center gap-1"
           >
             <History className="h-2.5 w-2.5" />
             {versionsOpen ? 'Hide versions' : 'Versions'}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -142,16 +149,13 @@ export function DeckToday({
       {/* ── Framing: the deck-level "why", as a glimpse ── */}
       {framing && (
         <Tip label={framingOpen ? 'Collapse' : 'Show full note'}>
-          <button
+          <InlineAction purpose="caption"
             type="button"
             onClick={() => setFramingOpen((v) => !v)}
-            className={cn(
-              'mb-2.5 block w-full px-1 text-left text-xs leading-relaxed text-muted-foreground/70 transition-colors hover:text-muted-foreground',
-              !framingOpen && 'line-clamp-1',
-            )}
+            className={cn("mb-2.5 block w-full text-left", !framingOpen && "line-clamp-1")}
           >
             {framing}
-          </button>
+          </InlineAction>
         </Tip>
       )}
 
@@ -201,14 +205,14 @@ export function DeckToday({
 
       {/* What you finished from the deck today, revealed from its chip. */}
       {open === 'done' && doneCount > 0 && (
-        <ul className="mb-3 space-y-1 rounded-md border border-border/60 px-3 py-2">
+        <Card as="ul" padding="md" surface="plain" density="row" className="mb-3 space-y-1">
           {completedItems.map((item) => (
             <li key={item.id} className="truncate text-xs text-muted-foreground/60 line-through">
               {item.parentTitle && <>{item.parentTitle} · </>}
               {item.title}
             </li>
           ))}
-        </ul>
+        </Card>
       )}
 
       {/* ── The ranked stack: flat and whole. Nothing is the "top" task. ── */}
@@ -225,12 +229,12 @@ export function DeckToday({
           onSubtaskFocus={onSubtaskFocus}
         />
       ) : (
-        <div className="rounded-lg border border-border bg-muted/20 px-4 py-6 text-center">
+        <Card padding="lg" density="comfortable" className="text-center">
           <p className="text-sm font-medium text-foreground">Nothing queued right now</p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             Add a task at the top to start today&apos;s deck.
           </p>
-        </div>
+        </Card>
       )}
     </section>
   );
@@ -248,21 +252,17 @@ function StatusChip({
   ...rest
 }: ComponentProps<'button'> & { icon: ReactNode; active?: boolean }) {
   return (
-    <button
+    <ChipButton
       type="button"
       {...rest}
-      data-slot="chip-button"
       data-on={active || undefined}
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] transition-colors',
-        active
-          ? 'border-border bg-muted text-foreground'
-          : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground',
-        className,
-      )}
+      variant="secondary"
+      size="compact"
+      pressed={active}
+      className={cn("inline-flex items-center gap-1.5", className)}
     >
       <span className="shrink-0 text-muted-foreground">{icon}</span>
       <span>{children}</span>
-    </button>
+    </ChipButton>
   );
 }

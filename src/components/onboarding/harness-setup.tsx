@@ -1,11 +1,16 @@
 'use client';
+import { ChoiceRow } from '@/components/system/choice-row';
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
+import { Checkbox } from '@/components/ui/checkbox';
 
 import { HarnessToolSetup } from '@/components/desktop/harness-tool-setup';
 import { CursorCredentialPanel } from '@/components/settings/cursor-credential-panel';
 import { HarnessPermissionNotice } from '@/components/settings/harness-permission-notice';
 import { HarnessPicker } from '@/components/settings/harness-picker';
 import { OpenCodeProviderPanel } from '@/components/settings/opencode-provider-panel';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import { apiErrorBody, apiErrorStatus, apiErrorText } from '@/lib/api/client';
 import { defaultModelFor } from '@/lib/harness/options';
@@ -247,7 +252,7 @@ export function HarnessSetup({
   return (
     <div className="@container space-y-4">
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">Harness</div>
+        <div className="text-xs text-muted-foreground">Harness</div>
         <HarnessPicker
           harnesses={HARNESS_IDS.map((id) => HARNESS_BY_ID[id])}
           value={state.harness}
@@ -298,23 +303,21 @@ function ModelChoice({
   }, [onSelect, options, selected]);
   return (
     <div className="space-y-2">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">Default model</div>
+      <div className="text-xs text-muted-foreground">Default model</div>
       {isLoading && <div className="text-xs text-muted-foreground">Loading models…</div>}
       <div className="grid max-h-72 grid-cols-1 gap-2 overflow-y-auto @min-[400px]:grid-cols-2">
         {options.map((opt) => {
           const active = selected === opt.id;
           return (
-            <button data-slot="choice-row" aria-pressed={active}
+            <ChoiceRow aria-pressed={active}
               key={opt.id}
               type="button"
               onClick={() => onSelect(opt.id)}
-              className={`flex flex-col items-start gap-0.5 rounded-lg border p-3 text-left transition-colors ${
-                active ? 'border-primary bg-primary/5' : 'border-border bg-card hover:bg-muted/50'
-              }`}
+              className={`flex flex-col items-start gap-0.5 text-left ${""}`}
             >
               <span className="text-sm font-medium">{opt.label}</span>
               {opt.hint && <span className="text-xs text-muted-foreground">{opt.hint}</span>}
-            </button>
+            </ChoiceRow>
           );
         })}
       </div>
@@ -343,7 +346,7 @@ function AuthStatus({
   const busy = auth.phase === 'checking' || auth.verify.phase === 'running';
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <Card padding="lg" shadow >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-medium">Authentication</div>
@@ -351,7 +354,13 @@ function AuthStatus({
             Confirms the CLI is installed, authenticated, and responds to a request.
           </div>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={onRecheck} disabled={busy}>
+        <Button
+          type="button"
+          onClick={onRecheck}
+          disabled={busy}
+          variant="secondary"
+          size="md"
+        >
           {busy ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
           {auth.phase === 'checking'
             ? 'Checking…'
@@ -375,7 +384,7 @@ function AuthStatus({
       {auth.phase === 'ready' && auth.report && (
         <ReadyState report={auth.report} harness={harness} auth={auth} onAccept={onAccept} />
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -452,11 +461,10 @@ function ReadyState({
         </div>
         <VerifyLine verify={auth.verify} harnessName={harness.name} />
         <label className="mt-3 flex items-start gap-2 text-sm">
-          <input
-            type="checkbox"
+          <Checkbox
             checked={auth.acceptsApiKeyBilling}
-            onChange={(e) => onAccept(e.target.checked)}
-            className="mt-0.5 size-4"
+            onCheckedChange={(checked) => onAccept((checked === true))}
+            className="mt-0.5"
           />
           <span>Continue with API key billing (I don&apos;t have a subscription)</span>
         </label>
@@ -557,13 +565,13 @@ function SubPlusKeyNote({
 }) {
   if (harness === 'claude') {
     return (
-      <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-300">
+      <Callout padding="md" tone={"warning"} className="mt-2 flex items-start gap-2">
         <AlertTriangle className="mt-0.5 size-4 shrink-0" />
         <span>
           Heads up: {apiKeyVar} will override your subscription for Claude Code. Continuing as-is
           bills at API rates. Unset {apiKeyVar} to use your subscription.
         </span>
-      </div>
+      </Callout>
     );
   }
   return (

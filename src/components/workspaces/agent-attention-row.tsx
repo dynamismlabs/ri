@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useDashboard } from '@/contexts/dashboard-context';
 import { AgentIcon } from '@/components/agents/agent-icon';
@@ -47,12 +48,9 @@ export function AgentAttentionRow({
 
   if (variant === 'rail') {
     return (
-      <button
+      <MenuAction selected={!!((isActive))} density="compact"
         onClick={open}
-        className={cn(
-          'relative w-full flex items-start gap-2 pl-5 pr-1.5 py-1 rounded-md text-left transition-colors',
-          isActive ? 'bg-secondary text-foreground' : 'hover:bg-muted/40',
-        )}
+        className="relative w-full flex items-start gap-2 text-left"
       >
         <span className="flex h-4 items-center flex-shrink-0">
           <span
@@ -68,18 +66,15 @@ export function AgentAttentionRow({
           </span>
           <span className={cn('mt-0.5 block truncate text-[10px] leading-tight', voiceClass)}>{voice.text}</span>
         </span>
-      </button>
+      </MenuAction>
     );
   }
 
   return (
     <Tip label={`${workspace.name}: ${voice.text}`} onlyWhenTextHidden>
-      <button
+      <MenuAction selected={!!((isActive))} density="compact"
         onClick={open}
-        className={cn(
-          'w-full flex items-start gap-1.5 px-2.5 py-1.5 text-left rounded-md transition-colors',
-          isActive ? 'bg-secondary' : 'hover:bg-muted/50',
-        )}
+        className="w-full flex items-start gap-1.5 text-left"
       >
         <span className="relative flex-shrink-0">
           <AgentIcon workspace={workspace} size="sm" />
@@ -91,7 +86,7 @@ export function AgentAttentionRow({
           <span className="block truncate text-[11.5px] font-semibold text-foreground/90">{workspace.name}</span>
           <span className={cn('mt-0.5 block truncate text-[10px]', voiceClass)}>{voice.text}</span>
         </span>
-      </button>
+      </MenuAction>
     </Tip>
   );
 }

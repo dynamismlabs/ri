@@ -1,5 +1,12 @@
 'use client';
+import { Card } from '@/components/system/card';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { useViewportTier } from '@/hooks/use-viewport-tier';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
 /**
  * Runs list at /runs.
  *
@@ -18,7 +25,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Activity, Hourglass } from 'lucide-react';
 import Link from 'next/link';
 import { useRuns } from '@/hooks/use-triggers';
-import { cn } from '@/lib/utils';
+
 import type { RunRecord, RunTrigger } from '@/db/types';
 import { RunActivityBadge } from '@/components/runs/run-activity-badge';
 
@@ -27,6 +34,7 @@ type Filter = 'all' | 'manual' | 'scheduled' | 'webhook';
 const SCHEDULED_TRIGGERS: RunTrigger[] = ['cron', 'every', 'at'];
 
 export default function RunsPage() {
+  const tier = useViewportTier();
   const router = useRouter();
   const [filter, setFilter] = useState<Filter>('all');
   const { data: runs, isLoading } = useRuns(
@@ -40,12 +48,14 @@ export default function RunsPage() {
   return (
     <div className="min-h-dvh bg-background text-foreground font-sans">
       <header className="border-b border-border px-6 py-4 flex items-center gap-3 sticky top-0 bg-background z-10">
-        <button
+        <IconButton
           onClick={() => router.push('/')}
-          className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+          label="Back to home"
+          variant="ghost"
+          size="sm"
         >
           <ArrowLeft size={16} />
-        </button>
+        </IconButton>
         <Activity size={16} className="text-primary" />
         <h1 className="text-base font-semibold">Runs</h1>
         <div className="flex-1" />
@@ -58,22 +68,7 @@ export default function RunsPage() {
       </header>
 
       <div className="px-6 py-3 border-b border-border flex items-center gap-2">
-        <div data-slot="segmented" data-size="responsive" className="contents">
-        {(['all', 'manual', 'scheduled', 'webhook'] as Filter[]).map((f) => (
-          <button data-slot="segmented-option" aria-pressed={filter === f}
-            key={f}
-            onClick={() => setFilter(f)}
-            className={cn(
-              'px-2 py-1 rounded-md text-[11px] uppercase tracking-wider border transition-all',
-              filter === f
-                ? 'border-primary text-primary bg-primary/5'
-                : 'border-border text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {f[0].toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-        </div>
+        <SegmentedControl mode="choice" ariaLabel="Run trigger" size={tier === 'phone' ? 'touch' : 'compact'} value={filter} onChange={setFilter} options={(['all','manual','scheduled','webhook'] as Filter[]).map(value => ({value,label:value[0].toUpperCase()+value.slice(1)}))} />
       </div>
 
       <main className="px-6 py-6 max-w-4xl mx-auto">
@@ -108,25 +103,24 @@ function RunRow({ run }: { run: RunRecord }) {
       ? run.status
       : undefined;
   return (
-    <Link
-      data-slot="run-row"
+    <Card as={Link} padding="md" shadow
       href={run.chatSessionId ? `/?session=${run.chatSessionId}` : `/runs/${run.id}`}
-      className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted text-sm"
+      className="flex flex-wrap items-center gap-x-2 gap-y-1.5 md:flex-nowrap md:gap-3"
     >
       <TriggerBadge trigger={run.triggerKind} />
       <RunActivityBadge runId={run.id} terminalStatus={terminal} />
-      <span data-slot="run-summary" className="flex-1 truncate text-muted-foreground text-[12px]">
+      <span className="order-first basis-full min-w-0 flex-1 whitespace-normal break-words text-t3 text-[12px] md:order-none md:basis-auto md:truncate">
         {run.status === 'failed' ? run.errorMessage ?? run.summary ?? '-' : run.summary ?? '-'}
       </span>
-      <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
+      <span className="text-[11px] md:text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
         {run.startedAt ? humanize(run.startedAt) : '-'}
       </span>
       {run.costUsd != null && run.costUsd > 0 && (
-        <span className="text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
+        <span className="text-[11px] md:text-[10px] text-muted-foreground tabular-nums whitespace-nowrap">
           ${(run.costUsd ?? 0).toFixed(4)}
         </span>
       )}
-    </Link>
+    </Card>
   );
 }
 
@@ -135,16 +129,11 @@ function TriggerBadge({ trigger }: { trigger: RunTrigger }) {
     return null; // default — no badge clutter
   }
   return (
-    <span data-slot="status-badge"
-      className={cn(
-        'px-1.5 py-0.5 text-[10px] uppercase tracking-wider rounded border',
-        trigger === 'webhook'
-          ? 'border-amber-500/40 text-amber-700 dark:text-amber-400'
-          : 'border-blue-500/40 text-blue-700 dark:text-blue-400',
-      )}
+    <StatusBadge tone={(trigger === 'webhook' ? "warning" : "info")}
+
     >
       {trigger}
-    </span>
+    </StatusBadge>
   );
 }
 

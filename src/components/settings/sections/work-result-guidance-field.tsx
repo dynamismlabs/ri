@@ -1,7 +1,8 @@
 'use client';
+import { TextArea } from '@/components/system/text-area';
 
 import { useEffect, useReducer } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
 import { WORK_RESULT_GUIDANCE_MAX } from '@/lib/instructions/preferences';
 
@@ -104,19 +105,26 @@ export function WorkResultGuidanceField() {
 
   return (
     <section className="space-y-2" aria-labelledby="work-result-guidance-label">
-      <label
-        id="work-result-guidance-label"
-        htmlFor="work-result-guidance"
-        className="block text-[12px] font-medium text-foreground"
-      >
-        Handoff and review preferences
-      </label>
-      <p id="work-result-guidance-description" className="text-[11px] leading-relaxed text-muted-foreground/70">
-        Shared preferences for how agents hand work back to you and review it. An agent can add its own preferences,
-        which take precedence when they conflict. These apply only to handoffs and reviews, not ordinary chat.
-      </p>
-      <textarea
+      <TextArea
+        rows={9}
         id="work-result-guidance"
+        label="Handoff and review preferences"
+        labelId="work-result-guidance-label"
+        description={
+          <>
+            Shared preferences for how agents hand work back to you and review it. An agent can add
+            its own preferences, which take precedence when they conflict. These apply only to
+            handoffs and reviews, not ordinary chat.
+          </>
+        }
+        descriptionId="work-result-guidance-description"
+        messagePosition="before-control"
+        counter={{
+          value: state.draft.length,
+          max: WORK_RESULT_GUIDANCE_MAX,
+          id: 'work-result-guidance-limit',
+          unit: 'characters',
+        }}
         aria-describedby="work-result-guidance-description work-result-guidance-status work-result-guidance-limit"
         aria-invalid={tooLong || undefined}
         value={state.draft}
@@ -124,13 +132,16 @@ export function WorkResultGuidanceField() {
         maxLength={WORK_RESULT_GUIDANCE_MAX}
         disabled={!state.loaded}
         placeholder="e.g. When handing work back to me, lead with what changed and what I need to do next. Keep summaries brief and include links to the finished work."
-        className="h-48 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-60"
+        className="w-full"
+        resize="vertical"
       />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p id="work-result-guidance-limit" className="text-[11px] text-muted-foreground/60">
-          {state.draft.length.toLocaleString()} / {WORK_RESULT_GUIDANCE_MAX.toLocaleString()} characters
-        </p>
-        <Button size="sm" onClick={save} disabled={!state.loaded || !dirty || state.saving || tooLong}>
+        <Button
+          onClick={save}
+          disabled={!state.loaded || !dirty || state.saving || tooLong}
+          variant="primary"
+          size="md"
+        >
           {state.saving ? 'Saving...' : 'Save preferences'}
         </Button>
       </div>
@@ -145,7 +156,11 @@ export function WorkResultGuidanceField() {
       {loadError && !state.loaded && (
         <div className="flex items-center gap-2">
           <p role="alert" className="text-[11px] text-destructive">Could not load preferences.</p>
-          <Button size="xs" variant="outline" onClick={() => refetch()}>Retry</Button>
+          <Button
+            onClick={() => refetch()}
+            variant="secondary"
+            size="xs"
+          >Retry</Button>
         </div>
       )}
     </section>

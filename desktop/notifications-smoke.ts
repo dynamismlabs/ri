@@ -9,6 +9,7 @@ import Database from 'better-sqlite3';
 import type { Notification } from 'electron';
 import { acceptance, api, assertNoAlertsWithoutSignature, eventually, needsSignedBuild } from './acceptance-fixture';
 import { serviceRequest, type ServiceSession } from '../src/lib/service/client';
+import { noteTitleField } from './renderer-locators';
 
 interface PresentationFixture { shown: Notification[]; mode: 'show' | 'fail' }
 type FixtureGlobal = typeof globalThis & { riNotificationAcceptance: PresentationFixture };
@@ -106,7 +107,7 @@ void acceptance('notifications-smoke', async fixture => {
   const note = await api<{ id: string }>(page, '/api/notes', 'POST', { title: 'Before notification click', body: 'Temporary notification fixture.' });
   await fixture.navigate(`/note/${note.id}`);
   const latest = 'Saved before the notification opened settings';
-  await page.locator('textarea.note-title').fill(latest);
+  await noteTitleField(page).fill(latest);
   await app.evaluate(({ BrowserWindow }) => {
     BrowserWindow.getAllWindows()[0].minimize();
     (globalThis as FixtureGlobal).riNotificationAcceptance.shown[0].emit('click');

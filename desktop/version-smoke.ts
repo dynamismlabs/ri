@@ -5,6 +5,7 @@ import path from 'node:path';
 import type { Request, WebSocketRoute } from 'playwright-core';
 import { acceptance, api, bounded, eventually, hydrated, type AcceptanceFixture } from './acceptance-fixture';
 import { API_PROTOCOL, apiCompatibilityIssue } from '../src/lib/releases/api-contract';
+import { noteTitleField } from './renderer-locators';
 
 async function openCapture(fixture: AcceptanceFixture) {
   await bounded(fixture.app!.evaluate(({ Menu, BrowserWindow }) => {
@@ -74,7 +75,7 @@ void acceptance('version-smoke', async fixture => {
     else await route.continue();
   });
   await fixture.navigate(`/note/${note.id}`);
-  const title = page.locator('textarea.note-title');
+  const title = noteTitleField(page);
   await title.waitFor();
   const composer = page.locator('[contenteditable="true"][aria-label]').first();
   await composer.waitFor();
@@ -155,7 +156,7 @@ void acceptance('version-smoke', async fixture => {
   try { await eventually(async () => (await title.inputValue()) === retainedTitle, 'pending document title remains visible after rejected save', 5_000); }
   catch (error) {
     fixture.report.pendingDocument = await page.evaluate(id => ({
-      title: document.querySelector<HTMLTextAreaElement>('textarea.note-title')?.value,
+      title: document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Note title"]')?.value,
       draft: localStorage.getItem(`ri:document-draft:v1:notes:${id}`),
     }), note.id);
     throw error;

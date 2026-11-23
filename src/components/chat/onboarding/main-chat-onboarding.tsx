@@ -1,5 +1,7 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { MainChatIntroPanel, useAppMainChatIntro, useEmptyChatActions } from '@/components/chat/main-chat-intro';
 import {
 	IdentityEditor,
@@ -363,13 +365,14 @@ export function MainChatOnboarding() {
         {/* Nothing works without a harness, so skipping waits until there is one. */}
         {!finished && !harnessPending && (
           <div className="flex justify-end">
-            <button data-slot="action-button" data-variant="ghost"
+            <Button
               type="button"
               onClick={skip}
-              className="rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+              variant="ghost"
+              size="md"
             >
               Skip setup
-            </button>
+            </Button>
           </div>
         )}
 
@@ -432,21 +435,25 @@ function NewStepOffer({ step, onDecline, children }: { step: OnboardingStepName;
         <span className="flex-shrink-0 text-muted-foreground">New</span>
         <span className="min-w-0 flex-1 truncate text-foreground/85">{STEP_TITLES[step]}</span>
         {!open && (
-          <button
+          <Button
             type="button"
             onClick={() => setOpen(true)}
-            className="flex-shrink-0 rounded px-1.5 py-0.5 font-medium text-foreground underline-offset-2 hover:underline"
+            variant="link"
+            size="md"
+            className="flex-shrink-0"
           >
             Set up
-          </button>
+          </Button>
         )}
-        <button data-slot="action-button" data-variant="ghost"
+        <Button
           type="button"
           onClick={onDecline}
-          className="flex-shrink-0 rounded px-1.5 py-0.5 text-muted-foreground transition-colors hover:text-foreground"
+          variant="ghost"
+          size="md"
+          className="flex-shrink-0"
         >
           Not now
-        </button>
+        </Button>
       </div>
       {open && <div className="mt-2">{children}</div>}
     </div>
@@ -555,8 +562,6 @@ function acknowledge(step: OnboardingStep, replies: Said['replies'], userName: s
   }
 }
 
-
-
 // ─── Steps ────────────────────────────────────────────────────
 
 function IdentityStep({ newHome, onDone }: { newHome: boolean; onDone: (name: string) => void }) {
@@ -604,7 +609,7 @@ function YouStep({ initial, onDone }: { initial: string; onDone: (name: string) 
   };
   return (
     <Card className="flex items-center gap-2">
-      <input data-slot="field"
+      <Field
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
@@ -616,7 +621,7 @@ function YouStep({ initial, onDone }: { initial: string; onDone: (name: string) 
         }}
         placeholder="Your name"
         aria-label="Your name"
-        className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-[13px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+        className="min-w-0 flex-1"
       />
       <PrimaryButton disabled={!trimmed} busy={update.isPending} onClick={submit}>
         Continue <ArrowRight size={12} />
@@ -663,15 +668,17 @@ function Starters() {
     <div className="flex flex-wrap gap-1.5">
       {starters.map((s) => (
         <Tip key={s.label} label={s.draft ? 'Start this in the composer' : 'Send this'}>
-          <button data-slot="action-button"
+          <Button
             type="button"
             disabled={actions.disabled}
             onClick={() => (s.draft ? actions.draft(s.prompt) : actions.send(s.prompt))}
-            className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-[12px] text-foreground/90 transition-colors hover:bg-muted/60 disabled:opacity-50"
+            variant="secondary"
+            size="md"
+            className="inline-flex items-center gap-1.5"
           >
             {s.draft ? <PenLine size={11} className="text-muted-foreground" /> : <ArrowUp size={11} className="text-muted-foreground" />}
             {s.label}
-          </button>
+          </Button>
         </Tip>
       ))}
     </div>

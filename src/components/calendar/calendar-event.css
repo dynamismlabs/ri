@@ -1,0 +1,6 @@
+html:root [data-slot="calendar-event"] { border-color: transparent; border-radius: 8px; background-color: var(--raised); }
+html:root [data-slot="calendar-event"]:hover { background-color: var(--selected); }
+html:root [data-slot="calendar-event"]:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+html:root [data-native-action="ri-calendar-overflow"] { border-color: transparent; border-radius: 999px; box-shadow: none; font-weight: 500; letter-spacing: normal; background-color: var(--track); }
+html:root [data-native-action="ri-calendar-overflow"]:hover:not(:disabled) { background-color: var(--selected); }
+html:root [data-native-action="ri-calendar-overflow"]:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }

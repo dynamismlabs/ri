@@ -1,5 +1,11 @@
 "use client";
 
+import { Meta, MetaItem } from '@/components/system/meta';
+import { InlineAction } from '@/components/system/inline-action';
+import { StreamToolbar, type StreamViewFilter as ViewFilter } from './stream-toolbar';
+
+import { IconButton } from '@/components/system/icon-button';
+
 /**
  * The stream tab: a calm ledger of captures, not a work queue (spec §3.12).
  *
@@ -14,8 +20,8 @@
 
 import { useState, useCallback } from 'react';
 import {
-  Loader2, Mic, MessageSquare, Inbox, ListFilter, Archive, BookOpen,
-  RotateCcw, RefreshCw, ListChecks, Target, FileText, Clock, ChevronDown,
+  Loader2, Mic, MessageSquare, Inbox, Archive, BookOpen,
+  RotateCcw, RefreshCw, Target, FileText, Clock,
 } from 'lucide-react';
 import {
   useStream,
@@ -31,9 +37,6 @@ import { StreamTriage } from './stream-triage';
 import { StreamDigest } from './stream-digest';
 import { TaskActions, NoteActions } from './promote-actions';
 import { StreamAttachments } from './stream-attachments';
-import {
-  Popover, PopoverTrigger, PopoverContent,
-} from '@/components/ui/popover';
 import type { StreamRecordWithOutcomes, StreamStatus } from '@/db/types';
 import { Tip } from '@/components/ui/tip';
 
@@ -61,16 +64,6 @@ const STATUS_COLORS: Record<StreamStatus, string> = {
   dismissed: 'bg-muted-foreground',
   incubating: 'bg-sky-400',
 };
-
-type ViewFilter = 'recent' | 'needs_call' | StreamStatus;
-
-const HISTORY_FILTERS: Array<{ id: ViewFilter; label: string }> = [
-  { id: 'pending', label: 'Captured' },
-  { id: 'promoted', label: 'Added' },
-  { id: 'reviewed', label: 'Kept as thoughts' },
-  { id: 'incubating', label: 'Kept for later' },
-  { id: 'dismissed', label: 'Set aside' },
-];
 
 function isPreprocessingPlaceholder(item: StreamRecordWithOutcomes): boolean {
   const head = item.rawText.trimStart();
@@ -131,98 +124,16 @@ export function StreamList() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
-      <div data-slot="list-toolbar" className={cn(
-        'px-3 py-2 border-b border-border flex items-center gap-2 flex-shrink-0',
-        isDark ? 'bg-card/50' : 'bg-muted'
-      )}>
-        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-card rounded border border-border">
-          <button
-            onClick={() => setView('recent')}
-            aria-pressed={view === 'recent'}
-            className={cn(
-              'px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-all',
-              view === 'recent' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            Recent
-          </button>
-          {proposalCount > 0 && (
-            <button
-              onClick={() => setView('needs_call')}
-              aria-pressed={view === 'needs_call'}
-              className={cn(
-                'px-2 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider transition-all',
-                view === 'needs_call' ? 'bg-primary text-primary-foreground' : 'text-primary hover:text-primary/80',
-              )}
-            >
-              Needs your call
-            </button>
-          )}
-        </div>
-
-        {/* Power filters: full history, tucked away */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <Tip label="History">
-              <button data-slot="chip-button" className="flex items-center gap-1 px-1.5 py-1 rounded text-muted-foreground/70 hover:text-foreground hover:bg-muted transition-colors" aria-label="History">
-                <ListFilter size={11} />
-                <ChevronDown size={8} />
-              </button>
-            </Tip>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="w-44 p-0" sideOffset={4}>
-            <div className="py-1">
-              {HISTORY_FILTERS.map((f) => (
-                <button
-                  key={f.id}
-                  onClick={() => setView(f.id)}
-                  className={cn(
-                    'w-full text-left px-3 py-1.5 text-[10.5px] hover:bg-muted transition-colors',
-                    view === f.id ? 'text-primary font-semibold' : 'text-foreground',
-                  )}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-
-        <div className="flex-1" />
-
-        {notice && (
-          <span className="text-[9.5px] text-muted-foreground truncate max-w-[45%]">{notice}</span>
-        )}
-
-        {proposalCount > 0 && (
-          <button
-            onClick={() => setTriageOpen(true)}
-            data-slot="chip-button"
-            className="flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded-md transition-colors"
-          >
-            Review
-          </button>
-        )}
-        <Tip label="Have the assistant triage waiting captures">
-          <button
-            onClick={handleSweep}
-            disabled={sweep.isPending}
-            data-slot="chip-button"
-            className="flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold text-primary hover:bg-primary/5 rounded-md transition-colors disabled:opacity-50"
-          >
-            <ListChecks size={10} />
-            Triage
-          </button>
-        </Tip>
-      </div>
+      <StreamToolbar view={view} onViewChange={setView} hasProposals={proposalCount > 0}
+        onReview={() => setTriageOpen(true)} onTriage={handleSweep} triaging={sweep.isPending}
+        notice={notice} isDark={isDark}/>
 
       {/* Review slide-over (proposals + manual) */}
       <StreamTriage open={triageOpen} onOpenChange={setTriageOpen} />
 
       <div className="flex-1 overflow-y-auto pb-4">
         {/* Digest: what triage did, graduation offers */}
-        {view === 'recent' && <StreamDigest />}
+        {view === "recent" && <StreamDigest />}
 
         <div className="p-4">
           {isLoading && (
@@ -239,7 +150,7 @@ export function StreamList() {
             <div className="flex flex-col items-center justify-center h-32 text-muted-foreground gap-2">
               <Inbox size={20} className="opacity-30" />
               <p className="text-[11px]">
-                {view === 'needs_call' ? 'Nothing needs you.' : 'Nothing here yet. Capture anything.'}
+                {view === "needs_call" ? "Nothing needs you." : "Nothing here yet. Capture anything."}
               </p>
             </div>
           )}
@@ -250,32 +161,47 @@ export function StreamList() {
                 <StreamRow
                   key={item.id}
                   item={item}
-                  onOpenEntity={(type, id) => (type === 'task' ? openTask(id) : openNote(id))}
-                  onKeepAsThought={() => decide.mutate({ disposition: 'journal', streamItemIds: [item.id] })}
-                  onDismiss={() => decide.mutate({ disposition: 'dismiss', streamItemIds: [item.id] })}
-                  onPromoteTask={(status) => decide.mutate({
-                    disposition: 'promote_task',
-                    streamItemIds: [item.id],
-                    draft: { title: item.rawText.trim().split('\n')[0]?.slice(0, 200) || 'Untitled', body: item.rawText, status },
-                  })}
-                  onPromoteNote={() => decide.mutate({ disposition: 'promote_note', streamItemIds: [item.id] })}
-                  onMergeTask={(taskId) => decide.mutate({
-                    disposition: 'merge_task',
-                    streamItemIds: [item.id],
-                    targetType: 'task',
-                    targetId: taskId,
-                    draft: { asSubtask: true, title: item.rawText.trim().split('\n')[0]?.slice(0, 200) },
-                  })}
-                  onMergeNote={(noteId) => decide.mutate({
-                    disposition: 'merge_note',
-                    streamItemIds: [item.id],
-                    targetType: 'note',
-                    targetId: noteId,
-                  })}
+                  onOpenEntity={(type, id) => (type === "task" ? openTask(id) : openNote(id))}
+                  onKeepAsThought={() => decide.mutate({ disposition: "journal", streamItemIds: [item.id] })}
+                  onDismiss={() => decide.mutate({ disposition: "dismiss", streamItemIds: [item.id] })}
+                  onPromoteTask={(status) =>
+                    decide.mutate({
+                      disposition: "promote_task",
+                      streamItemIds: [item.id],
+                      draft: {
+                        title: item.rawText.trim().split("\n")[0]?.slice(0, 200) || "Untitled",
+                        body: item.rawText,
+                        status,
+                      },
+                    })
+                  }
+                  onPromoteNote={() =>
+                    decide.mutate({ disposition: "promote_note", streamItemIds: [item.id] })
+                  }
+                  onMergeTask={(taskId) =>
+                    decide.mutate({
+                      disposition: "merge_task",
+                      streamItemIds: [item.id],
+                      targetType: "task",
+                      targetId: taskId,
+                      draft: { asSubtask: true, title: item.rawText.trim().split("\n")[0]?.slice(0, 200) },
+                    })
+                  }
+                  onMergeNote={(noteId) =>
+                    decide.mutate({
+                      disposition: "merge_note",
+                      streamItemIds: [item.id],
+                      targetType: "note",
+                      targetId: noteId,
+                    })
+                  }
                   onReopen={() => handleReopen(item.id)}
-                  onRetry={() => retry.mutate(item.id, {
-                    onError: () => showNotice('Still not able to read it. The original is safe, try again later.'),
-                  })}
+                  onRetry={() =>
+                    retry.mutate(item.id, {
+                      onError: () =>
+                        showNotice("Still not able to read it. The original is safe, try again later."),
+                    })
+                  }
                   onReview={() => setTriageOpen(true)}
                 />
               ))}
@@ -337,82 +263,107 @@ function StreamRow({
           </p>
           <StreamAttachments attachments={item.attachments} />
 
-          <div data-slot="stream-meta" className="flex items-center gap-2 mt-0.5 flex-wrap">
-            <SourceIcon size={9} className="text-muted-foreground/50" />
-            <p className="text-[8.5px] text-muted-foreground font-mono uppercase">
+          <Meta className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <MetaItem kind="time"><SourceIcon aria-hidden />
               {new Date(item.createdAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-            </p>
+            </MetaItem>
 
             {needsRetry && (
-              <span className="text-[8.5px] text-muted-foreground">
+              <MetaItem kind="processing">
                 Your recording is saved. Reading it needs another try.
-              </span>
+              </MetaItem>
             )}
 
             {isProposed && (
-              <button onClick={onReview} className="text-[8.5px] font-bold text-primary hover:underline">
+              <MetaItem as={InlineAction} appearance="link"
+                onClick={onReview}
+              >
                 {STATUS_LABELS.proposed}
-              </button>
+              </MetaItem>
             )}
 
             {label && !isProposed && item.status !== 'pending' && (
-              <span className="text-[8.5px] text-muted-foreground font-medium">{label}</span>
+              <MetaItem kind="status">{label}</MetaItem>
             )}
 
             {/* Consequences: where this capture went. */}
             {item.outcomes.map((o) => (
               <Tip key={`${o.entityType}:${o.entityId}:${o.relation}`} label={o.relation === 'created' ? 'Created from this capture' : 'This capture was added to it'}>
-                <button
+                <MetaItem as={InlineAction} appearance="link"
                   onClick={() => onOpenEntity(o.entityType, o.entityId)}
-                  className="inline-flex items-center gap-1 text-[8.5px] font-semibold text-emerald-600 dark:text-emerald-500 hover:underline"
+                  tone="success"
+                  className="inline-flex items-center gap-1"
                 >
                   {o.entityType === 'task' ? <Target size={8} /> : <FileText size={8} />}
                   {o.relation === 'merged_into' ? 'Added to ' : ''}
                   {o.entityTitle ?? o.entityType}
-                </button>
+                </MetaItem>
               </Tip>
             ))}
 
             {item.status === 'incubating' && item.resurfaceAt && (
-              <span className="inline-flex items-center gap-1 text-[8.5px] text-sky-500">
+              <MetaItem kind="resurface" tone="info" className="inline-flex items-center gap-1">
                 <Clock size={8} />
                 back {new Date(item.resurfaceAt).toLocaleDateString()}
-              </span>
+              </MetaItem>
             )}
-          </div>
+          </Meta>
         </div>
 
         {/* Row actions */}
         <div className="flex items-center gap-0.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
           {needsRetry && (
-            <Tip label="Try reading it again" side="bottom">
-              <button aria-label="Try reading it again" onClick={onRetry} className="p-1.5 rounded-md text-primary hover:bg-primary/10 transition-colors">
+              <IconButton
+                onClick={onRetry}
+                label="Try reading it again"
+                tooltip="Try reading it again"
+                tipSide="bottom"
+                variant="ghost"
+                size="sm"
+              >
                 <RefreshCw size={12} />
-              </button>
-            </Tip>
+              </IconButton>
           )}
           {isPending && !needsRetry && (
             <>
               <TaskActions onPromote={onPromoteTask} onMerge={onMergeTask} />
               <NoteActions onPromote={onPromoteNote} onMerge={onMergeNote} />
-              <Tip label="Keep as a thought" side="bottom">
-                <button aria-label="Keep as a thought" onClick={onKeepAsThought} className="p-1.5 rounded-md text-muted-foreground hover:text-violet-500 hover:bg-muted transition-colors">
+
+                <IconButton
+                  onClick={onKeepAsThought}
+                  label="Keep as a thought"
+                  tooltip="Keep as a thought"
+                  tipSide="bottom"
+                  variant="ghost"
+                  size="sm"
+                >
                   <BookOpen size={12} />
-                </button>
-              </Tip>
-              <Tip label="Set aside" side="bottom">
-                <button aria-label="Set aside" onClick={onDismiss} className="p-1.5 rounded-md text-muted-foreground hover:text-muted-foreground/80 hover:bg-muted transition-colors">
+                </IconButton>
+
+                <IconButton
+                  onClick={onDismiss}
+                  label="Set aside"
+                  tooltip="Set aside"
+                  tipSide="bottom"
+                  variant="ghost"
+                  size="sm"
+                >
                   <Archive size={12} />
-                </button>
-              </Tip>
+                </IconButton>
+
             </>
           )}
           {isSettled && (
-            <Tip label="Bring it back" side="bottom">
-              <button aria-label="Bring it back" onClick={onReopen} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <IconButton
+                onClick={onReopen}
+                label="Bring it back"
+                tooltip="Bring it back"
+                tipSide="bottom"
+                variant="ghost"
+                size="sm"
+              >
                 <RotateCcw size={12} />
-              </button>
-            </Tip>
+              </IconButton>
           )}
         </div>
       </div>

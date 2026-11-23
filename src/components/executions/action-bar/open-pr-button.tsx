@@ -27,7 +27,7 @@ export function OpenPrButton({ sessionId }: OpenPrButtonProps) {
       pending={openPr.isPending}
       disabled={isRunning}
       onClick={() => openPr.mutate()}
-      variant="primary"
+      variant="secondary"
       title={
         isRunning
           ? 'Wait for the current turn to finish'

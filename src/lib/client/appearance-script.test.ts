@@ -8,8 +8,8 @@ import { ThemeSettings } from '@/components/settings/sections/theme-settings';
 let values: Map<string, string>;
 let blocked: boolean;
 beforeEach(() => {
-  // What the server renders: dark, on the one look.
-  const { window, document } = parseHTML('<html class="dark" data-look="edge"><body></body></html>');
+  // What the server renders: dark, with no look flag.
+  const { window, document } = parseHTML('<html class="dark"><body></body></html>');
   vi.stubGlobal('window', window); vi.stubGlobal('document', document);
   blocked = false; values = new Map();
   Object.defineProperty(window, 'localStorage', { configurable: true, value: {
@@ -23,11 +23,11 @@ const runScript = () => new Function(APPEARANCE_SCRIPT)();
 const dark = () => document.documentElement.classList.contains('dark');
 const look = () => document.documentElement.getAttribute('data-look');
 
-it('applies a saved light theme before first paint, and leaves the look alone', () => {
+it('applies a saved light theme before first paint, and requires no look flag', () => {
   values.set(CLIENT_THEME_KEY, 'light');
   runScript();
   expect(dark()).toBe(false);
-  expect(look()).toBe('edge');
+  expect(look()).toBeNull();
 });
 
 it('keeps the dark default when nothing is saved or dark is saved', () => {
@@ -42,7 +42,7 @@ it('leaves the defaults when browser storage is blocked', () => {
   blocked = true;
   expect(() => runScript()).not.toThrow();
   expect(dark()).toBe(true);
-  expect(look()).toBe('edge');
+  expect(look()).toBeNull();
 });
 
 it('offers only the theme in the shared appearance settings, with no look switch', () => {

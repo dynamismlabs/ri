@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/system/dialog';
 import { HOTKEYS, matchesHotkey } from '@/constants/commands';
 import { readPreviewPlace, usePreviewPlace, writePreviewPlace } from '@/lib/client/preview-place';
 import { type ArtifactPreview } from './artifact-previews';
@@ -56,9 +56,9 @@ export function ArtifactPreviewProvider({ children }: { children: ReactNode }) {
     <ArtifactPreviewContext.Provider value={store}>
       {children}
       <Dialog open={isOpen} onOpenChange={value => { if (!value) store.closeDialog(); }}>
-        <DialogContent
+        <DialogContent height="document" padding="none"
           {...{ [PREVIEW_KEY_SCOPE]: '' }}
-          className="flex h-[90dvh] w-[calc(100%-2rem)] max-w-none flex-col gap-0 overflow-hidden rounded-xl p-0 sm:max-w-[min(90vw,1440px)]"
+          className="flex  w-[calc(100%-2rem)] max-w-none flex-col gap-0 overflow-hidden sm:max-w-[min(90vw,1440px)]"
           onCloseAutoFocus={event => {
             event.preventDefault();
             // The card last shown, after any Previous or Next, or the file's view where it moved beside the chat.
@@ -67,7 +67,7 @@ export function ArtifactPreviewProvider({ children }: { children: ReactNode }) {
         >
           <div className="min-w-0 shrink-0 border-b border-border px-4 py-3">
             <div className="flex min-w-0 flex-wrap items-center gap-2 pr-10">
-              <DialogTitle className="min-w-24 flex-1 truncate text-sm">{preview && previewName(preview)}</DialogTitle>
+              <DialogTitle className="min-w-24 flex-1 truncate">{preview && previewName(preview)}</DialogTitle>
               {preview && <PreviewDownload preview={preview} compact />}
               <PreviewSteps index={index} count={count} onStep={delta => store.step('dialog', delta)} />
               {besideSide && <PlaceSwitch place="large" side={besideSide} onMove={() => store.toBeside()} />}

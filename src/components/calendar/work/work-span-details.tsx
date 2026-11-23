@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { GitCommitHorizontal, MessageSquare } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -29,17 +30,17 @@ export function WorkSpanDetails({ span, agent }: { span: WorkSpan; agent: WorkAg
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto py-1">
         {span.chats.map((chat) => (
-          <button
+          <MenuAction density="compact"
             key={chat.sessionId}
             type="button"
             onClick={() => (chat.executionId ? openExecution(chat.sessionId) : span.agentId ? openAgent(span.agentId) : undefined)}
-            className="flex w-full items-center gap-2 px-3 py-1 text-left hover:bg-muted/60"
+            className="flex w-full items-center gap-2 text-left"
           >
             <MessageSquare size={11} className="shrink-0 text-muted-foreground" />
             <span className="min-w-0 flex-1 truncate text-xs">{chat.label}</span>
             {chat.scheduled && <span className="shrink-0 text-[10px] text-muted-foreground">scheduled</span>}
             <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{formatDuration(chat.agentMinutes)}</span>
-          </button>
+          </MenuAction>
         ))}
         {span.commits.length > 0 && (
           <div className="mt-1 border-t border-border/60 pt-1">

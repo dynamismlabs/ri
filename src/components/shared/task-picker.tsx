@@ -1,10 +1,15 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
+
+import { MetaItem } from '@/components/system/meta';
+
+import { Field } from '@/components/system/field';
 
 import { useState } from 'react';
 import { Search, Target, X } from 'lucide-react';
-import { Popover, PopoverTrigger, PopoverContent, PopoverClose } from '@/components/ui/popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
 import { useTasks } from '@/hooks/use-tasks';
-import { cn } from '@/lib/utils';
+
 import { Tip } from '@/components/ui/tip';
 
 interface TaskPickerProps {
@@ -33,56 +38,43 @@ export function TaskPicker({ value, onChange, className }: TaskPickerProps) {
     <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setSearch(''); }}>
       <PopoverTrigger asChild>
         <Tip label={value ? `Linked to: ${linkedTitle ?? 'task'}` : 'Link to task'}>
-          <button
-            data-slot="task-picker"
-            className={cn(
-              'inline-flex items-center gap-0.5 text-[8.5px] font-bold uppercase tracking-wider transition-colors hover:bg-muted px-1.5 py-0.5 rounded',
-              value ? 'text-primary/60' : 'text-muted-foreground/40',
-              className,
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Target size={8} />
-            {value ? 'Linked' : 'Link'}
-          </button>
+          <MetaItem as="button" kind="task" type="button" className={className} onClick={(e) => e.stopPropagation()}>
+            <Target aria-hidden />{value ? 'Linked' : 'Link'}
+          </MetaItem>
         </Tip>
       </PopoverTrigger>
-      <PopoverContent className="w-64 p-0" align="start">
+      <PopoverContent padding="none" className="w-64" align="start">
         <div className="p-2 border-b border-border">
-          <div className="flex items-center gap-1.5 bg-background border border-border rounded px-2 py-1">
-            <Search size={10} className="text-muted-foreground" />
-            <input
-              autoFocus
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tasks..."
-              className="flex-1 text-[11px] bg-transparent outline-none"
-              onClick={(e) => e.stopPropagation()}
-            />
-          </div>
+          <Field
+            autoFocus
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tasks..."
+            className={'flex-1'}
+            onClick={(e) => e.stopPropagation()}
+            leading={<Search />}
+            aria-label={'Search tasks'}
+          />
         </div>
         <div className="max-h-48 overflow-y-auto p-1">
           {value && (
-            <button
+            <MenuAction density="compact"
               onClick={(e) => { e.stopPropagation(); onChange(null); setOpen(false); }}
-              className="w-full text-left px-2 py-1.5 text-[11px] text-muted-foreground hover:bg-muted rounded flex items-center gap-1.5"
+              className="w-full text-left flex items-center gap-1.5"
             >
               <X size={10} /> Unlink
-            </button>
+            </MenuAction>
           )}
           {tasks?.map(task => (
-            <button
+            <MenuAction selected={!!((task.id === value))} density="compact"
               key={task.id}
               onClick={(e) => { e.stopPropagation(); onChange(task.id); setOpen(false); }}
-              className={cn(
-                'w-full text-left px-2 py-1.5 text-[11px] hover:bg-muted rounded flex items-center gap-1.5 line-clamp-1',
-                task.id === value && 'bg-primary/10 text-primary',
-              )}
+              className="w-full text-left flex items-center gap-1.5 line-clamp-1"
             >
               <Target size={10} className="flex-shrink-0" />
               <span className="truncate">{task.title}</span>
-            </button>
+            </MenuAction>
           ))}
           {tasks && tasks.length === 0 && (
             <p className="px-2 py-3 text-[10px] text-muted-foreground text-center">No tasks found</p>

@@ -1,7 +1,10 @@
 'use client';
+import { InlineAction } from '@/components/system/inline-action';
+import { Card } from '@/components/system/card';
 
+import { IconButton } from '@/components/system/icon-button';
 import { BookOpen, Check, CirclePause, LayoutGrid, MessageCircle, Server, Settings2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { AppMark } from '../app-mark';
 import { itemType, primaryLabel, type ReviewItem } from './catalog';
@@ -23,19 +26,30 @@ export function ItemStatus({ item }: { item: ReviewItem }) {
 }
 export function PrimaryButton({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <Button size="xs" variant={item.added ? 'outline' : 'default'} disabled={review.busy} onClick={() => review.primary(item)} aria-label={`${primaryLabel(item)} ${item.name}`}>{primaryLabel(item)}</Button>;
+  return <Button
+    disabled={review.busy}
+    onClick={() => review.primary(item)}
+    aria-label={`${primaryLabel(item)} ${item.name}`}
+    variant="secondary"
+    size="xs"
+  >{primaryLabel(item)}</Button>;
 }
 export function ManageButton({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <Button size="icon-xs" variant="ghost" onClick={() => review.details(item, true)} aria-label={`Manage ${item.name}`}><Settings2 size={13} /></Button>;
+  return <IconButton
+    onClick={() => review.details(item, true)}
+    label={`Manage ${item.name}`}
+    variant="ghost"
+    size="xs"
+  ><Settings2 size={13} /></IconButton>;
 }
 export function ItemCard({ item }: { item: ReviewItem }) {
   const review = useReview();
-  return <article data-slot="content-card" className={s.card} data-item={item.key}>
-    <button data-slot="menu-action" className={s.cardTop} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}>
+  return <Card as="article" padding="lg"  className={s.card} data-item={item.key}>
+    <InlineAction   className={s.cardTop} type="button" onClick={() => review.details(item)} aria-label={`Details for ${item.name}`}>
       <ItemMark item={item} /><span className={s.cardCopy}><h3>{item.name}</h3><span className={s.description}>{item.description}</span></span>
-    </button>
+    </InlineAction>
     <div className={s.itemType}>{item.view ? <LayoutGrid size={11} /> : item.kind === 'skills' ? <BookOpen size={11} /> : <MessageCircle size={11} />}{itemType(item)}{item.view && ' · Opens in Ri'}</div>
     <div className={s.cardFoot}><ItemStatus item={item} /><div className={s.actions}><PrimaryButton item={item} />{item.added && <ManageButton item={item} />}</div></div>
-  </article>;
+  </Card>;
 }

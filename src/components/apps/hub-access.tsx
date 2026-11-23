@@ -1,12 +1,18 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, KeyRound, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useConfirm } from '@/components/ui/confirm-dialog';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tip } from '@/components/ui/tip';
+import { Button } from '@/components/system/button';
+import { useConfirm } from '@/components/system/confirm-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/system/dialog';
+
 import { ApprovalDetails } from '@/components/chat-ui/approvals/approval-details';
 import { APP_NAME } from '@/constants/app';
 import { ageLabel } from '@/lib/harness/rate-limit-display';
@@ -31,21 +37,21 @@ export function HubAccessList() {
     <section aria-labelledby="hub-access" className="space-y-2">
       <h3 id="hub-access" className="flex items-center gap-1.5 text-xs font-semibold"><KeyRound size={13} aria-hidden />What your apps can reach</h3>
       <p className="text-[11px] text-muted-foreground">Apps that use your accounts through {APP_NAME}, and only what you allowed each one.</p>
-      <ul className="divide-y divide-border rounded-lg border border-border">
+      <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">
         {apps.data.map((app) => (
           <li key={app.id}>
-            <button type="button" onClick={() => setOpen(app.id)} className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-muted/40">
+            <MenuAction type="button" onClick={() => setOpen(app.id)} className="flex w-full items-center gap-3 text-left">
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm">{app.name}</span>
                 <span className="block truncate text-[11px] text-muted-foreground">
                   {app.off ? 'Turned off' : reach(app)}
                 </span>
               </span>
-              {app.pendingApprovals > 0 && <span className="shrink-0 rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">{app.pendingApprovals} waiting</span>}
-            </button>
+              {app.pendingApprovals > 0 && <StatusBadge appearance="solid"  className="shrink-0">{app.pendingApprovals} waiting</StatusBadge>}
+            </MenuAction>
           </li>
         ))}
-      </ul>
+      </Card>
       <Dialog open={!!open} onOpenChange={(next) => !next && setOpen(null)}>
         <DialogContent className="sm:max-w-lg">
           {open && <HubAppPanel id={open} />}
@@ -106,13 +112,26 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
             <li key={`${account.connectionId}:${account.toolkitId}`} className="rounded-md border border-border p-2">
               <div className="flex items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-sm">{account.service} <span className="text-muted-foreground">· {account.account}</span></span>
-                <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId })}>Remove</Button>
+                <Button
+                  disabled={narrow.isPending}
+                  onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId })}
+                  variant="ghost"
+                  size="xs"
+                >Remove</Button>
               </div>
               <ul className="mt-1 flex flex-wrap gap-1">
                 {account.tools.map((tool) => (
                   <li key={tool} className="flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">
                     {tool}
-                    <Tip label="Take this tool back"><button type="button" aria-label={`Remove ${tool}`} disabled={narrow.isPending} onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId, tool })}><X size={11} /></button></Tip>
+                    <IconButton
+                      type="button"
+                      disabled={narrow.isPending}
+                      onClick={() => narrow.mutate({ connectionId: account.connectionId, toolkitId: account.toolkitId, tool })}
+                      label={`Remove ${tool}`}
+                      tooltip="Take this tool back"
+                      variant="ghost"
+                      size="sm"
+                    ><X size={11} /></IconButton>
                   </li>
                 ))}
               </ul>
@@ -121,7 +140,12 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
           {data.services.map((service) => (
             <li key={service} className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
               <span className="min-w-0 flex-1">{APP_NAME}&apos;s {service.replace(/_/g, ' ')}</span>
-              <Button size="xs" variant="ghost" disabled={narrow.isPending} onClick={() => narrow.mutate({ service })}>Remove</Button>
+              <Button
+                disabled={narrow.isPending}
+                onClick={() => narrow.mutate({ service })}
+                variant="ghost"
+                size="xs"
+              >Remove</Button>
             </li>
           ))}
           {!data.accounts.length && !data.services.length && <li className="text-xs text-muted-foreground">Nothing. It can connect again from the app to ask for more.</li>}
@@ -143,8 +167,18 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
                     {approval.hubApp ? `${STARTED_BY[approval.hubApp.startedBy.kind] ?? ''}${approval.hubApp.startedBy.label ? ` (${approval.hubApp.startedBy.label})` : ''}` : ''}
                   </span>
                 </span>
-                <Button size="xs" variant="outline" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}>Deny</Button>
-                <Button size="xs" disabled={decide.isPending} onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}>Approve</Button>
+                <Button
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ ids: [approval.id], decision: 'deny' })}
+                  variant="secondary"
+                  size="xs"
+                >Deny</Button>
+                <Button
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ ids: [approval.id], decision: 'approve' })}
+                  variant="primary"
+                  size="md"
+                >Approve</Button>
               </div>
               {view.details.length > 0 && <ApprovalDetails details={view.details} />}
             </div>
@@ -155,7 +189,7 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
       <section aria-labelledby={`activity-${id}`} className="space-y-1.5">
         <h3 id={`activity-${id}`} className="text-xs font-semibold">Recent calls</h3>
         {data.calls.length === 0 ? <p className="text-xs text-muted-foreground">None yet.</p> : (
-          <ul className="max-h-48 divide-y divide-border overflow-y-auto rounded-md border border-border text-xs">
+          <Card as="ul" padding="none" surface="plain" className="max-h-48 divide-y divide-border overflow-y-auto">
             {data.calls.map((call) => (
               <li key={call.id} className="flex items-center gap-2 px-2 py-1.5">
                 <span className="min-w-0 flex-1 truncate font-mono">{call.tool}</span>
@@ -164,11 +198,17 @@ export function HubAppPanel({ id, embedded = false }: { id: string; embedded?: b
                 <span className="shrink-0 text-muted-foreground">{ageLabel(call.createdAt)}</span>
               </li>
             ))}
-          </ul>
+          </Card>
         )}
       </section>
 
-      {!data.off && <Button size="sm" variant="outline" className="text-destructive" disabled={turnOff.isPending} onClick={() => turnOff.mutate()}>Turn off {data.name}&apos;s access</Button>}
+      {!data.off && <Button
+        disabled={turnOff.isPending}
+        onClick={() => turnOff.mutate()}
+        variant="secondary"
+        size="sm"
+        tone="danger"
+      >Turn off {data.name}&apos;s access</Button>}
     </div>
   );
 }

@@ -18,6 +18,10 @@ const fixtures = vi.hoisted(() => ({
   scope: { canConfigure: true, personalTools: true, executionChoices: [] },
 }));
 
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/hooks/use-workspaces', () => ({
   useUpdateWorkspace: () => ({ mutate: fixtures.write, isPending: false }),
   useArchiveWorkspace: () => ({ mutateAsync: fixtures.archive }),
@@ -30,7 +34,7 @@ vi.mock('@/hooks/use-results', () => ({ useResultCapabilities: () => ({ data: { 
 vi.mock('@tanstack/react-query', () => ({ useQuery: () => ({ data: null }) }));
 vi.mock('@/lib/trpc/client', () => ({ trpc: { gh: { statusGet: { queryKey: () => ['test-gh-status'] } } }, trpcClient: { gh: { statusGet: { query: vi.fn() } } } }));
 vi.mock('@/lib/attachments/client', () => ({ uploadAttachment: vi.fn() }));
-vi.mock('@/components/ui/confirm-dialog', () => ({ useConfirm: () => fixtures.confirm }));
+vi.mock('@/components/system/confirm-dialog', () => ({ useConfirm: () => fixtures.confirm }));
 vi.mock('@/components/ui/switch', () => ({ Switch: () => null }));
 vi.mock('@/components/shared/emoji-picker', () => ({ EmojiPicker: ({ children }: { children: ReactNode }) => children }));
 vi.mock('@/components/chat-ui/handoffs/reviewer-selection', () => ({ ReviewerSelection: () => null }));
@@ -113,7 +117,8 @@ async function edit(value: string, element: HTMLTextAreaElement = guidance()) {
 }
 
 async function save() {
-  await act(async () => mountedProps<{ onClick: () => void }>(saveButton()!).onClick());
+  await act(async () => mountedProps<{ onClick: (event: Event) => void }>(saveButton()!)
+    .onClick(new window.Event('click', { cancelable: true })));
 }
 
 async function acknowledge(overrides: Partial<WorkspaceRecord> = {}) {

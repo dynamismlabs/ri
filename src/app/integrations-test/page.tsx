@@ -1,4 +1,8 @@
 'use client';
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+import { TextArea } from '@/components/system/text-area';
+
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { z } from 'zod/v4';
 
@@ -386,13 +390,15 @@ export default function IntegrationsTestPage() {
                 ) : (
                   <div className="flex shrink-0 items-center gap-2">
                     {(p.method === 'mcp' ? p.mcp?.authKind === 'none' ? [] : ['token'] : p.credentialFields ?? ['apiKey']).map((f) => (
-                      <input
+                      <Field
                         key={f}
                         type="password"
                         placeholder={f}
                         value={creds[p.id]?.[f] ?? ''}
                         onChange={(e) => setField(p.id, f, e.target.value)}
-                        className="w-32 rounded-md border border-neutral-300 px-2 py-1"
+                        className="w-32"
+                        aria-label={f}
+                        purpose="code"
                       />
                     ))}
                     <button
@@ -435,30 +441,35 @@ export default function IntegrationsTestPage() {
                     </div>
                   ))}
                   <div className="grid grid-cols-2 gap-2">
-                    <input
+                    <Field
                       placeholder="Label (e.g. Work)"
                       value={byoForm[p.id]?.label ?? ''}
                       onChange={(e) => setByoField(p.id, 'label', e.target.value)}
-                      className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                      className="w-auto"
+                      aria-label={'Label (e.g. Work)'}
                     />
-                    <input
+                    <Field
                       placeholder="Client ID"
                       value={byoForm[p.id]?.clientId ?? ''}
                       onChange={(e) => setByoField(p.id, 'clientId', e.target.value)}
-                      className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                      className="w-auto"
+                      aria-label={'Client ID'}
                     />
-                    <input
+                    <Field
                       type="password"
                       placeholder="Client secret (blank for PKCE)"
                       value={byoForm[p.id]?.clientSecret ?? ''}
                       onChange={(e) => setByoField(p.id, 'clientSecret', e.target.value)}
-                      className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                      className="w-auto"
+                      aria-label={'Client secret (blank for PKCE)'}
+                      purpose="code"
                     />
-                    <input
+                    <Field
                       placeholder="Redirect URI"
                       value={byoForm[p.id]?.redirectUri ?? redirectUri}
                       onChange={(e) => setByoField(p.id, 'redirectUri', e.target.value)}
-                      className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                      className="w-auto"
+                      aria-label={'Redirect URI'}
                     />
                   </div>
                   <button
@@ -542,33 +553,31 @@ export default function IntegrationsTestPage() {
       <section className="space-y-3">
         <h2 className="font-medium">Run an action</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="space-y-1">
-            <span className="text-xs text-neutral-500">Action</span>
-            <select
-              value={actionId}
-              onChange={(e) => setActionId(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 px-2 py-1.5"
-            >
-              {toolkits.map((t) => (
-                <optgroup key={t.id} label={t.displayName}>
-                  {t.actions.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.id} {a.mutating ? `(${a.risk})` : ''}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
-          <label className="space-y-1">
-            <span className="text-xs text-neutral-500">Account (email/label, optional)</span>
-            <input
-              value={account}
-              onChange={(e) => setAccount(e.target.value)}
-              placeholder="omit if only one connected"
-              className="w-full rounded-md border border-neutral-300 px-2 py-1.5"
-            />
-          </label>
+          <NativeSelect
+            value={actionId}
+            onChange={(e) => setActionId(e.target.value)}
+            controlClassName="w-full"
+            label="Action"
+            className="w-auto"
+          >
+            {toolkits.map((t) => (
+              <optgroup key={t.id} label={t.displayName}>
+                {t.actions.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.id} {a.mutating ? `(${a.risk})` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </NativeSelect>
+          <Field
+            value={account}
+            onChange={(e) => setAccount(e.target.value)}
+            placeholder="omit if only one connected"
+            controlClassName="w-full"
+            label="Account (email/label, optional)"
+            className="w-auto"
+          />
         </div>
         {selectedAction && (
           <p className="text-xs text-neutral-500">
@@ -576,15 +585,15 @@ export default function IntegrationsTestPage() {
             {selectedAction.scopes.length > 0 && <> · scopes: {selectedAction.scopes.join(', ')}</>}
           </p>
         )}
-        <label className="space-y-1">
-          <span className="text-xs text-neutral-500">Input (JSON)</span>
-          <textarea
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            rows={5}
-            className="w-full rounded-md border border-neutral-300 px-2 py-1.5 font-mono text-xs"
-          />
-        </label>
+        <TextArea
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          rows={5}
+          controlClassName="w-full"
+          purpose="code"
+          label="Input (JSON)"
+          className="w-auto"
+        />
         <button
           disabled={running || !actionId}
           onClick={run}

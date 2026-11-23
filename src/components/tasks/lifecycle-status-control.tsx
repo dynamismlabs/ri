@@ -1,12 +1,10 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { MetaItem } from '@/components/system/meta';
+import type { ContentTone } from '@/components/system/callout';
 import { ChevronDown } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent } from '@/components/system/menu';
 import { useTaskLifecycle } from '@/hooks/use-task-lifecycle';
 import {
   availableCommands,
@@ -15,15 +13,13 @@ import {
   type LifecycleCommand,
   type TaskStatus,
 } from '@/lib/tasks/lifecycle';
-import { cn } from '@/lib/utils';
 
 /** Consistent status color across every surface. */
 export const STATUS_COLOR: Record<TaskStatus, string> = {
-  consider: 'text-amber-500',
-  todo: 'text-blue-500',
-  in_progress: 'text-violet-500',
-  done: 'text-emerald-500',
-  archived: 'text-muted-foreground',
+  consider: 'text-status-consider', todo: 'text-status-todo', in_progress: 'text-status-progress', done: 'text-status-done', archived: 'text-t3',
+};
+const STATUS_TONE: Record<TaskStatus, ContentTone> = {
+  consider: 'status-consider', todo: 'status-todo', in_progress: 'status-progress', done: 'status-done', archived: 'neutral',
 };
 
 /**
@@ -37,7 +33,6 @@ export function LifecycleStatusControl({
   taskId,
   status,
   className,
-  size = 'sm',
 }: {
   taskId: string;
   status: TaskStatus;
@@ -63,27 +58,20 @@ export function LifecycleStatusControl({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        data-task-status={status}
-        className={cn(
-          'inline-flex items-center gap-1 rounded font-medium capitalize transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          size === 'xs' ? 'px-1 py-0.5 text-[11px]' : 'px-1.5 py-0.5 text-xs',
-          STATUS_COLOR[status],
-          className,
-        )}
-        aria-label={`Task status: ${TASK_STATUS_LABELS[status]}. Change status.`}
-      >
-        {TASK_STATUS_LABELS[status]}
-        <ChevronDown size={size === 'xs' ? 10 : 12} className="opacity-60" />
+      <DropdownMenuTrigger asChild>
+        <MetaItem as="button" type="button" kind="status" tone={STATUS_TONE[status]} className={className}
+          aria-label={`Task status: ${TASK_STATUS_LABELS[status]}. Change status.`}>
+          {TASK_STATUS_LABELS[status]}<ChevronDown aria-hidden />
+        </MetaItem>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-40">
         {commands.length === 0 ? (
-          <DropdownMenuItem disabled className="text-xs">No actions available</DropdownMenuItem>
+          <MenuAction kind="menu" disabled >No actions available</MenuAction>
         ) : (
           commands.map((cmd) => (
-            <DropdownMenuItem key={cmd} className="text-xs" onSelect={() => dispatch(cmd)}>
+            <MenuAction kind="menu" key={cmd}  onSelect={() => dispatch(cmd)}>
               {transitionLabel(cmd)}
-            </DropdownMenuItem>
+            </MenuAction>
           ))
         )}
       </DropdownMenuContent>

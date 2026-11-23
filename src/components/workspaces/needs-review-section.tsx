@@ -28,7 +28,7 @@ export function NeedsReviewSection() {
     <>
       <div className="px-1 py-2 border-b border-border/60">
         <div className="px-1.5 pb-1.5 flex items-center justify-between">
-          <span className="text-[8.5px] font-bold uppercase tracking-[0.15em] text-amber-500/80">
+          <span className="text-[11px] leading-[1.4] font-medium text-amber-500/80">
             Needs you
           </span>
           <span className="text-[9px] text-muted-foreground/70 font-mono">{agents.length + active.length}</span>

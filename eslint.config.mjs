@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import uiSystem from "./scripts/eslint/ui-system.mjs";
 
 // All restrictions share this array so adding the UI ratchet cannot replace
 // the existing tooltip rule. iframe title names a frame rather than a tooltip.
@@ -8,29 +9,14 @@ const titleSelectors = [{
   selector: "JSXOpeningElement[name.name=/^[a-z]/][name.name!='iframe'] > JSXAttribute[name.name='title']",
   message: "Use <Tip label=\"…\"> from '@/components/ui/tip' instead of the title attribute.",
 }, {
-  selector: "JSXOpeningElement:matches([name.name=/^(Button|Link|NodeViewWrapper|\\w+Trigger)$/], [name.type='JSXMemberExpression']) > JSXAttribute[name.name='title']",
+  selector: "JSXOpeningElement:matches([name.name=/^(Button|IconButton|ChipButton|ActionPrimitive|Card|Callout|MenuAction|StatusBadge|Meta|MetaItem|InlineAction|Field|TextArea|NativeSelect|SelectField|OverlaySurface|OverlayScrim|MenuSurface|ToastSurface|FormActions|FormLabel|FormDescription|(?:Dialog|Sheet|AlertDialog)(?:Content|Frame|Header|Footer|Title|Description|Body)|(?:Popover|Tooltip|HoverPreview)(?:Content|Frame)|DropdownMenu(?:Content|SubContent|Label|Separator|SubTrigger|Shortcut|CheckboxItem|RadioItem)|Select(?:Content|Item|Label|Separator)|Link|NodeViewWrapper|\\w+Trigger)$/], [name.type='JSXMemberExpression']) > JSXAttribute[name.name='title']",
   message: "This component passes title to the DOM. Wrap it in <Tip label=\"…\"> from '@/components/ui/tip' instead.",
 }];
 const capitalLabelSelector = {
   selector: "JSXText[value=/^(?=[^a-z]*$)(?:[^A-Z]*[A-Z]){3}/]",
   message: "Write labels in sentence case.",
 };
-const uiSystemSelectors = [...titleSelectors, {
-  // :has searches className's AST, including strings in cn(), branches and
-  // template parts. Separate searches also catch cn('border', 'rounded-md').
-  selector: String.raw`JSXOpeningElement[name.name=/^(button|a)$/]:not(:has(> JSXAttribute[name.name='data-slot'])):has(> JSXAttribute[name.name='className']:has(:matches(Literal[value=/(^|\s|:)border\b/], TemplateElement[value.raw=/(^|\s|:)border\b/]))):has(> JSXAttribute[name.name='className']:has(:matches(Literal[value=/(^|\s|:)rounded\b/], TemplateElement[value.raw=/(^|\s|:)rounded\b/])))`,
-  message: "Give this bordered control a shared data-slot from docs/ui-system.md, or use a shared UI component.",
-}, capitalLabelSelector];
-
-// Intentional technical acronyms and older source labels. Paths, not globs:
-// a new file always joins the ratchet. Each entry is removed after its labels
-// and controls pass the full uiSystemSelectors array.
-const uiSystemLegacyFiles = [
-  "src/app/dev/execution-chat/page.tsx", // Synthetic harness controls, outside the product UI.
-  "src/app/integrations-test/page.tsx", // Connector diagnostics intentionally keep their standalone drawing.
-  "src/components/settings/sections/api-transport.tsx", // HTTP is the protocol name.
-  "src/components/workspaces/worktree-scripts-section.tsx", // PORT and $RI_SOURCE_CHECKOUT_PATH are literal code.
-];
+const uiSystemSelectors = [...titleSelectors, capitalLabelSelector];
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -59,18 +45,13 @@ const eslintConfig = defineConfig([
   },
   {
     files: ["src/**/*.tsx"],
-    rules: { "no-restricted-syntax": ["error", ...uiSystemSelectors] },
+    plugins: { "ui-system": uiSystem },
+    rules: { "no-restricted-syntax": ["error", ...uiSystemSelectors], "ui-system/native-controls": "error", "ui-system/drawing-classes": "error" },
   },
   {
     // Installed primitives own their drawing. Source labels still use sentence case.
     files: ["src/components/ui/**/*.tsx"],
     rules: { "no-restricted-syntax": ["error", ...titleSelectors, capitalLabelSelector] },
-  },
-  {
-    // Shrink this list as the remaining legacy labels are reviewed. Keep the
-    // tooltip checks here: flat config replaces this entire rule, not its selectors.
-    files: uiSystemLegacyFiles,
-    rules: { "no-restricted-syntax": ["error", ...titleSelectors] },
   },
   {
     // Shared operations all receive input and request metadata. A leading

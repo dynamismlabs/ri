@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 import { Users } from 'lucide-react';
 import { useWorkRange } from '@/hooks/use-work';
 import { openCalendarModal } from '@/lib/client/calendar-modal';
@@ -46,16 +47,18 @@ export function WorkHudPill() {
         </span>
       }
     >
-      <button data-slot="action-button"
+      <Button
         type="button"
         onClick={() => openCalendarModal({ view: 'day', date: today })}
         aria-label={lines.join(' ')}
-        className="flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-border px-2 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+        variant="secondary"
+        size="sm"
+        className="flex shrink-0 items-center gap-1.5"
       >
         <Users size={12} />
         <span className="text-foreground">{formatHours(s.personHours)}h</span>
         <span className="hud-work-label"><span className="hud-work-detail">of </span>human work<span className="hud-work-detail"> today</span></span>
-      </button>
+      </Button>
     </Tip>
   );
 }

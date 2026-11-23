@@ -1,5 +1,10 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { ChoiceRow } from '@/components/system/choice-row';
+import { Meta, MetaItem } from '@/components/system/meta';
+
+import { IconButton } from '@/components/system/icon-button';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { useSpace } from '@/components/spaces/space-root';
 import { homeResourceHref } from '@/lib/home/resource-href';
@@ -11,16 +16,10 @@ import { TeamLabel } from '@/components/spaces/team-label';
 import { removeFromMyNotes } from '@/components/spaces/my-work';
 import { NoteIcon } from '@/components/shared/note-icon';
 import { DecisionLabel, NoteKindMenuItem } from './note-kind';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 import { AreaSelect } from '@/components/shared/area-select';
 import { TaskPicker } from '@/components/shared/task-picker';
-import { cn } from '@/lib/utils';
+
 import type { NoteListDTO } from '@/lib/api/dto/entity-list';
 
 /** Strip markdown syntax for plain-text previews */
@@ -67,11 +66,8 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
   const bodyPreview = rawPreview ? stripMarkdown(rawPreview) : '';
 
   return (
-    <div
-      className={cn(
-        'group flex items-start gap-1.5 px-2 py-2 rounded-lg transition-all border border-transparent cursor-pointer',
-        'hover:bg-card hover:border-border',
-      )}
+    <ChoiceRow asChild density="list" surface="plain"><div
+      className="group flex items-start gap-1.5 cursor-pointer"
       onClick={(e) => {
         if (e.metaKey || e.ctrlKey) {
           window.open(homeResourceHref('note', note.id, { kind: home?.home.kind ?? 'personal', spaceId: space?.id }), '_blank')
@@ -93,7 +89,7 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
         )}
 
         {/* Metadata row */}
-        <div data-slot="meta" className="mt-1 flex items-center gap-1.5 flex-wrap">
+        <Meta className="mt-1 flex items-center gap-1.5 flex-wrap">
           <TeamLabel teamId={note.sourceTeamId} sourceArea={note.source?.area} />
           <DecisionLabel kind={note.kind} />
           <AreaSelect
@@ -101,9 +97,9 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
             onChange={(areaId) => onUpdate(note.id, 'areaId', areaId)}
           />
 
-          <span data-slot="meta-item" data-kind="date" className="text-[8.5px] text-muted-foreground">
+          <MetaItem kind="date" >
             {formatRelativeDate(note.createdAt)}
-          </span>
+          </MetaItem>
 
           {privatePlanning && <TaskPicker
             value={note.taskId}
@@ -111,65 +107,67 @@ export function NoteRow({ note, onUpdate, onArchive, onOpen, privatePlanning = t
           />}
 
           {note.url && (
-            <a
+            <MetaItem as="a"
               href={note.url}
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              data-slot="meta-item"
-              data-kind="link"
-              className="inline-flex items-center gap-0.5 text-[8.5px] text-primary/60 font-bold uppercase tracking-wider hover:text-primary"
+
+              kind="link"
+              className="inline-flex items-center gap-0.5"
             >
               <ExternalLink size={8} /> Link
-            </a>
+            </MetaItem>
           )}
-        </div>
+        </Meta>
       </div>
 
       {/* Hover actions */}
       <div data-slot="row-actions" className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-0.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button
-              aria-label="More note actions"
-              className="p-1 text-muted-foreground hover:text-foreground rounded hover:bg-muted transition-colors"
+            <IconButton
               onClick={(e) => e.stopPropagation()}
+              label="More note actions"
+              variant="ghost"
+              size="xs"
+              focus="inside"
             >
               <MoreHorizontal size={14} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             {note.url && (
-              <DropdownMenuItem asChild className="text-xs">
+              <MenuAction kind="menu" asChild >
                 <a href={note.url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink size={12} className="mr-2" /> Open link
                 </a>
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             {note.url && <DropdownMenuSeparator />}
             {/* A saved team note is the team's: it leaves your notes, not the team. */}
             {note.sourceTeamId && note.sourceNoteId ? (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 onClick={(e) => { e.stopPropagation(); void removeFromMyNotes(note.sourceTeamId!, note.sourceNoteId!); }}
-                className="text-xs"
+
               >
                 <X size={12} className="mr-2" /> Remove from my notes
-              </DropdownMenuItem>
+              </MenuAction>
             ) : (
               <>
                 <NoteKindMenuItem kind={note.kind} onChange={(kind) => onUpdate(note.id, 'kind', kind)} />
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
+                <MenuAction tone="error" kind="menu"
                   onClick={() => onArchive(note.id)}
-                  className="text-xs text-destructive"
+
                 >
                   <Archive size={12} className="mr-2" /> Archive
-                </DropdownMenuItem>
+                </MenuAction>
               </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </div>
+    </div></ChoiceRow>
   );
 }

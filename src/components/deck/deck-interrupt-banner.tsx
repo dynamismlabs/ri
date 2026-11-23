@@ -1,8 +1,10 @@
 "use client";
+import { Callout } from '@/components/system/callout';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { AlertTriangle, X } from 'lucide-react';
 import type { DeckChangeView } from '@/types/dashboard';
-import { Tip } from '@/components/ui/tip';
 
 interface DeckInterruptBannerProps {
   interrupts: DeckChangeView[];
@@ -20,7 +22,7 @@ export function DeckInterruptBanner({ interrupts, onRestore, onDismiss }: DeckIn
   if (interrupts.length === 0) return null;
 
   return (
-    <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2.5">
+    <Callout padding="md" density="comfortable" tone={"warning"} className="mb-3">
       <div className="flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -36,26 +38,33 @@ export function DeckInterruptBanner({ interrupts, onRestore, onDismiss }: DeckIn
                     <span className="text-[10px] text-muted-foreground">: {c.reason}</span>
                   )}
                 </div>
-                <button
+                <Button
                   onClick={() => onRestore(c.taskId)}
-                  className="shrink-0 px-2 py-0.5 rounded-md text-[10px] font-medium text-amber-700 dark:text-amber-300 hover:bg-amber-500/15 transition-colors"
+                  variant="ghost"
+                  size="xs"
+                  tone="warning"
+                  className="shrink-0"
                 >
                   Keep it today
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         </div>
-        <Tip label="Dismiss">
-          <button
+
+          <IconButton
             onClick={onDismiss}
-            className="text-amber-600/60 hover:text-amber-700 dark:hover:text-amber-300 transition-colors shrink-0"
-            aria-label="Dismiss"
+            label="Dismiss"
+            tooltip="Dismiss"
+            variant="ghost"
+            size="xs"
+            tone="warning"
+            className="shrink-0"
           >
             <X className="w-3 h-3" />
-          </button>
-        </Tip>
+          </IconButton>
+
       </div>
-    </div>
+    </Callout>
   );
 }

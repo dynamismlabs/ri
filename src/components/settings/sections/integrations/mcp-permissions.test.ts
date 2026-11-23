@@ -55,7 +55,8 @@ describe('MCP permission controls', () => {
   it('shows legacy choices, resets an individual exception, and offers a bulk server reset', () => {
     const { element, onToolOverride, onSetPolicy } = serverDetail({ approvalPolicy: 'auto', toolOverrides: { read: { mutating: true }, write: { approvalMode: 'ask' } } });
     const controls = elements(element);
-    const reset = controls.find(child => child.props['aria-label'] === 'Use server permissions for read')!;
+    expect(renderToStaticMarkup(element)).toContain('aria-label="Use server permissions for read"');
+    const reset = controls.find(child => child.props.label === 'Use server permissions for read')!;
     (reset.props.onClick as () => void)();
     expect(onToolOverride).toHaveBeenCalledExactlyOnceWith('read', { approvalMode: null });
     const all = controls.find(child => child.props.children === 'Apply to all tools')!;

@@ -1,6 +1,9 @@
 'use client';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/system/popover';
+import { MenuAction } from '@/components/system/menu-action';
 
-import { useEffect, useRef, useState } from 'react';
+import { ChipButton } from '@/components/system/chip-button';
+import { useState } from 'react';
 import { History, Loader2 } from 'lucide-react';
 import {
   useMainChat,
@@ -21,42 +24,30 @@ import { cn } from '@/lib/utils';
  */
 export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScope; onOpenChat?: (id: string) => void }) {
   const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const { data: current } = useMainChat(scope);
   const { data: history, isLoading } = useMainChatHistory(scope, open);
   const resume = useResumeMainChat(scope);
 
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, [open]);
+
 
   const currentId = current?.session?.id ?? null;
   const sessions = history?.sessions ?? [];
 
   return (
-    <div className="relative" ref={menuRef}>
-      <button data-slot="chip-button" aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className={cn(
-          'flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] transition-all',
-          open
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-        )}
+    <Popover open={open} onOpenChange={setOpen}><div className="relative">
+      <PopoverTrigger asChild><ChipButton
+        aria-expanded={open}
+        variant="secondary"
+        size="compact"
+        pressed={open}
+        className="flex items-center gap-1"
       >
         <History size={10} />
         History
-      </button>
+      </ChipButton></PopoverTrigger>
 
       {open && (
-        <div data-slot="popover-content" className="absolute right-0 top-full mt-1 w-64 max-h-72 overflow-y-auto rounded-lg border border-border bg-card shadow-xl z-50 py-1">
+        <PopoverContent padding="xs" align="end" className="w-64 max-h-72 overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
               <Loader2 size={12} className="animate-spin text-muted-foreground" />
@@ -69,7 +60,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
             sessions.map((s) => {
               const isCurrent = s.id === currentId;
               return (
-                <button
+                <MenuAction selected={!!((isCurrent))} density="compact"
                   key={s.id}
                   onClick={() => {
                     if (onOpenChat) { onOpenChat(s.id); setOpen(false); }
@@ -77,10 +68,7 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
                     else resume.mutate(s.id, { onSuccess: () => setOpen(false) });
                   }}
                   disabled={resume.isPending}
-                  className={cn(
-                    'w-full flex items-center gap-2 px-3 py-1.5 text-left transition-all disabled:opacity-50',
-                    isCurrent ? 'bg-primary/5' : 'hover:bg-muted/50',
-                  )}
+                  className="w-full flex items-center gap-2 text-left"
                 >
                   <span
                     className={cn(
@@ -102,12 +90,12 @@ export function MainChatHistoryMenu({ scope, onOpenChat }: { scope: MainChatScop
                   <span className="shrink-0 text-[9.5px] text-muted-foreground/60 font-mono">
                     {formatCompactRelative(s.lastActivityAt ?? s.lastOutcomeEventAt ?? s.startedAt)}
                   </span>
-                </button>
+                </MenuAction>
               );
             })
           )}
-        </div>
+        </PopoverContent>
       )}
-    </div>
+    </div></Popover>
   );
 }

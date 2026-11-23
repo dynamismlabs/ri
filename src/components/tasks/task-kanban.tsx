@@ -1,5 +1,11 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Card } from '@/components/system/card';
 
+import { Field } from '@/components/system/field';
+
+import { ChipButton } from '@/components/system/chip-button';
+import { Button } from '@/components/system/button';
 import { entityKeys } from '@/lib/query/entity-keys';
 import { TeamLabel } from '@/components/spaces/team-label';
 
@@ -33,7 +39,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/system/menu';
 import { KANBAN_COLUMNS, LANE_BY_KEY, laneStatus, columnDropCommand, laneForStatus, type TaskLane } from '@/lib/tasks/lanes';
 import { STATUS_COLOR } from './lifecycle-status-control';
 import { TaskBadges } from './task-badges';
@@ -42,13 +48,11 @@ import type { TaskAttentionSignals, TaskStatus } from '@/db/types';
 import {
   ListToolbar,
   ToolbarActiveDot,
-  toolbarButtonClass,
-} from '@/components/shared/list-toolbar';
+  } from '@/components/shared/list-toolbar';
 import { cn } from '@/lib/utils';
 import { Tip } from '@/components/ui/tip';
 import { ColumnPicker, HiddenColumnsEmpty } from '@/components/board/column-picker';
 import { useBoardColumns } from '@/hooks/use-board-columns';
-
 
 /** How often the board looks for changes made elsewhere: an agent moving a
  * task in the middle of a long turn, the CLI, another device. Turn starts and
@@ -90,16 +94,10 @@ function KanbanCard({
   const showAgentRow =
     !!signals && (signals.blocked || signals.stalled || signals.review || signals.working || !!agentSessionId);
   return (
-    <div
+    <Card dragging={isDragging} padding="sm" shadow
       ref={setNodeRef}
       style={{ transform: CSS.Translate.toString(transform), transition }}
-      className={cn(
-        'group rounded-md border border-border bg-card p-2 text-xs shadow-sm',
-        'hover:border-primary/40 cursor-grab active:cursor-grabbing',
-        // An agent running a turn on it right now: findable at a glance.
-        signals?.working && 'border-emerald-500/50 hover:border-emerald-500/70',
-        isDragging && 'opacity-40',
-      )}
+      className="group cursor-grab active:cursor-grabbing"
       {...attributes}
       {...listeners}
       onClick={() => onOpen(task.id)}
@@ -114,7 +112,7 @@ function KanbanCard({
       <div className="mt-1 flex items-center gap-2">
         <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
         {showArea && areaName && (
-          <span className="rounded bg-muted px-1 py-0.5 text-[9px] uppercase tracking-wide text-muted-foreground">{areaName}</span>
+          <StatusBadge >{areaName}</StatusBadge>
         )}
         {task.hardDeadline && (
           <span className="text-[10px] text-amber-600">{task.hardDeadline.slice(0, 10)}</span>
@@ -131,7 +129,7 @@ function KanbanCard({
             // Straight to the agent's chat. Its own click, press and keys, so
             // it neither opens the task nor picks the card up.
             <Tip label="Open the agent's chat">
-              <button
+              <Button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -139,17 +137,19 @@ function KanbanCard({
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 onKeyDown={(e) => e.stopPropagation()}
-                className="ml-auto inline-flex items-center gap-1 rounded px-1 py-0.5 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 aria-label="Open the agent's chat"
+                variant="secondary"
+                size="sm"
+                className="ml-auto inline-flex items-center gap-1"
               >
                 <Bot size={11} aria-hidden />
                 Open
-              </button>
+              </Button>
             </Tip>
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -191,19 +191,21 @@ function ColumnAddTask({
 
   if (!open) {
     return (
-      <button
+      <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-1.5 flex w-full items-center gap-1 rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        variant="secondary"
+        size="sm"
+        className="mt-1.5 flex w-full items-center gap-1 justify-start"
       >
         <Plus size={13} className="shrink-0" /> Add task
-      </button>
+      </Button>
     );
   }
   return (
-    <div className="mt-1.5 flex items-center gap-1 rounded-md border border-border bg-card px-2 py-1.5">
+    <Card padding="sm" density="compact" shadow className="mt-1.5 flex items-center gap-1">
       <Plus size={13} className="shrink-0 text-muted-foreground" />
-      <input
+      <Field
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -214,9 +216,9 @@ function ColumnAddTask({
         onBlur={() => { if (!value.trim()) setOpen(false); }}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/50"
+        className="flex-1" purpose="embedded"
       />
-    </div>
+    </Card>
   );
 }
 
@@ -253,7 +255,7 @@ function KanbanColumn({
   return (
     <div className="flex h-full min-h-0 min-w-[240px] flex-1 flex-col">
       <div className="mb-2 flex items-center justify-between px-1">
-        <span className={cn('text-[10px] font-bold uppercase tracking-wider', STATUS_COLOR[def.status])}>{def.label}</span>
+        <span className={cn("text-[10px] font-bold", STATUS_COLOR[def.status])}>{def.label}</span>
         <span className="text-[10px] text-muted-foreground">{loading ? '' : tasks.length}</span>
       </div>
       <div
@@ -374,7 +376,6 @@ export function TaskKanban({
     },
     [createTask, areaMode, lifecycle, createDefaults],
   );
-
 
   // One query per column, ordered by the shared sort contract.
   const live = { refetchInterval: BOARD_POLL_MS };
@@ -531,23 +532,20 @@ export function TaskKanban({
         {leading}
         <div className="flex-1" />
         <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label={areaMode !== 'all' ? `Filter, active: ${areaLabel}` : 'Filter tasks'}
-            className={toolbarButtonClass({ active: areaMode !== 'all' })}
-          >
+          <DropdownMenuTrigger asChild><ChipButton variant="ghost" aria-label={areaMode !== 'all' ? `Filter, active: ${areaLabel}` : 'Filter tasks'} pressed={areaMode !== 'all'}>
             <Filter className="size-3.5 shrink-0" />
             <span className="hidden @sm/lt:inline max-w-[140px] truncate">
               {areaMode !== 'all' ? areaLabel : 'Filter'}
             </span>
             {areaMode !== 'all' && <ToolbarActiveDot />}
-          </DropdownMenuTrigger>
+          </ChipButton></DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel className="text-[9px] uppercase tracking-widest">Area</DropdownMenuLabel>
+            <DropdownMenuLabel className="">Area</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={areaMode} onValueChange={setAreaMode}>
-              <DropdownMenuRadioItem value="all" className="text-xs">All Areas</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="none" className="text-xs">No Area</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all" className="">All Areas</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="none" className="">No Area</DropdownMenuRadioItem>
               {areas?.map((a) => (
-                <DropdownMenuRadioItem key={a.id} value={a.id} className="text-xs">{a.name}</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem key={a.id} value={a.id} className="">{a.name}</DropdownMenuRadioItem>
               ))}
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
@@ -558,7 +556,12 @@ export function TaskKanban({
 
       {[consider, todo, current, done, archived].some((query, index) => columns.includes(ALL_COLUMNS[index]) && query.isError) && (
         <div role="alert" className="px-4 py-2 text-xs text-destructive">
-          Some tasks could not be loaded. <button type="button" className="underline" onClick={() => void Promise.all([consider, todo, current, done, archived].map((query) => query.refetch()))}>Try again</button>
+          Some tasks could not be loaded. <Button
+            type="button"
+            onClick={() => void Promise.all([consider, todo, current, done, archived].map((query) => query.refetch()))}
+            variant="link"
+            size="sm"
+          >Try again</Button>
         </div>
       )}
       <div className="min-h-0 flex-1 overflow-x-auto p-3">
@@ -590,9 +593,9 @@ export function TaskKanban({
           </div>
           <DragOverlay>
             {activeTask ? (
-              <div className="rounded-md border border-primary/50 bg-card p-2 text-xs shadow-lg">
+              <Card padding="sm" shadow >
                 <div className="line-clamp-3 font-medium">{activeTask.title || 'Untitled'}</div>
-              </div>
+              </Card>
             ) : null}
           </DragOverlay>
         </DndContext>

@@ -1,12 +1,9 @@
+
+import { StatusBadge } from '@/components/system/status-badge';
 import { cn } from '@/lib/utils';
 
 /** What a rail count means: work in flight (blue) or something waiting on you (amber). */
 export type RailTone = 'live' | 'attention';
-
-const PILL = {
-  live: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-  attention: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-} as const;
 
 const DOT = {
   live: 'bg-blue-500',
@@ -16,13 +13,13 @@ const DOT = {
 /** A live count beside a label in the wide rail. */
 export function RailCount({ count, tone, className }: { count: number; tone: RailTone; className?: string }) {
   return (
-    <span
-      className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] tabular-nums', PILL[tone], className)}
+    <StatusBadge tone={({live:"info",attention:"warning"} as const)[tone]}
+      className={cn("inline-flex items-center gap-1 tabular-nums", className)}
       aria-label={tone === 'attention' ? `${count} waiting on you` : `${count} active`}
     >
       <span className={cn('size-1.5 rounded-full', DOT[tone])} aria-hidden />
       {count}
-    </span>
+    </StatusBadge>
   );
 }
 

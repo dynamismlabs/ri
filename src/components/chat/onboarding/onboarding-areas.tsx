@@ -1,10 +1,12 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
 import { useAreas, useCreateArea } from '@/hooks/use-areas';
 import { apiErrorText } from '@/lib/api/client';
 import type { AreaSuggestion } from '@/lib/onboarding/area-suggestions';
 import { trpcClient } from '@/lib/trpc/client';
-import { cn } from '@/lib/utils';
+
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Loader2, Plus } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
@@ -112,20 +114,19 @@ export function AreasStep({
         {options.map((option) => {
           const on = selected.has(option.name);
           return (
-            <button data-slot="action-button"
+            <Button
               key={option.name}
               type="button"
               aria-pressed={on}
               onClick={() => toggle(option.name)}
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[12px] transition-colors',
-                on ? 'border-primary/60 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-muted/50',
-              )}
+              variant="secondary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               <span className="leading-none">{option.emoji}</span>
               {option.name}
               {on && <Check size={11} className="text-primary" />}
-            </button>
+            </Button>
           );
         })}
         {suggesting && (
@@ -135,7 +136,7 @@ export function AreasStep({
         )}
       </div>
       <div className="mt-2 flex items-center gap-1.5">
-        <input data-slot="field"
+        <Field
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -146,7 +147,7 @@ export function AreasStep({
           }}
           placeholder="Add your own"
           aria-label="Add an area"
-          className="h-8 min-w-0 flex-1 rounded-lg border border-border bg-background px-2.5 text-[12px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+          className="min-w-0 flex-1"
         />
         <QuietButton onClick={addCustom}>
           <span className="inline-flex items-center gap-1">

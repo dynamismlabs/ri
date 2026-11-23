@@ -1,5 +1,7 @@
 "use client";
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { Button } from '@/components/system/button';
 /**
  * The dense week: seven real columns of facts. Per day — a slim capacity
  * header (from actual busy time), all-day chips, deadline markers (tasks
@@ -17,7 +19,7 @@ import { formatMinutes, minutesToLabel, parseHhMm } from '@/lib/deck/calendar';
 import { eventWindowOnDate } from '@/lib/calendar/layout';
 import { formatDayLabel } from '@/lib/calendar/dates';
 import type { CalendarDay, CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
 import { WorkWorth } from './work/work-worth';
@@ -94,26 +96,29 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
             {/* All-day chips */}
             {day.allDay.map((e) => (
               <Tip key={e.id} label={e.calendar ? `${e.title} (${e.calendar.name})` : e.title}>
-                <span
-                  className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground truncate shrink-0"
+                <StatusBadge
+                  className="truncate shrink-0"
                   style={stripeStyle(e.color, 2)}
                 >
                   {e.title}
-                </span>
+                </StatusBadge>
               </Tip>
             ))}
 
             {/* Deadline markers — obligations landing on this day */}
             {deadlines.map((d) => (
               <Tip key={d.taskId} label={`Due: ${d.title}`}>
-                <button data-slot="action-button" data-tone="warning"
+                <Button
                   type="button"
                   onClick={() => onOpenTask(d.taskId)}
-                  className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-amber-500/40 bg-amber-500/10 text-[10px] font-medium text-amber-600 dark:text-amber-400 text-left shrink-0"
+                  variant="secondary"
+                  size="sm"
+                  tone="warning"
+                  className="flex items-center gap-1 shrink-0"
                 >
                   <Flag size={9} className="shrink-0" />
                   <span className="truncate">{d.title}</span>
-                </button>
+                </Button>
               </Tip>
             ))}
 
@@ -144,7 +149,7 @@ export function WeekView({ days, workday, today, deadlinesByDate, onSelectDay, o
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent side="bottom" align="start" className="p-0 w-auto">
+                <PopoverContent padding="none" side="bottom" align="start" className="w-auto">
                   <EventPopoverContent event={event} />
                 </PopoverContent>
               </Popover>

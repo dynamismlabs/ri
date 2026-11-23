@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -49,8 +50,7 @@ export function useAgentSkillAccess(enabled = true) {
   };
 }
 
-const buttonClass =
-  'inline-flex shrink-0 items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium hover:bg-muted/50 disabled:opacity-50';
+
 
 /** "Codex, Claude Code, Cursor, OpenCode and Antigravity": every harness this build offers. */
 const HARNESS_NAMES = listJoin(HARNESS_IDS.map((id) => HARNESS_REGISTRY[id].name));
@@ -67,17 +67,22 @@ export function AgentSkillFooter() {
 
   return (
     <section className="min-w-0" aria-label={`${APP_NAME}’s skills`}>
-      <h3 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{APP_NAME}’s skills</h3>
+      <h3 className="text-[11px] font-semibold text-muted-foreground">{APP_NAME}’s skills</h3>
       <p className="mt-1 text-xs text-muted-foreground">
         {HARNESS_NAMES} on this computer have {APP_NAME}’s skills for tasks, notes and the agent browser, so they can use
         your work through the <code className="font-mono">{APP_SHORT_ID}</code> command even before you connect them. Connecting one
         installs them for it. Your projects are never changed.
       </p>
-      <div className="mt-2 flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
+      <div className="ri-agent-skill-access-frame mt-2 flex items-center gap-3 rounded-md border border-border px-3 py-2 text-xs">
         {skill.failed ? (
           <>
             <span className="min-w-0 flex-1 text-destructive">Could not check the skills.</span>
-            <button type="button" className={buttonClass} onClick={skill.retry}>Retry</button>
+            <Button
+              type="button"
+              onClick={skill.retry}
+              variant="secondary"
+              size="sm"
+            >Retry</Button>
           </>
         ) : state === null ? (
           <span className="flex flex-1 items-center gap-2 text-muted-foreground">
@@ -97,15 +102,16 @@ export function AgentSkillFooter() {
                 <>Installed <span className="text-muted-foreground">in {listJoin(skill.status?.folders ?? [])}</span></>
               ) : 'Not installed'}
             </span>
-            <button
+            <Button
               type="button"
-              className={buttonClass}
               disabled={skill.busy}
               onClick={state === 'on' ? skill.uninstall : skill.install}
+              variant={state === "on" ? "destructive" : "secondary"}
+              size="sm"
             >
               {skill.busy && <Loader2 size={12} className="animate-spin" aria-hidden />}
               {state === 'on' ? 'Uninstall' : 'Install'}
-            </button>
+            </Button>
           </>
         )}
       </div>

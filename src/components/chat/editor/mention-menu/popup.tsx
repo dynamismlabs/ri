@@ -1,4 +1,10 @@
 'use client';
+import { MenuSurface } from '@/components/system/menu-surface';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { Button } from '@/components/system/button';
 import { SOURCE_STATUS_LABELS } from '@/lib/chat-sources/types'
 
 import { cn } from '@/lib/utils'
@@ -243,11 +249,11 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
     if (items.length === 0) {
       if (loading) {
         return (
-          <div className="slash-command-menu chat-slash-menu" aria-busy="true" aria-label="Loading mentions">
+          <MenuSurface density="compact" aria-busy="true" aria-label="Loading mentions">
             {chips}
             <MentionSkeletonRows count={3} />
             {footer}
-          </div>
+          </MenuSurface>
         )
       }
       // `@task:` takes spaces, so prose typed after a search that found
@@ -256,7 +262,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
       const search = parsed.text.trim()
       const noun = parsed.filter ? KIND_NOUNS[parsed.filter] : null
       return (
-        <div className="slash-command-menu chat-slash-menu">
+        <MenuSurface density="compact">
           {chips}
           <div className="px-2.5 py-1.5 text-xs text-muted-foreground">
             {noun
@@ -264,7 +270,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
               : 'No matches'}
           </div>
           {footer}
-        </div>
+        </MenuSurface>
       )
     }
 
@@ -300,7 +306,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
     // The menu's own overflow is turned off so the chips and the hint stay
     // put while the rows scroll between them.
     return (
-      <div className="slash-command-menu chat-slash-menu" style={{ overflowY: 'hidden' }}>
+      <MenuSurface density="compact" style={{ overflowY: 'hidden' }}>
         {chips}
         <div ref={listRef} className="flex min-h-0 flex-col gap-px overflow-y-auto">
           {rows}
@@ -312,7 +318,7 @@ export const MentionMenuList = forwardRef<SuggestionPopupRef, MentionMenuListPro
           )}
         </div>
         {footer}
-      </div>
+      </MenuSurface>
     )
   },
 )
@@ -354,25 +360,21 @@ function KindChips({
       className="relative mb-0.5 flex shrink-0 items-center gap-0.5 overflow-x-auto border-b border-border/60 px-0.5 pt-0.5 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       {KIND_CHIPS.map((filter, index) => (
-        <button
+        <Button
           key={filter ?? 'all'}
           type="button"
           data-kind-index={index}
           data-kind-chip={filter ?? 'all'}
           data-focused={index === focused ? '' : undefined}
           aria-pressed={index === active}
-          className={cn(
-            'shrink-0 rounded-full px-2 py-0.5 text-[11px] leading-4 transition-colors',
-            index === active
-              ? 'bg-accent font-medium text-foreground'
-              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-            index === focused && 'ring-1 ring-inset ring-ring',
-          )}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => onPick(index)}
+          variant="ghost"
+          size="xs"
+          className="shrink-0"
         >
           {filter ? mentionKind(filter).label : 'All'}
-        </button>
+        </Button>
       ))}
     </div>
   )
@@ -411,7 +413,7 @@ function SectionHeader({ kind, label: named }: { kind: Section; label?: string }
   else if (kind.startsWith('ref:')) label = `In @${kind.slice(4)} · read-only`
   else label = 'Files'
   return (
-    <div className="px-2.5 pt-1.5 pb-0.5 text-[9px] uppercase tracking-wider text-muted-foreground/60 font-semibold">
+    <div className="px-2.5 pt-1.5 pb-0.5 text-[11px] leading-[1.4] font-medium text-muted-foreground/60">
       {label}
     </div>
   )
@@ -427,13 +429,11 @@ interface MentionRowProps {
 
 function MentionRow({ item, index, selected, onSelect, onHover }: MentionRowProps) {
   return (
-    <button
+    <MenuAction selected={!!((selected))} density="compact"
       data-mention-index={index}
       data-selected={selected ? '' : undefined}
       type="button"
-      className={`flex items-center gap-2 w-full px-2.5 py-1 rounded text-left transition-colors ${
-        selected ? 'bg-accent' : 'hover:bg-accent/50'
-      }`}
+      className="flex items-center gap-2 w-full text-left"
       onMouseDown={(e) => e.preventDefault()}
       onClick={() => onSelect(index)}
       onMouseEnter={() => onHover(index)}
@@ -442,7 +442,7 @@ function MentionRow({ item, index, selected, onSelect, onHover }: MentionRowProp
         <RowIcon item={item} />
       </span>
       <RowBody item={item} />
-    </button>
+    </MenuAction>
   )
 }
 
@@ -508,7 +508,7 @@ function RowBody({ item }: { item: MentionItem }) {
         {account && <span className="text-muted-foreground"> · {account}</span>}
       </span>
       <span className="ml-auto flex shrink-0 items-center gap-1.5">
-        {capabilities && <span className="rounded bg-muted px-1.5 py-0.5 text-[9px] text-muted-foreground">{capabilities}</span>}
+        {capabilities && <StatusBadge >{capabilities}</StatusBadge>}
         {item.source.status !== 'ready' && <span className="text-[9px] text-muted-foreground">{SOURCE_STATUS_LABELS[item.source.status]}</span>}
       </span>
     </>
@@ -570,14 +570,11 @@ function RowBody({ item }: { item: MentionItem }) {
           {item.title || (item.kind === 'task' ? 'Untitled task' : 'Untitled note')}
         </span>
         {tag && (
-          <span
-            className={cn(
-              'ml-auto shrink-0 rounded px-1 py-0.5 text-[8.5px] font-semibold uppercase tracking-wide',
-              tag === 'Consider' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-            )}
+          <StatusBadge tone={(tag === 'Consider' ? "warning" : "status-progress")}
+            className="ml-auto shrink-0"
           >
             {tag}
-          </span>
+          </StatusBadge>
         )}
       </>
     )

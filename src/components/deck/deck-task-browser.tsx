@@ -1,5 +1,15 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
+import { StatusBadge } from '@/components/system/status-badge';
+
+
+import { Field } from '@/components/system/field';
+
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { ChipButton } from '@/components/system/chip-button';
+import { IconButton } from '@/components/system/icon-button';
 import { TeamLabel } from '@/components/spaces/team-label';
 import { useState, useMemo } from 'react';
 import { Search, Plus, Check, Minus, X, ChevronDown } from 'lucide-react';
@@ -8,13 +18,7 @@ import { parseLocalDate } from '@/lib/dates';
 import { useTasks } from '@/hooks/use-tasks';
 import { useAreas } from '@/hooks/use-areas';
 import { isClientReadyTodo } from '@/lib/deck/client-ready';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuSeparator } from '@/components/system/menu';
 import type { TaskListDTO } from '@/lib/api/dto/entity-list';
 
 const EFFORT_SHORT: Record<string, string> = {
@@ -91,67 +95,45 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2 border-b border-border/50">
         {/* Search */}
-        <div className="flex items-center gap-1.5 flex-1 bg-muted/50 rounded-md px-2 py-1">
-          <Search className="w-3 h-3 text-muted-foreground/50 shrink-0" />
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Search tasks..."
-            className="bg-transparent text-xs text-foreground placeholder:text-muted-foreground/40 outline-none w-full"
-            autoFocus
-          />
-        </div>
+        <Field
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search tasks..."
+          className={cn('w-full', 'flex-1')}
+          autoFocus
+          leading={<Search />}
+          aria-label={'Search tasks'}
+        />
 
         {/* Energy toggle */}
-        <div data-slot="segmented" className="flex items-center gap-0.5 p-0.5 bg-muted/50 rounded-md shrink-0">
-          <button
-            onClick={() => setEnergyFilter(energyFilter === 'light' ? null : 'light')}
-            aria-pressed={energyFilter === 'light'}
-            className={cn(
-              'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
-              energyFilter === 'light'
-                ? 'bg-sky-400/15 text-sky-400 shadow-sm'
-                : 'text-muted-foreground/50 hover:text-muted-foreground'
-            )}
-          >
-            Light
-          </button>
-          <button
-            onClick={() => setEnergyFilter(energyFilter === 'deep' ? null : 'deep')}
-            aria-pressed={energyFilter === 'deep'}
-            className={cn(
-              'px-2 py-0.5 rounded text-[9px] font-bold uppercase transition-all',
-              energyFilter === 'deep'
-                ? 'bg-orange-500/15 text-orange-500 shadow-sm'
-                : 'text-muted-foreground/50 hover:text-muted-foreground'
-            )}
-          >
-            Deep
-          </button>
-        </div>
+        <SegmentedControl mode="choice" allowEmpty ariaLabel="Energy" value={energyFilter} onChange={setEnergyFilter} options={[{value:'light',label:'Light'},{value:'deep',label:'Deep'}]} />
 
         {/* Area filter */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="flex items-center gap-1 shrink-0"
+            >
               {selectedArea ? selectedArea.name : 'All'}
               <ChevronDown size={8} className="text-muted-foreground/50" />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-36">
-            <DropdownMenuItem onClick={() => setAreaFilter(null)} className={cn('text-xs', !areaFilter && 'font-bold')}>
+            <MenuAction kind="menu" onClick={() => setAreaFilter(null)} selected={!!(!areaFilter)}>
               All areas
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
             {areas?.map(area => (
-              <DropdownMenuItem
+              <MenuAction kind="menu"
                 key={area.id}
                 onClick={() => setAreaFilter(area.id)}
-                className={cn('text-xs', area.id === areaFilter && 'font-bold')}
+                selected={!!(area.id === areaFilter)}
               >
                 {area.name}
-              </DropdownMenuItem>
+              </MenuAction>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -159,31 +141,38 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
         {/* Sort */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="chip-button" className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 rounded-md hover:bg-muted transition-colors shrink-0">
+            <ChipButton
+              variant="secondary"
+              size="compact"
+              className="flex items-center gap-1 shrink-0"
+            >
               {sortBy === 'default' ? 'Priority' : sortBy === 'newest' ? 'Newest' : 'Deadline'}
               <ChevronDown size={8} className="text-muted-foreground/50" />
-            </button>
+            </ChipButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-28">
-            <DropdownMenuItem onClick={() => setSortBy('default')} className={cn('text-xs', sortBy === 'default' && 'font-bold')}>
+            <MenuAction kind="menu" onClick={() => setSortBy('default')} selected={!!(sortBy === "default")}>
               Priority
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortBy('newest')} className={cn('text-xs', sortBy === 'newest' && 'font-bold')}>
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => setSortBy('newest')} selected={!!(sortBy === "newest")}>
               Newest
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setSortBy('deadline')} className={cn('text-xs', sortBy === 'deadline' && 'font-bold')}>
+            </MenuAction>
+            <MenuAction kind="menu" onClick={() => setSortBy('deadline')} selected={!!(sortBy === "deadline")}>
               Deadline
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
 
         {/* Close */}
-        <button
+        <IconButton
           onClick={onClose}
-          className="p-1 text-muted-foreground/50 hover:text-muted-foreground transition-colors shrink-0"
+          label="Close task browser"
+          variant="ghost"
+          size="xs"
+          focus="inside"
         >
           <X className="w-3.5 h-3.5" />
-        </button>
+        </IconButton>
       </div>
 
       {/* Task list */}
@@ -196,28 +185,32 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
             return (
               <div
                 key={task.id}
-                className={cn(
-                  'group/task flex items-center gap-2 px-3 py-1.5 hover:bg-muted/30 transition-colors',
-                )}
+                className="group/task flex items-center gap-2 px-3 py-1.5 hover:bg-muted/30 transition-colors"
               >
                 {onDeck ? (
-                  <button
+                  <IconButton
                     onClick={() => onRemoveFromDeck?.(task.id)}
-                    className="shrink-0 transition-colors text-muted-foreground/30 hover:text-red-400"
-                    aria-label="Remove from deck"
+                    label="Remove from deck"
+                    variant="ghost"
+                    size="xs"
+                    focus="inside"
+                    className="shrink-0"
                   >
                     {/* Mobile: always show minus. Desktop: check that swaps to minus on hover */}
                     <Check className="w-3.5 h-3.5 hidden md:block md:group-hover/task:hidden" />
                     <Minus className="w-3.5 h-3.5 md:hidden md:group-hover/task:block" />
-                  </button>
+                  </IconButton>
                 ) : (
-                  <button
+                  <IconButton
                     onClick={() => onAddToDeck(task)}
-                    className="shrink-0 transition-colors text-muted-foreground hover:text-foreground"
-                    aria-label="Add to deck"
+                    label="Add to deck"
+                    variant="ghost"
+                    size="xs"
+                    focus="inside"
+                    className="shrink-0"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                  </button>
+                  </IconButton>
                 )}
                 <span className={cn(
                   'text-xs truncate flex-1',
@@ -228,9 +221,9 @@ export function DeckTaskBrowser({ deckTaskIds, onAddToDeck, onRemoveFromDeck, on
                 <div className="flex items-center gap-1.5 shrink-0">
                   <TeamLabel teamId={task.sourceTeamId} sourceArea={task.source?.area} />
                   {task.areaId && areaMap.get(task.areaId) && (
-                    <span className="text-[9px] px-1 py-0.5 rounded bg-muted/80 text-muted-foreground/70">
+                    <StatusBadge >
                       {areaMap.get(task.areaId)}
-                    </span>
+                    </StatusBadge>
                   )}
                   {task.effort && (
                     <span className="text-[9px] text-muted-foreground/50">

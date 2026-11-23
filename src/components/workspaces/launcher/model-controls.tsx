@@ -1,5 +1,6 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { useState } from 'react';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { MakeDefaultRow } from '@/components/settings/make-default-row';
@@ -8,17 +9,17 @@ import { VisibleModelOptions } from '@/components/settings/visible-model-options
 import { ModelMenuContent, ModelMenuLabel } from '@/components/chat-ui/model-menu/model-menu';
 import { useSettingsLink } from '@/components/settings/settings-destination';
 import { useHomeStorageScope } from '@/components/home/home-context';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import type { EffortLevel } from '@/db/types';
 import { useDefaultSelection } from '@/hooks/use-default-selection';
 import { useHarnessModels } from '@/hooks/use-harness-models';
 import { effortOptionsForModel, explicitEffortForModel, explicitVariantForModel, harnessSupportsEffort, type ModelOption, type ProviderId } from '@/lib/harness/options';
-import { serviceTierForModel, serviceTierOptions } from '@/lib/harness/service-tiers';
+import { serviceTierForModel, serviceTierOptions, serviceTierLabel } from '@/lib/harness/service-tiers';
 import { readProviderSpeed } from '@/lib/executions/provider-speed';
 import { LauncherPopoverContent } from './launcher-popover';
 
-const TRIGGER_CLASS = 'inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground disabled:opacity-40 disabled:pointer-events-none';
+
 
 export interface LaunchHarnessSelection {
   harness: ProviderId;
@@ -34,6 +35,7 @@ export interface LaunchHarnessSelection {
  * a new chat" confirm.
  */
 export function ModelControl({
+  size = "compact",
   selection,
   label,
   rememberedEfforts,
@@ -44,6 +46,7 @@ export function ModelControl({
   serviceTier,
   onEffortChange,
 }: {
+  size?: "compact" | "touch";
   selection: ModelSelection;
   label: string;
   /** The launch's variant and effort, carried along if it's made the default. */
@@ -92,16 +95,16 @@ export function ModelControl({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Tip label="Choose a model and adjust its settings">
-          <button
+          <ChipButton
             type="button"
-            data-slot="chip-button"
-            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}`}
+            aria-label={`Model and settings: ${label}${effortLabel ? `, ${effortLabel} effort` : ''}${variantLabel ? `, ${variantLabel} variant` : ''}${speed ? `, ${serviceTierLabel(speed)}` : ''}`}
             disabled={disabled}
-            className={TRIGGER_CLASS}
+            variant="secondary"
+            size={size}
           >
             <HarnessMark id={selection.harness} />
-            <ModelMenuLabel model={label} effort={effortLabel} variant={variantLabel} speed={speed ?? undefined} />
-          </button>
+            <ModelMenuLabel model={label} effort={size === 'touch' ? undefined : effortLabel} variant={size === 'touch' ? undefined : variantLabel} speed={size === 'touch' ? undefined : speed ?? undefined} />
+          </ChipButton>
         </Tip>
       </PopoverTrigger>
       {/* Scrolling + height capping live in LauncherPopoverContent, which also

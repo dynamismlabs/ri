@@ -9,6 +9,10 @@ const fixtures = vi.hoisted(() => ({
   area: { id: 'review-area', name: 'Original name', description: 'Original description', status: 'active', attachments: [] },
   write: vi.fn(async () => {}),
 }));
+// These DOM-only behavior fixtures use desktop layout. Real field viewport
+// sizing is covered in field.browser.test.tsx and field-surfaces.browser.test.tsx.
+vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }));
+
 vi.mock('@/hooks/use-areas', () => ({
   useArea: () => ({ data: fixtures.area }),
   useUpdateArea: () => ({ mutate: vi.fn(), mutateAsync: fixtures.write }),
@@ -20,11 +24,13 @@ vi.mock('@/contexts/dashboard-context', () => ({ useDashboard: () => ({}) }));
 vi.mock('@/components/tasks/lifecycle-status-control', () => ({ LifecycleStatusControl: () => null }));
 vi.mock('@/components/shared/note-icon', () => ({ NoteIcon: () => null }));
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), warning: vi.fn() } }));
-vi.mock('radix-ui', () => {
+vi.mock('@/components/ui/tip', () => ({ Tip: ({ children }: { children: ReactNode }) => children }));
+vi.mock('radix-ui', async original => {
+  const actual=await original<typeof import('radix-ui')>();
   const wrapper = ({ children }: { children?: ReactNode }) => children;
-  return { Dialog: { Root: wrapper, Portal: wrapper, Content: wrapper, Title: wrapper, Overlay: () => null } };
+  return { ...actual, Dialog: { ...actual.Dialog, Root: wrapper, Portal: wrapper, Content: wrapper, Title: wrapper, Overlay: () => null } };
 });
-vi.mock('@/components/ui/dropdown-menu', () => {
+vi.mock('@/components/system/menu', () => {
   const wrapper = ({ children }: { children?: ReactNode }) => children;
   return { DropdownMenu: wrapper, DropdownMenuTrigger: wrapper, DropdownMenuContent: wrapper, DropdownMenuItem: wrapper };
 });

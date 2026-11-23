@@ -1,5 +1,6 @@
 "use client";
 
+import { OverlaySurface } from '@/components/system/overlay';
 import { useState } from 'react';
 import { minutePct, type MinuteWindow } from '@/lib/calendar/layout';
 import { formatDuration } from '@/lib/work/equivalents';
@@ -96,9 +97,9 @@ function RibbonReadout({
     return m >= bin.startMinute && m < end;
   }).length;
   return (
-    <div
+    <OverlaySurface kind="popover" padding="sm"
       role="tooltip"
-      className="pointer-events-none absolute right-full z-30 mr-2 w-52 rounded-md border border-border bg-popover px-2.5 py-2 shadow-lg"
+      className="pointer-events-none absolute right-full z-30 mr-2 w-52"
       style={{ top: `${minutePct(bin.startMinute, bounds)}%` }}
     >
       <p className="text-[10px] text-muted-foreground">
@@ -125,6 +126,6 @@ function RibbonReadout({
           {[handsOn && 'You were in the chats', commits > 0 && `${commits} ${commits === 1 ? 'commit' : 'commits'}`].filter(Boolean).join(' · ')}
         </p>
       )}
-    </div>
+    </OverlaySurface>
   );
 }

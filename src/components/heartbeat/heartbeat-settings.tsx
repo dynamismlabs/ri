@@ -1,5 +1,11 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { NativeSelect } from '@/components/system/native-select';
+import { Field } from '@/components/system/field';
+import { TextArea } from '@/components/system/text-area';
+
+import { Button } from '@/components/system/button';
 /**
  * The heartbeat's settings and status. One component in two places: Settings
  * > Heartbeat (full) and the deck chip's sheet (compact), so they can't drift.
@@ -11,7 +17,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Loader2, Play } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
+
 import { RunsOnPicker } from '@/components/triggers/runs-on-picker';
 import { closeSettings } from '@/components/settings/settings-store';
 import { useCheckInNow, useHeartbeat, useUpdateHeartbeat, type HeartbeatUpdate } from '@/hooks/use-heartbeat';
@@ -36,8 +42,6 @@ function browserTimezone(): string {
     return 'UTC';
   }
 }
-
-const SELECT_CLASS = 'rounded-md border border-border bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-ring';
 
 /** The hard limits, in the words the user sees. Mirrors HEARTBEAT_GROUND_RULES. */
 const GROUND_RULES = [
@@ -108,7 +112,7 @@ function HeartbeatSettingsBody({
     <div className="space-y-5">
       {/* On/off + status */}
       <section className="space-y-2">
-        <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border bg-background p-3">
+        <Card as="label" padding="md" className="flex cursor-pointer items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">Heartbeat</p>
             <p className="text-[11px] text-muted-foreground/85">{status.detail}</p>
@@ -119,14 +123,16 @@ function HeartbeatSettingsBody({
             onCheckedChange={(enabled) => save({ enabled })}
             aria-label="Heartbeat"
           />
-        </label>
+        </Card>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={() => checkIn.mutate(config.triggerId)}
             disabled={config.running || checkIn.isPending}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-[12px] hover:bg-muted disabled:opacity-50"
+            variant="secondary"
+            size="sm"
+            className="inline-flex items-center gap-1.5"
           >
             {config.running || checkIn.isPending ? (
               <Loader2 size={12} className="animate-spin" />
@@ -134,7 +140,7 @@ function HeartbeatSettingsBody({
               <Play size={12} />
             )}
             {config.running || checkIn.isPending ? 'Checking in…' : 'Check in now'}
-          </button>
+          </Button>
         </div>
       </section>
 
@@ -143,13 +149,13 @@ function HeartbeatSettingsBody({
       {/* Schedule */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Schedule</h3>
-        <div className="space-y-3 rounded-lg border border-border bg-background p-3">
+        <Card padding="md" className="space-y-3">
           <IntervalInput seconds={config.intervalSeconds} onCommit={(intervalSeconds) => save({ intervalSeconds })} />
           {/* The container is this row alone, because the model picker below
               can't have one above it (see LauncherPopoverContent). */}
           <div className="@container flex flex-wrap items-center gap-2">
             <span className="w-14 shrink-0 text-[12px] text-muted-foreground">Hours</span>
-            <select
+            <NativeSelect
               value={anyTime ? 'any' : 'window'}
               onChange={(e) =>
                 save(
@@ -161,12 +167,12 @@ function HeartbeatSettingsBody({
                       },
                 )
               }
-              className={SELECT_CLASS}
+              className="w-auto"
               aria-label="When it may check in"
             >
               <option value="any">24/7</option>
               <option value="window">Between</option>
-            </select>
+            </NativeSelect>
             {!anyTime && (
               // One unit, so a narrow panel wraps the pair together. Below a
               // medium container it takes its own row and the inputs share it.
@@ -188,13 +194,14 @@ function HeartbeatSettingsBody({
           {!anyTime && config.timezone && config.timezone !== userTz && (
             <p className="text-[11px] text-muted-foreground/85">
               These hours are in {config.timezone.replace(/_/g, ' ')}.{' '}
-              <button
+              <Button
                 type="button"
                 onClick={() => update.mutate({ timezone: userTz })}
-                className="font-medium text-foreground hover:underline"
+                variant="link"
+                size="sm"
               >
                 Use {userTz.replace(/_/g, ' ')}
-              </button>
+              </Button>
             </p>
           )}
           <div className="flex flex-wrap items-center gap-2">
@@ -205,7 +212,7 @@ function HeartbeatSettingsBody({
               disabled={update.isPending}
             />
           </div>
-        </div>
+        </Card>
       </section>
 
       <InstructionsEditor config={config} compact={compact} onSave={save} saving={update.isPending} />
@@ -245,11 +252,11 @@ function RecentCheckIns({ config, onNavigate }: { config: HeartbeatConfig; onNav
       {config.recentCheckIns.length === 0 ? (
         <p className="text-[11px] text-muted-foreground/85">None yet.</p>
       ) : (
-        <ul className="divide-y divide-border/60 rounded-lg border border-border bg-background">
+        <Card as="ul" padding="none" surface="plain" className="divide-y divide-border/60">
           {config.recentCheckIns.map((checkIn) => (
             <CheckInRow key={checkIn.runId} checkIn={checkIn} onNavigate={onNavigate} />
           ))}
-        </ul>
+        </Card>
       )}
     </section>
   );
@@ -278,13 +285,10 @@ function CheckInRow({ checkIn, onNavigate }: { checkIn: HeartbeatCheckIn; onNavi
         <span className="flex min-w-0 flex-1 items-center gap-2 px-3 py-1.5">{body}</span>
       )}
       {checkIn.changedCount > 0 && (
-        <Link
-          href={`/runs/${checkIn.runId}`}
-          onClick={onNavigate}
-          className="shrink-0 rounded-md px-1.5 py-0.5 text-[11px] text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
+        <Button asChild variant="secondary" size="sm" className="shrink-0"><Link href={`/runs/${checkIn.runId}`}
+          onClick={onNavigate}>
           Changes ({checkIn.changedCount})
-        </Link>
+        </Link></Button>
       )}
     </li>
   );
@@ -339,7 +343,7 @@ function IntervalInput({ seconds, onCommit }: { seconds: number; onCommit: (seco
     <div className="space-y-1">
       <div className="flex flex-wrap items-center gap-2">
         <span className="w-14 shrink-0 text-[12px] text-muted-foreground">Every</span>
-        <input data-slot="field"
+        <Field
           type="number"
           min={1}
           step="any"
@@ -354,13 +358,20 @@ function IntervalInput({ seconds, onCommit }: { seconds: number; onCommit: (seco
           }}
           aria-label="How often it checks in"
           aria-invalid={tooShort && left}
-          className="w-16 rounded-md border border-border bg-background px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring"
+          className="w-16"
         />
-        <select value={unit} onChange={(e) => pickUnit(Number(e.target.value))} aria-label="Unit" className={SELECT_CLASS}>
+        <NativeSelect
+          value={unit}
+          onChange={(e) => pickUnit(Number(e.target.value))}
+          aria-label="Unit"
+          className="w-auto"
+        >
           {units.map((u) => (
-            <option key={u.label} value={u.seconds}>{typed === 1 ? u.label.slice(0, -1) : u.label}</option>
+            <option key={u.label} value={u.seconds}>
+              {typed === 1 ? u.label.slice(0, -1) : u.label}
+            </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
       {tooShort && left && (
         <p role="alert" className="pl-16 text-[11px] text-destructive">
@@ -381,7 +392,7 @@ function TimeInput({ label, value, onCommit }: { label: string; value: string; o
     setDraft(value);
   }
   return (
-    <input data-slot="field"
+    <Field
       type="time"
       aria-label={label}
       value={draft}
@@ -390,7 +401,7 @@ function TimeInput({ label, value, onCommit }: { label: string; value: string; o
         if (/^\d{2}:\d{2}$/.test(draft) && draft !== value) onCommit(draft);
         else setDraft(value);
       }}
-      className="min-w-0 flex-1 rounded-md border border-border bg-background px-2 py-1 text-sm tabular-nums focus:outline-none focus:ring-1 focus:ring-ring @md:flex-none"
+      className="min-w-0 flex-1 @md:flex-none"
     />
   );
 }
@@ -440,13 +451,14 @@ function InstructionsEditor({
 
   if (!open) {
     return (
-      <button
+      <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-[12px] font-medium text-muted-foreground hover:text-foreground"
+        variant="ghost"
+        size="sm"
       >
         Edit instructions
-      </button>
+      </Button>
     );
   }
 
@@ -467,16 +479,17 @@ function InstructionsEditor({
       <p className="text-[11px] text-muted-foreground/85">
         What to do, and when. Each check-in knows the time and what earlier ones did, so you can write things like &ldquo;once each morning&rdquo;.
       </p>
-      <Textarea
+      <TextArea
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
         onFocus={() => setEditing(true)}
         onBlur={commit}
         rows={compact ? 6 : 9}
-        className="max-h-[50vh] overflow-y-auto font-sans text-sm"
         aria-label="Heartbeat instructions"
+        maxRows={compact ? 12 : 18}
+        autoSize
       />
-      <button
+      <Button
         type="button"
         onClick={() => {
           setDraft(DEFAULT_HEARTBEAT_INSTRUCTIONS);
@@ -484,10 +497,11 @@ function InstructionsEditor({
           setSavedAt(Date.now());
         }}
         disabled={config.instructionsAreDefault}
-        className="text-[11px] font-medium text-muted-foreground hover:text-foreground disabled:opacity-40"
+        variant="ghost"
+        size="sm"
       >
         Reset to default
-      </button>
+      </Button>
     </section>
   );
 }

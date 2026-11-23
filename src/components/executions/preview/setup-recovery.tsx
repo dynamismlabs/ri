@@ -1,5 +1,7 @@
 'use client';
+import { Card } from '@/components/system/card';
 
+import { Button } from '@/components/system/button';
 import { AlertCircle, Loader2, RotateCw } from 'lucide-react';
 
 /**
@@ -38,7 +40,7 @@ export function SetupRecovery({
       ? 'The dev server couldn’t start. If your app needs a dependency install (e.g. yarn install / pnpm install), add it as the agent’s setup command. It runs once per worktree before the preview starts.'
       : 'The dev server couldn’t start. If dependencies aren’t installed, re-run the agent’s setup script.';
   return (
-    <div className="w-full rounded-md border border-border bg-card/40 p-3">
+    <Card padding="md" className="w-full">
       <div className="flex items-start gap-2">
         <AlertCircle size={13} className={isError ? 'mt-0.5 shrink-0 text-amber-500' : 'mt-0.5 shrink-0 text-muted-foreground'} />
         <div className="min-w-0 flex-1 space-y-1.5">
@@ -51,27 +53,31 @@ export function SetupRecovery({
           )}
           {isConfigure ? (
             onOpenSettings && (
-              <button data-slot="action-button" data-variant="primary"
+              <Button
                 type="button"
                 onClick={onOpenSettings}
-                className="inline-flex items-center gap-1.5 rounded-md border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90"
+                variant="primary"
+                size="md"
+                className="inline-flex items-center gap-1.5"
               >
                 Set a setup command
-              </button>
+              </Button>
             )
           ) : (
-            <button data-slot="action-button" data-variant="primary"
+            <Button
               type="button"
               onClick={onRetry}
               disabled={isRetrying}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-foreground px-2.5 py-1.5 text-[12px] font-medium text-background hover:bg-foreground/90 disabled:opacity-50"
+              variant="primary"
+              size="md"
+              className="inline-flex items-center gap-1.5"
             >
               {isRetrying ? <Loader2 size={12} className="animate-spin" /> : <RotateCw size={12} />}
               Re-run setup
-            </button>
+            </Button>
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

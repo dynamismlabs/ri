@@ -1,11 +1,12 @@
 'use client';
+import { Card } from '@/components/system/card';
 
 import { HomeLink } from '@/components/home/home-link';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Loader2, MessageSquare, Square } from 'lucide-react';
 import { MessageResponse } from '@/components/ai-elements/message';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { PendingInputArea } from '@/components/chat-ui/pending-input-area';
 import { ExecutionEvent } from '@/components/chat-ui/activity/execution-event';
 import { useRuntimeStatus } from '@/hooks/use-execution';
@@ -30,13 +31,22 @@ export function ResultAiReview({ review, result, hasSuccessor, canFeedback, onFe
   const cancel = useCancelResultReview(result.id);
   const active = review.status === 'queued' || review.status === 'running';
   return (
-    <div id={`ai-review-${review.id}`} className="space-y-2 rounded-lg border bg-muted/20 p-3 text-xs">
+    <Card padding="md" id={`ai-review-${review.id}`} className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
         {active && <Loader2 size={12} className="animate-spin" />}
         <span className="font-medium">{resultReviewLabel(review, result, hasSuccessor)}</span>
         <span className="text-muted-foreground">{review.selection.harness ?? 'Unknown harness'} · {review.selection.model ?? 'Unknown model'}</span>
-        {active && <Button variant="ghost" size="xs" disabled={cancel.isPending} onClick={() => cancel.mutate(review.id)}><Square />Cancel</Button>}
-        {!active && !review.report && onRetry && <Button variant="outline" size="xs" onClick={onRetry}>Retry</Button>}
+        {active && <Button
+          disabled={cancel.isPending}
+          onClick={() => cancel.mutate(review.id)}
+          variant="ghost"
+          size="xs"
+        ><Square />Cancel</Button>}
+        {!active && !review.report && onRetry && <Button
+          onClick={onRetry}
+          variant="secondary"
+          size="xs"
+        >Retry</Button>}
       </div>
       {review.statusReason && <p className="text-muted-foreground">{review.statusReason.replaceAll('_', ' ')}</p>}
       {review.provenance.reusedReviewId && <a href={`#ai-review-${review.provenance.reusedReviewId}`} className="text-primary hover:underline">View reused AI review</a>}
@@ -52,13 +62,23 @@ export function ResultAiReview({ review, result, hasSuccessor, canFeedback, onFe
           </div>
         </details>
       )}
-      {canFeedback && review.report && <Button size="xs" variant="outline" onClick={() => onFeedback({ reviewId: review.id })}><MessageSquare />Address findings</Button>}
+      {canFeedback && review.report && <Button
+        onClick={() => onFeedback({ reviewId: review.id })}
+        variant="secondary"
+        size="xs"
+      ><MessageSquare />Address findings</Button>}
       {active && review.reviewerSessionId && <ReviewerAttention sessionId={review.reviewerSessionId} />}
-      <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground" onClick={() => setDetailsOpen(!detailsOpen)} aria-expanded={detailsOpen}>
+      <Button
+        onClick={() => setDetailsOpen(!detailsOpen)}
+        aria-expanded={detailsOpen}
+        variant="ghost"
+        size="xs"
+        className="flex items-center gap-1"
+      >
         <ChevronRight size={11} className={detailsOpen ? 'rotate-90' : ''} />Review details
-      </button>
+      </Button>
       {detailsOpen && <ReviewDetails review={review} />}
-    </div>
+    </Card>
   );
 }
 
@@ -98,7 +118,13 @@ function ReviewDetails({ review: snapshot }: { review: AiReviewDetail }) {
       </dl>
       {limitations.length > 0 && <div className="space-y-1"><p className="font-medium">Limits</p>{[...new Set(limitations)].map((limit) => <p key={limit} className="text-muted-foreground">{limit}</p>)}</div>}
       <details><summary className="cursor-pointer">Original review brief</summary><div className="mt-2"><MessageResponse className="text-xs">{review.brief ?? 'The original brief was not recorded for this evidence.'}</MessageResponse></div></details>
-      <button className="flex items-center gap-1 text-primary hover:underline" onClick={() => setActivityOpen(!activityOpen)} aria-expanded={activityOpen}><ChevronRight size={11} className={activityOpen ? 'rotate-90' : ''} />Available activity</button>
+      <Button
+        onClick={() => setActivityOpen(!activityOpen)}
+        aria-expanded={activityOpen}
+        variant="link"
+        size="xs"
+        className="flex items-center gap-1"
+      ><ChevronRight size={11} className={activityOpen ? 'rotate-90' : ''} />Available activity</Button>
       {activityOpen && <ReviewerActivity activity={details.data} loading={details.isLoading} />}
     </div>
   );
@@ -107,5 +133,5 @@ function ReviewDetails({ review: snapshot }: { review: AiReviewDetail }) {
 function ReviewerActivity({ activity, loading }: { activity?: WorkResultReviewActivity; loading: boolean }) {
   if (loading) return <p className="text-muted-foreground">Loading available activity...</p>;
   if (!activity?.activityAvailable || !activity.events.length) return <p className="text-muted-foreground">{activity?.limitation ?? 'Activity is unavailable or has been pruned. The saved review remains readable.'}</p>;
-  return <div className="max-h-96 space-y-3 overflow-y-auto rounded border bg-background p-3">{activity.events.map((event) => <ExecutionEvent key={event.id} event={event} sessionId={activity.session?.id} handoffActions={false} />)}</div>;
+  return <Card padding="md" className="max-h-96 space-y-3 overflow-y-auto">{activity.events.map((event) => <ExecutionEvent key={event.id} event={event} sessionId={activity.session?.id} handoffActions={false} />)}</Card>;
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/system/button';
 import type { WorkspaceRecord } from '@/db/types';
 import { useRetrySetup, useRetrySetupScript } from '@/hooks/use-execution';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
@@ -257,15 +258,18 @@ function SetupScriptErrorRow({ sessionId, error, on }: { sessionId: string; erro
       <div className="flex-1 min-w-0 space-y-1">
         <div className="text-amber-600 dark:text-amber-400 font-medium">{on ? `Setup failed on ${on}` : 'Setup script failed'}</div>
         <div className="text-muted-foreground/80 font-mono text-[10.5px] break-all whitespace-pre-wrap">{error}</div>
-        <button data-slot="action-button" data-tone="warning"
+        <Button
           type="button"
           onClick={() => retry.mutate()}
           disabled={retry.isPending}
-          className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-md border border-amber-500/40 bg-amber-500/10 text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/15 disabled:opacity-50 transition-colors"
+          variant="secondary"
+          size="md"
+          tone="warning"
+          className="inline-flex items-center gap-1 mt-0.5"
         >
           {retry.isPending ? <Loader2 size={11} className="animate-spin" /> : <RotateCw size={11} />}
           Retry setup
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -307,11 +311,14 @@ function SetupErrorRow({
         <div className="text-muted-foreground/80 font-mono text-[10.5px] break-all">
           {error}
         </div>
-        <button data-slot="action-button" data-tone="status"
+        <Button
           type="button"
           onClick={handleClick}
           disabled={retry.isPending}
-          className="inline-flex items-center gap-1 mt-0.5 px-2 py-0.5 rounded-md border border-rose-500/40 bg-rose-500/10 text-[11px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-500/15 disabled:opacity-50 transition-colors"
+          variant="secondary"
+          size="md"
+          tone="danger"
+          className="inline-flex items-center gap-1 mt-0.5"
         >
           {retry.isPending ? (
             <Loader2 size={11} className="animate-spin" />
@@ -319,7 +326,7 @@ function SetupErrorRow({
             <RotateCw size={11} />
           )}
           Try again
-        </button>
+        </Button>
       </div>
     </div>
   );

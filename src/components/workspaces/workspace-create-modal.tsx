@@ -1,5 +1,19 @@
 'use client';
+import { DialogFooter } from '@/components/system/dialog';
+import { DialogPrimitive } from '@/components/system/dialog';
+import { StatusBadge } from '@/components/system/status-badge';
 
+import { InlineAction } from '@/components/system/inline-action';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Card } from '@/components/system/card';
+import { Callout } from '@/components/system/callout';
+
+import { Field } from '@/components/system/field';
+import { NativeSelect } from '@/components/system/native-select';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 /**
  * New agent (docs/agent-folders.md): a name and the folders it works in, the
  * way ChatGPT creates a project. Folders are optional. The first one is the
@@ -15,7 +29,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight, Folder, FolderPlus, ImagePlus, Loader2, Monitor, SmilePlus, Trash2, X } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { EmojiPicker } from '@/components/shared/emoji-picker';
 import { SharedComputerWarning } from '@/components/home/shared-computer-warning';
 import { Switch } from '@/components/ui/switch';
@@ -31,7 +45,7 @@ import { uploadAttachment } from '@/lib/attachments/client';
 import { coverAttachmentUrl } from '@/lib/attachments/view';
 import { agentInitials } from '@/lib/client/agent-initials';
 import { folderName } from '@/lib/folders/folder-name';
-import { cn } from '@/lib/utils';
+
 import { DEFAULT_FILES_TO_COPY } from '@/lib/workspaces/defaults';
 import { useAgentConfigurationScope } from './agent-placement-controls';
 import { FilesToCopySection } from './files-to-copy-section';
@@ -217,17 +231,21 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
   return (
     <DialogPrimitive.Root open={open && canConfigure} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
           className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-[520px] -translate-x-1/2 -translate-y-1/2 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
-          <div className="flex max-h-[88vh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+          <div className="flex max-h-[88vh] flex-col overflow-hidden">
             <div className="flex shrink-0 items-center justify-between px-5 pt-4 pb-3">
-              <DialogPrimitive.Title className="text-lg font-semibold text-foreground">New agent</DialogPrimitive.Title>
+              <DialogPrimitive.Title>New agent</DialogPrimitive.Title>
               <DialogPrimitive.Close asChild>
-                <button aria-label="Close" className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                <IconButton
+                  label="Close"
+                  variant="ghost"
+                  size="sm"
+                >
                   <X size={16} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
             <VisuallyHidden.Root>
@@ -235,70 +253,75 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
             </VisuallyHidden.Root>
 
             <form
-              className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-2"
+              className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-2 pt-1"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();
               }}
             >
-              <div className="flex items-center rounded-xl border border-border bg-background focus-within:border-foreground/40 focus-within:ring-1 focus-within:ring-foreground/20">
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
-                <EmojiPicker
-                  onSelect={(picked) => {
-                    setEmoji(picked);
-                    setAttachment(null);
-                    coverEditedRef.current = true;
-                  }}
-                  actions={[
-                    { label: 'Upload image', icon: <ImagePlus size={13} />, onSelect: () => fileInputRef.current?.click() },
-                    ...(image || emoji
-                      ? [{
-                          label: 'Remove',
-                          icon: <Trash2 size={13} />,
-                          tone: 'destructive' as const,
-                          onSelect: () => {
-                            setEmoji(null);
-                            setAttachment(null);
-                            coverEditedRef.current = true;
-                          },
-                        }]
-                      : []),
-                  ]}
-                >
-                  <button
-                    type="button"
-                    aria-label="Agent icon"
-                    disabled={uploading}
-                    className="ml-1.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                  >
-                    {uploading ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={image} alt="" className="h-6 w-6 rounded-md object-cover" />
-                    ) : emoji ? (
-                      <span className="text-lg leading-none">{emoji}</span>
-                    ) : initials ? (
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-foreground/80">{initials}</span>
-                    ) : (
-                      <SmilePlus size={16} />
-                    )}
-                  </button>
-                </EmojiPicker>
-                <span aria-hidden className="mx-1.5 h-5 w-px bg-border" />
-                <input
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    // A name cleared back to nothing follows the primary folder again.
-                    nameEditedRef.current = e.target.value.trim().length > 0;
-                  }}
-                  placeholder="Agent name"
-                  aria-label="Agent name"
-                  autoFocus
-                  className="h-11 min-w-0 flex-1 bg-transparent pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
-                />
-              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
+              <Field
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  // A name cleared back to nothing follows the primary folder again.
+                  nameEditedRef.current = e.target.value.trim().length > 0;
+                }}
+                placeholder="Agent name"
+                aria-label="Agent name"
+                autoFocus
+                leading={
+                  <>
+                    <EmojiPicker
+                      onSelect={(picked) => {
+                        setEmoji(picked);
+                        setAttachment(null);
+                        coverEditedRef.current = true;
+                      }}
+                      actions={[
+                        { label: 'Upload image', icon: <ImagePlus size={13} />, onSelect: () => fileInputRef.current?.click() },
+                        ...(image || emoji
+                          ? [{
+                              label: 'Remove',
+                              icon: <Trash2 size={13} />,
+                              tone: 'destructive' as const,
+                              onSelect: () => {
+                                setEmoji(null);
+                                setAttachment(null);
+                                coverEditedRef.current = true;
+                              },
+                            }]
+                          : []),
+                      ]}
+                    >
+                      <Button
+                        type="button"
+                        aria-label="Agent icon"
+                        disabled={uploading}
+                        variant="ghost"
+                        size="sm"
+                        focus="inside"
+                        clip
+                        className="flex w-8 shrink-0 items-center justify-center"
+                      >
+                        {uploading ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={image} alt="" className="h-6 w-6 rounded-md object-cover" />
+                        ) : emoji ? (
+                          <span className="text-lg leading-none">{emoji}</span>
+                        ) : initials ? (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-foreground/80">{initials}</span>
+                        ) : (
+                          <SmilePlus size={16} />
+                        )}
+                      </Button>
+                    </EmojiPicker>
+                    <span aria-hidden className="h-5 w-px bg-border" />
+                  </>
+                }
+              />
 
               <SharedComputerWarning />
 
@@ -316,17 +339,19 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                     <p className="text-[13px] text-muted-foreground">
                       Add a folder on <span className="text-foreground">{place}</span>
                     </p>
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setPicking(true)}
-                      className="flex items-center gap-1.5 rounded-lg bg-accent px-3 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-accent/70"
+                      variant="secondary"
+                      size="sm"
+                      className="flex items-center gap-1.5"
                     >
                       <FolderPlus size={14} />
                       Add
-                    </button>
+                    </Button>
                   </div>
                 ) : (
-                  <ul className="overflow-hidden rounded-xl border border-border">
+                  <Card as="ul" padding="none" surface="plain" className="overflow-hidden">
                     {folders.map((folder, i) => (
                       <FolderRow
                         key={folder}
@@ -337,16 +362,16 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                       />
                     ))}
                     <li>
-                      <button
+                      <MenuAction
                         type="button"
                         onClick={() => setPicking(true)}
-                        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-[13px] text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                        className="flex w-full items-center gap-2.5 text-left"
                       >
                         <FolderPlus size={15} className="shrink-0" />
                         Add folder
-                      </button>
+                      </MenuAction>
                     </li>
-                  </ul>
+                  </Card>
                 )}
 
                 <p className="text-[11.5px] leading-relaxed text-muted-foreground/80">
@@ -399,7 +424,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
 
               {primary && (
                 <section>
-                  <button
+                  <InlineAction
                     type="button"
                     onClick={() => setScriptsOpen((v) => !v)}
                     aria-expanded={scriptsOpen}
@@ -414,7 +439,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                       </span>
                     </span>
                     {scriptsOpen ? <ChevronDown size={15} className="shrink-0 text-muted-foreground" /> : <ChevronRight size={15} className="shrink-0 text-muted-foreground" />}
-                  </button>
+                  </InlineAction>
                   {scriptsOpen && (
                     <div className="mt-3">
                       <WorktreeScriptsSection
@@ -432,47 +457,50 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
               )}
 
               <Section title="Area" hint="Where its tasks and notes belong. Optional.">
-                <div className="relative">
-                  <select
-                    value={areaId}
-                    onChange={(e) => setAreaId(e.target.value)}
-                    aria-label="Area"
-                    className="w-full appearance-none rounded-lg border border-border bg-background py-2 pl-3 pr-9 text-[13px] text-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20"
-                  >
-                    <option value="">None</option>
-                    {areas?.map((area) => (
-                      <option key={area.id} value={area.id}>
-                        {area.emoji ? `${area.emoji} ${area.name}` : area.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                </div>
+                <NativeSelect
+                  value={areaId}
+                  onChange={(e) => setAreaId(e.target.value)}
+                  aria-label="Area"
+                  className="w-full"
+                >
+                  <option value="">None</option>
+                  {areas?.map((area) => (
+                    <option key={area.id} value={area.id}>
+                      {area.emoji ? `${area.emoji} ${area.name}` : area.name}
+                    </option>
+                  ))}
+                </NativeSelect>
               </Section>
 
               {error && (
-                <div role="alert" className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
+                <Callout padding="md" density="row" tone={"error"} role="alert" >
                   {error}
-                </div>
+                </Callout>
               )}
             </form>
 
-            <div className="flex shrink-0 items-center justify-end gap-2 px-5 pt-2 pb-4">
+            <DialogFooter padding="panel" className="flex-row items-center justify-end">
               <DialogPrimitive.Close asChild>
-                <button type="button" className="rounded-lg px-4 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="md"
+                >
                   Cancel
-                </button>
+                </Button>
               </DialogPrimitive.Close>
-              <button
+              <Button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!trimmedName || createWs.isPending}
-                className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                variant="primary"
+                size="md"
+                className="flex items-center gap-1.5"
               >
                 {createWs.isPending && <Loader2 size={14} className="animate-spin" />}
                 Create agent
-              </button>
-            </div>
+              </Button>
+            </DialogFooter>
           </div>
           <FolderPickerDialog
             open={picking}
@@ -509,27 +537,29 @@ function FolderRow({
         </span>
       </Tip>
       {primary ? (
-        <span className="shrink-0 rounded-md border border-border px-2 py-0.5 text-[11.5px] text-muted-foreground">Primary</span>
+        <StatusBadge className="shrink-0">Primary</StatusBadge>
       ) : (
-        <button
+        <Button
           type="button"
           onClick={onMakePrimary}
-          className={cn(
-            'shrink-0 rounded-md bg-accent px-2 py-0.5 text-[11.5px] font-medium text-foreground transition-opacity hover:bg-accent/70',
-            'opacity-0 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100',
-          )}
+          variant="ghost"
+          size="sm"
+          reveal
+          className="shrink-0"
         >
           Make primary
-        </button>
+        </Button>
       )}
-      <button
+      <IconButton
         type="button"
         onClick={onRemove}
-        aria-label={`Remove ${label}`}
-        className="shrink-0 rounded p-1 text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground"
+        label={`Remove ${label}`}
+        variant="ghost"
+        size="sm"
+        className="shrink-0"
       >
         <X size={13} />
-      </button>
+      </IconButton>
     </li>
   );
 }

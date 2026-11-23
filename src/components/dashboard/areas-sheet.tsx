@@ -1,7 +1,13 @@
-'use client'
+'use client';
+import { SheetFrame } from '@/components/system/sheet';
 
+import { DialogPrimitive as Dialog } from '@/components/system/dialog';
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { useCallback, useRef, useState } from 'react'
-import { Dialog } from 'radix-ui'
+
 import { X, Plus, GripVertical } from 'lucide-react'
 import {
   DndContext,
@@ -103,16 +109,9 @@ function SortableAreaRow({ area, onOpen }: { area: AreaRecord; onOpen: (id: stri
           )}
         </div>
 
-        <span className={cn(
-          'text-[9px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-md flex-shrink-0',
-          area.status === 'active'
-            ? 'text-emerald-500 bg-emerald-500/10'
-            : area.status === 'inactive'
-              ? 'text-amber-500 bg-amber-500/10'
-              : 'text-muted-foreground bg-muted'
-        )}>
+        <StatusBadge tone={(area.status === 'active' ? "success" : (area.status === 'inactive' ? "warning" : "neutral"))} className="flex-shrink-0">
           {area.status}
-        </span>
+        </StatusBadge>
       </div>
     </div>
   )
@@ -170,7 +169,6 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
     })
   }, [displayedAreas, queryClient, updateArea])
 
-
   // Drag to resize
   const handleResizeStart = useCallback(
     (e: React.MouseEvent) => {
@@ -207,17 +205,17 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
         {/* Overlay */}
         <Dialog.Overlay
           className={cn(
-            'fixed inset-0 z-40 bg-black/30 transition-opacity duration-150',
+            'fixed inset-0 z-40 transition-opacity duration-150',
             isVisible ? 'opacity-100' : 'opacity-0'
           )}
         />
 
         {/* Slideout panel */}
-        <Dialog.Content
+        <SheetFrame padding="none"
           data-slot="sheet-content" data-side="right"
           ref={containerRef}
           className={cn(
-            'fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out outline-none',
+            "fixed top-0 right-0 bottom-0 z-50 flex transition-transform duration-150 ease-out",
             isVisible ? 'translate-x-0' : 'translate-x-full'
           )}
           style={{ width: `min(${width}px, 100vw)` }}
@@ -247,25 +245,28 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-4 h-11 flex-shrink-0 border-b border-border">
               <div className="flex items-center gap-3">
-                <button
+                <IconButton
                   onClick={() => onOpenChange(false)}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-                  aria-label="Close"
+                  label="Close"
+                  variant="ghost"
+                  size="sm"
                 >
                   <X size={16} />
-                </button>
-                <span className="text-[10px] font-bold tracking-wide text-muted-foreground/60 uppercase">
+                </IconButton>
+                <span className="text-[10px] font-bold text-muted-foreground/60">
                   Areas
                 </span>
               </div>
 
-              <button
+              <Button
                 onClick={() => setCreateModalOpen(true)}
-                className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-1"
               >
                 <Plus size={12} />
                 New
-              </button>
+              </Button>
             </div>
 
             {/* Area list */}
@@ -273,12 +274,13 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
               {displayedAreas.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-2">
                   <p className="text-[11px]">No areas yet</p>
-                  <button
+                  <Button
                     onClick={() => setCreateModalOpen(true)}
-                    className="text-[11px] text-primary hover:underline"
+                    variant="link"
+                    size="sm"
                   >
                     Create your first area
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -296,18 +298,19 @@ export function AreasSheet({ open, onOpenChange }: AreasSheetProps) {
             {/* Footer */}
             {archivedAreas.length > 0 && (
               <div className="flex-shrink-0 border-t border-border px-4 py-2">
-                <button
+                <Button
                   onClick={() => setShowArchived(!showArchived)}
-                  className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                  variant="ghost"
+                  size="sm"
                 >
                   {showArchived
                     ? 'Hide archived'
                     : `Show ${archivedAreas.length} archived`}
-                </button>
+                </Button>
               </div>
             )}
           </div>
-        </Dialog.Content>
+        </SheetFrame>
       </Dialog.Portal>
 
       <AreaCreateModal open={createModalOpen} onOpenChange={setCreateModalOpen} />

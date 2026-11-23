@@ -1,8 +1,9 @@
 'use client';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { useEffect, useRef, useState } from 'react';
 import { Gauge, Loader2 } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { UsageWarningsSetting } from '@/components/settings/usage-warnings-setting';
 import { useHarnessRateLimits } from '@/hooks/use-harness-rate-limits';
@@ -68,7 +69,7 @@ export function RateLimitsPill() {
   return (
     <Popover open={open} onOpenChange={(next) => { pinned.current = false; setOpen(next); }}>
       <PopoverTrigger asChild>
-        <button data-slot="chip-button"
+        <ChipButton
           ref={trigger}
           type="button"
           aria-label={label}
@@ -84,10 +85,9 @@ export function RateLimitsPill() {
               requestAnimationFrame(() => content.current?.querySelector<HTMLButtonElement>('button[aria-pressed]')?.focus());
             }
           }}
-          className={cn(
-            'flex h-7 shrink-0 items-center gap-1.5 rounded px-1.5 text-[10px] text-muted-foreground transition-colors',
-            'hover:bg-muted hover:text-foreground data-[state=open]:bg-muted data-[state=open]:text-foreground',
-          )}
+          variant="secondary"
+          size="compact"
+          className="flex shrink-0 items-center gap-1.5"
         >
           <Gauge size={11} aria-hidden="true" />
           {warnings.map(({ harness, row }) => (
@@ -98,7 +98,7 @@ export function RateLimitsPill() {
               </span>
             </span>
           ))}
-        </button>
+        </ChipButton>
       </PopoverTrigger>
       <PopoverContent
         ref={content}
@@ -114,10 +114,10 @@ export function RateLimitsPill() {
           if (returnFocus.current) { returnFocus.current = false; trigger.current?.focus(); }
         }}
         onEscapeKeyDown={() => { cancelHover(); returnFocus.current = true; }}
-        className="max-h-[var(--radix-popover-content-available-height)] w-72 max-w-[calc(100vw-16px)] overflow-y-auto bg-popover text-popover-foreground"
+        className="max-h-[var(--radix-popover-content-available-height)] w-72 max-w-[calc(100vw-16px)] overflow-y-auto"
       >
         <div className="flex items-center justify-between gap-2 pb-2">
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Usage</p>
+          <p className="text-[10.5px] font-bold text-muted-foreground">Usage</p>
           {updating && (
             <span className="flex items-center gap-1 text-[10.5px] text-muted-foreground" role="status">
               <Loader2 size={10} className="animate-spin" /> Updating

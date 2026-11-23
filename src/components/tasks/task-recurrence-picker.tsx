@@ -1,9 +1,11 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
+import { ChipButton } from '@/components/system/chip-button';
 import { Check, Repeat } from 'lucide-react';
 import { useRef, useState, type ReactElement, type SyntheticEvent } from 'react';
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from '@/components/ui/input-group';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Field } from '@/components/system/field';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { Tip } from '@/components/ui/tip';
 import {
   RECURRENCE_PRESETS,
@@ -13,7 +15,6 @@ import {
   recurrenceLabel,
   recurrenceValue,
 } from '@/lib/tasks/recurrence';
-import { cn } from '@/lib/utils';
 
 /** Clicks inside reach the row behind through React's portal bubbling, and a held touch would start dragging it. */
 function keepFromRow(event: SyntheticEvent) {
@@ -70,9 +71,9 @@ function RecurrencePanel({ value, onChange, onClose }: {
   };
 
   return (
-    <PopoverContent
+    <PopoverContent padding="sm"
       align="start"
-      className="w-60 p-2"
+      className="w-60"
       data-cancel-on-escape=""
       onOpenAutoFocus={(event) => {
         event.preventDefault();
@@ -87,32 +88,25 @@ function RecurrencePanel({ value, onChange, onClose }: {
       }}
     >
       <div onClick={keepFromRow} onTouchStart={keepFromRow} className="flex flex-col gap-1">
-        <InputGroup className="h-8 rounded-md">
-          <InputGroupInput
-            ref={input}
-            aria-label="Repeat"
-            aria-invalid={unreadable}
-            autoComplete="off"
-            placeholder="Type one, like every 2 weeks"
-            value={text}
-            className="h-8 px-2 md:text-xs"
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key !== 'Enter') return;
-              event.preventDefault();
-              if (empty) finish(null);
-              else if (typed) finish(recurrenceValue(typed));
-              else if (!edited) onClose();
-            }}
-          />
-          {edited && !empty && (
-            <InputGroupAddon align="inline-end" className="py-0 pr-2">
-              <InputGroupText aria-live="polite" className={cn('whitespace-nowrap text-xs', unreadable && 'text-destructive')}>
-                {typed ? describeRecurrence(typed) : 'Not a repeat'}
-              </InputGroupText>
-            </InputGroupAddon>
-          )}
-        </InputGroup>
+        <Field
+          inlineMessage
+          error={unreadable ? 'Not a repeat' : undefined}
+          description={edited && !empty && typed ? describeRecurrence(typed) : undefined}
+          ref={input}
+          aria-label="Repeat"
+          aria-invalid={unreadable}
+          autoComplete="off"
+          placeholder="Type one, like every 2 weeks"
+          value={text}
+          onChange={(event) => setText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            if (empty) finish(null);
+            else if (typed) finish(recurrenceValue(typed));
+            else if (!edited) onClose();
+          }}
+        />
         {recurrenceHasDetail(value) && (
           <p className="px-2 pt-1 text-[11px] leading-snug text-muted-foreground">Saved as &ldquo;{value}&rdquo;</p>
         )}
@@ -121,27 +115,27 @@ function RecurrencePanel({ value, onChange, onClose }: {
             const presetValue = recurrenceValue(preset);
             const current = presetValue === saved;
             return (
-              <button data-slot="menu-action"
+              <MenuAction density="compact"
                 key={presetValue}
                 type="button"
                 aria-pressed={current}
                 onClick={() => finish(presetValue)}
-                className="flex items-center justify-between rounded-md px-2 py-1.5 text-left text-xs transition-colors hover:bg-muted"
+                className="flex items-center justify-between text-left"
               >
                 {describeRecurrence(preset)}
                 {current && <Check size={12} className="text-primary" aria-hidden />}
-              </button>
+              </MenuAction>
             );
           })}
         </div>
         {value && (
-          <button data-slot="menu-action"
+          <MenuAction density="compact" separator
             type="button"
             onClick={() => finish(null)}
-            className="mt-1 rounded-md border-t border-border px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="mt-1 text-left"
           >
             Don&rsquo;t repeat
-          </button>
+          </MenuAction>
         )}
       </div>
     </PopoverContent>
@@ -154,18 +148,16 @@ export function TaskRecurrenceField({ value, onChange }: {
 }) {
   const label = recurrenceLabel(value);
   const button = (
-    <button
+    <ChipButton
       type="button"
       aria-label={`Repeat: ${label ?? 'Never'}`}
-      data-slot="chip-button"
-      className={cn(
-        'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
-        !label && 'text-muted-foreground',
-      )}
+      variant="secondary"
+      size="compact"
+      className="inline-flex w-fit items-center gap-1.5"
     >
       <Repeat size={12} />
       {label ?? 'Never'}
-    </button>
+    </ChipButton>
   );
   return (
     <TaskRecurrencePicker value={value} onChange={onChange}>

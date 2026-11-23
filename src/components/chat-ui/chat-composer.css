@@ -1,0 +1,2 @@
+html:root [data-slot="chat-composer-card"] { border-color: transparent; border-radius: 22px; background-color: var(--composer); box-shadow: var(--composer-shadow); }
+html:root [data-slot="chat-composer-card"]:focus-within { border-color: transparent; box-shadow: var(--composer-focus); }

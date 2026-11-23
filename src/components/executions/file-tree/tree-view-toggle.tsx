@@ -1,4 +1,5 @@
 'use client';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { useId } from 'react';
 import { Switch } from '@/components/ui/switch';
@@ -49,9 +50,9 @@ export function TreeViewToggle({
           Changes<span className="hidden @[11rem]/tree-filter:inline"> only</span>
         </span>
         <Tip label={changedCount > 99 ? `${changedCount.toLocaleString()} changed files` : undefined}>
-          <span className="ml-auto min-w-8 shrink-0 rounded-full bg-muted px-1.5 text-center text-[10px] tabular-nums text-muted-foreground">
+          <StatusBadge className="ml-auto w-9 shrink-0 text-center tabular-nums">
             {formatChangedCount(changedCount)}
-          </span>
+          </StatusBadge>
         </Tip>
       </label>
     </div>

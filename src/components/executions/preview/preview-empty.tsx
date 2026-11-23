@@ -1,10 +1,11 @@
 'use client';
+import { Field } from '@/components/system/field';
 
+import { Button } from '@/components/system/button';
+import { IconButton } from '@/components/system/icon-button';
 import { useAgentConfigurationScope } from '@/components/workspaces/agent-placement-controls';
 import { useEffect, useRef, useState } from 'react';
 import { Play, AlertCircle, Pencil, X, Check, Loader2, Settings as SettingsIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Tip } from '@/components/ui/tip';
 
 interface PreviewEmptyProps {
   variant:
@@ -86,18 +87,17 @@ function renderBody(props: PreviewEmptyProps) {
           command && <CommandReadonly command={command} />
         )}
         {onStart && (
-          <button data-slot="action-button" data-variant="primary"
+          <Button
             type="button"
             onClick={onStart}
             disabled={isStarting}
-            className={cn(
-              'flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:bg-foreground/90',
-              isStarting && 'opacity-60',
-            )}
+            variant="primary"
+            size="md"
+            className="flex items-center gap-2"
           >
             <Play size={13} className="fill-current" />
             {isStarting ? 'Starting…' : props.startLabel ?? 'Start preview'}
-          </button>
+          </Button>
         )}
       </>
     );
@@ -126,14 +126,16 @@ function renderBody(props: PreviewEmptyProps) {
         </Subtle>
         {command && <CommandReadonly command={command} />}
         {props.onOpenWorkspaceSettings && (
-          <button data-slot="action-button"
+          <Button
             type="button"
             onClick={props.onOpenWorkspaceSettings}
-            className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 text-[13px] font-medium text-foreground hover:bg-muted"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-2"
           >
             <SettingsIcon size={13} />
             Open agent setup
-          </button>
+          </Button>
         )}
       </>
     );
@@ -164,18 +166,17 @@ function renderBody(props: PreviewEmptyProps) {
         command && <CommandReadonly command={command} />
       )}
       {onStart && (
-        <button data-slot="action-button" data-variant="primary"
+        <Button
           type="button"
           onClick={onStart}
           disabled={isStarting}
-          className={cn(
-            'flex items-center gap-2 rounded-md border border-border bg-foreground px-3 py-1.5 text-[13px] font-medium text-background hover:bg-foreground/90',
-            isStarting && 'opacity-60',
-          )}
+          variant="primary"
+          size="md"
+          className="flex items-center gap-2"
         >
           <Play size={13} className="fill-current" />
           {isStarting ? 'Starting…' : props.startLabel ?? 'Restart'}
-        </button>
+        </Button>
       )}
     </>
   );
@@ -274,26 +275,29 @@ export function CommandEditor({
         <pre className="w-full overflow-x-auto rounded-md border border-border bg-muted/40 px-3 py-2 pr-9 font-mono text-[12px] text-foreground">
           {initialValue || <span className="text-muted-foreground/60">{canConfigure ? '(no command set)' : 'An owner can add the start command in agent settings.'}</span>}
         </pre>
-        {canConfigure && <Tip label="Edit command">
-          <button
+        {canConfigure &&
+          <IconButton
             type="button"
             onClick={() => {
               setDraft(initialValue);
               setEditing(true);
             }}
-            aria-label="Edit command"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-muted hover:text-foreground group-hover:text-muted-foreground"
+            label="Edit command"
+            tooltip="Edit command"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center"
           >
             <Pencil size={12} />
-          </button>
-        </Tip>}
+          </IconButton>
+        }
       </div>
     );
   }
 
   return (
     <div className="flex w-full items-stretch gap-1.5">
-      <input
+      <Field
         ref={inputRef}
         type="text"
         value={draft}
@@ -312,33 +316,39 @@ export function CommandEditor({
         spellCheck={false}
         autoCorrect="off"
         autoCapitalize="off"
-        className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary disabled:opacity-60"
+        className="flex-1"
+        purpose="code"
+        aria-label={'Start command'}
       />
-      <Tip label="Save" shortcut="Enter">
-        <button data-slot="action-button" data-variant="primary"
+
+        <IconButton
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          aria-label="Save"
-          className={cn(
-            'inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-foreground text-background transition-opacity hover:bg-foreground/90',
-            isSaving && 'opacity-60',
-          )}
+          label="Save"
+          tooltip="Save"
+          shortcut="Enter"
+          variant="ghost"
+          size="md"
+          className="inline-flex items-center justify-center"
         >
           {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />}
-        </button>
-      </Tip>
-      <Tip label="Cancel" shortcut="Esc">
-        <button data-slot="action-button"
+        </IconButton>
+
+        <IconButton
           type="button"
           onClick={handleCancel}
           disabled={isSaving}
-          aria-label="Cancel"
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-60"
+          label="Cancel"
+          tooltip="Cancel"
+          shortcut="Esc"
+          variant="ghost"
+          size="sm"
+          className="inline-flex items-center justify-center"
         >
           <X size={13} />
-        </button>
-      </Tip>
+        </IconButton>
+
     </div>
   );
 }

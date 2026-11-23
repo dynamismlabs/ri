@@ -1,4 +1,5 @@
 'use client';
+import { MenuAction } from '@/components/system/menu-action';
 
 import { useQuery } from '@tanstack/react-query';
 import { CircleArrowUp } from 'lucide-react';
@@ -20,20 +21,20 @@ export function RailUpdateRow({ collapsed }: { collapsed: boolean }) {
   const detail = data ? railUpdateNotice({ canUseUpdates: data.canUseUpdates, update: 'update' in data ? data.update : undefined }) : null;
   if (!detail) return null;
   const open = () => openSettings('updates');
-  if (collapsed) return <RailIconButton icon={CircleArrowUp} label={`Update ready. ${detail}`} onClick={open} className="text-primary" />;
+  if (collapsed) return <RailIconButton icon={CircleArrowUp} label={`Update ready. ${detail}`} onClick={open} />;
   return (
     <Tip label={detail} onlyWhenTextHidden>
-      <button
+      <MenuAction density="compact"
         type="button"
         onClick={open}
-        className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-1 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="flex min-w-0 items-center gap-2 text-left"
       >
         <CircleArrowUp size={14} className="shrink-0 text-primary" aria-hidden />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[12px] font-medium text-foreground">Update ready</span>
           <span className="block truncate text-[10.5px] text-muted-foreground">{detail}</span>
         </span>
-      </button>
+      </MenuAction>
     </Tip>
   );
 }

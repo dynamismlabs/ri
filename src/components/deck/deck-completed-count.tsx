@@ -1,4 +1,5 @@
 "use client";
+import { MenuAction } from '@/components/system/menu-action';
 
 import { Check, ChevronDown, ChevronRight } from 'lucide-react';
 import type { DeckItem } from '@/types/dashboard';
@@ -14,9 +15,9 @@ export function DeckCompletedCount({ completedItems, expanded, onToggle }: DeckC
 
   return (
     <div className="mb-2">
-      <button
+      <MenuAction
         onClick={onToggle}
-        className="flex items-center gap-2 w-full text-left py-2"
+        className="flex items-center gap-2 w-full text-left"
       >
         <Check className="w-3.5 h-3.5 text-muted-foreground/50" />
         <span className="text-xs text-muted-foreground/60">
@@ -26,7 +27,7 @@ export function DeckCompletedCount({ completedItems, expanded, onToggle }: DeckC
           ? <ChevronDown className="w-3 h-3 text-muted-foreground/40" />
           : <ChevronRight className="w-3 h-3 text-muted-foreground/40" />
         }
-      </button>
+      </MenuAction>
 
       {expanded && (
         <div className="ml-5.5 space-y-1 pb-2">

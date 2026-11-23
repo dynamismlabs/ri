@@ -1,4 +1,5 @@
 'use client';
+import { Field } from '@/components/system/field';
 
 import { useEffect, useRef, useState } from 'react';
 import { useUpdateSession } from '@/hooks/use-execution';
@@ -85,7 +86,7 @@ export function ChatTitleInput({ rename, className }: { rename: ChatRename; clas
   }, []);
 
   return (
-    <input
+    <Field
       ref={ref}
       value={rename.draft}
       onChange={(e) => rename.setDraft(e.target.value)}
@@ -104,10 +105,9 @@ export function ChatTitleInput({ rename, className }: { rename: ChatRename; clas
       placeholder="Untitled"
       maxLength={120}
       spellCheck={false}
-      className={cn(
-        'min-w-0 rounded border border-primary/40 bg-background font-semibold text-foreground focus:outline-none',
-        className,
-      )}
+      className={cn('min-w-0 w-auto', className)}
+      purpose="title"
+      titleSize="inline"
     />
   );
 }

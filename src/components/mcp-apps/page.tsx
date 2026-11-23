@@ -1,10 +1,16 @@
 'use client';
+import { Card } from '@/components/system/card';
+
+import { MenuAction } from '@/components/system/menu-action';
+
+import { NativeSelect } from '@/components/system/native-select';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppWindow, ArrowLeft, FileBox, Loader2, MessageCircle, PanelRightOpen, RotateCcw, Server, Settings2 } from 'lucide-react';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/router';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/system/button';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
 import { integrationMeta, starterPrompt } from '@/components/integrations/integration-meta';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -76,14 +82,31 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
 
   const header = <header className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-2.5">
     {fullScreen
-      ? <Button variant="ghost" size="sm" onClick={leaveScreen}><ArrowLeft size={14}/>{app.toolkitName}</Button>
-      : <Button variant="ghost" size="sm" onClick={() => navigate('')}><ArrowLeft size={14}/>Apps</Button>}
+      ? <Button
+        onClick={leaveScreen}
+        variant="ghost"
+        size="sm"
+      ><ArrowLeft size={14}/>{app.toolkitName}</Button>
+      : <Button
+        onClick={() => navigate('')}
+        variant="ghost"
+        size="sm"
+      ><ArrowLeft size={14}/>Apps</Button>}
     <div className="flex-1"/>
     {fullScreen && screenEntry && screen.state.kind === 'idle' && <Tip label={`Start ${screenEntry.title} over`}>
-      <Button size="sm" variant="ghost" aria-label={`Reload ${screenEntry.title}`} onClick={() => void screen.open(screenEntry, {fresh: true})}><RotateCcw size={14}/>Reload</Button>
+      <Button
+        aria-label={`Reload ${screenEntry.title}`}
+        onClick={() => void screen.open(screenEntry, {fresh: true})}
+        variant="ghost"
+        size="sm"
+      ><RotateCcw size={14}/>Reload</Button>
     </Tip>}
-    {accounts.length > 1 && <select aria-label="Connected account" value={app.id} onChange={event => navigate(`~connected/${event.target.value}`)} className="max-w-48 rounded-md border bg-background p-1.5 text-xs">{accounts.map(account => <option key={account.id} value={account.id}>{account.account}</option>)}</select>}
-    <Button size="sm" variant="ghost" onClick={() => navigate(app.providerId ? `?provider=${encodeURIComponent(app.providerId)}` : `?mcp=${encodeURIComponent(app.id)}`)}><Settings2 size={14}/>Connection</Button>
+    {accounts.length > 1 && <NativeSelect aria-label="Connected account" value={app.id} onChange={event => navigate(`~connected/${event.target.value}`)} className={cn("max-w-48", 'w-auto')}>{accounts.map(account => <option key={account.id} value={account.id}>{account.account}</option>)}</NativeSelect>}
+    <Button
+      onClick={() => navigate(app.providerId ? `?provider=${encodeURIComponent(app.providerId)}` : `?mcp=${encodeURIComponent(app.id)}`)}
+      variant="ghost"
+      size="sm"
+    ><Settings2 size={14}/>Connection</Button>
   </header>;
 
   if (fullScreen) return <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
@@ -110,7 +133,13 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
           {!app.available && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">Reconnect or turn on this account to use it.</p>}
           <div className="flex flex-wrap items-center gap-2">
             <TryInChat app={app}/>
-            {app.entrypoints.map(entry => <Button key={entry.name} size="sm" variant="outline" disabled={!app.available} onClick={() => void screen.open(entry)}>
+            {app.entrypoints.map(entry => <Button
+              key={entry.name}
+              disabled={!app.available}
+              onClick={() => void screen.open(entry)}
+              variant="secondary"
+              size="sm"
+            >
               <EntrypointIcon icons={entry.icons} size={14}/>{app.entrypoints.length > 1 ? `Open ${entry.title}` : 'Open app'}
             </Button>)}
           </div>
@@ -133,15 +162,15 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
           ? <p className="text-xs text-muted-foreground">{app.views.length
             ? `When your agent uses ${app.views.map(view => view.title).join(', ')}, the interactive result shows in its chat, where it opens again any time, and the latest show here.`
             : `Screens you open show here.`}</p>
-          : <ul className="divide-y divide-border rounded-lg border border-border">{recent.map(item => <li key={item.id}>
+          : <Card as="ul" padding="none" surface="plain" className="divide-y divide-border">{recent.map(item => <li key={item.id}>
             {/* A screen reopens full screen. A chat's result opens here on the page. */}
-            <button type="button" aria-pressed={item.id === open} onClick={() => item.launched ? navigate(`${page}?screen=${encodeURIComponent(item.id)}`) : setOpen(item.id === open ? null : item.id)}
-              className={cn('flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-muted/40', item.id === open && 'bg-muted/40')}>
+            <MenuAction type="button" aria-pressed={item.id === open} onClick={() => item.launched ? navigate(`${page}?screen=${encodeURIComponent(item.id)}`) : setOpen(item.id === open ? null : item.id)}
+              className="flex w-full items-center gap-3 text-left">
               <AppWindow size={14} className="shrink-0 text-muted-foreground"/>
               <span className="min-w-0 flex-1 truncate">{item.title}</span>
               <span className="shrink-0 text-xs text-muted-foreground">{item.chatId ? 'From a chat · ' : ''}{ageLabel(new Date(item.created).toISOString())}</span>
-            </button>
-          </li>)}</ul>}
+            </MenuAction>
+          </li>)}</Card>}
       </section>
     </div></div>
   </div>;
@@ -173,18 +202,35 @@ function NoScreen({serverId, navigate, loading, error}: {serverId: string; navig
     <h1 className="text-lg font-semibold">{place.label} isn’t allowed in {personal.name} yet</h1>
     <p className="text-muted-foreground">{place.status === 'unavailable' && place.error ? `${place.error} ` : ''}Allow {place.label} in {personal.name} to open it here and use it in chat.</p>
     <div className="flex flex-wrap gap-2">
-      <Button size="sm" disabled={allowApp.checking} onClick={() => void allow()}>{allowApp.checking && <Loader2 size={14} className="animate-spin"/>}Allow {place.label} in {personal.name}</Button>
-      <Button size="sm" variant="ghost" onClick={() => navigate(`?mcp=${encodeURIComponent(serverId)}`)}><Settings2 size={14}/>Connection</Button>
+      <Button
+        disabled={allowApp.checking}
+        onClick={() => void allow()}
+        variant="primary"
+        size="md"
+      >{allowApp.checking && <Loader2 size={14} className="animate-spin"/>}Allow {place.label} in {personal.name}</Button>
+      <Button
+        onClick={() => navigate(`?mcp=${encodeURIComponent(serverId)}`)}
+        variant="ghost"
+        size="sm"
+      ><Settings2 size={14}/>Connection</Button>
     </div>
   </>;
   else if (personal) body = <>
     <h1 className="text-lg font-semibold">{personal.name} has no screens to open</h1>
     <p className="text-muted-foreground">Use it in chat. Mention {personal.name} with @ and ask for what you need, or type / to use one of its prompts.</p>
-    <div className="flex flex-wrap gap-2"><Button size="sm" onClick={toChat}><MessageCircle size={14}/>Open chat</Button></div>
+    <div className="flex flex-wrap gap-2"><Button
+      onClick={toChat}
+      variant="secondary"
+      size="md"
+    ><MessageCircle size={14}/>Open chat</Button></div>
   </>;
   else body = <p className="text-muted-foreground">This connection doesn’t offer a screen. Use it in chat with @.</p>;
   return <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
-    <header className="flex items-center gap-2 border-b border-border px-5 py-2.5"><Button variant="ghost" size="sm" onClick={() => navigate('')}><ArrowLeft size={14}/>Apps</Button></header>
+    <header className="flex items-center gap-2 border-b border-border px-5 py-2.5"><Button
+      onClick={() => navigate('')}
+      variant="ghost"
+      size="sm"
+    ><ArrowLeft size={14}/>Apps</Button></header>
     <div className="min-h-0 flex-1 overflow-y-auto px-5 py-8 sm:px-8"><div className="mx-auto max-w-xl space-y-3 text-sm">
       {body}
       {failure && <p role="alert" className="text-xs text-destructive">{failure}</p>}
@@ -238,7 +284,12 @@ function TryInChat({app}: {app: App}) {
     finally { setBusy(false); }
   };
   return <>
-    <Button size="sm" disabled={busy || !app.available || !app.sourceRef} onClick={() => void start()}>
+    <Button
+      disabled={busy || !app.available || !app.sourceRef}
+      onClick={() => void start()}
+      variant="secondary"
+      size="md"
+    >
       {busy ? <Loader2 size={14} className="animate-spin"/> : <MessageCircle size={14}/>}Try in chat
     </Button>
     <span className="text-xs text-muted-foreground">“{prompt}”</span>
@@ -327,14 +378,33 @@ function ScreenStatus({app, screen, onBack}: {app: App; screen: ScreenLaunch; on
       {state.kind === 'approval' && <div role="group" aria-label={`Allow ${app.toolkitName} to open`} className="space-y-3 rounded-xl bg-amber-500/10 p-4 text-left">
         <p>Allow {app.toolkitName} to open {state.entry.title}?</p>
         {state.preview != null && <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(state.preview, null, 2)}</pre>}
-        <div className="flex gap-2"><Button size="sm" disabled={busy} onClick={() => void screen.decide(true)}>Allow once</Button><Button size="sm" variant="ghost" disabled={busy} onClick={() => void screen.decide(false)}>Decline</Button></div>
+        <div className="flex gap-2"><Button
+          disabled={busy}
+          onClick={() => void screen.decide(true)}
+          variant="primary"
+          size="md"
+        >Allow once</Button><Button
+          disabled={busy}
+          onClick={() => void screen.decide(false)}
+          variant="ghost"
+          size="sm"
+        >Decline</Button></div>
       </div>}
       {state.kind === 'error' && <div role="alert" className="space-y-3">
         <p className="font-medium">{app.toolkitName} could not open</p>
         <p className="whitespace-pre-wrap text-muted-foreground [overflow-wrap:anywhere]">{state.message}</p>
         <div className="flex justify-center gap-2">
-          {state.entry && <Button size="sm" variant="outline" disabled={busy} onClick={() => void screen.open(state.entry!)}>Try again</Button>}
-          <Button size="sm" variant="ghost" onClick={onBack}>Back to {app.toolkitName}</Button>
+          {state.entry && <Button
+            disabled={busy}
+            onClick={() => void screen.open(state.entry!)}
+            variant="secondary"
+            size="sm"
+          >Try again</Button>}
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            size="sm"
+          >Back to {app.toolkitName}</Button>
         </div>
       </div>}
     </div>

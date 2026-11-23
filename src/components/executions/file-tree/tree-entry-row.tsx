@@ -251,7 +251,7 @@ export function TreeSectionHeader({
     <div className="flex h-full w-full items-end gap-1.5 px-2.5 pb-0.5 select-none">
       <span
         className={cn(
-          'text-[10px] font-semibold uppercase tracking-[0.1em]',
+          "text-[10px] font-semibold",
           tone === 'conflict'
             ? 'text-orange-600 dark:text-orange-400'
             : 'text-muted-foreground/70',

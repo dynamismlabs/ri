@@ -1,5 +1,11 @@
 'use client';
+import { DialogPrimitive } from '@/components/system/dialog';
+import { Callout } from '@/components/system/callout';
 
+import { StatusBadge } from '@/components/system/status-badge';
+
+import { IconButton } from '@/components/system/icon-button';
+import { Button } from '@/components/system/button';
 import { invalidateWorkspaceViews } from '@/lib/query/work-view-invalidation';
 import { WorkspacePicker } from '@/components/workspaces/workspace-picker';
 
@@ -76,7 +82,7 @@ import {
 	SquareCheckBig,
 	X,
 } from 'lucide-react';
-import { Dialog as DialogPrimitive, VisuallyHidden } from 'radix-ui';
+import { VisuallyHidden } from 'radix-ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { uuidv7 } from 'uuidv7';
@@ -646,7 +652,7 @@ function LaunchModalInner({
     <>
     <DialogPrimitive.Root open onOpenChange={(o) => !o && closeLauncher()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay data-slot="dialog-overlay" className="fixed inset-0 z-50 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         {/* Anchored near the top rather than vertically centered. The panel
             grows downward as browse opens and chips accumulate, so centering
             made it drift upward as it filled — and pushed the footer's popovers
@@ -657,8 +663,8 @@ function LaunchModalInner({
             (including an animated one) would become the containing block for
             the launcher's `position: fixed` popovers, which re-clips them
             inside the panel's `overflow-hidden`. See `launcher-popover.tsx`. */}
-        <DialogPrimitive.Content data-slot="dialog-content" data-kind="wrapped"
-          className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl px-3"
+        <DialogPrimitive.Content placement="custom" padding="md" data-slot="dialog-content"
+          className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl"
           onOpenAutoFocus={(e) => {
             // Land in the prompt, not on the first focusable (the workspace
             // chip). This is the whole express lane: open, type, Enter.
@@ -694,7 +700,7 @@ function LaunchModalInner({
           </VisuallyHidden.Root>
 
           <ChatDropZone
-            className="flex max-h-[84vh] animate-in flex-col overflow-hidden rounded-xl border border-border bg-card fade-in-0 shadow-2xl duration-150"
+            className="ri-launch-frame flex max-h-[84vh] animate-in flex-col overflow-hidden rounded-xl border border-border bg-card fade-in-0 shadow-2xl duration-150"
             // The panel sits 8vh down. Its bottom stops 0.75rem above the
             // keyboard's top edge, so the footer never slides under it.
             style={touch && visibleBottom ? { maxHeight: `min(84vh, calc(${visibleBottom}px - 8vh - 0.75rem))` } : undefined}
@@ -754,12 +760,14 @@ function LaunchModalInner({
                 )}
               </div>
               <DialogPrimitive.Close asChild>
-                <button
-                  className="flex-shrink-0 rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground pointer-coarse:-m-1 pointer-coarse:p-2"
-                  aria-label="Close"
+                <IconButton
+                  label="Close"
+                  variant="ghost"
+                  size={touch ? 'touch' : 'sm'}
+                  className="flex-shrink-0 pointer-coarse:-m-1"
                 >
                   <X size={15} />
-                </button>
+                </IconButton>
               </DialogPrimitive.Close>
             </div>
 
@@ -824,33 +832,37 @@ function LaunchModalInner({
                 />
               ) : (
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                  <span className="text-[10px] font-medium text-muted-foreground/60">
                     Start from
                   </span>
-                  <button data-slot="action-button"
+                  <Button
                     type="button"
                     onClick={openBrowse}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:border-solid hover:bg-muted/50 hover:text-foreground"
+                    variant="secondary"
+                    size={touch ? 'touch' : 'sm'}
+                    className="inline-flex items-center gap-1.5"
                   >
                     <Search size={10} />
                     Browse
                     {!touch && <kbd className="font-mono text-[9px] opacity-60">⌥⏎</kbd>}
-                  </button>
+                  </Button>
                   {suggestions.map((item) => {
                     const Icon = CHIP_ICON[item.kind];
                     return (
                       <Tip key={`${item.kind}:${item.key}`} label={item.title} onlyWhenTextHidden>
-                        <button data-slot="action-button"
+                        <Button
                           type="button"
                           onClick={() => handlePick(item)}
-                          className="inline-flex max-w-[14rem] items-center gap-1.5 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+                          variant="secondary"
+                          size={touch ? 'touch' : 'sm'}
+                          className="inline-flex max-w-[14rem] items-center gap-1.5"
                         >
                           <Icon size={10} className="flex-shrink-0" />
                           <span className="truncate">
                             {item.number != null ? `#${item.number} ` : ''}
                             {item.title}
                           </span>
-                        </button>
+                        </Button>
                       </Tip>
                     );
                   })}
@@ -861,15 +873,15 @@ function LaunchModalInner({
 
               {!continuation && runtimeProblem && <p role="status" className="px-4 py-2 text-[12px] text-muted-foreground">{runtimeProblem}</p>}
               {!continuation && runOnProblem && (
-                <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-2.5 py-1.5 text-[11px] text-amber-700 dark:text-amber-400">
+                <Callout tone="warning" padding="md">
                   {runOnProblem}
-                </div>
+                </Callout>
               )}
 
               {error && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 px-2.5 py-1.5 text-[11px] text-destructive">
+                <Callout tone="error" padding="md" >
                   {error}
-                </div>
+                </Callout>
               )}
             </div>
 
@@ -884,13 +896,14 @@ function LaunchModalInner({
                 className="-ml-1"
               />
               {continuation ? (
-                <span className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2 py-1 text-[11px] text-foreground">
+                <StatusBadge tone="info" className="inline-flex items-center gap-1.5">
                   <MessageSquare size={11} className="text-primary/70" />
                   Continuing an existing chat
-                </span>
+                </StatusBadge>
               ) : (
                 <>
                   <ModelControl
+                    size={touch ? "touch" : "compact"}
                     selection={selection}
                     label={modelLabel}
                     variant={harnessPick?.variant ?? null}
@@ -910,25 +923,28 @@ function LaunchModalInner({
                     front of you before you've decided what to ask. Enabled
                     with an empty prompt, which is the whole point. */}
                 <Tip label="Create the session and open it without sending a message">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => void launch({ send: false })}
                     disabled={launching || !!runOnProblem || !!runtimeProblem}
-                    className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground disabled:opacity-40 pointer-coarse:py-2 pointer-coarse:text-[13px]"
+                    variant="secondary"
+                    size={touch ? 'touch' : 'md'}
                   >
                     Open only
-                  </button>
+                  </Button>
                 </Tip>
-                <button
+                <Button
                   type="button"
                   onClick={() => void launch()}
                   disabled={!ready || launching}
-                  className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40 pointer-coarse:px-4 pointer-coarse:py-2 pointer-coarse:text-[13px]"
+                  variant="primary"
+                  size={touch ? 'touch' : 'md'}
+                  className="inline-flex items-center gap-1.5"
                 >
                   {launching && <Loader2 size={12} className="animate-spin" />}
                   Start
                   {!touch && <kbd className="font-mono text-[9.5px] opacity-70">⏎</kbd>}
-                </button>
+                </Button>
               </div>
             </div>
           </ChatDropZone>
@@ -946,20 +962,11 @@ function LaunchModalInner({
  */
 function Chip({ chip, onRemove }: { chip: LaunchChip; onRemove: () => void }) {
   const Icon = CHIP_ICON[chip.sourceKind];
-  const tone =
-    chip.chipKind === 'base'
-      ? 'border-primary/30 bg-primary/5'
-      : chip.chipKind === 'continue'
-        ? 'border-primary/30 bg-primary/5'
-        : 'border-border bg-background';
 
   return (
     <Tip label={chip.detail ? `${chip.label} · ${chip.detail}` : chip.label} onlyWhenTextHidden>
-      <span
-        className={cn(
-          'inline-flex max-w-[20rem] items-center gap-1.5 rounded-md border px-2 py-1 text-[11px]',
-          tone,
-        )}
+      <StatusBadge
+        className="max-w-[20rem]"
       >
         <Icon size={10} className="flex-shrink-0 text-muted-foreground/80" />
         <span className="flex-shrink-0 font-medium text-muted-foreground/80">{chip.chipKind}:</span>
@@ -969,15 +976,17 @@ function Chip({ chip, onRemove }: { chip: LaunchChip; onRemove: () => void }) {
         {chip.detail && (
           <span className="flex-shrink-0 truncate text-muted-foreground/60">{chip.detail}</span>
         )}
-        <button
+        <IconButton
           type="button"
           onClick={onRemove}
-          aria-label={`Remove ${chip.label}`}
-          className="ml-0.5 flex-shrink-0 rounded text-muted-foreground/60 transition-colors hover:text-foreground"
+          label={`Remove ${chip.label}`}
+          variant="ghost"
+          size="sm"
+          className="ml-0.5 flex-shrink-0"
         >
           <X size={10} />
-        </button>
-      </span>
+        </IconButton>
+      </StatusBadge>
     </Tip>
   );
 }

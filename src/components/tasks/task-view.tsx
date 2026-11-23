@@ -1,6 +1,8 @@
 'use client';
 
-import { SegmentedTabs } from '@/components/shared/list-toolbar';
+import { SegmentedControl } from '@/components/system/segmented-control';
+
+import { } from '@/components/shared/list-toolbar';
 
 /** List and the Tasks view of the shared Board use the same lifecycle. */
 export type TaskView = 'list' | 'board';
@@ -25,7 +27,7 @@ export function TaskViewToggle({
   onChange: (next: TaskView) => void;
 }) {
   return (
-    <SegmentedTabs<TaskView>
+    <SegmentedControl<TaskView> mode="choice"
       ariaLabel="Task view"
       value={value}
       onChange={onChange}

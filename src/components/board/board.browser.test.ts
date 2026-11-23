@@ -389,3 +389,22 @@ it('keeps Team actions in one row through label breakpoints and the reported 765
     expect(errors).toEqual([]);
   } finally { await page.close(); }
 });
+
+it('keeps the actual Board frame spanning its existing desktop and phone insets', async () => {
+  for (const width of [390, 900, 1440]) for (const dark of [false, true]) {
+    const page = await browser.newPage({ viewport: { width, height: 900 } });
+    try {
+      await page.goto(base);
+      await page.evaluate(dark => document.documentElement.classList.toggle('dark', dark), dark);
+      await page.getByRole('button', { name: 'Board', exact: true }).click();
+      const dialog = page.getByRole('dialog');
+      await dialog.waitFor();
+      expect(await dialog.boundingBox()).toMatchObject({
+        x: width >= 768 ? 16 : 8,
+        y: width >= 768 ? 48 : 8,
+        width: width - (width >= 768 ? 32 : 16),
+        height: 900 - (width >= 768 ? 64 : 16),
+      });
+    } finally { await page.close(); }
+  }
+});

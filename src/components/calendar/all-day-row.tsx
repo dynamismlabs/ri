@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from '@/components/system/button';
 /**
  * All-day events pinned above the hour axis: birthdays, OOO, multi-day spans.
  * They never join the busy math (a birthday must not zero out the day) but
@@ -9,7 +10,7 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import type { CalendarEvent } from '@/lib/calendar/types';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { stripeStyle } from './event-color';
 import { EventPopoverContent } from './event-popover';
 
@@ -38,19 +39,20 @@ export function AllDayRow({ events }: { events: CalendarEvent[] }) {
               {e.title}
             </button>
           </PopoverTrigger>
-          <PopoverContent side="bottom" align="start" className="p-0 w-auto">
+          <PopoverContent padding="none" side="bottom" align="start" className="w-auto">
             <EventPopoverContent event={e} />
           </PopoverContent>
         </Popover>
       ))}
       {!expanded && hidden > 0 && (
-        <button
+        <Button
           type="button"
           onClick={() => setExpanded(true)}
-          className="px-1.5 py-0.5 rounded text-[10px] text-muted-foreground/70 hover:text-foreground transition-colors"
+          variant="ghost"
+          size="sm"
         >
           +{hidden} more
-        </button>
+        </Button>
       )}
     </div>
   );

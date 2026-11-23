@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/system/button';
 import { CircleCheck, House, Settings } from 'lucide-react';
 import { SpaceSelector } from '@/components/spaces/space-selector';
 import { useSpace } from '@/components/spaces/space-root';
@@ -21,10 +22,17 @@ export function TeamRailFooter({ collapsed }: { collapsed: boolean }) {
       <div className={cn('flex items-center gap-1.5', collapsed && 'flex-col')}>
         <RailIconButton icon={Settings} label="Settings" onClick={() => nav.openPanel('settings')} />
         <Tip label="Your account">
-          <button data-slot="action-button" type="button" aria-label="Your account" onClick={account} className={cn('flex min-w-0 items-center gap-2 rounded-lg text-left text-xs text-muted-foreground hover:bg-muted/40', collapsed ? 'p-1.5' : 'flex-1 border border-border/60 px-2 py-1.5')}>
+          <Button
+            type="button"
+            aria-label="Your account"
+            onClick={account}
+            variant="secondary"
+            size="sm"
+            className={cn("flex min-w-0 items-center gap-2", (collapsed ? '' : "flex-1"))}
+          >
             <MemberAvatar name={member.name} size="xs" />
             {!collapsed && <><span className="truncate">{member.name}</span><span className="ml-auto text-[10px]">{TEAM_ROLE_LABELS[member.role]}</span></>}
-          </button>
+          </Button>
         </Tip>
       </div>
       {space && <Tip label={collapsed ? 'Connected to My Ri' : undefined}>
@@ -35,7 +43,13 @@ export function TeamRailFooter({ collapsed }: { collapsed: boolean }) {
       </Tip>}
       {!space && (collapsed
         ? <RailIconButton icon={House} label="Connect to My Ri" onClick={account} className="self-center" />
-        : <button data-slot="action-button" data-variant="ghost" type="button" onClick={account} className="flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-primary hover:bg-muted/40"><House size={13} className="shrink-0" />Connect to My Ri</button>)}
+        : <Button
+          type="button"
+          onClick={account}
+          variant="secondary"
+          size="sm"
+          className="flex items-center gap-2"
+        ><House size={13} className="shrink-0" />Connect to My Ri</Button>)}
     </footer>
   );
 }

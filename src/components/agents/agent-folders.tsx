@@ -1,5 +1,15 @@
 'use client';
 
+import { DialogBody } from '@/components/system/dialog';
+import { MenuAction } from '@/components/system/menu-action';
+
+import { Callout } from '@/components/system/callout';
+import { StatusBadge } from '@/components/system/status-badge';
+import { Card } from '@/components/system/card';
+
+import { SegmentedRoot, SegmentedList, SegmentedPanel } from '@/components/system/segmented-control';
+
+import { IconButton } from '@/components/system/icon-button';
 /**
  * An agent's folders on each of the person's devices (docs/homes-spec.md
  * §4.1-4.2, docs/agent-folders.md): one list, its primary folder first (where
@@ -15,12 +25,12 @@ import { useRef, useState, type ReactNode } from 'react';
 import { AlertTriangle, Bot, Check, CircleSlash, CornerUpLeft, Folder, FolderOpen, FolderPlus, GitBranch, Globe, Home as HomeIcon, Loader2, Lock, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import slugify from '@sindresorhus/slugify';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/system/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/system/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { FolderPickerDialog } from '@/components/workspaces/folder-picker-dialog';
 import { folderName } from '@/lib/folders/folder-name';
-import { useConfirm } from '@/components/ui/confirm-dialog';
+import { useConfirm } from '@/components/system/confirm-dialog';
 import { useAgentFolders, useChangeAgentFolders } from '@/hooks/use-workspaces';
 import {
   useArchiveReferenceFolder,
@@ -64,68 +74,65 @@ export function AgentFoldersSection({ workspace }: { workspace: WorkspaceRecord 
   const selected = devices.find((c) => c.deviceId === chosenId) ?? devices[0] ?? null;
 
   return (
-    <section className="space-y-3">
-      <div>
-        <h3 className="text-sm font-semibold text-foreground">Folders</h3>
-        <p className="mt-0.5 text-[11px] text-muted-foreground/75">
-          {workspace.name}&apos;s chats start in its primary folder and follow that folder&apos;s instructions. They can read and
-          change every folder here, except ones marked read only.
-        </p>
-      </div>
-
-      {isLoading && (
-        <p className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
-          <Loader2 size={14} className="animate-spin" /> Loading folders…
-        </p>
-      )}
-      {error && <p className="text-[12px] text-destructive">{apiErrorText(error)}</p>}
-
-      {devices.length > 1 && (
-        <div data-slot="segmented" data-scroll role="tablist" aria-label="Devices" className="flex flex-wrap gap-1.5">
-          {devices.map((c) => {
-            const s = standing(c);
-            const active = c.deviceId === selected?.deviceId;
-            return (
-              <button data-slot="segmented-option"
-                key={c.deviceId}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => setChosenId(c.deviceId)}
-                className={cn(
-                  'flex items-center gap-1.5 rounded-full border px-3 py-1 text-[12px] transition-colors',
-                  active ? 'border-primary/60 bg-primary/10 text-foreground' : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground',
-                )}
-              >
-                <span
-                  aria-hidden
-                  className={cn(
-                    'h-1.5 w-1.5 shrink-0 rounded-full',
-                    s === 'ready' && 'bg-emerald-500',
-                    s === 'unchecked' && 'bg-muted-foreground/50',
-                    s === 'problem' && 'bg-amber-500',
-                    s === 'none' && 'border border-muted-foreground/50',
-                  )}
-                />
-                {c.isHome && <HomeIcon size={11} className="shrink-0" aria-label="Hosts your Ri" />}
-                {c.name}
-                {s === 'none' && <span className="text-muted-foreground/70">· not set up</span>}
-              </button>
-            );
-          })}
+    <SegmentedRoot asChild mode="tabs" value={selected?.deviceId ?? null} onChange={setChosenId}>
+      <section className="space-y-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Folders</h3>
+          <p className="mt-0.5 text-[11px] text-muted-foreground/75">
+            {workspace.name}&apos;s chats start in its primary folder and follow that folder&apos;s
+            instructions. They can read and change every folder here, except ones marked read only.
+          </p>
         </div>
-      )}
 
-      {selected && <OnDevice key={selected.deviceId} workspace={workspace} on={selected} />}
+        {isLoading && (
+          <p className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
+            <Loader2 size={14} className="animate-spin" /> Loading folders…
+          </p>
+        )}
+        {error && <p className="text-[12px] text-destructive">{apiErrorText(error)}</p>}
 
-      {devices.length === 1 && (
-        <p className="text-[10.5px] text-muted-foreground/60">
-          Your other devices show here once Ri runs on them, connected to this one.
-        </p>
-      )}
+        {devices.length > 1 && (
+          <SegmentedList
+            ariaLabel="Devices"
+            options={devices.map((c) => {
+              const status = standing(c);
+              return {
+                value: c.deviceId,
+                label: c.name + (status === 'none' ? ' · not set up' : ''),
+                icon: c.isHome ? <HomeIcon aria-label="Hosts your Ri" /> : undefined,
+                dot:
+                  status === 'ready'
+                    ? 'working'
+                    : status === 'problem'
+                      ? 'attention'
+                      : status === 'none'
+                        ? 'unavailable'
+                        : 'neutral',
+              };
+            })}
+          />
+        )}
 
-      <ReferencedBy workspaceId={workspace.id} />
-    </section>
+        {selected && (
+          <SegmentedPanel
+            value={selected.deviceId}
+            {...(devices.length === 1
+              ? { role: 'region', 'aria-labelledby': undefined, 'aria-label': selected.name }
+              : {})}
+          >
+            <OnDevice key={selected.deviceId} workspace={workspace} on={selected} />
+          </SegmentedPanel>
+        )}
+
+        {devices.length === 1 && (
+          <p className="text-[10.5px] text-muted-foreground/60">
+            Your other devices show here once Ri runs on them, connected to this one.
+          </p>
+        )}
+
+        <ReferencedBy workspaceId={workspace.id} />
+      </section>
+    </SegmentedRoot>
   );
 }
 
@@ -149,7 +156,12 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
         <p className="text-[12.5px] text-foreground">
           {workspace.name} isn&apos;t on {on.name} yet.
         </p>
-        <Button size="sm" onClick={() => setSettingUp(true)} disabled={!on.connected}>
+        <Button
+          onClick={() => setSettingUp(true)}
+          disabled={!on.connected}
+          variant="primary"
+          size="md"
+        >
           Set up on {on.name}
         </Button>
         <p className="text-[11px] text-muted-foreground/75">
@@ -238,13 +250,13 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
         </p>
       )}
       {setup.problem && (
-        <p className="flex items-start gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-2.5 py-2 text-[11.5px] text-amber-600 dark:text-amber-400">
+        <Callout as="p" padding="sm" density="row" tone={"warning"} className="flex items-start gap-1.5">
           <AlertTriangle size={12} className="mt-0.5 shrink-0" />
           <span>{setup.problem}</span>
-        </p>
+        </Callout>
       )}
 
-      <ul className="overflow-hidden rounded-xl border border-border">
+      <Card as="ul" padding="none" surface="plain" className="overflow-hidden">
         <li className="flex items-start gap-2.5 border-b border-border px-3 py-2.5">
           <Folder size={15} className="mt-0.5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
@@ -252,7 +264,7 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
             <PathLine path={setup.folder} state={projectState} deviceName={on.name} />
           </div>
           <div className="flex shrink-0 items-center gap-1">
-            <span className="rounded-md border border-border px-2 py-0.5 text-[11px] text-muted-foreground">Primary</span>
+            <StatusBadge >Primary</StatusBadge>
             <RowButton onClick={() => setChoosing({ kind: 'project' })} emphasis={projectState === 'missing'}>
               Change
             </RowButton>
@@ -287,30 +299,33 @@ function OnDevice({ workspace, on }: { workspace: WorkspaceRecord; on: AgentFold
           />
         ))}
         <li>
-          <button
+          <MenuAction
             type="button"
             // A device that isn't running Ri can't be browsed, so its folder is typed in the full dialog.
             onClick={() => (on.connected ? setPicking(true) : setDefining({ editing: null }))}
             disabled={change.addFolder.isPending}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left text-[13px] text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground disabled:opacity-50"
+            className="flex w-full items-center gap-2.5 text-left"
           >
             {change.addFolder.isPending ? <Loader2 size={15} className="shrink-0 animate-spin" /> : <FolderPlus size={15} className="shrink-0" />}
             Add folder
-          </button>
+          </MenuAction>
         </li>
-      </ul>
+      </Card>
 
       {!on.isHome && (
         <div className="pt-1">
-          <button
+          <Button
             type="button"
             onClick={removeFromHere}
             disabled={change.remove.isPending}
-            className="flex items-center gap-1.5 text-[11px] text-destructive hover:underline disabled:opacity-50"
+            variant="link"
+            size="sm"
+            tone="danger"
+            className="flex items-center gap-1.5"
           >
             <Trash2 size={11} />
             Remove from {on.name}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -421,16 +436,16 @@ function LinkedRow({
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="truncate text-[13px] font-medium text-foreground">{refOn.alias}</span>
           {refOn.readOnly && (
-            <span className="flex items-center gap-0.5 rounded bg-accent px-1 py-px text-[9.5px] text-muted-foreground">
+            <StatusBadge className="flex items-center gap-0.5">
               <Lock size={8} /> read only
-            </span>
+            </StatusBadge>
           )}
           {refOn.forEveryAgent && (
-            <span className="flex items-center gap-0.5 rounded bg-accent px-1 py-px text-[9.5px] text-muted-foreground">
+            <StatusBadge className="flex items-center gap-0.5">
               <Globe size={8} /> every agent
-            </span>
+            </StatusBadge>
           )}
-          {agent && <span className="rounded bg-accent px-1 py-px text-[9.5px] text-muted-foreground">{agent.name}&apos;s folder</span>}
+          {agent && <StatusBadge >{agent.name}&apos;s folder</StatusBadge>}
         </div>
         {refOn.description && <p className="mt-0.5 text-[10.5px] leading-snug text-muted-foreground/85">{refOn.description}</p>}
         {agent ? (
@@ -466,24 +481,27 @@ function LinkedRow({
           </RowButton>
         )}
         {canBePrimary && (
-          <button data-slot="action-button" data-variant="ghost"
+          <Button
             type="button"
             onClick={onMakePrimary}
             disabled={busy}
-            className="rounded-md bg-accent px-2 py-0.5 text-[11px] font-medium text-foreground opacity-0 transition-opacity hover:bg-accent/70 focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100 disabled:opacity-40"
+            variant="ghost"
+            size="sm"
+            reveal
           >
             Make primary
-          </button>
+          </Button>
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button data-slot="action-button" data-variant="ghost"
+            <IconButton
               type="button"
-              aria-label={`More for ${refOn.alias}`}
-              className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              label={`More for ${refOn.alias}`}
+              variant="ghost"
+              size="sm"
             >
               <MoreHorizontal size={14} />
-            </button>
+            </IconButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
@@ -496,26 +514,26 @@ function LinkedRow({
             }}
           >
             {!agent && (
-              <DropdownMenuItem className="text-xs" onSelect={later(onChange)}>
+              <MenuAction kind="menu"  onSelect={later(onChange)}>
                 <FolderOpen size={12} className="mr-2" />
                 {state === 'omitted' || state === 'unchosen' ? `Choose where it is` : `Change where it is`}
-              </DropdownMenuItem>
+              </MenuAction>
             )}
             {!agent && state !== 'omitted' && (
-              <DropdownMenuItem className="text-xs" onSelect={onGoWithout}>
+              <MenuAction kind="menu"  onSelect={onGoWithout}>
                 <CircleSlash size={12} className="mr-2" />
                 Go without it
-              </DropdownMenuItem>
+              </MenuAction>
             )}
-            <DropdownMenuItem className="text-xs" onSelect={later(onEdit)}>
+            <MenuAction kind="menu"  onSelect={later(onEdit)}>
               <Pencil size={12} className="mr-2" />
               Edit
-            </DropdownMenuItem>
+            </MenuAction>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-xs text-destructive focus:text-destructive" onSelect={later(onRemove)}>
+            <MenuAction tone="error" kind="menu"  onSelect={later(onRemove)}>
               <Trash2 size={12} className="mr-2" />
               Remove
-            </DropdownMenuItem>
+            </MenuAction>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -535,17 +553,15 @@ function RowButton({
   children: ReactNode;
 }) {
   return (
-    <button data-slot="action-button" data-variant="ghost"
+    <Button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={cn(
-        'rounded-md px-2 py-0.5 text-[11px] font-medium transition-colors disabled:opacity-40',
-        emphasis ? 'bg-primary/10 text-primary hover:bg-primary/15' : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-      )}
+      variant={emphasis ? "secondary" : "ghost"}
+      size="sm"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -640,7 +656,8 @@ function ChooseFolderBody({
         <DialogTitle className="break-words">{title}</DialogTitle>
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
-      <form
+      <DialogBody className="space-y-4">
+<form
         onSubmit={(e) => {
           e.preventDefault();
           void save();
@@ -655,11 +672,22 @@ function ChooseFolderBody({
         )}
         {problem && <p className="text-[12px] text-destructive">{problem}</p>}
       </form>
+</DialogBody>
       <DialogFooter>
-        <Button variant="ghost" onClick={onDone} disabled={saving}>
+        <Button
+          onClick={onDone}
+          disabled={saving}
+          variant="ghost"
+          size="md"
+        >
           Cancel
         </Button>
-        <Button onClick={() => void save()} disabled={saving || unchanged}>
+        <Button
+          onClick={() => void save()}
+          disabled={saving || unchanged}
+          variant="primary"
+          size="md"
+        >
           {saving && <Loader2 size={13} className="animate-spin" />}
           Save
         </Button>
@@ -794,13 +822,13 @@ function ReferencedBy({ workspaceId }: { workspaceId: string }) {
   const names = data.referencedBy.map((r) => `${r.workspaceName ?? 'every agent'}${r.readOnly ? ' (read only)' : ''}`);
   const anyEditable = data.referencedBy.some((r) => !r.readOnly);
   return (
-    <div className="flex items-start gap-1.5 rounded-lg border border-border bg-muted/20 px-2.5 py-2 text-[10.5px] text-muted-foreground">
+    <Card padding="sm" density="row" className="flex items-start gap-1.5">
       <CornerUpLeft size={11} className="mt-px shrink-0" />
       <span>
         Linked from {names.join(', ')}. Those agents can read this one&apos;s folder
         {anyEditable ? ", and change it where their link isn't read only" : ''}. Links go one way, so nothing in
         this agent&apos;s setup changes.
       </span>
-    </div>
+    </Card>
   );
 }

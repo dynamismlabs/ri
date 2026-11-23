@@ -327,8 +327,8 @@ it.skipIf(!enabled)('keeps uploaded text as a readable chip in both themes and o
         return { ratio: (Math.max(a, b) + .05) / (Math.min(a, b) + .05), border: parseFloat(style.borderTopWidth), radius: parseFloat(style.borderRadius), color: style.color, background: style.backgroundColor, bubble: getComputedStyle(bubble).backgroundColor, bubbleColor: getComputedStyle(bubble).color };
       });
       expect(contrast.ratio, JSON.stringify({ dark, ...contrast })).toBeGreaterThanOrEqual(4.5);
-      expect(contrast.border).toBeGreaterThan(0);
-      expect(contrast.radius).toBeGreaterThan(0);
+      expect(contrast.border).toBe(0);
+      expect(contrast.radius).toBeGreaterThan(100);
       expect(await chip.innerText()).toContain('99 B');
       if (process.env.RI_ARTIFACT_SCREENSHOTS) await chip.screenshot({ path: path.join(process.env.RI_ARTIFACT_SCREENSHOTS, `attachment-chip-${dark ? 'dark' : 'light'}.png`) });
     }
@@ -395,18 +395,18 @@ it.skipIf(!enabled)('copies and downloads unsupported original bytes in both pre
   try {
     await p.evaluate(() => Object.defineProperty(navigator, 'clipboard', { value: { writeText: async (value: string) => { (window as unknown as { copied: string }).copied = value; } }, configurable: true }));
     await p.getByRole('button', { name: 'Open file: output.bin', exact: true }).hover();
-    await p.getByRole('tooltip').waitFor();
-    expect(await p.getByRole('tooltip').innerText()).toContain(outputPath);
+    await p.getByRole('tooltip').filter({ hasText: outputPath }).waitFor();
+    expect(await p.getByRole('tooltip').filter({ hasText: outputPath }).innerText()).toContain(outputPath);
     const view = await open(p, 'output.bin');
     await view.getByText('No preview is available for this file type. Download it to open it.', { exact: true }).waitFor();
     await view.getByRole('heading', { name: 'output.bin', exact: true }).waitFor();
     const besideCopy = view.getByRole('button', { name: 'Copy path', exact: true });
     expect(await besideCopy.innerText()).toContain('Copy path');
     expect(await besideCopy.innerText()).toContain(outputPath);
-    await besideCopy.hover(); await p.getByRole('tooltip').waitFor();
-    expect(await p.getByRole('tooltip').innerText()).toContain(outputPath);
-    expect((await p.locator('[data-slot="tooltip-content"]').boundingBox())!.height).toBeLessThan(280);
-    expect(await p.locator('[data-slot="tooltip-content"] > span').first().evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    await besideCopy.hover(); await p.getByRole('tooltip').filter({ hasText: outputPath }).waitFor();
+    expect(await p.getByRole('tooltip').filter({ hasText: outputPath }).innerText()).toContain(outputPath);
+    expect((await p.locator('[data-slot="tooltip-content"]').filter({ hasText: outputPath }).boundingBox())!.height).toBeLessThan(280);
+    expect(await p.locator('[data-slot="tooltip-content"]').filter({ hasText: outputPath }).locator(':scope > span').first().evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
     await besideCopy.click(); expect(await p.evaluate(() => (window as unknown as { copied: string }).copied)).toBe(outputPath);
     await view.getByRole('button', { name: 'Show large', exact: true }).click();
     const dialog = p.getByRole('dialog');
@@ -414,8 +414,8 @@ it.skipIf(!enabled)('copies and downloads unsupported original bytes in both pre
     expect(await largeCopy.innerText()).toContain('Copy path');
     await largeCopy.focus(); await p.keyboard.press('Tab'); await p.keyboard.press('Shift+Tab');
     expect(await largeCopy.evaluate(element => element === document.activeElement)).toBe(true);
-    await p.getByRole('tooltip').waitFor();
-    expect(await p.getByRole('tooltip').innerText()).toContain(outputPath);
+    await p.getByRole('tooltip').filter({ hasText: outputPath }).waitFor();
+    expect(await p.getByRole('tooltip').filter({ hasText: outputPath }).innerText()).toContain(outputPath);
     await largeCopy.press('Enter');
     expect(await p.evaluate(() => (window as unknown as { copied: string }).copied)).toBe(outputPath);
     const [download] = await Promise.all([p.waitForEvent('download'), dialog.getByRole('link', { name: 'Download output.bin', exact: true }).click()]);
