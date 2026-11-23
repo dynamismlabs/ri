@@ -253,7 +253,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
             </VisuallyHidden.Root>
 
             <form
-              className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-2"
+              className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 pb-2 pt-1"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmit();
