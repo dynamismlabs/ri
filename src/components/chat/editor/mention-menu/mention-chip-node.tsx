@@ -171,7 +171,7 @@ function MentionChipView({ node, editor, getPos, selected }: NodeViewProps) {
           variant="ghost"
           size="xs"
           focus="inside"
-          className="ml-0.5 inline-flex items-center justify-center"
+          className="ri-chip-remove ml-0.5 inline-flex items-center justify-center"
         >
           <X size={10} />
         </IconButton>
