@@ -8,15 +8,16 @@ gaps, widths, margins, positioning, overflow and responsive visibility.
 ## Foundations
 
 `src/styles/theme.css` defines the palette, platform fonts, semantic ink/fill
-pairs and shadows. It also owns document type, selection and scrollbars.
-`src/app/globals.css` registers the tokens with Tailwind and imports each
-component's CSS. Domain drawing lives beside its owning component.
+pairs and shadows. `src/app/globals.css` registers the tokens with Tailwind,
+imports each component's CSS, and owns the document base and scrollbar rules.
+Domain drawing lives beside its owning component.
 
 The canvas holds navigation and the top bar. The pane holds work. Raised fills
 sit inside a pane. Columns meet the window and each other without floating
 rounded pane frames. Hairlines divide structural panes. Content uses soft fills
-and shadows rather than outlines. Plain task, note and Stream rows, ordinary
-user messages and bare connected forms retain their transparent host layout.
+and shadows rather than outlines. Plain task, note and Stream rows stay
+transparent. User messages keep their inverted bubble without an added Card
+frame. Bare connected forms retain their host layout.
 
 Neutral colors use a low-chroma gray in both themes. `--t1` through `--t4` mean
 title, body, secondary and faint. Semantic tones include attention, warning,
