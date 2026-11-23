@@ -6,3 +6,5 @@ html:root [data-slot="top-hud"] { background-color: var(--canvas); }
 html:root [data-slot="top-hud"] .ri-button { --control-size: 24px; --control-icon: 13px; gap: 4px; padding-inline: 8px; font-size: 12px; }
 html:root [data-slot="top-hud"] .ri-button.ri-button--icon { padding-inline: 0; }
 html:root [data-slot="top-hud"] .ri-button--secondary:not([class*='ri-tone--'], [aria-expanded='true'], [aria-pressed='true'], .ri-button--pressed):not(:hover) { background-color: transparent; }
+/* Create matches the icon group's track beside it, so the two read as one row. */
+html:root [data-slot="top-hud"] .ri-button--primary { --control-size: 28px; padding-inline: 11px; }

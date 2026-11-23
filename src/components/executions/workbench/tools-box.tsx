@@ -347,8 +347,9 @@ export function ToolsMini({
         type="button"
         onClick={onClick}
         aria-label={label}
-        variant="secondary"
+        variant="ghost"
         size="sm"
+        icon
         pressed={active}
         className="relative inline-flex items-center justify-center"
       >
