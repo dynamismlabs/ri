@@ -536,7 +536,7 @@ function AccountRow({
         <Button
           onClick={onTest}
           disabled={busy || testing}
-          variant="ghost"
+          variant="secondary"
           size="xs"
         >
           {testing ? <Loader2 size={12} className="animate-spin" /> : <ShieldCheck size={12} />}

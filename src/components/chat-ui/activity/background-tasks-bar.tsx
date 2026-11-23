@@ -100,16 +100,16 @@ export function BackgroundTasksBar({
 
   return (
     <>
-      {/* A strip attached to the top of the composer card: same column
-          width, inset like a tab, no borders. Render it directly before
-          the composer so the two touch. */}
+      {/* A tab attached to the top of the composer card: inset from its
+          edges, rounded on top only, no borders. Render it directly before
+          the composer so the two touch. Drawing: background-tasks-bar.css. */}
       <div className="mx-auto max-w-3xl px-5">
         <Button
           type="button"
           onClick={() => setOpen(true)}
-          variant="ghost"
+          variant="secondary"
           size="xs"
-          className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 justify-start"
+          className="ri-background-tasks-strip mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 justify-start"
         >
           {/* Sky and still: background work, not the agent working. */}
           <span aria-hidden className={cn('size-1.5 shrink-0', BACKGROUND_DOT)} />

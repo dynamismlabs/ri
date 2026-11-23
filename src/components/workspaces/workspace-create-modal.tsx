@@ -342,7 +342,7 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                     <Button
                       type="button"
                       onClick={() => setPicking(true)}
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
                       className="flex items-center gap-1.5"
                     >

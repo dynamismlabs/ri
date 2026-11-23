@@ -13,6 +13,7 @@
 @import '../components/calendar/calendar-event.css';
 @import '../components/calendar/calendar-modal.css';
 @import '../components/calendar/work/work-stats.css';
+@import '../components/chat-ui/activity/background-tasks-bar.css';
 @import '../components/chat-ui/chat-composer.css';
 @import '../components/chat-ui/gallery/model-menu-preview.css';
 @import '../components/chat-ui/questions/question-card.css';

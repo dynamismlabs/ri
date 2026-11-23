@@ -46,7 +46,7 @@ export function TeamRailFooter({ collapsed }: { collapsed: boolean }) {
         : <Button
           type="button"
           onClick={account}
-          variant="ghost"
+          variant="secondary"
           size="sm"
           className="flex items-center gap-2"
         ><House size={13} className="shrink-0" />Connect to My Ri</Button>)}

@@ -379,7 +379,7 @@ export function IntegrationScopePicker({ scopes, onChange, disabled }: Integrati
           <Button
             type="button"
             onClick={() => openSettings('plugins', { anchor: 'integrations' })}
-            variant="ghost"
+            variant="secondary"
             size="sm"
             className="mt-3 flex items-center gap-1.5"
           >

@@ -303,7 +303,7 @@ function ConnectMethodPanel(props: ApplicationDetailProps & { onStarted: (attemp
               )}
               {props.onCancel && <Button
                 onClick={props.onCancel}
-                variant="ghost"
+                variant="secondary"
                 size="xs"
               >Cancel</Button>}
             </div>
@@ -479,7 +479,7 @@ function ManagedAccountRow({ account, returnTo, startOpen, onReconnect, onMessag
               <Button
                 type="button"
                 onClick={() => setRenaming(false)}
-                variant="ghost"
+                variant="secondary"
                 size="xs"
               >Cancel</Button>
             </form>
@@ -508,7 +508,7 @@ function ManagedAccountRow({ account, returnTo, startOpen, onReconnect, onMessag
               onReconnect(result.attemptId);
               await openIntegrationAuthorization(result.authorizationUrl);
             })}
-              variant="ghost"
+              variant="secondary"
               size="xs"
             >
               <RefreshCw size={12} /> Reconnect
@@ -517,7 +517,7 @@ function ManagedAccountRow({ account, returnTo, startOpen, onReconnect, onMessag
           <Button
             aria-expanded={agentsOpen}
             onClick={() => setToggled(!agentsOpen)}
-            variant="ghost"
+            variant="secondary"
             size="xs"
           >
             <Bot size={12} /> Agents
