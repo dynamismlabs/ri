@@ -102,7 +102,7 @@ export function BackgroundTasksBar({
           width, inset like a tab, no borders. Render it directly before
           the composer so the two touch. */}
       <div className="mx-auto max-w-3xl px-5">
-        <button data-slot="action-button" data-variant="ghost"
+        <button data-slot="background-tasks-strip"
           type="button"
           onClick={() => setOpen(true)}
           className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-t-lg bg-muted/60 px-3 py-1.5 text-[11.5px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground/85"
