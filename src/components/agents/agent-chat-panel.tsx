@@ -79,7 +79,7 @@ export function AgentChatPanel({
               <button
                 onClick={() => newChat.mutate(sessionId ? { sourceChatId: sessionId } : undefined, { onSuccess: data => { if (sessionId) openExecution(data.session.id); } })}
                 disabled={newChat.isPending}
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all disabled:opacity-50"
+                data-slot="chip-button" className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9.5px] font-bold uppercase tracking-[0.06em] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all disabled:opacity-50"
               >
                 {newChat.isPending ? <Loader2 size={10} className="animate-spin" /> : <Plus size={10} />}
                 New

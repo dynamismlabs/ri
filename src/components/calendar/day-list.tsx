@@ -67,7 +67,7 @@ export function DayList({
             {day.allDay.map((e) => (
               <Popover key={e.id}>
                 <PopoverTrigger asChild>
-                  <button
+                  <button data-slot="calendar-event"
                     type="button"
                     className="max-w-64 truncate rounded bg-muted px-2 py-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
                     style={stripeStyle(e.color, 2)}
@@ -81,7 +81,7 @@ export function DayList({
               </Popover>
             ))}
             {deadlines.map((d) => (
-              <button
+              <button data-slot="action-button" data-tone="warning"
                 key={d.taskId}
                 type="button"
                 onClick={() => onOpenTask(d.taskId)}
@@ -134,7 +134,7 @@ function EventRow({ event, start, end }: { event: CalendarEvent; start: number; 
       </div>
       <Popover>
         <PopoverTrigger asChild>
-          <button
+          <button data-slot="calendar-event"
             type="button"
             className={cn(
               'flex min-w-0 flex-1 items-center gap-3 rounded-md border border-border bg-muted py-1.5 pr-2 text-left transition-colors hover:border-muted-foreground/40',
@@ -163,7 +163,7 @@ function EventRow({ event, start, end }: { event: CalendarEvent; start: number; 
       {/* Always the same width, so every card ends at the same edge. */}
       <div className="flex w-16 shrink-0 items-center justify-end">
         {event.joinUrl && !declined && (
-          <a
+          <a data-slot="action-button"
             href={event.joinUrl}
             target="_blank"
             rel="noreferrer"

@@ -121,7 +121,7 @@ export function QuestionCard({
         {q.options.map((opt) => {
           const isSelected = selected.includes(opt.label);
           return (
-            <button
+            <button data-slot="choice-row"
               key={opt.label}
               type="button"
               aria-pressed={isSelected}
@@ -160,7 +160,7 @@ export function QuestionCard({
             automatically"). Replaces the dismiss-X that used to live
             in the header — the Stop button on the composer is the
             mechanism for actually cancelling the agent. */}
-        <button
+        <button data-slot="choice-row"
           type="button"
           aria-pressed={otherActive}
           onClick={() => toggleOption(OTHER_VALUE)}
@@ -189,7 +189,7 @@ export function QuestionCard({
         </button>
 
         {otherActive && (
-          <input
+          <input data-slot="field"
             ref={otherInputRef}
             type="text"
             value={otherTyped}
@@ -218,7 +218,7 @@ export function QuestionCard({
         {pending.questions.length > 1 ? (
           <div className="flex gap-1">
             {pending.questions.map((_, i) => (
-              <button
+              <button data-slot="action-button" data-tone="status"
                 key={i}
                 type="button"
                 onClick={() => setCurrentIdx(i)}
@@ -238,7 +238,7 @@ export function QuestionCard({
           <div />
         )}
 
-        <button
+        <button data-slot="action-button" data-variant="primary"
           type="button"
           disabled={!currentAnswered || resolve.isPending || (isLast && !allAnswered)}
           onClick={handleNext}

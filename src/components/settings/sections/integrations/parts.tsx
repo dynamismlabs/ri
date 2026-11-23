@@ -104,7 +104,7 @@ export function CatalogTile({
   onOpen: () => void;
 }) {
   return (
-    <button
+    <button data-slot="content-card"
       type="button"
       onClick={onOpen}
       className="group flex min-w-0 items-center gap-3 rounded-xl border border-border bg-card/20 p-3 text-left transition-colors hover:border-foreground/15 hover:bg-muted/40 focus-visible:border-ring focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -140,7 +140,7 @@ export function BackLink({ onBack, busy = false, label = `All ${INTEGRATION_LABE
   return (
     <div className="flex min-h-6 items-center justify-between gap-2">
       <Tip label={`Back to ${label.toLowerCase()}`} shortcut={HOTKEYS.slideoutBack.label}>
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={onBack}
           className="-ml-1 inline-flex items-center gap-1 rounded-md px-1 py-0.5 text-[11px] font-medium text-muted-foreground transition-colors hover:text-foreground"

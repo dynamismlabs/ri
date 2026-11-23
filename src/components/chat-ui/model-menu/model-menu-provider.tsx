@@ -82,7 +82,7 @@ export function ModelMenuProvider({
       </CommandGroup>
       {!search && (
         <>
-          <button
+          <button data-slot="menu-action"
             type="button"
             aria-expanded={expanded}
             aria-controls={regionId}

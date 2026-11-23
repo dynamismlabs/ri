@@ -88,7 +88,7 @@ export function MobileCreateSheet() {
 
 function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label: string; hint: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors active:bg-accent">
+    <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClick} className="flex items-center gap-3 rounded-xl px-2 py-2.5 text-left transition-colors active:bg-accent">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground">
         <Icon size={19} />
       </span>
@@ -102,7 +102,7 @@ function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label
 
 function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: string; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-3.5 transition-colors active:bg-accent">
+    <button data-slot="action-button" type="button" onClick={onClick} className="flex flex-col items-center gap-1.5 rounded-xl border border-border py-3.5 transition-colors active:bg-accent">
       <Icon size={20} className="text-foreground" />
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
     </button>
@@ -111,7 +111,7 @@ function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: st
 
 function SetupRow({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm text-foreground/90 transition-colors active:bg-accent disabled:opacity-50">
+    <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClick} disabled={disabled} className="flex items-center gap-3 rounded-lg px-2 py-3 text-left text-sm text-foreground/90 transition-colors active:bg-accent disabled:opacity-50">
       <Plus size={17} className="shrink-0 text-muted-foreground" /> {label}
     </button>
   );

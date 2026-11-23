@@ -278,7 +278,7 @@ function ZoomControls({ percent, zoomed, atMost, onZoom, onFit }: { percent: num
         <Button variant="ghost" size="icon-xs" className={cn('rounded-full', unavailable)} aria-label="Zoom out" aria-disabled={!zoomed || undefined} onClick={() => { if (zoomed) onZoom(1 / ZOOM_STEP); }}><ZoomOut /></Button>
       </Tip>
       <Tip label="Fit to window" shortcut={HOTKEYS.previewZoomFit.label}>
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           aria-label={`Fit to window, zoom ${percent}%`}
           aria-disabled={!zoomed || undefined}

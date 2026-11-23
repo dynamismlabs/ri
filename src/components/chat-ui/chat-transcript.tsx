@@ -167,7 +167,7 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
           loadOlder={loadOlder}
           oldestEventId={oldestEventId}
         />
-        {hasOlder && <button type="button" className="self-center rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60" disabled={isLoadingOlder} onClick={() => void loadOlder()}>{isLoadingOlder ? 'Loading…' : 'Load earlier messages'}</button>}
+        {hasOlder && <button data-slot="action-button" data-variant="ghost" type="button" className="self-center rounded px-2 py-1 text-xs text-muted-foreground hover:bg-muted disabled:opacity-60" disabled={isLoadingOlder} onClick={() => void loadOlder()}>{isLoadingOlder ? 'Loading…' : 'Load earlier messages'}</button>}
         {before}
         <LinkedCoordinationMessage sessionId={session.id} />
 

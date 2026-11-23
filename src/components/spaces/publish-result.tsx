@@ -39,7 +39,7 @@ export function SharedPublishedResults({ task, teamName }: { task: TaskRecord; t
     <section aria-label={`Published to ${teamName}`} className="space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-[12px] font-semibold">Published to {teamName}</h3>
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={() => setOpen(true)}
           className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border px-2 text-[11px] font-medium text-foreground hover:bg-muted"
@@ -145,7 +145,7 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
 
         <label className="block space-y-1.5">
           <span className="text-xs font-medium">Summary</span>
-          <textarea
+          <textarea data-slot="field"
             value={summaryValue}
             onChange={(e) => setSummary(e.target.value)}
             rows={6}
@@ -157,7 +157,7 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
 
         <label className="block space-y-1.5">
           <span className="text-xs font-medium">Pull request or link</span>
-          <input
+          <input data-slot="field"
             type="url"
             value={urlValue}
             onChange={(e) => setUrl(e.target.value)}
@@ -207,10 +207,10 @@ function PublishResultDialog({ task, teamName, onClose }: { task: TaskRecord; te
         </p>
 
         <DialogFooter>
-          <button type="button" onClick={onClose} className="h-8 rounded-md px-3 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button data-slot="action-button" data-variant="ghost" type="button" onClick={onClose} className="h-8 rounded-md px-3 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
             Cancel
           </button>
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             disabled={nothing || publishing || uploading}
             onClick={() => void publish()}

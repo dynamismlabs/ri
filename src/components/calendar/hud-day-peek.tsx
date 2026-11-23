@@ -101,7 +101,7 @@ export function HudDayPeek({
                 {row.title}
               </span>
               {row.joinUrl && (
-                <a
+                <a data-slot="action-button"
                   href={row.joinUrl}
                   target="_blank"
                   rel="noreferrer"

@@ -219,7 +219,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
             {/* Header */}
             <div className="flex items-center justify-between px-4 h-11 flex-shrink-0 border-b border-border">
               <div className="flex items-center gap-1.5 group/nav">
-                <button
+                <button data-slot="action-button" data-variant="ghost"
                   onClick={onClose}
                   className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1.5"
                   aria-label="Back"
@@ -230,7 +230,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                   </kbd>
                 </button>
                 {hasHistory && (
-                  <button
+                  <button data-slot="action-button" data-variant="ghost"
                     onClick={onCloseAll}
                     className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors opacity-0 group-hover/nav:opacity-100 flex items-center gap-1.5"
                     aria-label="Close all"
@@ -246,7 +246,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
               <div className="flex items-center gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
+                    <button data-slot="action-button" data-variant="ghost" className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
                       <MoreHorizontal size={16} />
                     </button>
                   </DropdownMenuTrigger>
@@ -276,7 +276,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                         Area
                       </span>
                       <span className="text-muted-foreground/30">·</span>
-                      <button
+                      <button data-slot="action-button" data-tone="status"
                         onClick={() => {
                           if (!areaId || !area) return
                           const cycle = ['active', 'inactive'] as const
@@ -404,7 +404,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           />
                         </div>
                       ) : (
-                        <button
+                        <button data-slot="menu-action"
                           onClick={() => setAddingTask(true)}
                           className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-muted-foreground/40 hover:text-muted-foreground transition-colors hover:bg-card"
                         >
@@ -426,7 +426,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                               className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors hover:bg-card opacity-60 hover:opacity-100"
                             >
                               <Tip label="Reopen">
-                                <button
+                                <button data-slot="completion-control"
                                   onClick={() => lifecycle.reopen(task.id)}
                                   aria-label="Reopen task"
                                   className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-primary border border-primary flex items-center justify-center"
@@ -457,7 +457,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
 
                     <div className="space-y-0.5">
                       {notes.map((note) => (
-                        <button
+                        <button data-slot="menu-action"
                           key={note.id}
                           onClick={() => openNote(note.id)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors hover:bg-card"
@@ -499,7 +499,7 @@ export function AreaSlideout({ areaId, onClose, onCloseAll, hasHistory }: AreaSl
                           />
                         </div>
                       ) : (
-                        <button
+                        <button data-slot="menu-action"
                           onClick={() => setAddingNote(true)}
                           className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left text-muted-foreground/40 hover:text-muted-foreground transition-colors hover:bg-card"
                         >

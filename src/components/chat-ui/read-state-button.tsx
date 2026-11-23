@@ -26,7 +26,7 @@ export function ReadStateButton({ sessionId, className }: { sessionId: string | 
   if (isSessionUnread(chat)) {
     return (
       <Tip label="Mark read">
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={() => markRead.mutate(chat.id)}
           aria-label="Unread, mark read"
@@ -44,7 +44,7 @@ export function ReadStateButton({ sessionId, className }: { sessionId: string | 
 
   return (
     <Tip label="Mark unread to come back to it. It stays lit until you open it again.">
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         onClick={() => markUnread.mutate(chat.id)}
         aria-label="Mark unread"

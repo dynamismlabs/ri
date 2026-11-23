@@ -46,7 +46,7 @@ export function FocusView() {
                 <button className="px-4 py-2 bg-orange-500 text-white text-[11px] font-bold rounded-lg shadow-lg shadow-orange-500/20 hover:bg-orange-600 transition-all active:scale-95">
                   Complete
                 </button>
-                <button className={cn(
+                <button data-slot="action-button" className={cn(
                   'px-4 py-2 text-[11px] font-bold rounded-lg border border-border text-muted-foreground hover:text-foreground transition-all',
                   isDark ? 'bg-secondary' : 'bg-muted'
                 )}>

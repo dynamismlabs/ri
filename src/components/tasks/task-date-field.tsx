@@ -143,6 +143,8 @@ export function TaskDateField({ label, value, onChange, highlightOverdue = false
       <button
         type="button"
         aria-label={`${label}: ${shown ?? emptyLabel?.toLowerCase() ?? 'not set'}`}
+        data-slot="chip-button"
+        data-urgency={highlightOverdue && isPastDate(value) ? 'late' : undefined}
         className={cn(
           'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
           !shown && 'text-muted-foreground',

@@ -121,7 +121,7 @@ function RecurrencePanel({ value, onChange, onClose }: {
             const presetValue = recurrenceValue(preset);
             const current = presetValue === saved;
             return (
-              <button
+              <button data-slot="menu-action"
                 key={presetValue}
                 type="button"
                 aria-pressed={current}
@@ -135,7 +135,7 @@ function RecurrencePanel({ value, onChange, onClose }: {
           })}
         </div>
         {value && (
-          <button
+          <button data-slot="menu-action"
             type="button"
             onClick={() => finish(null)}
             className="mt-1 rounded-md border-t border-border px-2 py-1.5 text-left text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
@@ -157,6 +157,7 @@ export function TaskRecurrenceField({ value, onChange }: {
     <button
       type="button"
       aria-label={`Repeat: ${label ?? 'Never'}`}
+      data-slot="chip-button"
       className={cn(
         'inline-flex w-fit items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-muted',
         !label && 'text-muted-foreground',

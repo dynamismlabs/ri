@@ -711,7 +711,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
     case 'question_response': {
       const text = event.content ?? '';
       return (
-        <button
+        <button data-slot="choice-row" aria-expanded={expanded}
           onClick={() => setExpanded((v) => !v)}
           className="group/row w-full text-left rounded-md border border-foreground/15 bg-foreground/5 px-2.5 py-1.5"
         >
@@ -866,7 +866,7 @@ function ClaudeAuthRequiredBanner({
             <div className="mt-1 text-destructive">{errorMessage}</div>
           )}
         </div>
-        <button
+        <button data-slot="action-button" data-variant="primary"
           type="button"
           onClick={() => login.mutate()}
           disabled={login.isPending}
@@ -940,7 +940,7 @@ function CliSignInBanner({
           )}
         </div>
         {harness && (
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             onClick={() => recheck.mutate(harness)}
             disabled={recheck.isPending}
@@ -1004,7 +1004,7 @@ function ResendLastMessageButton({ sessionId }: { sessionId: string }) {
   if (!lastUser || !(lastUser.content ?? '').trim()) return null;
 
   return (
-    <button
+    <button data-slot="action-button" data-variant="primary"
       type="button"
       onClick={() => resend.mutate()}
       disabled={resend.isPending}
@@ -1047,7 +1047,7 @@ function FailedSendBadge({
         <AlertTriangle size={11} />
         <span>{error ? `Send failed: ${error}` : 'Send failed'}</span>
       </div>
-      <button
+      <button data-slot="action-button" data-tone="status"
         type="button"
         onClick={() => retry.mutate({ eventId })}
         disabled={retry.isPending}
@@ -1128,7 +1128,7 @@ function DeliveryLine({
       {tone === 'warn' && <AlertTriangle size={10} />}
       <span>{text}</span>
       {delivery.cancellable && (
-        <button
+        <button data-slot="action-button" data-variant="ghost"
           type="button"
           onClick={() => cancel.mutate(eventId)}
           disabled={cancel.isPending}
@@ -1138,7 +1138,7 @@ function DeliveryLine({
         </button>
       )}
       {again && (
-        <button
+        <button data-slot="action-button"
           type="button"
           onClick={() => send.mutate({ content, attachments })}
           disabled={send.isPending}
@@ -1224,7 +1224,7 @@ function RowDisclosure({ children, expanded }: { children: ReactNode; expanded: 
 /** "PR #N ↗" external link — opens the pull request in a new tab. */
 function PrLink({ url, number }: { url: string; number: number }) {
   return (
-    <a
+    <a data-slot="action-button"
       href={url}
       target="_blank"
       rel="noopener noreferrer"

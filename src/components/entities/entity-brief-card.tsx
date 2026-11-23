@@ -208,7 +208,7 @@ function SmallButton({
   subtle?: boolean;
 }) {
   return (
-    <button
+    <button data-slot="action-button" data-variant={subtle ? undefined : "primary"}
       type="button"
       onClick={onClick}
       disabled={disabled}
@@ -238,7 +238,7 @@ function Chips({
     <div className="mt-3 flex flex-wrap gap-1.5">
       {items.map((s) => (
         <Tip key={s} label="Send this to the agent">
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             disabled={disabled}
             onClick={() => onPick(s)}

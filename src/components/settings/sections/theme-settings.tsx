@@ -4,7 +4,7 @@ import { Moon, Sun } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useClientTheme } from '@/lib/client/theme';
 
-/** Shared appearance control. It never reads or writes a Home's server settings. */
+/** Shared appearance controls. They never read or write a Home's server settings. */
 export function ThemeSettings() {
   const { theme, toggleTheme } = useClientTheme();
   const isDark = theme === 'dark';

@@ -89,7 +89,7 @@ function ActivityCard({ row, bucket }: { row: ActivityItem; bucket: BucketId }) 
     : session?.waitingOn ?? (session?.label !== title ? session?.label : null);
   const at = main ? latestActivityAt(main.chat) : session?.lastActivityAt ?? session?.startedAt;
   const destination = activityDestination(row);
-  return <button type="button" onClick={() => {
+  return <button data-slot="content-card" type="button" onClick={() => {
     closeTaskBoard();
     if (destination.kind === 'agent') openAgent(destination.id);
     else openExecution(destination.id);

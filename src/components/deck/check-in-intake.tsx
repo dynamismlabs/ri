@@ -76,7 +76,7 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
         Anything I should know before I plan your day?
       </p>
 
-      <textarea
+      <textarea data-slot="field"
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -88,7 +88,7 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
       {/* Quick-tap chips */}
       <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
         {chips.map((chip) => (
-          <button
+          <button data-slot="action-button" aria-pressed={chip.selected}
             key={chip.id}
             onClick={() => toggleChip(chip.id)}
             className={cn(
@@ -112,7 +112,7 @@ export function CheckInIntake({ onSubmit, onSkip, hasPreviousDeck, collapsed, on
         >
           Skip, just show me the plan
         </button>
-        <button
+        <button data-slot="action-button" data-variant="primary"
           onClick={handleSubmit}
           className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all"
         >

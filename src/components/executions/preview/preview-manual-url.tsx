@@ -86,7 +86,7 @@ export function PreviewManualUrl({
           className="flex-1 rounded-md border border-border bg-background px-3 py-1.5 font-mono text-[12px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
         />
         <Tip label="Save URL">
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             onClick={() => save(draft)}
             disabled={!dirty || isSaving}
@@ -100,7 +100,7 @@ export function PreviewManualUrl({
         </Tip>
         {current && (
           <Tip label="Clear URL">
-            <button
+            <button data-slot="action-button"
               type="button"
               onClick={() => { setDraft(''); save(''); }}
               disabled={isSaving}

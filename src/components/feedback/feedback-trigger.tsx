@@ -34,7 +34,7 @@ export function FeedbackRailButton({ collapsed }: { collapsed: boolean }) {
             active={open}
           />
         ) : (
-          <button
+          <button data-slot="action-button"
             type="button"
             aria-label="Feedback & bugs"
             aria-expanded={open}

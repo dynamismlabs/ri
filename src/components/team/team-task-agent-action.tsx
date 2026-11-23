@@ -40,7 +40,7 @@ export function TeamTaskAgentAction({ task }: { task: TaskLike }) {
   if (!teamReady) return <WorkWithPersonalAgent taskId={task.id} label="Work in My Ri" />;
   if (!personalReady) return <Tip label="Runs on this team's server. Everyone on the team can read the chat."><span><StartWithAgentButton task={task} label="Work on team's server" /></span></Tip>;
   return <DropdownMenu open={open} onOpenChange={setOpen}>
-    <DropdownMenuTrigger asChild><button type="button" className="inline-flex h-7 items-center gap-1.5 rounded border px-2 text-[11px] font-medium hover:bg-muted"><Bot size={13}/>Work with agent</button></DropdownMenuTrigger>
+    <DropdownMenuTrigger asChild><button data-slot="action-button" type="button" className="inline-flex h-7 items-center gap-1.5 rounded border px-2 text-[11px] font-medium hover:bg-muted"><Bot size={13}/>Work with agent</button></DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="space-y-2 p-3">
       <div><StartWithAgentButton task={task} label="Work on team's server"/><p className="mt-1 text-[11px] text-muted-foreground">Everyone on the team can read the chat.</p></div>
       <div><WorkWithPersonalAgent taskId={task.id} label="Work in My Ri"/><p className="mt-1 text-[11px] text-muted-foreground">Your personal agents. Only you can read the chat.</p></div>

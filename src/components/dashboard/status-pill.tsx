@@ -22,6 +22,7 @@ export function StatusPill(props: StatusPillProps) {
   if (props.count === 0) {
     return (
       <span
+        data-slot="chip-button" data-tone="status"
         aria-label={`${props.label}: 0`}
         className="flex items-center gap-1 px-1.5 h-[18px] rounded text-[10px] opacity-30 select-none"
       >
@@ -44,6 +45,7 @@ function ActiveStatusPill({ label, count, icon, accentClass, countBgClass, heade
         <Tip label={label}>
           <button
             type="button"
+            data-slot="chip-button" data-tone="status"
             aria-label={`${label}: ${count}`}
             className={cn(
               'flex items-center gap-1 px-1.5 h-[18px] rounded text-[10px] transition-[filter]',

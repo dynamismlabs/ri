@@ -277,7 +277,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <Field label="Name" required>
-        <input
+        <input data-slot="field"
           type="text"
           value={values.name}
           onChange={(e) => set({ name: e.target.value })}
@@ -289,7 +289,7 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
       </Field>
 
       <Field label="Description">
-        <input
+        <input data-slot="field"
           type="text"
           value={values.description}
           onChange={(e) => set({ description: e.target.value })}
@@ -307,8 +307,8 @@ export function TriggerForm({ trigger, onCreated, onCancel, onNavigateAway }: Tr
         {isHeartbeat && (
           <p className="text-[11px] text-muted-foreground">Sent after the app&apos;s ground rules, which it always follows.</p>
         )}
-        <div className="rounded-lg border border-border bg-card">
-          <textarea
+        <div data-slot="input-group" className="rounded-lg border border-border bg-card">
+          <textarea data-slot="field"
             aria-label={isHeartbeat ? 'Instructions' : 'Message'}
             value={values.prompt}
             onChange={(e) => set({ prompt: e.target.value })}
@@ -446,7 +446,7 @@ function Advanced({
         <div className="space-y-4 border-l-2 border-border pl-4">
           {target !== 'session' && (
             <Field label="Time limit in seconds (optional)">
-              <input
+              <input data-slot="field"
                 type="number"
                 min={60}
                 step={60}
@@ -462,7 +462,7 @@ function Advanced({
             </Field>
           )}
           <Field label="If the last run is still going">
-            <select
+            <select data-slot="field"
               value={values.concurrencyPolicy}
               disabled={locked.has('concurrencyPolicy')}
               onChange={(e) => set({ concurrencyPolicy: e.target.value as TriggerConcurrencyPolicy })}
@@ -479,7 +479,7 @@ function Advanced({
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Active hours start">
-              <input
+              <input data-slot="field"
                 type="time"
                 value={values.activeHoursStart}
                 onChange={(e) => set({ activeHoursStart: e.target.value })}
@@ -487,7 +487,7 @@ function Advanced({
               />
             </Field>
             <Field label="Active hours end">
-              <input
+              <input data-slot="field"
                 type="time"
                 value={values.activeHoursEnd}
                 onChange={(e) => set({ activeHoursEnd: e.target.value })}
@@ -515,7 +515,7 @@ function WorkspacePill({
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
-      <button
+      <button data-slot="action-button"
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label="Agent"

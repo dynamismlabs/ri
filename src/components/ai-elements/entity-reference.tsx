@@ -157,7 +157,7 @@ function TaskCard({ data, onClick }: { data: TaskRecord; onClick: () => void }) 
   const isOverdue = isPastDate(data.hardDeadline)
 
   return (
-    <button
+    <button data-slot="content-card"
       onClick={onClick}
       className={cn(
         'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
@@ -211,7 +211,7 @@ function NoteCard({ data, onClick }: { data: NoteRecord; onClick: () => void }) 
   const preview = data.body ? stripMarkdown(data.body).slice(0, 120) : null
 
   return (
-    <button
+    <button data-slot="content-card"
       onClick={onClick}
       className={cn(
         'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
@@ -278,7 +278,7 @@ function DeckCard({ data, onClick }: { data: { id: string; framing?: string | nu
   const itemCount = data.items?.length ?? 0
 
   return (
-    <button
+    <button data-slot="content-card"
       onClick={onClick}
       className={cn(
         'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',
@@ -350,7 +350,7 @@ function ExecutionCard({ data, onClick }: { data: ChatSessionWithExecution; onCl
           : { text: 'Idle', className: 'text-muted-foreground/70' }
 
   return (
-    <button
+    <button data-slot="content-card"
       onClick={onClick}
       className={cn(
         'flex items-start gap-2.5 w-full rounded-lg border border-border border-l-2 bg-card px-3 py-2.5 text-left transition-colors hover:bg-accent/50',

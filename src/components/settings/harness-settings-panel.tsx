@@ -412,7 +412,7 @@ function VirtualModelChecklist({
               </label>
               {model.custom && (
                 <Tip label={`Unpin ${model.id}`}>
-                  <button
+                  <button data-slot="action-button" data-variant="ghost"
                     type="button"
                     disabled={removing === model.id}
                     onClick={() => onRemove(model.id)}

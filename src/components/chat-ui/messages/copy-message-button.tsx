@@ -81,7 +81,7 @@ export function CopyMessageButton({
 
   const iconNode = (
     <Tip label={copied ? 'Copied' : 'Copy message'}>
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         onClick={onClick}
         aria-label={copied ? 'Copied' : 'Copy message'}

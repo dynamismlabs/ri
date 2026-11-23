@@ -42,8 +42,8 @@ export function TaskDocument({ task, onTitleChange, onAreaChange, onDeadlineChan
   return (
     <div ref={root} className="min-w-0 space-y-0">
       <div className="px-4 pt-4 md:px-12">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">{task.parentId ? 'Subtask' : 'Task'}</span>
+        <div data-slot="entity-kind" className="flex items-center gap-2 text-xs">
+          <span data-slot="entity-kind-label" className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground/60">{task.parentId ? 'Subtask' : 'Task'}</span>
           <span className="text-muted-foreground/30">·</span>
           {areaControl ?? <AreaSelect value={task.areaId} onChange={onAreaChange} />}
         </div>
@@ -63,7 +63,7 @@ export function TaskDocument({ task, onTitleChange, onAreaChange, onDeadlineChan
         <p className="mt-1 text-[10px] text-muted-foreground/50">Created {new Date(task.createdAt).toLocaleDateString()}{task.updatedAt !== task.createdAt && <> · Edited {new Date(task.updatedAt).toLocaleDateString()}</>}{task.completedAt && <> · Completed {new Date(task.completedAt).toLocaleDateString()}</>}</p>
       </div>
       <div className="px-4 pb-2 pt-4 md:px-12">
-        <div className="grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-2 border-b border-border pb-4 text-xs">
+        <div data-slot="properties" className="grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-2 border-b border-border pb-4 text-xs">
           <span className="font-medium text-muted-foreground">Status</span>
           <LifecycleStatusControl taskId={task.id} status={task.status} className="-ml-1.5" />
           <span className="font-medium text-muted-foreground">Deadline</span>

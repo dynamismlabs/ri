@@ -63,7 +63,7 @@ export function ComposerAddMenu({ editor, onPick, disabled, skills, mentions, cl
       <DropdownMenu modal={false} onOpenChange={(open) => { if (open) dismissOpenSuggestions(); }}>
         <DropdownMenuTrigger asChild disabled={disabled}>
           <Tip label="Add files and more">
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               type="button"
               disabled={disabled}
               aria-label="Add to this chat"

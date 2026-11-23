@@ -258,7 +258,7 @@ function RunButton({
 }) {
   return (
     <Tip label={title}>
-      <button
+      <button data-slot="action-button" data-variant={primary ? 'primary' : 'secondary'}
         type="button"
         onClick={onClick}
         disabled={disabled}

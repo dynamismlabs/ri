@@ -115,7 +115,7 @@ export function MainChatIntroPanel({
         <div className="mt-4 flex flex-wrap gap-1.5">
           {intro.starters.map((s) => (
             <Tip key={s.label} label={s.draft ? 'Start this in the composer' : 'Send this'}>
-              <button
+              <button data-slot="action-button"
                 type="button"
                 disabled={disabled}
                 onClick={() => (s.draft ? onDraft(s.prompt) : onSend(s.prompt))}

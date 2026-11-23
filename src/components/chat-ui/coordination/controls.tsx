@@ -51,7 +51,7 @@ function IncomingPauseButton({ sessionId }: { sessionId: string }) {
   const { data } = useCoordinationState(sessionId);
   const hold = useCoordinationHold(sessionId);
   if (!data) return null;
-  return <Tip label="Queues incoming agent messages in this chat. Your messages still run, and work already running continues."><button type="button" aria-pressed={!!data.heldAt} disabled={hold.isPending} onClick={() => hold.mutate(!data.heldAt)} className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted disabled:opacity-50">
+  return <Tip label="Queues incoming agent messages in this chat. Your messages still run, and work already running continues."><button data-slot="action-button" data-variant="ghost" type="button" aria-pressed={!!data.heldAt} disabled={hold.isPending} onClick={() => hold.mutate(!data.heldAt)} className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-1 hover:bg-muted disabled:opacity-50">
     {data.heldAt ? <Play size={12} /> : <Pause size={12} />}{data.heldAt ? 'Resume' : 'Pause incoming'}
   </button></Tip>;
 }

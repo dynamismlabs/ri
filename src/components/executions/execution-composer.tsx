@@ -924,6 +924,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   <button
                     type="button"
                     onClick={handleStop}
+                    data-slot="icon-button"
                     disabled={stopping}
                     className={cn(
                       'w-7 h-7 rounded-md flex items-center justify-center transition-colors',
@@ -961,6 +962,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                         ? 'bg-primary text-primary-foreground hover:opacity-90 active:scale-95'
                         : 'bg-muted text-muted-foreground/40 cursor-not-allowed',
                     )}
+                    data-slot="send-button"
                     aria-label="Send message"
                   >
                     {sending ? <Loader2 size={13} className="animate-spin" /> : <ArrowUp size={13} />}
@@ -999,6 +1001,8 @@ function ModePicker({ harness, open, onOpenChange, current, options, onSelect, d
           <button
             type="button"
             disabled={disabled}
+            data-slot="chip-button"
+            data-mode={current}
             className={cn(
               'inline-flex items-center gap-1.5 text-[11px] font-medium rounded-md px-2 py-1 border transition-colors',
               meta.classes.text,

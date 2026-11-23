@@ -178,7 +178,7 @@ function GraduationOffers() {
   return (
     <div className="mx-4 mt-3 space-y-2">
       {offers.map((offer) => (
-        <div key={offer.disposition} className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
+        <div key={offer.disposition} data-slot="callout" className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2.5">
           <div className="flex items-start gap-2">
             <Lightbulb size={12} className="text-primary mt-0.5 flex-shrink-0" />
             <p className="flex-1 text-[11px] leading-snug text-foreground">{offer.line}</p>
@@ -217,6 +217,7 @@ function PassDigest({ passId }: { passId: string }) {
 
   return (
     <div
+      data-slot="callout"
       className={cn(
         'rounded-lg border px-3 py-2.5 transition-colors',
         unseen ? 'border-primary/25 bg-primary/[0.03]' : 'border-border bg-card/40',

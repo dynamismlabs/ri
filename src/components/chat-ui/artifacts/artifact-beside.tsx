@@ -79,7 +79,7 @@ export function BesideFileClose({ host, className }: { host: string; className?:
   if (!open) return null;
   return (
     <Tip label="Close">
-      <button
+      <button data-slot="action-button" data-variant="ghost"
         type="button"
         {...{ [BESIDE_FILE]: '' }}
         aria-label={`Close ${previewName(open.preview)}`}

@@ -201,7 +201,7 @@ function ReferenceFolderForm({
                   className="min-w-0 flex-1 rounded-md border border-border bg-background px-3 py-2 font-mono text-xs focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <Tip label={browsable ? undefined : `${device?.name ?? 'That device'} isn't running Ri right now. Type the path instead.`}>
-                  <button
+                  <button data-slot="action-button"
                     type="button"
                     onClick={() => setPickerOpen(true)}
                     disabled={!browsable}

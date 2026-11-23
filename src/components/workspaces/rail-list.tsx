@@ -106,7 +106,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
         <>
           <span className="text-[10px] font-medium tabular-nums text-muted-foreground">{count} selected</span>
           <div className="flex-1" />
-          <button
+          <button data-slot="action-button" data-variant="primary"
             type="button"
             onClick={() => void handleConfirmArchive()}
             disabled={count === 0 || bulkArchive.isPending}
@@ -116,7 +116,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
             Archive
           </button>
           <Tip label="Stop selecting" shortcut={HOTKEYS.cancelSelection.label}>
-            <button
+            <button data-slot="action-button" data-variant="ghost"
               type="button"
               onClick={() => selection?.exit()}
               className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
@@ -133,7 +133,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
           {selection && (
             <div className="flex items-center gap-1">
               <Tip label="Select chats to archive">
-                <button
+                <button data-slot="action-button" data-variant="ghost"
                   type="button"
                   onClick={selection.enter}
                   className="rounded p-1 text-muted-foreground/70 transition-colors hover:bg-muted/50 hover:text-foreground"
@@ -146,6 +146,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
                 <button
                   type="button"
                   onClick={openWorkspaceCreate}
+                  data-slot="new-agent"
                   className="rounded bg-primary p-1 text-primary-foreground transition-opacity hover:opacity-90"
                   aria-label="New agent"
                 >
@@ -170,7 +171,7 @@ export function RailListHeader({ tab, onSelect }: { tab: RailTab; onSelect: (nex
  */
 function ListSwitch({ tab, onSelect }: { tab: RailTab; onSelect: (next: RailTab) => void }) {
   return (
-    <div role="tablist" aria-label="Rail list" className="inline-flex items-center rounded-md bg-muted p-0.5 dark:bg-muted/50">
+    <div role="tablist" aria-label="Rail list" data-slot="segmented" className="inline-flex items-center rounded-md bg-muted p-0.5 dark:bg-muted/50">
       <SwitchTab active={tab === 'workspace'} onClick={() => onSelect('workspace')}>
         Agents
       </SwitchTab>
@@ -183,7 +184,7 @@ function ListSwitch({ tab, onSelect }: { tab: RailTab; onSelect: (next: RailTab)
 
 function SwitchTab({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
   return (
-    <button
+    <button data-slot="segmented-option"
       type="button"
       role="tab"
       aria-selected={active}

@@ -50,8 +50,8 @@ export function DeadlineBand() {
   const showSoon = soonExpanded || urgent.length === 0;
 
   return (
-    <section className="px-4 pt-3">
-      <div className="mb-1.5 flex items-center gap-2 px-1">
+    <section data-slot="deadline-band" className="px-4 pt-3">
+      <div data-slot="deadline-head" className="mb-1.5 flex items-center gap-2 px-1">
         <CalendarClock size={12} className="text-amber-600 dark:text-amber-500" />
         <h3 className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
           Deadlines
@@ -101,6 +101,11 @@ export function DeadlineBand() {
 
 // ─── Row ──────────────────────────────────────────────────────────
 
+/** Late, today or soon: the one fact the row's color says. */
+function deadlineUrgency(d: DeadlineTask): 'late' | 'today' | 'soon' {
+  return d.overdue ? 'late' : d.dueToday ? 'today' : 'soon';
+}
+
 function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => void }) {
   const tint = d.overdue
     ? 'border-red-500/25 bg-red-500/[0.05] hover:border-red-500/45'
@@ -110,6 +115,8 @@ function DeadlineRow({ d, onOpen }: { d: DeadlineTask; onOpen: (id: string) => v
 
   return (
     <li
+      data-slot="deadline-row"
+      data-urgency={deadlineUrgency(d)}
       className={cn(
         'group flex items-center gap-2 rounded-md border px-2.5 py-1.5 transition-colors',
         tint,
@@ -161,7 +168,7 @@ function DeadlinePill({ d }: { d: DeadlineTask }) {
     cls = 'bg-muted text-muted-foreground';
   }
   return (
-    <span className={cn('inline-flex items-center gap-1 rounded-sm px-1 py-px text-[9px] font-medium', cls)}>
+    <span data-slot="deadline-when" data-urgency={deadlineUrgency(d)} className={cn('inline-flex items-center gap-1 rounded-sm px-1 py-px text-[9px] font-medium', cls)}>
       {d.overdue && <AlertTriangle size={9} />}
       {label}
       <span className="opacity-60">· {date}</span>

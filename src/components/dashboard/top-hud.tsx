@@ -45,7 +45,7 @@ export function TopHud() {
   const latestExecutionId = useLatestExecutionId();
 
   return (
-    <header data-desktop-titlebar className="flex-shrink-0 h-10 border-b border-border flex items-center px-4 gap-2 bg-background z-50">
+    <header data-desktop-titlebar data-slot="top-hud" className="flex-shrink-0 h-10 border-b border-border flex items-center px-4 gap-2 bg-background z-50">
       {/* Desktop app only, right after the window controls. */}
       <DesktopNavButtons className="-ml-1 shrink-0" />
 
@@ -63,6 +63,8 @@ export function TopHud() {
               <button
                 type="button"
                 onClick={goHome}
+                data-slot="hud-view-button"
+                data-variant="close"
                 className="flex shrink-0 items-center gap-1.5 h-7 px-1.5 rounded-lg border border-border bg-secondary text-foreground hover:bg-accent transition-colors"
                 aria-label={closeLabel}
               >
@@ -78,6 +80,7 @@ export function TopHud() {
               <button
                 type="button"
                 onClick={() => openExecution(latestExecutionId)}
+                data-slot="hud-view-button"
                 className="flex shrink-0 items-center gap-1.5 h-7 px-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 aria-label="Open latest chat"
               >
@@ -97,8 +100,11 @@ export function TopHud() {
           {!team && <><div className="hud-calendar min-w-0"><HudDayButton /></div><BudgetWarningPill /></>}
 
           <div className="flex shrink-0 items-center gap-2">
+            {/* The page tools: no box of their own in classic (contents), one capsule
+                in the new look (docs/ui-system.md). */}
+            <div data-slot="hud-tools" className="contents">
             <Tip label="Search tasks, notes and commands" shortcut={HOTKEYS.search.label}>
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={() => document.dispatchEvent(new CustomEvent('open-search'))}
                 className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
@@ -108,6 +114,7 @@ export function TopHud() {
               </button>
             </Tip>
             {!team && <><DeckBesideButton /><ScratchpadButton /></>}
+            </div>
             <CreateMenu />
           </div>
         </div>

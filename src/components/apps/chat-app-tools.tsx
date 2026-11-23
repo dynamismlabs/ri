@@ -62,7 +62,7 @@ export function ChatAppToolsDialog({ chatId, open, onOpenChange }: { chatId: str
                   {app.mode === 'off' ? 'Not in this chat' : app.loaded ? 'Tools loaded' : 'One line until needed'}
                 </span>
               </span>
-              <div role="radiogroup" aria-label={`${app.name} in this chat`} className="flex shrink-0 rounded-md border border-border p-0.5">
+              <div role="radiogroup" aria-label={`${app.name} in this chat`} data-slot="segmented" className="flex shrink-0 rounded-md border border-border p-0.5">
                 {MODES.map((mode) => (
                   <button key={mode.value} type="button" role="radio" aria-checked={app.mode === mode.value} disabled={set.isPending}
                     onClick={() => app.mode !== mode.value && set.mutate({ toolkitId: app.toolkitId, mode: mode.value })}

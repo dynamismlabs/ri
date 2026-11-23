@@ -126,41 +126,42 @@ export default function PairPage() {
   const validating = status.kind === 'validating';
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-background px-6 py-10 overflow-hidden">
+    <div data-slot="pairing" className="relative flex min-h-screen items-center justify-center bg-background px-6 py-10 overflow-hidden">
       {/* Ambient background effects */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
+      <div data-slot="pairing-decoration" className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden">
         <div className="absolute -top-1/4 left-1/4 h-[500px] w-[500px] rounded-full bg-primary/10 opacity-50 blur-[100px] mix-blend-screen" />
         <div className="absolute -bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-accent/10 opacity-50 blur-[120px] mix-blend-screen" />
       </div>
 
       <div className="relative z-10 w-full max-w-md space-y-8">
         <div className="flex flex-col items-center text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-inner border border-primary/20 backdrop-blur-md">
+          <div data-slot="pairing-mark" className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-inner border border-primary/20 backdrop-blur-md">
             <MonitorSmartphone className="h-7 w-7" />
           </div>
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary/80">
             {APP_NAME}
           </p>
           <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Device Pairing
+            Device pairing
           </h1>
           <p className="text-sm text-muted-foreground/90 max-w-[280px] mx-auto leading-relaxed">
             Connect this browser to your secure {APP_NAME} using a pairing token.
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border/50 bg-card/60 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+        <div data-slot="callout" className="rounded-2xl border border-border/50 bg-card/60 p-6 sm:p-8 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
           <div className="space-y-6">
             <div className="space-y-3">
-              <label className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <label htmlFor="pairing-token" className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                 <KeyRound size={14} />
-                Pairing Token
+                Pairing token
               </label>
               
               <div className="group relative">
-                <div className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 blur transition duration-500 group-focus-within:opacity-100" />
-                <div className="relative flex items-center gap-2 rounded-lg bg-background/80 p-1.5 border border-border/50 shadow-inner backdrop-blur-xl transition-all hover:bg-background/90 group-focus-within:bg-background">
+                <div data-slot="pairing-decoration" className="absolute -inset-0.5 rounded-lg bg-gradient-to-r from-primary/30 to-accent/30 opacity-0 blur transition duration-500 group-focus-within:opacity-100" />
+                <div data-slot="input-group" className="relative flex items-center gap-2 rounded-lg bg-background/80 p-1.5 border border-border/50 shadow-inner backdrop-blur-xl transition-all hover:bg-background/90 group-focus-within:bg-background">
                   <input
+                    id="pairing-token" aria-label="Pairing token"
                     ref={inputRef}
                     type="text"
                     autoComplete="off"
@@ -177,7 +178,7 @@ export default function PairPage() {
                     disabled={validating}
                     className="w-full flex-1 bg-transparent px-3 py-2 text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none disabled:opacity-50"
                   />
-                  <button
+                  <button data-slot="action-button" data-variant="primary"
                     type="button"
                     onClick={submit}
                     disabled={!token.trim() || validating}
@@ -201,7 +202,7 @@ export default function PairPage() {
                 </div>
               )}
 
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={() => {
                   if (status.kind !== 'idle') setStatus({ kind: 'idle' });
@@ -220,18 +221,18 @@ export default function PairPage() {
               </p>
             </div>
 
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent" />
+            <div data-slot="separator" className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent" />
 
             <div className="space-y-4 pt-2">
               <h2 className="text-sm font-medium text-foreground">Need a token?</h2>
-              <div className="rounded-xl border border-border/50 bg-muted/30 p-4 text-sm shadow-sm transition-colors hover:bg-muted/50 text-muted-foreground/90 leading-relaxed text-xs">
+              <div data-slot="callout" className="rounded-xl border border-border/50 bg-muted/30 p-4 text-sm shadow-sm transition-colors hover:bg-muted/50 text-muted-foreground/90 leading-relaxed text-xs">
                 <p>
                   On any paired device, open the <strong className="text-foreground font-medium">Devices</strong> menu and click <strong className="text-foreground font-medium">Add device</strong>. Paste the raw token here.
                 </p>
               </div>
 
               <details className="group [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer select-none items-center justify-between rounded-lg px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground">
+                <summary data-slot="action-button" data-variant="ghost" className="flex cursor-pointer select-none items-center justify-between rounded-lg px-2 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground">
                   <span className="flex items-center gap-2">
                     <Terminal size={14} />
                     Use the host CLI instead
@@ -241,13 +242,13 @@ export default function PairPage() {
                 <div className="mt-2 space-y-3 px-2 text-xs text-muted-foreground animate-in slide-in-from-top-2 fade-in duration-300">
                   <div>
                     <p className="mb-1.5">On the host machine, run:</p>
-                    <span className="block rounded-md border border-border/50 bg-background/50 p-2 font-mono text-[11px] text-foreground shadow-inner">
+                    <span data-slot="callout" className="block rounded-md border border-border/50 bg-background/50 p-2 font-mono text-[11px] text-foreground shadow-inner">
                       {APP_SHORT_ID} pair
                     </span>
                   </div>
                   <div className="pt-1">
                     <p className="mb-1 text-[11px] text-muted-foreground/70">If pairing off-network for the first time, first set your URL:</p>
-                    <span className="block rounded bg-background/50 px-1.5 py-1 font-mono text-[10px] text-foreground border border-border/50 shadow-inner">
+                    <span data-slot="callout" className="block rounded bg-background/50 px-1.5 py-1 font-mono text-[10px] text-foreground border border-border/50 shadow-inner">
                       {APP_SHORT_ID} pair --set-url &lt;url&gt;
                     </span>
                   </div>

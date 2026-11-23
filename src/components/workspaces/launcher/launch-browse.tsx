@@ -350,7 +350,7 @@ export function LaunchBrowse({
           someone here. */}
       {showArchivedToggle && (
         <div className="flex flex-shrink-0 items-center gap-1 border-b border-border/70 px-1.5 py-1">
-          <button
+          <button data-slot="action-button"
             type="button"
             onClick={() => setShowArchivedChats((prev) => !prev)}
             aria-pressed={showArchivedChats}
@@ -383,7 +383,7 @@ export function LaunchBrowse({
             const selected = s.id === effectiveScope;
             return (
               <Tip key={s.id} label={isIntegration && !selected ? (isTaskTab ? s.label : `Show ${s.label} tasks`) : undefined}>
-                <button
+                <button data-slot="action-button"
                   type="button"
                   onClick={() => selectScope(s.id)}
                   aria-label={s.label}
@@ -405,7 +405,7 @@ export function LaunchBrowse({
 
           {connectSettings && connectMore.length > 0 && (
             <Tip label={`Connect ${connectMore.map((s) => s.providerLabel).join(', ')}`}>
-              <button
+              <button data-slot="action-button"
                 type="button"
                 onClick={connectSettings ?? undefined}
                 className="inline-flex flex-shrink-0 items-center gap-1 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10.5px] font-medium text-muted-foreground transition-colors hover:border-solid hover:bg-muted/50 hover:text-foreground"

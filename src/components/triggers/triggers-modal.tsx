@@ -78,7 +78,7 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
   const toList = () => setView({ kind: 'list' });
 
   return (
-    <div
+    <div data-slot="dialog-overlay"
       className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={closeSchedulesWindow}
       role="dialog"
@@ -86,6 +86,7 @@ function SchedulesWindow({ triggerId }: { triggerId: string | null }) {
       aria-label="Schedules and Triggers"
     >
       <div
+        data-slot="dialog-content"
         // Height: capped at 88% of the viewport and ~896px, floored for short
         // screens, in rem so it scales with the user's font size. A steady
         // height keeps the window from jumping between views; the body
@@ -321,6 +322,8 @@ function NewTriggerButton({ onClick }: { onClick: MouseEventHandler<HTMLButtonEl
     <button
       type="button"
       onClick={onClick}
+      data-slot="action-button"
+      data-variant="primary"
       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
     >
       <Plus size={14} />
@@ -366,7 +369,7 @@ function Row({
   });
   const overdue = overdueLabel(trigger);
   return (
-    <div className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted/40 transition-colors">
+    <div data-slot="schedule-row" className="flex items-center gap-3 p-3 rounded-md border border-border bg-card hover:bg-muted/40 transition-colors">
       <Tip label={trigger.enabled ? 'Pause trigger' : 'Resume trigger'}>
         <button
           type="button"
@@ -396,6 +399,7 @@ function Row({
           {isReservedTrigger(trigger.id) && (
             <Tip label="Managed by the app. Its schedule and who runs it can change, the rest is fixed.">
               <span
+                data-slot="status-badge"
                 className="flex-shrink-0 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-medium bg-muted text-muted-foreground"
               >
                 Managed
@@ -403,7 +407,7 @@ function Row({
             </Tip>
           )}
           {trigger.lastRunStatus && (
-            <span
+            <span data-slot="status-badge"
               className={cn(
                 'px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider font-medium',
                 trigger.lastRunStatus === 'completed' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
