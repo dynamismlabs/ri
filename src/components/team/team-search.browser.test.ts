@@ -44,22 +44,30 @@ it.skipIf(!enabled)('uses shared prefixes, recents, keyboard commands and Home d
 }, 30_000);
 
 
-it.skipIf(!enabled)('keeps the task entry prefix, filters recent notes and leaves general keyboard search unfiltered', async () => {
+it.skipIf(!enabled)('opens on Tasks from the task entry, filters recent notes and leaves general keyboard search unfiltered', async () => {
   const page = await fixture.browser.newPage();testTimeouts(page, 8000);
   try {
     await page.goto(fixture.url);
     const search = page.getByRole('combobox');
+    const filters = page.getByRole('group', { name: 'Search in' });
     await page.getByText('Recent shared note', { exact: true }).waitFor();
+    expect(await filters.getByRole('button').allInnerTexts()).toEqual(['All', 'Tasks', 'Notes', 'Decisions', 'Chats', 'Commands']);
     await page.evaluate(() => document.dispatchEvent(new CustomEvent('open-search', { detail: { initialQuery: 'task: ' } })));
-    await expect.poll(() => search.inputValue()).toBe('task: ');
+    await expect.poll(() => filters.locator('[aria-pressed="true"]').innerText()).toBe('Tasks');
+    expect(await search.inputValue()).toBe('');
     expect(await page.getByText('Recent shared note', { exact: true }).count()).toBe(0);
     await page.getByText('Recent shared task', { exact: true }).waitFor();
     await search.fill('task: result');
     await page.getByText('Task result', { exact: true }).waitFor();
     expect(await page.getByText('Note result', { exact: true }).count()).toBe(0);
     expect(await page.evaluate('window.chatReads')).toEqual([]);
+    // Chats searches the team's chats only, with the same words.
+    await filters.getByRole('button', { name: 'Chats' }).click();
+    await expect.poll(() => page.evaluate('window.chatReads')).toEqual(['result']);
+    expect(await page.getByText('Task result', { exact: true }).count()).toBe(0);
     await page.keyboard.press('ControlOrMeta+k');
     await expect.poll(() => search.inputValue()).toBe('');
+    expect(await filters.locator('[aria-pressed="true"]').innerText()).toBe('All');
     await page.getByText('Recent shared note', { exact: true }).waitFor();
     expect(await page.evaluate('window.openPanels')).toEqual(['search', 'search']);
   } finally { await page.close(); }

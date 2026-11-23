@@ -13056,6 +13056,7 @@ export function getRecentEntities(limit = 10) {
       id: tasks.id,
       title: tasks.title,
       entityType: sql<'task'>`'task'`.as('entityType'),
+      kind: sql<null>`NULL`.as('kind'),
       lastViewedAt: tasks.lastViewedAt,
       hasBody: sql<boolean>`(length(trim(${tasks.body})) > 0)`.as('hasBody'),
     })
@@ -13071,6 +13072,8 @@ export function getRecentEntities(limit = 10) {
       id: notes.id,
       title: sql<string>`COALESCE(${notes.title}, substr(${notes.body}, 1, 60))`.as('title'),
       entityType: sql<'note'>`'note'`.as('entityType'),
+      // Decisions are notes of their own kind, so ⌘K's Decisions filter can show recent ones.
+      kind: sql<NoteKind>`COALESCE(${notes.kind}, 'note')`.as('kind'),
       lastViewedAt: notes.lastViewedAt,
       hasBody: sql<boolean>`(length(trim(${notes.body})) > 0)`.as('hasBody'),
     })

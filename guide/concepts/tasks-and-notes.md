@@ -51,6 +51,12 @@ You can add images and files to a task or note too.
 
 Agents never delete anything. They archive, and archiving can be undone. You can archive or delete a task or note from its **More actions** menu. Delete is permanent, so archive when in doubt.
 
+## Search
+
+Search (⌘K or Ctrl+K) finds any task, note, decision or capture from a few of its words, so you don't have to remember where you put something. The filters across the top narrow it to one kind: **All**, **Tasks**, **Notes**, **Decisions**, **Stream**, **Apps** once you have one, and **Commands**. Press Tab to move to the next filter, or click one. Typing `task:` or `>` picks Tasks or Commands too.
+
+In a team, search has **Chats** in place of **Stream**.
+
 ## Other ways to see your work
 
 - **Board**, in the rail: your tasks in columns by state, or what your agents are doing.

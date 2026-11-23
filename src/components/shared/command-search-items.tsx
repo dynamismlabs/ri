@@ -14,7 +14,7 @@ export function matchCommands(commands: readonly PaletteCommand[], query: string
  * One command matching and keyboard row implementation. Homes supply available actions. With no
  * `empty`, a query that finds nothing shows nothing, for a group beside other results.
  */
-export function CommandSearchItems({ commands, query, onSelect, icon = command => command.icon, label = command => command.label, heading = 'Actions', empty = 'No matching commands' }: {
+export function CommandSearchItems({ commands, query, onSelect, icon = command => command.icon, label = command => command.label, heading = 'Commands', empty = 'No matching commands' }: {
   commands: PaletteCommand[]; query: string; onSelect: (command: PaletteCommand) => void;
   icon?: (command: PaletteCommand) => string; label?: (command: PaletteCommand) => string;
   heading?: string; empty?: string | null;

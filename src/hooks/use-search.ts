@@ -1,7 +1,7 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { trpc } from '@/lib/trpc/client';
 import { rpcQuery } from '@/lib/trpc/request-options';
-import { searchApi, type SearchMode } from '@/lib/api/search';
+import { searchApi, type SearchMode, type SearchType } from '@/lib/api/search';
 
 /**
  * Cross-entity search (tasks, notes, stream) behind the ⌘K palette.
@@ -11,12 +11,15 @@ import { searchApi, type SearchMode } from '@/lib/api/search';
  * place instead of flashing empty between keystrokes. Callers should still defer
  * the input value (useDeferredValue) so we fire one request per settle, not one
  * per keystroke.
+ *
+ * `type` and `kind` narrow on the server, so a filtered search fills its limit
+ * with that type rather than whatever survives from the top mixed hits.
  */
-export function useSearch(query: string, mode?: SearchMode, kind?: 'note' | 'decision') {
+export function useSearch(query: string, mode?: SearchMode, kind?: 'note' | 'decision', type?: SearchType) {
   const trimmed = query.trim();
   return useQuery({
-    queryKey: trpc.search.list.queryKey({ query: rpcQuery({ q: trimmed, mode, kind }) }),
-    queryFn: () => searchApi.query(trimmed, { mode, ...(kind ? { kind } : {}) }),
+    queryKey: trpc.search.list.queryKey({ query: rpcQuery({ q: trimmed, mode, kind, type }) }),
+    queryFn: () => searchApi.query(trimmed, { mode, ...(kind ? { kind } : {}), ...(type ? { type } : {}) }),
     enabled: trimmed.length > 0,
     placeholderData: keepPreviousData,
     staleTime: 30_000,

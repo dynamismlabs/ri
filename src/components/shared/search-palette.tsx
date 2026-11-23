@@ -4,7 +4,8 @@ import { OverlaySurface, OverlayScrim } from '@/components/system/overlay';
 import { DialogPrimitive } from '@/components/system/dialog';
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
-import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { SegmentedControl } from '@/components/system/segmented-control';
+import { useEffect, useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { Command } from 'cmdk';
 import { VisuallyHidden } from 'radix-ui';
 import { Search, Loader2, X, MessageSquare, Target } from 'lucide-react';
@@ -13,6 +14,9 @@ import { DecisionLabel } from '@/components/notes/note-kind';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TeamLabel } from '@/components/spaces/team-label';
 import type { SearchResult } from '@/lib/api/search';
+import { SEARCH_FILTERS, type SearchFilter } from '@/constants/commands';
+import { stepFilter } from '@/lib/client/search-query';
+import { useViewportTier } from '@/hooks/use-viewport-tier';
 
 export function EntityIcon({ type, hasBody, className }: { type: string; hasBody?: boolean; className?: string }) {
   switch (type) {
@@ -24,27 +28,59 @@ export function EntityIcon({ type, hasBody, className }: { type: string; hasBody
 }
 
 
-/** One search input, keyboard model, result layout and loading/error behavior. */
-export function SearchPalette({ open, onOpenChange, query, onQueryChange, searchQuery, results, searching, fetching, onSelect, beforeResults, placeholder = 'Search tasks and notes', typeFilter, inputRef, chats = [], onChat, error, onRetry }: {
+/**
+ * One search input, keyboard model, result layout and loading/error behavior.
+ * The row of filters under the input lists what this Home's palette can
+ * search. Tab and Shift+Tab move along it from the input, and Backspace at
+ * the start of the input goes back to All.
+ */
+export function SearchPalette({ open, onOpenChange, query, onQueryChange, searchQuery, results, searching, fetching, onSelect, beforeResults, placeholder, filters, filter = 'all', onFilterChange, inputRef, chats = [], onChat, error, onRetry }: {
   open: boolean; onOpenChange: (open: boolean) => void; query: string; onQueryChange: (query: string) => void;
   searchQuery: string; results: SearchResult[]; searching: boolean; fetching?: boolean;
-  onSelect: (type: string, id: string) => void; beforeResults?: ReactNode; placeholder?: string; typeFilter?: string | null;
+  onSelect: (type: string, id: string) => void; beforeResults?: ReactNode; placeholder?: string;
+  filters?: readonly SearchFilter[]; filter?: SearchFilter; onFilterChange?: (filter: SearchFilter) => void;
   inputRef?: RefObject<HTMLInputElement | null>; chats?: { id: string; label: string | null; snippet?: string | null }[];
   onChat?: (id: string) => void; error?: string | null; onRetry?: () => void;
 }) {
   const list = useRef<HTMLDivElement>(null);
-  useEffect(() => { list.current?.scrollTo(0, 0); }, [results]);
+  const ownInput = useRef<HTMLInputElement>(null);
+  const input = inputRef ?? ownInput;
+  const tier = useViewportTier();
+  useEffect(() => { list.current?.scrollTo(0, 0); }, [results, filter]);
   const hasQuery = searchQuery.trim().length > 0;
+  const offered = filters && filters.length > 1 && onFilterChange ? filters : null;
+  const choose = (next: SearchFilter) => {
+    onFilterChange?.(next);
+    // Picking a filter is a step toward typing, so the words go back in the box.
+    input.current?.focus();
+  };
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!offered || event.nativeEvent.isComposing || event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      // The dialog's focus trap would otherwise wrap Shift+Tab from its first field to its last.
+      event.stopPropagation();
+      onFilterChange?.(stepFilter(offered, filter, event.shiftKey ? -1 : 1));
+    } else if (event.key === 'Backspace' && filter !== 'all' && event.currentTarget.selectionStart === 0 && event.currentTarget.selectionEnd === 0) {
+      // The filter reads as the word before the text, so deleting at the start removes it.
+      event.preventDefault();
+      onFilterChange?.('all');
+    }
+  };
   return <Command.Dialog open={open} onOpenChange={onOpenChange} label="Search" shouldFilter={false} className="fixed inset-0 z-50">
     <VisuallyHidden.Root><DialogPrimitive.Title>Search</DialogPrimitive.Title><DialogPrimitive.Description>Find work in Ri</DialogPrimitive.Description></VisuallyHidden.Root>
     <OverlayScrim className="absolute inset-0" onClick={() => onOpenChange(false)}/>
     <OverlaySurface kind="dialog" padding="none" data-slot="dialog-content" className="relative mx-auto mt-[15vh] w-[min(42rem,calc(100%-16px))] max-w-2xl overflow-hidden">
-      <div className="flex items-center gap-3 border-b px-4 py-3"><Search size={16} className="shrink-0 text-muted-foreground"/><Command.Input ref={inputRef} value={query} onValueChange={onQueryChange} placeholder={placeholder} className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none"/>{hasQuery && fetching && <Loader2 size={14} className="animate-spin"/>}{typeFilter && <span className="text-[11px] leading-[1.4] font-medium text-primary">{typeFilter}</span>}<IconButton
+      <div className="flex items-center gap-3 border-b px-4 py-3"><Search size={16} className="shrink-0 text-muted-foreground"/><Command.Input ref={input} value={query} onValueChange={onQueryChange} onKeyDown={onKeyDown} placeholder={placeholder ?? SEARCH_FILTERS[filter].placeholder} className="min-w-0 flex-1 border-none bg-transparent text-sm outline-none"/>{hasQuery && fetching && <Loader2 size={14} className="animate-spin"/>}<IconButton
         onClick={() => onOpenChange(false)}
         label="Close search"
         variant="ghost"
         size="sm"
       ><X size={14}/></IconButton></div>
+      {offered && <div data-slot="search-filters" className="px-4 pt-2">
+        <SegmentedControl mode="choice" ariaLabel="Search in" size={tier === 'phone' ? 'touch' : 'compact'} value={filter} onChange={choose}
+          options={offered.map(value => ({ value, label: SEARCH_FILTERS[value].label }))}/>
+      </div>}
       <Command.List ref={list} className="max-h-[60vh] overflow-y-auto">
         {beforeResults}
         {hasQuery && (results.length || chats.length ? <Command.Group heading="Results" className="p-2 text-xs">{results.map(result => <SearchResultItem key={`${result.entityType}:${result.id}`} result={result} onSelect={onSelect}/>)}{chats.map(chat => <Command.Item key={`chat:${chat.id}`} value={`chat:${chat.id}`} onSelect={() => onChat?.(chat.id)} className="flex cursor-pointer items-start gap-3 rounded-md px-2 py-2 data-[selected=true]:bg-muted/50"><MessageSquare size={14}/><span className="min-w-0"><span className="block truncate">{chat.label ?? 'Chat'}</span>{chat.snippet && <span className="block truncate text-muted-foreground">{chat.snippet}</span>}</span></Command.Item>)}</Command.Group> : searching ? <SearchResultsSkeleton/> : !error && <p className="p-8 text-center text-xs text-muted-foreground">No results for “{searchQuery}”</p>)}
@@ -54,7 +90,7 @@ export function SearchPalette({ open, onOpenChange, query, onQueryChange, search
           size="sm"
         >Retry</Button></p>}
       </Command.List>
-      <div data-slot="search-footer" className="flex gap-3 border-t px-4 py-2 text-[9px] text-muted-foreground"><span>↑↓ navigate</span><span>Enter open</span><span>Esc close</span></div>
+      <div data-slot="search-footer" className="hidden gap-3 border-t px-4 py-2 text-[9px] text-muted-foreground md:flex"><span>↑↓ navigate</span><span>Enter open</span>{offered && <span>Tab filter</span>}<span>Esc close</span></div>
     </OverlaySurface>
   </Command.Dialog>;
 }
