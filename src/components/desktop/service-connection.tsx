@@ -137,7 +137,7 @@ export function ServiceConnection() {
     </UpdateNotice>;
   }
   if (!readyUpdate || (settings.open && settings.section === 'updates')) return null;
-  return <UpdateNotice title={`Ri ${readyUpdate.version} is ready to update`} actions={<>
+  return <UpdateNotice title={`Ri ${readyUpdate.label} is ready to update`} actions={<>
     <Button size="sm" variant="secondary" onClick={viewUpdate}>View update</Button>
     <Button size="sm" variant="ghost" disabled={answering} onClick={() => void answer('later')}>Not now</Button>
     <Button size="sm" variant="primary" disabled={answering} onClick={() => void answer('apply')}>Update now</Button>

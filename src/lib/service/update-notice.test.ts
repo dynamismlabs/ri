@@ -20,6 +20,14 @@ it('says once that an update is waiting, and for what', () => {
   expect(updateNotice(record({ phase: 'waiting', reason: 'a quiet moment', release }), '~/ri', first!.mark)).toBeNull();
 });
 
+it('names a build from a checkout by its commit, as ri update does', () => {
+  const local = { commit: 'fc418c0a4d2e9b7f', checkout: '/src/ri' };
+  expect(updateNotice(record({ phase: 'waiting', reason: '1 chat', release, local }), '~/ri', null)?.line)
+    .toBe('Ri main fc418c0a is ready. Waiting for 1 chat to finish. To update now: ri update');
+  expect(updateNotice(record({ phase: 'committed', committedAt: '2026-11-23T00:00:00Z', release, local }), '~/ri', null)?.line)
+    .toBe('Updated ~/ri to main fc418c0a');
+});
+
 it('stays quiet otherwise', () => {
   expect(updateNotice(record({ phase: 'idle' }), '~/ri', null)).toBeNull();
   expect(updateNotice(record({ phase: 'failed', release }), '~/ri', null)).toBeNull();

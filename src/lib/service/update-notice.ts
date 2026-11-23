@@ -7,17 +7,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { atomicWriteFile } from '@/lib/config/atomic-file';
 import { getRuntimeInstallDir } from './paths';
-import { updateWaitingText } from './update-presentation';
+import { releaseLabel, updateWaitingText } from './update-presentation';
 import type { UpdateRecord } from './update';
 
 export function updateNotice(update: UpdateRecord, rootLabel: string, seen: string | null): { line: string; mark: string } | null {
   if (update.phase === 'committed' && update.committedAt && update.release) {
     const mark = `moved:${update.committedAt}`;
-    return mark === seen ? null : { mark, line: `Updated ${rootLabel} to ${update.release.version}` };
+    return mark === seen ? null : { mark, line: `Updated ${rootLabel} to ${releaseLabel(update.release, update.local)}` };
   }
   if (update.phase === 'waiting' && update.release) {
     const mark = `waiting:${update.release.runtime.id}`;
-    return mark === seen ? null : { mark, line: `Ri ${update.release.version} is ready. ${updateWaitingText(update)}. To update now: ri update` };
+    return mark === seen ? null : { mark, line: `Ri ${releaseLabel(update.release, update.local)} is ready. ${updateWaitingText(update)}. To update now: ri update` };
   }
   return null;
 }

@@ -11,7 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { apiErrorText } from '@/lib/api/client';
 import { documentSaves } from '@/lib/client/document-saves';
 import type { UpdateRecord } from '@/lib/service/update';
-import { describeRollback, maintenanceWindowText, updateProgress, updateStatusText } from '@/lib/service/update-presentation';
+import { describeRollback, maintenanceWindowText, releaseLabel, updateProgress, updateStatusText } from '@/lib/service/update-presentation';
 import { MaintenanceWindowSchema, type ReleasePreferences, type UpdateAction, type UpdatePreferences } from '@/lib/service/update-settings';
 import { trpcClient } from '@/lib/trpc/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -216,7 +216,7 @@ export function UpdatesSection() {
     <div><p>Ri {data.version}</p></div>
     {status.error && <p role="status" className="text-muted-foreground">Reconnecting to the service. The last known update status is shown below.</p>}
     {update && <div className="space-y-2">
-      {update.release && update.phase !== 'committed' && update.phase !== 'idle' && <p>Release {update.release.version}</p>}
+      {update.release && update.phase !== 'committed' && update.phase !== 'idle' && <p>Release {releaseLabel(update.release, update.local)}</p>}
       {update.release?.notes && (inProgress || update.phase === 'committed') && <p className="whitespace-pre-wrap text-muted-foreground">{update.release.notes}</p>}
       <p role="status" aria-live="polite">{updateStatusText(update)}</p>
       {progress && <div className="space-y-1">

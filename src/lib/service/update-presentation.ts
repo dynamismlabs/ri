@@ -1,4 +1,4 @@
-import type { RollbackStatus, UpdateRecord } from './update';
+import type { LocalRelease, RollbackStatus, UpdateRecord, UpdateRelease } from './update';
 import type { MaintenanceWindow } from './update-settings';
 
 export function maintenanceWindowText(window: MaintenanceWindow) {
@@ -24,12 +24,19 @@ export function railUpdateNotice(status: { canUseUpdates: boolean; update?: Pick
   return updateWaitingText(status.update, now);
 }
 
+/** A release's name, as `ri update` and `ri status` say it: a build from a
+ * checkout by its commit, since its version can match the one running. */
+export function releaseLabel(release: Pick<UpdateRelease, 'version'>, local?: LocalRelease) {
+  return local?.commit ? `main ${local.commit.slice(0, 8)}` : release.version;
+}
+
 /** A downloaded update stays visible until it installs or the person postpones it. */
-export function readyUpdateNotice(status: { canUseUpdates: boolean; update?: Pick<UpdateRecord, 'phase' | 'heldUntil' | 'release' | 'automatic'> }, now = Date.now()) {
+export function readyUpdateNotice(status: { canUseUpdates: boolean; update?: Pick<UpdateRecord, 'phase' | 'heldUntil' | 'release' | 'automatic' | 'local'> }, now = Date.now()) {
   const update = status.update;
   if (!status.canUseUpdates || update?.phase !== 'waiting' || !update.release) return null;
   if (update.heldUntil && Date.parse(update.heldUntil) > now) return null;
-  return { version: update.release.version, notes: update.release.notes, automatic: !!update.automatic };
+  // A build from a checkout has no feed entry, so no notes.
+  return { label: releaseLabel(update.release, update.local), notes: update.release.notes ?? '', automatic: !!update.automatic };
 }
 
 export function updateStatusText(update: UpdateRecord & { busy?: boolean }) {
