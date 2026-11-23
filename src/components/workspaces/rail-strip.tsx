@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Bot, PanelLeftOpen } from 'lucide-react';
+import { Bot, PanelLeft } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useAgentAttention } from '@/hooks/use-agent-attention';
 import { useOpenChatAgentId } from '@/hooks/use-open-chat-agent';
@@ -37,7 +37,7 @@ export function RailStrip({ places, onToggle }: { places: readonly RailPlace[]; 
       <div className="flex min-h-0 flex-1 flex-col items-center gap-0.5 overflow-y-auto overflow-x-hidden pb-2">
         {onToggle && (
           <RailIconButton
-            icon={PanelLeftOpen}
+            icon={PanelLeft}
             label="Expand rail"
             shortcut={HOTKEYS.toggleRail.label}
             onClick={onToggle}
