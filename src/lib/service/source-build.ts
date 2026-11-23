@@ -68,6 +68,14 @@ export function background(command: string, args: string[]): [string, string[]] 
   return ['nice', ['-n', '10', command, ...args]];
 }
 
+/** The build's scripts run on Ri's own Node, whichever `node` comes first on
+ * the caller's PATH. Another app's Node can't always load native modules: the
+ * one inside ChatGPT.app is signed with library validation, so it refuses
+ * lightningcss and the install's gallery build fails. */
+export function buildPath(execPath = process.execPath, inherited = process.env.PATH ?? ''): string {
+  return [path.dirname(execPath), inherited].filter(Boolean).join(path.delimiter);
+}
+
 const runCommand: Run = (command, args, options) => new Promise((resolve, reject) => {
   const child = spawn(untraced(command), args, { cwd: options.cwd, env: { ...process.env, ...options.env }, stdio: ['ignore', options.log, options.log] });
   child.once('error', reject);
@@ -120,9 +128,9 @@ export async function buildRelease(options: BuildOptions): Promise<BuildResult> 
       fs.mkdirSync(/* turbopackIgnore: true */ cache, { recursive: true, mode: 0o700 });
       fs.symlinkSync(cache, path.join(/* turbopackIgnore: true */ worktree, '.electron-demo'));
       step('Installing dependencies');
-      await run(...background('pnpm', ['install', '--frozen-lockfile']), { cwd: worktree, log });
+      await run(...background('pnpm', ['install', '--frozen-lockfile']), { cwd: worktree, log, env: { PATH: buildPath() } });
       step('Building (a few minutes)');
-      await run(...background(process.execPath, ['desktop/package.mjs', '--headless', '--release-dir', output]), { cwd: worktree, log, env: { RI_RELEASE_COMMIT: options.commit } });
+      await run(...background(process.execPath, ['desktop/package.mjs', '--headless', '--release-dir', output]), { cwd: worktree, log, env: { PATH: buildPath(), RI_RELEASE_COMMIT: options.commit } });
       step('Adding it to this computer');
       const version = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ worktree, 'package.json'), 'utf8')).version as string;
       const manifest = stageRelease(output, base, { move: true });

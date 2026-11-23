@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { buildRelease, DivergedBranchesError, releaseCommit, selectCommit, type Run } from './source-build';
+import { buildPath, buildRelease, DivergedBranchesError, releaseCommit, selectCommit, type Run } from './source-build';
 import { writeRuntimeFixture } from './runtime-fixture';
 import { latestRelease, storeDirectory } from './store';
 
@@ -61,8 +61,10 @@ it('ignores uncommitted changes and leaves the checkout exactly as it was', asyn
   fs.writeFileSync(path.join(checkout, 'package.json'), JSON.stringify({ version: 'uncommitted' }));
   const before = git(checkout, 'status', '--porcelain');
   const seen: string[] = [];
+  const paths: string[] = [];
   const run: Run = async (command, args, options) => {
     // Stand in for pnpm install and the packaging script.
+    if (args.includes('install') || args.includes('desktop/package.mjs')) paths.push(options.env!.PATH);
     if (args.includes('desktop/package.mjs')) {
       seen.push(fs.readFileSync(path.join(options.cwd, 'package.json'), 'utf8'));
       const output = args[args.indexOf('--release-dir') + 1];
@@ -74,6 +76,9 @@ it('ignores uncommitted changes and leaves the checkout exactly as it was', asyn
   const steps: string[] = [];
   const result = await buildRelease({ checkout, commit: selectCommit(checkout).commit, run, free: () => 64 * 1024 ** 3, step: step => steps.push(step) });
   expect(seen).toEqual([JSON.stringify({ version: '0.3.0' })]);
+  // Install and packaging run on this process's Node, not the first `node` on the caller's PATH.
+  expect(paths).toHaveLength(2);
+  for (const value of paths) expect(value.split(path.delimiter)[0]).toBe(path.dirname(process.execPath));
   expect(result).toMatchObject({ version: '0.3.0', commit: head });
   expect(latestRelease()).toBe(result.id);
   expect(releaseCommit(path.join(storeDirectory(), result.id, 'server'))).toBe(head);
@@ -104,4 +109,10 @@ it("refuses to start a build without 8 GiB free, before touching the checkout", 
   await expect(buildRelease({ checkout, commit: selectCommit(checkout).commit, run, free: () => 7.2 * 1024 ** 3 }))
     .rejects.toThrow('A build needs 8 GiB free and 7.2 GiB is.');
   expect(git(checkout, 'worktree', 'list').split('\n')).toHaveLength(1);
+});
+
+it("puts Ri's own Node ahead of the caller's PATH", () => {
+  expect(buildPath('/ri/node/bin/node', '/Applications/ChatGPT.app/Contents/Resources:/usr/bin'))
+    .toBe(['/ri/node/bin', '/Applications/ChatGPT.app/Contents/Resources:/usr/bin'].join(path.delimiter));
+  expect(buildPath('/ri/node/bin/node', '')).toBe('/ri/node/bin');
 });
