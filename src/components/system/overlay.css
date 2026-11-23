@@ -16,6 +16,14 @@
   .ri-overlay--sheet {
     border-radius: 0;
   }
+  /* A sheet that rises from the bottom or drops from the top rounds the edge
+     that faces the page, as phone sheets do. Side sheets meet the window. */
+  .ri-overlay--sheet.ri-sheet--bottom {
+    border-radius: 16px 16px 0 0;
+  }
+  .ri-overlay--sheet.ri-sheet--top {
+    border-radius: 0 0 16px 16px;
+  }
   .ri-overlay--toast {
     border-radius: 14px;
   }

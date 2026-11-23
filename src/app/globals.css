@@ -27,6 +27,7 @@
 @import '../components/executions/execution-review-bar.css';
 @import '../components/executions/workbench/panel-strip.css';
 @import '../components/home/home-navigation.css';
+@import '../components/mobile/mobile-create-sheet.css';
 @import '../components/mobile/mobile-tab-bar.css';
 @import '../components/orchestrator/identity-editor.css';
 @import '../components/settings/agent-skill-access.css';

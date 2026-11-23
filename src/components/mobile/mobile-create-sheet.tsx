@@ -1,8 +1,8 @@
 "use client";
 import { ChoiceRow } from '@/components/system/choice-row';
 import { Card } from '@/components/system/card';
+import { MenuAction } from '@/components/system/menu-action';
 
-import { Button } from '@/components/system/button';
 import { useCallback, useState } from 'react';
 import { CheckSquare, FileText, Layers, MessageSquarePlus, Plus, Zap } from 'lucide-react';
 import {
@@ -105,7 +105,7 @@ function VerbRow({ icon: Icon, label, hint, onClick }: { icon: typeof Zap; label
 
 function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: string; onClick: () => void }) {
   return (
-    <Card as="button" padding="md"  type="button" onClick={onClick} className="flex flex-col items-center gap-1.5">
+    <Card as="button" padding="md" surface="track" type="button" onClick={onClick} className="ri-create-tile flex flex-col items-center gap-1.5">
       <Icon size={20} className="text-foreground" />
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
     </Card>
@@ -114,15 +114,14 @@ function ThingTile({ icon: Icon, label, onClick }: { icon: typeof Zap; label: st
 
 function SetupRow({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <Button
+    <MenuAction
       type="button"
       onClick={onClick}
       disabled={disabled}
-      variant="ghost"
       size="touch"
-      className="flex items-center gap-3 justify-start"
+      className="flex w-full items-center gap-3 text-left"
     >
       <Plus size={17} className="shrink-0 text-muted-foreground" /> {label}
-    </Button>
+    </MenuAction>
   );
 }

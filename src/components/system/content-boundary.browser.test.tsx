@@ -55,7 +55,8 @@ for (const theme of ['light', 'dark']) for (const width of [360, 900]) {
         const r=el.getBoundingClientRect();return [...el.querySelectorAll('span')].every(child => {const c=child.getBoundingClientRect();return c.top>=r.top && c.bottom<=r.bottom;});
       })).toBe(true);
       expect(await choice.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(60);
-      expect(await page.getByRole('button', { name: 'Connect a service', exact: true }).evaluate(el => Math.round(el.querySelector('svg')!.getBoundingClientRect().left - el.getBoundingClientRect().left))).toBe(16);
+      // The setup rows are menu rows, so their icon sits at the menu-row inset.
+      expect(await page.getByRole('button', { name: 'Connect a service', exact: true }).evaluate(el => Math.round(el.querySelector('svg')!.getBoundingClientRect().left - el.getBoundingClientRect().left))).toBe(12);
       await page.keyboard.press('Tab');await choice.focus();
       expect(await choice.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
     } finally { await page.close(); }
