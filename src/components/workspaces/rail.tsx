@@ -1,7 +1,7 @@
 'use client';
 
 import { RailLayout } from '@/components/home/home-navigation';
-import { PanelLeftClose } from 'lucide-react';
+import { PanelLeft } from 'lucide-react';
 import { HOTKEYS } from '@/constants/commands';
 import { useRailTab } from '@/lib/client/rail-tab';
 import { openSchedulesWindow, useSchedulesWindow } from '@/lib/client/schedules-window';
@@ -69,7 +69,7 @@ function WideRail({ places, onToggle }: { places: readonly RailPlace[]; onToggle
             action={
               onToggle && (
                 <RailIconButton
-                  icon={PanelLeftClose}
+                  icon={PanelLeft}
                   label="Collapse rail"
                   shortcut={HOTKEYS.toggleRail.label}
                   onClick={onToggle}
