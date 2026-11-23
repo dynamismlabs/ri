@@ -106,6 +106,9 @@
 .ri-menu-action[class*='ri-tone--']:where(:hover, [data-highlighted]):not(:disabled, [aria-disabled='true'], [data-disabled]) { background-color: var(--control-fill); color: var(--control-ink); }
 .ri-choice-row:where(:disabled, [aria-disabled='true']), .ri-menu-action:where(:disabled, [aria-disabled='true'], [data-disabled]) { opacity: .5; cursor: not-allowed; }
 .ri-choice-row:focus-visible, .ri-menu-action:focus-visible { outline: 2px solid var(--ring); outline-offset: -2px; }
+/* In a menu the highlight is the focus mark. Radix moves focus with the pointer,
+   so a ring as well would draw on every row you pass over. */
+.ri-menu-action:is([role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox']):focus-visible { outline: 0 solid transparent; }
 .ri-choice-row[aria-invalid='true'], .ri-menu-action[aria-invalid='true'] { outline: 1px solid var(--danger); outline-offset: -1px; }
 .ri-choice-row[aria-invalid='true']:focus-visible, .ri-menu-action[aria-invalid='true']:focus-visible { outline-width: 2px; }
 .ri-choice-row--touch { min-height: 40px; }

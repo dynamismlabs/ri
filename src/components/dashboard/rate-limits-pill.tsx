@@ -91,9 +91,9 @@ export function RateLimitsPill() {
         >
           <Gauge size={11} aria-hidden="true" />
           {warnings.map(({ harness, row }) => (
-            <span key={harness} aria-hidden="true" className="flex min-w-5 flex-col items-center gap-0.5">
+            <span key={harness} aria-hidden="true" className="flex items-center gap-1">
               <HarnessMark id={harness} />
-              <span className={cn('font-mono text-[10px] leading-none tabular-nums', TEXT_TONE[row.tone])}>
+              <span className={cn('font-mono text-[11px] leading-none tabular-nums', TEXT_TONE[row.tone])}>
                 {row.percent === undefined ? '!' : usagePercentLabel(row.percent)}
               </span>
             </span>
