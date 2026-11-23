@@ -1,5 +1,5 @@
 /**
- * Skills over HTTP: the contract the app and the orchestrator actions share.
+ * Skills over HTTP: the contract the app and the Ri actions share.
  * Status codes, refs in the path, the stale-write answer, moving, and
  * committing a project skill. The logic itself is covered in src/lib/skills.
  */

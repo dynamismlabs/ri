@@ -10,7 +10,7 @@
 
 V1 ships **scheduled tasks**. One new tick, two new tables, one new column.
 
-- **Schedules** — cron / interval / at / webhook triggers that dispatch a prompt against a workspace or the orchestrator
+- **Schedules** — cron / interval / at / webhook triggers that dispatch a prompt against a workspace or the coordinator
 - **One 60s tick** in `instrumentation.ts`, file-locked, advances `next_run_at` before dispatch
 - **Runs** — one row per execution; status enum kept simple (`queued | running | completed | failed | skipped`)
 - **Scheduled runs surface as executions** in the existing 4-col view with a trigger badge — no new UI tab
@@ -80,7 +80,7 @@ The boundary we hold. Everything Claude Code does well → we author markdown / 
 
 | Capability                                  | Where                                              | Status                                            |
 |---------------------------------------------|----------------------------------------------------|---------------------------------------------------|
-| Typed orchestrator action registry          | `src/lib/orchestrator/registry.ts`                 | 15 actions, dispatch via `queries.ts`             |
+| Typed Ri action registry          | `src/lib/actions/registry.ts`                 | 15 actions, dispatch via `queries.ts`             |
 | Multi-provider executor                     | `src/lib/executor/adapter.ts` (`@agentex/agent`)   | Claude Code, Codex, OpenClaw                      |
 | Per-turn message queue                      | `chat_events.queued_at` + drain loop               | Shipped                                           |
 | 60s background health sweep                 | `instrumentation.ts:86-105`                        | Reconcile + redispatch                            |
@@ -151,9 +151,9 @@ A `schedules` row is "fire under these conditions." User-editable.
 | `cron`   | Fire on a cron expression in a timezone                            |
 | `webhook`| Fire when POST hits `/api/triggers/:public_id` with valid HMAC     |
 
-Each schedule has: `prompt`, `harness`, `target_kind` (`workspace` or `orchestrator`), optional `workspace_id`, `concurrency_policy`, `catch_up_policy`, `enabled`, plus kind-specific config.
+Each schedule has: `prompt`, `harness`, `target_kind` (`workspace` or `coordinator`), optional `workspace_id`, `concurrency_policy`, `catch_up_policy`, `enabled`, plus kind-specific config.
 
-**No `session_strategy` enum.** Dispatch behavior is derived from `kind` + `target_kind` per `docs/executions-spec.md` §5: orchestrator schedules get a fresh chat each fire, one-off (`kind='at'`) workspace schedules get a fresh execution + chat each fire, recurring workspace schedules reuse the schedule's owning execution and create a fresh chat inside it. The artifact (worktree, branch, PR) persists; the conversation is bounded per fire. If a `continuous` (chat-persists) mode becomes a real use case in V2, it's added as an additive nullable column with no migration pain.
+**No `session_strategy` enum.** Dispatch behavior is derived from `kind` + `target_kind` per `docs/executions-spec.md` §5: coordinator schedules get a fresh chat each fire, one-off (`kind='at'`) workspace schedules get a fresh execution + chat each fire, recurring workspace schedules reuse the schedule's owning execution and create a fresh chat inside it. The artifact (worktree, branch, PR) persists; the conversation is bounded per fire. If a `continuous` (chat-persists) mode becomes a real use case in V2, it's added as an additive nullable column with no migration pain.
 
 **Who runs it:** a trigger stores its engine in `triggers.harness`, and each fire copies it onto the run and the chat. `create_trigger` takes `provider` (`claude | codex | cursor | opencode | antigravity`) and stores it as the harness. An omitted provider resolves to the user's default provider (`user_state.default_harness`), the same default the chat composer and background AI use. The old `agent_id` param pointed at the since-deleted `agents` table and is now rejected with a message pointing to `provider` (`docs/agents-view-spec.md`, Phase 1). `model` is validated against the provider on write, and `effort` is resolved down to what the model supports at dispatch. OpenCode is no exception: its models list their own levels, and agentex hands the effort to OpenCode as the model's variant. `update_trigger` can switch `provider` on any trigger, app-managed ones included. A switch that doesn't restate `model` / `effort` resets both to the new provider's defaults. The create form and the trigger detail page both expose provider, model and effort through the launcher's controls.
 
@@ -186,7 +186,7 @@ This is critical for cost rollup, budget guardrails, and the activity timeline t
 
 Status enum (V1, deliberately simple): `queued | running | completed | failed | skipped`.
 
-Each run gets a `chat_session` (existing table, `type='execution'`). The orchestrator runs inside it. `runs` holds metadata (trigger, status, cost, timing, summary, artifact refs); `chat_events` holds the transcript.
+Each run gets a `chat_session` (existing table, `type='execution'`). The coordinator runs inside it. `runs` holds metadata (trigger, status, cost, timing, summary, artifact refs); `chat_events` holds the transcript.
 
 **Why runs separate from sessions:**
 - A session may host multiple runs (initial → iterate → re-iterate = three runs on the same session)
@@ -195,7 +195,7 @@ Each run gets a `chat_session` (existing table, `type='execution'`). The orchest
 
 **Provenance:** new column `chat_sessions.created_by_run_id` (nullable FK) records the run that created the chat. "Created by," not "triggered by" — a chat hosts many subsequent runs (initial → iterate → re-iterate) but only one creator. Subsequent runs are tracked via `runs.chat_session_id`, not by mutating this field. NULL for chats the user created directly without a run kicking them off.
 
-**Execution linkage:** new column `chat_sessions.execution_id` (nullable FK to `executions`, ON DELETE SET NULL) lands as part of the pre-#9 executions lift (see `docs/executions-spec.md`). Workspace-scope chats have it set; orchestrator/content chats have it NULL. `runs.execution_id` is the denormalized version on runs for cheap per-execution cost rollups.
+**Execution linkage:** new column `chat_sessions.execution_id` (nullable FK to `executions`, ON DELETE SET NULL) lands as part of the pre-#9 executions lift (see `docs/executions-spec.md`). Workspace-scope chats have it set; coordinator/content chats have it NULL. `runs.execution_id` is the denormalized version on runs for cheap per-execution cost rollups.
 
 **Execution-level run mutex:** at most one workspace run per execution may be in `status='running'` at any time. Because many schedules can point at one execution (via `schedules.owning_execution_id`), the schedule-level `concurrency_policy` isn't enough — two different schedules sharing an execution could otherwise mutate the same worktree concurrently. Dispatch checks `runs WHERE execution_id = E AND status = 'running'` before starting; scheduled dispatches fall back to the firing schedule's `concurrency_policy`, manual dispatches reject in V1 (see open questions). See `docs/executions-spec.md` §5.
 
@@ -203,10 +203,10 @@ Each run gets a `chat_session` (existing table, `type='execution'`). The orchest
 
 **Summary population (V1):** auto-extract from the last assistant message at run completion (first ~200 chars). Future versions may add an explicit `set_run_summary` agent-only action when we want the agent to write a deliberate summary distinct from its closing message.
 
-**Artifact refs:** `runs.artifact_refs` JSON column captures what the run produced — `[{kind:'task', id:'...'}, {kind:'note', id:'...'}]`. **Inferred by the dispatcher, not declared by the agent.** (Implemented at the action layer in `src/lib/runs/artifact-refs.ts`, keyed by the calling chat's session credential. The first version read refs back out of the harness's tool-result stream and never matched MCP tool names, so it recorded nothing until 2026-09-22.) When the orchestrator calls entity-mutating registry actions (`create_task`, `update_task`, `create_note`, `update_memory`, ...) during the run, the dispatcher accumulates the resulting ids into the run's refs. Lower surface area for the agent to mess up; agents that don't think about telemetry still produce correct timelines.
+**Artifact refs:** `runs.artifact_refs` JSON column captures what the run produced — `[{kind:'task', id:'...'}, {kind:'note', id:'...'}]`. **Inferred by the dispatcher, not declared by the agent.** (Implemented at the action layer in `src/lib/runs/artifact-refs.ts`, keyed by the calling chat's session credential. The first version read refs back out of the harness's tool-result stream and never matched MCP tool names, so it recorded nothing until 2026-09-22.) When the coordinator calls entity-mutating registry actions (`create_task`, `update_task`, `create_note`, `update_memory`, ...) during the run, the dispatcher accumulates the resulting ids into the run's refs. Lower surface area for the agent to mess up; agents that don't think about telemetry still produce correct timelines.
 
 **Dispatch behavior (derived, no enum):**
-- `target_kind='orchestrator'`: no execution, fresh `chat_sessions` row each fire
+- `target_kind='coordinator'`: no execution, fresh `chat_sessions` row each fire
 - `target_kind='workspace'` + `kind='at'`: new execution + new chat each fire (one-off, nothing to reuse)
 - `target_kind='workspace'` + recurring (`cron`/`every`/`interval`): reuse the schedule's owning execution (via `schedule.owning_execution_id` — direct FK lookup, no join), create a fresh chat inside it each fire. If the FK is NULL or points to an archived execution, create a new active execution and persist back
 
@@ -292,7 +292,7 @@ This gets its own section because it was in earlier drafts and is being delibera
 
 1. **The agent is smart and has tools.** The schedule's prompt tells the agent what to do; the agent calls `list_tasks`, `list_stream`, etc. as needed. Pre-baking a snapshot means *we* decide what's relevant before the agent has even started.
 2. **Most of the snapshot is noise for any specific task.** "Triage the inbox" doesn't need "schedules due in next 24h." Generic snapshots dilute the relevant signal.
-3. **The agent already gets what matters for free.** Workspace `CLAUDE.md` is loaded by Claude Code natively in that cwd. Brain `MEMORY.md` is read by the orchestrator on demand. The schedule's `prompt` is the right place to scope context.
+3. **The agent already gets what matters for free.** Workspace `CLAUDE.md` is loaded by Claude Code natively in that cwd. Brain `MEMORY.md` is read by the coordinator on demand. The schedule's `prompt` is the right place to scope context.
 4. **Complexity we'd rip out.** Token budgets, truncation rules, per-schedule scope flags, a `describe_world` action — infrastructure for a problem the agent doesn't actually have.
 
 **What we do instead:**
@@ -340,7 +340,7 @@ export const schedules = sqliteTable('schedules', {
   }).notNull().default('skip_missed'),
   max_catch_up_runs: integer('max_catch_up_runs').notNull().default(3),
 
-  target_kind: text('target_kind', { enum: ['workspace', 'orchestrator'] }).notNull(),
+  target_kind: text('target_kind', { enum: ['workspace', 'coordinator'] }).notNull(),
   // No session_strategy column in V1 — dispatch behavior derived from kind +
   // target_kind. See docs/executions-spec.md §5/§6. Adding a `continuous_chat`
   // boolean later (V2+) is purely additive.
@@ -391,7 +391,7 @@ export const runs = sqliteTable('runs', {
   schedule_id: text('schedule_id').references(() => schedules.id),
   workspace_id: text('workspace_id').references(() => workspaces.id),
   // Added as part of the executions lift (pre-#9). Denormalized FK for cheap
-  // per-execution cost rollup. NULL for orchestrator-target runs.
+  // per-execution cost rollup. NULL for coordinator-target runs.
   execution_id: text('execution_id').references(() => executions.id),
   chat_session_id: text('chat_session_id').references(() => chatSessions.id),
   harness: text('harness').notNull(), // engine; was agent_id → agents (retired)
@@ -450,7 +450,7 @@ That's the entire schema delta. Two new tables, one new column on `chat_sessions
 
 ---
 
-## 7. New orchestrator actions
+## 7. New Ri actions
 
 | Action                 | Purpose                                          | Mutating |
 |------------------------|--------------------------------------------------|----------|
@@ -503,7 +503,7 @@ Single form, top to bottom:
 
 1. **What** — name, prompt, optional description
 2. **When** — `[ Run on a schedule | Every N | At a specific time | When triggered (webhook) ]`. For "on a schedule," natural-language input ("every weekday at 9am") that compiles to cron + timezone, with the resolved expression and next 3 fire times shown beneath
-3. **Where** — target workspace or orchestrator. Skills selector. (No session-strategy picker — dispatch behavior is derived from kind + target_kind per `executions-spec.md` §5.)
+3. **Where** — target workspace or coordinator. Skills selector. (No session-strategy picker — dispatch behavior is derived from kind + target_kind per `executions-spec.md` §5.)
 4. **Settings** — model override, timeout, active hours, concurrency policy
 5. **Save** — preview of next fire, then save
 
@@ -521,7 +521,7 @@ One ship, no internal gates.
 
 1. **Schema migrations** — `schedules` (incl. `owning_execution_id`), `runs` (incl. `execution_id`), `chat_sessions.created_by_run_id`, `user_state.monthly_budget_usd`
 2. **Scheduler tick** in `instrumentation.ts` + file lock + `next_run_at` advance-before-dispatch semantics + active-hours skip
-3. **Runs dispatch path** — for scheduled dispatches: resolve target execution per derived rules (orchestrator → no execution; one-off workspace → new execution; recurring workspace → use `schedule.owning_execution_id` if set and active, else create + persist), execution-level run mutex check (skip/coalesce per concurrency_policy if execution is busy), create chat_session inside the execution, attach to schedule, call `executor.dispatch`, insert `runs` row. Worktree provisioning is lazy — kicked off at first dispatch against an execution, not at execution-row creation
+3. **Runs dispatch path** — for scheduled dispatches: resolve target execution per derived rules (coordinator → no execution; one-off workspace → new execution; recurring workspace → use `schedule.owning_execution_id` if set and active, else create + persist), execution-level run mutex check (skip/coalesce per concurrency_policy if execution is busy), create chat_session inside the execution, attach to schedule, call `executor.dispatch`, insert `runs` row. Worktree provisioning is lazy — kicked off at first dispatch against an execution, not at execution-row creation
 4. **Instrument existing user-initiated dispatch** in `executor/adapter.ts` to also insert a `runs` row with `trigger='manual'` on every chat send. This is what makes `runs` *unified* — without this step, manual chat is invisible to spend tracking and the budget guardrail is wrong
 5. **Cost capture** from `@agentex/agent` `result` event into `runs.{tokens, cost_usd}` — fires for both manual and scheduled runs from steps 3 + 4
 6. **Artifact-ref accumulator** in the dispatcher — when entity-mutating registry actions complete successfully, push the resulting id into the current run's `artifact_refs`
@@ -551,7 +551,7 @@ Each of these is intentionally out of V1 with a note on why and how it slots in.
 - **Heartbeat as a primitive.** ~~Columns on `agents` + `processHeartbeats()` sibling call in the tick + `<brain>/HEARTBEAT.md` file + notifications table.~~ **Shipped 2026-09-22, differently:** an app-managed trigger whose prompt is the user's instructions, wrapped in ground rules at dispatch, with quiet check-ins archived out of Unread. No new tables or columns. See `docs/heartbeat.md`.
 - **First integration** (Gmail or Linear). Native OAuth flow + typed actions + sync skill + webhook handler. V1 has webhook intake only — external services can already POST to schedule webhooks. V2 ships the polished UX.
 - **Notifications table.** Global inbox primitive — heartbeat output, run state transitions, integration events, cost alerts. Build with heartbeat in V2.
-- **Multi-state action protocol** (`request_input`, `report_blocked`, `continue_work`). Locks the orchestrator contract; right time is when autonomous loops genuinely need it. Migration: additive — new agent-only actions, new run statuses.
+- **Multi-state action protocol** (`request_input`, `report_blocked`, `continue_work`). Locks the coordinator contract; right time is when autonomous loops genuinely need it. Migration: additive — new agent-only actions, new run statuses.
 - **Goals entity.** Title, description, area_id, target_date, success_criteria, status, parent_goal_id. Load-bearing for self-directed autonomy.
 - **Work queue + `tasks.ai_eligible` flag.** The "agent picks from a queue" pattern. Build after goals.
 - **Subagent lineage** (`parent_run_id`, `depth` on runs). Add when multi-agent coordination exists. Today Claude Code subagents are within-turn and roll up into the parent run's cost.
@@ -617,7 +617,7 @@ Putting these in writing so they don't sneak back in:
 17. **Destructive action pre-gate in V1.** V2 safety net.
 18. **Concurrency lanes in V1.** V2 — add when contention shows up in real usage.
 19. **Subagent lineage columns** (`parent_run_id`, `depth`). V2 with multi-agent.
-20. **`describe_world` orchestrator action.** Agent calls existing list/get actions individually.
+20. **`describe_world` Ri action.** Agent calls existing list/get actions individually.
 21. **Auto-action on external systems by default.** "Draft don't send."
 22. **Cost tracking deferred.** Ships in V1. Non-negotiable.
 
@@ -630,7 +630,7 @@ Putting these in writing so they don't sneak back in:
 - **Single-machine scale.** Lane model would extend to multi-machine but we're not building that.
 - **Cost tracking is client-side estimate** from `@agentex/agent`'s bundled price tables. Truth is Anthropic Admin API; we don't fetch it in V1.
 - **Simple status enum.** No `awaiting_input` / `blocked` vocabulary in V1. Autonomous loop in V2 will pressure us to add it; migration is additive.
-- **No safety net on destructive actions.** V1 schedules can do anything the registry allows. The orchestrator's prompts are the only guardrail. V2's pre-gate adds the real safety net.
+- **No safety net on destructive actions.** V1 schedules can do anything the registry allows. The coordinator's prompts are the only guardrail. V2's pre-gate adds the real safety net.
 - **No lane fairness.** A burst of webhook fires can crowd out scheduled cron work. V1 trusts the global rate-lease to be enough at our scale; V2 adds lanes when we see real contention.
 - **No presence.** Without heartbeat, the AI only fires when a schedule says to. V1 is "scheduled co-worker"; real co-worker pulse comes in V2.
 
@@ -678,7 +678,7 @@ The pieces beyond V1 — heartbeat, pre-gate, lanes, integrations, goals, work q
 - `src/lib/scheduler/cron.ts` — cron parsing + `computeNextRun()` (uses `croner`)
 - `src/lib/scheduler/rate-lease.ts` — global semaphore around `@agentex/agent`
 - `src/lib/executor/adapter.ts` — gains dispatch caller from runner; completes harness-agnostic skill loading
-- `src/lib/orchestrator/registry.ts` — new schedule/run actions
+- `src/lib/actions/registry.ts` — new schedule/run actions
 - `src/lib/pricing/models.json` — provider/model → cents per million tokens
 - `src/lib/pricing/models.ts` — loader + cost computation
 - `src/app/api/triggers/[public_id]/route.ts` — schedule webhooks

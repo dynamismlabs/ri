@@ -138,11 +138,6 @@ export const userState = sqliteTable('user_state', {
   defaultVariant: text(),
   defaultEffort: text({ enum: ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'] }),
   defaultServiceTier: text(),
-  // Retired 2026-10-05, no longer read or written: the main chat acts
-  // through MCP only. It once chose between 'harness_skills' (actions via the
-  // CLI and skills), 'harness_mcp' and the built-in 'legacy' chat. Kept so
-  // existing homes need no migration. See docs/orchestrator-harness.md.
-  orchestratorMode: text({ enum: ['legacy', 'harness_skills', 'harness_mcp'] }),
   // Monthly spend ceiling in USD for scheduled + manual runs combined.
   // Null means no budget enforced. When `currentMonthSpend()` crosses
   // thresholds, dispatch behavior changes: <75% no-op, 75–99% warn in
@@ -160,21 +155,21 @@ export const userState = sqliteTable('user_state', {
   // 0 → never. A preference, so no schema default. See
   // src/lib/sessions/inactive.ts.
   executionInactiveAfterDays: integer(),
-  // What the user calls the app's main chat (the orchestrator). Null → the
-  // product default (resolveOrchestratorName, APP_NAME), so a rename of the
+  // What the user calls the app's main chat (the coordinator). Null → the
+  // product default (resolveCoordinatorName, APP_NAME), so a rename of the
   // app still reaches everyone who never chose. A preference, so no schema
-  // default. See src/lib/orchestrator/name.ts.
-  orchestratorName: text(),
-  // How the orchestrator looks wherever it's drawn (src/lib/orchestrator/look.ts):
+  // default. See src/lib/coordinator/name.ts.
+  coordinatorName: text(),
+  // How the coordinator looks wherever it's drawn (src/lib/coordinator/look.ts):
   // an image (uploaded, or art made in the app) wins over an emoji, which sits
   // on the color. All null → the Ri mark for the default name, else its
   // initial on the theme's primary. Preferences, so no schema defaults.
-  orchestratorEmoji: text(),
-  orchestratorImage: text({ mode: 'json' }).$type<StoredAttachment>(),
-  orchestratorColor: text(),
+  coordinatorEmoji: text(),
+  coordinatorImage: text({ mode: 'json' }).$type<StoredAttachment>(),
+  coordinatorColor: text(),
   // When the main chat's first-run conversation (docs/main-chat-onboarding.md)
   // was finished or skipped. Null → an empty main chat opens with it.
-  orchestratorIntroducedAt: text(),
+  coordinatorIntroducedAt: text(),
   // Where this home is in that conversation, step by step, keyed by step name
   // (src/lib/onboarding/progress.ts). On the home so every window agrees.
   // Null → never started, or finished before steps were recorded.
@@ -820,7 +815,7 @@ export interface CalendarBlock {
 // active one. `ai_client`: in a team space, a member's own AI assistant
 // (Codex, Claude Code), issued by Connect your AI (docs/homes-spec.md §9.8).
 // On a personal Home, it has no device or member and reaches only content
-// tools on the orchestrator MCP. In a team it reaches the team's MCP and
+// tools on the home MCP. In a team it reaches the team's MCP and
 // its files, acting as that member's agent. It is never a sign-in.
 // Callers always say which: there is no default.
 export const API_KEY_ROLES = ['sign_in', 'worker', 'ai_client', 'app_client'] as const;
@@ -1843,7 +1838,7 @@ export const folderLinks = sqliteTable(
 // same worktree). See `docs/executions-spec.md`.
 //
 // These columns were lifted off `chat_sessions`; a chat now points at its
-// execution via `chat_sessions.execution_id` (nullable — orchestration and
+// execution via `chat_sessions.execution_id` (nullable — coordinator and
 // content chats have no execution).
 
 export const executions = sqliteTable(
@@ -2251,7 +2246,7 @@ export const previewTargets = sqliteTable(
 );
 
 // ─── Chat Sessions ────────────────────────────────────────────
-// One row per chat thread. `type` discriminates: orchestration (main thread),
+// One row per chat thread. `type` discriminates: coordinator (main thread),
 // content (scoped to a task/note), execution (CLI-backed work). Execution
 // chats carry workspace_id and point at an `execution_id`; the durable
 // git/worktree/PR state lives on the `executions` row, read back
@@ -2281,7 +2276,7 @@ export const chatSessions = sqliteTable(
     // (Replaced `agent_id`, a pointer to a four-row table that held nothing
     // but this value. See docs/agents-view-spec.md Phase 1.)
     harness: text({ enum: HARNESS_VALUES }).notNull(),
-    type: text({ enum: ['orchestration', 'content', 'execution'] }).notNull(),
+    type: text({ enum: ['coordinator', 'content', 'execution'] }).notNull(),
     surfaceKind: text(),
     surfaceRef: text(),
     status: text({ enum: ['active', 'archived'] }).notNull(),
@@ -2299,7 +2294,7 @@ export const chatSessions = sqliteTable(
     // Execution-specific fields.
     workspaceId: text().references(() => workspaces.id, { onDelete: 'set null' }),
 
-    // The durable work artifact this chat belongs to. NULL for orchestration
+    // The durable work artifact this chat belongs to. NULL for coordinator
     // and content chats. NOT NULL for active execution chats (see the
     // invariant in docs/executions-spec.md §2.2). ON DELETE SET NULL: if an
     // execution is ever hard-deleted (workspace deletion cascade), the chat
@@ -2307,7 +2302,7 @@ export const chatSessions = sqliteTable(
     executionId: text().references((): AnySQLiteColumn => executions.id, { onDelete: 'set null' }),
     // The device a chat without an execution runs on (docs/homes-build.md,
     // P0.3 Placement). Null is the home's own device, which is right for the
-    // app's main chat, content chats and scheduled orchestrator fires. An
+    // app's main chat, content chats and scheduled coordinator fires. An
     // agent main chat fixed to a connected device has it set. Execution
     // chats run where their execution's placement says.
     deviceId: text().references((): AnySQLiteColumn => devices.id, { onDelete: 'set null' }),
@@ -2693,7 +2688,7 @@ export const entityVersions = sqliteTable(
 
     // Who authored the change that produced this snapshot.
     //   human  — a person edited via the UI / trusted local CLI
-    //   ai     — an agent edited (document chat / orchestrator via MCP)
+    //   ai     — an agent edited (document chat / coordinator via MCP)
     //   system — a revert or other automated process
     source: text({ enum: ['human', 'ai', 'system'] }).notNull(),
 
@@ -3036,7 +3031,7 @@ export const conversationOutputs = sqliteTable('conversation_outputs', {
 // files have no row of their own — they live as JSON attachments on
 // their owning entity).
 //
-// `hydrate` controls whether the orchestrator inlines the entity's
+// `hydrate` controls whether the coordinator inlines the entity's
 // body into the agent's turn. Default on for inline mentions; off
 // is the escape hatch for "pinned for the human, not the agent".
 
@@ -3096,7 +3091,7 @@ export const triggers = sqliteTable(
     // or the user's default one.
     harness: text({ enum: HARNESS_VALUES }).notNull(),
     workspaceId: text().references(() => workspaces.id, { onDelete: 'cascade' }),
-    targetKind: text({ enum: ['workspace', 'orchestrator', 'session'] }).notNull(),
+    targetKind: text({ enum: ['workspace', 'coordinator', 'session'] }).notNull(),
     // targetKind 'session': the existing chat every fire sends its prompt
     // into, instead of starting a chat. That chat keeps its own engine and
     // model, so `harness` mirrors it. A plain id, not a foreign key: every
@@ -3118,7 +3113,7 @@ export const triggers = sqliteTable(
 
     // Trigger kind. Exactly one of cron_expression / interval_seconds /
     // run_at / (webhook_public_id + webhook_secret_hash) is populated for
-    // the matching kind. Validated in the orchestrator action layer (see
+    // the matching kind. Validated in the Ri action layer (see
     // task #19 / src/lib/scheduler/cron.ts validateCronExpression).
     // 'manual' = no automatic firing; only the "Run now" button + the
     // `run_trigger` action invoke it. nextRunAt stays null forever for
@@ -3167,7 +3162,7 @@ export const triggers = sqliteTable(
     // falls out without a unique-constraint workaround. ON DELETE SET
     // NULL: archiving/deleting the execution doesn't break the trigger;
     // next fire creates a fresh execution. See docs/executions-spec.md
-    // §2.3. NULL for one-off (`kind='at'`) and orchestrator triggers.
+    // §2.3. NULL for one-off (`kind='at'`) and coordinator triggers.
     owningExecutionId: text().references(() => executions.id, { onDelete: 'set null' }),
 
     // Webhook intake (kind='webhook' only). publicId is the path segment
@@ -3211,7 +3206,7 @@ export const triggers = sqliteTable(
 
     // Notifier digest binding (docs/integrations-email-and-notifier-spec.md §2.9):
     // notification_channel ids that this trigger's result is delivered to when an
-    // orchestrator-target run completes (`trigger.run_completed`, binding routing).
+    // coordinator-target run completes (`trigger.run_completed`, binding routing).
     deliverResultTo: text({ mode: 'json' }).$type<string[]>().notNull().default([]),
   },
   (table) => [
@@ -3252,8 +3247,8 @@ export const runs = sqliteTable(
     // Which trigger fired this (null for manual chat sends).
     triggerId: text().references(() => triggers.id, { onDelete: 'set null' }),
     // Denormalized FKs for cheap rollups. workspaceId is null for
-    // orchestrator-target runs; executionId follows the chat's executionId
-    // (null for orchestration/content chats).
+    // coordinator-target runs; executionId follows the chat's executionId
+    // (null for coordinator/content chats).
     workspaceId: text().references(() => workspaces.id, { onDelete: 'set null' }),
     executionId: text().references(() => executions.id, { onDelete: 'set null' }),
     // The chat where the transcript lives.
@@ -3349,7 +3344,7 @@ export const runs = sqliteTable(
 
 /**
  * Entity reference accumulated into `runs.artifactRefs` when a run's
- * orchestrator successfully calls a mutating action. Kind matches the
+ * coordinator successfully calls a mutating action. Kind matches the
  * entity surface in the action registry; id is the row id of the
  * affected entity (or a sentinel like `MEMORY.md` for the memory file).
  */

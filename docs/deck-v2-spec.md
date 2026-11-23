@@ -109,7 +109,7 @@ Deadline *ranking* lives inside generation, but deadline *visibility* must not. 
 - **Honest late vs. due today.** Each row shows a pill (`N days late` / `Due today` / `Due in N days`) plus the calendar date, so late reads as late. Overdue sorts to the top.
 - **Slim, never crowding.** Urgent rows (overdue + due today) show outright; "due soon" collapses behind a one-click toggle, and a large urgent pile caps with "+N more". The band absorbs the completeness burden so the deck below stays free to sequence and triage rather than defensively list every dated item.
 - **Staleness is stated, not hidden.** When the deck on screen is not for today (generation could not refresh it), the container shows a quiet notice with a Rebuild action, reinforcing that the deadlines above are current regardless.
-- **Agent parity.** The `list_deadlines` orchestrator action exposes the same deterministic query to the CLI + MCP, so an agent can answer "what is due" without triggering a deck generation (previously only a `hardDeadline` *sort* on `list_tasks` existed, never a filter).
+- **Agent parity.** The `list_deadlines` Ri action exposes the same deterministic query to the CLI + MCP, so an agent can answer "what is due" without triggering a deck generation (previously only a `hardDeadline` *sort* on `list_tasks` existed, never a filter).
 
 Rationale and the fact-vs-judgment split: this is the trust requirement "real deadlines need to show, without generating a deck." See `src/lib/db/queries.deadlines.test.ts` for the covered guarantees.
 

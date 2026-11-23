@@ -2,7 +2,7 @@
 
 Status: implemented, developed in `feature/slack-conversations` against main at `879da5eb`, including native team AI. No production server was restarted and no live Slack or Buzz account was connected during implementation.
 
-Ri owns the conversation, identity checks, tools and work. Slack and Buzz provide another place to talk to the same agent. This keeps the orchestrator powerful without creating a second agent runtime or a second permission system.
+Ri owns the conversation, identity checks, tools and work. Slack and Buzz provide another place to talk to the same agent. This keeps the coordinator powerful without creating a second agent runtime or a second permission system.
 
 ## One Slack app, two capabilities
 
@@ -30,7 +30,7 @@ Personal and team settings label this section **Slack & Buzz**. The stable setti
 
 Slack account tools already search, read and write through the existing Connector. This change adds an agent people can mention or message. The account Connector and agent appear together in setup, but keep their distinct credentials and permissions. A bot identity does not grant access to a person's private messages.
 
-Each connection has a name and a fixed destination: the personal orchestrator, a personal agent, or a selected team agent. Distinct Slack mentions require distinct Slack apps, for example Ri Personal and Ri Team. A message's sender cannot change the connection's destination. Buzz uses its own named identity and runs `ri acp` through `buzz-acp` or a custom desktop harness.
+Each connection has a name and a fixed destination: the personal coordinator, a personal agent, or a selected team agent. Distinct Slack mentions require distinct Slack apps, for example Ri Personal and Ri Team. A message's sender cannot change the connection's destination. Buzz uses its own named identity and runs `ri acp` through `buzz-acp` or a custom desktop harness.
 
 Each external thread has one ordinary Ri chat. Inputs are saved before dispatch and delivery acknowledgments. Replies and pending questions are saved to an outbox independently of the model turn. Ri keeps its existing harness, tools, permissions, team capabilities and member attribution. Reply delivery retries never repeat the model's work. Replies written from the Ri chat also reach its external thread.
 
@@ -58,7 +58,7 @@ Buzz's ACP host supplies conversation context and enforces its author gate. The 
 
 Open **Settings > Slack & Buzz** in your personal Ri or the team's settings and choose **Slack**. From **Plugins > Slack**, **Add your agent to Slack** opens the same personal setup. Team AI must already be configured and enabled. A team administrator with sign-in management capability creates the connection. The screen shows the following steps, with every step visible so you can continue directly with tokens if the Slack app already has Ri's agent configuration.
 
-1. **Choose your Ri destination.** Enter a name such as **Ri Personal** or **Ri Team** and choose its destination. Personal Ri can target the orchestrator or one of its agents. A team connection targets a selected team agent.
+1. **Choose your Ri destination.** Enter a name such as **Ri Personal** or **Ri Team** and choose its destination. Personal Ri can target the coordinator or one of its agents. A team connection targets a selected team agent.
 2. **Create or open your Slack app.** Click **Copy Slack app manifest**, then **Open Slack apps**. In Slack, choose **Create New App > From a manifest**, select the workspace and paste it. The manifest configures the native agent view, Socket Mode, scopes and subscriptions. If you already finished this, open the app's settings and go straight to step 3.
 3. **Get your app-level token.** Slack opens **Basic Information** after creating the app. On that page, open **App-Level Tokens > Generate Token and Scopes**. Name it, for example **Ri Socket Mode**, add `connections:write`, and click **Generate**. Copy the `xapp-` token into Ri's **App-level token** field. Confirm **Socket Mode > Enable Socket Mode** is on. Socket Mode connects outward from Ri, so this setup needs no public Slack webhook.
 4. **Get your bot token.** Next, open **OAuth & Permissions**. If the app is not installed, click **Install to Workspace** and approve it. Copy **Bot User OAuth Token**, beginning with `xoxb-`, and paste it into Ri's **Bot token** field. An already installed app's token is on this same page.
@@ -74,7 +74,7 @@ The manifest is a way to preconfigure the app, not another integration. Slack re
 
 ```json
 "agent_view": {
-  "agent_description": "Talk to your Ri orchestrator or team agent."
+  "agent_description": "Talk to your Ri coordinator or team agent."
 }
 ```
 
@@ -82,7 +82,7 @@ If an earlier copied manifest reports **Invalid property 'enabled'**, replace th
 
 Agent View also expects `app_home_opened` in `settings.event_subscriptions.bot_events`. The generator includes it alongside mention, message and Stop events. If Slack warns about that subscription on a previously copied manifest, add `"app_home_opened"` to the bot events array. Opening the agent view does not itself start model work.
 
-Create separate Slack apps and Ri connections for separately mentionable identities. A Ri connection's name alone cannot create another Slack user. For example, **Ri Personal** can point to your personal orchestrator while **Ri Team** points to the team's product agent. Each connection has a fixed destination.
+Create separate Slack apps and Ri connections for separately mentionable identities. A Ri connection's name alone cannot create another Slack user. For example, **Ri Personal** can point to your personal coordinator while **Ri Team** points to the team's product agent. Each connection has a fixed destination.
 
 If a token expires or rotates, use **Update Slack tokens** on the existing connection. Ri verifies that the new credentials belong to the same bot and Slack workspace. Saved chats and unsent reply parts are preserved. **Retry delivery** retries failed replies after a channel or credential issue is fixed. **Pause** keeps history and pending delivery. **Disconnect** removes the transport binding and credentials while leaving the Ri chat history.
 
@@ -190,7 +190,7 @@ Migrations run through Ri's safe migration runner when the relevant home next st
 | Runtime output and pending questions | `src/lib/executor/apply.ts`, `src/lib/runs/finish.ts` |
 | Destination instructions and audience | `src/lib/executor/session-spec.ts`, `src/components/executions/execution-composer.tsx` |
 
-Review alongside `docs/orchestrator-harness.md`, `docs/homes-spec.md`, `docs/team-isolation.md`, `docs/integrations-current.md`, `docs/environments.md` and the current team authority implementation. The earlier Slack proposal is background, not an implementation contract.
+Review alongside `docs/coordinator-harness.md`, `docs/homes-spec.md`, `docs/team-isolation.md`, `docs/integrations-current.md`, `docs/environments.md` and the current team authority implementation. The earlier Slack proposal is background, not an implementation contract.
 
 ## Verification
 

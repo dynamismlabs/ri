@@ -14,6 +14,8 @@ import { createPersonalAiClient, findPersonalAiClientByToken, revokePersonalAiCl
 import { processState } from '@/lib/process-state';
 import type { AiClientKind } from '@/lib/external-ai/client-config';
 import { hubResourceFor, OAUTH_SCOPE, resourceFor } from './issuer';
+import { HOME_MCP_PATH } from '@/lib/external-ai/policy';
+import { legacyHomeApiPath } from '@/lib/coordinator/legacy-names';
 import { upsertHubApp, getHubApp } from '@/lib/db/queries';
 import type { HubGrant } from '@/lib/db/schema';
 import { isHubToken, issueHubTokens, refreshHubTokens, revokeHubTokenValue } from '@/lib/integrations/hub/tokens';
@@ -119,7 +121,10 @@ export async function checkAuthorizeRequest(params: URLSearchParams, issuer: str
   if (params.get('code_challenge_method') !== 'S256') return fail('invalid_request', 'Ri accepts only the S256 code challenge method.');
   const askedResource = params.get('resource');
   const hub = !!askedResource && sameResource(askedResource, hubResourceFor(issuer));
-  const resource = hub ? hubResourceFor(issuer) : resourceFor(issuer);
+  // A client still set up with the old address keeps signing in for it (legacy-names.ts).
+  const legacy = legacyHomeApiPath(HOME_MCP_PATH);
+  const old = !hub && !!askedResource && !!legacy && sameResource(askedResource, resourceFor(issuer, legacy));
+  const resource = hub ? hubResourceFor(issuer) : old && legacy ? resourceFor(issuer, legacy) : resourceFor(issuer);
   if (askedResource && !sameResource(askedResource, resource)) return fail('invalid_target', `This Ri’s MCP server is ${resource}.`);
   return { kind: 'ok', request: { client, kind: kindFor(client, redirectUri), redirectUri, state, codeChallenge, resource, issuer, audience: hub ? 'hub' : 'home', scope: params.get('scope') } };
 }

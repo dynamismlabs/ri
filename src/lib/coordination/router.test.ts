@@ -2,7 +2,7 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {createTestHome,type TestHome} from '@/test/fixtures/home';
 import * as q from '@/lib/db/queries';
 import {coordinationRouter} from './router';
-import {SESSION_CREDENTIAL_HEADER,sessionCredential} from '@/lib/orchestrator/session-credential';
+import {SESSION_CREDENTIAL_HEADER,sessionCredential} from '@/lib/actions/session-credential';
 vi.mock('./service',async original=>({...await original<object>(),drainAgentCoordination:async()=>{}}));
 let home:TestHome;
 beforeEach(async()=>{home=await createTestHome();});
@@ -12,7 +12,7 @@ function caller(scope:'viewer'|'session'|'worker'='viewer',headers?:HeadersInit)
 }
 it('reports manager authority from the saved chat and keeps its Ask preference separate', async () => {
   const workspace = q.createWorkspace({ name: 'Project', cwd: home.root, isGit: false });
-  const manager = q.createChatSession({ harness: 'claude', type: 'orchestration', workspaceId: workspace.id });
+  const manager = q.createChatSession({ harness: 'claude', type: 'coordinator', workspaceId: workspace.id });
   const { session } = q.createExecutionWithChat({ harness: 'claude', workspaceId: workspace.id, label: null });
   for (const chat of [manager, session]) {
     q.setAgentCoordinationPolicy('chat', chat.id, 'ask');

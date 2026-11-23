@@ -70,7 +70,7 @@ function requestedReview(actor: WorkResultActor = human) {
     requestId: 'review', resultId: result.id, brief: 'Original task and exact artifacts',
     selection, scope: scope(result.id), provenance: { method: 'fresh_session', independence: 'observed' },
   }).review;
-  const session = createChatSession({ harness: 'codex', type: 'orchestration', surfaceKind: 'result_review', surfaceRef: review.id });
+  const session = createChatSession({ harness: 'codex', type: 'coordinator', surfaceKind: 'result_review', surfaceRef: review.id });
   const run = createRun({ harness: 'codex', triggerKind: 'manual', chatSessionId: session.id });
   linkWorkResultAiReviewRuntime(review.id, { reviewerSessionId: session.id, runId: run.id });
   transitionWorkResultAiReview(review.id, 'queued', 'running');
@@ -237,7 +237,7 @@ describe('durable result identity and immutable snapshots', () => {
   });
 
   it('filters current and historical taskless work after source deletion with capabilities off', async () => {
-    const session = createChatSession({ harness: 'codex', type: 'orchestration' });
+    const session = createChatSession({ harness: 'codex', type: 'coordinator' });
     const actor: WorkResultActor = { userId: 'local', source: 'ai', sessionId: session.id };
     const original = createWorkResult(actor, { requestId: 'original-research', title: 'Offline budget research', body: 'Earlier conclusion about CSV quoting.' }).result;
     const successor = createWorkResult(actor, { requestId: 'updated-research', title: 'Budget log recommendation', body: 'Current conclusion about an SQLite journal.', supersedesId: original.id }).result;

@@ -347,7 +347,7 @@ async function runPersonal() {
     assert.equal(process.env.RI_ROOT, fixture.root);
     ensureWorkDir(); ensureAttachmentsDir();
     ensureHomeIdentity();
-    updateUserState({ onboardedAt: new Date().toISOString(), orchestratorIntroducedAt: new Date().toISOString() });
+    updateUserState({ onboardedAt: new Date().toISOString(), coordinatorIntroducedAt: new Date().toISOString() });
   } finally { resetDb(); resetHomeIdentityCache(); allowMigrations(allowed); }
   await ensureService({ repo: path.resolve(__dirname, '..'), node: process.execPath, env: { ...fixture.env, NODE_ENV: production ? 'production' : 'development' } });
   await launch();

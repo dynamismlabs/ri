@@ -44,7 +44,7 @@ async function picker(chatId: string) {
 it("gives a chat on another device that device's path, not browsable from here", async () => {
   await setUpAgentOn(agentId, macbookId, '/Users/trey/studio/bounce', { links: { 'beamd-cli': '/Users/trey/code/beamd' } });
   const q = await import('@/lib/db/queries');
-  const chat = q.createChatSession({ type: 'orchestration', workspaceId: agentId, deviceId: macbookId, harness: 'claude', status: 'active' });
+  const chat = q.createChatSession({ type: 'coordinator', workspaceId: agentId, deviceId: macbookId, harness: 'claude', status: 'active' });
   expect(await picker(chat.id)).toEqual([
     expect.objectContaining({ alias: 'beamd-cli', absolutePath: '/Users/trey/code/beamd', exists: true, browsable: false }),
   ]);
@@ -55,7 +55,7 @@ it("gives a chat at home the home's path, browsable", async () => {
   fs.mkdirSync(beamd);
   await setUpAgentOn(agentId, hostId, home.root, { links: { 'beamd-cli': beamd } });
   const q = await import('@/lib/db/queries');
-  const chat = q.createChatSession({ type: 'orchestration', workspaceId: agentId, harness: 'claude', status: 'active' });
+  const chat = q.createChatSession({ type: 'coordinator', workspaceId: agentId, harness: 'claude', status: 'active' });
   expect(await picker(chat.id)).toEqual([
     expect.objectContaining({ alias: 'beamd-cli', absolutePath: beamd, exists: true, browsable: true }),
   ]);

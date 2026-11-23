@@ -1,6 +1,6 @@
 /**
  * Input shapes for skill writes, shared by the API routes and the
- * orchestrator actions so both accept exactly the same thing. Raw Zod shapes,
+ * Ri actions so both accept exactly the same thing. Raw Zod shapes,
  * the form actions take (the routes wrap them in `z.object`).
  *
  * Limits here only stop absurd input. The skill rules (name pattern,

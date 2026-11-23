@@ -91,7 +91,7 @@ The owner decided that Connector and app mentions are live everywhere, with no e
 
 ### Removed
 
-- `chatSourcesEnabled()` and every `RI_CHAT_SOURCES` read: server composition (`src/lib/server/chat-sources.ts`), session reach (`src/lib/auth/session-token.ts`, now the same executions and agent main chats as the other session servers), the `/api/chat-sources/action` route's 404, and the orchestrator registry filter, so `describe_chat_source` and `call_chat_source` are always registered.
+- `chatSourcesEnabled()` and every `RI_CHAT_SOURCES` read: server composition (`src/lib/server/chat-sources.ts`), session reach (`src/lib/auth/session-token.ts`, now the same executions and agent main chats as the other session servers), the `/api/chat-sources/action` route's 404, and the action registry filter, so `describe_chat_source` and `call_chat_source` are always registered.
 - The `enabled` dependency and its checks in `ChatSources`, the `chatSources.enabled` tRPC query, and the client branches that read it: the library's "not enabled" message in Use in chat, and the page's prompt-only fallback.
 - The local-app source adapter still requires `localAppsEnabled()`. Connectors never depended on it.
 

@@ -14,7 +14,7 @@ await vi.hoisted(async () => {
 const mocks = vi.hoisted(() => ({ list: vi.fn(), identity: vi.fn(), logo: null as string | null, assign: vi.fn(), settings: vi.fn(), home: null as { home: { id: string; kind: 'personal' | 'team'; name: string } } | null }));
 vi.mock('@/lib/spaces/my-ri-client', () => ({ myRiClient: { spaces: { list: { query: mocks.list }, identity: { query: mocks.identity } } } }));
 vi.mock('@/lib/spaces/client-cache', () => ({ teamConnectionsKey: () => ['teams'], teamIdentityKey: (id: string) => ['team-identity', id] }));
-vi.mock('@/hooks/use-user-state', () => ({ useOrchestratorIdentity: () => ({ imageUrl: mocks.logo }) }));
+vi.mock('@/hooks/use-user-state', () => ({ useCoordinatorIdentity: () => ({ imageUrl: mocks.logo }) }));
 vi.mock('@/components/home/home-context', () => ({ useOptionalHomeContext: () => mocks.home }));
 import { SpaceSelector } from './space-selector';
 

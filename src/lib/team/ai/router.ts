@@ -86,9 +86,9 @@ function memberNames() {
 
 export const teamAiRouter = router({
   /** The Home entry resolves its assistant directly, without choosing another agent. */
-  orchestrator: memberProcedure.query(() => {
+  coordinator: memberProcedure.query(() => {
     const cwd = path.join(getWorkDir(), 'team-assistant');
-    const assistant = q.ensureTeamOrchestrator(cwd);
+    const assistant = q.ensureTeamCoordinator(cwd);
     if (assistant?.cwd === cwd) fs.mkdirSync(cwd, { recursive: true });
     return { workspaceId: assistant?.id ?? null, enabled: Boolean(q.getTeamAiSettings()?.enabled) };
   }),

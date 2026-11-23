@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { readAuthConfig } from '@/lib/auth/config-file';
 import { getBrowserProfilesDir } from '@/lib/config/paths';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { detectBrowsers, resolveChromium, type DetectedBrowser } from './chromium';
 
 /** The built-in fallback profile name, used when none is configured. */

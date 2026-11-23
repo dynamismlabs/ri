@@ -2,7 +2,7 @@
 
 Copying a note body preserves attachment URLs but can create manifest stubs with the storage filename as the display name, `application/octet-stream`, size `0`, and a new upload timestamp. Normal note updates intentionally preserve existing metadata, so resubmitting upload hints does not replace those stubs.
 
-Use the trusted local orchestrator action when another existing note has the authoritative upload metadata:
+Use the trusted local Ri action when another existing note has the authoritative upload metadata:
 
 ```sh
 ri agent describe_paths
@@ -21,6 +21,6 @@ Retrying the same repair does not rewrite already matching metadata or bump `upd
 Verification:
 
 ```sh
-pnpm exec vitest run src/lib/attachments/repair-metadata.test.ts src/lib/db/queries.attachment-repair.test.ts src/lib/orchestrator/registry.attachment-repair.test.ts
+pnpm exec vitest run src/lib/attachments/repair-metadata.test.ts src/lib/db/queries.attachment-repair.test.ts src/lib/actions/registry.attachment-repair.test.ts
 pnpm ts
 ```

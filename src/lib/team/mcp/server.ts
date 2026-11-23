@@ -5,7 +5,7 @@
  *
  * The proxy admits two callers here: an active AI client key of an active
  * member (src/lib/team/credential.ts), and a running Team AI turn's own
- * ordinary signed chat credential (src/lib/orchestrator/session-credential.ts). Every tool call checks
+ * ordinary signed chat credential (src/lib/actions/session-credential.ts). Every tool call checks
  * that again before it runs, so a client disconnected, a member removed or
  * a turn ended stops at the next call. The tools are exactly `TEAM_TOOLS`: the server knows no others, so
  * a name that isn't listed is refused at discovery and at call alike.
@@ -22,7 +22,7 @@ import { notATeam } from '@/lib/team/http';
 import { readLimitedRequestBody, RequestBodyTooLargeError } from '@/lib/webhooks/read-limited-body';
 import { runTeamTool, TEAM_TOOLS, type TeamToolContext, type TeamToolResult } from './tools';
 import { parseTeamContentInput, teamContentResult } from './input';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 /** A note body can be long. Anything past this isn't a tool call. */
 const MAX_REQUEST_BYTES = 2 * 1024 * 1024;

@@ -13,7 +13,7 @@ export function seedUnifiedTeam(ownerId: string) {
     sortKey: status === 'todo' ? 'a0' : null,
   }));
   const note = q.createNote({ title: 'Same name', body: 'Shared reference', areaId: area.id });
-  const chat = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Existing shared history' });
+  const chat = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Existing shared history' });
   q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'Earlier owner question', authorMemberId: ownerId });
   q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'Earlier member context', authorMemberId: member.member.id });
   q.insertChatEvent({ sessionId: chat.id, role: 'assistant', source: 'agent', content: 'Retained shared answer' });

@@ -4,7 +4,7 @@
  * Replaces "the run has been going for X minutes, kill it" with a
  * richer view: what's the subprocess doing, what was the last event,
  * how long ago, is the agent waiting on something? This is the
- * primitive the orchestrator will need once it's the user's primary
+ * primitive the coordinator will need once it's the user's primary
  * interface — when *it* runs scheduled tasks for the user, it has to
  * be able to answer "is daily-briefing stuck or just slow?" with
  * actual evidence instead of a stopwatch.
@@ -28,7 +28,7 @@
  *      the result event got dropped.
  *
  * Returns a structured shape — no automatic action. The UI surfaces
- * it as a status badge; the orchestrator will eventually call this
+ * it as a status badge; the coordinator will eventually call this
  * directly to decide whether to wait, cancel, or alert.
  */
 

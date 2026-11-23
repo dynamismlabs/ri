@@ -4,7 +4,7 @@
  * real cert, reachable from any device.
  *
  * `resolve()` is the tunnel half of lazy bring-up (the server half is done
- * by the orchestrator before this runs, since `managesLocalServer` is true):
+ * by the coordinator before this runs, since `managesLocalServer` is true):
  *   1. Is a tunnel for this name already live? (`beamd list`) → reuse its URL.
  *   2. Else open one (`beamd open <port> --as <name> -d --json`).
  * The `url` is read straight from beamd — never assembled — so it's correct

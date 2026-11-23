@@ -38,19 +38,19 @@ services under their provider with a provider-level "select all" (§7).
 
 | Surface | Integrations |
 |---|---|
-| **Orchestrator** (+ orchestrator-targeted schedules, `workspaceId: null`) | all connected (broad) |
+| **Coordinator** (+ coordinator-targeted schedules, `workspaceId: null`) | all connected (broad) |
 | **Content** (note/task in-document chat) | all connected (broad) — interactive + supervised |
 | **Execution** (workspace agent/coding sessions) | **workspace scopes ∩ connected**, default none |
 
-A workspace-less digest is an **orchestrator-targeted schedule** (`targetKind:'orchestrator'`,
+A workspace-less digest is an **coordinator-targeted schedule** (`targetKind:'coordinator'`,
 `workspaceId` null) — already runs broad in the data root. No synthetic workspace needed.
 This spec only governs **workspace-targeted executions**.
 
 ## 3. Security baseline: executions fail closed (P1)
 
 Independent of integrations: **execution sessions must set `strictMcpConfig: true`** so
-ambient/user/repo-level MCP config can't leak into a worktree agent. The orchestrator
-already does this (`orchestratorSessionConfig`); executions currently skip it. Fix that
+ambient/user/repo-level MCP config can't leak into a worktree agent. The coordinator
+already does this (`coordinatorSessionConfig`); executions currently skip it. Fix that
 first — strict MCP with an empty server list when a workspace grants nothing, or with
 *only* the scoped integrations server when it does. Without this, every other guarantee
 here is bypassable. (`harness-surface.test.ts` already asserts strict + no-MCP blocks
@@ -189,7 +189,7 @@ projection logic (`accountBinding`, `allowedAccountDescription`, `bindingRunOpti
 `integrationsMcpServer(port, { workspaceId })` appends `?ws=<id>`. The serve route, per
 request (mcp-handler's init callback has no request access, so build the handler in the
 route from `req.url`):
-- **no `ws`** → toolkits = connected (orchestrator/content broad).
+- **no `ws`** → toolkits = connected (coordinator/content broad).
 - **`ws` present** → validate the workspace id, load its `integrationScopes`, compute
   `toolkits = connected ∩ scoped`, `connectionPins` and `allowedAccounts` server-side
   (`resolveIntegrationFilter`, `src/lib/integrations/workspace-filter.ts`), pass to `serveMcp`. Each
@@ -210,7 +210,7 @@ For `sessionType === 'execution'`: always `strictMcpConfig: true` (§3). Attach
 `integrationsMcpServer(port, { workspaceId })` **only when** (a) the workspace's
 `integrationScopes` is non-empty **and** (b) the session's harness enforces strict MCP (§3
 capability gate — Claude Code yes, Codex no). On a non-enforcing harness, attach nothing and
-surface it. Executions do not get the orchestrator MCP — unchanged.
+surface it. Executions do not get the home MCP — unchanged.
 
 ### 6d. SDK parity
 `getIntegrationTools(ownerId, opts?: Partial<WorkspaceIntegrationFilter>)` takes the same optional
@@ -242,7 +242,7 @@ filters (`toolkits`, `connectionPins`, `allowedAccounts`) for any workspace-boun
 - Pins are deduped per scope, scopes are deduped by toolkit (last wins), and only the current shape
   is written.
 
-`update_workspace` (orchestrator action, local CLI only) takes `integrationScopes: [{ toolkitId,
+`update_workspace` (Ri action, local CLI only) takes `integrationScopes: [{ toolkitId,
 accounts?: (string | { accountId, authConfigId? })[], account?: string | null }]`, folds the legacy
 `account` into `accounts`, and forwards to the PUT above, so the same resolution and errors apply
 (a 400 comes back as `invalid_params`).
@@ -287,14 +287,14 @@ Tightening (removing) must apply now; the harness caches tool lists otherwise.
 
 - New column defaults `[]`. Existing + new workspaces → `[]` → executions get nothing, exactly
   as today. Zero behavior change on migration; opt-in per workspace.
-- Orchestrator stays broad (absorbs the "just works" case), so default-empty workspaces aren't
+- Coordinator stays broad (absorbs the "just works" case), so default-empty workspaces aren't
   a dead end.
 
 ## 9. Out of scope (future seams)
 
 - **Integrations on non-strict harnesses** (e.g. Codex executions). Blocked until that harness
   enforces MCP tool-filtering (§3 capability gate); revisit when agentex adds it.
-- **Per-execution override** (one-off "this run may also use X"). Workspace + orchestrator cover
+- **Per-execution override** (one-off "this run may also use X"). Workspace + coordinator cover
   the cases; deferred to avoid per-run decision friction.
 - **Content scoping** to the focused entity's workspace; content stays broad for now.
 
@@ -321,8 +321,8 @@ Tightening (removing) must apply now; the harness caches tool lists otherwise.
   re-pin; the same account connected through a second OAuth client stays a distinct, unambiguous pin.
 - Executor: execution session is `strictMcpConfig: true` always; attaches the scoped endpoint
   only with non-empty scopes **and** a strict-enforcing harness (capability gate); a
-  non-enforcing harness (Codex) attaches no integrations; orchestrator/content unchanged; an
-  orchestrator-targeted schedule stays broad.
+  non-enforcing harness (Codex) attaches no integrations; coordinator/content unchanged; an
+  coordinator-targeted schedule stays broad.
 - Invalidation: removing a service recycles that workspace's active execution sessions.
 - Connect: selecting a subset of services requests only those scopes; incremental consent tops up.
 

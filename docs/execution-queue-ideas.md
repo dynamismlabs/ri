@@ -20,7 +20,7 @@ them apart — but bridge them (see #1 below), because a separate surface you ha
 
 - **Deck** = the human's attention ("what needs *me* today").
 - **Execution engine** = the AI doing work. *Already exists* — executions /
-  workspaces / orchestrator (agent sessions, worktrees, PRs, takeover).
+  workspaces / coordinator (agent sessions, worktrees, PRs, takeover).
 - **Execution Queue** = the pipeline that engine **reports to you** through. Your
   job is two gates; everything between runs itself:
 
@@ -56,7 +56,7 @@ them apart — but bridge them (see #1 below), because a separate surface you ha
    teammate's PRs, not 10 new cards).
 
 5. **It's also your control room, bounded.** The *Running* lane lets you peek at a
-   live agent, intervene, or stop it (orchestrator oversight already supports
+   live agent, intervene, or stop it (coordinator oversight already supports
    list/read/send). Cap concurrent work (N at a time, queue the rest) and tie spend
    to the existing monthly budget so it stays legible.
 
@@ -82,7 +82,7 @@ The queue is mostly *a view + a Proposed lane + the bridge*, not a new engine:
 - Scheduler + `schedules`/`runs` — cron + scheduled runs (same engine the deck's
   morning cron uses).
 - `listNeedsReviewSessionCandidates` — the "needs review" set already exists.
-- Orchestrator oversight (list/read/send to executions) — the control-room plumbing.
+- Coordinator oversight (list/read/send to executions) — the control-room plumbing.
 - `user_state.monthlyBudgetUsd` — spend cap already there.
 - The deck's `change-router` (`src/lib/deck/change-router.ts`) — the bridge's
   absorb/digest/interrupt policy, source-agnostic by design.

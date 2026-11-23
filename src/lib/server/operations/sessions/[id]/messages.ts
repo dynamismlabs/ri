@@ -24,7 +24,7 @@ import { expandEntityMarkers } from '@/lib/entity-refs/expand-markers';
 import * as executor from '@/lib/executor/adapter';
 import { healthCheckSession, recordSendRefused } from '@/lib/executor/health';
 import { IMPORT_MIRROR_REFUSAL, isImportMirror } from '@/lib/import/mirror';
-import { SESSION_CREDENTIAL_HEADER, verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER, verifySessionCredential } from '@/lib/actions/session-credential';
 import { budgetGate } from '@/lib/runs/budget';
 import { ensureWorktreeReady } from '@/lib/runs/dispatch';
 import { reply, type OperationContext } from '@/lib/server/operation';
@@ -118,7 +118,7 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
     // A message another chat sent (message_agent, delegate_work)
     // carries that chat's signed credential. Verified, never trusted as a
     // bare id, so a client can't make a message look like it came from a
-    // chat that didn't send it. See src/lib/orchestrator/session-credential.ts.
+    // chat that didn't send it. See src/lib/actions/session-credential.ts.
     const senderSessionId = verifySessionCredential(request.headers.get(SESSION_CREDENTIAL_HEADER));
     // Who is sending, for the command a connected device gets (P2.6).
     const actor = actorFromRequest(request.headers);
@@ -303,7 +303,7 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
     const entityExpanded = expandEntityMarkers(content, id);
     const expanded = await expandMarkers(entityExpanded, attachments);
     // First-message titling is for task-shaped threads (executions, content):
-    // their first message IS the intent. Orchestration chats are
+    // their first message IS the intent. Coordinator chats are
     // relationship-shaped — intent drifts, so they stay unlabeled while live
     // and get a retrospective summary at archive time instead
     // (`deriveRetrospectiveLabel`). Naming starts in onTaken below.
@@ -373,7 +373,7 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
             onTaken: () => {
               taken = true;
               // The live runner now exists, or its send is queued ahead of naming.
-              if (!session.label && session.type !== 'orchestration') {
+              if (!session.label && session.type !== 'coordinator') {
                 void deriveAndSetSessionLabel(id, expanded, session.harness);
               }
             },

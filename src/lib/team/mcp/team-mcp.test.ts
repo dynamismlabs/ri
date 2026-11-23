@@ -138,7 +138,7 @@ describe('what an AI client can see', () => {
 describe('the team\'s shared chats', () => {
   it('finds a shared chat by what was said in it, and reads it with who said what', async () => {
     const q = await import('@/lib/db/queries');
-    const chat = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Release planning' });
+    const chat = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Release planning' });
     q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'Should we ship the invoices export on Tuesday?', authorMemberId: owner.id, createdAt: new Date().toISOString() });
     q.insertChatEvent({ sessionId: chat.id, role: 'assistant', source: 'agent', content: 'Tuesday works: support is staffed.', createdAt: new Date().toISOString() });
     const { token } = await connectAi(owner.token);

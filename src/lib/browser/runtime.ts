@@ -14,7 +14,7 @@
 import type { Page } from 'playwright-core';
 import type { Attachment } from '@/db/types';
 import { saveAttachment } from '@/lib/attachments/save';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { getIdleCloseMs } from './config';
 import type { AgentBrowser, OpenOptions } from './session';
 import { openOrConnect, closeBrowser } from './session';

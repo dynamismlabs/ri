@@ -1,6 +1,6 @@
 /**
  * User-owned personalization stubs, seeded write-once into the brain dir by
- * `ensureBrainDir()` (next to MEMORY.md). The orchestrator brief references
+ * `ensureBrainDir()` (next to MEMORY.md). The coordinator brief references
  * them; the app NEVER regenerates or overwrites them — they're the user's.
  *
  * Two files, deliberately (see the OpenClaw set — we skip IDENTITY/TOOLS as

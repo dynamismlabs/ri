@@ -7,7 +7,7 @@ import { isMcpTransport, riMcpHandler, withProgressKeepalive, zodStandardSchema 
 /** A client that talks to the handler in process: no socket, the real wire format. */
 async function connect(handler: (request: Request) => Promise<Response>, mode: 'auto' | 'legacy', headers: Record<string, string> = {}) {
   const client = new Client({ name: 'http-server-test', version: '1' }, { versionNegotiation: { mode } });
-  await client.connect(new StreamableHTTPClientTransport(new URL('http://ri.test/api/orchestrator/mcp'), {
+  await client.connect(new StreamableHTTPClientTransport(new URL('http://ri.test/api/home/mcp'), {
     fetch: (url, init) => handler(new Request(url, init)), requestInit: { headers },
   }));
   return client;

@@ -1,23 +1,23 @@
 /**
  * Integrations MCP server — projects the integration engine's actions (Gmail, Slack, …) as typed MCP
- * tools for an in-repo agent harness (Claude Code, Codex). Mirrors the orchestrator MCP route
- * (`/api/orchestrator/[transport]`): `riMcpHandler` + the engine's `serveMcp`, which registers
+ * tools for an in-repo agent harness (Claude Code, Codex). Mirrors the home MCP route
+ * (`/api/home/[transport]`): `riMcpHandler` + the engine's `serveMcp`, which registers
  * one tool per action over the SAME gated `runAction` — so the harness passes the identical trust
  * spine (scope, approval, redaction, audit) as every other caller.
  *
  * Bearer auth is enforced globally by the middleware; the harness attaches this with the app's
- * localToken (see `integrationsMcpServer` in orchestrator/harness-surface.ts).
+ * localToken (see `integrationsMcpServer` in coordinator/harness-surface.ts).
  *
  * URL: POST /api/integrations/mcp, Streamable HTTP, serving MCP 2026-07-28 and 2025-era clients
  * (src/lib/mcp/http-server.ts). Static siblings (connect, run, status, …) take routing precedence.
  *
  * Scoping: an optional `?ws=<workspaceId>` narrows the tool set to that workspace's integration
- * allowlist (executions); omitted = the broad connected set (orchestrator/content). The handler is
+ * allowlist (executions); omitted = the broad connected set (coordinator/content). The handler is
  * built PER REQUEST so it can read `?ws` and the calling chat. The
  * filter is always derived server-side from the validated workspace — never a client-asserted scope.
  *
  * Caller identity: a harness session at home carries its signed session credential (the same
- * header the orchestrator MCP reads), and a session on another computer speaks with its own session
+ * header the home MCP reads), and a session on another computer speaks with its own session
  * token, which the proxy verifies. Either stamps the call as coming from that chat, so
  * an action paused on "Ask first" surfaces as an approval card in exactly that transcript, and the
  * grant the user gives matches only that chat's retry. Unverified or absent → an anonymous MCP call,
@@ -43,7 +43,7 @@ import { getChatSession, getHubApp } from '@/lib/db/queries';
 import { serveHub } from '@/lib/integrations/hub/serve';
 import { withStartedBy } from '@/lib/integrations/hub/origin';
 import { registeredClient } from '@/lib/oauth/clients';
-import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/orchestrator/session-credential';
+import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/actions/session-credential';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { connectedButUnavailable, recordPausedConnection, requestConnection } from '@/lib/integrations/connection-requests';
 import { z } from 'zod';
@@ -87,7 +87,7 @@ function buildHandler(workspaceId: string | null, sessionId: string | null, sign
         connectionPins = filter.connectionPins;
         allowedAccounts = filter.allowedAccounts;
       } else {
-        // Broad surface (orchestrator/content): every connected provider's toolkits, with each
+        // Broad surface (coordinator/content): every connected provider's toolkits, with each
         // personal app pinned to its connection for Ri itself. mcp-handler builds a fresh server per
         // POST, so newly-connected accounts / MCP servers appear without a restart — the only lag is
         // an already-running session caching its tool list.

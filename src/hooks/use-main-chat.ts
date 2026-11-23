@@ -8,26 +8,26 @@ export { mainChatKey } from '@/lib/query/session-keys';
 
 /**
  * Main chats (docs/agents-view-spec.md §4): the app's main chat (scope
- * `null`, served by `/api/orchestrator-chat`) and each agent's main chat
+ * `null`, served by `/api/coordinator-chat`) and each agent's main chat
  * (scope = its workspace id, served by `/api/workspaces/:id/chat`). One
  * current chat per scope. GET has ensure semantics, so `data.session` is
  * always present once loaded.
  */
 export type MainChatScope = string | null;
 
-export type MainChatHistoryEntry = RouterOutputs['orchestratorChat']['historyGet']['sessions'][number];
+export type MainChatHistoryEntry = RouterOutputs['coordinatorChat']['historyGet']['sessions'][number];
 
 /** Optional provider/model for a fresh chat: the composer's "switch provider". */
-export type NewMainChatOptions = NonNullable<RouterInputs['orchestratorChat']['create']['body']>;
+export type NewMainChatOptions = NonNullable<RouterInputs['coordinatorChat']['create']['body']>;
 
 export const mainChatHistoryKey = (scope: MainChatScope) =>
-  scope === null ? (['orchestrator-chat', 'history'] as const) : (['agent-chat', scope, 'history'] as const);
+  scope === null ? (['coordinator-chat', 'history'] as const) : (['agent-chat', scope, 'history'] as const);
 
 /** The scope's current chat, created on first load. */
 export function useMainChat(scope: MainChatScope, enabled = true) {
   return useQuery({
     queryKey: mainChatKey(scope),
-    queryFn: () => scope === null ? trpcClient.orchestratorChat.list.query({}) : trpcClient.workspaces.chatGet.query({ params: { id: scope } }),
+    queryFn: () => scope === null ? trpcClient.coordinatorChat.list.query({}) : trpcClient.workspaces.chatGet.query({ params: { id: scope } }),
     enabled,
     staleTime: 30_000,
   });
@@ -53,7 +53,7 @@ export function useNewMainChat(scope: MainChatScope) {
 /** Archive the scope's current chat and create a fresh one, without switching to it yet. */
 export function createMainChat(scope: MainChatScope, opts: NewMainChatOptions) {
   return scope === null
-    ? trpcClient.orchestratorChat.create.mutate({ body: opts })
+    ? trpcClient.coordinatorChat.create.mutate({ body: opts })
     : trpcClient.workspaces.chatNewPost.mutate({ params: { id: scope }, body: opts });
 }
 
@@ -77,7 +77,7 @@ export async function switchToMainChat(
 export function useMainChatHistory(scope: MainChatScope, enabled: boolean) {
   return useQuery({
     queryKey: mainChatHistoryKey(scope),
-    queryFn: () => scope === null ? trpcClient.orchestratorChat.historyGet.query({}) : trpcClient.workspaces.chatHistoryGet.query({ params: { id: scope } }),
+    queryFn: () => scope === null ? trpcClient.coordinatorChat.historyGet.query({}) : trpcClient.workspaces.chatHistoryGet.query({ params: { id: scope } }),
     enabled,
   });
 }
@@ -90,7 +90,7 @@ export function useResumeMainChat(scope: MainChatScope) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (sessionId: string) =>
-      scope === null ? trpcClient.orchestratorChat.resumePost.mutate({ body: { sessionId } }) : trpcClient.workspaces.chatResumePost.mutate({ params: { id: scope }, body: { sessionId } }),
+      scope === null ? trpcClient.coordinatorChat.resumePost.mutate({ body: { sessionId } }) : trpcClient.workspaces.chatResumePost.mutate({ params: { id: scope }, body: { sessionId } }),
     onError: error => {
       toast.error('Could not resume this chat', { description: apiErrorText(error) });
       refreshMainChatRecovery(qc, scope);

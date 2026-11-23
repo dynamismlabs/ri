@@ -1,35 +1,7 @@
-import { registerActionTool } from '@/lib/orchestrator/mcp-registration';
-import { isMcpTransport, mcpNotFound, riMcpHandler } from '@/lib/mcp/http-server';
-import { discoverableResultActions, resultActions, handleUndiscoveredResultCall } from '@/lib/orchestrator/result-actions';
-import { runAction } from '@/lib/orchestrator/dispatch';
-import { mcpCallContext } from '@/lib/orchestrator/mcp-caller';
-import { getChatSession, getWorkResultAiReviewForSession } from '@/lib/db/queries';
-
-async function handle(request: Request) {
-  if (!isMcpTransport(new URL(request.url).pathname.split('/').pop())) return mcpNotFound();
-  const staleCall = await handleUndiscoveredResultCall(request);
-  if (staleCall) return staleCall;
-  const actor = mcpCallContext(request.headers).actor;
-  const session = actor?.sessionId ? getChatSession(actor.sessionId) : null;
-  const assigned = session?.surfaceKind === 'result_review' ? getWorkResultAiReviewForSession(session.id) : null;
-  // An admitted reviewer keeps the finishing action after disable. Admission itself
-  // is still guarded in the query layer against the exact running request.
-  const available = assigned
-    ? resultActions.filter((action) => ['get_result', 'report_result_review'].includes(action.name))
-    : discoverableResultActions();
-  const handler = riMcpHandler((server) => {
-    for (const action of available) registerActionTool(server, action, async (input) => {
-      const envelope = await runAction(action.name, input, mcpCallContext(request.headers, { allowMissing: ['report_result', 'report_result_review'].includes(action.name) }));
-      return { content: [{ type: 'text' as const, text: JSON.stringify(envelope) }], isError: !envelope.ok };
-    });
-  }, {
-    name: 'ri-results',
-    version: '0.1.0',
-    instructions: assigned ? 'Inspect only your assigned exact result. Save your findings with report_result_review and the assigned review_id. Do not edit, accept, complete, merge, or publish work.' : 'When meaningful work is finished, call get_handoff_context before preparing a handoff, then save it with report_result. Ordinary questions, progress and confirmations stay in chat. Independent review is requested explicitly by the user or scheduled by Ri settings. Use a stable request_id for retries.',
-  });
-  return handler(request);
-}
-
-export const GET = handle;
-export const POST = handle;
-export const DELETE = handle;
+/**
+ * The old address of the results MCP, served by /api/home/results/[transport].
+ * Before Ri's tools moved to /api/home/, they lived here. Other agents'
+ * settings, OAuth sign-ins, sessions started before an update and devices
+ * on an older release still call this address (src/lib/coordinator/legacy-names.ts).
+ */
+export { GET, POST, DELETE } from '@/app/api/home/results/[transport]/route';

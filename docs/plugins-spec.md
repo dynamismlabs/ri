@@ -108,7 +108,7 @@ Recommended scope:
 
 1. Use Plugins in primary navigation. Use Accounts for account management within a plugin. Remove Integrations from new user-facing copy. Use Integrations in technical/domain descriptions where necessary.
 2. Use integration terminology in new internal APIs and modules. A mechanical rename of existing private symbols/modules can be a separate change, with compilation and persistence regressions.
-3. Retain existing serialized keys, encrypted-store location, OAuth callbacks, tool IDs and public orchestrator actions for this feature. The name on disk does not make the product feel stale.
+3. Retain existing serialized keys, encrypted-store location, OAuth callbacks, tool IDs and public Ri actions for this feature. The name on disk does not make the product feel stale.
 4. Do not add an `integrations` SQLite table just to relabel existing connections, and do not migrate credentials into SQLite for this project.
 
 If a full storage rename is later chosen, treat it as its own migration: stop competing writers, migrate the complete store including the existing encryption key and locks, preserve connection IDs and auth bindings, verify decryptability and pending OAuth returns, and provide failure recovery. Never create a fresh key beside migrated ciphertext. Rename persisted SQLite fields only through appended, rowid-safe migrations. Never rewrite released migration history. Registered callback URLs and learned tool/action names remain compatible even if implementation files change.
@@ -266,7 +266,7 @@ Generic plugin archives, version solving, marketplace submissions, executable ho
 
 If demand for multi-part distribution is demonstrated, add a small versioned bundle manifest mapping skill refs and integration dependencies. Preview what will be added, reuse existing account connections, reject unsupported components explicitly, pin the source/revision, stage installation atomically, and uninstall only bundle-owned material. Keep skill writes through `src/lib/skills/manage.ts`. This is an extension of the model, not permission to flatten someone else's plugin package silently.
 
-Ri-as-a-plugin for ChatGPT belongs to a separate spec covering account linking, remote reachability, execution permissions and distribution. Reuse the existing orchestrator/service layer if pursued. Do not introduce duplicate action names or treat an iframe as the owner of a long-running execution.
+Ri-as-a-plugin for ChatGPT belongs to a separate spec covering account linking, remote reachability, execution permissions and distribution. Reuse the existing coordinator/service layer if pursued. Do not introduce duplicate action names or treat an iframe as the owner of a long-running execution.
 
 ## Delivery tasks and acceptance
 

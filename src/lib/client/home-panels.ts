@@ -2,7 +2,7 @@ import type { AnyPanelTab, PanelId } from '@/types/dashboard';
 
 /**
  * Home's two panels and which side each tab calls home: the chat (the
- * orchestrator) on the left, the deck on the right. `resetLayout` returns
+ * coordinator) on the left, the deck on the right. `resetLayout` returns
  * here.
  */
 export const DEFAULT_HOME_PANELS: Readonly<Record<PanelId, AnyPanelTab>> = { a: 'chat', b: 'deck' };

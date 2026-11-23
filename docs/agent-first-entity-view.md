@@ -57,7 +57,7 @@ brief.
 | Brief library | `src/lib/briefs/` | Content hash, file cache, one-shot generation, freshness. |
 | Brief API | `src/app/api/entity-brief/route.ts` | `GET` never blocks (cached state). `POST` ensures a fresh brief, deduped per entity. |
 | Brief hook | `src/hooks/use-entity-brief.ts` | Generates once per open when missing or stale, then shows "Changed since this brief · Refresh" instead of churning on every edit. |
-| Focus prompt | `src/lib/orchestrator/harness-surface.ts` `renderContentFocusPrompt` | Reframed from "narrow side panel" to "front door to the document": add in place with the user's words, tidy without dropping, remove exactly what was named, confirm in one line. Applies to both views. |
+| Focus prompt | `src/lib/coordinator/harness-surface.ts` `renderContentFocusPrompt` | Reframed from "narrow side panel" to "front door to the document": add in place with the user's words, tidy without dropping, remove exactly what was named, confirm in one line. Applies to both views. |
 | Hosts | `task-slideout.tsx`, `note-slideout.tsx`, `app/task/[id]/page.tsx`, `app/note/[id]/page.tsx` | Each renders `EntityAgentView` when the pref is on and the per-open view is `agent`; otherwise the unchanged editor tree. |
 | Plumbing | `execution-composer.tsx` (`placeholder` prop), `harness-chat.tsx` (`composerPlaceholder`), `slideout-chat.tsx` (invalidates brief + versions when a turn ends) | Additive, defaults unchanged. |
 

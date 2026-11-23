@@ -29,7 +29,7 @@ function fixtureResponses(): Record<string, unknown> {
     'integrations.writePolicyGet': { toolkits: [] },
     'integrations.authConfigsGet': { configs: [] },
     'skills.list': { skills: [{ ref: 'ri:private-workflow', name: 'Private workflow', description: 'Our internal writing process.', hasErrors: false, location: { kind: 'ri' } }], projects: [] },
-    'orchestratorChat.list': { session: { id: 'fixture-chat', harness: 'codex' } },
+    'coordinatorChat.list': { session: { id: 'fixture-chat', harness: 'codex' } },
     'chatSources.search': { items: [], total: 0 },
     'skills.RefGet': { skill: { ref: 'ri:private-workflow', name: 'Private workflow', description: 'Our process', body: 'Use our source material.', hash: 'original' } },
   };

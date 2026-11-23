@@ -117,13 +117,13 @@ describe("the home's records for that device wire remote linked folders", () => 
     fs.mkdirSync(current);
     q.createReferenceFolder({ workspaceId: agentId, alias: 'docs' });
     await setUpAgentOn(agentId, deviceId, home.root, { links: { docs: current } });
-    const main = q.createChatSession({ type: 'orchestration', workspaceId: agentId, harness, status: 'active' });
+    const main = q.createChatSession({ type: 'coordinator', workspaceId: agentId, harness, status: 'active' });
     const fake = (await import('@/test/fixtures/fake-harness')).installFakeHarness(harness);
     const runner = await import('@/lib/runner/local-runner');
     (await import('@/lib/runner/sink')).installRunnerSink({ writer: { write: async () => true }, signal: () => {} });
     try {
       const spec = await (await import('@/lib/executor/session-spec')).buildSessionSpec({
-        chatSessionId: main.id, harness, cwd: home.root, sessionType: 'orchestration', workspaceId: agentId,
+        chatSessionId: main.id, harness, cwd: home.root, sessionType: 'coordinator', workspaceId: agentId,
         surfaceKind: null, surfaceRef: null, existingExternalSessionId: null, permissionMode: main.permissionMode, prePlanMode: null,
         model: 'fake-model', modelVariant: null, effort: null,
       }, { deviceId, isHome: false, generation: null });

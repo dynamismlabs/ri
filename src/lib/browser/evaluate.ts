@@ -22,7 +22,7 @@
  */
 
 import type { BrowserContext, CDPSession, Page, Route, Request } from 'playwright-core';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { applyCap } from './cap';
 import { isRequestAllowed } from './confine';
 import { redactSecrets } from './redact';

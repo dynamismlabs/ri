@@ -157,7 +157,7 @@ it('Restart and Close chat report lifecycle admission collisions as conflicts', 
   const { closeChatAdmission } = await import('./lifecycle-admission');
   const member = await teamTrpc(fixture.member.token.plaintext);
   const { execution, session: chat } = q.createExecutionWithChat({ workspaceId: fixture.workspace.id, label: 'Collision', harness: 'claude', createdByMemberId: fixture.member.member.id, surfaceKind: q.TEAM_CHAT_SURFACE });
-  q.createChatSession({ type: 'orchestration', executionId: execution.id, harness: 'claude', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
+  q.createChatSession({ type: 'coordinator', executionId: execution.id, harness: 'claude', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
   const release = closeChatAdmission(chat.id);
   try {
     for (const mutation of [member.sessions.restartPost, member.sessions.closeChatPost]) {

@@ -6,18 +6,18 @@ import { StatusBadge } from '@/components/system/status-badge';
 import { Button } from '@/components/system/button';
 import type { ReactNode } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
-import { useOrchestratorName } from '@/hooks/use-user-state';
+import { useCoordinatorName } from '@/hooks/use-user-state';
 import { useRailSessions } from '@/hooks/use-workspaces';
 import { isSessionUnread } from '@/lib/utils/session-sort';
-import { OrchestratorAvatar } from '@/components/shared/orchestrator-mark';
+import { CoordinatorAvatar } from '@/components/shared/coordinator-mark';
 
 import { useOptionalTeam, useTeamNav } from '@/components/team/team-context';
 import { Tip } from '@/components/ui/tip';
 import { Users } from 'lucide-react';
 
 /**
- * The top of the rail: the orchestrator, by the name and look the user gave
- * it, and the way home. Home is where the orchestrator lives (its chat on the
+ * The top of the rail: the coordinator, by the name and look the user gave
+ * it, and the way home. Home is where the coordinator lives (its chat on the
  * left, the deck on the right), so it is the home link rather than a separate
  * "Home" item. Highlighted while you're there.
  *
@@ -31,7 +31,7 @@ import { Users } from 'lucide-react';
  */
 export function RailHome({ collapsed, action }: { collapsed: boolean; action?: ReactNode }) {
   const { activeView, goHome } = useDashboard();
-  const name = useOrchestratorName();
+  const name = useCoordinatorName();
   const team = useOptionalTeam();
   const nav = useTeamNav();
   const home = team ? () => nav.show('chat') : goHome;
@@ -54,7 +54,7 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
             size="sm"
             className="relative"
           >
-            <OrchestratorAvatar size="md" />
+            <CoordinatorAvatar size="md" />
             {unread && <span aria-hidden className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full bg-amber-500 ring-2 ring-background" />}
             {team && <span className="absolute -bottom-1 -right-1 rounded bg-primary p-0.5 text-primary-foreground ring-2 ring-background"><Users size={9} aria-hidden /></span>}
           </Button>
@@ -72,7 +72,7 @@ export function RailHome({ collapsed, action }: { collapsed: boolean; action?: R
         aria-current={isHome ? 'page' : undefined}
         className="flex min-w-0 flex-1 items-center gap-2 text-left"
       >
-        <OrchestratorAvatar size={team ? 'md' : 'sm'} />
+        <CoordinatorAvatar size={team ? 'md' : 'sm'} />
         <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">{name}</span>
         {unread && <span aria-hidden className="ml-auto size-2 shrink-0 rounded-full bg-amber-500" />}
         {team && <StatusBadge appearance="solid"  className="ml-auto inline-flex shrink-0 items-center gap-1"><Users size={11} aria-hidden />Team</StatusBadge>}

@@ -48,7 +48,7 @@ const agent = (patch: Partial<LocalAgentState>): LocalAgentState => ({
 
 async function render(keys: AiClientView[], antigravity: LocalAgentState, engine: 'antigravity' | 'codex' | null = null) {
   await act(async () => root.render(createElement(QueryClientProvider, { client }, createElement(ConfirmProvider, null, createElement(ConnectAgents, {
-    target: { space: { kind: 'personal' }, mcpUrl: 'http://127.0.0.1:42243/api/orchestrator/mcp', server: 'ri', tokenVar: 'RI_TOKEN', reachable: false },
+    target: { space: { kind: 'personal' }, mcpUrl: 'http://127.0.0.1:42243/api/home/mcp', server: 'ri', tokenVar: 'RI_TOKEN', reachable: false },
     keys,
     createKey: vi.fn(),
     revokeKey: vi.fn(),

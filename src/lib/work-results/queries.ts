@@ -19,7 +19,7 @@ import { getAttachmentsDir } from '@/lib/config/paths';
 import { uploadMime, extForFile } from '@/lib/attachments/mime';
 import { extractReferencedFileNames } from '@/lib/attachments/derive';
 import { validateWorkResultActor } from './home-policy';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { APP_SHORT_ID } from '@/constants/app';
 import { publishChatEvent } from '@/lib/realtime/bus';
 import { assertHandoffsEnabled, assertAiReviewEnabled, handoffsEnabled, aiReviewEnabled } from './capabilities';

@@ -25,14 +25,14 @@ vi.mock('@/lib/trpc/client', async original => ({ ...await original<typeof impor
   workspaces: {
     get: { query: async ({ params }: { params: { id: string } }) => { h.calls.push('wsGet'); return h.wsGet ? h.wsGet(params.id) : WS; } },
     list: { query: async () => { h.calls.push('wsList'); return [WS]; } },
-    chatGet: { query: async () => { h.calls.push('chatGet'); return h.main ? h.main() : { session: { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration' } }; } },
+    chatGet: { query: async () => { h.calls.push('chatGet'); return h.main ? h.main() : { session: { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator' } }; } },
     chatHistoryGet: { query: async () => ({ sessions: [] }) },
-    chatNewPost: { mutate: async (input: { body: unknown }) => { h.calls.push('chatNewPost'); h.newBodies.push(input.body); return { session: { id: 'C', workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration' } }; } },
+    chatNewPost: { mutate: async (input: { body: unknown }) => { h.calls.push('chatNewPost'); h.newBodies.push(input.body); return { session: { id: 'C', workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator' } }; } },
   },
   sessions: { messagesPost: { mutate: async (input: { params: { id: string } }) => { h.calls.push('messagesPost:' + input.params.id); return {}; } } },
 } }));
 vi.mock('@/lib/api/sessions', async original => ({ ...await original<typeof import('@/lib/api/sessions')>(), sessionsApi: new Proxy({
-  get: async (id: string) => { h.calls.push('sessionGet:' + id); return h.sessionGet ? h.sessionGet(id) : { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration', permissionMode: 'ask' }; },
+  get: async (id: string) => { h.calls.push('sessionGet:' + id); return h.sessionGet ? h.sessionGet(id) : { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator', permissionMode: 'ask' }; },
   sendMessage: async (id: string) => { h.calls.push('send:' + id); return { id: 'e1' }; },
 } as Record<string, unknown>, { get: (t, k: string) => t[k] ?? (async () => []) }) }));
 vi.mock('@/hooks/use-session-stream', () => ({ useSessionStream: () => {}, useGlobalSessionStream: () => {} }));
@@ -120,7 +120,7 @@ async function until(check: () => boolean, ms = 30_000) {
 const click = async (sel: string) => { const el = container.querySelector(sel)!; expect(el).toBeTruthy(); await act(async () => { el.dispatchEvent(new win.Event('click', { bubbles: true })); }); };
 
 it('L1: pinned chat, session cached, agent row not cached, offline -> what AgentView shows', async () => {
-  client.setQueryData(['session', 'X'], { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration', permissionMode: 'ask' });
+  client.setQueryData(['session', 'X'], { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator', permissionMode: 'ask' });
   onlineManager.setOnline(false);
   h.url = new URL('http://team.test/?view=chat&chat=X');
   await mount(); await settle();
@@ -171,7 +171,7 @@ it('L4: confirmed-null member chat + failed refresh -> number of refresh notices
 it('L5: refresh failure while composing in a pinned Team chat keeps the composer + draft', async () => {
   const { ApiError } = await import('@/lib/api/client');
   let fail = false;
-  h.sessionGet = async id => { if (fail) throw new ApiError(503, { error: 'Temporary' }, '/fixture'); return { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration', permissionMode: 'ask' }; };
+  h.sessionGet = async id => { if (fail) throw new ApiError(503, { error: 'Temporary' }, '/fixture'); return { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator', permissionMode: 'ask' }; };
   h.url = new URL('http://team.test/?view=chat&chat=X');
   await mount();
   await until(() => !!container.querySelector('[data-composer]'));
@@ -190,7 +190,7 @@ it('L5: refresh failure while composing in a pinned Team chat keeps the composer
 it('L6: refresh failure while composing in an unpinned main chat (HarnessChat) keeps composer + draft', async () => {
   const { ApiError } = await import('@/lib/api/client');
   let fail = false;
-  h.main = async () => { if (fail) throw new ApiError(500, { error: 'boom' }, '/fixture'); return { session: { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration' } }; };
+  h.main = async () => { if (fail) throw new ApiError(500, { error: 'boom' }, '/fixture'); return { session: { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator' } }; };
   await mount('agent-unpinned');
   await until(() => !!container.querySelector('[data-composer]'));
   await act(async () => { ((globalThis as Record<string, unknown>).__type as (v: string) => void)('main draft'); });
@@ -211,7 +211,7 @@ it('L12: unpinned main chat resolves, its session row GET fails (no cache): what
   expect(container.querySelector('[data-composer]')).toBeNull();
   expect(text()).toContain(onlineManager.isOnline() ? 'This chat is unavailable' : 'You are offline');
   expect([...container.querySelectorAll('button')].some(b => b.textContent === 'Retry')).toBe(true);
-  h.sessionGet = async id => ({ id, workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration', permissionMode: 'ask' });
+  h.sessionGet = async id => ({ id, workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator', permissionMode: 'ask' });
   const retry = [...container.querySelectorAll('button')].find(b => b.textContent === 'Retry')!;
   await act(async () => retry.dispatchEvent(new win.Event('click', { bubbles: true })));
   await until(() => !!container.querySelector('[data-composer]'));
@@ -219,7 +219,7 @@ it('L12: unpinned main chat resolves, its session row GET fails (no cache): what
 
 it('L12b: main chat cached, offline, session row not cached', async () => {
   client.setQueryData(['workspaces', 'agent'], WS);
-  client.setQueryData(['agent-chat', 'agent'], { session: { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration' } });
+  client.setQueryData(['agent-chat', 'agent'], { session: { id: 'X', workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator' } });
   onlineManager.setOnline(false);
   await mount('agent-unpinned'); await settle();
   expect(container.querySelector('[data-composer]')).toBeNull();

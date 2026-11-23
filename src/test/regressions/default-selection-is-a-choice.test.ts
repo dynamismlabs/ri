@@ -28,7 +28,7 @@ describe('the default selection', () => {
     const q = await import('@/lib/db/queries');
     q.updateUserState({ defaultHarness: 'claude', defaultModel: 'opus', defaultEffort: 'high' });
     const chat = q.createChatSession({
-      type: 'orchestration',
+      type: 'coordinator',
       harness: 'claude',
       model: 'haiku',
       effort: 'low',

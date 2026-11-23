@@ -1,9 +1,9 @@
 import * as q from '@/lib/db/queries';
 import type { AgentRequestRecord, AgentDeliveryRecord, ChatSessionRecord } from '@/db/types';
-import type { ActionContext } from '@/lib/orchestrator/types';
-import { ActionError } from '@/lib/orchestrator/types';
-import { serverFetch, ServerResponseError, ServerTransportError } from '@/lib/orchestrator/server-client';
-import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/orchestrator/session-credential';
+import type { ActionContext } from '@/lib/actions/types';
+import { ActionError } from '@/lib/actions/types';
+import { serverFetch, ServerResponseError, ServerTransportError } from '@/lib/actions/server-client';
+import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/actions/session-credential';
 import { assertPersonalCapability, isTeamAuthority } from '@/lib/home/authority';
 import { processState } from '@/lib/process-state';
 import { perfScope } from '@/lib/perf/recorder';
@@ -36,7 +36,7 @@ export { addressOf } from './address';
 
 export function normalizeAddress(target: string, source: ChatSessionRecord, assignment: AgentRequestRecord | null = null): string {
   if (target === 'agent') {
-    if (!source.workspaceId) throw new ActionError('invalid_params', 'Name an agent as agent:<workspace id>, or use orchestrator.');
+    if (!source.workspaceId) throw new ActionError('invalid_params', 'Name an agent as agent:<workspace id>, or use coordinator.');
     return `agent:${source.workspaceId}`;
   }
   if (target === 'requester') {
@@ -45,14 +45,14 @@ export function normalizeAddress(target: string, source: ChatSessionRecord, assi
     if (!incoming.sourceSessionId) throw new ActionError('not_found', 'The requesting chat is unavailable.');
     return `session:${incoming.sourceSessionId}`;
   }
-  if (target === 'orchestrator' || /^(agent|session):[^\s:]+$/.test(target)) return target;
-  throw new ActionError('invalid_params', 'Use orchestrator, agent, requester, agent:<workspace id>, or session:<chat id>.');
+  if (target === 'coordinator' || /^(agent|session):[^\s:]+$/.test(target)) return target;
+  throw new ActionError('invalid_params', 'Use coordinator, agent, requester, agent:<workspace id>, or session:<chat id>.');
 }
 
 export async function resolveAddress(address: string, userId: string): Promise<ChatSessionRecord> {
   const { ensureMainChat } = await import('@/lib/sessions/main-chat');
   let chat: ChatSessionRecord;
-  if (address === 'orchestrator') chat = await ensureMainChat(null);
+  if (address === 'coordinator') chat = await ensureMainChat(null);
   else if (address.startsWith('agent:')) {
     const workspaceId = address.slice(6);
     const workspace = q.getWorkspace(workspaceId);
@@ -70,7 +70,7 @@ export async function resolveAddress(address: string, userId: string): Promise<C
 export async function inCoordinationServer<T>(ctx: ActionContext, name: string, input: unknown, operation: () => Promise<T> | T): Promise<T> {
   if (ctx.remote !== false) return operation();
   const credential = ctx.actor?.sessionId ? sessionCredential(ctx.actor.sessionId) : process.env[SESSION_CREDENTIAL_ENV];
-  const envelope = await serverFetch<{ ok: boolean; result?: T; error?: { code?: string; message?: string } }>(`/orchestrator/actions/${name}`, {
+  const envelope = await serverFetch<{ ok: boolean; result?: T; error?: { code?: string; message?: string } }>(`/home/actions/${name}`, {
     method: 'POST', body: JSON.stringify(input), headers: credential ? { [SESSION_CREDENTIAL_HEADER]: credential } : {},
   });
   if (!envelope.ok) throw new ActionError(envelope.error?.code === 'not_found' ? 'not_found' : envelope.error?.code === 'invalid_params' ? 'invalid_params' : envelope.error?.code === 'unsupported' ? 'unsupported' : 'conflict', envelope.error?.message ?? 'The coordination operation failed.');
@@ -149,7 +149,7 @@ export async function submitAgentRequest(ctx: ActionContext, input: { target: st
   // Reply permission belongs to the exact sender, never a replacement or new chat.
   let replyTarget = target;
   if (!replyTarget && input.kind !== 'delegation') {
-    const scope = address === 'orchestrator' ? null : address.startsWith('agent:') ? address.slice(6) : undefined;
+    const scope = address === 'coordinator' ? null : address.startsWith('agent:') ? address.slice(6) : undefined;
     replyTarget = scope !== undefined ? q.listMainChats(scope, { status: 'active', limit: 1 })[0] ?? null : null;
   }
   const isReply = input.kind !== 'delegation' && !!replyTarget && q.hasAgentReplyAuthorization(source.id, replyTarget.id);
@@ -253,7 +253,7 @@ async function dispatchReserved(sessionId: string, run: ReturnType<typeof q.getR
       void executor.dispatch(sessionId, expanded, { runId: run.id, sourceEventId: run.sourceEventId, coordinationDeliveryIds: messages.map(message => message.id), attachments,
         actor, onQueued: resolve, onTaken: () => {
           resolve();
-          if (session && !session.label && session.type !== 'orchestration') {
+          if (session && !session.label && session.type !== 'coordinator') {
             // Use the shared intent, without sender labels or delivery instructions.
             const content = messages.map(message => [message.payload.directions, message.payload.content].filter(Boolean).join('\n\n')).join('\n\n');
             void deriveAndSetSessionLabel(sessionId, content, session.harness);
@@ -424,6 +424,6 @@ export function recoverAgentCoordination(): void {
 
 export async function currentAgentAddresses(chat: ChatSessionRecord) {
   const { currentMainChat } = await import('@/lib/sessions/main-chat');
-  return { self: `session:${chat.id}`, orchestrator: { address: 'orchestrator', sessionId: currentMainChat(null)?.id ?? null },
+  return { self: `session:${chat.id}`, coordinator: { address: 'coordinator', sessionId: currentMainChat(null)?.id ?? null },
     agent: chat.workspaceId ? { address: `agent:${chat.workspaceId}`, sessionId: currentMainChat(chat.workspaceId)?.id ?? null } : null };
 }

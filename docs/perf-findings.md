@@ -86,7 +86,7 @@ Full mechanism, repro, and upstream history in `docs/nextjs-route-handler-gzip-b
 
 - Tasks keep: id, timestamps, parentId, areaId, workspaceId, title, status, energy, effort, hardDeadline, reminderAt, resurfaceAfter, sortKey, blockedOn, recurrence, completedAt, lastViewedAt, contextTags, subtaskCount, subtaskPreview. MUST also keep description and outcome: `deck-container.tsx:51-54` builds deck card rationale from them, dropping them silently blanks deck cards. Replace body with a 300-char SQL excerpt + bodyLen + hasAttachments. Drop rawInput, aiContext, userContext, foldedHeadings, attachments.
 - Notes keep: title, 300-char body excerpt (note-row derives display title and preview from body), url, areaId, taskId, status, lastViewedAt, timestamps. Behavior note: `promote-actions.tsx:132` searches merge targets over full note bodies client-side, either accept excerpt-only matching or move that search server-side.
-- Do NOT change `listTasks`/`listNotes` signatures or the 10000 default: they back the orchestrator agent actions `list_tasks`/`list_notes` (`registry.ts:194, 266`), the public agent contract. Do NOT excerpt stream rawText: stream UI renders full rawText and promote drafts build from it, truncation would corrupt promoted bodies.
+- Do NOT change `listTasks`/`listNotes` signatures or the 10000 default: they back the coordinator agent actions `list_tasks`/`list_notes` (`registry.ts:194, 266`), the public agent contract. Do NOT excerpt stream rawText: stream UI renders full rawText and promote drafts build from it, truncation would corrupt promoted bodies.
 
 Expected: ~0.4KB/row, 976KB to ~200KB raw, ~40-60KB gzipped with B1.
 
@@ -104,9 +104,9 @@ No data endpoint sets ETag or Cache-Control, so every refetch (focus refetch, 15
 
 ### B5. [MEDIUM] Rail and session list endpoints ship full rows including a live credential
 
-`listRailSessions`/`listHistorySessions`/`listWorkspaceExecutions` select every chat_sessions column (scratchPad markdown, externalHistoryCheckpoint) plus every executions column, and `flattenSessionExecution` (`queries.ts:2978-2999`) duplicates execution fields, including `takeoverToken` at :2996, into flattened copies alongside the nested object. The rail is polled every 15s. The orchestrator action `list_workspace_sessions` (`registry.ts:1071-1072`) returns the same full rows including takeoverToken to the agent surface. Additionally `listChatSessions` has no SQL limit and orchestrator-chat history loads every chat then slices to 50 in JS.
+`listRailSessions`/`listHistorySessions`/`listWorkspaceExecutions` select every chat_sessions column (scratchPad markdown, externalHistoryCheckpoint) plus every executions column, and `flattenSessionExecution` (`queries.ts:2978-2999`) duplicates execution fields, including `takeoverToken` at :2996, into flattened copies alongside the nested object. The rail is polled every 15s. The Ri action `list_workspace_sessions` (`registry.ts:1071-1072`) returns the same full rows including takeoverToken to the agent surface. Additionally `listChatSessions` has no SQL limit and coordinator-chat history loads every chat then slices to 50 in JS.
 
-**Fix (with verified constraints).** RailSessionDTO keeping the rail's read set plus fields with verified consumers: agentId, externalSessionId, prNumber (orchestrator `list_executions` reads them), workspaceAttachments (rail status pills render them). ChatSearchResult extends RailSessionRow (`queries.ts:3747`), update or decouple it in the same change. Drop scratchPad, externalHistoryCheckpoint, setupScriptError bodies. Remove takeoverToken from ALL list serialization (keep on per-session GET, the takeover flow uses per-session endpoints), and slim the `list_workspace_sessions` action output. Push a limit into listChatSessions SQL.
+**Fix (with verified constraints).** RailSessionDTO keeping the rail's read set plus fields with verified consumers: agentId, externalSessionId, prNumber (Ri `list_executions` reads them), workspaceAttachments (rail status pills render them). ChatSearchResult extends RailSessionRow (`queries.ts:3747`), update or decouple it in the same change. Drop scratchPad, externalHistoryCheckpoint, setupScriptError bodies. Remove takeoverToken from ALL list serialization (keep on per-session GET, the takeover flow uses per-session endpoints), and slim the `list_workspace_sessions` action output. Push a limit into listChatSessions SQL.
 
 ### B6. [MEDIUM] /api/search: N+1 point lookups returning full rows for a snippet UI
 
@@ -124,7 +124,7 @@ Every note/task detail page and slideout mount fetches the full snapshot list (e
 
 `listStream` selects all columns including externalPayload (full inbound webhook payload kept for audit/replay) while the UI renders rawText, status, media, source, outcomes, attachments. Magnitude today is unproven (local stream table empty), but it scales the hot capture surface as integrations land.
 
-**Fix.** Exclude externalPayload (and dismissedBy/externalId) from the list projection, keep on `getStream(id)`. This also changes the orchestrator `list_stream` action output (`registry.ts:389`), do it deliberately on both surfaces with a trimmed list type rather than silently narrowing the shared type.
+**Fix.** Exclude externalPayload (and dismissedBy/externalId) from the list projection, keep on `getStream(id)`. This also changes Ri's `list_stream` action output (`registry.ts:389`), do it deliberately on both surfaces with a trimmed list type rather than silently narrowing the shared type.
 
 ---
 
@@ -138,9 +138,9 @@ DashboardShell renders MobileLayout (md:hidden), TabletLayout (hidden md:flex lg
 
 ### C2. [CRITICAL] Global staleTime 30s + refetchOnWindowFocus refetches every heavy list per alt-tab
 
-`query-provider.tsx:12-13`. Every focus after 30s idle concurrently refires ~10 mounted queries: tasks, areas, workspaces, stream, rail, needs-review, runs-stats, user-state, day-shape, orchestrator-chat, PLUS `useSessionEvents` (`use-execution.ts:129`) which refetches the full 1000-event transcript page and is likely the single largest payload on the default dashboard. Cost: ~5 to 15s of tunnel saturation per alt-tab at measured aggregate throughput.
+`query-provider.tsx:12-13`. Every focus after 30s idle concurrently refires ~10 mounted queries: tasks, areas, workspaces, stream, rail, needs-review, runs-stats, user-state, day-shape, coordinator-chat, PLUS `useSessionEvents` (`use-execution.ts:129`) which refetches the full 1000-event transcript page and is likely the single largest payload on the default dashboard. Cost: ~5 to 15s of tunnel saturation per alt-tab at measured aggregate throughput.
 
-**Fix (with verified prerequisite).** Defaults staleTime 5min, gcTime 30min, refetchOnWindowFocus false, opting back in per endpoint where focus freshness is cheap (rail, needs-review, runs-stats, runtime-status, calendar). HARD PREREQUISITE: ship an SSE entity channel on the existing realtime bus first (publish task/note/stream change frames from the queries.ts mutation layer). Agent-side writes (orchestrator, triage, CLI/MCP) currently reach the browser ONLY via focus refetch and polls, flipping defaults alone makes agent-created entities invisible for up to 5 minutes.
+**Fix (with verified prerequisite).** Defaults staleTime 5min, gcTime 30min, refetchOnWindowFocus false, opting back in per endpoint where focus freshness is cheap (rail, needs-review, runs-stats, runtime-status, calendar). HARD PREREQUISITE: ship an SSE entity channel on the existing realtime bus first (publish task/note/stream change frames from the queries.ts mutation layer). Agent-side writes (coordinator, triage, CLI/MCP) currently reach the browser ONLY via focus refetch and polls, flipping defaults alone makes agent-created entities invisible for up to 5 minutes.
 
 ### C3. [HIGH] Steady-state polling storm, ~28 req/min idle, redundant with SSE
 

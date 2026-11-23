@@ -26,7 +26,7 @@ afterEach(async () => {
 it('completes a Team task from the real Results layout while the real Team boundary uses shared API routes', async () => {
   fixture = await createTeamExecutionFixture();
   const task = q.createTask({ title: 'Accept this work' });
-  const legacy = q.createChatSession({ type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const legacy = q.createChatSession({ type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
   const requests: string[] = [];
   const { window, document } = parseHTML('<html><body><div id="root"></div></body></html>');
   const storage = new Map([['ri.token', fixture.member.token.plaintext]]);

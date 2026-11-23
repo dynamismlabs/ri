@@ -8,7 +8,7 @@
  *   doctor       readiness checks
  *   stop         the kill switch: close the agent browser
  *
- * The agent-facing verbs (browser_read, browser_act) are orchestrator actions,
+ * The agent-facing verbs (browser_read, browser_act) are Ri actions,
  * reachable as `ri agent browser_read ...`. These commands are for the human.
  *
  * A profile is a separate logged-in identity (its own cookie jar). Omit
@@ -17,7 +17,7 @@
 
 import type { Command } from 'commander';
 import pc from 'picocolors';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import { runBrowserDoctor } from '@/lib/browser/doctor';
 
 function printEnvelope(label: string, env: { ok: boolean; result?: unknown; error?: { message: string; suggestion?: string } }) {

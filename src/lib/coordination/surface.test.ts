@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import * as q from '@/lib/db/queries';
 import { buildSessionSpec } from '@/lib/executor/session-spec';
-import { verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { verifySessionCredential } from '@/lib/actions/session-credential';
 import { writeAuthConfig } from '@/lib/auth/config-file';
 import { COORDINATION_TOOLS } from './surface';
 import { coordinationActions } from './actions';
@@ -28,7 +28,7 @@ describe('execution coordination tools', () => {
     expect(spec.strictMcpConfig).toBe(true);
     expect(spec.mcpServers.map(server => server.name)).toEqual(expect.arrayContaining(['coordination', 'integrations', 'browser']));
     const coordination = spec.mcpServers.find(server => server.name === 'coordination')!;
-    expect(coordination).toMatchObject({ type: 'http', url: expect.stringContaining('/api/orchestrator/coordination/mcp') });
+    expect(coordination).toMatchObject({ type: 'http', url: expect.stringContaining('/api/home/coordination/mcp') });
     expect(verifySessionCredential((coordination as { headers: Record<string, string> }).headers['x-ri-session'], home.token)).toBe(session.id);
     expect(spec.instructions).toContain('resumes the requesting chat automatically');
     expect(spec.instructions).toContain('message_agent');
@@ -48,7 +48,7 @@ describe('execution coordination tools', () => {
   });
 
   it('keeps native coordination focused and all coordination actions registered', async () => {
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     expect(COORDINATION_TOOLS.every(name => actions.some(action => action.name === name))).toBe(true);
     expect(coordinationActions.every(action => (COORDINATION_TOOLS as readonly string[]).includes(action.name))).toBe(true);
     for (const name of ['update_workspace', 'create_workspace', 'create_skill', 'update_heartbeat']) expect(COORDINATION_TOOLS).not.toContain(name);
@@ -65,10 +65,10 @@ describe('execution coordination tools', () => {
     scope.strict = strict;
     const workspace = q.createWorkspace({ name: 'Project', cwd: home.root, isGit: false, browserEnabled: true });
     const { session } = q.createExecutionWithChat({ workspaceId: workspace.id, harness: 'codex', label: 'Work' });
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     expect(await runAction('get_session_context', {}, { remote: true, actor: { source: 'ai', sessionId: session.id } })).toMatchObject({
       ok: true, result: { session: { id: session.id, workspaceId: workspace.id, executionId: session.executionId },
-        addresses: { self: `session:${session.id}`, agent: { address: `agent:${workspace.id}` }, orchestrator: { address: 'orchestrator' } },
+        addresses: { self: `session:${session.id}`, agent: { address: `agent:${workspace.id}` }, coordinator: { address: 'coordinator' } },
         capabilities: { nativeCoordination: strict, integrations: strict, browser: strict } },
     });
   });

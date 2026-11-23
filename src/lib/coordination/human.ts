@@ -1,7 +1,7 @@
 import * as q from '@/lib/db/queries';
 import type { AgentDeliveryRecord } from '@/db/types';
 import { isImportMirror, IMPORT_MIRROR_REFUSAL } from '@/lib/import/mirror';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { stableCoordinationId } from './ids';
 import { drainAgentCoordination, personalChat } from './service';
 

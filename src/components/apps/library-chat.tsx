@@ -30,7 +30,7 @@ function SourceChoices({ item, onClose, onOpenChat }: { item: LibraryItem; onClo
     queryKey: ['apps-library-chat', item.key], staleTime: 0,
     queryFn: async () => {
       const [main, toolkits] = await Promise.all([
-        queryClient.fetchQuery({ queryKey: mainChatKey(null), queryFn: () => trpcClient.orchestratorChat.list.query({}), staleTime: 0 }),
+        queryClient.fetchQuery({ queryKey: mainChatKey(null), queryFn: () => trpcClient.coordinatorChat.list.query({}), staleTime: 0 }),
         trpcClient.integrations.toolkitsGet.query({}),
       ]);
       let providerId = item.target.kind === 'provider' ? item.target.id : undefined;

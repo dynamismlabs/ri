@@ -38,10 +38,10 @@ afterEach(async () => {
 
 function input(over: Partial<SessionSpecInput>): SessionSpecInput {
   return {
-    chatSessionId: q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' }).id,
+    chatSessionId: q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' }).id,
     harness: 'claude',
     cwd: home.root,
-    sessionType: 'orchestration',
+    sessionType: 'coordinator',
     workspaceId: null,
     surfaceKind: null,
     surfaceRef: null,

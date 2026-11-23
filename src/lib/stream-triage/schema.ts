@@ -1,6 +1,6 @@
 /**
  * Zod schemas for the stream triage wire surface — the single source shared
- * by orchestrator actions (registry.ts) and API routes so drafts and
+ * by Ri actions (registry.ts) and API routes so drafts and
  * proposals validate identically everywhere. Deeper invariants (dates
  * require evidence, merge targets must exist) are enforced again in the
  * query layer; this is the shape gate.

@@ -64,7 +64,7 @@ describe('window navigation', () => {
       'cursor://anysphere.cursor-deeplink/mcp/install?name=ri&config=e30%3D',
       'vscode:mcp/install?%7B%22name%22%3A%22ri%22%7D',
       'vscode-insiders:mcp/install?%7B%7D',
-      'goose://extension?url=https%3A%2F%2Fri.example%2Fapi%2Forchestrator%2Fmcp&type=streamable_http',
+      'goose://extension?url=https%3A%2F%2Fri.example%2Fapi%2Fhome%2Fmcp&type=streamable_http',
       'lmstudio://add_mcp?name=ri&config=e30%3D',
     ]) expect(agentInstallUrl(url)).toBe(new URL(url).href);
     for (const url of [

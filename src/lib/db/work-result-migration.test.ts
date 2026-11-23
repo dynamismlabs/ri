@@ -102,7 +102,7 @@ function upgradedHome() {
   expect(runMigrations(sqlite, before.folder)).toEqual({ applied: before.count });
 
   for (const id of ['actor', 'source', 'event-source', 'feedback', 'reviewer']) {
-    insert('chat_sessions', { id, harness: 'codex', type: 'orchestration', status: 'active', permission_mode: 'ask' });
+    insert('chat_sessions', { id, harness: 'codex', type: 'coordinator', status: 'active', permission_mode: 'ask' });
   }
   insert('workspaces', {
     id: 'workspace', name: 'Migration fixture', slug: 'migration-fixture', cwd: dir,
@@ -184,7 +184,7 @@ describe('work result migration', () => {
       status: 'active', instructions: 'Standing instructions stay distinct.',
     });
     insert('tasks', { rowid: 321, id: 'task', raw_input: 'Keep this task', title: 'Keep this task', status: 'todo' });
-    insert('chat_sessions', { rowid: 58, id: 'chat', harness: 'codex', type: 'orchestration', status: 'active', permission_mode: 'ask' });
+    insert('chat_sessions', { rowid: 58, id: 'chat', harness: 'codex', type: 'coordinator', status: 'active', permission_mode: 'ask' });
     insert('chat_events', { rowid: 9001, id: 'event', session_id: 'chat', role: 'assistant', source: 'harness', content: 'Earlier answer' });
     const untouched = ['areas', 'tasks', 'chat_sessions', 'chat_events'].map((name) => ({ name, rows: rows(name), foreignKeys: foreignKeys(name) }));
     const ownerBefore = rows('user_state');

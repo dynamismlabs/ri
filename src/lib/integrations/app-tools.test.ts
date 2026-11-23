@@ -82,7 +82,7 @@ describe('apps loaded straight away for a message', () => {
     const q = await import('@/lib/db/queries');
     const { encodeSource, sourceMarker } = await import('@/lib/chat-sources/reference');
     const { messageAppToolsContext } = await import('./app-tools');
-    const chat = q.createChatSession({ harness: 'claude', type: 'orchestration' });
+    const chat = q.createChatSession({ harness: 'claude', type: 'coordinator' });
     const mention = (toolkitId: string) => sourceMarker(encodeSource({ v: 1, kind: 'integration', toolkitId, account: { accountId: 'place:ri', authConfigId: null } }));
 
     const first = await messageAppToolsContext(chat.id, `What am I reading? ${mention('app_reading_log')} ${mention('app_bloom')}`, null);
@@ -96,9 +96,9 @@ describe('apps loaded straight away for a message', () => {
     expect(await messageAppToolsContext(chat.id, mention('app_reading_log'), null)).toBe('');
 
     // Open beside the chat: its screen's context names it. Off in this chat: never described.
-    const other = q.createChatSession({ harness: 'claude', type: 'orchestration' });
+    const other = q.createChatSession({ harness: 'claude', type: 'coordinator' });
     expect(await messageAppToolsContext(other.id, 'Add this one', [{ sourceRef: encodeSource({ v: 1, kind: 'integration', toolkitId: 'app_reading_log', account: { accountId: 'place:ri', authConfigId: null } }) }])).toContain('Reading Log');
-    const off = q.createChatSession({ harness: 'claude', type: 'orchestration' });
+    const off = q.createChatSession({ harness: 'claude', type: 'coordinator' });
     q.updateChatSession(off.id, { appTools: { modes: { app_reading_log: 'off' } } });
     expect(await messageAppToolsContext(off.id, mention('app_reading_log'), null)).toBe('');
     vi.doUnmock('./runtime');

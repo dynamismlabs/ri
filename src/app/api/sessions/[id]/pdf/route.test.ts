@@ -51,7 +51,7 @@ async function setup() {
 
 it('opens PDFs in the agent own folder from its main chat', async () => {
   const { q, session, get } = await setup();
-  const main = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'orchestration' });
+  const main = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'coordinator' });
   const pdf = await get('docs/spec.pdf', {}, main.id);
   expect(pdf.status).toBe(200);
   expect(pdf.body.equals(REPORT)).toBe(true);

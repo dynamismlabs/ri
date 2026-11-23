@@ -23,7 +23,7 @@
  * The executor adapter doesn't render `SKILL.md` itself — it hands the
  * resolved source directories to `@agentex/agent`'s `skillDirs`
  * config, which translates discovery for the active harness. The shipped
- * orchestrator skill is deliberately excluded from this path because it is
+ * coordinator skill is deliberately excluded from this path because it is
  * installed at the app root or, after explicit opt-in, in the user's global
  * agent skill directories. Our job here is only to enumerate user-authored
  * library and workspace skills.
@@ -102,7 +102,7 @@ function mergeByName(library: DiscoveredSkill[], workspace: DiscoveredSkill[]): 
  * library skills by `name`. Returns the merged + deduped list.
  *
  * @param workspaceCwd  Working directory of the session's workspace,
- *                      or null for orchestrator/content sessions.
+ *                      or null for coordinator/content sessions.
  */
 export function resolveSkillsForSession(
   workspaceCwd: string | null,
@@ -122,7 +122,7 @@ export function resolveSkillDirsForSession(workspaceCwd: string | null, opts: Re
 }
 
 /**
- * Inventory for the `list_skills` orchestrator action. Returns a
+ * Inventory for the `list_skills` Ri action. Returns a
  * stable shape independent of the active session.
  */
 export interface SkillInventoryEntry {

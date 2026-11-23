@@ -519,7 +519,7 @@ export const uiSystemAllowlist = [
   },
   {
     "id": "identity-editor-IdentityEditor-input-41",
-    "file": "src/components/orchestrator/identity-editor.tsx",
+    "file": "src/components/coordinator/identity-editor.tsx",
     "owner": "IdentityEditor",
     "elements": [
       "input"
@@ -533,7 +533,7 @@ export const uiSystemAllowlist = [
   },
   {
     "id": "identity-editor-Swatch-button-42",
-    "file": "src/components/orchestrator/identity-editor.tsx",
+    "file": "src/components/coordinator/identity-editor.tsx",
     "owner": "Swatch",
     "elements": [
       "button"

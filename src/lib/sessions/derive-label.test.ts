@@ -48,12 +48,12 @@ afterAll(() => {
   }
 });
 
-async function seedOrchestrationChat() {
+async function seedCoordinatorChat() {
   const { getDb, resetDb } = await import('@/lib/db');
   resetDb();
   getDb();
   const q = await import('@/lib/db/queries');
-  const session = q.createChatSession({ type: 'orchestration', harness: 'claude', label: null, status: 'active' });
+  const session = q.createChatSession({ type: 'coordinator', harness: 'claude', label: null, status: 'active' });
   return { q, session };
 }
 
@@ -61,9 +61,9 @@ const at = (i: number) => new Date(Date.now() - (100 - i) * 1000).toISOString();
 
 describe('buildRetrospectiveSample', () => {
   it('samples the opening user message plus recent prose, skipping tool noise', async () => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'plan my week around the launch', createdAt: at(1) });
-    q.insertChatEvent({ sessionId: session.id, role: 'assistant', source: 'tool_call', content: null, toolName: 'mcp__orchestrator__list_tasks', createdAt: at(2) });
+    q.insertChatEvent({ sessionId: session.id, role: 'assistant', source: 'tool_call', content: null, toolName: 'mcp__ri_home__list_tasks', createdAt: at(2) });
     q.insertChatEvent({ sessionId: session.id, role: 'assistant', source: 'agent', content: 'Here is the plan…', createdAt: at(3) });
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'also triage my stream', createdAt: at(4) });
 
@@ -77,7 +77,7 @@ describe('buildRetrospectiveSample', () => {
   });
 
   it('returns null for sessions with no prose', async () => {
-    const { session } = await seedOrchestrationChat();
+    const { session } = await seedCoordinatorChat();
     const { buildRetrospectiveSample } = await import('./derive-label');
     expect(buildRetrospectiveSample(session.id)).toBeNull();
   });
@@ -85,7 +85,7 @@ describe('buildRetrospectiveSample', () => {
 
 describe('deriveRetrospectiveLabel', () => {
   it('writes the cleaned summary as the label', async () => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'help me plan the launch week', createdAt: at(1) });
     executeMock.mockResolvedValue({ status: 'completed', summary: '"Launch week planning."' });
 
@@ -97,7 +97,7 @@ describe('deriveRetrospectiveLabel', () => {
   });
 
   it('leaves the label untouched when summarization fails — snippet fallback covers it', async () => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'something', createdAt: at(1) });
     executeMock.mockRejectedValue(new Error('CLI unavailable'));
 
@@ -111,7 +111,7 @@ describe('deriveRetrospectiveLabel', () => {
 
 describe('background title restrictions', () => {
   it.each(['cursor', 'antigravity'] as const)('never runs title generation for disabled %s', async (harness) => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.updateChatSession(session.id, { harness, model: 'example-model' });
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'plan the launch', createdAt: at(1) });
     const flag = harness === 'cursor' ? 'NEXT_PUBLIC_RI_CURSOR_ENABLED' : 'NEXT_PUBLIC_RI_ANTIGRAVITY_ENABLED';
@@ -127,7 +127,7 @@ describe('background title restrictions', () => {
   });
 
   it('keeps the snippet fallback for Antigravity even when it is enabled', async () => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.updateChatSession(session.id, { harness: 'antigravity', model: 'gemini-3.1-pro-high' });
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'plan the launch', createdAt: at(1) });
     const { deriveRetrospectiveLabel } = await import('./derive-label');
@@ -140,7 +140,7 @@ describe('background title restrictions', () => {
 
 describe('native-first chat naming', () => {
   async function contentChat() {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.updateChatSession(session.id, { type: 'content' });
     return { q, session };
   }
@@ -224,7 +224,7 @@ describe('native-first chat naming', () => {
   });
 
   it('retrospective requests generate fresh titles and preserve manual names', async () => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'plan the launch', createdAt: at(1) });
     q.setGeneratedChatSessionLabel(session.id, { label: 'Old automatic name', source: 'native', expectedRevision: 0 });
     const readTitle = vi.fn(async () => 'Old native name');
@@ -242,7 +242,7 @@ describe('native-first chat naming', () => {
 
 describe('native naming after a chat closes', () => {
   it('uses the native operation on a short-lived control session and closes it', async () => {
-    const { q, session } = await seedOrchestrationChat();
+    const { q, session } = await seedCoordinatorChat();
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'plan a vegetable garden', createdAt: at(1) });
     const generateNativeTitle = vi.fn(async () => 'Garden planning');
     const close = vi.fn(async () => {});

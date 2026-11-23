@@ -73,7 +73,7 @@ export const executions = sqliteTable('executions', {
   user_id: text('user_id').notNull().default('local'),
 
   // What this execution is anchored to. Required — executions are
-  // workspace work artifacts. Orchestrator/content chats don't have
+  // workspace work artifacts. Coordinator/content chats don't have
   // executions (their chat_sessions.execution_id is NULL).
   //
   // CASCADE: workspace deletion takes its executions with it. The
@@ -158,7 +158,7 @@ Rules that keep the pin honest:
 - `workspace_id` — stays on chat_sessions. Should match the execution's workspace_id when execution_id is set. Query-layer assert enforces.
 
 **New column:**
-- `execution_id: text('execution_id').references(() => executions.id, { onDelete: 'set null' })` — nullable. NULL for content and orchestration chats. NOT NULL for type='execution' chats.
+- `execution_id: text('execution_id').references(() => executions.id, { onDelete: 'set null' })` — nullable. NULL for content and coordinator chats. NOT NULL for type='execution' chats.
 - **`onDelete: 'set null'`** is deliberate: if an execution is ever hard-deleted, the chats survive as orphaned-but-readable transcripts. Product code never hard-deletes executions (archive only); this is a safety net.
 
 **`type` discriminator:** stays. Useful for queries and existing code paths. Don't bother dropping.
@@ -529,8 +529,8 @@ V1 has **no `session_strategy` enum**. Behavior is derived from `schedules.kind`
 if target_kind == 'session':
     send into the chat named by target_session_id, every fire
     no new execution, no new chat (see "Sending to an existing chat" below)
-elif target_kind == 'orchestrator':
-    no execution (orchestrator chats have execution_id=NULL)
+elif target_kind == 'coordinator':
+    no execution (coordinator chats have execution_id=NULL)
     create a new chat_session each fire
 elif kind == 'at':
     create a new execution + new chat_session each fire
@@ -550,7 +550,7 @@ else:  # recurring workspace (cron / every / interval)
 
 - Recurring workspace work wants the *artifact* (worktree, branch, PR) to persist while keeping the *conversation* bounded. Branch persists, commits stack up across fires, PR keeps iterating; fresh chat each fire means the agent reads CLAUDE.md and MEMORY.md, not a 200-turn history.
 - One-off schedules (`kind='at'`) genuinely want everything fresh — nothing to reuse.
-- Orchestrator schedules don't have a workspace artifact to preserve — fresh chat each fire is the only sensible default.
+- Coordinator schedules don't have a workspace artifact to preserve — fresh chat each fire is the only sensible default.
 
 This matches what OpenClaw, Hermes, Paperclip, GBrain, and Claude Code Routines all do: fresh sessions per run, artifacts persist via files.
 
@@ -625,7 +625,7 @@ The build order grows by one task at the beginning, and three existing tasks cha
 **Task #12 (instrument manual dispatch to create runs row)** — affected:
 - For workspace chats (`execution_id IS NOT NULL`), populate `runs.execution_id` on insert
 - Manual sends are **not** gated by the execution-level run mutex (§5) — concurrent sends ride the provider's native queue (see §5 note). The mutex applies to scheduled dispatch only.
-- For orchestrator/content chats (`execution_id IS NULL`), no execution_id population, no mutex
+- For coordinator/content chats (`execution_id IS NULL`), no execution_id population, no mutex
 
 All other tasks (#10, #13–#20, #22–#25) are unaffected by the executions lift specifically.
 

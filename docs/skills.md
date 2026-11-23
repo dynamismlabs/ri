@@ -48,7 +48,7 @@ project's older `.ri/skills`, is found and edited where it is.
 
 A skill is named by a **ref**: `draft:<name>`, `ri:<name>`, `global:<name>`,
 or `project:<workspaceId>:<name>`. A bare name means a Ri skill. Refs are the
-view's URL (`?skill=ri:weekly-review`), the API path, and the orchestrator
+view's URL (`?skill=ri:weekly-review`), the API path, and the coordinator
 actions' parameter. Installing, moving or uninstalling changes the ref, and
 the skill's chats follow it.
 
@@ -280,7 +280,7 @@ capable and every line costs context.
 
 ## Agent surface
 
-Orchestrator actions (`src/lib/orchestrator/registry.ts`):
+Ri actions (`src/lib/actions/registry.ts`):
 
 | Action | Notes |
 | --- | --- |

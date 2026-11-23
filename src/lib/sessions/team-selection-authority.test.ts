@@ -63,7 +63,7 @@ it('members cannot launch or switch to models the owner has not enabled', async 
 }, 60_000);
 
 it('native Team launches carry and inherit speed, and retries reject a changed speed', async () => {
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const { runAction } = await import('@/lib/actions/dispatch');
   const { withExecutionRequest } = await import('@/lib/home/execution-request');
   const member = await teamTrpc(fixture.member.token.plaintext);
   const sender = await member.workspaces.sessionsPost.mutate({ params: { id: fixture.workspace.id }, body: { harness: 'claude', model: 'opus', serviceTier: 'fast' } });

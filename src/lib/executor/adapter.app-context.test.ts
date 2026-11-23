@@ -28,9 +28,9 @@ vi.mock('@/lib/harness/runtime', () => ({
     concurrentSend: { supported: true }, modelVariants: { supported: false }, reasoningEffort: { supported: true },
   } }),
 }));
-vi.mock('@/lib/orchestrator/harness-surface', () => ({
+vi.mock('@/lib/coordinator/harness-surface', () => ({
   resolveCliCommand: () => 'ri', resolveServerPort: () => 0,
-  installOrchestratorSurface: async () => {}, orchestratorSessionConfig: () => ({}),
+  installCoordinatorSurface: async () => {}, coordinatorSessionConfig: () => ({}),
   integrationsMcpServer: () => null, browserMcpServer: () => null, renderContentFocusPrompt: () => '',
 }));
 vi.mock('@/lib/attachments/expand-markers', () => ({ expandMarkers: async (text: string) => text }));
@@ -111,9 +111,9 @@ describe('connected app context at dispatch', () => {
   });
 
   it('refuses a cancelled assignment after preparation and in the device queue', async () => {
-    const source = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+    const source = q.createChatSession({ type: 'coordinator', harness: 'claude' });
     const { session, message, command } = queuedSend(source.id);
-    const request = coordinationAssignment(q, { id: 'cancelled-assignment', sourceSessionId: source.id, sourceAddress: 'orchestrator', targetAddress: `session:${session.id}`, targetSessionId: session.id, requestKey: 'cancelled', kind: 'question', content: message.content!, messageEventId: message.id });
+    const request = coordinationAssignment(q, { id: 'cancelled-assignment', sourceSessionId: source.id, sourceAddress: 'coordinator', targetAddress: `session:${session.id}`, targetSessionId: session.id, requestKey: 'cancelled', kind: 'question', content: message.content!, messageEventId: message.id });
     let release!: () => void;
     const gate = new Promise<void>(resolve => { release = resolve; });
     mock.turnContext.mockImplementationOnce(async () => { await gate; return ''; });
@@ -131,9 +131,9 @@ describe('connected app context at dispatch', () => {
 
   it.each(['input', 'continuation'])('does not send a cancelled assignment %s when harness startup finishes after abort', async (kind) => {
     const session = q.createChatSession({ type: 'content', harness: 'claude' });
-    const source = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+    const source = q.createChatSession({ type: 'coordinator', harness: 'claude' });
     const message = q.insertChatEvent({ sessionId: session.id, senderSessionId: source.id, role: 'user', source: 'user', content: 'Review' })!;
-    const request = coordinationAssignment(q, { id: 'cancel-during-spawn', sourceSessionId: source.id, sourceAddress: 'orchestrator', targetAddress: `session:${session.id}`, targetSessionId: session.id, requestKey: 'during-spawn', kind: 'question', content: 'Review', messageEventId: message.id });
+    const request = coordinationAssignment(q, { id: 'cancel-during-spawn', sourceSessionId: source.id, sourceAddress: 'coordinator', targetAddress: `session:${session.id}`, targetSessionId: session.id, requestKey: 'during-spawn', kind: 'question', content: 'Review', messageEventId: message.id });
     let eventId = message.id;
     if (kind === 'continuation') {
       q.updateAgentRequest(request.id, { status: 'waiting' });

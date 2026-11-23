@@ -20,7 +20,7 @@
  */
 
 import type { Page } from 'playwright-core';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { applyCap } from './cap';
 import { redactSecrets } from './redact';
 

@@ -38,7 +38,7 @@ async function schedule(targetKind: TriggerRecord['targetKind'], kind: TriggerRe
     ...(kind === 'cron' ? { cronExpression: '0 9 * * *' } : {}),
     ...(kind === 'at' ? { runAt: new Date(Date.now() + 60_000).toISOString() } : {}) };
   if (speed === null) return q.createTrigger({ ...input, serviceTier: null });
-  const { actions } = await import('@/lib/orchestrator/registry');
+  const { actions } = await import('@/lib/actions/registry');
   const created = await actions.find(action => action.name === 'create_trigger')!.handler({ remote: false }, {
     ...input, provider: 'codex', ...(speed === undefined ? {} : { serviceTier: speed }),
   } as never) as { trigger: { id: string } };
@@ -56,7 +56,7 @@ describe.each([
   { targetKind: 'workspace', kind: 'at', fires: 1 },
   { targetKind: 'workspace', kind: 'every', fires: 2 },
   { targetKind: 'workspace', kind: 'cron', fires: 2 },
-  { targetKind: 'orchestrator', kind: 'manual', fires: 1 },
+  { targetKind: 'coordinator', kind: 'manual', fires: 1 },
 ] as const)('$targetKind $kind selection', ({ targetKind, kind, fires }) => {
   it.each([
     { speed: 'ultrafast', expected: 'ultrafast' },

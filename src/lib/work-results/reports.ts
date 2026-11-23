@@ -1,6 +1,6 @@
 import { createWorkResult, getWorkResult, workResultRequestScopedId, reportWorkResultAiReview, getWorkResultAiReview } from '@/lib/db/queries';
-import { ActionError } from '@/lib/orchestrator/types';
-import { independentReviewSchema } from '@/lib/orchestrator/result-actions';
+import { ActionError } from '@/lib/actions/types';
+import { independentReviewSchema } from '@/lib/actions/result-actions';
 import { saveWorkResultSchema } from '@/lib/work-results/validation';
 import { observeWorkResultCodeRevision } from '@/lib/work-results/observe';
 import { prepareAutomaticWorkResultReview, dispatchAutomaticWorkResultReviews } from '@/lib/work-results/automatic';

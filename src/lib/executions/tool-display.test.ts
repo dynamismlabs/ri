@@ -53,6 +53,12 @@ describe('describeToolCall', () => {
     expect(toolDisplayName('mcp__codex_apps')).toBe('ChatGPT apps');
   });
 
+  it("names Ri's own tools Ri, in new chats and older ones", () => {
+    expect(toolDisplayName('mcp__ri_home__list_executions')).toBe('Ri: list_executions');
+    expect(toolDisplayName('mcp__orchestrator__list_executions')).toBe('Ri: list_executions');
+    expect(toolDisplayName('mcp__coordination__set_chat_status')).toBe('coordination: set_chat_status');
+  });
+
   it('gives permission prompts the same readable tool name', () => {
     expect(toolDisplayName('mcp__probe__write_marker')).toBe('probe: write_marker');
     expect(toolDisplayName('command_execution')).toBe('command_execution');

@@ -39,17 +39,17 @@ it('preserves transcript rowids, historical payload bytes, message identities an
     initDatabase(db, previous.folder);
     db.exec(`
       INSERT INTO chat_sessions(rowid,id,harness,type,status,permission_mode) VALUES
-      (13,'source','claude','orchestration','active','auto_all'),(29,'target','claude','orchestration','active','ask');
+      (13,'source','claude','coordinator','active','auto_all'),(29,'target','claude','coordinator','active','ask');
       INSERT INTO chat_events(rowid,id,session_id,role,source,content) VALUES
       (73,'original','source','user','user','Preserve quartz context'),
       (74,'fyi-event','target','user','user','Exact old FYI bytes'),
       (75,'answer-event','source','user','user','Exact old returned bytes');
       INSERT INTO runs(id,chat_session_id,harness,trigger_kind,status) VALUES ('run','target','claude','manual','completed');
       INSERT INTO agent_requests(id,source_session_id,source_address,target_address,target_session_id,request_key,kind,content,status,message_event_id,run_id) VALUES
-      ('fyi','source','orchestrator','session:target','target','fyi-key','message','FYI','completed','fyi-event','run'),
-      ('question','source','orchestrator','session:target','target','question-key','question','Question','completed','question-event','run'),
-      ('historical-failed-request','source','orchestrator','session:target','target','historical-failed-key','question','Historical assignment','failed','historical-failed-input',NULL),
-      ('pending','source','orchestrator','session:target',NULL,'pending-key','question','Still waiting','queued','pending-event',NULL);
+      ('fyi','source','coordinator','session:target','target','fyi-key','message','FYI','completed','fyi-event','run'),
+      ('question','source','coordinator','session:target','target','question-key','question','Question','completed','question-event','run'),
+      ('historical-failed-request','source','coordinator','session:target','target','historical-failed-key','question','Historical assignment','failed','historical-failed-input',NULL),
+      ('pending','source','coordinator','session:target',NULL,'pending-key','question','Still waiting','queued','pending-event',NULL);
       INSERT INTO agent_deliveries(id,request_id,dedupe_key,kind,content,event_id,status,delivered_to_session_id) VALUES
       ('outcome','question','outcome','response','Answer','answer-event','sent','source'),
       ('historical-failure','historical-failed-request','failure','failed','A historical Ri failure','historical-error-event','sent','source');
@@ -60,7 +60,7 @@ it('preserves transcript rowids, historical payload bytes, message identities an
       INSERT INTO chat_events(id,session_id,role,source,content) VALUES ('remote-input','target','user','user','Frozen remote request');
       INSERT INTO runs(id,chat_session_id,harness,trigger_kind,status,source_event_id) VALUES ('remote-run','target','claude','manual','running','remote-input');
       INSERT INTO agent_requests(id,source_session_id,source_address,target_address,target_session_id,request_key,kind,content,status,message_event_id,run_id) VALUES
-      ('remote','source','orchestrator','session:target','target','remote-key','question','Remote work','sent','remote-input','remote-run');
+      ('remote','source','coordinator','session:target','target','remote-key','question','Remote work','sent','remote-input','remote-run');
       INSERT INTO worker_commands(id,device_id,chat_session_id,kind,payload,actor,state,source_event_id) VALUES
       ('queued-command','laptop','target','send','{"runId":"remote-run","turnId":"device-turn"}','{"source":"ai","sessionId":"source"}','queued','remote-input');
       INSERT INTO agent_deliveries(id,request_id,dedupe_key,kind,content,event_id,status,delivered_to_session_id) VALUES
@@ -69,7 +69,7 @@ it('preserves transcript rowids, historical payload bytes, message identities an
       UPDATE chat_events SET attachments='[{"file_name":"kept.txt","original_name":"Kept.txt","mime_type":"text/plain","size":12,"uploaded_at":"2026-10-22T00:00:00Z"}]' WHERE id='fyi-event';
       INSERT INTO runs(id,chat_session_id,harness,trigger_kind,status,source_event_id) VALUES ('unaccepted-run','target','claude','manual','failed','failed-input'),('unaccepted-return-run','source','claude','manual','failed','failed-return');
       INSERT INTO agent_requests(id,source_session_id,source_address,target_address,target_session_id,request_key,kind,content,status,message_event_id,run_id) VALUES
-      ('failed-request','source','orchestrator','session:target','target','failed-key','question','Failed before acceptance','failed','failed-input','unaccepted-run');
+      ('failed-request','source','coordinator','session:target','target','failed-key','question','Failed before acceptance','failed','failed-input','unaccepted-run');
       INSERT INTO agent_deliveries(id,request_id,dedupe_key,kind,content,event_id,status,delivered_to_session_id) VALUES
       ('failed-return','question','blocked:failed-send','blocked','Not accepted by device','failed-return','sent','source');
       INSERT INTO worker_commands(id,device_id,chat_session_id,kind,payload,actor,state,source_event_id) VALUES
@@ -77,7 +77,7 @@ it('preserves transcript rowids, historical payload bytes, message identities an
       INSERT INTO chat_events(id,session_id,role,source,content) VALUES ('native-refused-input','target','user','user','Saved but never accepted');
       INSERT INTO runs(id,chat_session_id,harness,trigger_kind,status,source_event_id) VALUES ('native-refused-run','target','claude','manual','failed','native-refused-input');
       INSERT INTO agent_requests(id,source_session_id,source_address,target_address,target_session_id,request_key,kind,content,status,message_event_id,run_id) VALUES
-      ('native-refused','source','orchestrator','session:target','target','native-refused-key','question','Native startup refused','sent','native-refused-input','native-refused-run');
+      ('native-refused','source','coordinator','session:target','target','native-refused-key','question','Native startup refused','sent','native-refused-input','native-refused-run');
       INSERT INTO worker_commands(id,device_id,chat_session_id,kind,payload,actor,state,source_event_id) VALUES
       ('native-refused-command','laptop','target','send','{"runId":"native-refused-run","turnId":"native-refused-turn"}','{"source":"system"}','failed','native-refused-input');
     `);

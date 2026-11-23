@@ -6,7 +6,7 @@ import { callSourceParams, describeSourceParams } from './actions';
 import { getChatSession } from '@/lib/db/queries';
 import { requestConnection } from '@/lib/integrations/connection-requests';
 import { decodeSource } from './reference';
-import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/orchestrator/session-credential';
+import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/actions/session-credential';
 
 const chat = { chatId: z.string().uuid() };
 function actorChat(request: Request, target: string) {

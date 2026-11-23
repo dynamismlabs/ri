@@ -16,7 +16,7 @@ import {
   type AiConnectionTarget,
 } from './client-config';
 
-const personal: AiConnectionTarget = { space: { kind: 'personal' }, mcpUrl: 'https://ri.example/api/orchestrator/mcp', ...personalMcpNames('production') };
+const personal: AiConnectionTarget = { space: { kind: 'personal' }, mcpUrl: 'https://ri.example/api/home/mcp', ...personalMcpNames('production') };
 const team = teamConnectionTarget('Acme Labs', 'https://acme.example/api/team/mcp');
 const TOKEN = 'ri_live_abc123';
 
@@ -125,7 +125,7 @@ describe('steps by hand', () => {
 
   it('gives Codex a table the CLI and the app both read, with the key as a static header', () => {
     const [step] = aiClientSetup('codex', personal, TOKEN).steps;
-    expect(step.text).toBe('[mcp_servers.ri]\nurl = "https://ri.example/api/orchestrator/mcp"\nhttp_headers = { Authorization = "Bearer ri_live_abc123" }');
+    expect(step.text).toBe('[mcp_servers.ri]\nurl = "https://ri.example/api/home/mcp"\nhttp_headers = { Authorization = "Bearer ri_live_abc123" }');
     expect(step.label).toContain('~/.codex/config.toml');
   });
 

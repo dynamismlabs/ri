@@ -43,7 +43,7 @@ Later integration includes automatic AI review, persisted workspace review defau
 
 ### Small integration boundary
 
-Group feature-specific queries/services and UI components together, with a small set of named integration points: orchestrator actions and instruction delivery, result rendering, runtime dispatch/completion, attachment retention, and capability configuration. Continue routing mutations through queries.ts and existing server-owned runtime primitives. Use ordinary module boundaries and shared components, not a new plugin framework, event bus, or workflow engine.
+Group feature-specific queries/services and UI components together, with a small set of named integration points: Ri actions and instruction delivery, result rendering, runtime dispatch/completion, attachment retention, and capability configuration. Continue routing mutations through queries.ts and existing server-owned runtime primitives. Use ordinary module boundaries and shared components, not a new plugin framework, event bus, or workflow engine.
 
 Use additive migrations for feature tables and optional later settings. Do not repurpose existing task, execution, or chat state to mean handoff readiness or acceptance. No mandatory hooks on every assistant answer, no task-body rewriting, and no dependency from ordinary completion/shipping onto these records. Feature-owned rows may refer to existing work, but ordinary work must still function without creating them.
 
@@ -135,7 +135,7 @@ Team publication is later integration, outside the pilot. When enabled, it is ex
 
 ## Agent API and discovery
 
-Add report_result to the existing orchestrator registry, using a raw Zod parameter shape and a creator in queries.ts. The same action supplies CLI help and MCP behavior. Preserve existing public wire action names.
+Add report_result to the existing action registry, using a raw Zod parameter shape and a creator in queries.ts. The same action supplies CLI help and MCP behavior. Preserve existing public wire action names.
 
 Inputs:
 
@@ -159,7 +159,7 @@ When the handoff capability is enabled, provide the exact invocation path and th
 
 Use the existing session-instruction delivery and extend the first-message fallback to execution sessions whose harness ignores instructionsFile. Ensure resumed sessions receive the currently enabled guidance through a supported adapter path. Do not inject disabled capabilities, and handle stale calls under the disable behavior above. Do not depend solely on skill auto-discovery. A separate skill is optional, not a user setup requirement.
 
-The CLI is the common structured path today. Execution sessions currently attach connector/browser MCP servers rather than the complete orchestrator surface. If using MCP, explicitly attach a narrow report-result capability where supported. Exposing the action in the registry alone is not sufficient.
+The CLI is the common structured path today. Execution sessions currently attach connector/browser MCP servers rather than the complete coordinator surface. If using MCP, explicitly attach a narrow report-result capability where supported. Exposing the action in the registry alone is not sufficient.
 
 A report call activates the result presentation. Never create results from every normal final message or use an extra model call to classify every turn. If an agent omits a report, ordinary output remains useful. The user can Save as handoff when the output is already usable, or explicitly Prepare handoff when assembling a useful handoff needs more work.
 
@@ -332,7 +332,7 @@ Index (result_id, created_at, id), reviewer_session_id, and run_id. Reject a tar
 
 Use the existing request-scoped ID and canonical-intent rules. Persist the request and exact prepared initial message before dispatch, with deterministic session/message identities. A replay never creates another reviewer. Reconcile lifecycle callbacks with idempotent conditional updates. completed requires a committed report, not merely a successfully ended harness turn. A terminal turn with no report becomes failed with missing_report. Late reports or callbacks cannot resurrect failed/cancelled requests or overwrite/downgrade a completed report. Replay of an already committed completion still returns the original. Interrupted dispatch/run recovery becomes visible and offers Retry through existing runtime facilities, rather than blindly relaunching work. A retry is a new linked-to-the-same-target attempt with a new request key. Prior outcomes and reports remain readable after session/run pruning. No additional worker, scheduler, or general pipeline engine is introduced.
 
-Add two orchestrator actions, exposed through the same narrow CLI/MCP surface and shared query layer:
+Add two Ri actions, exposed through the same narrow CLI/MCP surface and shared query layer:
 
 - request_result_review: request_id, result_id, optional focus, and optional harness/model/variant/effort overrides using existing selection types and wire conventions. Validate actor, target access, runtime access, and budget/permission boundaries. Resolve compatible existing evidence or an active request first, otherwise persist and enqueue one request. Return its review ID, exact-result URL, whether evidence/request was reused, and current status. Explicit Review again uses a fresh request key and an explicit rerun option, without changing historical evidence. It cannot bypass an active incompatible review.
 - report_result_review: request_id, either an assigned review_id or an accessible result_id for recording an existing review, body, optional title/attachments/links, and evidence scope/provenance. The service validates observed fields against trusted runtime facts. For an assigned review, only its authenticated reviewer or a trusted native adapter can finish it. An implementer can report existing native evidence but cannot impersonate a separate reviewer. Transactionally create the immutable report through the same result creator and link it to the review record. The report's request_hash protects completion retries. Replaying with changed evidence conflicts. Return review ID, report result ID, and exact-target URL.

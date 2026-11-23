@@ -15,7 +15,7 @@
  *   database time, plus event-loop delay percentiles.
  *
  * A scope is a label for a unit of work: an HTTP request (`http:GET /api/x`),
- * a tRPC procedure (`trpc:tasks.list`), an orchestrator action, a timer, an
+ * a tRPC procedure (`trpc:tasks.list`), a Ri action, a timer, an
  * agent event being stored. Scopes ride AsyncLocalStorage, so a statement is
  * attributed to the innermost one around it. Work that outlives its scope
  * (a request that started an agent run) is attributed as `<label> (after)`,

@@ -8,12 +8,12 @@ import { z as rpcZ } from 'zod/v4';
  *   POST   { action: 'open' | 'stop', url? } → open a headed window (login) or
  *          close the browser (kill switch)
  *
- * The heavy lifting is the orchestrator actions, reused here so the panel and
+ * The heavy lifting is the Ri actions, reused here so the panel and
  * the agent share one code path. Config writes go through writeAuthConfig.
  */
 
 import { writeAuthConfig } from '@/lib/auth/config-file';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 async function statusSnapshot() {
   const env = await runAction('browser_status', {}, { remote: false });

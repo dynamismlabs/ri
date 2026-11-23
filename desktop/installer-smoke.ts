@@ -139,7 +139,7 @@ if(m.type==='user')reply();});
       return saved.title === 'Note edited in the app' && saved.body.includes(body);
     }, 'editor autosave');
     pass('Tasks complete and real note title/body edits autosave');
-    const chat = await api<{ session: { id: string } }>(page, '/api/orchestrator-chat', 'POST', { providerId: 'claude', model: 'sonnet' });
+    const chat = await api<{ session: { id: string } }>(page, '/api/coordinator-chat', 'POST', { providerId: 'claude', model: 'sonnet' });
     await api(page, `/api/sessions/${chat.session.id}/messages`, 'POST', { content: 'Installer smoke message' });
     await eventually(async () => (await api<{ role: string; content: string }[]>(page, `/api/sessions/${chat.session.id}/events`)).some(event => event.role === 'assistant' && event.content.includes('Installer harness reply.')), 'stand-in chat reply', 90_000);
     pass('The installed app dispatches a chat and persists a streamed stand-in reply');

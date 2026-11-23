@@ -2,7 +2,7 @@
  * The home's own key: the one `ensureLocalToken` minted at startup and keeps
  * in this root's config (`localToken`). Holding it is what makes a caller
  * the home's own machine: the local CLI, and the harness sessions the home
- * runs, which carry it in their orchestrator config. A device's `deviceType`
+ * runs, which carry it in their home MCP config. A device's `deviceType`
  * label never decides this, because any paired device can edit its label.
  *
  * The hash is cached against the config file's modification time, so the

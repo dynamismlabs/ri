@@ -7,7 +7,7 @@ import { APP_SHORT_ID } from '@/constants/app';
 /**
  * `last_outcome_event_at` is the "there is output you haven't seen" signal —
  * it drives the rail's Unread bucket, the header's Respond state, and the
- * orchestrator's "what needs my attention".
+ * coordinator's "what needs my attention".
  *
  * A subagent narrating to its own caller is not the session answering the
  * user. Before attribution existed, a fan-out of research subagents bumped

@@ -12,7 +12,7 @@ import { z as rpcZ } from 'zod/v4';
  *   POST /api/triggers/<id>?action=reset    — clear consecutive_failures
  */
 
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 // Compressed when the body is JSON and over ~1KiB; a streamed or
 // non-JSON response passes through untouched. See lib/api/compression.ts.

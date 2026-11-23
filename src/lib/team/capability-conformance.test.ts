@@ -19,7 +19,7 @@ const deny = (action: TeamAction) => policy.denied.add(action);
 
 it('admits stop independently from content edits on both tRPC and REST', async () => {
   const client = await teamTrpc(fixture.member.token.plaintext);
-  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE });
   deny('editContent');
   await expect(client.tasks.create.mutate({ title: 'Refused', rawInput: 'Refused' })).rejects.toThrow(/cannot perform/);
   expect(await client.sessions.interruptPost.mutate({ params: { id: chat.id }, body: {} })).toEqual({ ok: true });
@@ -31,7 +31,7 @@ it('admits stop independently from content edits on both tRPC and REST', async (
 
 it('refuses the compatibility send before recording work when run permission is removed', async () => {
   const client = await teamTrpc(fixture.member.token.plaintext);
-  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE });
   deny('runTeamAgent');
   await expect(client.team.ai.send.mutate({ chatId: chat.id, clientSendId: 'denied-native-send', text: 'Do not accept' })).rejects.toThrow(/cannot perform/);
   expect(q.listTeamChatTurns(chat.id)).toEqual([]);
@@ -52,7 +52,7 @@ it('supports attributed file tree mutations for a member and refuses them when f
   await client.workspaces.dirPost.mutate({ params, body: { path: 'drafts' } });
   await client.workspaces.dirDelete.mutate({ params, query: { path: 'drafts' }, body: {} });
   expect(fs.existsSync(path.join(fixture.workspace.cwd, 'renamed.txt'))).toBe(true);
-  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
   await client.sessions.fileCreatePost.mutate({ params: { id: chat.id }, body: { path: 'from-chat.txt' } });
   expect(fs.existsSync(path.join(fixture.workspace.cwd, 'from-chat.txt'))).toBe(true);
   deny('editAgentFolder');
@@ -91,7 +91,7 @@ it('checks edit authority for reverts and preview mutations while preserving rea
 });
 
 it('attributes file uploads and checks folder editing on both upload routes', async () => {
-  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
   const upload = (scope: 'workspaces' | 'sessions', filename: string) => {
     const form = new FormData();
     form.append('path', filename);

@@ -1,5 +1,5 @@
 /** A private Home's connected team socket. Only its selected member credential goes upstream. */
-import { SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import { WebSocket, WebSocketServer } from 'ws';

@@ -99,7 +99,7 @@ describe('runTick — at-most-once for one-off triggers', () => {
     const past = new Date(Date.now() - 120_000).toISOString();
     queries.createTrigger({
       name: 'tick',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'X',
       kind: 'every',
@@ -123,7 +123,7 @@ describe('runTick — at-most-once for one-off triggers', () => {
     // Ten intervals missed while the home was asleep.
     const trigger = queries.createTrigger({
       name: 'every minute',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'X',
       kind: 'every',
@@ -146,7 +146,7 @@ describe('runTick — a failed tick never stops the scheduler', () => {
     const { runTick } = await import('./runner');
     const trigger = queries.createTrigger({
       name: 'nightly',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'X',
       kind: 'every',
@@ -185,7 +185,7 @@ describe('runTick — how late a fire was', () => {
     const due = new Date(Date.now() - 3 * 60 * 60_000 - 39 * 60_000 - 5_000).toISOString();
     const trigger = queries.createTrigger({
       name: 'morning',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'Refresh the deck.',
       kind: 'cron',
@@ -209,7 +209,7 @@ describe('runTick — how late a fire was', () => {
     const { runTick } = await import('./runner');
     const trigger = queries.createTrigger({
       name: 'morning',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'Refresh the deck.',
       kind: 'every',

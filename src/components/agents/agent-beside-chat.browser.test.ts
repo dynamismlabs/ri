@@ -52,7 +52,7 @@ const STUBS: Record<string, string> = {
   '@/hooks/use-workspaces': `
     export const useMarkSessionRead = () => ({ mutate() {} });
     export const useWorkspace = () => ({ data: null });`,
-  '@/hooks/use-user-state': `export const useOrchestratorName = () => 'Ri';`,
+  '@/hooks/use-user-state': `export const useCoordinatorName = () => 'Ri';`,
   '@/contexts/work-context': `export const useWorkActivity = () => ({ streamingSessionIds: new Set(), pendingInputSessionIds: new Set(), backgroundSessionIds: new Set() });`,
   '@/components/executions/chat-status': `
     import { jsx } from 'react/jsx-runtime';

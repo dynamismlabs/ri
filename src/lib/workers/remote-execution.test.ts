@@ -144,7 +144,7 @@ describe('an execution on a connected device', () => {
     await worker!.stop();
     worker = null;
     q.setAgentCoordinationPolicy('global', '1', 'allow');
-    const source = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+    const source = q.createChatSession({ type: 'coordinator', harness: 'claude' });
     q.setAgentCoordinationHold(source.id, true);
     const delivery = await coordination.submitAgentRequest(
       { remote: true, actor: { source: 'ai', sessionId: source.id } },
@@ -188,7 +188,7 @@ describe('an execution on a connected device', () => {
     const { dispatch, answerPendingInput } = await import('@/lib/executor/adapter');
     q.updateChatSession(chatId, { permissionMode: 'ask' });
     q.setAgentCoordinationPolicy('global', '1', 'allow');
-    const source = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+    const source = q.createChatSession({ type: 'coordinator', harness: 'claude' });
     q.setAgentCoordinationHold(source.id, true);
     const delivery = await coordination.submitAgentRequest(
       { remote: true, actor: { source: 'ai', sessionId: source.id } },
@@ -483,7 +483,7 @@ describe('an execution on a connected device', () => {
     const servers = JSON.parse(reply) as Array<{ url: string; headers: Record<string, string> }>;
     const browser = servers.find((s) => s.url.includes('/browser/mcp'))!;
     // At the address the laptop reaches the home by, in its agent's own profile.
-    expect(browser.url).toBe(`${server.url}/api/orchestrator/browser/mcp?profile=ws-${workspaceId}`);
+    expect(browser.url).toBe(`${server.url}/api/home/browser/mcp?profile=ws-${workspaceId}`);
     expect(browser.headers.Authorization).toMatch(/^Bearer ri_session_/);
     expect(reply).not.toContain(home.token);
 
@@ -500,7 +500,7 @@ describe('an execution on a connected device', () => {
     });
     expect(initialize.status).toBe(200);
     expect(await initialize.text()).toContain('"serverInfo"');
-    const elsewhere = await fetch(`${server.url}/api/orchestrator/browser/mcp?profile=default`, { method: 'POST', headers: browser.headers });
+    const elsewhere = await fetch(`${server.url}/api/home/browser/mcp?profile=default`, { method: 'POST', headers: browser.headers });
     expect(elsewhere.status).toBe(403);
     const tasks = await fetch(`${server.url}/api/workers/me`, { headers: browser.headers });
     expect(tasks.status).toBe(403);
@@ -550,7 +550,7 @@ describe('an execution on a connected device', () => {
     await until(() => live.listForSession(chatId).length === 1, 'the prompt to reach the home');
     const { requestId } = live.listForSession(chatId)[0]!;
     const allow = { allow: true, updatedInput: { command: 'ls' } };
-    const agent = { source: 'ai' as const, sessionId: 'orchestrator-chat', apiKeyId: null };
+    const agent = { source: 'ai' as const, sessionId: 'coordinator-chat', apiKeyId: null };
     const answers = () => q.listWorkerCommands(deviceId).filter((c) => c.kind === 'answer_pending_input');
 
     // The home refuses it, and nothing goes to the laptop.
@@ -582,8 +582,8 @@ describe('an execution on a connected device', () => {
 
   it('carries who sent a message, and the label on one another chat sent, through the real route', async () => {
     const q = await import('@/lib/db/queries');
-    const { sessionCredential, SESSION_CREDENTIAL_HEADER } = await import('@/lib/orchestrator/session-credential');
-    const orchestrator = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode: 'ask' });
+    const { sessionCredential, SESSION_CREDENTIAL_HEADER } = await import('@/lib/actions/session-credential');
+    const coordinator = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode: 'ask' });
     const post = (content: string, headers: Record<string, string> = {}) =>
       fetch(`${server.url}/api/sessions/${chatId}/messages`, {
         method: 'POST',
@@ -597,17 +597,17 @@ describe('an execution on a connected device', () => {
     await until(() => q.listChatEvents(chatId).some((e) => e.content === 'ok: from the phone'), 'the reply');
     expect(sendOf('from the phone')).toMatchObject({ actor: { source: 'human', sessionId: null, apiKeyId: laptopKey.id } });
 
-    expect((await post('from the orchestrator', { [SESSION_CREDENTIAL_HEADER]: sessionCredential(orchestrator.id)! })).status).toBe(409);
+    expect((await post('from the coordinator', { [SESSION_CREDENTIAL_HEADER]: sessionCredential(coordinator.id)! })).status).toBe(409);
     q.setAgentCoordinationPolicy('global','1','allow');
-    const {runAction}=await import('@/lib/orchestrator/dispatch');
-    const result=await runAction('message_agent',{target:`session:${chatId}`,request_id:'provenance',response:'none',content:'from the orchestrator'},{remote:true,actor:{source:'ai',sessionId:orchestrator.id}});
+    const {runAction}=await import('@/lib/actions/dispatch');
+    const result=await runAction('message_agent',{target:`session:${chatId}`,request_id:'provenance',response:'none',content:'from the coordinator'},{remote:true,actor:{source:'ai',sessionId:coordinator.id}});
     expect(result.ok).toBe(true);
     await (await import('@/lib/coordination/service')).drainAgentCoordination();
-    await until(()=>q.listWorkerCommands(deviceId).some(command=>command.kind==='send' && (command.payload as {message:string}).message.includes('from the orchestrator')),'the coordinated send');
-    const sent=q.listWorkerCommands(deviceId).find(command=>command.kind==='send' && (command.payload as {message:string}).message.includes('from the orchestrator'))!;
-    expect(sent.actor).toEqual({source:'ai',sessionId:orchestrator.id,apiKeyId:null});
-    expect((sent.payload as {message:string}).message).toContain("[Message from the orchestrator (the user's main chat), sent on the user's behalf]");
-    expect((sent.payload as {message:string}).message).toContain('from the orchestrator');
+    await until(()=>q.listWorkerCommands(deviceId).some(command=>command.kind==='send' && (command.payload as {message:string}).message.includes('from the coordinator')),'the coordinated send');
+    const sent=q.listWorkerCommands(deviceId).find(command=>command.kind==='send' && (command.payload as {message:string}).message.includes('from the coordinator'))!;
+    expect(sent.actor).toEqual({source:'ai',sessionId:coordinator.id,apiKeyId:null});
+    expect((sent.payload as {message:string}).message).toContain("[Message from the coordinator (the user's main chat), sent on the user's behalf]");
+    expect((sent.payload as {message:string}).message).toContain('from the coordinator');
   }, 60_000);
 
   it("never sends a command for a placement that changed while the laptop was away", async () => {

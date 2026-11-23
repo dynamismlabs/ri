@@ -22,7 +22,7 @@ When an assigned run finishes, Ri captures its saved root assistant output. Outs
 
 ## Addresses and tools
 
-Stable addresses are `orchestrator`, `agent` for the caller's own agent, and `agent:<workspace id>`. `session:<chat id>` identifies an exact chat. `requester` means the exact originating chat of the verified current assignment. Scheduled chats also use exact return addresses. A stable address may resolve a replacement main chat before delivery is attempted. Once pinned, the destination is retained through retries and uncertain acknowledgments.
+Stable addresses are `coordinator`, `agent` for the caller's own agent, and `agent:<workspace id>`. `session:<chat id>` identifies an exact chat. `requester` means the exact originating chat of the verified current assignment. Scheduled chats also use exact return addresses. A stable address may resolve a replacement main chat before delivery is attempted. Once pinned, the destination is retained through retries and uncertain acknowledgments.
 
 | Tool | Purpose |
 | --- | --- |
@@ -58,13 +58,13 @@ Receipts expose `delivery_id`, optional `request_id`, delivery `status`, `reques
 | `send_agent_message` | `message_agent`, `response: "none"` |
 | `send_session_message` | `message_agent`, `target: "session:<id>"`, explicit response policy |
 | `start_execution` | `delegate_work` |
-| `submit_memory_finding` | `message_agent`, target orchestrator, `response: "none"` |
+| `submit_memory_finding` | `message_agent`, target coordinator, `response: "none"` |
 
-Removed tools have no MCP or CLI aliases. The orchestration registry generates both surfaces. Qualified personal chats receive the focused native coordination server, with a signed CLI fallback. Team chats and internal reviewers retain their restricted surfaces. The orchestrator and agent main chats are encouraged to consult and delegate proactively within the user's intent and permission. An agent's main chat delegates research and wide reading as well as building, keeping its own context for coordination (`docs/orchestrator-harness.md`, Agent main chats).
+Removed tools have no MCP or CLI aliases. The action registry generates both surfaces. Qualified personal chats receive the focused native coordination server, with a signed CLI fallback. Team chats and internal reviewers retain their restricted surfaces. The coordinator and agent main chats are encouraged to consult and delegate proactively within the user's intent and permission. An agent's main chat delegates research and wide reading as well as building, keeping its own context for coordination (`docs/coordinator-harness.md`, Agent main chats).
 
 ## Permission and Hold
 
-Ri's main orchestrator chat and each agent's main chat are unrestricted for coordination. The server identifies them as personal orchestration chats without an execution or creating run, on a main or unset surface. Their new messages and delegations queue without approval even when saved preferences say Ask first. The chat menu states this authority instead of showing ineffective Ask/Allow choices. Incoming pause, tool permissions and restricted team/reviewer boundaries remain unchanged. Earlier sends awaiting approval still need the person's decision.
+Ri's main coordinator chat and each agent's main chat are unrestricted for coordination. The server identifies them as personal coordinator chats without an execution or creating run, on a main or unset surface. Their new messages and delegations queue without approval even when saved preferences say Ask first. The chat menu states this authority instead of showing ineffective Ask/Allow choices. Incoming pause, tool permissions and restricted team/reviewer boundaries remain unchanged. Earlier sends awaiting approval still need the person's decision.
 
 The policy below applies to execution and other chats. `get_session_context` and the coordination state expose manager authority as `unrestricted`, separately from saved preferences. This exemption is not inherited by delegated execution chats. Their existing policy initialization remains unchanged.
 
@@ -102,7 +102,7 @@ Archive preserves exact history. Hard deletion settles unaccepted coordination b
 
 ## Scheduled jobs
 
-Enabling an automation authorizes communication and delegation needed for its assignment. The dispatcher initializes each trigger-fired chat with the existing chat-level Allow automatically preference. This includes first-time execution creation, later recurring execution chats, orchestrator jobs, one-time jobs, interval jobs, webhooks and Run now. Ordinary interactive chat defaults remain unchanged. There are no new permission tables, recipient grants or trigger preference columns. Future fires of existing schedules use the new default without a migration or historical replay.
+Enabling an automation authorizes communication and delegation needed for its assignment. The dispatcher initializes each trigger-fired chat with the existing chat-level Allow automatically preference. This includes first-time execution creation, later recurring execution chats, coordinator jobs, one-time jobs, interval jobs, webhooks and Run now. Ordinary interactive chat defaults remain unchanged. There are no new permission tables, recipient grants or trigger preference columns. Future fires of existing schedules use the new default without a migration or historical replay.
 
 ### Check-ins on an existing chat
 
@@ -114,7 +114,7 @@ The fire is the trigger's prompt behind a `[from trigger <name> (<id>)]` marker,
 - A fire while the chat is busy is skipped as `chat_busy`. Busy is a turn in flight here or on its device, background tasks, a send not yet taken, or the trigger's own earlier fire, the same reading coordination uses before delivering. Chat targets default to `skip_if_running`, because a busy chat is already awake. With `coalesce_if_active` the prompt joins the turn under way. One chat runs one turn at a time, so `allow_concurrent` skips too.
 - A chat that has been archived or deleted fails the fire with `target_chat_unavailable` and pauses the trigger. `target_session_id` is a plain id, not a foreign key: every fire looks the chat up.
 
-This replaces the relay pattern, where a workspace or orchestrator trigger started a fresh chat on every fire only to message the chat that owned the work. The trade-off is the one docs/executions-spec.md §6 names: the target chat's conversation grows with every fire. The creator chooses that by naming a chat.
+This replaces the relay pattern, where a workspace or coordinator trigger started a fresh chat on every fire only to message the chat that owned the work. The trade-off is the one docs/executions-spec.md §6 names: the target chat's conversation grows with every fire. The creator chooses that by naming a chat.
 
 A person may change that run chat's preference, pause incoming messages or stop the run. If the turn ends with its own send still awaiting approval, the run fails with `coordination_approval_required` and an actionable message. Its normal terminal notification route is used, with the existing needs-input route as fallback. There is one notification route per failure and no duplicate on repeated result callbacks. Already authorized queued messages remain delivery state. A run's completed turn is distinct from an accepted delivery or a finished delegated assignment.
 

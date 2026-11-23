@@ -67,9 +67,9 @@ Use controllable promises in runtime and route tests to exercise the preparation
 
 ### Observed behavior
 
-The `cancel_run` orchestrator action imports the executor adapter in the calling process. A standalone CLI process has its own empty handle map, so `abort()` can do nothing while the server's agent keeps running. The action then marks the run cancelled.
+The `cancel_run` Ri action imports the executor adapter in the calling process. A standalone CLI process has its own empty handle map, so `abort()` can do nothing while the server's agent keeps running. The action then marks the run cancelled.
 
-Evidence: [Orchestrator registry](../src/lib/orchestrator/registry.ts), around lines 2060 to 2082. The existing [server client](../src/lib/orchestrator/server-client.ts) provides the transport needed to reach server-owned runtime state.
+Evidence: [Action registry](../src/lib/actions/registry.ts), around lines 2060 to 2082. The existing [server client](../src/lib/actions/server-client.ts) provides the transport needed to reach server-owned runtime state.
 
 ### Proposed fix
 

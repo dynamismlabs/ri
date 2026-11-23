@@ -24,7 +24,7 @@ export function appMessageRouting(queryClient: QueryClient, dashboard: Dashboard
       return { id, type, workspaceId: workspaceId ?? null };
     },
     async mainChat() {
-      const main = await queryClient.fetchQuery({ queryKey: mainChatKey(null), queryFn: () => trpcClient.orchestratorChat.list.query({}), staleTime: 30_000 });
+      const main = await queryClient.fetchQuery({ queryKey: mainChatKey(null), queryFn: () => trpcClient.coordinatorChat.list.query({}), staleTime: 30_000 });
       return main.session.id;
     },
     async newMainChat(scope) {

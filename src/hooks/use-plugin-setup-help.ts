@@ -28,7 +28,7 @@ export function usePluginSetupHelp() {
       const content = pluginSetupHelpMessage(target);
       if (!request.current || request.current.content !== content) request.current = { content, eventId: uuidv7() };
       const sessionId = await sendPluginSetupHelp(request.current, {
-        ensureMainChat: () => trpcClient.orchestratorChat.list.query({}), sendMessage: sessionsApi.sendMessage,
+        ensureMainChat: () => trpcClient.coordinatorChat.list.query({}), sendMessage: sessionsApi.sendMessage,
       });
       request.current = null;
       void qc?.invalidateQueries({ queryKey: mainChatKey(null), exact: true });

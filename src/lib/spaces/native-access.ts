@@ -2,7 +2,7 @@ import { apiErrorStatus } from '@/lib/api/error-status';
 import { teamContentInput, teamContentResult, UNKNOWN_CONTENT_OPERATION } from '@/lib/team/mcp/input';
 import { z } from 'zod';
 import * as q from '@/lib/db/queries';
-import { ActionError, defineAction, type Action, type ActionContext } from '@/lib/orchestrator/types';
+import { ActionError, defineAction, type Action, type ActionContext } from '@/lib/actions/types';
 import { isTeamAuthority } from '@/lib/home/authority';
 import { assertCurrentTeam, recordTeamFailure, teamFor } from './connect';
 import { workResultAttachmentSchema } from '@/lib/work-results/validation';

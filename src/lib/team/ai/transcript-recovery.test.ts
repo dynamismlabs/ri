@@ -19,7 +19,7 @@ it('catches up a Team transcript through both session-open and restart recovery 
   const external = crypto.randomUUID();
   const line = (id: string, content: string) => JSON.stringify({ type: 'assistant', uuid: id, sessionId: external, timestamp: new Date().toISOString(), message: { id, role: 'assistant', content: [{ type: 'text', text: content }] } }) + '\n';
   fs.writeFileSync(file, line('before-restart', 'Saved on disk before restart'));
-  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE,
+  const chat = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE,
     externalSessionId: external, externalTranscriptPath: file, externalSyncOffset: 0, deviceId: q.getHome()!.hostDeviceId });
   const member = await teamTrpc(fixture.member.token.plaintext);
   const opened = await member.sessions.reconcilePost.mutate({ params: { id: chat.id }, body: {} });

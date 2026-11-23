@@ -85,13 +85,13 @@ export type { WorkResultLink, WorkResultCodeRevision, WorkResultReviewSelection,
 
 // ─── User State ────────────────────────────────────────────────
 
-// `orchestratorImage` is stored snake_case like every attachment column and
+// `coordinatorImage` is stored snake_case like every attachment column and
 // hydrated by `getUserState` / `updateUserState`, so the app sees `Attachment`.
-export type UserStateRecord = Omit<InferSelectModel<typeof userState>, 'orchestratorImage'> & {
-  orchestratorImage: Attachment | null;
+export type UserStateRecord = Omit<InferSelectModel<typeof userState>, 'coordinatorImage'> & {
+  coordinatorImage: Attachment | null;
 };
 export type UpdateUserStateInput = Partial<
-  Omit<InferInsertModel<typeof userState>, 'id' | 'orchestratorImage'> & { orchestratorImage: Attachment | null }
+  Omit<InferInsertModel<typeof userState>, 'id' | 'coordinatorImage'> & { coordinatorImage: Attachment | null }
 >;
 
 // ─── Scratchpad ────────────────────────────────────────────────

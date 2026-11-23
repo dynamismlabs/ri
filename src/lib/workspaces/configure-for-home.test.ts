@@ -21,7 +21,7 @@ it('keeps agent configuration owner-controlled while members read it and shared 
 });
 it('cancels accepted work on an agent configuration change with attributed history retained', async () => {
   const owner = await teamTrpc(fixture.owner.token.plaintext);
-  const chat = q.createChatSession({ harness: 'codex', type: 'orchestration', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ harness: 'codex', type: 'coordinator', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
   const receipt = q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'configuration-queued', text: 'Waiting work' });
   await owner.workspaces.update.mutate({ params: { id: fixture.workspace.id }, body: { instructions: 'Changed instructions' } });
   expect(q.getTeamChatTurn(receipt.turn.id)?.status).toBe('cancelled');

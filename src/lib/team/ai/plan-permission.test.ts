@@ -5,7 +5,7 @@ import { preloadTeamRoutes, serveTeam, teamTrpc } from '@/test/fixtures/team-hom
 import * as q from '@/lib/db/queries';
 import { settledTeamAi, stopTeamAiWork, setTeamAiRunnerForTests } from '@/lib/team/ai/chat';
 import { closeAllSessions, _resetExecutorState } from '@/lib/runner/local-runner';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>;
 let fake: FakeHarness;
@@ -23,7 +23,7 @@ afterEach(async () => {
 it("a human plan approval restores the helper's inherited Ask setting", async () => {
   fake = installFakeHarness('claude');
   q.saveTeamAiSettings({ harness: 'claude', model: fake.modelId }, fixture.owner.member.id);
-  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask' });
+  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask' });
   const answers: unknown[] = [];
   fake.onTurn(async turn => {
     answers.push(await turn.ask({ toolName: 'ExitPlanMode', toolUseId: 'plan-exit', input: { plan: 'Do it' } }));

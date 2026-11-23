@@ -142,7 +142,7 @@ describe('dispatchRun', () => {
     expect(ownsRecur).toEqual([]);
   });
 
-  it('orchestrator-target trigger fires create chats with executionId NULL', async () => {
+  it('coordinator-target trigger fires create chats with executionId NULL', async () => {
     await seed();
     const queries = await import('@/lib/db/queries');
     const { dispatchRun } = await import('./dispatch');
@@ -150,7 +150,7 @@ describe('dispatchRun', () => {
     const orch = queries.createTrigger({
       name: 'morning-summary',
       workspaceId: null,
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'Summarize',
       kind: 'cron',
@@ -159,13 +159,13 @@ describe('dispatchRun', () => {
     const r = await dispatchRun({ trigger: orch, triggerKind: 'cron' });
     expect(r.run.executionId).toBeNull();
     expect(r.chatSession?.executionId).toBeNull();
-    expect(r.chatSession?.type).toBe('orchestration');
+    expect(r.chatSession?.type).toBe('coordinator');
   });
 
   it.each([
-    ['workspace', 'at'], ['workspace', 'cron'], ['orchestrator', 'at'],
-    ['orchestrator', 'cron'], ['orchestrator', 'every'],
-    ['orchestrator', 'manual'], ['orchestrator', 'webhook'],
+    ['workspace', 'at'], ['workspace', 'cron'], ['coordinator', 'at'],
+    ['coordinator', 'cron'], ['coordinator', 'every'],
+    ['coordinator', 'manual'], ['coordinator', 'webhook'],
   ] as const)('%s %s fires can coordinate under Ask first defaults', async (targetKind, kind) => {
     const { wsId } = await seed();
     const q = await import('@/lib/db/queries');
@@ -288,7 +288,7 @@ describe('dispatchRun', () => {
 
     const sched = queries.createTrigger({
       name: 'no-timeout',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'X',
       kind: 'cron',
@@ -327,14 +327,14 @@ describe('dispatchRun', () => {
     expect(fireB.run.statusReason).toBe('trigger_busy');
   });
 
-  it('allow_concurrent on an orchestrator target spawns a second run', async () => {
+  it('allow_concurrent on a coordinator target spawns a second run', async () => {
     await seed();
     const queries = await import('@/lib/db/queries');
     const { dispatchRun } = await import('./dispatch');
 
     const sched = queries.createTrigger({
       name: 'parallel-orch',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'X',
       kind: 'cron',
@@ -343,7 +343,7 @@ describe('dispatchRun', () => {
     });
     const fireA = await dispatchRun({ trigger: sched, triggerKind: 'cron' });
     const fireB = await dispatchRun({ trigger: sched, triggerKind: 'cron' });
-    // Orchestrator targets have no shared worktree — allow_concurrent
+    // Coordinator targets have no shared worktree — allow_concurrent
     // does what it says. Re-read since `dispatchRun` returns the
     // initial 'queued' snapshot.
     const liveB = queries.getRun(fireB.run.id);
@@ -393,7 +393,7 @@ describe('dispatchRun', () => {
 
     const sched = queries.createTrigger({
       name: 'with-transcript',
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       harness: 'claude',
       prompt: 'Triage the inbox',
       kind: 'cron',

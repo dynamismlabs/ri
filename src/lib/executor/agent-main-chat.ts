@@ -1,11 +1,11 @@
 /**
  * Spawn preparation for an agent's main chat (docs/agents-view-spec.md
- * Phase 6): an orchestration chat with a workspace, running in the agent's
+ * Phase 6): a coordinator chat with a workspace, running in the agent's
  * own folder.
  *
  * The folder belongs to the user, so nothing is written into it. The brief
  * goes through the session instructions file (in the work dir), and
- * orchestrator actions go through the session's MCP config. The chat gets
+ * Ri actions go through the session's MCP config. The chat gets
  * the same scope as the agent's executions: its integration scopes, the agent
  * browser when enabled, and its reference folders. In a git agent the file-editing tools are
  * denied, since the checkout is what every execution's worktree branches
@@ -21,10 +21,10 @@ import type { WorkspaceRecord } from '@/db/types';
 import {
   browserMcpServer,
   integrationsMcpServer,
-  ORCHESTRATOR_DISALLOWED_TOOLS,
-  orchestratorMcpServer,
+  COORDINATOR_DISALLOWED_TOOLS,
+  homeMcpServer,
   renderAgentMainChatBrief,
-} from '@/lib/orchestrator/harness-surface';
+} from '@/lib/coordinator/harness-surface';
 import { listUsableReferenceFolders } from '@/lib/reference-folders/resolve';
 import {
   buildReferenceFolderSessionConfig,
@@ -82,8 +82,8 @@ export async function prepareAgentMainChatSpawn(args: AgentMainChatSpawnArgs): P
   const disallowedTools: string[] = [];
 
   const servers: McpServerConfig[] = [];
-  const orchestrator = orchestratorMcpServer(args.port, { sessionId: args.chatSessionId });
-  if (orchestrator) servers.push(orchestrator);
+  const coordinator = homeMcpServer(args.port, { sessionId: args.chatSessionId });
+  if (coordinator) servers.push(coordinator);
   // The agent's accounts, or at least `request_connection` so it can ask for one it needs.
   const hasScopes = ws.integrationScopes.length > 0;
   const integrations = args.strictMcpIsolation
@@ -100,7 +100,7 @@ export async function prepareAgentMainChatSpawn(args: AgentMainChatSpawnArgs): P
   if (browser) servers.push(browser);
 
   if (ws.isGit) {
-    disallowedTools.push(...ORCHESTRATOR_DISALLOWED_TOOLS);
+    disallowedTools.push(...COORDINATOR_DISALLOWED_TOOLS);
     if (!TOOL_FILTER_PROVIDERS.has(providerType)) {
       warnings.push('the git write guard is prompt-only (this harness ignores tool filtering)');
     }

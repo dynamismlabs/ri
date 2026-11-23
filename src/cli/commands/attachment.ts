@@ -3,11 +3,11 @@ import { constants } from 'node:fs';
 import path from 'node:path';
 import type { Command } from 'commander';
 import type { Attachment } from '@/db/types';
-import { serverFetch } from '@/lib/orchestrator/server-client';
+import { serverFetch } from '@/lib/actions/server-client';
 import { getInstallationRole } from '@/lib/config/role';
 import { readConnection } from '@/lib/connection/config';
 import { homeFetch } from '@/lib/connection/home-client';
-import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { resolveMime } from '@/lib/attachments/mime';
 
 /** Upload explicitly selected local bytes through the existing attachment API.

@@ -3,7 +3,7 @@ import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
 import { listenTeam, preloadTeamRoutes } from '@/test/fixtures/team-home';
-import { sessionCredential } from '@/lib/orchestrator/session-credential';
+import { sessionCredential } from '@/lib/actions/session-credential';
 import * as q from '@/lib/db/queries';
 import * as chat from '@/lib/team/ai/chat';
 import { closeAllSessions } from '@/lib/runner/local-runner';
@@ -16,7 +16,7 @@ beforeAll(async () => {
   vi.stubEnv('RI_MIRROR_DISABLED', '1'); await preloadTeamRoutes(); fixture = await createTeamExecutionFixture(); server = await listenTeam();
   fake = installFakeHarness('claude'); codex = installFakeHarness('codex'); codex.onTurn(async turn => { await turn.say('ok'); }); q.saveTeamAiSettings({ harness: 'claude', model: fake.modelId }, fixture.owner.member.id);
   fake.onTurn(async turn => { await turn.say('ok'); });
-  const parent = q.createChatSession({ type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, harness: 'claude', permissionMode: 'auto_edits', createdByMemberId: fixture.member.member.id });
+  const parent = q.createChatSession({ type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, harness: 'claude', permissionMode: 'auto_edits', createdByMemberId: fixture.member.member.id });
   q.acceptTeamChatSend({ chatId: parent.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'native-fixture', text: 'Use tools' }); q.claimNextTeamChatTurn(parent.id);
   credential = sessionCredential(parent.id)!;
 }, 120_000);
@@ -45,7 +45,7 @@ it('refuses unknown and conflicting native keys before child creation', async ()
 it.each(['mcp', 'http'] as const)('%s honors narrower modes, harness and task aliases', async transport => {
   const task = q.createTask({ title: 'Alias task' });
   const input = { workspace_id: fixture.workspace.id, request_id: crypto.randomUUID(), prompt: 'Plan only', harness: 'codex', permission_mode: 'plan', task_id: task.id };
-  const result = transport === 'mcp' ? (await mcp('start_execution', input)).body : await (await fetch(server.url + '/api/orchestrator/actions/start_execution', {
+  const result = transport === 'mcp' ? (await mcp('start_execution', input)).body : await (await fetch(server.url + '/api/home/actions/start_execution', {
     method: 'POST', headers: { authorization: 'Bearer ' + credential, 'x-ri-session': credential, 'content-type': 'application/json' }, body: JSON.stringify(input),
   })).json();
   expect(result, JSON.stringify(result)).toMatchObject({ ok: true });

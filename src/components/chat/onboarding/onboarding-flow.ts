@@ -76,12 +76,12 @@ export function stepApplies(step: OnboardingStep, ctx: StepContext): boolean {
  */
 export function stepsOnFile(state: {
   name?: string | null;
-  orchestratorName?: string | null;
-  orchestratorEmoji?: string | null;
-  orchestratorImage?: unknown;
+  coordinatorName?: string | null;
+  coordinatorEmoji?: string | null;
+  coordinatorImage?: unknown;
 }): Set<OnboardingStepName> {
   const steps = new Set<OnboardingStepName>();
-  if (state.orchestratorName || state.orchestratorEmoji || state.orchestratorImage) steps.add('identity');
+  if (state.coordinatorName || state.coordinatorEmoji || state.coordinatorImage) steps.add('identity');
   if (state.name?.trim()) steps.add('you');
   return steps;
 }

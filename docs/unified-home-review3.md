@@ -18,7 +18,7 @@ No production Home, real provider account, Docker, deployment, push or merge to 
 
 | Finding | Correction | Regression evidence |
 | --- | --- | --- |
-| H1 raw destinations | MCP preserves raw keys until dispatch. Camel/snake targets normalize or refuse before action validation, unknown target spellings refuse, targeted Team aliases survive. External-content scope remains unchanged. | `api/orchestrator/[transport]/route.test.ts`, `spaces/native-access.test.ts`, `external-ai/home-mcp.test.ts` |
+| H1 raw destinations | MCP preserves raw keys until dispatch. Camel/snake targets normalize or refuse before action validation, unknown target spellings refuse, targeted Team aliases survive. External-content scope remains unchanged. | `api/home/[transport]/route.test.ts`, `spaces/native-access.test.ts`, `external-ai/home-mcp.test.ts` |
 | H3 Files | Create, rename, delete, directories and conflict resolution use named `editAgentFolder` admission and common owner-file operations. Successful edits carry member/sign-in activity. | `team/capability-conformance.test.ts`, `team/ai/native-turn.test.ts`, actual Team boundary integration |
 | M1 version skew | Protocol 2 is required by new native clients. Updated Homes retain protocol 1. An older server gives an update message. Discovery probes capability before advertising native operations. | `spaces/mixed-version.test.ts` starts a real pinned main-code Team process |
 | M2 permissions | Agent launch inherits sender restrictions. Widening needs a signed-in person. Identity from member keys also preserves disclosed session identity. | Actual runner and signed in-process tRPC POST in `team/ai/native-turn.test.ts`, main/sibling policy tests |

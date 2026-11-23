@@ -42,7 +42,7 @@ it('browses without an agent, filters by kind, and preserves total counts beyond
 });
 
 it('keeps an existing chat\'s prior references without carrying them into New chat', async () => {
-  const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+  const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
   const archived = q.createTask({ title: 'Archived context', status: 'archived' });
   q.pinSessionRef({ sessionId: chat.id, entityType: 'task', entityId: archived.id, createdBy: 'user' });
   const input = { params: { id: chat.id }, query: { kind: 'task' as const } };

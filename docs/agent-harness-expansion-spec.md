@@ -303,7 +303,7 @@ Primary app files include:
 - `src/lib/db/schema.ts`
 - `src/lib/db/queries.ts`
 - `src/app/api/harness/*`
-- `src/app/api/orchestrator-chat/route.ts`
+- `src/app/api/coordinator-chat/route.ts`
 - `src/app/api/document-chat/route.ts`
 - `src/app/api/sessions/[id]/*`
 - `src/components/settings/*`
@@ -1214,7 +1214,7 @@ Generalize these inputs:
 Affected APIs include:
 
 - New execution chat
-- Orchestrator chat
+- Coordinator chat
 - Document chat
 - Session model update
 - Default harness update
@@ -2421,7 +2421,7 @@ Affected app areas:
 - [ ] `[APP]` Update `src/lib/harness/options.ts`
 - [ ] `[APP]` Update `src/lib/executor/harness.ts`
 - [ ] `[APP]` Update `src/lib/sessions/dispatch.ts`
-- [ ] `[APP]` Update orchestrator and document chat routes
+- [ ] `[APP]` Update coordinator and document chat routes
 - [ ] `[APP]` Update new-chat and session routes
 - [ ] `[APP]` Update hooks and API client types
 - [ ] `[APP]` Update execution and harness-chat component callback types
@@ -2949,9 +2949,9 @@ Added 2026-10-01 against Agentex 0.0.39. Google's Antigravity CLI (`agy`) replac
 | Permission modes | `auto_all` and `plan` only, like Cursor. Headless `agy` has no approval channel: a tool that needs approval is soft-denied by policy and reported as a denial. Offering `ask` would mean "deny every edit and command" and `auto_edits` ("ask for shell") would mean "never run shell", both silently. `auto_all` is `--dangerously-skip-permissions`, `plan` is `--mode plan`, passed without skip permissions. This requests CLI planning behavior, not a filesystem sandbox. Unsupported modes are rejected on writes and again before launch. The initial execution mode is stored atomically, before the first prompt |
 | Sessions and resume | One `agy --input-format stream-json --output-format stream-json` process per session. The conversation id is the external session id, and a restart resumes with `--conversation <id>`. The resume command shown in the UI is `agy --conversation {id}`, run from the chat's folder because conversations are scoped to it |
 | Instructions | Agentex reads `instructionsFile` in the session and sends it ahead of the first message of a conversation it starts, so Antigravity is in `SESSION_INSTRUCTIONS_PROVIDERS`. Agent instructions, reference folders and an agent main chat's brief all arrive. Reference folders are `prompt-only` (no `--add-dir` or tool filters). A successful resume keeps its original instructions. Agentex must fix missing instructions when a requested resume starts a new conversation, before publication |
-| Orchestrator surface | Antigravity reads the data root's `AGENTS.md`. It is deliberately not in `installInstructions`' runtimes, because its native file is a full `GEMINI.md` copy and the app root carries one rules file |
+| Coordinator surface | Antigravity reads the data root's `AGENTS.md`. It is deliberately not in `installInstructions`' runtimes, because its native file is a full `GEMINI.md` copy and the app root carries one rules file |
 | Skills | Workspace skills from `.agents/skills`, global from `~/.gemini/config/skills` (not `~/.agents/skills`, checked with agy 1.4.3). Ri's own skills arrive as `skillDirs`, which agentex 0.0.46 stages in a temporary `.agents/skills` folder added with `--add-dir`, with each skill's real folder added too so headless agy may read it. Never the chat's folder, so an agent main chat still gets them. Ri's shipped global skills go to `~/.gemini/config/skills` as copies, since agy can't read a link there (docs/skills.md) |
-| MCP | None (`mcp: false`). Agentex passes no MCP servers to `agy`, so integrations, the agent browser and the orchestrator MCP don't reach it, the same as Codex, Cursor and OpenCode. Executions skip integrations and the browser up front because `strictMcpIsolation` is false |
+| MCP | None (`mcp: false`). Agentex passes no MCP servers to `agy`, so integrations, the agent browser and the home MCP don't reach it, the same as Codex, Cursor and OpenCode. Executions skip integrations and the browser up front because `strictMcpIsolation` is false |
 | Background AI | `CHEAPEST_MODEL.antigravity` is explicitly null. One-shots fail clearly before launch because agy ignores the required tool filters and MCP isolation. Automatic titles use the existing snippet fallback. No other harness is silently substituted |
 | Reconciliation | No durable catch-up. `reconcileSession` reports `unsupported_provider`, as for Cursor |
 | Sign-in loss mid-chat | Agentex emits `auth_required` with `loginCommand: "agy"`. The transcript banner is provider-aware: it names the command, checks the sign-in again on request through `/api/harness/auth`, and offers Resend once it holds. Only Claude keeps the in-app login button |
@@ -2973,10 +2973,10 @@ Followed for Antigravity. The complete permission, command, model, effort, instr
 - [x] `[APP]` `src/lib/executor/session-instructions.ts`: whether the session path reads `instructionsFile`, checked against agentex source
 - [x] `[APP]` `src/lib/executor/agent-main-chat.ts`: whether `skillDirs` would land in the cwd
 - [x] `[APP]` `src/lib/executor/harness.ts` `CHEAPEST_MODEL`: a stable alias or explicit null, plus the background availability guard
-- [x] `[APP]` `src/lib/orchestrator/harness-surface.ts`: exhaustive instruction-file participation map, explicitly excluding Antigravity from native-file generation
+- [x] `[APP]` `src/lib/coordinator/harness-surface.ts`: exhaustive instruction-file participation map, explicitly excluding Antigravity from native-file generation
 - [x] `[APP]` UI: the onboarding card copy (`step-harness.tsx`), the registry icon map (`harness-connection-ui.tsx`), resume id label, provider label, auth banner. Capability fallbacks in the composer and background task bar read registry maximums
-- [x] `[APP]` Tests: registry, options, permission map, instruction delivery, reference-folder wiring, one-shot, orchestrator surface, service environment, icons, and an end-to-end run through the real runner and agentex provider against a stand-in CLI (`src/lib/executor/antigravity-harness.test.ts`, `src/test/fixtures/mock-agy.ts`)
-- [x] `[APP]` Docs: `AGENTS.md`, `README.md`, this section, `docs/skills.md`, `docs/desktop.md`, `docs/reference-folders-spec.md`, `docs/orchestrator-harness.md`, `docs/background-ai.md`, `docs/pinned-models.md`
+- [x] `[APP]` Tests: registry, options, permission map, instruction delivery, reference-folder wiring, one-shot, coordinator surface, service environment, icons, and an end-to-end run through the real runner and agentex provider against a stand-in CLI (`src/lib/executor/antigravity-harness.test.ts`, `src/test/fixtures/mock-agy.ts`)
+- [x] `[APP]` Docs: `AGENTS.md`, `README.md`, this section, `docs/skills.md`, `docs/desktop.md`, `docs/reference-folders-spec.md`, `docs/coordinator-harness.md`, `docs/background-ai.md`, `docs/pinned-models.md`
 - [ ] `[AX]` Publish Agentex 0.0.39, then `pnpm up @agentex/agent@0.0.39` to refresh `pnpm-lock.yaml`
 - [ ] `[APP]` Live check with a signed-in `agy`: onboarding verify, a chat, a resume, plan mode, an execution with reference folders
 

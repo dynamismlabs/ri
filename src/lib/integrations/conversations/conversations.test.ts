@@ -73,7 +73,7 @@ it('runs a real Ri conversation from a Slack mention, deduplicates it, and retur
   await vi.waitFor(() => expect(sent.filter(row => row.method === 'chat.postMessage')).toHaveLength(1), { timeout: 15_000 });
   expect(sent.find(row => row.method === 'chat.postMessage')?.body).toMatchObject({ channel: 'C001', thread_ts: '123.000001', text: 'The release checklist is ready.' });
   const thread = q.getConversationThread(accepted!.threadId!)!;
-  expect(q.getChatSession(thread.sessionId!)).toMatchObject({ type: 'orchestration', workspaceId: null });
+  expect(q.getChatSession(thread.sessionId!)).toMatchObject({ type: 'coordinator', workspaceId: null });
   expect(harness.sessions).toHaveLength(1);
   expect(q.getConversationInput(accepted!.inputId!)?.status).toBe('accepted');
   expect(q.conversationOutputsForConnection(connection.id)).toHaveLength(0);
@@ -241,7 +241,7 @@ it('rotates Slack credentials while preserving the linked conversation and unsen
 it('reports uncertain persisted input after restart instead of dispatching its work twice', async () => {
   const accepted = event('<@UBOT> Launch once')!;
   const input = q.getConversationInput(accepted.inputId!)!;
-  const session = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  const session = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   q.bindConversationThread(input.threadId, session.id);
   q.insertChatEvent({ id: input.eventId, sessionId: session.id, role: 'user', source: 'user', content: input.content });
   await drainConversations();
@@ -256,7 +256,7 @@ it('does not accept a message from a different workspace or an unconnected chann
 
 it('returns a restarted run failure even when the model emitted no assistant text', async () => {
   const thread = savedThread('C001', 'root');
-  const session = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  const session = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   q.bindConversationThread(thread.id, session.id);
   const run = q.createRun({ chatSessionId: session.id, harness: 'claude', triggerKind: 'manual', status: 'queued' });
   q.bindConversationRun(session.id, run.id);

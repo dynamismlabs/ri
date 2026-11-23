@@ -6,7 +6,7 @@
  * `{ response, entities, innerSteps }` payload. External agents hit this to
  * read from or contribute to the user's productivity system; the app-side
  * agent runs on the user's default subscription harness and acts through
- * the orchestrator action surface.
+ * the Ri action surface.
  *
  * Bearer auth is enforced globally by `src/middleware.ts`.
  *

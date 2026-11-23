@@ -24,7 +24,7 @@ async function main() {
   const member = q.redeemTeamInvite({ secret: invitation.secret, name: 'Luis Arroyo', device: { kind: 'computer', name: 'Member browser' } });
   q.updateUserState({ onboardedAt: new Date().toISOString(), name: 'Field Notes', defaultHarness: 'codex', defaultModel: 'gpt-6.1-sol' });
   const logo = await saveAttachment({ originalName: 'Field Notes.svg', mimeType: 'image/svg+xml', data: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><rect width="96" height="96" rx="22" fill="#167451"/><path d="M26 28h23M26 28v40m0-20h18m13 20V28l18 40V28" fill="none" stroke="#f3f6e7" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>') });
-  q.updateUserState({ orchestratorImage: logo });
+  q.updateUserState({ coordinatorImage: logo });
   const launch = q.createArea({ name: 'Launch', emoji: '🚀' });
   const research = q.createArea({ name: 'Research', emoji: '🔎' });
   const tasks = [
@@ -50,7 +50,7 @@ async function main() {
   const assistant = makeAgent('Field Notes assistant', 'assistant', 'Coordinate shared tasks, notes, decisions and the team’s agents.');
   const builder = makeAgent('Product', 'product', 'Build and review the Field Notes application.');
   const analyst = makeAgent('Research', 'research', 'Read sources and turn findings into useful shared notes.');
-  const chat = q.createChatSession({ type: 'orchestration', workspaceId: assistant.id, harness: 'codex', model: 'gpt-6.1-sol', surfaceKind: q.TEAM_CHAT_SURFACE, createdByMemberId: owner.member.id });
+  const chat = q.createChatSession({ type: 'coordinator', workspaceId: assistant.id, harness: 'codex', model: 'gpt-6.1-sol', surfaceKind: q.TEAM_CHAT_SURFACE, createdByMemberId: owner.member.id });
   q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', authorMemberId: owner.member.id, content: 'What should we focus on for the release?' });
   q.insertChatEvent({ sessionId: chat.id, role: 'assistant', source: 'agent', content: 'The onboarding review is the next decision. Luis is checking exports. We can keep the announcement ready while you review the prototype together.' });
   q.setMemberCurrentMainChat(owner.member.id, assistant.id, chat.id);

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { readLimitedJson, RequestBodyTooLargeError } from '@/lib/api/limited-body';
 import { getRequestKey } from '@/lib/auth/request-key';
-import { mcpCallContext } from '@/lib/orchestrator/mcp-caller';
-import { dispatchEmailOperation } from '@/lib/orchestrator/email-actions';
-import { ActionError } from '@/lib/orchestrator/types';
+import { mcpCallContext } from '@/lib/actions/mcp-caller';
+import { dispatchEmailOperation } from '@/lib/actions/email-actions';
+import { ActionError } from '@/lib/actions/types';
 
 /** Signed CLI forwarding keeps live draft updates in the server process. No send operation. */
 export async function POST(request: Request) {

@@ -25,8 +25,8 @@ Grounded in the code as of 2026-07-10:
 
 - Capture plumbing is solid. Unified `POST /api/capture` handles text, image (vision OCR), and audio (STT). Pocket webhook ingests with external-id dedupe. Brain dump modal and chat both create items. All items are embedded and hybrid-searchable (`src/lib/embeddings/embed.ts`).
 - Schema (`src/lib/db/schema.ts:138-178`): `stream` table with `rawText`, `source`, `media`, `origin`, external dedupe fields, `status` in `pending | promoted | dismissed`, one-to-one promotion stamps (`promotedToType`, `promotedToId`, `promotedAt`), an unused `promotionPass` column, and derived `attachments`.
-- Promotion exists in two parallel implementations: the atomic server-side `promote_stream` orchestrator action (`src/lib/orchestrator/registry.ts:304-443`) and hand-rolled client-side create-then-stamp in `stream-list.tsx:111-192` and `stream-triage.tsx:92-174`.
-- Agent triage is prompt-driven and on-demand (`src/lib/orchestrator/harness-surface.ts:153-177`), triggerable via a user-created trigger. Nothing runs by default.
+- Promotion exists in two parallel implementations: the atomic server-side `promote_stream` Ri action (`src/lib/actions/registry.ts:304-443`) and hand-rolled client-side create-then-stamp in `stream-list.tsx:111-192` and `stream-triage.tsx:92-174`.
+- Agent triage is prompt-driven and on-demand (`src/lib/coordinator/harness-surface.ts:153-177`), triggerable via a user-created trigger. Nothing runs by default.
 
 ### Gaps, in order of how much they block the vision
 
@@ -141,7 +141,7 @@ A cluster proposal is represented as the same proposal object stamped on every m
 
 ### 3.4 The reconciler
 
-A scheduled orchestrator run (default on, created at onboarding as a visible, editable trigger, honoring the user-owned-hooks principle: the user can see it, change its cadence, or delete it). Suggested default: twice daily, aligned with the deck's morning review and an end-of-day sweep.
+A scheduled coordinator run (default on, created at onboarding as a visible, editable trigger, honoring the user-owned-hooks principle: the user can see it, change its cadence, or delete it). Suggested default: twice daily, aligned with the deck's morning review and an end-of-day sweep.
 
 Each pass:
 
@@ -166,9 +166,9 @@ Ship with everything in review mode. No settings page of toggles for v1 beyond a
 
 ### 3.6 Server-side consolidation
 
-- All promotion, merging, appending, and dismissal goes through query-layer functions called by orchestrator actions. The client calls the same server paths (route handlers that dispatch to the same `queries.ts` functions). Delete the hand-rolled create-then-stamp logic in `stream-list.tsx` and `stream-triage.tsx`.
+- All promotion, merging, appending, and dismissal goes through query-layer functions called by Ri actions. The client calls the same server paths (route handlers that dispatch to the same `queries.ts` functions). Delete the hand-rolled create-then-stamp logic in `stream-list.tsx` and `stream-triage.tsx`.
 - New query functions: `applyProposal(streamIdOrClusterId)`, `appendToNote(noteId, content, provenance)` (non-destructive, versioned via `entity_versions`), `unpromoteStream(id)`, `reopenStream(id)`, `mergeStreamCluster(clusterId)`.
-- New or changed orchestrator actions: `propose_stream` (agent writes a proposal without applying), `apply_stream_proposal`, `unpromote_stream`, `reopen_stream`. `promote_stream` remains for direct promotion and gains cluster support. All mutating actions stay retry-safe per registry invariants.
+- New or changed Ri actions: `propose_stream` (agent writes a proposal without applying), `apply_stream_proposal`, `unpromote_stream`, `reopen_stream`. `promote_stream` remains for direct promotion and gains cluster support. All mutating actions stay retry-safe per registry invariants.
 - Fix the triage placement bug as part of consolidation: placement either persists to the created task or leaves the UI.
 
 ### 3.7 Review surface

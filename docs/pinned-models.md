@@ -118,7 +118,7 @@ Sessions **other** than the current one keep the removed id and fail at their
 next send with `Model <id> is unavailable`. This is the existing behavior for
 any model that leaves the catalog, and it is loud rather than silent. Paths
 that inherit a tuple rather than being handed one (`new-chat`,
-`orchestrator-chat`, the launcher) pass `repairInvalidModel`, so they fall back
+`coordinator-chat`, the launcher) pass `repairInvalidModel`, so they fall back
 to the harness default instead of failing.
 
 ## API

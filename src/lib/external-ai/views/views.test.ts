@@ -37,7 +37,7 @@ it('is a standard MCP Apps page that reaches nothing on the network', () => {
 });
 
 it('hints every content tool as reading or changing work, from its own action', async () => {
-  const { actions } = await import('@/lib/orchestrator/registry');
+  const { actions } = await import('@/lib/actions/registry');
   const reads = HOME_CONTENT_ACTIONS.filter(name => contentToolAnnotations(actions.find(action => action.name === name)!).readOnlyHint);
   expect([...reads].sort()).toEqual(['get_area', 'get_deck', 'get_note', 'get_task', 'list_areas', 'list_backlinks', 'list_deadlines', 'list_notes', 'list_outgoing_links', 'list_tasks', 'read_docs', 'search']);
 });
@@ -46,7 +46,7 @@ describe('over MCP', () => {
   let home: TestHome;
   const clients: Client[] = [];
 
-  beforeAll(async () => { await Promise.all([import('@/proxy'), import('@/app/api/orchestrator/[transport]/route')]); }, 120_000);
+  beforeAll(async () => { await Promise.all([import('@/proxy'), import('@/app/api/home/[transport]/route')]); }, 120_000);
   beforeEach(async () => {
     home = await createTestHome({ prefix: 'ri-mcp-views-' });
     const { setRemoteBaseUrl } = await import('@/lib/auth/bootstrap');
@@ -67,7 +67,7 @@ describe('over MCP', () => {
     const { proxy } = await import('@/proxy');
     const auth = proxy(request);
     if (auth.headers.get('x-middleware-next') !== '1') return auth;
-    const route = await import('@/app/api/orchestrator/[transport]/route');
+    const route = await import('@/app/api/home/[transport]/route');
     return route[request.method as 'GET' | 'POST' | 'DELETE'](new NextRequest(request, { headers: forwarded(auth) }));
   }
   async function assistant(): Promise<Client> {

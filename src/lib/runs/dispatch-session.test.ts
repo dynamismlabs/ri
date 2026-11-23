@@ -117,7 +117,7 @@ describe('dispatchRun for a chat target', () => {
 
   it('sends into a chat with no execution, such as an agent main chat or Ri', async () => {
     const { queries, dispatchRun } = await seed();
-    const main = queries.createChatSession({ type: 'orchestration', harness: 'claude', label: 'Ri' });
+    const main = queries.createChatSession({ type: 'coordinator', harness: 'claude', label: 'Ri' });
     const trigger = queries.createTrigger({ name: 'ri-check', targetKind: 'session', targetSessionId: main.id,
       harness: 'claude', prompt: 'Look at the deck.', kind: 'manual' });
     const fired = await dispatchRun({ trigger, triggerKind: 'manual' });

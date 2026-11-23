@@ -290,7 +290,7 @@ function ChatBody({
     )
   }
 
-  // Reuse the same harness chat surface the orchestrator + execution chats
+  // Reuse the same harness chat surface the coordinator + execution chats
   // use — transcript (with inline diff chips for the agent's edits), pending
   // input, and composer — keyed to this entity's content session.
   return (

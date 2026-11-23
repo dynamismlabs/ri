@@ -75,7 +75,7 @@ async function main() {
       await page.addInitScript({ content: "localStorage.setItem('ri.client.apiTransport', 'http');" });
       await page.route('**/api/trpc/**', async route => {
         const procedure = new URL(route.request().url()).pathname.split('/').at(-1)!;
-        if (procedure === 'orchestratorChat.list') { mainReads++; await route.fulfill({ json: { result: { data: { session: { id: 'app-main' } } } } }); }
+        if (procedure === 'coordinatorChat.list') { mainReads++; await route.fulfill({ json: { result: { data: { session: { id: 'app-main' } } } } }); }
         else if (procedure === 'sessions.messagesPost') {
           sends.push(route.request().postDataJSON());
           await new Promise(resolve => setTimeout(resolve, 100));

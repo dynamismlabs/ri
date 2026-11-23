@@ -2,7 +2,7 @@ import { conversationViews } from '@/lib/sessions/view-state';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { workspaceAuthority, executionOperationFailure } from '@/lib/workspaces/access';
 import type { EffortLevel, PermissionMode } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { actorFromRequest } from '@/lib/auth/actor';
 import { getWorkspace, listWorkspaceExecutions } from '@/lib/db/queries';
 import { UnsupportedPermissionModeError } from '@/lib/executor/permission-map';

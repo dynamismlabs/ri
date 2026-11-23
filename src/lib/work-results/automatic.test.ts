@@ -75,7 +75,7 @@ describe('opt-in automatic result review', () => {
   function seed(enabled: boolean | null = true) {
     const workspace = q.createWorkspace({ name: 'Author', cwd: root, isGit: false,
       reviewBeforeHandoff: enabled, reviewDefaults: { harness: 'claude', model: 'opus', effort: 'high' } });
-    const session = q.createChatSession({ harness: 'claude', type: 'orchestration', workspaceId: workspace.id });
+    const session = q.createChatSession({ harness: 'claude', type: 'coordinator', workspaceId: workspace.id });
     q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'Write an offline memo.' });
     return { workspace, session };
   }

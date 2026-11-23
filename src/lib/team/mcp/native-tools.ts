@@ -2,8 +2,8 @@
 import * as q from '@/lib/db/queries';
 import type { RequestKey } from '@/lib/auth/request-key';
 import { withExecutionRequest } from '@/lib/home/execution-request';
-import { findAction, runAction } from '@/lib/orchestrator/dispatch';
-import type { ActionContext } from '@/lib/orchestrator/types';
+import { findAction, runAction } from '@/lib/actions/dispatch';
+import type { ActionContext } from '@/lib/actions/types';
 
 const NATIVE_ACTIONS = ['list_workspaces', 'get_workspace', 'start_execution', 'get_handoff_context', 'report_result', 'get_result', 'list_results', 'request_result_review', 'report_result_review'] as const;
 

@@ -28,9 +28,9 @@ vi.mock('@/lib/harness/runtime', () => ({
     concurrentSend: { supported: true }, modelVariants: { supported: false }, reasoningEffort: { supported: true },
   } }),
 }));
-vi.mock('@/lib/orchestrator/harness-surface', () => ({
+vi.mock('@/lib/coordinator/harness-surface', () => ({
   resolveCliCommand: () => 'ri', resolveServerPort: () => 0,
-  installOrchestratorSurface: async () => {}, orchestratorSessionConfig: () => ({}),
+  installCoordinatorSurface: async () => {}, coordinatorSessionConfig: () => ({}),
   integrationsMcpServer: () => null, browserMcpServer: () => null, renderContentFocusPrompt: () => '',
 }));
 vi.mock('@/lib/attachments/expand-markers', () => ({ expandMarkers: async (text: string) => text }));

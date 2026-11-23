@@ -32,7 +32,7 @@ describe('title ownership and revision', () => {
     const q = await import('./queries');
     const named = q.createChatSession({ harness: 'codex', type: 'content', label: 'Explicit name' });
     expect(q.adoptNativeChatSessionLabel(named.id, 'Different native name')).toBeNull();
-    const main = q.createChatSession({ harness: 'codex', type: 'orchestration' });
+    const main = q.createChatSession({ harness: 'codex', type: 'coordinator' });
     expect(q.adoptNativeChatSessionLabel(main.id, 'First-message native name')).toBeNull();
     expect(q.getChatSession(main.id)?.label).toBeNull();
   });

@@ -8,7 +8,7 @@ import { StatusBadge } from '@/components/system/status-badge';
  * "Quiet for 12 min" — instead of the wall-clock-timer pattern.
  *
  * No automatic action: this is purely a status surface. Users (and
- * eventually the orchestrator) decide whether to intervene.
+ * eventually the coordinator) decide whether to intervene.
  */
 
 import { AlertTriangle, Hourglass, MessageSquare, Skull, Wrench } from 'lucide-react';

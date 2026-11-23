@@ -7,7 +7,7 @@
  * - A chat's signed session credential makes the actor that agent.
  * - Otherwise a request the proxy let through is a person, on the key it
  *   accepted: the app, or the home's own CLI run by hand.
- * - An orchestrator action without a session credential is a person only
+ * - A Ri action without a session credential is a person only
  *   from the home's own CLI (run here, or passed to the server with the
  *   home's key). Over HTTP with any other key it's an agent, as its
  *   transport says: treating an unknown remote caller as a person would let
@@ -21,8 +21,8 @@
  */
 
 import type { WorkerCommandActor } from '@/db/types';
-import { SESSION_CREDENTIAL_HEADER, verifySessionCredential } from '@/lib/orchestrator/session-credential';
-import type { ActionContext } from '@/lib/orchestrator/types';
+import { SESSION_CREDENTIAL_HEADER, verifySessionCredential } from '@/lib/actions/session-credential';
+import type { ActionContext } from '@/lib/actions/types';
 import { getRequestKey, type RequestKey } from './request-key';
 import { getMember, TeamError } from '@/lib/db/queries';
 

@@ -130,7 +130,7 @@ describe('sweepAttachments', () => {
 
     const db = getDb();
     db.insert(chatSessions)
-      .values({ id: 'cs-1', harness: 'claude', type: 'orchestration', label: 'test', status: 'active', permissionMode: 'auto_all' })
+      .values({ id: 'cs-1', harness: 'claude', type: 'coordinator', label: 'test', status: 'active', permissionMode: 'auto_all' })
       .run();
     db.insert(chatEvents)
       .values({

@@ -47,7 +47,7 @@ describe('shipped agent skills', () => {
   it('installs the app-owned skill into both app-root channels', async () => {
     const result = await installAppRootSkills();
 
-    // Two shipped skills (orchestrator + browser) across two channels each.
+    // Two shipped skills (coordinator + browser) across two channels each.
     expect(result.installed).toBe(4);
     for (const channel of ['.agents', '.claude']) {
       const link = path.join(appRoot, channel, 'skills', AGENT_SKILL_NAME);

@@ -10,7 +10,7 @@
  */
 
 import { getChatSessionWithExecution, getUserState, getWorkspace } from '@/lib/db/queries';
-import { DEFAULT_ORCHESTRATOR_NAME, resolveOrchestratorName } from '@/lib/orchestrator/name';
+import { DEFAULT_COORDINATOR_NAME, resolveCoordinatorName } from '@/lib/coordinator/name';
 
 /** A short description of the sending chat, for the label. */
 export function describeSender(senderSessionId: string): string {
@@ -19,10 +19,10 @@ export function describeSender(senderSessionId: string): string {
   const workspace = sender.workspaceId ? getWorkspace(sender.workspaceId) : null;
   const where = workspace ? ` in "${workspace.name}"` : '';
   switch (sender.type) {
-    case 'orchestration':
-      // A scheduled run's chat is orchestration too, and no one's main chat.
+    case 'coordinator':
+      // A scheduled run's chat is coordinator too, and no one's main chat.
       if (sender.createdByRunId) return `the scheduled "${sender.label ?? 'background'}" run`;
-      // The UI calls a workspace an agent. Its main chat is an orchestration
+      // The UI calls a workspace an agent. Its main chat is a coordinator
       // chat with a workspace. The app's main chat has none.
       if (workspace) return `the "${workspace.name}" agent's main chat`;
       return appMainChatName();
@@ -40,9 +40,9 @@ export function describeSender(senderSessionId: string): string {
  * The default name is the app's own, which would only add noise to the label.
  */
 function appMainChatName(): string {
-  const name = resolveOrchestratorName(getUserState()?.orchestratorName);
-  const role = "the orchestrator (the user's main chat)";
-  return name === DEFAULT_ORCHESTRATOR_NAME ? role : `${name}, ${role}`;
+  const name = resolveCoordinatorName(getUserState()?.coordinatorName);
+  const role = "the coordinator (the user's main chat)";
+  return name === DEFAULT_COORDINATOR_NAME ? role : `${name}, ${role}`;
 }
 
 /** The text a harness receives: the label then the message, or the message alone. */

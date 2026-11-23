@@ -3,7 +3,7 @@ import { uuidv7 } from 'uuidv7';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import * as q from '@/lib/db/queries';
 import type { AgentDeliveryRecord, ChatSessionRecord } from '@/db/types';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import { drainAgentCoordination, recoverAgentCoordination } from './service';
 import { finishRun } from '@/lib/runs/finish';
 import { applyChatEvent } from '@/lib/executor/apply';
@@ -32,9 +32,9 @@ let accepted: Array<{ sessionId: string; content: string; eventId: string; runId
 beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-coordination-' });
   q.setAgentCoordinationPolicy('global', '1', 'allow');
-  main = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  main = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   agent = q.createWorkspace({ name: 'Frontend', cwd: home.root, isGit: false, filesToCopy: [] });
-  agentMain = q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId: agent.id });
+  agentMain = q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId: agent.id });
   accepted = []; deriveTitle.mockClear(); fake.busy.clear(); fake.producers.clear(); fake.concurrentSend = true; fake.dispatch.mockReset(); fake.abort.mockReset(); fake.launch.mockReset();
   fake.dispatch.mockImplementation(async (sessionId: string, content: string, options: { runId: string; sourceEventId: string; coordinationDeliveryIds: string[]; onTaken?: () => void }) => {
     q.markRunStarted(options.runId);
@@ -271,17 +271,17 @@ describe('permission and Hold', () => {
     expect(q.getAgentDelivery(reply.id)?.status).toBe('accepted');
     expect((await send(main, { response: 'none', content: 'Follow up on the review.' })).status).toBe('accepted');
   });
-  it.each(['orchestrator', 'agent'] as const)('pins a one-way reply to the current %s chat without approving a replacement', async address => {
+  it.each(['coordinator', 'agent'] as const)('pins a one-way reply to the current %s chat without approving a replacement', async address => {
     q.archiveChatSession(agentMain.id);
     agentMain = q.createChatSession({ type: 'content', harness: 'claude', workspaceId: agent.id });
-    const sender = address === 'orchestrator' ? main : q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId: agent.id });
+    const sender = address === 'coordinator' ? main : q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId: agent.id });
     q.setAgentCoordinationPolicy('chat', agentMain.id, 'ask');
     await send(sender, { response: 'none' });
     const reply = await send(agentMain, { target: address, response: 'none' });
     expect(reply).toMatchObject({ status: 'accepted', targetSessionId: sender.id });
 
     q.archiveChatSession(sender.id);
-    const replacement = q.createChatSession({ type: 'orchestration', harness: 'claude', ...(address === 'agent' ? { workspaceId: agent.id } : {}) });
+    const replacement = q.createChatSession({ type: 'coordinator', harness: 'claude', ...(address === 'agent' ? { workspaceId: agent.id } : {}) });
     expect((await send(agentMain, { target: address, response: 'none' })).status).toBe('awaiting_approval');
     expect(q.listChatEvents(replacement.id)).toEqual([]);
     expect(await act(agentMain, 'delegate_work', { workspace_id: agent.id, request_id: 'reply-is-not-delegation', prompt: 'Start another review.' })).toMatchObject({ ok: true, result: { status: 'awaiting_approval' } });
@@ -374,9 +374,9 @@ describe('launch, provenance and guards', () => {
     expect(q.getAgentRequest(delivery.requestId!)?.status).toBe('failed'); expect(accepted.some(row=>row.sessionId===agentMain.id)).toBe(false);
   });
   it('refuses unsigned, self-directed, foreign-owner and restricted callers', async () => {
-    const input={response:'required',target:'orchestrator',request_id:'restricted',content:'Do something.'};
+    const input={response:'required',target:'coordinator',request_id:'restricted',content:'Do something.'};
     expect(await runAction('message_agent',input,{remote:true})).toMatchObject({ok:false}); expect(await act(main,'message_agent',input)).toMatchObject({ok:false});
-    for(const surfaceKind of ['team_chat','result_review']) expect(await act(q.createChatSession({harness:'claude',type:'orchestration',surfaceKind}),'message_agent',input)).toMatchObject({ok:false});
+    for(const surfaceKind of ['team_chat','result_review']) expect(await act(q.createChatSession({harness:'claude',type:'coordinator',surfaceKind}),'message_agent',input)).toMatchObject({ok:false});
     const foreign=q.createChatSession({harness:'claude',type:'content',userId:'other'});
     expect(await act(main,'message_agent',{...input,target:`session:${foreign.id}`})).toMatchObject({ok:false});
   });
@@ -494,7 +494,7 @@ describe('delegating into an existing execution', () => {
 describe('personal conversation retrieval', () => {
   it('searches main and content conversations while keeping team and reviewer history separate', async () => {
     const content = q.createChatSession({ type: 'content', harness: 'claude', status: 'active' });
-    const team = q.createChatSession({ type: 'orchestration', harness: 'claude', surfaceKind: 'team_chat', status: 'active' });
+    const team = q.createChatSession({ type: 'coordinator', harness: 'claude', surfaceKind: 'team_chat', status: 'active' });
     const reviewer = q.createChatSession({ type: 'execution', harness: 'claude', surfaceKind: 'result_review', status: 'active' });
     for (const chat of [main, agentMain, content, team, reviewer]) q.insertChatEvent({ sessionId: chat.id, role: 'assistant', source: 'agent', content: 'quartz retention decision' });
     const result = await act(main, 'search_sessions', { query: 'quartz' });
@@ -535,7 +535,7 @@ describe('personal conversation retrieval', () => {
     const plans = getRawDb().prepare('EXPLAIN QUERY PLAN SELECT id, content FROM chat_events WHERE session_id = ? ORDER BY created_at DESC, id DESC LIMIT 21').all(main.id) as Array<{ detail: string }>;
     expect(plans.some(row => row.detail.includes('idx_chat_events_session_created'))).toBe(true);
     expect(plans.some(row => /SCAN chat_events\b/.test(row.detail))).toBe(false);
-    const other = q.createChatSession({ harness: 'claude', type: 'orchestration', userId: 'other-user' });
+    const other = q.createChatSession({ harness: 'claude', type: 'coordinator', userId: 'other-user' });
     const event = q.insertChatEvent({ sessionId: other.id, role: 'assistant', source: 'agent', content: 'private zircon context' })!;
     expect(await act(main, 'get_chat_event', { id: event.id })).toMatchObject({ ok: false, error: { code: 'not_found' } });
     expect(await act(main, 'search_sessions', { query: 'zircon' })).toMatchObject({ ok: true, result: [] });
@@ -599,7 +599,7 @@ it('rolls back receiving text, outgoing receipt and delivery state without publi
 });
 
 
-it.each(['agent', 'orchestrator'] as const)('%s manager messages and delegations bypass every saved Ask preference', async kind => {
+it.each(['agent', 'coordinator'] as const)('%s manager messages and delegations bypass every saved Ask preference', async kind => {
   const source = kind === 'agent' ? agentMain : main;
   q.updateChatSession(source.id, { surfaceKind: kind === 'agent' ? 'main' : null });
   q.setAgentCoordinationPolicy('global', '1', 'ask');
@@ -619,12 +619,12 @@ it.each(['agent', 'orchestrator'] as const)('%s manager messages and delegations
   expect(q.agentCoordinationPolicy(child.targetSessionId!)).toMatchObject({ unrestricted: false, policy: 'ask' });
 });
 
-it.each(['execution', 'content', 'scheduled', 'orchestration-in-execution'] as const)('%s chat retains Ask and Allow for messages and delegation', async kind => {
+it.each(['execution', 'content', 'scheduled', 'coordinator-in-execution'] as const)('%s chat retains Ask and Allow for messages and delegation', async kind => {
   const execution = q.createExecutionWithChat({ workspaceId: agent.id, harness: 'claude', label: null });
   const source = kind === 'execution' ? execution.session : q.createChatSession({
-    type: kind === 'content' ? 'content' : 'orchestration', harness: 'claude',
+    type: kind === 'content' ? 'content' : 'coordinator', harness: 'claude',
     ...(kind === 'scheduled' ? { createdByRunId: q.createRun({ harness: 'claude', triggerKind: 'manual', status: 'completed' }).id } : {}),
-    ...(kind === 'orchestration-in-execution' ? { workspaceId: agent.id, executionId: execution.execution.id } : {}),
+    ...(kind === 'coordinator-in-execution' ? { workspaceId: agent.id, executionId: execution.execution.id } : {}),
   });
   q.setAgentCoordinationPolicy('global', '1', 'ask');
   expect(q.agentCoordinationPolicy(source.id)).toMatchObject({ unrestricted: false, policy: 'ask' });

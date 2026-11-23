@@ -1,5 +1,5 @@
 import { ExecutorError } from '@/lib/runner/errors';
-import { ServerTransportError, ServerResponseError } from '@/lib/orchestrator/server-client';
+import { ServerTransportError, ServerResponseError } from '@/lib/actions/server-client';
 
 /** Only failures known to precede native acceptance may retry automatically. */
 export function retryableCoordinationDispatch(error: unknown): boolean {

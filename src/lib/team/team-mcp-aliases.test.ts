@@ -1,13 +1,13 @@
 import { afterAll, beforeAll, expect, it, vi } from 'vitest';
 import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import { listenTeam, preloadTeamRoutes } from '@/test/fixtures/team-home';
-import { sessionCredential } from '@/lib/orchestrator/session-credential';
+import { sessionCredential } from '@/lib/actions/session-credential';
 import * as q from '@/lib/db/queries';
 
 let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>, server: Awaited<ReturnType<typeof listenTeam>>, credential: string;
 beforeAll(async () => {
   vi.stubEnv('RI_MIRROR_DISABLED', '1'); await preloadTeamRoutes(); fixture = await createTeamExecutionFixture(); server = await listenTeam();
-  const chat = q.createChatSession({ type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, harness: 'codex' });
+  const chat = q.createChatSession({ type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, harness: 'codex' });
   q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'alias-fixture', text: 'Use tools' }); q.claimNextTeamChatTurn(chat.id);
   credential = sessionCredential(chat.id)!;
 }, 120_000);
@@ -15,7 +15,7 @@ afterAll(async () => { await server?.close(); await fixture?.cleanup(); vi.unstu
 
 async function call(transport: 'mcp' | 'http', args: Record<string, unknown>, tool = 'create_task') {
   const mcp = transport === 'mcp';
-  const response = await fetch(server.url + (mcp ? '/api/team/mcp' : `/api/orchestrator/actions/${tool}`), {
+  const response = await fetch(server.url + (mcp ? '/api/team/mcp' : `/api/home/actions/${tool}`), {
     method: 'POST', headers: { authorization: 'Bearer ' + credential, 'x-ri-session': credential, 'content-type': 'application/json', accept: 'application/json, text/event-stream' },
     body: JSON.stringify(mcp ? { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: tool, arguments: args } } : args),
   });

@@ -11,6 +11,6 @@ it('distinguishes stale clients, newer clients and invalid reports before writes
   expect(apiCompatibilityIssue('bogus', [1])).toMatchObject({ update: 'client', protocol: null });
 });
 it('exempts only explicit independently negotiated MCP transports', () => {
-  for (const url of ['/api/mcp', '/api/sse', '/api/orchestrator/mcp', '/api/orchestrator/browser/mcp', '/api/integrations/mcp']) expect(hasIndependentProtocol(url)).toBe(true);
-  for (const url of ['/api/tasks', '/api/integrations/run', '/api/orchestrator/mcp/anything', '/api/mcp/../tasks']) expect(hasIndependentProtocol(url)).toBe(false);
+  for (const url of ['/api/mcp', '/api/sse', '/api/home/mcp', '/api/home/browser/mcp', '/api/integrations/mcp']) expect(hasIndependentProtocol(url)).toBe(true);
+  for (const url of ['/api/tasks', '/api/integrations/run', '/api/home/mcp/anything', '/api/mcp/../tasks']) expect(hasIndependentProtocol(url)).toBe(false);
 });

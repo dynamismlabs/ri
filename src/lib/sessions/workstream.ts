@@ -16,7 +16,7 @@
  * preserve the execution/worktree/chats/associations) — never a silent default.
  *
  * This module is runtime-agnostic: it takes an injected {@link WorkstreamRuntime}
- * so the exact same orchestration runs in-process for REST (which owns the live
+ * so the exact same coordinator runs in-process for REST (which owns the live
  * handles) and via the server HTTP control path for the CLI/MCP (which do not).
  * It imports only the query layer, so it is safe to load from the CLI process.
  */
@@ -47,7 +47,7 @@ export interface ScopeChange {
 }
 
 /** The runtime side effects coordination needs, injected so REST (in-process)
- * and CLI/MCP (server HTTP) share one orchestration. */
+ * and CLI/MCP (server HTTP) share one coordinator. */
 export interface WorkstreamRuntime {
   /** Chat-session ids with an in-flight turn right now, or null when the truth
    * is unknown (server unreachable) — treated as "nothing running", which is

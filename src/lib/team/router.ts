@@ -40,7 +40,7 @@ import { teamWriteSource } from './shared-work';
 import type { TRPCContext } from '@/lib/trpc/init';
 import { publishTaskResult } from './published-results';
 import { attachment, publishTaskResultSchema } from '@/lib/trpc/schemas';
-import { parseOrchestratorLook } from '@/lib/orchestrator/look';
+import { parseCoordinatorLook } from '@/lib/coordinator/look';
 import { attachmentPath } from '@/lib/attachments/save';
 
 const nativeInput = z.object({ action: z.string().min(1).max(100), input: z.record(z.string(), z.unknown()) }).strict();
@@ -140,11 +140,11 @@ export const teamRouter = router({
   renameMe: memberProcedure.input(nameInput).mutation(({ ctx, input }) => memberView(q.renameMember(me(ctx).id, input.name))),
   /** A Team's logo uses its existing home-wide identity image and attachment store. */
   setLogo: ownerProcedure.input(z.object({ image: attachment.nullable() }).strict()).mutation(({ input }) => {
-    const parsed = parseOrchestratorLook({ orchestratorImage: input.image });
+    const parsed = parseCoordinatorLook({ coordinatorImage: input.image });
     if ('error' in parsed) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Choose an uploaded image for the team logo.' });
-    const image = parsed.patch.orchestratorImage ?? null;
+    const image = parsed.patch.coordinatorImage ?? null;
     if (image && !fs.existsSync(/* turbopackIgnore: true */ attachmentPath(image.fileName))) throw new TRPCError({ code: 'BAD_REQUEST', message: 'Upload the logo before saving it.' });
-    q.updateUserState({ orchestratorImage: image });
+    q.updateUserState({ coordinatorImage: image });
     return { image };
   }),
 

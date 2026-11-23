@@ -61,7 +61,7 @@ export function handOffToMainAgent(run: RunRecord, source: ChatSessionRecord, no
     id,
     source,
     sourceRunId: null,
-    address: 'orchestrator',
+    address: 'coordinator',
     targetSessionId: null,
     requestKey: `heartbeat:${run.id}:now`,
     parentRequestId: null,

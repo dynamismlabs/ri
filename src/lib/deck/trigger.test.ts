@@ -35,14 +35,14 @@ describe('morning deck trigger', () => {
     expect(sched.getMorningDeckTrigger()).toBeNull();
   });
 
-  it('creates an orchestrator cron trigger and round-trips the time', async () => {
+  it('creates a coordinator cron trigger and round-trips the time', async () => {
     const { sched, q } = await setup();
     const cfg = sched.setMorningDeckConfig({ enabled: true, time: '04:30' });
     expect(cfg).toEqual(expect.objectContaining({ enabled: true, time: '04:30' }));
 
     const row = sched.getMorningDeckTrigger()!;
     expect(row.kind).toBe('cron');
-    expect(row.targetKind).toBe('orchestrator');
+    expect(row.targetKind).toBe('coordinator');
     expect(row.cronExpression).toBe('30 4 * * *');
     expect(row.enabled).toBe(true);
     expect(row.nextRunAt).toBeTruthy();
@@ -110,7 +110,7 @@ describe('ensureMorningDeckTrigger', () => {
       enabled: true,
       harness: 'claude',
       workspaceId: null,
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       prompt: 'legacy prompt',
       kind: 'cron',
       cronExpression: '15 7 * * *',
@@ -130,10 +130,10 @@ describe('ensureMorningDeckTrigger', () => {
   });
 });
 
-describe('reserved-trigger guardrails (via orchestrator actions)', () => {
+describe('reserved-trigger guardrails (via Ri actions)', () => {
   async function withReservedRow() {
     const ctx = await setup();
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const { RESERVED_TRIGGER_IDS } = await import('@/lib/triggers/reserved');
     ctx.sched.ensureMorningDeckTrigger();
     return { ...ctx, runAction, id: RESERVED_TRIGGER_IDS.morningDeck };

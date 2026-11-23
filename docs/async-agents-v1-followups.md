@@ -114,7 +114,7 @@ The kind / target / policy toggles look pressed visually but don't announce stat
 
 ### 1.6 Webhook rotate-secret action
 
-**Files**: `src/lib/orchestrator/registry.ts`, `src/lib/scheduler/webhook.ts`, schedule detail UI
+**Files**: `src/lib/actions/registry.ts`, `src/lib/scheduler/webhook.ts`, schedule detail UI
 
 If a user loses the plaintext webhook secret, they must delete and recreate the schedule. A rotate action is small additive work:
 
@@ -203,7 +203,7 @@ ri schedule edit <name>
 
 Missing: `--name`, `--description`, `--concurrency`, `--catch-up`, `--active-hours`, `--model`, `--effort`, `--timeout`, `--workspace`, `--target`, `--skills`.
 
-The `update_schedule` orchestrator action accepts most of these. Just expose them as CLI flags.
+The `update_schedule` Ri action accepts most of these. Just expose them as CLI flags.
 
 **Fix**: extend the `edit` subcommand definition with the remaining options. Map each to the action's input shape.
 
@@ -303,8 +303,8 @@ pill + model pill + Frequency + Advanced).
 
 **Hidden / removed from the UI (still reachable via CLI / API):**
 - Target-kind picker — schedules always target a workspace now; the
-  orchestrator-target schedules path stays alive for the CLI + agent
-  surface. The UI re-exposes it when the orchestrator gets smart
+  coordinator-target schedules path stays alive for the CLI + agent
+  surface. The UI re-exposes it when the coordinator gets smart
   enough to interpret loose intent (see 4.1 below).
 - Skills selector — `skillHints` isn't honored at runtime yet (see
   `schema.ts:skillHints` comment).
@@ -333,17 +333,17 @@ Plus `--hourly`, `--weekly-on monday --at 9am`, `--monthly-on 1 --at 9am`,
 `--manual`, `--webhook`. The raw `--cron`, `--every`, `--run-at`
 escape hatches stay.
 
-### 4.1 Re-expose orchestrator schedules when the orchestrator gets smart
+### 4.1 Re-expose coordinator schedules when the coordinator gets smart
 
 The reason OpenClaw / Hermes can show a single "What should the agent
-do?" textarea is their orchestrator can read loose intent and figure
-out which workspace / project to act on. Ri's orchestrator can do
+do?" textarea is their coordinator can read loose intent and figure
+out which workspace / project to act on. Ri's coordinator can do
 some of that today (it has the action registry), but the UX trade-off
 is muddier — users who pick a workspace explicitly land in a clean
-git-isolated execution; orchestrator schedules don't, so they're more
+git-isolated execution; coordinator schedules don't, so they're more
 "talk to the agent about things" than "do work that produces commits."
 
-When the orchestrator surface grows (multi-state action protocol,
+When the coordinator surface grows (multi-state action protocol,
 goals, self-directed autonomy per `async-agents-v1.md §11`), re-add
 the target picker. Until then, workspace is the safer default.
 

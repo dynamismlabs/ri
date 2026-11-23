@@ -12,7 +12,7 @@
 
 V1 is **scheduled tasks**. That's it.
 
-- **Schedules** — cron / interval / at / webhook / manual triggers that dispatch a prompt against a workspace or the orchestrator.
+- **Schedules** — cron / interval / at / webhook / manual triggers that dispatch a prompt against a workspace or the coordinator.
 - **One in-process 60s tick** processes due schedules through the same `executor.dispatch()` path the UI already uses.
 - **Scheduled runs surface as executions** in the existing 4-col view with a provenance chip. The existing unread machinery is the review surface — no new state machine.
 - **Skills** as procedural memory at `<brain>/.claude/skills/` (global) and `<workspace>/.claude/skills/` (per-workspace) — Claude Code's native hierarchy.
@@ -87,7 +87,7 @@ The boundary we hold. Every primitive Claude Code does well → we author markdo
 
 | Capability                                  | Where it lives                                         | Status                                            |
 |---------------------------------------------|--------------------------------------------------------|---------------------------------------------------|
-| Typed action registry (CLI + HTTP MCP)      | `src/lib/orchestrator/registry.ts`                     | Shipped — 15 actions                              |
+| Typed action registry (CLI + HTTP MCP)      | `src/lib/actions/registry.ts`                     | Shipped — 15 actions                              |
 | NL MCP (free-form `query` / `update`)       | `/api/[transport]`                                     | Shipped                                           |
 | Multi-provider executor                     | `src/lib/executor/adapter.ts` (`@agentex/agent`)       | Shipped — Claude Code, Codex, OpenClaw            |
 | Per-turn message queue                      | `chat_events.queued_at` + drain loop                   | Shipped                                           |
@@ -153,7 +153,7 @@ export const schedules = sqliteTable('schedules', {
   agent_id: text('agent_id').references(() => agents.id),
 
   // Target
-  target_kind: text('target_kind', { enum: ['workspace', 'orchestrator'] }).notNull(),
+  target_kind: text('target_kind', { enum: ['workspace', 'coordinator'] }).notNull(),
   workspace_id: text('workspace_id').references(() => workspaces.id, { onDelete: 'cascade' }),
   session_strategy: text('session_strategy', { enum: ['isolated', 'persistent'] }).notNull(),
   persistent_session_id: text('persistent_session_id')
@@ -201,7 +201,7 @@ export const schedules = sqliteTable('schedules', {
 
 Defaults that matter:
 - `target_kind='workspace'` defaults `session_strategy='persistent'` (the workspace's "AI lane" — replies continue the conversation).
-- `target_kind='orchestrator'` defaults `session_strategy='isolated'` (each run is a fresh starting point).
+- `target_kind='coordinator'` defaults `session_strategy='isolated'` (each run is a fresh starting point).
 
 Note: no `context_scope` field. The schedule's *prompt* tells the agent what to do; the agent queries what it needs via the action registry. See §6.
 
@@ -291,7 +291,7 @@ description: Review a PR for correctness, security, and style
 When invoked, look up the PR via the gh CLI, read the diff, and check for...
 ```
 
-A schedule's `skills` field references skill names by hint; the orchestrator's normal description-matching picks them up at dispatch.
+A schedule's `skills` field references skill names by hint; the coordinator's normal description-matching picks them up at dispatch.
 
 What skills are *not*:
 - Not code. Markdown only.
@@ -345,7 +345,7 @@ Cost data comes from `schedule_runs.{input_tokens, cached_input_tokens, output_t
 
 **Budget guardrails:**
 - `monthly_budget_usd` setting in config
-- 75% spend → activity page shows a warning banner; the orchestrator agent gets a `budget_warning` note next time the user interacts
+- 75% spend → activity page shows a warning banner; the coordinator agent gets a `budget_warning` note next time the user interacts
 - 100% spend → scheduled runs auto-pause; manual runs require explicit override
 
 This is small in code (one new query, one new page) and load-bearing for trust. Without it, users can't enable schedules confidently.
@@ -368,7 +368,7 @@ Migrations:
 
 That's the whole schema delta for V1. No new columns on `agents` (heartbeat is V2). No `nudges` or `heartbeat_config` tables. No `integrations` table.
 
-New orchestrator actions:
+New Ri actions:
 - `list_schedules`, `get_schedule`, `list_schedule_runs`, `run_schedule_now`
 - `list_skills`
 
@@ -386,7 +386,7 @@ This deserves its own section because it was in earlier drafts and is being remo
 
 1. **The agent is smart and has tools.** The schedule's prompt tells the agent what to do. The agent calls `list_tasks`, `list_stream`, `get_workspace`, etc. as needed. Pre-baking a snapshot means *we* decide what's relevant before the agent has even started. We get it wrong half the time.
 2. **Most of the snapshot is noise for any specific task.** A "triage the inbox" run doesn't need "schedules due in next 24h." A "review this PR" run doesn't need "open tasks across all workspaces." Generic snapshots dilute the relevant signal.
-3. **The agent already gets the things that matter for free.** Workspace `CLAUDE.md` is loaded by Claude Code natively when running in that cwd. Brain `MEMORY.md` is read by the orchestrator agent on demand (and we can prompt it to do so up front in the schedule's prompt if we want). The schedule's `prompt` field is the right place to scope context — not a generic injection layer.
+3. **The agent already gets the things that matter for free.** Workspace `CLAUDE.md` is loaded by Claude Code natively when running in that cwd. Brain `MEMORY.md` is read by the coordinator agent on demand (and we can prompt it to do so up front in the schedule's prompt if we want). The schedule's `prompt` field is the right place to scope context — not a generic injection layer.
 4. **Adding complexity we'd have to rip out.** Token budgets, truncation rules, per-schedule scope flags, a `describe_world` action — all infrastructure for a problem the agent doesn't actually have.
 
 **What we do instead:**
@@ -420,7 +420,7 @@ One form, no tabs. Top to bottom:
 
 1. **What** — name, prompt, optional description.
 2. **When** — `[ On a schedule | Every N | At a specific time | When triggered (webhook) ]`. For "on a schedule," a natural-language input ("every weekday at 9am") that compiles to cron + timezone, with the resolved expression and a preview of the next 3 fire times shown beneath.
-3. **Where** — target (workspace dropdown or "orchestrator"). Session strategy (persistent / isolated, with help text). Skills selector (multi).
+3. **Where** — target (workspace dropdown or "coordinator"). Session strategy (persistent / isolated, with help text). Skills selector (multi).
 4. **Settings** — model override, effort, timeout, active hours.
 5. **Save** — preview of the next fire, then save.
 
@@ -542,12 +542,12 @@ What evolves cleanly:
 - **Heartbeat in V2.** Pure addition — columns on `agents` + a sibling call inside the existing tick. No migration of V1 data.
 - **Skills + subagents.** Markdown files. Add, edit, delete freely.
 - **Cost capture.** Promote to `run_usage_events` later if per-turn breakdown matters. Additive.
-- **Context aggregation if/when needed.** `describe_world` is an additive orchestrator action. Doesn't change the dispatch path.
+- **Context aggregation if/when needed.** `describe_world` is an additive Ri action. Doesn't change the dispatch path.
 
 Manageable migration cost:
 
 - **Run-vs-session relationship.** If we later decide tasks should own a persistent chat session, we add `chat_session_id` to tasks and migrate. Well-bounded.
-- **Multi-state action protocol added later.** Existing runs unaffected; orchestrator gains new actions. Additive.
+- **Multi-state action protocol added later.** Existing runs unaffected; coordinator gains new actions. Additive.
 
 Real but bounded risks:
 

@@ -8,7 +8,7 @@ vi.mock('@/lib/trpc/init', () => {
   return { router: t.router, viewerProcedure: t.procedure };
 });
 vi.mock('@/lib/server/chat-sources', () => ({ chatSources: { search: state.search, resolve: async () => [{ service: 'Mail', accountLabel: 'Work', status: 'needs_access' }] } }));
-vi.mock('@/lib/orchestrator/session-credential', () => ({ actorFromSessionCredential: () => state.actor, sessionCredentialFromHeaders: () => '', SESSION_CREDENTIAL_ENV: 'RI_SESSION_CREDENTIAL', SESSION_CREDENTIAL_HEADER: 'x-ri-session' }));
+vi.mock('@/lib/actions/session-credential', () => ({ actorFromSessionCredential: () => state.actor, sessionCredentialFromHeaders: () => '', SESSION_CREDENTIAL_ENV: 'RI_SESSION_CREDENTIAL', SESSION_CREDENTIAL_HEADER: 'x-ri-session' }));
 vi.mock('@/lib/integrations/connection-requests', () => ({ requestConnection: state.request }));
 vi.mock('@/lib/db/queries', () => ({ getChatSession: () => ({ workspaceId: 'agent' }) }));
 import { chatSourcesRouter } from './router';

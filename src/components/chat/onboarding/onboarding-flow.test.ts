@@ -71,9 +71,9 @@ describe('nextStep', () => {
 
 describe('what is done', () => {
   it('counts a name already on file, so a home that answered before is not asked again', () => {
-    expect(stepsOnFile({ name: 'Trey', orchestratorName: 'Rye' })).toEqual(new Set(['identity', 'you']));
-    expect(stepsOnFile({ orchestratorEmoji: '🍞' })).toEqual(new Set(['identity']));
-    expect(stepsOnFile({ name: '  ', orchestratorName: null })).toEqual(new Set());
+    expect(stepsOnFile({ name: 'Trey', coordinatorName: 'Rye' })).toEqual(new Set(['identity', 'you']));
+    expect(stepsOnFile({ coordinatorEmoji: '🍞' })).toEqual(new Set(['identity']));
+    expect(stepsOnFile({ name: '  ', coordinatorName: null })).toEqual(new Set());
   });
 
   it('counts every recorded step, answered or not, plus what is on file', () => {

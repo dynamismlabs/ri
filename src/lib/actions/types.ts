@@ -1,0 +1,97 @@
+/**
+ * Contract-first action definitions for the agent coordinator.
+ *
+ * A single action registry generates both the CLI (`<cli> agent <name>`) and
+ * the home MCP (`/api/home/[transport]`). Same params, same
+ * handler, same validation — two transports.
+ *
+ * Kept separate from the external user-facing MCP at `/api/[transport]`, which
+ * is a thin natural-language interface. The coordinator is fine-grained and
+ * typed — one tool per verb — for in-repo agents doing CRUD work.
+ */
+
+import type { z } from 'zod';
+
+export interface ActionContext {
+  /**
+   * True when the caller is remote/untrusted (HTTP MCP).
+   * False for local CLI invocations by the owner of the machine.
+   * Security-sensitive actions may tighten behavior when remote=true.
+   */
+  remote: boolean;
+  /**
+   * Optional provenance so lifecycle history (and other audited writes) can
+   * attribute the human or agent, the chat session, and the execution/run
+   * behind a command. Populated by the transport when known; absent falls back
+   * to a transport-derived default (remote => ai, local => human).
+   */
+  actor?: {
+    source?: 'human' | 'ai' | 'system';
+    sessionId?: string | null;
+    executionId?: string | null;
+    runId?: string | null;
+    /** Native team caller, bound by its active turn credential. */
+    memberId?: string | null;
+  };
+  /**
+   * Who is calling, from the credential the transport validated, never from
+   * the caller's claim. `home` covers the home's own CLI and sessions (its
+   * host key). `elsewhere` is any other device, phone or service, reached
+   * over HTTP. Absent means the transport didn't say, which handlers treat
+   * as `elsewhere`. Actions that resolve a folder path from their input do
+   * it on the home's disk, so they refuse callers elsewhere
+   * (docs/homes-spec.md §4.1: machine paths belong to that machine).
+   */
+  caller?: {
+    location: 'home' | 'elsewhere';
+    apiKeyId?: string | null;
+    /** Outside personal assistants receive content tools only. */
+    scope?: 'home_content';
+  };
+}
+
+export class ActionError extends Error {
+  constructor(
+    public code:
+      | 'not_found'
+      | 'invalid_params'
+      | 'conflict'
+      | 'unsupported',
+    message: string,
+    public suggestion?: string,
+    /** Structured data the caller (agent) needs to recover — e.g. the running
+     * workstreams to choose between, or the open children to acknowledge. */
+    public details?: unknown,
+  ) {
+    super(message);
+    this.name = 'ActionError';
+  }
+
+  toJSON() {
+    return { error: this.code, message: this.message, suggestion: this.suggestion };
+  }
+}
+
+export interface Action<Shape extends z.ZodRawShape = z.ZodRawShape, Name extends string = string, Result = unknown> {
+  name: Name;
+  description: string;
+  params: Shape;
+  /** Reject unrecognized arguments consistently at dispatch and MCP validation. */
+  strictParams?: boolean;
+  mutating?: boolean;
+  /** Original personal contract, before explicit connected-Home targeting. */
+  localContract?: { params: z.ZodRawShape; description: string };
+  handler: (
+    ctx: ActionContext,
+    input: z.infer<z.ZodObject<Shape>>,
+  ) => Result | Promise<Result>;
+  cli?: {
+    positional?: Array<Extract<keyof Shape, string>>;
+  };
+}
+
+export function defineAction<const Name extends string, Shape extends z.ZodRawShape, Result>(
+  action: Action<Shape, Name, Result>,
+): Action<Shape, Name, Result> {
+  return action;
+}

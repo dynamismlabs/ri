@@ -22,7 +22,7 @@ beforeEach(async () => {
   folder = path.join(home.root, 'folder'); outside = path.join(home.root, 'outside');
   await fs.mkdir(folder); await fs.mkdir(outside);
   const ws = q.createWorkspace({ name: 'Preview files', cwd: folder, isGit: false, filesToCopy: [], collapsed: false, skipLiveConfirm: false, browserEnabled: false });
-  sessionId = q.createChatSession({ workspaceId: ws.id, harness: 'claude', type: 'orchestration' }).id;
+  sessionId = q.createChatSession({ workspaceId: ws.id, harness: 'claude', type: 'coordinator' }).id;
 });
 afterEach(async () => { (await import('@/lib/home/identity')).resetHomeIdentityCache(); await home.cleanup(); });
 
@@ -49,7 +49,7 @@ it('only opens exact references shared in this chat, including unknown formats',
   const saved = await download(new NextRequest(`http://ri.local/?path=${encodeURIComponent(file)}`), { params: Promise.resolve({ id: sessionId }) });
   expect(saved.status).toBe(200); expect(Buffer.from(await saved.arrayBuffer())).toEqual(Buffer.from([0, 1, 2, 3]));
   expect(saved.headers.get('content-disposition')).toContain('attachment;');
-  const other = q.createChatSession({ harness: 'claude', type: 'orchestration' });
+  const other = q.createChatSession({ harness: 'claude', type: 'coordinator' });
   await expect(previewFile({ ...source, sessionId: other.id })).rejects.toMatchObject({ status: 403 });
 });
 it('rejects traversal, directories, missing files and non-media inline delivery', async () => {

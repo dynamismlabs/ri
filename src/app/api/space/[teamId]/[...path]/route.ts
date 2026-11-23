@@ -10,7 +10,7 @@
  * that can't be reached says so, as `team_signed_out` and `team_unreachable`.
  */
 
-import { SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import type { NextRequest } from 'next/server';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { isTeamAuthority } from '@/lib/home/authority';

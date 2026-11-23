@@ -2,7 +2,7 @@ import { APP_NAME } from '@/constants/app';
 
 /**
  * What every chat is told about Ri's guide: the app's and each agent's main
- * chat in their brief's rules (src/lib/orchestrator/harness-surface.ts), a
+ * chat in their brief's rules (src/lib/coordinator/harness-surface.ts), a
  * chat in an agent in its session instructions (src/lib/executor/session-spec.ts).
  */
 export const GUIDE_INSTRUCTION =

@@ -4,7 +4,7 @@ import { listenTeam, preloadTeamRoutes } from '@/test/fixtures/team-home';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { ensureSessionCli } from '@/lib/executor/session-cli';
-import { sessionCredential } from '@/lib/orchestrator/session-credential';
+import { sessionCredential } from '@/lib/actions/session-credential';
 import * as q from '@/lib/db/queries';
 
 async function callAgentCli(args: string[], overrides: Partial<NodeJS.ProcessEnv> = {}) {
@@ -17,7 +17,7 @@ let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>, server: Awa
 beforeAll(async () => {
   vi.stubEnv('NODE_ENV', 'development');
   await preloadTeamRoutes(); fixture = await createTeamExecutionFixture(); server = await listenTeam();
-  const chat = q.createChatSession({ type: 'orchestration', harness: 'codex', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ type: 'coordinator', harness: 'codex', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
   q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'cli-fixture', text: 'Fixture turn' });
   q.claimNextTeamChatTurn(chat.id);
   vi.stubEnv('RI_HOME_TOOLS_URL', server.url); vi.stubEnv('RI_SESSION_CREDENTIAL', sessionCredential(chat.id)!);
@@ -39,7 +39,7 @@ it('uses string receipt flags, applies JSON alias overrides, and reports conflic
 }, 60_000);
 
 it('refuses unsigned, forged and expired Team session launchers without local writes', async () => {
-  const archived = q.createChatSession({ type: 'orchestration', harness: 'codex', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
+  const archived = q.createChatSession({ type: 'coordinator', harness: 'codex', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
   q.archiveChatSession(archived.id);
   const before = q.listTasks().length;
   for (const credential of ['', 'forged.signature', sessionCredential(archived.id)!]) {

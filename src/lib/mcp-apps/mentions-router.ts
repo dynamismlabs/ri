@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { router, viewerProcedure as p } from '@/lib/trpc/init';
-import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/orchestrator/session-credential';
+import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/actions/session-credential';
 import { searchAppMentions } from './mentions';
 
 /**

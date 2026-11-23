@@ -3,7 +3,7 @@ import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import * as q from '@/lib/db/queries';
 import { executionDispatchPolicy } from './home-policy';
 import { buildSessionSpec } from './session-spec';
-import { verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { verifySessionCredential } from '@/lib/actions/session-credential';
 import { PUBLIC_BASE_URL_ENV } from '@/lib/server-runtime/record';
 let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>;
 beforeEach(async () => { fixture = await createTeamExecutionFixture(); });

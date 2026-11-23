@@ -80,7 +80,7 @@ it('relays a team page subscription without reading the personal Home event bus'
     subscription = remote.live.output.subscribe({ s: [], t: [] }, { onData: frame => { received.push(frame); if (frame.event === 'ready') { clearTimeout(timeout); resolve(); } }, onError: error => { clearTimeout(timeout); reject(error); } });
   });
   try {
-    const personalChat = q.createChatSession({ harness: 'codex', type: 'orchestration' });
+    const personalChat = q.createChatSession({ harness: 'codex', type: 'coordinator' });
     publishRuntime(personalChat.id, true);
     await new Promise(resolve => setTimeout(resolve, 25));
     expect(JSON.stringify(received)).not.toContain(personalChat.id);

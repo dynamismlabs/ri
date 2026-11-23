@@ -5,7 +5,7 @@ import path from 'node:path';
 
 /**
  * Main chats (docs/agents-view-spec.md Phase 5): each agent's main chat
- * (`/api/workspaces/:id/chat/*`) and the app's (`/api/orchestrator-chat/*`)
+ * (`/api/workspaces/:id/chat/*`) and the app's (`/api/coordinator-chat/*`)
  * share one helper and never see each other's chats. Real database. The
  * harness process and the model catalog are stubbed.
  */
@@ -68,19 +68,19 @@ async function agentResume(id: string, sessionId: unknown) {
   return POST(post({ sessionId }), ctx(id));
 }
 async function appChat() {
-  const { GET } = await import('@/app/api/orchestrator-chat/route');
+  const { GET } = await import('@/app/api/coordinator-chat/route');
   return GET(new Request('http://127.0.0.1/x') as never, undefined as never);
 }
 async function appNew() {
-  const { POST } = await import('@/app/api/orchestrator-chat/route');
+  const { POST } = await import('@/app/api/coordinator-chat/route');
   return POST(new Request('http://127.0.0.1/x', { method: 'POST', body: '{}' }));
 }
 async function appHistory() {
-  const { GET } = await import('@/app/api/orchestrator-chat/history/route');
+  const { GET } = await import('@/app/api/coordinator-chat/history/route');
   return GET(new Request('http://127.0.0.1/x') as never, undefined as never);
 }
 async function appResume(sessionId: string) {
-  const { POST } = await import('@/app/api/orchestrator-chat/resume/route');
+  const { POST } = await import('@/app/api/coordinator-chat/resume/route');
   return POST(post({ sessionId }));
 }
 
@@ -93,7 +93,7 @@ describe('GET /api/workspaces/:id/chat', () => {
   it("creates the agent's main chat once, scoped to the agent, then keeps returning it", async () => {
     const ws = await seedAgent();
     const first = (await (await agentChat(ws.id)).json()) as SessionBody;
-    expect(first.session).toMatchObject({ type: 'orchestration', workspaceId: ws.id, status: 'active' });
+    expect(first.session).toMatchObject({ type: 'coordinator', workspaceId: ws.id, status: 'active' });
     const again = (await (await agentChat(ws.id)).json()) as SessionBody;
     expect(again.session.id).toBe(first.session.id);
   });
@@ -178,7 +178,7 @@ describe("the app's main chat and agents' main chats stay apart", () => {
     const q = await import('@/lib/db/queries');
     const agent = (await (await agentChat(ws.id)).json()) as SessionBody;
     const app = (await (await appChat()).json()) as SessionBody;
-    const fired = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const fired = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     const run = q.createRun({ harness: 'claude', chatSessionId: fired.id, triggerKind: 'manual', status: 'completed' });
     q.updateChatSession(fired.id, { createdByRunId: run.id });
 
@@ -190,7 +190,7 @@ describe("the app's main chat and agents' main chats stay apart", () => {
 
   it("a scheduled fire is never taken for the app's current chat", async () => {
     const q = await import('@/lib/db/queries');
-    const fired = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const fired = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     const run = q.createRun({ harness: 'claude', chatSessionId: fired.id, triggerKind: 'manual', status: 'completed' });
     q.updateChatSession(fired.id, { createdByRunId: run.id });
     const app = (await (await appChat()).json()) as SessionBody;

@@ -1,7 +1,7 @@
 /**
  * Initial MEMORY.md placed in the brain directory on first init.
  *
- * Brain-level memory the orchestrator reads on every session.
+ * Brain-level memory the coordinator reads on every session.
  * Written once by `ensureBrainDir()` if absent; never overwritten so
  * user edits survive.
  *

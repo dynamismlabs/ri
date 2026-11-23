@@ -127,7 +127,7 @@ What exists and is sound:
 
 - **Schema** (`src/lib/db/schema.ts:140-178`): stream table with rawText, source (capture/chat/webhook), media (text/voice/image), origin, external dedupe fields (externalSource, externalId, externalPayload with an index), status (pending/promoted/dismissed), dismissedBy, promotedToType/Id/At, attachments JSON.
 - **Query layer** (`src/lib/db/queries.ts:576-681`): listStream, getStream, findStreamByExternalId, createStream, updateStream, dismissStream. Embedding upsert and mirror sync fire on create/update. No hard delete exists anywhere. Good.
-- **Orchestrator actions** (`src/lib/orchestrator/registry.ts:304-437`): list_stream, get_stream_item, create_stream_item, promote_stream (single item to new task or note, guards status pending, throws conflict on re-promote), dismiss_stream (records dismissedBy agent).
+- **Ri actions** (`src/lib/actions/registry.ts:304-437`): list_stream, get_stream_item, create_stream_item, promote_stream (single item to new task or note, guards status pending, throws conflict on re-promote), dismiss_stream (records dismissedBy agent).
 - **Capture surface**: `/api/capture` handles text, voice (transcription), image (vision extraction). Pocket webhook dedupes via externalId. Quick-capture modal in the dashboard.
 - **Manual triage UI** (`src/components/stream/`): stream list with promote/merge/dismiss per item, full triage sheet with area/energy/effort override pills, merge-into-existing pickers for tasks and notes.
 - **Search**: stream is a first-class entity in sqlite-vec and FTS5, participates in hybrid search, backfill support exists.
@@ -181,7 +181,7 @@ Key move: **log manual UI triage into the same table with actor user.** The user
 
 All schema changes are additive, per the established migration discipline (new columns nullable or defaulted, no reorders, drizzle-kit generate).
 
-### 6.2 Orchestrator action vocabulary
+### 6.2 Ri action vocabulary
 
 Action names are public contract, so promote_stream and dismiss_stream keep their names and semantics. Additions (all mutating, all idempotent via status guards plus pass stamping, all through queries.ts, all throwing ActionError with stable codes):
 
@@ -196,7 +196,7 @@ The sweep agent receives only this action set plus read actions. It cannot delet
 
 ### 6.3 The sweep runner
 
-Runs as a harness session (consistent with the orchestrator-on-harness direction) invoked by the trigger infrastructure. Inputs assembled for the prompt:
+Runs as a harness session (consistent with the coordinator-on-harness direction) invoked by the trigger infrastructure. Inputs assembled for the prompt:
 
 1. All pending items with attachments and transcripts, oldest first.
 2. Per item: nearest neighbors via existing sqlite-vec embeddings, two candidate sets, (a) other pending items within the window (combine candidates, weighted by semantic similarity and temporal proximity) and (b) existing tasks and notes (merge targets). The agent judges retrieved candidates. It never free-associates merge targets from memory.
