@@ -117,9 +117,9 @@ describe("a home session's spec", () => {
   afterEach(() => { fake.restore(); vi.unstubAllEnvs(); });
 
   it("puts this home's `ri` first on the session's PATH", async () => {
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     const spec = await buildSessionSpec({
-      chatSessionId: chat.id, harness: 'claude', cwd: home.root, sessionType: 'orchestration', workspaceId: null,
+      chatSessionId: chat.id, harness: 'claude', cwd: home.root, sessionType: 'coordinator', workspaceId: null,
       surfaceKind: null, surfaceRef: null, existingExternalSessionId: null, permissionMode: 'auto_all',
       prePlanMode: null, model: null, modelVariant: null, effort: null,
     });

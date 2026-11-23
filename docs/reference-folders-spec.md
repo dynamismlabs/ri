@@ -212,7 +212,7 @@ flag, and §7 below assumes Codex still gets the prompt-level guard. Agentex's
 `instructionsFile` is resolved by every provider (claude maps it to
 `--append-system-prompt-file`, codex folds it into base instructions), so the
 block is portable. It was previously unused in Ri, and
-`orchestratorSessionConfig` does not set it, so there is no collision.
+`coordinatorSessionConfig` does not set it, so there is no collision.
 
 The file is written to `<workDir>/reference-folders/<chatSessionId>.md` on every
 session build, so it always matches the current reference list.
@@ -488,9 +488,9 @@ the target agent names which of those links are read only.
 
 Use semantic design tokens throughout. No raw Tailwind palette.
 
-## 10. Orchestrator actions
+## 10. Ri actions
 
-`src/lib/orchestrator/registry.ts`, alongside the existing workspace actions:
+`src/lib/actions/registry.ts`, alongside the existing workspace actions:
 
 - `list_reference_folders` (`workspaceId` optional, omitted lists global)
 - `create_reference_folder`
@@ -613,7 +613,7 @@ rather than by booting a session.
 - [x] `reference-folders-section.tsx` plus the add dialog, reusing
       `folder-picker-dialog.tsx`.
 - [x] Mount in `workspace-settings-sheet.tsx`.
-- [x] Orchestrator actions and their `ActionError` handling.
+- [x] Ri actions and their `ActionError` handling.
 - [x] Tests from §12 that cover Phase 1 surface area (50 tests across 4 files).
 - [x] `pnpm ts`, plus `pnpm smoke:boot` since the registry gained an import.
 
@@ -707,10 +707,10 @@ Ordered by what actually costs a user something today.
 
 ### Deliberate boundaries, recorded so they aren't re-litigated by accident
 
-7. **Orchestrator sessions do not get reference folders.** The adapter gates on
-   `sessionType === 'execution'`. The orchestrator runs in the data root and
+7. **Coordinator sessions do not get reference folders.** The adapter gates on
+   `sessionType === 'execution'`. The coordinator runs in the data root and
    acts through typed actions rather than reading codebases, so the block would
-   be noise. Revisit only if the orchestrator starts doing code work.
+   be noise. Revisit only if the coordinator starts doing code work.
 8. **Reference folders are not indexed into embeddings or `search`.** A stated
    non-goal in §3. The agent greps them live, which stays correct as the folder
    changes underneath us. Indexing would mean owning staleness for a folder

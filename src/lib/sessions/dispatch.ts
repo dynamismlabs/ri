@@ -19,7 +19,7 @@
  * async orchestration layer that combines DB writes with filesystem ops.
  */
 
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { promisify } from 'node:util';
@@ -883,7 +883,7 @@ export async function continueExecutionSession(
   const session = getChatSessionWithExecution(args.sessionId);
   if (!session) return null;
   const policy = executionLifecyclePolicy(session, 'continue', args.actor);
-  // No execution = chat-only (orchestration/content) — nothing to provision.
+  // No execution = chat-only (coordinator/content) — nothing to provision.
   if (!session.executionId) return session;
   const ws = session.workspaceId ? getWorkspace(session.workspaceId) : null;
   // Non-git workspaces never had a worktree to recreate; just unarchive.

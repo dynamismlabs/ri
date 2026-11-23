@@ -25,7 +25,7 @@ Every MCP server Ri connects to (hosted catalog servers, servers you add, manage
 
 ## Ri as a server
 
-All of Ri's MCP endpoints are built on one wrapper, `src/lib/mcp/http-server.ts` (`riMcpHandler`), around the SDK's `createMcpHandler` with its stateless legacy leg. One handler answers 2026-07-28 clients and 2025-era clients at the same URL: the orchestrator (`/api/orchestrator/mcp`), the natural-language endpoint (`/api/mcp`), integrations (`/api/integrations/mcp`), coordination, email, browser and results (`/api/orchestrator/<surface>/mcp`), and the team endpoint.
+All of Ri's MCP endpoints are built on one wrapper, `src/lib/mcp/http-server.ts` (`riMcpHandler`), around the SDK's `createMcpHandler` with its stateless legacy leg. One handler answers 2026-07-28 clients and 2025-era clients at the same URL: the coordinator (`/api/home/mcp`), the natural-language endpoint (`/api/mcp`), integrations (`/api/integrations/mcp`), coordination, email, browser and results (`/api/home/<surface>/mcp`), and the team endpoint.
 
 - Tool schemas are zod 3 raw shapes, published as the same JSON Schema SDK 1.x published (`zodToJsonSchema`), so clients that cached a tool list see no change. A parameterless tool keeps the bare `{type: "object", properties: {}}` schema.
 - Request headers reach every tool handler, so the signed chat credential still identifies the calling chat.
@@ -36,7 +36,7 @@ All of Ri's MCP endpoints are built on one wrapper, `src/lib/mcp/http-server.ts`
 
 ### Verified with real harnesses (October 19, 2026)
 
-On the dev home, a Claude Code chat and a Codex chat (agent main chats, which carry the orchestrator server) each ran `list_tasks` and `create_note`. A message from the Claude chat reached the Codex chat, and a tracked consultation (then named `ask_agent`) from Codex was answered by Claude and resumed the Codex chat. Executions ran `get_session_context`, `list_email_accounts` and `browser_status` on the coordination, email and browser servers in both harnesses. Through a logging proxy, Claude Code 2.1.302 negotiated 2026-07-28 (`server/discover`, `subscriptions/listen`, `tools/list`, `tools/call`) and Codex 0.162.1 negotiated 2025-06-18 through `initialize`.
+On the dev home, a Claude Code chat and a Codex chat (agent main chats, which carry the home MCP server) each ran `list_tasks` and `create_note`. A message from the Claude chat reached the Codex chat, and a tracked consultation (then named `ask_agent`) from Codex was answered by Claude and resumed the Codex chat. Executions ran `get_session_context`, `list_email_accounts` and `browser_status` on the coordination, email and browser servers in both harnesses. Through a logging proxy, Claude Code 2.1.302 negotiated 2026-07-28 (`server/discover`, `subscriptions/listen`, `tools/list`, `tools/call`) and Codex 0.162.1 negotiated 2025-06-18 through `initialize`.
 
 ## Checking a server
 

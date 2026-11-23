@@ -66,9 +66,9 @@ createRoot(document.getElementById('root')).render(<QueryClientProvider client={
       if (method === 'connectedApps.context') { contexts.push(input.context); revision++; data = { revision, updateId: `update-${revision}` }; }
       if (method === 'connectedApps.clearContext') { cleared++; revision++; data = { revision }; }
       // The view's chat is the main chat, and the person has written in it, so the home keeps it (`forApp`).
-      if (method === 'sessions.get') data = { id: chatId, type: 'orchestration', workspaceId: null };
-      if (method === 'orchestratorChat.list') data = { session: { id: chatId } };
-      if (method === 'orchestratorChat.create') {
+      if (method === 'sessions.get') data = { id: chatId, type: 'coordinator', workspaceId: null };
+      if (method === 'coordinatorChat.list') data = { session: { id: chatId } };
+      if (method === 'coordinatorChat.create') {
         newChatAsks.push(input);
         res.statusCode = 409; res.setHeader('content-type', 'application/json');
         res.end(JSON.stringify({ error: { message: 'This chat has your conversation in it, so a new chat wasn\'t started.', code: -32009, data: { code: 'CONFLICT', httpStatus: 409, domainCode: 'main_chat_in_use' } } }));

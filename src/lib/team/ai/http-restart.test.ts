@@ -7,7 +7,7 @@ import { expect, it, vi } from 'vitest';
 import { startTeamProcess, type TeamProcess } from '@/test/fixtures/team-process';
 import { teamTRPC } from '@/lib/spaces/remote';
 import { API_PROTOCOL, API_PROTOCOL_HEADER } from '@/lib/releases/api-contract';
-import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { parseTeamLink } from '@/lib/team/links';
 it('keeps two-member work, approval authority, stopped outcomes and native identity through an actual server restart',async()=>{
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'ri-team-http-restart-'));

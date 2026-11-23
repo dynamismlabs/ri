@@ -6,7 +6,7 @@ import { uploadLocalAttachment } from './attachment';
 
 const upload = vi.hoisted(() => vi.fn());
 const remote = vi.hoisted(() => ({ connected: false, fetch: vi.fn() }));
-vi.mock('@/lib/orchestrator/server-client', () => ({ serverFetch: upload }));
+vi.mock('@/lib/actions/server-client', () => ({ serverFetch: upload }));
 vi.mock('@/lib/config/role', () => ({ getInstallationRole: () => remote.connected ? 'connected' : 'home' }));
 vi.mock('@/lib/connection/config', () => ({ readConnection: () => ({ homeUrl: 'https://home.example', credential: 'test-viewer' }) }));
 vi.mock('@/lib/connection/home-client', () => ({ homeFetch: remote.fetch }));

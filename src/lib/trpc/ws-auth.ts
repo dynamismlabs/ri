@@ -1,4 +1,4 @@
-import { SESSION_CREDENTIAL_HEADER, activeSessionCredential } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER, activeSessionCredential } from '@/lib/actions/session-credential';
 import { TRPCError } from '@trpc/server';
 import { lookupApiToken } from '@/lib/auth/api-token';
 import { isHostKeyHash } from '@/lib/auth/host-key';

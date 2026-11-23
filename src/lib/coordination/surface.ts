@@ -1,7 +1,7 @@
 import type { McpServerConfig } from '@agentex/agent';
 import { readAuthConfig } from '@/lib/auth/config-file';
-import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
-import { resolveServerPort } from '@/lib/orchestrator/harness-surface';
+import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
+import { resolveServerPort } from '@/lib/coordinator/harness-surface';
 
 export const COORDINATION_TOOLS = [
   'get_session_context', 'message_agent', 'delegate_work', 'get_agent_request', 'get_agent_delivery', 'list_agent_requests', 'reply_agent_request', 'cancel_agent_request',
@@ -21,7 +21,7 @@ export function coordinationMcpServer(sessionId: string): McpServerConfig | null
   const token = readAuthConfig()?.localToken;
   if (!token) return null;
   const credential = sessionCredential(sessionId, token);
-  return { name: 'coordination', type: 'http', url: `http://localhost:${resolveServerPort()}/api/orchestrator/coordination/mcp`,
+  return { name: 'coordination', type: 'http', url: `http://localhost:${resolveServerPort()}/api/home/coordination/mcp`,
     headers: { Authorization: `Bearer ${token}`, ...(credential ? { [SESSION_CREDENTIAL_HEADER]: credential } : {}) } };
 }
 

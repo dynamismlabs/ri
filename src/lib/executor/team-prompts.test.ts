@@ -8,7 +8,7 @@ let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>;
 beforeEach(async () => { fixture = await createTeamExecutionFixture(); });
 afterEach(async () => { await fixture.cleanup(); });
 it.each(['answer', 'approve'] as const)('allows another active person to %s, and refuses agents, session identities and client keys', operation => {
-  const chat = q.createChatSession({ harness: 'codex', type: 'orchestration', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ harness: 'codex', type: 'coordinator', workspaceId: fixture.workspace.id, surfaceKind: q.TEAM_CHAT_SURFACE });
   q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.owner.member.id, requestingApiKeyId: fixture.owner.key.id, clientSendId: 'owner-prompt', text: 'Shared work' }); const turn = q.claimNextTeamChatTurn(chat.id)!;
   const input = { operation, chatId: chat.id, turnId: turn.id };
   expect(authorizeTeamActorExecution(fixture.actor, input).member.id).toBe(fixture.member.member.id);

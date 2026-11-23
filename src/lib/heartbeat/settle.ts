@@ -8,7 +8,7 @@
 
 import { archiveChatSession, getChatSession, getRun, getUserState, listRuns, updateRun } from '@/lib/db/queries';
 import { turnReply } from '@/lib/notifications/turn-reply';
-import { resolveOrchestratorName } from '@/lib/orchestrator/name';
+import { resolveCoordinatorName } from '@/lib/coordinator/name';
 import { RESERVED_TRIGGER_IDS } from '@/lib/triggers/reserved';
 import {
   HEARTBEAT_HELD_REASON,
@@ -43,7 +43,7 @@ export function settleHeartbeatRun(runId: string, chatSessionId: string): { hand
   const reply = turnReply(chatSessionId);
   const note = reply && !isQuietReply(reply) ? parseCheckInNote(reply) : null;
   if (note?.now) {
-    const name = resolveOrchestratorName(getUserState()?.orchestratorName);
+    const name = resolveCoordinatorName(getUserState()?.coordinatorName);
     updateRun(runId, { statusReason: HEARTBEAT_TOLD_REASON, summary: `Told ${name}: ${firstItem(note.now)}` });
   } else if (note?.later) {
     updateRun(runId, { statusReason: HEARTBEAT_HELD_REASON, summary: `Saved for later: ${firstItem(note.later)}` });

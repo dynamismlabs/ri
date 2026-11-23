@@ -2892,7 +2892,7 @@ export function dismissStream(id: string, dismissedBy = 'user'): StreamRecord | 
 //   - undo has a precise record to reverse
 // See docs/streaming-spec-tasks.md Part 3.
 
-/** Typed error the orchestrator action layer maps to ActionError and API
+/** Typed error the Ri action layer maps to ActionError and API
  *  routes map to HTTP status codes. */
 export class TriageError extends Error {
   constructor(
@@ -4279,14 +4279,14 @@ export function getUserState(): UserStateRecord | undefined {
 }
 
 /**
- * The orchestrator's image is a snake_case attachment on disk, camelCase in
+ * The coordinator's image is a snake_case attachment on disk, camelCase in
  * the app. Onboarding progress is read leniently: steps this version doesn't
  * know are dropped (src/lib/onboarding/progress.ts).
  */
 function hydrateUserState(row: typeof userState.$inferSelect): UserStateRecord {
   return {
     ...row,
-    orchestratorImage: row.orchestratorImage ? camelizeKeys(row.orchestratorImage) : null,
+    coordinatorImage: row.coordinatorImage ? camelizeKeys(row.coordinatorImage) : null,
     onboarding: row.onboarding ? readOnboardingRecord(row.onboarding) : null,
   };
 }
@@ -4311,7 +4311,7 @@ function changeOnboarding(
     const row = tx.select().from(userState).where(eq(userState.id, 1)).get();
     if (!row) return undefined;
     const now = new Date().toISOString();
-    const result = change(baseOnboardingRecord(row.onboarding, row.orchestratorIntroducedAt), row, now);
+    const result = change(baseOnboardingRecord(row.onboarding, row.coordinatorIntroducedAt), row, now);
     if (!result) return hydrateUserState(row);
     const updated = tx
       .update(userState)
@@ -4357,7 +4357,7 @@ export function finishOnboarding(input: { skipped: boolean; chatId?: string }): 
   return changeOnboarding((record, row, now) => ({
     record: withFinished(record, { skipped: input.skipped, chatId: input.chatId, at: now }),
     set: {
-      orchestratorIntroducedAt: row.orchestratorIntroducedAt ?? now,
+      coordinatorIntroducedAt: row.coordinatorIntroducedAt ?? now,
       onboardedAt: row.onboardedAt ?? now,
     },
   }));
@@ -4396,14 +4396,14 @@ export function updateUserState(input: UpdateUserStateInput): UserStateRecord | 
   const workResultGuidance = input.workResultGuidance === undefined
     ? undefined : normalizeWorkResultGuidance(input.workResultGuidance);
   const db = getDb();
-  const { orchestratorImage, ...rest } = input;
+  const { coordinatorImage, ...rest } = input;
   const row = db
     .update(userState)
     .set({
       ...rest,
       ...(workResultGuidance !== undefined ? { workResultGuidance } : {}),
-      ...(orchestratorImage !== undefined
-        ? { orchestratorImage: orchestratorImage ? snakeizeKeys(orchestratorImage) : null }
+      ...(coordinatorImage !== undefined
+        ? { coordinatorImage: coordinatorImage ? snakeizeKeys(coordinatorImage) : null }
         : {}),
       updatedAt: new Date().toISOString(),
     })
@@ -6429,7 +6429,7 @@ export function saveTeamAiSettings(patch: TeamAiSettingsPatch, byMemberId: strin
 
 /** A Team's first-class assistant uses the ordinary agent runtime and shared history.
  * Provisioning is synchronous and atomic, with no model discovery or AI call. */
-export function ensureTeamOrchestrator(cwd: string): WorkspaceRecord | null {
+export function ensureTeamCoordinator(cwd: string): WorkspaceRecord | null {
   return getDb().transaction(() => {
     const settings = getTeamAiSettings();
     const previous = settings?.mainChatSessionId ? getChatSession(settings.mainChatSessionId) : null;
@@ -6444,7 +6444,7 @@ export function ensureTeamOrchestrator(cwd: string): WorkspaceRecord | null {
     setAgentFolder(workspace.id, home.hostDeviceId, cwd);
     // This empty anchor identifies the assistant across per-member current chats.
     // Legacy unbound conversations remain intact and readable in shared history.
-    const anchor = createChatSession({ type: 'orchestration', workspaceId: workspace.id,
+    const anchor = createChatSession({ type: 'coordinator', workspaceId: workspace.id,
       surfaceKind: TEAM_CHAT_SURFACE, harness: settings.harness, model: settings.model,
       deviceId: home.hostDeviceId, status: 'active' });
     saveTeamAiSettings({ mainChatSessionId: anchor.id }, null);
@@ -8722,7 +8722,7 @@ export function normalizeReferencePath(raw: string): string {
  * HTTP routes hand us `await request.json()` cast to the input type, which is
  * a compile-time claim and nothing more. Spreading that straight into `.set()`
  * let a stray `id` in the body rewrite the primary key and orphan the row, so
- * the whitelist lives here rather than at each route — the orchestrator
+ * the whitelist lives here rather than at each route — the coordinator
  * actions, the routes, and any future caller all get it.
  */
 const REFERENCE_FOLDER_WRITABLE = [
@@ -8914,7 +8914,7 @@ export function createReferenceFolder(input: CreateReferenceFolderInput): Refere
 
   const now = new Date().toISOString();
   // `~` and relative paths are normalized here so every caller (route,
-  // orchestrator action, test) stores the same absolute form. A path is
+  // Ri action, test) stores the same absolute form. A path is
   // where it is on the home: the home's link, once the home has an identity.
   const homePath = input.path ? normalizeReferencePath(input.path) : null;
   const host = hostOf();
@@ -9359,7 +9359,7 @@ export function unarchiveExecution(executionId: string): ExecutionRecord | null 
  * columns used to have on chat_sessions. The execution is the sole source
  * of truth. Drizzle returns an all-null object (not null) for an unmatched
  * left join, so we coalesce on the execution's id to decide whether it's
- * real; a chat with no execution (orchestration/content) reports null.
+ * real; a chat with no execution (coordinator/content) reports null.
  *
  * Generic over the row type so list queries (rail/history) keep their
  * extra joined columns.
@@ -9490,7 +9490,7 @@ export function setExecutionPinned(
  * Session-keyed pin toggle: resolves the session's execution and pins/unpins
  * it, then returns the session flattened with the updated execution state so
  * the caller can echo the new `execution.pinnedAt` straight into its caches.
- * Returns null for an unknown session or one with no execution (orchestration
+ * Returns null for an unknown session or one with no execution (coordinator
  * and content chats can't be pinned — they never appear in the rail).
  */
 export function setSessionPinned(
@@ -9630,7 +9630,7 @@ export function listChatSessions(filter: {
   workspaceId?: string;
   executionId?: string;
   status?: 'active' | 'archived';
-  type?: 'orchestration' | 'content' | 'execution';
+  type?: 'coordinator' | 'content' | 'execution';
   /** Operational tooling may inspect dedicated reviewer contexts explicitly. */
   includeInternal?: boolean;
 } = {}): ChatSessionWithExecution[] {
@@ -9642,7 +9642,7 @@ export function listChatSessions(filter: {
   if (filter.status) conditions.push(eq(chatSessions.status, filter.status));
   if (filter.type) conditions.push(eq(chatSessions.type, filter.type));
   // LEFT JOIN + flatten so consumers (workspace session rows, the
-  // orchestrator's list_workspace_sessions) see worktree/branch/PR/setup
+  // coordinator's list_workspace_sessions) see worktree/branch/PR/setup
   // state sourced from the execution, not the dead chat_sessions columns.
   const rows = db
     .select({
@@ -9658,10 +9658,10 @@ export function listChatSessions(filter: {
 }
 
 /**
- * Main chats: interactive orchestration chats, newest activity first. The
+ * Main chats: interactive coordinator chats, newest activity first. The
  * app's main chat has no workspace (`workspaceId: null`), an agent's main
  * chat has its workspace (docs/agents-view-spec.md §4). Scheduled fires also
- * create orchestration chats, but they carry `createdByRunId` and belong to
+ * create coordinator chats, but they carry `createdByRunId` and belong to
  * the runs surface, so they are never main chats.
  */
 export function listMainChats(
@@ -9670,7 +9670,7 @@ export function listMainChats(
 ): ChatSessionRecord[] {
   const db = getDb();
   const conditions: SQL[] = [
-    eq(chatSessions.type, 'orchestration'),
+    eq(chatSessions.type, 'coordinator'),
     workspaceId === null
       ? sql`COALESCE(${chatSessions.surfaceKind}, '') IN ('', 'main')`
       : sql`COALESCE(${chatSessions.surfaceKind}, '') IN ('', 'main', 'team_chat')`,
@@ -9712,7 +9712,7 @@ export function listAgentMainChats(): AgentMainChatState[] {
     .innerJoin(workspaces, eq(workspaces.id, chatSessions.workspaceId))
     .where(
       and(
-        eq(chatSessions.type, 'orchestration'),
+        eq(chatSessions.type, 'coordinator'),
         isNull(chatSessions.createdByRunId),
         isNull(chatSessions.executionId),
         eq(chatSessions.status, 'active'),
@@ -9897,7 +9897,7 @@ export function setGeneratedChatSessionLabel(id: string, input: {
 /** Native notifications are metadata, never transcript rows or names for a live main chat. */
 export function adoptNativeChatSessionLabel(id: string, label: string): ChatSessionRecord | null {
   const existing = getChatSession(id);
-  if (!existing || (existing.type === 'orchestration' && existing.status === 'active') || existing.labelSource === 'manual'
+  if (!existing || (existing.type === 'coordinator' && existing.status === 'active') || existing.labelSource === 'manual'
     || (existing.labelSource === null && existing.label !== null) || existing.label === label) return null;
   return setGeneratedChatSessionLabel(id, { label, source: 'native', expectedRevision: existing.labelRevision });
 }
@@ -10413,16 +10413,16 @@ export function listNeedsReviewSessionCandidates(): ChatSessionWithExecution[] {
       and(
         eq(chatSessions.status, 'active'),
         sql`COALESCE(${chatSessions.surfaceKind}, '') <> 'result_review'`,
-        // The interactive orchestrator chat (orchestration + no creating
+        // The interactive coordinator chat (coordinator + no creating
         // run) is "the assistant in the Chat tab" — its replies are the
         // conversation itself, not output owed review, so it never belongs
-        // in the unread queue. Scheduled orchestrator chats generally stay
+        // in the unread queue. Scheduled coordinator chats generally stay
         // eligible because this is how their results reach the user. The
         // app-managed deck and stream-triage runs are the exception: their
         // results already have purpose-built review surfaces (the Deck pane,
         // the stream digest and "Needs your call"), so a second, redundant
         // unread row is pure noise. See TRIGGERS_WITH_OWN_REVIEW_SURFACE.
-        sql`NOT (${chatSessions.type} = 'orchestration' AND ${chatSessions.createdByRunId} IS NULL)`,
+        sql`NOT (${chatSessions.type} = 'coordinator' AND ${chatSessions.createdByRunId} IS NULL)`,
         notExists(createdBySelfReviewedRun),
         sql`COALESCE(${chatSessions.lastOutcomeEventAt}, ${chatSessions.unreadMarkerAt}) IS NOT NULL`,
         sql`COALESCE(
@@ -10677,7 +10677,7 @@ function hydrateRailRow(
 // above every message for those words, and a chat's own branch is named
 // from its title anyway.
 //
-// Scoped to `type='execution'` chats (native + imported). Orchestration and
+// Scoped to `type='execution'` chats (native + imported). Coordinator and
 // content chats have no workspace/execution and render differently, so folding
 // them into this rail-shaped result would be misleading — a separate surface
 // can search those later if wanted.
@@ -10942,7 +10942,7 @@ function isSubagentLaunchCall(sessionId: string, callId: string): boolean {
 
 /**
  * Chokepoint for `chat_events` inserts. The executor live stream, JSONL
- * reconcile, user-message POST, inject dev route, and MCP/orchestrator
+ * reconcile, user-message POST, inject dev route, and MCP/coordinator
  * handlers all go through here so the realtime broadcast and outcome-timestamp
  * bump are guaranteed.
  *
@@ -11279,7 +11279,7 @@ export function chatEventInsertionCursor(sessionId: string, eventId: string): nu
 
 /**
  * Most recent event of a given source for a session. Backs the
- * orchestrator-chat history's snippet (last user message) — a cheap
+ * coordinator-chat history's snippet (last user message) — a cheap
  * single-row probe instead of paging the whole tail.
  */
 export function getLastChatEventBySource(
@@ -12085,7 +12085,7 @@ export function setSessionScratchPad(
 
 // ─── Triggers ────────────────────────────────────────────────
 // All trigger mutations route through here so the scheduler tick, the
-// orchestrator actions, and the UI share a single write path. Reads
+// Ri actions, and the UI share a single write path. Reads
 // land in two flavors: bare `TriggerRecord` for the tick (it doesn't
 // want the extra join cost) and `TriggerWithLastRun` for surfaces
 // that render status pills.

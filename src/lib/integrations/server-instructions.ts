@@ -123,7 +123,7 @@ export async function recycleForInstructionsChange(entry: Pick<McpServerEntry, '
   if (place?.kind === 'agent') return executor.recycleWorkspaceSessions(place.workspaceId);
   const ownChats = [
     ...listChatSessions({ status: 'active', type: 'content' }),
-    ...listChatSessions({ status: 'active', type: 'orchestration' }).filter((chat) => !chat.workspaceId),
+    ...listChatSessions({ status: 'active', type: 'coordinator' }).filter((chat) => !chat.workspaceId),
   ];
   await Promise.all(ownChats.map((chat) => executor.recycleWhenIdle(chat.id).catch(() => {})));
   if (!place) await executor.recycleEveryAgentSession();

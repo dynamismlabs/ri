@@ -29,7 +29,7 @@ vi.mock('@/lib/harness/runtime', () => ({ getHarnessRuntime: async (harness: str
   sessions: { supported: true }, planMode: { supported: true },
   mcp: { supported: harness !== 'codex' },
 } }) }));
-vi.mock('@/lib/orchestrator/harness-surface', () => ({ resolveCliCommand: () => 'ri' }));
+vi.mock('@/lib/coordinator/harness-surface', () => ({ resolveCliCommand: () => 'ri' }));
 // Runtime fixtures exercise source association and files, not asynchronous embeddings.
 vi.mock('@/lib/embeddings/embed', async (importOriginal) => ({
   ...await importOriginal<typeof import('@/lib/embeddings/embed')>(),

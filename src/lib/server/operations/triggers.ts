@@ -6,12 +6,12 @@ import { z as rpcZ } from 'zod/v4';
  * GET  /api/triggers  — list with optional filters
  * POST /api/triggers  — create
  *
- * Server-side wrapper around the orchestrator's `list_triggers` and
+ * Server-side wrapper around Ri's `list_triggers` and
  * `create_trigger` actions so the UI gets the same validation +
  * derived behavior the CLI and MCP get.
  */
 
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 // Compressed when the body is JSON and over ~1KiB; a streamed or
 // non-JSON response passes through untouched. See lib/api/compression.ts.

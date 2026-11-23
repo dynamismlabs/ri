@@ -36,9 +36,9 @@ describe('listNeedsReviewSessionCandidates', () => {
     const { workspaces, runs } = await import('@/lib/db/schema');
     const { uuidv7 } = await import('uuidv7');
 
-    // 1. Interactive orchestrator chat with an unread reply — the bug case.
+    // 1. Interactive coordinator chat with an unread reply — the bug case.
     const interactive = q.createChatSession({
-      type: 'orchestration', harness: 'claude', label: null, status: 'active',
+      type: 'coordinator', harness: 'claude', label: null, status: 'active',
     });
     q.updateChatSession(interactive.id, {
       lastOutcomeEventAt: past(1), lastViewedAt: past(10),
@@ -56,10 +56,10 @@ describe('listNeedsReviewSessionCandidates', () => {
       lastOutcomeEventAt: past(1), lastViewedAt: past(10),
     });
 
-    // 3. Scheduled orchestration chat (created_by_run_id set) with an unread
+    // 3. Scheduled coordinator chat (created_by_run_id set) with an unread
     //    outcome — must stay: needs-review is how scheduled results surface.
     const scheduled = q.createChatSession({
-      type: 'orchestration', harness: 'claude', label: 'Morning triage', status: 'active',
+      type: 'coordinator', harness: 'claude', label: 'Morning triage', status: 'active',
     });
     const runId = uuidv7();
     getDb().insert(runs).values({
@@ -89,7 +89,7 @@ describe('listNeedsReviewSessionCandidates', () => {
         enabled: true,
         harness: 'claude',
         workspaceId: null,
-        targetKind: 'orchestrator',
+        targetKind: 'coordinator',
         prompt: name,
         kind: 'cron',
         cronExpression: cron,
@@ -97,7 +97,7 @@ describe('listNeedsReviewSessionCandidates', () => {
         nextRunAt: new Date().toISOString(),
       });
       const chat = q.createChatSession({
-        type: 'orchestration', harness: 'claude', label: name, status: 'active',
+        type: 'coordinator', harness: 'claude', label: name, status: 'active',
       });
       const run = q.createRun({
         triggerId: id,

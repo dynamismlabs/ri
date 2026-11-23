@@ -38,6 +38,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type Database from 'better-sqlite3';
 import { uuidv7 } from 'uuidv7';
+import { currentChatType } from '@/lib/coordinator/legacy-names';
 import { getAppRoot, getAttachmentsDir } from '@/lib/config/paths';
 import { getDb, getRawDb } from '@/lib/db';
 import { createDevice, getWorkspaceSetup, getHome, listDevices, moveFolderRecords, setAgentFolder } from '@/lib/db/queries';
@@ -322,11 +323,11 @@ function buildPlan(
   // here, the most recent one stays active and the rest are archived.
   const archivedMainChats = new Set<string>();
   const destHasMain = dest.prepare(
-    "SELECT 1 FROM chat_sessions WHERE type = 'orchestration' AND created_by_run_id IS NULL AND execution_id IS NULL AND status = 'active' AND workspace_id IS ?",
+    "SELECT 1 FROM chat_sessions WHERE type = 'coordinator' AND created_by_run_id IS NULL AND execution_id IS NULL AND status = 'active' AND workspace_id IS ?",
   );
   const mainsByScope = new Map<string, Row[]>();
   for (const c of chatRows) {
-    if (text(c.type) !== 'orchestration' || c.execution_id || text(c.status) !== 'active') continue;
+    if (currentChatType(text(c.type)) !== 'coordinator' || c.execution_id || text(c.status) !== 'active') continue;
     const scope = c.workspace_id ? (agentIds.get(text(c.workspace_id)) ?? text(c.workspace_id)) : '';
     mainsByScope.set(scope, [...(mainsByScope.get(scope) ?? []), c]);
   }
@@ -541,6 +542,8 @@ function applyPlan(src: Database.Database, dest: Database.Database, plan: BuiltP
         insertChat.run(
           pick('chat_sessions', c, {
             workspace_id: c.workspace_id ? (plan.agentIds.get(text(c.workspace_id)) ?? text(c.workspace_id)) : null,
+            // A source from before the rename calls a main chat `orchestration`.
+            type: currentChatType(text(c.type)),
             ...(archive ? { status: 'archived', archived_at: text(c.archived_at) || now } : {}),
             ...(plan.columns.chat_sessions.includes('last_viewed_at') ? { last_viewed_at: lastSeen } : {}),
             ...(plan.columns.chat_sessions.includes('unread_marker_at') ? { unread_marker_at: null } : {}),

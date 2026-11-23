@@ -9,13 +9,13 @@ import {
 	draftName,
 	useSaveIdentity,
 	type IdentityDraft,
-} from '@/components/orchestrator/identity-editor';
+} from '@/components/coordinator/identity-editor';
 import { installAgentSkill } from '@/components/onboarding/agent-skill-install';
 import { WorkspaceCreateModal } from '@/components/workspaces/workspace-create-modal';
 import { APP_NAME, APP_SHORT_ID } from '@/constants/app';
 import { useAreas } from '@/hooks/use-areas';
 import { mainChatKey, useMainChat } from '@/hooks/use-main-chat';
-import { useOrchestratorName, useUpdateUserState, useUserState } from '@/hooks/use-user-state';
+import { useCoordinatorName, useUpdateUserState, useUserState } from '@/hooks/use-user-state';
 import { useWorkspaces } from '@/hooks/use-workspaces';
 import { apiErrorText } from '@/lib/api/client';
 import type { AreaSuggestion } from '@/lib/onboarding/area-suggestions';
@@ -70,7 +70,7 @@ type Mode = 'conversation' | 'new-step' | 'intro';
 
 /**
  * The main chat's first run, which is also a new home's whole setup: there
- * is no wizard in front of the app. The orchestrator introduces itself and
+ * is no wizard in front of the app. The coordinator introduces itself and
  * asks only what this home doesn't have yet, one message at a time:
  *
  *   its name and look → a harness to think with (only when the background
@@ -81,7 +81,7 @@ type Mode = 'conversation' | 'new-step' | 'intro';
  *
  * The messages are scripted and drawn with the transcript's own components,
  * not stored as chat events. The real conversation with the harness starts
- * clean, and every answer lands in the settings the orchestrator already
+ * clean, and every answer lands in the settings the coordinator already
  * reads (its brief, user state), so it knows them all the same. Three things
  * run in the background from the first message so the steps that need them
  * rarely wait: the harness check, the search for history, and (once you've
@@ -93,7 +93,7 @@ type Mode = 'conversation' | 'new-step' | 'intro';
  * in the chat instead of answering skips the question on screen (the server
  * does it as the message arrives), and the rest come back on the next new
  * chat, after a short line rather than the welcome. Finishing or "Skip setup"
- * fills in the rest and records `orchestratorIntroducedAt`. After that the
+ * fills in the rest and records `coordinatorIntroducedAt`. After that the
  * chat opens on the usual intro, and a step added since is offered there as
  * one line, once.
  */
@@ -104,7 +104,7 @@ export function MainChatOnboarding() {
   const { data: areas } = useAreas();
   const { data: mainChat } = useMainChat(null);
   const chatId = mainChat?.session?.id ?? null;
-  const name = useOrchestratorName();
+  const name = useCoordinatorName();
   const appIntro = useAppMainChatIntro(name);
   const actions = useEmptyChatActions();
   const progress = useOnboardingProgress();
@@ -112,7 +112,7 @@ export function MainChatOnboarding() {
   const [typing, setTyping] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  const record = userState ? baseOnboardingRecord(userState.onboarding, userState.orchestratorIntroducedAt) : EMPTY_RECORD;
+  const record = userState ? baseOnboardingRecord(userState.onboarding, userState.coordinatorIntroducedAt) : EMPTY_RECORD;
 
   // The chats this conversation has been in: the one it opened in, and one
   // that replaced it while it was up (the harness step starts the empty chat
@@ -186,7 +186,7 @@ export function MainChatOnboarding() {
     const snapshot = new Set([...stepsOnFile(userState)].filter((step) => !said.has(step)));
     const done = doneSteps(record, snapshot);
     const open = openSteps({ ...ctx, importFound: null }, done);
-    const mode: Mode = !userState.orchestratorIntroducedAt
+    const mode: Mode = !userState.coordinatorIntroducedAt
       ? open.length > 0 ? 'conversation' : 'intro'
       : open.length > 0 ? 'new-step' : 'intro';
     // The welcome, unless something was settled before this conversation: then a line on picking up.
@@ -197,7 +197,7 @@ export function MainChatOnboarding() {
   // A home with nothing left to ask that never finished: it's finished now.
   const finishedQuietly = useRef(false);
   useEffect(() => {
-    if (decided?.mode !== 'intro' || !userState || userState.orchestratorIntroducedAt || finishedQuietly.current) return;
+    if (decided?.mode !== 'intro' || !userState || userState.coordinatorIntroducedAt || finishedQuietly.current) return;
     finishedQuietly.current = true;
     void progress.finish({ skipped: false, ...(chatId ? { chatId } : {}) });
   }, [decided, userState, progress, chatId]);
@@ -234,7 +234,7 @@ export function MainChatOnboarding() {
   // opens on the usual intro. This chat keeps the conversation until it's used.
   const recorded = useRef(false);
   useEffect(() => {
-    if (!finished || recorded.current || !userState || userState.orchestratorIntroducedAt) return;
+    if (!finished || recorded.current || !userState || userState.coordinatorIntroducedAt) return;
     recorded.current = true;
     void progress.finish({ skipped: false, ...(chatId ? { chatId } : {}) });
   }, [finished, userState, progress, chatId]);
@@ -336,7 +336,7 @@ export function MainChatOnboarding() {
   if (!decided) {
     // A home that finished almost always opens on the usual intro, so show it
     // while checking. One that hasn't waits for its conversation.
-    return userState?.orchestratorIntroducedAt ? intro() : <div className="flex-1" />;
+    return userState?.coordinatorIntroducedAt ? intro() : <div className="flex-1" />;
   }
   if (decided.mode === 'intro') return intro();
   if (decided.mode === 'new-step') {

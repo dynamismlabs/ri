@@ -60,7 +60,7 @@ Agent features run through a coding CLI you already use and are signed in to (Cl
 
 ## Use Ri from Slack or Buzz
 
-Open **Settings > Slack & Buzz** to add your orchestrator or an agent for two-way conversations through mentions, DMs and threads. You can also find **Add your agent to Slack** under **Plugins > Slack**. Team settings have the same **Slack & Buzz** entry for shared agents and connected channels.
+Open **Settings > Slack & Buzz** to add your coordinator or an agent for two-way conversations through mentions, DMs and threads. You can also find **Add your agent to Slack** under **Plugins > Slack**. Team settings have the same **Slack & Buzz** entry for shared agents and connected channels.
 
 The Slack account Connector in **Plugins** lets Ri search, read and send messages as you. One Slack app can support both account tools and a conversational bot, with separate permissions. The [Slack and Buzz guide](docs/slack-buzz-conversations.md) covers setup, reusing an app and which identity sends each message.
 
@@ -178,16 +178,16 @@ Installs predating this layout (content under a `brain/` subfolder) convert with
 
 There are two distinct agent surfaces — don't conflate them:
 
-- **Typed action registry** (`src/lib/orchestrator/registry.ts`) — one definition per action, generates both:
+- **Typed action registry** (`src/lib/actions/registry.ts`) — one definition per action, generates both:
   - The CLI: `ri agent <action> [params]` (JSON to stdout)
-  - The HTTP MCP server at `/api/orchestrator/[transport]`
+  - The HTTP MCP server at `/api/home/[transport]`
 - **Natural-language MCP** at `/api/[transport]` — two tools (`query` / `update`) that route through `runMcpAgent` for free-form interpretation.
 
 Every handler dispatches through `src/lib/db/queries.ts` — never raw SQL. The query layer enforces embedding upserts, markdown-mirror sync, and attachment derivation, so agent writes hold the same invariants as human writes.
 
 ### Skills
 
-`skills/orchestrator/SKILL.md` teaches Claude Code, Codex, and compatible harnesses how to use the action surface. It ships as a template: the installed skill name is composed from `APP_SHORT_ID` (`AGENT_SKILL_NAME` in `src/constants/app.ts`, currently `agent-work-tasks-notes_ri`), materialized into `.work/skills/` with the name substituted, so a rebrand propagates from one constant. The `{{SKILL_NAME}}` placeholder in the template is the only source of the name — nothing hardcodes the short id.
+`skills/tasks-notes/SKILL.md` teaches Claude Code, Codex, and compatible harnesses how to use the action surface. It ships as a template: the installed skill name is composed from `APP_SHORT_ID` (`AGENT_SKILL_NAME` in `src/constants/app.ts`, currently `agent-work-tasks-notes_ri`), materialized into `.work/skills/` with the name substituted, so a rebrand propagates from one constant. The `{{SKILL_NAME}}` placeholder in the template is the only source of the name — nothing hardcodes the short id.
 
 By default the skill installs into `~/.claude/skills/` and `~/.agents/skills/`, so agents can manage your tasks and notes from any project. This is the default because it removes an onboarding decision most users can't meaningfully answer. Individual repositories are never written into either way. To scope it back to sessions the app launches from its own directory, use **Settings → Agents → Task and note access** (the app-root install is always present regardless). The CLI installs the app-root copy during bootstrap; the global copy is toggled via `PUT /api/agent/skills/global`.
 
@@ -248,7 +248,7 @@ pnpm cli:build            # bundle CLI to ./dist
 - **Types** are derived from the Drizzle schema. Don't duplicate.
 - **API routes** call shared functions from `src/lib/db/queries.ts`. No raw SQL in handlers.
 - **Paths** resolve through `src/lib/config/paths.ts` helpers. Never hardcode the data root.
-- **Orchestrator handlers** throw `ActionError` with a stable code, return plain data, and never `console.log`.
+- **action handlers** throw `ActionError` with a stable code, return plain data, and never `console.log`.
 
 See [`AGENTS.md`](AGENTS.md) for the full set of project rules.
 
@@ -262,11 +262,11 @@ src/
   lib/
     ai/                # provider adapters, agent prompts, deck generation
     db/                # Drizzle schema, queries (the only write path)
-    orchestrator/      # typed action registry → CLI + HTTP MCP
+    coordinator/      # typed action registry → CLI + HTTP MCP
     mcp/               # NL MCP agent (query/update tools)
     embeddings/        # sqlite-vec backfill + helpers
     config/paths.ts    # canonical brain-path resolution
-skills/orchestrator/   # Cross-agent skill template; installed name composed from APP_SHORT_ID, global by default
+skills/tasks-notes/   # Cross-agent skill template; installed name composed from APP_SHORT_ID, global by default
 modules/parakeet-stt/  # voice submodule (Docker sidecar)
 docs/                  # PRD, specs, architecture notes
 scripts/               # smoke tests, seed-dev, backups
@@ -276,7 +276,7 @@ scripts/               # smoke tests, seed-dev, backups
 
 Pre-1.0 and moving fast. The right doors:
 
-- **New agent action?** Add it to `src/lib/orchestrator/registry.ts`. Both CLI and MCP pick it up.
+- **New agent action?** Add it to `src/lib/actions/registry.ts`. Both CLI and MCP pick it up.
 - **New write path from the UI?** Add it to `src/lib/db/queries.ts` so agents and humans go through the same code.
 
 Issues and PRs welcome.

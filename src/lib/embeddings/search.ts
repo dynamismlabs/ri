@@ -243,7 +243,7 @@ function truncate(value: unknown): unknown {
 
 /**
  * Hybrid search + entity hydration. The single implementation behind the
- * chat agent's `searchKnowledgeBase` tool, the orchestrator `search`
+ * chat agent's `searchKnowledgeBase` tool, Ri's `search`
  * action, and deck generation's context-gathering tool — keeps the
  * per-entity column selection and snippet truncation in one place.
  *

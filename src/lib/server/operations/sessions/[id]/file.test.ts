@@ -146,7 +146,7 @@ it('handles missing, oversized and disguised text files without reading unrelate
 it('opens relative files from an agent main chat in its own folder', async () => {
   const { q, folder, session } = await setup();
   fs.writeFileSync(path.join(folder, 'README.md'), '# Agent notes');
-  const main = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'orchestration' });
+  const main = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'coordinator' });
   const { GET } = await import('@/lib/server/operations/sessions/[id]/file');
   expect(await GET({ params: { id: main.id }, query: { path: 'README.md' } }, {} as never)).toMatchObject({ ok: true, data: { content: '# Agent notes' } });
   expect(await GET({ params: { id: main.id }, query: { path: '../elsewhere/secret.txt' } }, {} as never)).toMatchObject({ ok: false, status: 400 });
@@ -168,14 +168,14 @@ it('downloads original text bytes past the preview cap with the same access chec
   expect(Buffer.from(await response.arrayBuffer()).equals(bytes)).toBe(true);
   expect((await downloadSessionFile(request, session.id, path.join(outside, 'secret.txt'))).status).toBe(403);
   expect((await downloadSessionFile(request, session.id, '../elsewhere/secret.txt')).status).toBe(400);
-  const other = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'orchestration' });
+  const other = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'coordinator' });
   expect((await downloadSessionFile(request, other.id, file)).status).toBe(403);
 });
 
 it('downloads relative text from an agent main chat and reports a missing file', async () => {
   const { q, folder, session } = await setup();
   fs.writeFileSync(path.join(folder, 'README.md'), '# Agent notes\n');
-  const main = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'orchestration' });
+  const main = q.createChatSession({ workspaceId: session.workspaceId, harness: 'claude', type: 'coordinator' });
   const { downloadSessionFile } = await import('@/lib/sessions/file-download');
   const request = new Request('http://ri.local/download');
   const file = await downloadSessionFile(request, main.id, 'README.md');

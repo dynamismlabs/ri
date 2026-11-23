@@ -3,7 +3,7 @@
  * in-memory executor state (the running-sessions set and the cached agent
  * handles), so it only works in the process that owns those handles — the app
  * server. REST routes use this directly; the CLI/MCP reach the same effects
- * through the server HTTP control path (see the orchestrator runtime).
+ * through the server HTTP control path (see the coordinator runtime).
  */
 
 import * as executor from '@/lib/executor/adapter';

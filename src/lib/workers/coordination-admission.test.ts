@@ -101,7 +101,7 @@ async function userMessage(content: string) {
 
 it('runs a delegated sibling on the existing connected device without preparing another execution', async () => {
   const q = await import('@/lib/db/queries');
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const { runAction } = await import('@/lib/actions/dispatch');
   const service = await import('@/lib/coordination/service');
   const source = q.getChatSession(chatId)!;
   const placement = q.getOpenPlacement(executionId)!;
@@ -133,7 +133,7 @@ it('F6: an offline device receives two distinct assignment sends for one chat be
   await worker!.stop();
   worker = null;
   q.setAgentCoordinationPolicy('global', '1', 'allow');
-  const a = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  const a = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   const b = q.createChatSession({ type: 'content', harness: 'claude' });
   q.setAgentCoordinationHold(a.id, true);
   q.setAgentCoordinationHold(b.id, true);
@@ -159,7 +159,7 @@ it('F7: a human send folds a delivery whose own reserved send is already queued,
   await worker!.stop();
   worker = null;
   q.setAgentCoordinationPolicy('global', '1', 'allow');
-  const a = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  const a = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   q.setAgentCoordinationHold(a.id, true);
   const first = await coordination.submitAgentRequest({ remote: true, actor: { source: 'ai', sessionId: a.id } }, { target: `session:${chatId}`, requestId: 'only', kind: 'message', content: 'UNIQUE-MARKER one-way note.' });
   await coordination.drainAgentCoordination();

@@ -24,7 +24,7 @@ import { OperationError } from '@/lib/server/operation';
 import { getAttachmentsDir } from '@/lib/config/paths';
 import { replaceAttachmentReferences } from '@/lib/attachments/derive';
 import { validateWorkResultAttachments } from '@/lib/work-results/queries';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import type { PublishedResult } from '@/lib/team/published-results';
 import { assertCurrentTeam, recordTeamFailure, teamFor, type ConnectedTeam } from './connect';
 import { teamRequest } from './remote';

@@ -2,7 +2,7 @@
  * Writes the guide's two generated pages from the code, so they can't drift:
  * guide/reference/cli.md from the `ri` command tree (src/cli/program.ts) and
  * guide/reference/actions.md from the action registry
- * (src/lib/orchestrator/registry.ts).
+ * (src/lib/actions/registry.ts).
  *
  *   pnpm guide:reference           rewrite both pages
  *   pnpm guide:reference --check   exit 1 if either is stale, changing nothing
@@ -15,7 +15,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Command, Help } from 'commander';
 import type { z } from 'zod';
-import type { Action } from '@/lib/orchestrator/types';
+import type { Action } from '@/lib/actions/types';
 import { APP_NAME, APP_SHORT_ID } from '@/constants/app';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { COORDINATION_TOOLS } from '@/lib/coordination/surface';
@@ -224,7 +224,7 @@ export function renderActionsReference(actions: readonly Action[]): string {
 /** Both pages, rendered from this checkout's code. */
 export async function renderReferences(): Promise<Record<keyof typeof REFERENCE_PAGES, string>> {
   const { buildProgram } = await import('@/cli/program');
-  const { actionCatalog } = await import('@/lib/orchestrator/registry');
+  const { actionCatalog } = await import('@/lib/actions/registry');
   // A personal Ri's actions, whatever kind of Home this computer has.
   return { cli: renderCliReference(buildProgram()), actions: renderActionsReference(actionCatalog(false)) };
 }

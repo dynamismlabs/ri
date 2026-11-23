@@ -6,7 +6,7 @@ Built October 31, 2026. Code: `src/lib/oauth/`, `src/app/oauth/authorize/`, `src
 
 ## Connecting
 
-Cloud apps reach Ri from the internet, so Ri needs a remote address first (Settings → Devices, Use Beamd URL or your own HTTPS address). The MCP address is that address with `/api/orchestrator/mcp`.
+Cloud apps reach Ri from the internet, so Ri needs a remote address first (Settings → Devices, Use Beamd URL or your own HTTPS address). The MCP address is that address with `/api/home/mcp`.
 
 **ChatGPT.** Plugins → + → Add custom MCP server. Name it Ri, paste the MCP address as its server URL and choose OAuth under Authentication. ChatGPT finds Ri's sign-in on its own and picks its metadata document (CIMD), so there's no client to set up. Accept the warning and choose Create as a plugin. ChatGPT opens Ri's sign-in page in your browser. Choose Allow. Settings → Ri in other agents → ChatGPT has the same steps with your address filled in, and lists each connection with when it was last used and Disconnect. OpenAI's steps: [Connect and test](https://developers.openai.com/plugins/deploy/connect-chatgpt).
 
@@ -31,7 +31,7 @@ What Ri implements, and the specs it follows: the [MCP authorization spec](https
 
 | Step | Ri |
 | --- | --- |
-| Discovery | A request to `/api/orchestrator/mcp` without a working key gets 401 with `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource/api/orchestrator/mcp", scope="content"` (and `error="invalid_token"` when a key was sent). Only that endpoint challenges. |
+| Discovery | A request to `/api/home/mcp` without a working key gets 401 with `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource/api/home/mcp", scope="content"` (and `error="invalid_token"` when a key was sent). Only that endpoint challenges. |
 | Resource metadata (RFC 9728) | `/.well-known/oauth-protected-resource`, also suffixed with the endpoint's path. The resource is the MCP address. |
 | Server metadata (RFC 8414) | `/.well-known/oauth-authorization-server`: S256 only, `authorization_response_iss_parameter_supported`, `client_id_metadata_document_supported`, a registration endpoint, `none`, `client_secret_basic` and `client_secret_post` at the token endpoint, revocation. No OIDC scopes, so ChatGPT asks for none. |
 | Clients | A client ID metadata document (ChatGPT's is `https://chatgpt.com/oauth/client.json`), or dynamic registration (RFC 7591). |
@@ -63,7 +63,7 @@ Each rule names who it stops and what they'd get.
 | Allow posts with the browser's `SameSite=Lax` cookie, and the proxy refuses a cookie POST from another origin | Another site's form | Approving an app for the owner | Kept. |
 | The page can't be framed (`frame-ancestors 'none'`, `X-Frame-Options: DENY`), isn't cached and sends no referrer to other sites (`same-origin`) | A site that frames Ri's page under its own button | The owner's click on Allow | Kept. Not `no-referrer`: under it the form's POST carries `Origin: null`, which the proxy refuses. |
 | Allow is never focused and takes a click only after the page has been visible for 500 ms, as Ri's approval cards arm | A site that opens the page in a new window under a click or key it asked for | The owner's Allow | Kept. |
-| A sign-in key reaches only `/api/orchestrator/mcp` and the content tools | An app, or a stolen token | Chats, files, settings, starting agents | Kept, as for every outside-assistant key (`HOME_CONTENT_ACTIONS`). |
+| A sign-in key reaches only `/api/home/mcp` and the content tools | An app, or a stolen token | Chats, files, settings, starting agents | Kept, as for every outside-assistant key (`HOME_CONTENT_ACTIONS`). |
 | The model can add to the Stream but not read it, and reads neither the Stream nor the scratchpad | An app's model | The person's raw captures and working memory in its context | Kept. Ri's view shows them to the person through `load_view`, which hosts that follow MCP Apps keep from their model. The app's company still receives them, which the consent page says. |
 
 ## Views

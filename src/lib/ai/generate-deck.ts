@@ -1,7 +1,7 @@
 /**
  * Deck generation pipeline, callable from any server-side surface.
  *
- * Extracted from `POST /api/deck/generate` so the orchestrator
+ * Extracted from `POST /api/deck/generate` so the coordinator
  * `regenerate_deck` action (CLI + MCP) can run the pipeline directly
  * instead of bouncing through HTTP. The route stays as the thin
  * HTTP wrapper for the web UI.
@@ -46,11 +46,11 @@ import {
   harnessSupportsMcp,
 } from '@/lib/harness/one-shot';
 import {
-  orchestratorMcpServer,
+  homeMcpServer,
   integrationsMcpServer,
-  ORCHESTRATOR_MCP_SERVER_NAME,
+  HOME_MCP_SERVER_NAME,
   INTEGRATIONS_MCP_SERVER_NAME,
-} from '@/lib/orchestrator/harness-surface';
+} from '@/lib/coordinator/harness-surface';
 import {
   DECK_GENERATION_TASK_LIMIT,
   DECK_SYSTEM_PROMPT,
@@ -66,7 +66,7 @@ import {
 /**
  * Best-effort harvest of knowledge-base search hits out of a harness
  * tool_result payload. Two shapes appear in the wild:
- *   - MCP (Claude): the orchestrator `search` tool's result — a JSON array
+ *   - MCP (Claude): Ri's `search` tool's result — a JSON array
  *     of hydrated hits, possibly wrapped in the action envelope.
  *   - CLI (Codex): shell output of `<cli> agent search`, which prints the
  *     same array as JSON on stdout.
@@ -397,7 +397,7 @@ export async function generateDeck(
   // ═══════════════════════════════════════════════════════════════
 
   // The gathering pass runs through the default harness. Tools (the
-  // orchestrator `search` + `get_day_shape` actions and the user's
+  // Ri `search` + `get_day_shape` actions and the user's
   // read-only integration actions) attach as MCP servers when the harness
   // supports it; otherwise the run sits at the app root where the
   // installed AGENTS.md surface routes the same actions through the CLI
@@ -422,7 +422,7 @@ export async function generateDeck(
       skipPermissions?: boolean;
     };
     if (harnessSupportsMcp(providerType)) {
-      const servers = [orchestratorMcpServer(), integrationsMcpServer()].filter(
+      const servers = [homeMcpServer(), integrationsMcpServer()].filter(
         (s): s is McpServerConfig => s !== null,
       );
       const integrationAllow = (await getReadOnlyIntegrationToolNames()).map(
@@ -433,8 +433,8 @@ export async function generateDeck(
         // Gathering is strictly read-only: search, day shape, and the
         // non-mutating integration actions. Everything else is denied.
         allowedTools: [
-          `mcp__${ORCHESTRATOR_MCP_SERVER_NAME}__search`,
-          `mcp__${ORCHESTRATOR_MCP_SERVER_NAME}__get_day_shape`,
+          `mcp__${HOME_MCP_SERVER_NAME}__search`,
+          `mcp__${HOME_MCP_SERVER_NAME}__get_day_shape`,
           ...integrationAllow,
         ],
         disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],

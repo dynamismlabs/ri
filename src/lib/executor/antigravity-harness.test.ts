@@ -16,9 +16,9 @@ import { resumeCommandForHarness } from '@/lib/harness/registry';
  * actually become on the command line, which no unit test of either side can.
  */
 
-// The orchestrator surface asks the installed Claude whether it needs a
+// The coordinator surface asks the installed Claude whether it needs a
 // CLAUDE.md pointer. Nothing about that is under test here.
-vi.mock('@/lib/orchestrator/claude-agents-md', () => ({ shouldWriteClaudeMdPointer: async () => false }));
+vi.mock('@/lib/coordinator/claude-agents-md', () => ({ shouldWriteClaudeMdPointer: async () => false }));
 
 const MODEL = MOCK_AGY_MODELS[1].id;
 
@@ -59,7 +59,7 @@ function flagValue(argv: string[], flag: string): string | undefined {
 async function chat(input: { permissionMode?: 'auto_all' | 'plan'; effort?: 'low' | 'medium' | 'high' | 'max'; workspaceId?: string } = {}) {
   const q = await import('@/lib/db/queries');
   return q.createChatSession({
-    type: 'orchestration',
+    type: 'coordinator',
     harness: 'antigravity',
     status: 'active',
     model: MODEL,
@@ -228,7 +228,7 @@ describe('Antigravity chats through the real runner', () => {
 describe('Antigravity permission boundaries', () => {
   it.each(['ask', 'auto_edits'] as const)('refuses %s at chat creation and updates', async (permissionMode) => {
     const q = await import('@/lib/db/queries');
-    expect(() => q.createChatSession({ type: 'orchestration', harness: 'antigravity', permissionMode })).toThrow(/not supported/);
+    expect(() => q.createChatSession({ type: 'coordinator', harness: 'antigravity', permissionMode })).toThrow(/not supported/);
     const session = await chat();
     expect(() => q.updateChatSession(session.id, { permissionMode })).toThrow(/not supported/);
     expect(q.getChatSession(session.id)?.permissionMode).toBe('auto_all');
@@ -318,7 +318,7 @@ describe('fresh-chat switches keep permissions', () => {
       session = q.createExecutionWithChat({ workspaceId: ws.id, harness, label: null, model, permissionMode: mode }).session;
     } else {
       session = q.createChatSession({
-        harness, model, permissionMode: mode, type: surface === 'main' ? 'orchestration' : 'content',
+        harness, model, permissionMode: mode, type: surface === 'main' ? 'coordinator' : 'content',
         ...(surface === 'content' ? { surfaceKind: 'note', surfaceRef: 'switch-note' } : {}),
       });
     }
@@ -334,7 +334,7 @@ describe('fresh-chat switches keep permissions', () => {
         return POST(request(body) as never, { params: Promise.resolve({ id: session.id }) });
       }
       if (surface === 'main') {
-        const { POST } = await import('@/app/api/orchestrator-chat/route');
+        const { POST } = await import('@/app/api/coordinator-chat/route');
         return POST(request(body));
       }
       const { POST } = await import('@/app/api/document-chat/route');

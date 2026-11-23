@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { validateWorkResultActor } from './home-policy';
-import { ActionError, type ActionContext } from '@/lib/orchestrator/types';
-import { mcpCallContext, requestHasSessionAuthority } from '@/lib/orchestrator/mcp-caller';
+import { ActionError, type ActionContext } from '@/lib/actions/types';
+import { mcpCallContext, requestHasSessionAuthority } from '@/lib/actions/mcp-caller';
 import { getHome, memberForApiKey, getChatSession, getWorkResultAiReviewForSession } from '@/lib/db/queries';
 import type { WorkResultActor } from '@/db/types';
 import { isTaskLifecycleError, LIFECYCLE_ERROR_HTTP_STATUS } from '@/lib/tasks/lifecycle';

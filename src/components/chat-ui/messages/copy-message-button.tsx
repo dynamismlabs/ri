@@ -33,7 +33,7 @@ interface CopyMessageButtonProps {
 /**
  * Action row under a chat message. Carries a copy icon
  * and (optionally) the message timestamp. Shared between execution
- * chat and the orchestrator chat so both surfaces read the same.
+ * chat and the coordinator chat so both surfaces read the same.
  *
  * The "copied" tick stays for ~1.2s before reverting. Clipboard write
  * failures are silent — the icon just doesn't flip — so users on

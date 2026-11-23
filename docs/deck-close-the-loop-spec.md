@@ -46,7 +46,7 @@ against "glance and start."
 - **Mid-day reconcile** — `reconcileDeckWithExternalChanges`
   (`src/lib/deck/reconcile-external.ts`): deterministic calendar-snapshot diff → bump →
   router → new `midday` version. Reachable only via `POST /api/deck/reconcile` and the
-  `reconcile_deck` orchestrator action. No heartbeat, no scheduler entry, no client hook
+  `reconcile_deck` Ri action. No heartbeat, no scheduler entry, no client hook
   calls it.
 - **Triggers** — morning cron trigger seeded at boot, default on at 04:00
   (`src/lib/deck/trigger.ts`, `instrumentation.ts:184`). Lazy `ensureTodaysDeck` on
@@ -65,7 +65,7 @@ against "glance and start."
   branch unreachable (`:487-503`).
 - **Review feed (exists!)** — `listNeedsReviewSessionCandidates()`
   (`src/lib/db/queries.ts:3439`) + `GET /api/sessions/needs-review`: active sessions
-  with unread outcomes, already excluding the interactive orchestrator chat and the
+  with unread outcomes, already excluding the interactive coordinator chat and the
   morning-deck refresh. This is the deterministic "agent output awaiting review" feed
   the attention phase needs — it just isn't surfaced on the deck.
 - **Dead components** — `plan-review.tsx`, `plan-review-v2.tsx`, `plan-review-v3.tsx`
@@ -200,7 +200,7 @@ against "glance and start."
   (`:87`): every 15 minutes call `reconcileDeckWithExternalChanges()`, guarded by
   (a) a `sweeping` re-entry flag, (b) `hasCalendarProvider()`, (c) local time within
   `workdayStart..workdayEnd`.
-- Why not an orchestrator cron trigger like the morning deck: reconcile is
+- Why not a coordinator cron trigger like the morning deck: reconcile is
   deterministic and cheap — no agent judgment involved, so no reason to spend a
   scheduler dispatch + agent session on it. The scheduler stays for agent-shaped work.
 - `POST /api/deck/reconcile` and `reconcile_deck` stay as the manual/agent paths.

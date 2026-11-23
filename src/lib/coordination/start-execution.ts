@@ -1,6 +1,6 @@
 import * as q from '@/lib/db/queries';
 import type { AgentRequestRecord } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { UnsupportedPermissionModeError } from '@/lib/executor/permission-map';
 import { HarnessDisabledError } from '@/lib/harness/registry';
 import { requestScopedId } from './start-id';

@@ -77,7 +77,7 @@ beforeAll(async () => {
   q.createReferenceFolder({ alias: 'docs', path: '/Users/someone/docs' });
   q.createTrigger({
     name: 'morning',
-    targetKind: 'orchestrator',
+    targetKind: 'coordinator',
     harness: 'claude',
     prompt: 'X',
     kind: 'every',

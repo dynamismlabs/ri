@@ -4,7 +4,7 @@
  * sheet needs into one round-trip.
  *
  * Lazy-imported for the same ESM-only-exports reason the workspace lib is —
- * the orchestrator CLI dispatches through tsx, which can't statically
+ * the Ri CLI dispatches through tsx, which can't statically
  * resolve packages with no `"require"` exports condition.
  */
 

@@ -41,7 +41,7 @@ A scope is a label for a unit of work. Scopes ride AsyncLocalStorage, so each st
 |---|---|
 | `http:<METHOD> <route>` | `src/service/http-server.ts`, for every request. Record ids fold to `:id`. A request ends when its response finishes. A live stream (SSE) ends when its headers go out. |
 | `trpc:<procedure>` | the HTTP host for `/api/trpc/<procedure>`, and the viewer middleware (`src/lib/trpc/init.ts`) for WebSocket calls. Both use the same label, so a call counts once whichever transport carried it. |
-| `action:<name>` | `runAction` (`src/lib/orchestrator/dispatch.ts`), inside the MCP or actions request that carried it. |
+| `action:<name>` | `runAction` (`src/lib/actions/dispatch.ts`), inside the MCP or actions request that carried it. |
 | `ingest:<harness>` | `persistStreamEvent`, once per agent event stored. Shows how much time goes to taking in agent output. |
 | `timer:scheduler`, `timer:mirror`, `timer:health`, `timer:notifier`, `startup:reconcile` | the background jobs. |
 

@@ -300,7 +300,7 @@ export const LIFECYCLE_ERROR_HTTP_STATUS: Record<LifecycleErrorCode, number> = {
   active_execution: 409,
 };
 
-/** Orchestrator ActionError code for each lifecycle error code, for CLI/MCP. */
+/** ActionError code for each lifecycle error code, for CLI/MCP. */
 export const LIFECYCLE_ERROR_ACTION_CODE: Record<LifecycleErrorCode, 'not_found' | 'invalid_params' | 'conflict' | 'unsupported'> = {
   not_found: 'not_found',
   invalid_params: 'invalid_params',

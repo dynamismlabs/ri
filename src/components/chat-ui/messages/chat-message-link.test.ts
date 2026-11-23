@@ -7,7 +7,7 @@ import { ChatMessageLink } from './chat-message-link';
 const state = vi.hoisted(() => ({ session: null as unknown, error: null as unknown, navigate: vi.fn(), canNavigate: true }));
 vi.mock('@/hooks/use-execution', () => ({ useSession: () => ({ data: state.session, error: state.error }) }));
 vi.mock('@/hooks/use-workspaces', () => ({ useWorkspace: () => ({ data: { name: 'Research' } }) }));
-vi.mock('@/hooks/use-user-state', () => ({ useOrchestratorName: () => 'Ri' }));
+vi.mock('@/hooks/use-user-state', () => ({ useCoordinatorName: () => 'Ri' }));
 vi.mock('@/contexts/work-context', () => ({ useOptionalWorkNavigation: () => ({ openLinkedChat: state.canNavigate ? (id: string, eventId?: string) => state.navigate({ kind: 'execution', id, ...(eventId ? { eventId } : {}), history: true }) : undefined }) }));
 vi.mock('@/components/ui/tip', () => ({ Tip: ({ children }: { children: unknown }) => children }));
 vi.mock('next/link', () => ({ default: (props: Record<string, unknown>) => {
@@ -45,7 +45,7 @@ describe('linked chat identity', () => {
   });
 
   it.each([null, 'research'])('preserves the exact archived main chat instead of the scope current chat (%s)', async (workspaceId) => {
-    state.session = { id: 'peer-chat', type: 'orchestration', status: 'archived', label: 'Earlier date review', workspaceId };
+    state.session = { id: 'peer-chat', type: 'coordinator', status: 'archived', label: 'Earlier date review', workspaceId };
     await act(async () => root.render(createElement(ChatMessageLink, { sessionId: 'peer-chat', label: 'Sent to', direction: 'outgoing' })));
     expect(container.querySelector('a')?.getAttribute('href')).toBe('/?session=peer-chat&history=1');
     expect(container.textContent).toContain('Earlier date review');

@@ -182,7 +182,7 @@ describe('heartbeat dispatch', () => {
     expect(turn.prompts[1]).toContain('A background check-in has something');
     expect(turn.prompts[1]).toContain('exactly NO_REPLY');
     expect(turn.prompts[1]).toContain('the scheduled "Heartbeat" run');
-    expect(turn.prompts[1]).not.toContain('the orchestrator (the user');
+    expect(turn.prompts[1]).not.toContain('the coordinator (the user');
 
     const events = queries.listRecentChatEvents(main.id, 10);
     const incoming = events.find((event) => event.role === 'user')!;
@@ -223,7 +223,7 @@ describe('heartbeat dispatch', () => {
     const { ensureHeartbeatTrigger } = await import('@/lib/heartbeat/trigger');
     await ensureHeartbeatTrigger();
     const main = await ensureMainChat(null);
-    const source = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', label: 'Heartbeat' });
+    const source = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', label: 'Heartbeat' });
     const { handOffToMainAgent } = await import('@/lib/heartbeat/handoff');
     const checkIn = queries.createRun({ triggerId: HEARTBEAT_ID, harness: 'claude', triggerKind: 'every', status: 'completed', chatSessionId: source.id });
     const delivery = handOffToMainAgent(checkIn, source, 'The contract expires today.');
@@ -292,7 +292,7 @@ describe('heartbeat dispatch', () => {
 
   it('can list only tasks last updated before a date, to find stale ones cheaply', async () => {
     const queries = await import('@/lib/db/queries');
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const { getDb } = await import('@/lib/db');
     const { tasks } = await import('@/lib/db/schema');
     const { eq } = await import('drizzle-orm');
@@ -347,7 +347,7 @@ describe('heartbeat dispatch', () => {
 
   it('a check-in filing a task keeps its place in the stale list, and anything else counts as a touch', async () => {
     const queries = await import('@/lib/db/queries');
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const area = queries.createArea({ name: 'Taxes' });
     const filed = queries.createTask({ title: 'Quarterly taxes' });
     const edited = queries.createTask({ title: 'Mortgage' });
@@ -370,9 +370,9 @@ describe('heartbeat dispatch', () => {
 
   it('records what the agent changed on the run, and changes alone send no message', async () => {
     const queries = await import('@/lib/db/queries');
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const task = queries.createTask({ title: 'Needs an area' });
-    // Mid-turn, the agent edits a task through the orchestrator with its
+    // Mid-turn, the agent edits a task through the coordinator with its
     // session credential (as the MCP route or the CLI would), then replies quiet.
     turn.during = async (chatSessionId) => {
       const env = await runAction(
@@ -395,7 +395,7 @@ describe('heartbeat dispatch', () => {
     const { finishRun } = await import('./finish');
     const { ensureHeartbeatTrigger } = await import('@/lib/heartbeat/trigger');
     await ensureHeartbeatTrigger();
-    const chat = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', label: 'Heartbeat' });
+    const chat = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', label: 'Heartbeat' });
     const run = queries.createRun({ triggerId: HEARTBEAT_ID, harness: 'claude', triggerKind: 'every', status: 'running', chatSessionId: chat.id });
     queries.updateChatSession(chat.id, { createdByRunId: run.id });
     finishRun(run.id, { ok: false, errorCode: 'timeout', errorMessage: 'Run exceeded 1800s timeout' });
@@ -473,7 +473,7 @@ describe('heartbeat dispatch', () => {
     const queries = await import('@/lib/db/queries');
     const { ensureMainChat } = await import('@/lib/sessions/main-chat');
     const main = await ensureMainChat(null);
-    const source = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'archived', label: 'Heartbeat' });
+    const source = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'archived', label: 'Heartbeat' });
     const { ensureHeartbeatTrigger } = await import('@/lib/heartbeat/trigger');
     await ensureHeartbeatTrigger();
     const { handOffToMainAgent } = await import('@/lib/heartbeat/handoff');
@@ -489,7 +489,7 @@ describe('heartbeat dispatch', () => {
     const queries = await import('@/lib/db/queries');
     const { dispatchRun } = await import('./dispatch');
     const other = queries.createTrigger({
-      name: 'nightly', harness: 'claude', targetKind: 'orchestrator', workspaceId: null,
+      name: 'nightly', harness: 'claude', targetKind: 'coordinator', workspaceId: null,
       prompt: 'Plain prompt.', kind: 'manual',
     });
     const { run, chatSession } = await dispatchRun({ trigger: other, triggerKind: 'manual' });

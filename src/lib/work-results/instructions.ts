@@ -1,8 +1,8 @@
 import { signedCliCommand } from '@/lib/utils/signed-cli-command';
 import { getWorkResultCapabilities } from './capabilities';
-import { resolveServerPort } from '@/lib/orchestrator/harness-surface';
+import { resolveServerPort } from '@/lib/coordinator/harness-surface';
 import { readAuthConfig } from '@/lib/auth/config-file';
-import { SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/actions/session-credential';
 import type { McpServerConfig } from '@agentex/agent';
 import { APP_GUIDANCE_OPEN, USER_MESSAGE_FOLLOWS } from './guidance-markers';
 
@@ -55,7 +55,7 @@ export function workResultsMcpServer(sessionId: string, port = resolveServerPort
   return {
     name: 'results',
     type: 'http',
-    url: `http://localhost:${port}/api/orchestrator/results/mcp`,
+    url: `http://localhost:${port}/api/home/results/mcp`,
     headers: { Authorization: `Bearer ${token}`, ...(credential ? { [SESSION_CREDENTIAL_HEADER]: credential } : {}) },
   };
 }

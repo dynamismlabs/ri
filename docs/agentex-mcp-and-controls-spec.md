@@ -1,7 +1,7 @@
 # Spec: agentex MCP attachment + session controls
 
-**Status:** SHIPPED upstream as `@agentex/agent@0.0.20` (2026-06-06) and consumed by Ri — orchestrator sessions now pass typed `mcpServers`/`strictMcpConfig`/`disallowedTools` (`src/lib/orchestrator/harness-surface.ts`, `orchestratorSessionConfig`); Ri's `extraArgs` is down to the permission-mode flag and the host-staged `tmp/orchestrator-mcp.json` is gone (agentex stages its own 0600 config). `includePartialMessages`/`assistant_delta` shipped too but Ri doesn't consume deltas yet. Kept for the rationale record. Originally written against `@agentex/agent@0.0.19`, validated against Claude Code CLI 2.1.165.
-**Audience:** the agentex repo's coding agent. Everything here was found while wiring Ri's orchestrator onto harness sessions (Ri = host app embedding agentex sessions; see `docs/orchestrator-harness.md` in the Ri repo for the consumer side).
+**Status:** SHIPPED upstream as `@agentex/agent@0.0.20` (2026-06-06) and consumed by Ri — coordinator sessions now pass typed `mcpServers`/`strictMcpConfig`/`disallowedTools` (`src/lib/coordinator/harness-surface.ts`, `coordinatorSessionConfig`); Ri's `extraArgs` is down to the permission-mode flag and the host-staged `tmp/orchestrator-mcp.json` is gone (agentex stages its own 0600 config). `includePartialMessages`/`assistant_delta` shipped too but Ri doesn't consume deltas yet. Kept for the rationale record. Originally written against `@agentex/agent@0.0.19`, validated against Claude Code CLI 2.1.165.
+**Audience:** the agentex repo's coding agent. Everything here was found while wiring Ri's coordinator onto harness sessions (Ri = host app embedding agentex sessions; see `docs/coordinator-harness.md` in the Ri repo for the consumer side).
 **Priorities:** P0 is a shipped bug. P1s are features Ri currently fakes through `extraArgs` and wants first-class. P2 is a smaller correctness ask.
 
 ---
@@ -100,7 +100,7 @@ export type McpServerConfig =
 
 ## P1 — First-class tool allow/deny
 
-Ri runs orchestrator sessions that must never edit files directly (writes go
+Ri runs coordinator sessions that must never edit files directly (writes go
 through its action surface). Today it passes:
 
 ```ts
@@ -224,7 +224,7 @@ The agentex-sized ask (narrow, no cross-shape correlation):
 
 ## Appendix — how Ri consumes this today (the consumer contract)
 
-Per orchestrator session, Ri currently passes:
+Per coordinator session, Ri currently passes:
 
 ```ts
 config.extraArgs = [
@@ -239,8 +239,8 @@ config.extraArgs = [
 ];
 ```
 
-where the JSON file is `{"mcpServers": {"orchestrator": {"type": "http",
-"url": "http://localhost:<port>/api/orchestrator/mcp", "headers":
+where the JSON file is `{"mcpServers": {"coordinator": {"type": "http",
+"url": "http://localhost:<port>/api/home/mcp", "headers":
 {"Authorization": "Bearer <token>"}}}}` (mode 0600). After this spec ships,
 all of that collapses into typed `ProviderConfig` fields and Ri's
 `extraArgs` drops to just the permission-mode flag.

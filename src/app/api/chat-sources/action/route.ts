@@ -1,5 +1,5 @@
 import { getRequestKey } from '@/lib/auth/request-key';
-import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/orchestrator/session-credential';
+import { actorFromSessionCredential, sessionCredentialFromHeaders } from '@/lib/actions/session-credential';
 import { dispatchSourceAction } from '@/lib/chat-sources/actions';
 import { readLimitedJson } from '@/lib/api/limited-body';
 export async function POST(request: Request) {

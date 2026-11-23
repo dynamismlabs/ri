@@ -8,7 +8,7 @@ import { createTestHome } from '@/test/fixtures/home';
 import { teamTRPC } from './remote';
 import { connectTeam } from './connect';
 import { syncTeam } from './sync';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import * as q from '@/lib/db/queries';
 import { ensureHomeIdentity } from '@/lib/home/identity';
 import { API_PROTOCOL_HEADER } from '@/lib/releases/api-contract';

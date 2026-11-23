@@ -45,10 +45,10 @@ import { cn } from '@/lib/utils';
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * The harness-backed orchestrator chat — the dashboard Chat tab. A
- * persistent `type='orchestration'` chat session runs a real harness process
+ * The harness-backed coordinator chat — the dashboard Chat tab. A
+ * persistent `type='coordinator'` chat session runs a real harness process
  * (Claude Code today) with cwd = the app data root, acting through the
- * orchestrator's MCP tools (see `src/lib/orchestrator/harness-surface.ts`).
+ * coordinator's MCP tools (see `src/lib/coordinator/harness-surface.ts`).
  *
  * Deliberately a recomposition of the execution chat column —
  * transcript + pending-input + composer — minus the workspace chrome
@@ -90,7 +90,7 @@ export function HarnessChat({
       <div className="flex-1 flex items-center justify-center text-center px-8">
         <div>
           <p className="text-[12px] font-semibold text-foreground">
-            {scope === null ? 'Couldn\u2019t load the orchestrator chat.' : 'Couldn\u2019t load this agent\u2019s chat.'}
+            {scope === null ? 'Couldn\u2019t load your main chat.' : 'Couldn\u2019t load this agent\u2019s chat.'}
           </p>
           <p className="text-[11px] text-muted-foreground/80 mt-1">
             {apiErrorStatus(error) !== undefined
@@ -134,7 +134,7 @@ export function HarnessChat({
 /**
  * The harness chat surface for a single session id — transcript +
  * pending-input + composer, no workspace chrome. Reused by both the
- * dashboard orchestrator chat (above) and the in-document (note/task)
+ * dashboard coordinator chat (above) and the in-document (note/task)
  * `type='content'` chat (see slideout-chat.tsx). Everything it needs is
  * keyed off the session id, so the same component drives either.
  */

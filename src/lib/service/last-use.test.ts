@@ -8,7 +8,7 @@ it('remembers the last use', () => {
 
 it('counts calls from connected agents, and nothing a window does by itself', () => {
   expect(isAgentCall('POST', '/api/mcp')).toBe(true);
-  expect(isAgentCall('POST', '/api/orchestrator/mcp')).toBe(true);
+  expect(isAgentCall('POST', '/api/home/mcp')).toBe(true);
   expect(isAgentCall('GET', '/api/mcp')).toBe(false);
   expect(isAgentCall('GET', '/api/live')).toBe(false);
   expect(isAgentCall('POST', '/api/desktop/notifications')).toBe(false);

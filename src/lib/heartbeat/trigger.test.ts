@@ -39,7 +39,7 @@ const HEARTBEAT_ID = '00000000-0000-0000-0000-000000000005';
 const UTC_HOURS = { activeHoursStart: '09:00', activeHoursEnd: '21:00', timezone: 'UTC' };
 
 describe('ensureHeartbeatTrigger', () => {
-  it('seeds the reserved row off, orchestrator-targeted, with the default instructions and bounded behavior', async () => {
+  it('seeds the reserved row off, coordinator-targeted, with the default instructions and bounded behavior', async () => {
     const { ensureHeartbeatTrigger } = await import('./trigger');
     const { DEFAULT_HEARTBEAT_INSTRUCTIONS } = await import('./constants');
     const row = (await ensureHeartbeatTrigger())!;
@@ -47,7 +47,7 @@ describe('ensureHeartbeatTrigger', () => {
       id: HEARTBEAT_ID,
       name: 'Heartbeat',
       enabled: false,
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       workspaceId: null,
       kind: 'every',
       intervalSeconds: 1800,
@@ -76,7 +76,7 @@ describe('ensureHeartbeatTrigger', () => {
   it("takes the fallback name when the user already owns a trigger called Heartbeat, and leaves theirs alone", async () => {
     const queries = await import('@/lib/db/queries');
     const mine = queries.createTrigger({
-      name: 'Heartbeat', harness: 'claude', targetKind: 'orchestrator', workspaceId: null,
+      name: 'Heartbeat', harness: 'claude', targetKind: 'coordinator', workspaceId: null,
       prompt: 'my own', kind: 'manual',
     });
     const { ensureHeartbeatTrigger } = await import('./trigger');
@@ -189,7 +189,7 @@ describe('getHeartbeatConfig', () => {
     const { getHeartbeatConfig, ensureHeartbeatTrigger } = await import('./trigger');
     const queries = await import('@/lib/db/queries');
     await ensureHeartbeatTrigger();
-    const chat = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const chat = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
 
     queries.createRun({
       triggerId: HEARTBEAT_ID, harness: 'claude', triggerKind: 'every', status: 'completed', statusReason: 'heartbeat_told',
@@ -216,7 +216,7 @@ describe('getHeartbeatConfig', () => {
     const { getHeartbeatConfig, ensureHeartbeatTrigger } = await import('./trigger');
     const queries = await import('@/lib/db/queries');
     await ensureHeartbeatTrigger();
-    const chat = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const chat = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     queries.bumpSessionOutcome(chat.id);
     queries.archiveChatSession(chat.id);
     queries.createRun({

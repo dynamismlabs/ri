@@ -6,8 +6,8 @@ import type { ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ai-elements/message';
 import { ThinkingDots } from '@/components/executions/thinking-dots';
-import { OrchestratorAvatar } from '@/components/shared/orchestrator-mark';
-import { useOrchestratorIdentity } from '@/hooks/use-user-state';
+import { CoordinatorAvatar } from '@/components/shared/coordinator-mark';
+import { useCoordinatorIdentity } from '@/hooks/use-user-state';
 import { cn } from '@/lib/utils';
 import type { OnboardingStep } from './onboarding-flow';
 
@@ -19,11 +19,11 @@ import type { OnboardingStep } from './onboarding-flow';
 
 /** One run of the assistant's messages, under its avatar and name. */
 export function Turn({ children }: { children: ReactNode }) {
-  const { name } = useOrchestratorIdentity();
+  const { name } = useCoordinatorIdentity();
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5">
-        <OrchestratorAvatar size="sm" />
+        <CoordinatorAvatar size="sm" />
         <span className="text-[11px] font-semibold text-foreground/80">{name}</span>
       </div>
       {children}
@@ -46,7 +46,7 @@ export function Reply({ step, children }: { step: OnboardingStep; children: Reac
       <MessageContent className="whitespace-pre-wrap break-words text-[12.5px]">
         {step === 'identity' ? (
           <span className="inline-flex items-center gap-1.5">
-            <OrchestratorAvatar size="xs" />
+            <CoordinatorAvatar size="xs" />
             {children}
           </span>
         ) : (
@@ -60,7 +60,7 @@ export function Reply({ step, children }: { step: OnboardingStep; children: Reac
 export function Typing() {
   return (
     <div className="flex flex-col gap-1.5">
-      <OrchestratorAvatar size="sm" />
+      <CoordinatorAvatar size="sm" />
       <div className="pl-0.5 text-muted-foreground">
         <ThinkingDots />
       </div>

@@ -19,7 +19,7 @@ We want to:
 2. Filter by **active vs. archived** and by **source** (native vs. imported).
 3. Make search **always visible** — not gated behind the History tab — while
    also working inside History.
-4. Expose it to the **orchestrator agent**. Chat search stays **out of ⌘K** on
+4. Expose it to the **coordinator agent**. Chat search stays **out of ⌘K** on
    purpose (see decisions).
 
 ## Result shape
@@ -52,7 +52,7 @@ null `snippet` and `matchedEventId`. See "Titles match first" below.
   supported saved-history importer. OpenCode imports are included alongside
   Claude and Codex and remain part of the generic imported source filter.
 - **Search opens a modal from the rail (since 2026-10-01).** The rail's search
-  icon, under the orchestrator's name, opens `ChatSearchModal`
+  icon, under the coordinator's name, opens `ChatSearchModal`
   (`src/components/workspaces/chat-search-modal.tsx`): the same endpoint, the
   same status and source facets (shown once there's a query), and rows with
   agent, branch, date and the highlighted snippet, opened with arrows and
@@ -263,9 +263,9 @@ Chat search is **not** added to ⌘K (`SearchOverlay`) — it stays isolated to 
 power rail so transcript hits don't drown the high-precision task/note/stream
 launcher. No changes to `search-overlay.tsx` / `constants/commands.ts`.
 
-### Orchestrator — `search_sessions` action
+### Coordinator — `search_sessions` action
 
-`src/lib/orchestrator/registry.ts`, next to `list_workspace_sessions_action`
+`src/lib/actions/registry.ts`, next to `list_workspace_sessions_action`
 (line 1024), registered in the `actions` array (line 1689):
 
 ```ts
@@ -288,7 +288,7 @@ const search_sessions_action = defineAction({
 ```
 
 Update the harness surface doc string so the agent knows chats are searchable
-(`src/lib/orchestrator/harness-surface.ts` — the "across tasks, notes, and
+(`src/lib/coordinator/harness-surface.ts` — the "across tasks, notes, and
 stream" blurb around lines 232/317).
 
 ---

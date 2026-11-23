@@ -217,7 +217,7 @@ describe('/api/workspaces/:id/terminals', () => {
   it("archiving the agent reaps its own terminals and closes its main chat's process", async () => {
     const ws = await seed(PLAIN, false);
     const q = await import('@/lib/db/queries');
-    const main = q.createChatSession({ type: 'orchestration', workspaceId: ws.id, harness: 'claude', status: 'active' });
+    const main = q.createChatSession({ type: 'coordinator', workspaceId: ws.id, harness: 'claude', status: 'active' });
     const { POST } = await import('./archive/route');
     expect((await POST(postJson({}), ctx({ id: ws.id }))).status).toBe(200);
     expect(killAllForOwner).toHaveBeenCalledWith(`workspace:${ws.id}`);

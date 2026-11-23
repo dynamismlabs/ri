@@ -48,14 +48,18 @@ export function issuerFor(
   return (remote ?? local ?? originOf(requestUrl)!).origin;
 }
 
-/** The MCP endpoint a token from this issuer is for (RFC 8707). */
-export function resourceFor(issuer: string): string {
-  return `${issuer}${HOME_MCP_PATH}`;
+/**
+ * The MCP endpoint a token from this issuer is for (RFC 8707). `path` is the
+ * old address (`/api/orchestrator/mcp`) for a client that connected there
+ * before Ri's tools moved, so its sign-in names the URL it actually uses.
+ */
+export function resourceFor(issuer: string, path: string = HOME_MCP_PATH): string {
+  return `${issuer}${path}`;
 }
 
 /** Where a client learns how to sign in to the MCP endpoint (RFC 9728, path-suffixed). */
-export function protectedResourceMetadataUrl(issuer: string): string {
-  return `${issuer}/.well-known/oauth-protected-resource${HOME_MCP_PATH}`;
+export function protectedResourceMetadataUrl(issuer: string, path: string = HOME_MCP_PATH): string {
+  return `${issuer}/.well-known/oauth-protected-resource${path}`;
 }
 
 /**
@@ -85,8 +89,8 @@ export function hubProtectedResourceMetadata(issuer: string) {
 }
 
 /** The challenge on a 401 from the MCP endpoint, which starts a client's sign-in. */
-export function mcpChallenge(issuer: string, error?: 'invalid_token'): string {
-  return `Bearer resource_metadata="${protectedResourceMetadataUrl(issuer)}", scope="${OAUTH_SCOPE}"${error ? `, error="${error}"` : ''}`;
+export function mcpChallenge(issuer: string, error?: 'invalid_token', path: string = HOME_MCP_PATH): string {
+  return `Bearer resource_metadata="${protectedResourceMetadataUrl(issuer, path)}", scope="${OAUTH_SCOPE}"${error ? `, error="${error}"` : ''}`;
 }
 
 export const OAUTH_PATHS = {
@@ -123,9 +127,9 @@ export function authorizationServerMetadata(issuer: string) {
 }
 
 /** RFC 9728. */
-export function protectedResourceMetadata(issuer: string) {
+export function protectedResourceMetadata(issuer: string, path: string = HOME_MCP_PATH) {
   return {
-    resource: resourceFor(issuer),
+    resource: resourceFor(issuer, path),
     authorization_servers: [issuer],
     scopes_supported: [OAUTH_SCOPE],
     bearer_methods_supported: ['header'],

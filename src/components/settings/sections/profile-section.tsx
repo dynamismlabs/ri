@@ -13,7 +13,7 @@ import {
   sameDraft,
   useSaveIdentity,
   type IdentityDraft,
-} from '@/components/orchestrator/identity-editor';
+} from '@/components/coordinator/identity-editor';
 import { DeckSourcesField } from './deck-sources-field';
 
 function timeAgo(date: Date): string {
@@ -28,7 +28,7 @@ function timeAgo(date: Date): string {
 
 /**
  * Your identity + the free-form context the agents build on. Your name saves
- * on blur; the assistant's name and look (the orchestrator) save with their
+ * on blur; the assistant's name and look (the coordinator) save with their
  * own button, since trying on looks shouldn't change it; the "about you"
  * description debounced-saves to `user_state.description`.
  * Profile context supports planning and the app's background assistance.
@@ -122,7 +122,7 @@ export function ProfileSection() {
         label="What should your assistant call you?"
       />
 
-      {/* The assistant (the orchestrator): its name and look */}
+      {/* The assistant (the coordinator): its name and look */}
       <section className="space-y-2">
         <h3 className="text-[12px] font-medium text-foreground">Your assistant</h3>
         <Card padding="md" className="max-w-xl">

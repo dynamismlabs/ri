@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server';
 import { getDb, resetDb } from '@/lib/db';
 import { getUserState, updateUserState } from '@/lib/db/queries';
 import { writeAuthConfig } from '@/lib/auth/config-file';
-import { SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { WORK_RESULT_GUIDANCE_MAX } from '@/lib/instructions/preferences';
 import { PATCH } from './route';
 

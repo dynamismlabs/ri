@@ -1,6 +1,6 @@
 import type { ApiKeyRecord } from '@/db/types';
 
-export const HOME_MCP_PATH = '/api/orchestrator/mcp';
+export const HOME_MCP_PATH = '/api/home/mcp';
 
 /** Explicit scope: adding a registry action never silently grants it to outside clients. */
 export const HOME_CONTENT_ACTIONS = [

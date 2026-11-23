@@ -1,0 +1,176 @@
+/**
+ * Minimal client for registry handlers that need the RUNNING app server —
+ * not the database.
+ *
+ * Why this exists: live session state is process-owned. The in-memory
+ * `AgentSession` cache, the running-sessions set, and pending-input
+ * resolvers all live in the server process. Registry handlers, however,
+ * run in two different processes depending on surface:
+ *
+ *   - home MCP → inside the server (state visible)
+ *   - CLI (`<cli> agent …`) → its own short-lived process (state invisible;
+ *     worse, dispatching from here would spawn a *duplicate* harness
+ *     process against a session the server already owns)
+ *
+ * Routing live reads + session mutations through the server's HTTP API
+ * makes both surfaces behave identically and keeps exactly one process
+ * owning every harness subprocess. DB-only reads should NOT use this —
+ * query the DB directly; it works from any process.
+ */
+
+import { API_PROTOCOL, API_PROTOCOL_HEADER } from '@/lib/releases/api-contract';
+import { readAuthConfig } from '@/lib/auth/config-file';
+import { getLoopbackBaseUrl } from '@/lib/auth/bootstrap';
+import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER } from './session-credential';
+import { ActionError } from './types';
+import type { WorkstreamRuntime, ScopeChange } from '@/lib/sessions/workstream';
+
+/**
+ * Base URL for INTERNAL self-calls into the app's HTTP API: the server over
+ * plain HTTP on loopback, never the public HTTPS gateway, whose certificate
+ * this Node client doesn't trust (`getLoopbackBaseUrl`).
+ */
+export function serverBaseUrl(): string {
+  return getLoopbackBaseUrl();
+}
+
+/**
+ * Authenticated fetch against the app server. Throws `ActionError` with a
+ * actionable message when the server is unreachable — callers that can
+ * degrade gracefully (live-signal enrichment) should catch; callers that
+ * can't (sends) let it propagate.
+ *
+ * `Connection: close` — node's undici pool reuses sockets the Next dev
+ * server has already closed, surfacing as spurious "fetch failed".
+ */
+/**
+ * The app server answered with a non-2xx status. Still an `ActionError`
+ * (`conflict`) for callers that just surface it, but carries the status and
+ * body so a caller can turn a known failure into a clearer message.
+ */
+export class ServerTransportError extends ActionError {
+  constructor(message: string) {
+    super('conflict', message);
+    this.name = 'ServerTransportError';
+  }
+}
+
+export class ServerResponseError extends ActionError {
+  constructor(
+    public status: number,
+    public body: string,
+    message: string,
+  ) {
+    super('conflict', message);
+    this.name = 'ServerResponseError';
+  }
+
+  /** The body parsed as JSON, or null when it isn't. */
+  json(): Record<string, unknown> | null {
+    try {
+      const parsed = JSON.parse(this.body) as unknown;
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+export async function serverFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = readAuthConfig()?.localToken;
+  if (!token) {
+    throw new ActionError(
+      'unsupported',
+      'No local auth token found (config.json). Has the app been initialized with `start`?',
+    );
+  }
+  const base = serverBaseUrl();
+  let res: Response;
+  try {
+    res = await fetch(`${base}/api${path}`, {
+      ...init,
+      headers: {
+        ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+        Authorization: `Bearer ${token}`,
+        [API_PROTOCOL_HEADER]: String(API_PROTOCOL),
+        Connection: 'close',
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch {
+    throw new ServerTransportError(
+      `App server unreachable at ${base}. Live session state and sends require the app to be running.`,
+    );
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new ServerResponseError(
+      res.status,
+      body,
+      `${init.method ?? 'GET'} ${path} → ${res.status}: ${body.slice(0, 300)}`,
+    );
+  }
+  return (await res.json()) as T;
+}
+
+export interface LiveSignals {
+  /** Chat-session ids with an in-flight turn right now. */
+  runningSessionIds: string[];
+  /** Chat-session ids blocked on a permission/question prompt. */
+  pendingSessionIds: string[];
+  /** Chat-session ids whose turn ended with a background task still running. */
+  backgroundSessionIds: string[];
+}
+
+/**
+ * Live running/pending sets from the server's rail endpoint. Returns null
+ * when the server is unreachable — which also means nothing can be running
+ * (the server process owns every harness subprocess), so callers may
+ * render "unknown/offline" or treat it as idle; they should say which.
+ */
+export async function fetchLiveSignals(): Promise<LiveSignals | null> {
+  try {
+    const rail = await serverFetch<{
+      runningSessionIds: string[];
+      pendingSessionIds: string[];
+      backgroundSessionIds?: string[];
+    }>('/sessions/rail');
+    return {
+      runningSessionIds: rail.runningSessionIds ?? [],
+      pendingSessionIds: rail.pendingSessionIds ?? [],
+      backgroundSessionIds: rail.backgroundSessionIds ?? [],
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The {@link WorkstreamRuntime} for action handlers (CLI and MCP). Live
+ * running state and the runtime stop/notify effects are process-owned by the app
+ * server, so this routes them through the authenticated HTTP control path. When
+ * the server is unreachable, `runningSessionIds` reports null — meaning nothing
+ * can be running — so a lifecycle change with no live agent still proceeds
+ * offline, and a stop against a genuinely running agent surfaces as a conflict.
+ */
+export const serverWorkstreamRuntime: WorkstreamRuntime = {
+  async runningSessionIds() {
+    const signals = await fetchLiveSignals();
+    return signals ? signals.runningSessionIds : null;
+  },
+  stopExecution(executionId) {
+    // An agent's CLI call carries its chat's credential, so the stop is
+    // recorded as that agent's (P2.6).
+    const credential = process.env[SESSION_CREDENTIAL_ENV];
+    return serverFetch<{ ok: boolean; failures: string[] }>(`/executions/${executionId}/stop-agent`, {
+      method: 'POST',
+      ...(credential ? { headers: { [SESSION_CREDENTIAL_HEADER]: credential } } : {}),
+    });
+  },
+  async notify(executionId, change: ScopeChange) {
+    await serverFetch(`/executions/${executionId}/notify-scope-change`, {
+      method: 'POST',
+      body: JSON.stringify(change),
+    });
+  },
+};

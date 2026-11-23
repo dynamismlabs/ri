@@ -20,7 +20,7 @@ import { FileText, ListTodo, Search } from 'lucide-react';
 /**
  * The left rail (docs/rail.md), wide or collapsed. Top to bottom:
  *
- *   - **Home**: the orchestrator by name, the way home, with the collapse
+ *   - **Home**: the coordinator by name, the way home, with the collapse
  *     toggle at its right (`RailHome`). Fixed.
  *   - **New execution, Search chats**: rows, fixed under the home row
  *     (`rail-nav.tsx`).

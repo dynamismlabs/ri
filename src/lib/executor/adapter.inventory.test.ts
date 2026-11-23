@@ -54,12 +54,12 @@ describe('executor adapter — inventory lifecycle', () => {
   });
 
   it('captures the inventory from a system/init event', () => {
-    _recordSessionInventory(SESSION_ID, makeInitEvent(['/clear', '/help'], ['orchestrator']));
+    _recordSessionInventory(SESSION_ID, makeInitEvent(['/clear', '/help'], ['coordinator']));
 
     const inventory = getSessionInventory(SESSION_ID);
     expect(inventory).not.toBeNull();
     expect(inventory?.slashCommands).toEqual(['/clear', '/help']);
-    expect(inventory?.skills).toEqual(['orchestrator']);
+    expect(inventory?.skills).toEqual(['coordinator']);
     expect(inventory?.source).toBe('provider-init');
     expect(inventory?.provider).toBe('claude');
   });
@@ -95,7 +95,7 @@ describe('executor adapter — inventory lifecycle', () => {
   });
 
   it('reset clears all captured inventories', () => {
-    _recordSessionInventory(SESSION_ID, makeInitEvent([], ['orchestrator']));
+    _recordSessionInventory(SESSION_ID, makeInitEvent([], ['coordinator']));
     expect(getSessionInventory(SESSION_ID)).not.toBeNull();
 
     _resetExecutorState();

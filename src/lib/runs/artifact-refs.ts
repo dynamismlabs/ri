@@ -1,5 +1,5 @@
 /**
- * Which entities a successful orchestrator action changed, as run artifact
+ * Which entities a successful Ri action changed, as run artifact
  * refs. Recorded at the action layer (see `recordRunArtifacts` below, called
  * from `runAction`), where the action name, its validated input, and its real
  * return value are all in hand, and the caller's chat is known from its signed
@@ -7,7 +7,7 @@
  *
  * This replaces reading refs back out of the harness's tool-result stream,
  * which never matched in practice: MCP tool names arrive prefixed
- * (`mcp__orchestrator__update_task`) and the harness hands the tool output
+ * (`mcp__ri_home__update_task`) and the harness hands the tool output
  * over empty, so `runs.artifactRefs` stayed empty for every run. Recording
  * where the action runs also covers the CLI path (`ri agent ...` from the
  * harness's shell), which the stream never saw.

@@ -45,8 +45,8 @@ function parseOverride(src: { providerId?: unknown; model?: unknown; variant?: u
  * SURFACE_KINDS below).
  *
  * This replaced the old direct-to-OpenAI copilot: the in-document chat now
- * runs on the same harness as the orchestrator (Claude Code today, via the
- * user's subscription), acting through the orchestrator action surface — so
+ * runs on the same harness as the coordinator (Claude Code today, via the
+ * user's subscription), acting through the Ri action surface — so
  * its edits flow through `queries.ts` (embeddings, mirror, attachment
  * derivation, and change versioning) instead of bypassing it. See
  * `ensureHarnessSession`'s `content` branch in `src/lib/executor/adapter.ts`
@@ -54,7 +54,7 @@ function parseOverride(src: { providerId?: unknown; model?: unknown; variant?: u
  *
  * One active session per entity at a time:
  *   GET  ?entityType=task|note&entityId=<id> → return it, creating one if
- *        none exists ("ensure" semantics — same pattern as orchestrator-chat).
+ *        none exists ("ensure" semantics — same pattern as coordinator-chat).
  *        Persistent: reopening the doc resumes the same thread.
  *   POST { entityType, entityId } → start fresh: archive the current session
  *        (closing its harness process) and create a new one. The "New chat"
@@ -62,7 +62,7 @@ function parseOverride(src: { providerId?: unknown; model?: unknown; variant?: u
  *
  * Messages are sent and streamed through the shared per-session transport
  * (`/api/sessions/[id]/messages` + `/api/sessions/[id]/stream`), identical to
- * the orchestrator and execution chats.
+ * the coordinator and execution chats.
  */
 
 /**

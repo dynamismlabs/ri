@@ -147,7 +147,7 @@ describe('cascades', () => {
     const { queries } = await mod();
     const ch = queries.createNotificationChannel({ userId: 'local', kind: 'integration', providerId: 'telegram', config: {}, events: [], enabled: true });
     const sched = queries.createTrigger({
-      userId: 'local', name: 'digest', harness: 'claude', targetKind: 'orchestrator', prompt: 'summarize',
+      userId: 'local', name: 'digest', harness: 'claude', targetKind: 'coordinator', prompt: 'summarize',
       kind: 'cron', cronExpression: '0 9 * * *', timezone: 'UTC', deliverResultTo: [ch.id],
     });
     expect(queries.getTrigger(sched.id)!.deliverResultTo).toEqual([ch.id]);

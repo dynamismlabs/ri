@@ -10,7 +10,7 @@ import { uploadAttachment } from '@/lib/attachments/client';
 import { attachmentUrl } from '@/lib/attachments/view';
 import { apiErrorText } from '@/lib/api/client';
 import { useUserState } from '@/hooks/use-user-state';
-import { OrchestratorMark } from '@/components/shared/orchestrator-mark';
+import { CoordinatorMark } from '@/components/shared/coordinator-mark';
 import { useHomeContext } from '@/components/home/home-context';
 import { useTeam } from './team-context';
 import type { Attachment, UserStateRecord } from '@/db/types';
@@ -26,12 +26,12 @@ export function TeamLogo() {
     mutationFn: (image: Attachment | null) => trpcClient.team.setLogo.mutate({ image }),
     meta: { carriesInput: true },
     onSuccess: ({ image }) => {
-      cache.setQueryData<UserStateRecord>(trpc.userState.list.queryKey({}), previous => previous ? { ...previous, orchestratorImage: image } : previous);
+      cache.setQueryData<UserStateRecord>(trpc.userState.list.queryKey({}), previous => previous ? { ...previous, coordinatorImage: image } : previous);
       void cache.invalidateQueries({ queryKey: trpc.userState.list.queryKey({}) });
     },
   });
   const busy = uploading || save.isPending;
-  const image = data?.orchestratorImage;
+  const image = data?.coordinatorImage;
   const upload = async (file: File) => {
     setUploading(true);
     try {
@@ -43,7 +43,7 @@ export function TeamLogo() {
     } finally { setUploading(false); }
   };
   return <div className="flex items-center gap-3">
-    <OrchestratorMark name={team.name} imageUrl={image ? attachmentUrl(image.fileName) : null} size="lg" className="object-contain" />
+    <CoordinatorMark name={team.name} imageUrl={image ? attachmentUrl(image.fileName) : null} size="lg" className="object-contain" />
     <div className="min-w-0 space-y-1.5">
       <p className="text-xs font-medium">Team logo</p>
       <p className="text-xs text-muted-foreground">Your company or team logo, shown beside the team name and shared assistant.</p>

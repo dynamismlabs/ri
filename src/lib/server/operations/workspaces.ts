@@ -6,7 +6,7 @@ import { createInsertSchema } from 'drizzle-zod';
 import { z as rpcZ } from 'zod/v4';
 import { WorkResultGuidanceError } from '@/lib/instructions/preferences';
 import { workspaceReviewPreferencesSchema } from '@/lib/workspaces/review-preferences';
-import { requestHasSessionAuthority } from '@/lib/orchestrator/mcp-caller';
+import { requestHasSessionAuthority } from '@/lib/actions/mcp-caller';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { authorizeTeamExecution } from '@/lib/home/execution-authority';
 import { createWorkspaceForHome, WorkspaceCreationError } from '@/lib/workspaces/create-for-home';

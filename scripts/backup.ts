@@ -1,5 +1,5 @@
 /**
- * Backup orchestrator — remote push. Run with `tsx scripts/backup.ts` (or
+ * Backup coordinator — remote push. Run with `tsx scripts/backup.ts` (or
  * from cron).
  *
  * Steps:

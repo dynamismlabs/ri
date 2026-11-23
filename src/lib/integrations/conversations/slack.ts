@@ -26,7 +26,7 @@ export function slackConversationManifest(name: string) {
   return { display_information: { name: appName }, features: {
     app_home: { messages_tab_enabled: true, messages_tab_read_only_enabled: false },
     bot_user: { display_name: botName },
-    agent_view: { agent_description: 'Talk to your Ri orchestrator or team agent.' },
+    agent_view: { agent_description: 'Talk to Ri or a team agent.' },
   },
     oauth_config: { scopes: { bot: ['app_mentions:read', 'chat:write', 'im:history', 'channels:history', 'groups:history', 'assistant:write'] } },
     settings: { socket_mode_enabled: true, event_subscriptions: { bot_events: ['app_home_opened', 'app_mention', 'message.im', 'message.channels', 'message.groups', 'agent_session_stopped'] } } };

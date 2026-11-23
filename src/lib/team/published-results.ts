@@ -23,7 +23,7 @@ import { dehydrateAttachments, hydrateRow } from '@/lib/db/hydrate';
 import { tasks, workResults, workResultTasks } from '@/lib/db/schema';
 import { getMember, TeamError } from '@/lib/db/queries';
 import type { Attachment } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { validateWorkResultAttachments, workResultIntentHash, workResultRequestScopedId } from '@/lib/work-results/queries';
 
 export const PUBLISHED_SUMMARY_MAX = 20_000;

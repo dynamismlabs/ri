@@ -8,7 +8,7 @@
  * closes the one hole unrelated to their logins.
  */
 
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 const BLOCKED_HOSTS = new Set([
   'localhost',

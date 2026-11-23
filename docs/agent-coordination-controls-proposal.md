@@ -18,7 +18,7 @@ Both send modes are subject to applicable permission, availability, and Hold. Wa
 
 Delivery receipts come from Ri code. They are visible status, not agent input. Agents must not send acknowledgments merely to confirm delivery. A returned answer does not itself create another obligation to answer.
 
-The orchestrator and agent main chats should consult and delegate proactively within the user's intent and permission. The user does not need to tell them to become an orchestrator.
+The coordinator and agent main chats should consult and delegate proactively within the user's intent and permission. The user does not need to tell them to become a coordinator.
 
 There is no passive-context send mode in version one. In particular, `response: "none"` does not mean wait for a future unrelated turn. Legitimate one-way instructions can require action now without requiring an answer back.
 
@@ -123,7 +123,7 @@ Add nullable `agent_coordination_policy` preferences to these existing tables:
 | `executions` | All existing and future chats in this execution |
 | `chat_sessions` | This exact chat |
 
-Manager chats are unrestricted for new coordinating sends. These are personal orchestration chats with no execution, no creating run, and a main or unset surface, including Ri's main chat and each agent's main chat. The server derives this authority from the saved chat. No coordination setting can make a manager chat ask before messaging or delegating. Existing pending approvals remain pending, including unchanged retries. The panel explains the exemption and retains incoming pause, without offering Ask/Allow choices for the manager. Restricted team and reviewer surfaces remain outside this authority.
+Manager chats are unrestricted for new coordinating sends. These are personal coordinator chats with no execution, no creating run, and a main or unset surface, including Ri's main chat and each agent's main chat. The server derives this authority from the saved chat. No coordination setting can make a manager chat ask before messaging or delegating. Existing pending approvals remain pending, including unchanged retries. The panel explains the exemption and retains incoming pause, without offering Ask/Allow choices for the manager. Restricted team and reviewer surfaces remain outside this authority.
 
 Saved preferences remain separate from this exemption. The following precedence and child-initialization rules continue to govern execution and other chats. Manager authority does not initialize a child to Allow automatically.
 
@@ -282,7 +282,7 @@ The initial text belongs to the initial delivery. The returned text belongs to i
 | sender_kind | agent, human, or system |
 | source_session_id | Source chat context, nullable for system origin or retained history |
 | source_run_id | Verified initiating run when applicable, nullable |
-| target_address | Logical destination, including stable agent/orchestrator addresses |
+| target_address | Logical destination, including stable agent/coordinator addresses |
 | target_session_id | Exact destination pinned before the first external delivery attempt |
 | event_id | Unique receiving event ID allocated at creation, also the stable event retry identity |
 | source_event_id | Optional selected/forwarded original material, a soft reference |
@@ -433,7 +433,7 @@ The review usefully motivated symmetric delivery, explicit states, and Hold. Its
 | [Executor adapter](../src/lib/executor/adapter.ts) | Dispatch runs and admission |
 | [Local runner](../src/lib/runner/local-runner.ts) | Producing run identity, overlapping inputs, and acceptance |
 | [Event ingestion](../src/lib/executor/apply.ts) | Output attribution and pending input |
-| [Session credentials](../src/lib/orchestrator/session-credential.ts) | Authenticated chat identity, distinct from exact producing-run context |
+| [Session credentials](../src/lib/actions/session-credential.ts) | Authenticated chat identity, distinct from exact producing-run context |
 | [Message operation](../src/lib/server/operations/sessions/[id]/messages.ts) | Event persistence and subsequent execution |
 | [Chat composer](../src/components/executions/execution-composer.tsx) | Human sends during running work |
 | [Execution chat tabs](../src/components/executions/execution-chat-tabs.tsx) | Multiple chats per execution |

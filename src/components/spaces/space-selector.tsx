@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { teamConnectionsKey, teamIdentityKey } from '@/lib/spaces/client-cache';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { restoredHomeNavigation } from '@/lib/home/navigation';
-import { useOrchestratorIdentity } from '@/hooks/use-user-state';
+import { useCoordinatorIdentity } from '@/hooks/use-user-state';
 
 /**
  * The compact space selector (docs/homes-spec.md §3.2, P7.1): My Ri and the
@@ -101,7 +101,7 @@ function ConnectedTeamMark({ id, name, selected, currentLogo }: { id: string; na
 
 export function SpaceSelector({ variant, onOpenSettings, onOpenAccount }: { variant: 'wide' | 'collapsed' | 'phone'; onOpenSettings?: () => void; onOpenAccount?: () => void }) {
   const home = useOptionalHomeContext();
-  const identity = useOrchestratorIdentity();
+  const identity = useCoordinatorIdentity();
   const currentLogo = home?.home.kind === 'team' ? identity.imageUrl : null;
   const here = currentSpaceId();
   const standalone = home?.home.kind === 'team' && !here ? home.home : null;

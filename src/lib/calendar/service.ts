@@ -1,6 +1,6 @@
 /**
  * The day-shape service — one normalized calendar read for every consumer:
- * `GET /api/calendar` (UI surfaces), the `get_day_shape` orchestrator action
+ * `GET /api/calendar` (UI surfaces), the `get_day_shape` Ri action
  * (agents), and the deck's provider seam (generation + reconcile, via
  * `src/lib/deck/calendar-integration.ts`).
  *

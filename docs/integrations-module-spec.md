@@ -943,7 +943,7 @@ the outbound trust spine, so deferring them is scope, not debt. The exact extens
    (atomic writes). Tests target the spine.
 2. **Google vertical:** `google` + `google_calendar` then `gmail`; multi-account + incremental
    consent proven against §14.
-3. **Surfaces:** `toToolSet` into the chat orchestrator; programmatic app use; connect UI
+3. **Surfaces:** `toToolSet` into the chat coordinator; programmatic app use; connect UI
    (reuse the beamd-connect state machine); `ApprovalPolicy` bridged to existing prompts;
    `onActionRun` into the app's event model.
 4. **Durable host:** SQLite store; encrypted secrets; action-run audit table.

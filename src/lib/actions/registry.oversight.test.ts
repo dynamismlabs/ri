@@ -1,0 +1,334 @@
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+
+vi.mock('@agentex/agent', () => ({
+  getProvider: () => ({ capabilities: { concurrentSend: true } }),
+  listInstalledSkills: vi.fn(async () => ({})),
+  commandInventoryFromEvent: () => null,
+}));
+vi.mock('@/lib/executor/adapter', () => ({
+  dispatch: vi.fn(async () => {}),
+  abort: vi.fn(async () => {}),
+  ExecutorError: class extends Error {},
+}));
+
+const TEST_DB = path.join(os.tmpdir(), `ri-registry-oversight-test-${process.pid}.db`);
+// Isolated app root so readAuthConfig/getLocalBaseUrl can never reach the
+// developer's real config.json (or their running server) from a test.
+let TEST_ROOT: string;
+let prevRoot: string | undefined;
+
+beforeEach(() => {
+  for (const suffix of ['', '-wal', '-shm']) {
+    const p = TEST_DB + suffix;
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  }
+  process.env.RI_DB_PATH = TEST_DB;
+  TEST_ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-oversight-root-'));
+  prevRoot = process.env.RI_ROOT;
+  process.env.RI_ROOT = TEST_ROOT;
+});
+
+afterAll(() => {
+  for (const suffix of ['', '-wal', '-shm']) {
+    const p = TEST_DB + suffix;
+    if (fs.existsSync(p)) fs.unlinkSync(p);
+  }
+  if (prevRoot === undefined) delete process.env.RI_ROOT;
+  else process.env.RI_ROOT = prevRoot;
+});
+
+async function resetDb() {
+  const { getDb, resetDb: reset } = await import('@/lib/db');
+  reset();
+  getDb();
+}
+
+async function findAction(name: string) {
+  const m = await import('./registry');
+  const a = m.actions.find((x) => x.name === name);
+  if (!a) throw new Error(`action ${name} missing`);
+  return a;
+}
+
+const ctx = { remote: false } as const;
+
+async function seedExecutionSession() {
+  const q = await import('@/lib/db/queries');
+  const { getDb } = await import('@/lib/db');
+  const { workspaces } = await import('@/lib/db/schema');
+  const { uuidv7 } = await import('uuidv7');
+
+  const wsId = uuidv7();
+  getDb()
+    .insert(workspaces)
+    .values({ id: wsId, name: 'OversightWs', slug: `ows-${wsId}`, cwd: '/tmp/ows', isGit: false, status: 'active', filesToCopy: [], collapsed: false, skipLiveConfirm: false, browserEnabled: true })
+    .run();
+  const { session } = q.createExecutionWithChat({
+    workspaceId: wsId,
+    harness: 'claude',
+    label: 'Fix the flux capacitor',
+  });
+  return { wsId, session };
+}
+
+describe('execution oversight actions', () => {
+  it('exposes the oversight surface', async () => {
+    const { actions } = await import('./registry');
+    const names = actions.map((a) => a.name);
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'list_executions', 'get_session_messages', 'message_agent',
+        'get_pending_input', 'answer_pending_input',
+      ]),
+    );
+  });
+
+  it('pending-input actions validate the session and fail cleanly without a server', async () => {
+    await resetDb();
+    const get = await findAction('get_pending_input');
+    const answer = await findAction('answer_pending_input');
+
+    await expect(
+      (async () => get.handler(ctx, { sessionId: 'nope' } as never))(),
+    ).rejects.toMatchObject({ code: 'not_found' });
+
+    const { session } = await seedExecutionSession();
+    // Live pending state is server-owned; with no config.json in the
+    // isolated root, the server client refuses before any network call.
+    await expect(
+      (async () => get.handler(ctx, { sessionId: session.id } as never))(),
+    ).rejects.toMatchObject({ code: 'unsupported' });
+    await expect(
+      (async () =>
+        answer.handler(ctx, {
+          sessionId: session.id, requestId: 'req-1', allow: true,
+        } as never))(),
+    ).rejects.toMatchObject({ code: 'unsupported' });
+  });
+
+  it('list_executions returns rail rows and degrades live flags without a server', async () => {
+    await resetDb();
+    const { session } = await seedExecutionSession();
+    const q = await import('@/lib/db/queries');
+    q.updateChatSession(session.id, { externalSessionId: 'claude-session-abc' });
+    const list = await findAction('list_executions');
+
+    const result = (await list.handler(ctx, {} as never)) as {
+      live: boolean;
+      executions: Array<{
+        sessionId: string;
+        externalSessionId: string | null;
+        harness: string | null;
+        resumeCommand: string | null;
+        workspace: { name: string };
+        running: boolean;
+      }>;
+    };
+
+    expect(result.live).toBe(false); // no config.json in the isolated root
+    const row = result.executions.find((e) => e.sessionId === session.id);
+    expect(row).toBeDefined();
+    expect(row!.workspace.name).toBe('OversightWs');
+    expect(row!.running).toBe(false);
+    expect(row!.externalSessionId).toBe('claude-session-abc');
+    expect(row!.harness).toBe('claude');
+    expect(row!.resumeCommand).toBe('claude --resume claude-session-abc');
+  });
+
+  it('list_executions derives unread the way the rail does', async () => {
+    await resetDb();
+    const q = await import('@/lib/db/queries');
+    const list = await findAction('list_executions');
+
+    // Unread: outcome newer than last view.
+    const { session: unreadSession } = await seedExecutionSession();
+    q.updateChatSession(unreadSession.id, {
+      lastOutcomeEventAt: new Date().toISOString(),
+      lastViewedAt: new Date(Date.now() - 600_000).toISOString(),
+    });
+    // Read: view newer than the outcome.
+    const { session: readSession } = await seedExecutionSession();
+    q.updateChatSession(readSession.id, {
+      lastOutcomeEventAt: new Date(Date.now() - 600_000).toISOString(),
+      lastViewedAt: new Date().toISOString(),
+    });
+
+    const result = (await list.handler(ctx, {} as never)) as {
+      executions: Array<{ sessionId: string; unread: boolean }>;
+    };
+    const byId = new Map(result.executions.map((e) => [e.sessionId, e]));
+    expect(byId.get(unreadSession.id)?.unread).toBe(true);
+    expect(byId.get(readSession.id)?.unread).toBe(false);
+  });
+
+  it('list_executions flags inactive work by the user\'s threshold, the way the rail folds it', async () => {
+    await resetDb();
+    const q = await import('@/lib/db/queries');
+    const list = await findAction('list_executions');
+    const daysAgo = (d: number) => new Date(Date.now() - d * 24 * 60 * 60 * 1000).toISOString();
+
+    const { getDb } = await import('@/lib/db');
+    const { chatSessions } = await import('@/lib/db/schema');
+    const { eq } = await import('drizzle-orm');
+    // Backdate a seeded session: started a month ago, last active `days` ago.
+    const lastActive = (id: string, days: number) =>
+      getDb().update(chatSessions).set({ startedAt: daysAgo(30), lastActivityAt: daysAgo(days) }).where(eq(chatSessions.id, id)).run();
+
+    const { session: stale } = await seedExecutionSession();
+    lastActive(stale.id, 10);
+    const { session: fresh } = await seedExecutionSession();
+    lastActive(fresh.id, 2);
+
+    const run = async () => {
+      const result = (await list.handler(ctx, {} as never)) as {
+        executions: Array<{ sessionId: string; inactive: boolean }>;
+      };
+      return new Map(result.executions.map((e) => [e.sessionId, e.inactive]));
+    };
+
+    // Default threshold: a week.
+    let byId = await run();
+    expect(byId.get(stale.id)).toBe(true);
+    expect(byId.get(fresh.id)).toBe(false);
+
+    // A shorter threshold folds the fresher one too, and 0 turns folding off.
+    q.updateUserState({ executionInactiveAfterDays: 1 });
+    byId = await run();
+    expect(byId.get(fresh.id)).toBe(true);
+    q.updateUserState({ executionInactiveAfterDays: 0 });
+    byId = await run();
+    expect(byId.get(stale.id)).toBe(false);
+  });
+
+  it('get_session_messages condenses the tail, drops noise, and surfaces pending prompts', async () => {
+    await resetDb();
+    const { session } = await seedExecutionSession();
+    const q = await import('@/lib/db/queries');
+
+    const at = (i: number) => new Date(Date.now() - (100 - i) * 1000).toISOString();
+    q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'Fix it please', createdAt: at(1) });
+    q.insertChatEvent({ sessionId: session.id, role: 'system', source: 'system', content: 'init', createdAt: at(2) });
+    q.insertChatEvent({
+      sessionId: session.id, role: 'assistant', source: 'tool_call', content: null,
+      toolName: 'Bash', toolInput: { command: 'pnpm test' }, createdAt: at(3),
+    });
+    q.insertChatEvent({
+      sessionId: session.id, role: 'assistant', source: 'agent', content: 'x'.repeat(2000), createdAt: at(4),
+    });
+    q.insertChatEvent({
+      sessionId: session.id, role: 'system', source: 'question_request', content: 'Which database?',
+      toolName: 'AskUserQuestion', createdAt: at(5),
+    });
+
+    const get = await findAction('get_session_messages');
+    const result = (await get.handler(ctx, { sessionId: session.id } as never)) as {
+      session: {
+        id: string;
+        executionId: string | null;
+        externalSessionId: string | null;
+        harness: string | null;
+        resumeCommand: string | null;
+      };
+      running: boolean | null;
+      awaitingInput: boolean;
+      pendingDetail: { kind: string; detail: string } | null;
+      messages: Array<{ kind: string; text?: string; tool?: string; input?: string }>;
+    };
+
+    expect(result.running).toBeNull(); // server unreachable → unknown
+    expect(result.session.id).toBe(session.id);
+    expect(result.session.executionId).toBe(session.executionId);
+    expect(result.session.harness).toBe('claude');
+    expect(result.awaitingInput).toBe(true); // derived from the unanswered question
+    expect(result.pendingDetail?.kind).toBe('question');
+    expect(result.pendingDetail?.detail).toContain('Which database?');
+
+    const kinds = result.messages.map((m) => m.kind);
+    expect(kinds).not.toContain('system'); // noise dropped
+    expect(kinds).toEqual(expect.arrayContaining(['user', 'tool_call', 'agent', 'question_request']));
+
+    const toolRow = result.messages.find((m) => m.kind === 'tool_call');
+    expect(toolRow?.tool).toBe('Bash');
+    expect(toolRow?.input).toContain('pnpm test');
+
+    const agentRow = result.messages.find((m) => m.kind === 'agent');
+    expect(agentRow!.text!.length).toBeLessThanOrEqual(700); // truncated
+  });
+
+  it('get_session_messages reports answered prompts as not pending', async () => {
+    await resetDb();
+    const { session } = await seedExecutionSession();
+    const q = await import('@/lib/db/queries');
+    q.insertChatEvent({ sessionId: session.id, role: 'system', source: 'question_request', content: 'Pick one', createdAt: new Date(Date.now() - 2000).toISOString() });
+    q.insertChatEvent({ sessionId: session.id, role: 'system', source: 'question_response', content: 'A', createdAt: new Date(Date.now() - 1000).toISOString() });
+
+    const get = await findAction('get_session_messages');
+    const result = (await get.handler(ctx, { sessionId: session.id } as never)) as {
+      awaitingInput: boolean;
+      pendingDetail: unknown;
+    };
+    expect(result.awaitingInput).toBe(false);
+    expect(result.pendingDetail).toBeNull();
+  });
+
+  it('get_session_messages marks messages another chat sent, and leaves typed ones unmarked', async () => {
+    await resetDb();
+    const { session } = await seedExecutionSession();
+    const q = await import('@/lib/db/queries');
+    const steerer = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
+    q.insertChatEvent({ sessionId: session.id, role: 'user', source: 'user', content: 'Typed by the user', createdAt: new Date(Date.now() - 2000).toISOString() });
+    q.insertChatEvent({
+      sessionId: session.id, role: 'user', source: 'user', content: 'Sent by the coordinator',
+      senderSessionId: steerer.id, createdAt: new Date(Date.now() - 1000).toISOString(),
+    });
+
+    const get = await findAction('get_session_messages');
+    const result = (await get.handler(ctx, { sessionId: session.id } as never)) as {
+      messages: Array<{ text?: string; sentBy?: string }>;
+    };
+    expect(result.messages.find((m) => m.text === 'Typed by the user')?.sentBy).toBeUndefined();
+    expect(result.messages.find((m) => m.text === 'Sent by the coordinator')?.sentBy).toBe(steerer.id);
+  });
+
+  it('get_session_messages throws not_found for unknown sessions', async () => {
+    await resetDb();
+    const get = await findAction('get_session_messages');
+    await expect(
+      (async () => get.handler(ctx, { sessionId: 'nope' } as never))(),
+    ).rejects.toMatchObject({ code: 'not_found' });
+  });
+
+  it('message_agent refuses unavailable, read-only and unsigned targets', async () => {
+    await resetDb();
+    const send = await findAction('message_agent');
+    const q = await import('@/lib/db/queries');
+    const caller = q.createChatSession({ type: 'coordinator', harness: 'claude' });
+    const signed = { remote: true, actor: { source: 'ai', sessionId: caller.id } };
+    const input = (id: string, content = 'hi') => ({ target: `session:${id}`, content, response: 'none', request_id: `message-${id}` });
+
+    await expect(
+      (async () => send.handler(signed as never, input('nope') as never))(),
+    ).rejects.toMatchObject({ code: 'not_found' });
+
+    const { session } = await seedExecutionSession();
+    q.archiveChatSession(session.id);
+    await expect(
+      (async () => send.handler(signed as never, input(session.id) as never))(),
+    ).rejects.toMatchObject({ code: 'conflict' });
+
+    // An import nobody took over is read-only: refused here, before the
+    // server, with no message saved.
+    const { session: imported } = await seedExecutionSession();
+    q.updateChatSession(imported.id, { surfaceKind: 'imported_agent' });
+    await expect(
+      (async () => send.handler(signed as never, input(imported.id, 'Hello') as never))(),
+    ).rejects.toMatchObject({ code: 'conflict', message: expect.stringMatching(/can only be read here/) });
+    expect(q.listChatEvents(imported.id).some((e) => e.content === 'Hello')).toBe(false);
+
+    // A request cannot establish return provenance without a signed source.
+    await expect(send.handler(ctx, input(caller.id) as never)).rejects.toMatchObject({ code: 'unsupported' });
+  });
+});

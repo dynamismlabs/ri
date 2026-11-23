@@ -108,7 +108,7 @@ adds one. Completing says when the next one is.
 
 - REST: `POST /api/tasks/:id/transition` and `/complete`. Generic PATCH rejects
   a `status` field; POST rejects a non-`consider`/`todo` create status.
-- Orchestrator (CLI + MCP): `transition_task`, `complete_task`,
+- Coordinator (CLI + MCP): `transition_task`, `complete_task`,
   `create_task` (consider|todo only), `update_task` (no status), `list_tasks`
   (accepts the legacy `active` filter alias = todo|in_progress).
 - Client: `useTaskLifecycle` (shared complete/start/archive/restore/reopen/move

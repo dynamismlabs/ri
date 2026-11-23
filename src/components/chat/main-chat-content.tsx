@@ -1,8 +1,8 @@
 'use client';
 import { ChipButton } from '@/components/system/chip-button';
 import { Loader2, Plus } from 'lucide-react';
-import { useOrchestratorName } from '@/hooks/use-user-state';
-import { OrchestratorAvatar } from '@/components/shared/orchestrator-mark';
+import { useCoordinatorName } from '@/hooks/use-user-state';
+import { CoordinatorAvatar } from '@/components/shared/coordinator-mark';
 import { HarnessChat } from '@/components/chat/harness-chat';
 import { useAppMainChatIntro, type MainChatIntro } from '@/components/chat/main-chat-intro';
 import { useNewMainChat, useMainChat, type MainChatScope } from '@/hooks/use-main-chat';
@@ -32,7 +32,7 @@ function ChatHeaderBar({
     <div className="shrink-0 flex items-center justify-end gap-1.5 px-2 py-1 border-b border-border/50">
       {/* Who you're talking to, the same name the rail's home row shows. */}
       <span className="mr-auto flex min-w-0 items-center gap-1.5 pl-0.5">
-        <OrchestratorAvatar size="xs" />
+        <CoordinatorAvatar size="xs" />
         <span className="truncate text-[9.5px] font-bold text-muted-foreground">
           {name}
         </span>
@@ -75,4 +75,4 @@ export function MainChatContent({ scope = null, name, intro, enabled = true }: {
   );
 }
 
-export function PersonalMainChatContent() { return <MainChatContent name={useOrchestratorName()} />; }
+export function PersonalMainChatContent() { return <MainChatContent name={useCoordinatorName()} />; }

@@ -1,3 +1,4 @@
+import { currentHomeApiPath } from '@/lib/coordinator/legacy-names';
 /** Stable browser/CLI API contract, independent of release/build identity. */
 // Protocol 2 requires unified-Home native content and incremental references.
 // New Homes retain baseline callers because their older operations still work.
@@ -17,5 +18,5 @@ export function apiCompatibilityIssue(header: string | null, supported: readonly
 /** These authenticated transports negotiate their own protocol. This does
  * not bypass authentication or the scope checks that protect those routes. */
 export function hasIndependentProtocol(pathname: string): boolean {
-  return /^\/api\/(?:orchestrator\/(?:browser\/)?|integrations\/)?(?:mcp|sse|message|messages)$/.test(pathname) || pathname === '/api/team/mcp';
+  return /^\/api\/(?:home\/(?:browser\/)?|integrations\/)?(?:mcp|sse|message|messages)$/.test(currentHomeApiPath(pathname)) || pathname === '/api/team/mcp';
 }

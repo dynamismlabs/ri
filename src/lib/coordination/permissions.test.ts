@@ -7,14 +7,14 @@ let home: TestHome;
 beforeEach(async () => { home = await createTestHome(); });
 afterEach(async () => { await home.cleanup(); });
 it.each(['ask','plan'] as const)('caps omitted and broader requested authority to the source %s mode', mode => {
-  const source=q.createChatSession({type:'orchestration',harness:'claude',permissionMode:mode});
+  const source=q.createChatSession({type:'coordinator',harness:'claude',permissionMode:mode});
   const actor={source:'ai' as const,sessionId:source.id};
   expect(agentLaunchPermission(actor,undefined,'claude')).toBe(mode);
   expect(agentLaunchPermission(actor,'auto_all','codex')).toBe(mode);
   expect(agentLaunchPermission({source:'human'},'auto_all','claude')).toBe('auto_all');
 });
 it('fails unsupported capped modes rather than upgrading them', async () => {
-  const source=q.createChatSession({type:'orchestration',harness:'claude',permissionMode:'ask'});
+  const source=q.createChatSession({type:'coordinator',harness:'claude',permissionMode:'ask'});
   const actor={source:'ai' as const,sessionId:source.id};
   expect(()=>agentLaunchPermission(actor,undefined,'cursor')).toThrow(/does not support|not supported|supports/i);
   const workspace=q.createWorkspace({name:'Project',cwd:home.root,isGit:false});
@@ -23,7 +23,7 @@ it('fails unsupported capped modes rather than upgrading them', async () => {
   expect(q.listChatSessions({workspaceId:workspace.id})).toHaveLength(0);
 });
 it('rechecks an existing launch on retry without overwriting a human permission change', async () => {
-  const source=q.createChatSession({type:'orchestration',harness:'claude',permissionMode:'ask'});
+  const source=q.createChatSession({type:'coordinator',harness:'claude',permissionMode:'ask'});
   const workspace=q.createWorkspace({name:'Project',cwd:home.root,isGit:false});
   const {session}=q.createExecutionWithChat({workspaceId:workspace.id,harness:'claude',permissionMode:'auto_all',label:null});
   const {dispatchExecutionSession}=await import('@/lib/sessions/dispatch');
@@ -32,7 +32,7 @@ it('rechecks an existing launch on retry without overwriting a human permission 
 });
 
 it('finishes child policy initialization after a crash between chat creation and initialization', async () => {
-  const source = q.createChatSession({ type: 'orchestration', harness: 'claude', permissionMode: 'ask' });
+  const source = q.createChatSession({ type: 'coordinator', harness: 'claude', permissionMode: 'ask' });
   q.setAgentCoordinationPolicy('chat', source.id, 'allow');
   const workspace = q.createWorkspace({ name: 'Project', cwd: home.root, isGit: false });
   q.setAgentCoordinationPolicy('agent', workspace.id, 'ask');
@@ -51,21 +51,21 @@ it('finishes child policy initialization after a crash between chat creation and
 });
 
 it('prevents signed agents from bypassing delegation approval through sibling or main-chat launch endpoints', async () => {
-  const source = q.createChatSession({ type: 'orchestration', harness: 'claude' });
-  const { SESSION_CREDENTIAL_HEADER, sessionCredential } = await import('@/lib/orchestrator/session-credential');
+  const source = q.createChatSession({ type: 'coordinator', harness: 'claude' });
+  const { SESSION_CREDENTIAL_HEADER, sessionCredential } = await import('@/lib/actions/session-credential');
   const request = new Request('http://localhost/api/new-chat', { headers: { [SESSION_CREDENTIAL_HEADER]: sessionCredential(source.id)! } });
   const context = { headers: request.headers, url: request.url, nextUrl: new URL(request.url), signal: request.signal };
   const sibling = await import('@/lib/server/operations/sessions/[id]/new-chat');
   const agentMain = await import('@/lib/server/operations/workspaces/[id]/chat/new');
-  const orchestrator = await import('@/lib/server/operations/orchestrator-chat');
+  const coordinator = await import('@/lib/server/operations/coordinator-chat');
   expect(await sibling.POST(sibling.POSTInput.parse({ params: { id: source.id }, body: {} }), context)).toMatchObject({ ok: false, status: 403 });
   expect(await agentMain.POST(agentMain.POSTInput.parse({ params: { id: 'other-agent' }, body: {} }), context)).toMatchObject({ ok: false, status: 403 });
-  expect(await orchestrator.POST(orchestrator.POSTInput.parse({ body: {} }), context)).toMatchObject({ ok: false, status: 403 });
+  expect(await coordinator.POST(coordinator.POSTInput.parse({ body: {} }), context)).toMatchObject({ ok: false, status: 403 });
   expect(q.listChatSessions({})).toHaveLength(1);
 });
 
 it('binds sibling launch approval to its execution and recovers the reserved chat after creation', async () => {
-  const source = q.createChatSession({ type: 'orchestration', harness: 'claude', permissionMode: 'plan' });
+  const source = q.createChatSession({ type: 'coordinator', harness: 'claude', permissionMode: 'plan' });
   const workspace = q.createWorkspace({ name: 'Project', cwd: home.root, isGit: false });
   const { execution } = q.createExecutionWithChat({ workspaceId: workspace.id, harness: 'claude', label: null });
   const delivery = q.createInitiatingAgentDelivery({ id: 'approved-sibling', source, sourceRunId: null, address: `agent:${workspace.id}`, targetSessionId: null, requestKey: 'sibling-key', parentRequestId: null, kind: 'delegation', content: 'Review.', options: { workspaceId: workspace.id, executionId: execution.id, provider: 'claude', permissionMode: 'auto_all' }, eventId: 'sibling-input', prompt: 'Review.', status: 'queued' });

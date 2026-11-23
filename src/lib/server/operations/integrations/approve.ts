@@ -6,7 +6,7 @@ import {
   type ApprovalDecision,
 } from '@/lib/integrations/approval';
 import { allowWithoutAsking, recordApprovalDecision } from '@/lib/integrations/approval-events';
-import { SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { reply, type OperationContext } from '@/lib/server/operation';
 import { z as rpcZ } from 'zod/v4';
 
@@ -24,7 +24,7 @@ import { z as rpcZ } from 'zod/v4';
  * told, so it retries or stands down without the user typing anything (approval-events.ts).
  * The legacy single form `{ id, decision: 'allow' | 'deny' }` still works.
  *
- * Human-only. No orchestrator action or integration tool reaches this, and a request carrying an
+ * Human-only. No Ri action or integration tool reaches this, and a request carrying an
  * agent session credential (the header every harness session's app calls carry) is refused, so an
  * agent can't approve its own request through the app's own plumbing.
  */

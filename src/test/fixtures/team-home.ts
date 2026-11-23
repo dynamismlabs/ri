@@ -21,7 +21,7 @@ export const TEAM_ROUTES: Array<[RegExp, () => Promise<RouteModule>]> = [
   [/^\/api\/sessions\/([^/]+)\/file\/upload$/, () => import('@/app/api/sessions/[id]/file/upload/route') as unknown as Promise<RouteModule>],
   [/^\/api\/workspaces\/([^/]+)\/file\/upload$/, () => import('@/app/api/workspaces/[id]/file/upload/route') as unknown as Promise<RouteModule>],
   [/^\/api\/transcribe$/, () => import('@/app/api/transcribe/route') as unknown as Promise<RouteModule>],
-  [/^\/api\/orchestrator\/actions\/([^/]+)$/, () => import('@/app/api/orchestrator/actions/[name]/route') as unknown as Promise<RouteModule>],
+  [/^\/api\/home\/actions\/([^/]+)$/, () => import('@/app/api/home/actions/[name]/route') as unknown as Promise<RouteModule>],
   [/^\/api\/tasks\/([^/]+)\/continue-targets$/, () => import('@/app/api/tasks/[id]/continue-targets/route') as unknown as Promise<RouteModule>],
   [/^\/api\/skills\/([^/]+)\/move$/, () => import('@/app/api/skills/[ref]/move/route') as unknown as Promise<RouteModule>],
   [/^\/api\/skills\/([^/]+)\/commit$/, () => import('@/app/api/skills/[ref]/commit/route') as unknown as Promise<RouteModule>],
@@ -142,7 +142,7 @@ export async function serveTeam(input: string | URL | Request, init?: RequestIni
   const handler = mod[request.method as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'];
   if (!handler) return Response.json({ error: 'method' }, { status: 405 });
   const captured = route[0].exec(path)?.[1] ?? '';
-  const params = Promise.resolve<Record<string, string>>(path.startsWith('/api/orchestrator/actions/') ? { name: captured } : /^\/api\/(workspaces|sessions|tasks)\//.test(path) ? { id: captured, ...(route[0].exec(path)?.[2] ? { [path.includes('/pending-input/') ? 'requestId' : 'terminalId']: route[0].exec(path)![2] } : {}) } : { fileName: captured });
+  const params = Promise.resolve<Record<string, string>>(path.startsWith('/api/home/actions/') ? { name: captured } : /^\/api\/(workspaces|sessions|tasks)\//.test(path) ? { id: captured, ...(route[0].exec(path)?.[2] ? { [path.includes('/pending-input/') ? 'requestId' : 'terminalId']: route[0].exec(path)![2] } : {}) } : { fileName: captured });
   return handler(new NextRequest(request, { headers }), { params });
 }
 

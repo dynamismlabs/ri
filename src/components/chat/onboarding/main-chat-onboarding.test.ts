@@ -8,8 +8,8 @@ import { MainChatOnboarding } from './main-chat-onboarding';
 const fixtures = vi.hoisted(() => ({
   state: {
     name: null as string | null, description: 'Existing description', onboardedAt: null as string | null,
-    orchestratorIntroducedAt: null as string | null,
-    orchestratorName: null as string | null,
+    coordinatorIntroducedAt: null as string | null,
+    coordinatorName: null as string | null,
     defaultHarness: 'claude' as string | null,
     defaultModel: 'sonnet' as string | null,
     defaultEffort: 'high' as string | null,
@@ -32,7 +32,7 @@ vi.mock('@/hooks/use-viewport-tier', () => ({ useViewportTier: () => 'desktop' }
 vi.mock('@/hooks/use-user-state', () => ({
   useUserState: () => ({ data: fixtures.state, refetch: fixtures.refetch }),
   useUpdateUserState: () => ({ mutate: fixtures.update, mutateAsync: fixtures.update }),
-  useOrchestratorName: () => 'Ri',
+  useCoordinatorName: () => 'Ri',
 }));
 vi.mock('./use-onboarding-progress', () => ({ useOnboardingProgress: () => fixtures.progress }));
 vi.mock('@/hooks/use-workspaces', () => ({ useWorkspaces: () => ({ data: [] }) }));
@@ -52,7 +52,7 @@ vi.mock('./use-harness-check', () => ({
     return { data: { status: 'ready', harness: 'codex', report: {} } };
   },
 }));
-vi.mock('@/components/orchestrator/identity-editor', () => ({
+vi.mock('@/components/coordinator/identity-editor', () => ({
   IdentityEditor: () => null,
   draftFromState: () => ({}),
   draftName: () => 'Ri',
@@ -102,7 +102,7 @@ const AT = '2026-10-06T12:00:00.000Z';
 beforeEach(() => {
   vi.clearAllMocks();
   Object.assign(fixtures.state, {
-    name: null, onboardedAt: null, orchestratorIntroducedAt: null, orchestratorName: null, onboarding: null,
+    name: null, onboardedAt: null, coordinatorIntroducedAt: null, coordinatorName: null, onboarding: null,
     defaultHarness: 'claude', defaultModel: 'sonnet', defaultEffort: 'high',
   });
   const { window, document } = parseHTML('<!doctype html><html><body></body></html>');
@@ -165,7 +165,7 @@ describe("Ri's skills on a new home", () => {
   });
 
   it('are left to Settings once a home has finished setting up', async () => {
-    Object.assign(fixtures.state, { onboardedAt: AT, orchestratorIntroducedAt: AT });
+    Object.assign(fixtures.state, { onboardedAt: AT, coordinatorIntroducedAt: AT });
     await render();
     expect(fixtures.installSkill).not.toHaveBeenCalled();
   });
@@ -247,7 +247,7 @@ describe('progress kept on the home', () => {
   });
 
   it('keeps the welcome when this same conversation is opened again, its answers replayed', async () => {
-    Object.assign(fixtures.state, { orchestratorName: 'Rye' });
+    Object.assign(fixtures.state, { coordinatorName: 'Rye' });
     fixtures.state.onboarding = { steps: { identity: { status: 'answered', reply: 'Rye', chatId: 'chat-1', at: AT } } };
     await render();
     expect(container.textContent).toContain('Hi, welcome to Ri.');
@@ -256,7 +256,7 @@ describe('progress kept on the home', () => {
   });
 
   it('picks up after a skipped step with a short line, not the welcome, and does not replay earlier chats', async () => {
-    Object.assign(fixtures.state, { orchestratorName: 'Rye' });
+    Object.assign(fixtures.state, { coordinatorName: 'Rye' });
     fixtures.state.onboarding = {
       steps: {
         identity: { status: 'answered', reply: 'Rye', chatId: 'earlier', at: AT },
@@ -271,7 +271,7 @@ describe('progress kept on the home', () => {
   });
 
   it('never asks again what is already on file, like a name given before', async () => {
-    Object.assign(fixtures.state, { name: 'Trey', orchestratorName: 'Rye' });
+    Object.assign(fixtures.state, { name: 'Trey', coordinatorName: 'Rye' });
     await render();
     expect(container.textContent).not.toContain('What should I go by?');
     expect(container.textContent).not.toContain('And what should I call you?');
@@ -288,7 +288,7 @@ describe('progress kept on the home', () => {
 
 describe('a home that finished setting up', () => {
   beforeEach(() => {
-    Object.assign(fixtures.state, { name: 'Trey', orchestratorName: 'Rye', onboardedAt: AT, orchestratorIntroducedAt: AT });
+    Object.assign(fixtures.state, { name: 'Trey', coordinatorName: 'Rye', onboardedAt: AT, coordinatorIntroducedAt: AT });
   });
 
   it('opens on the usual intro, with nothing to set up, when it finished before steps were recorded', async () => {

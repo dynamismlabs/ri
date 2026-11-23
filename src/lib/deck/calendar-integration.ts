@@ -9,7 +9,7 @@
  * only registers when no provider is set, so it never clobbers an
  * explicitly-injected provider (e.g. a test mock). Call it at each entry
  * point that can generate/reconcile a deck — server boot (instrumentation)
- * covers the web/API paths; the orchestrator action handlers cover the CLI
+ * covers the web/API paths; the Ri action handlers cover the CLI
  * subprocess path.
  *
  * Nothing connected reads as an open day. A failed or cut-short read keeps the

@@ -19,8 +19,8 @@ reference for interactive chat interfaces, their origins and source files.
 
 **There are three distinct kinds of chat, not one model with variants.** Each serves a different purpose and gets the UX that purpose deserves:
 
-1. **Orchestration** — your main thread with the orchestrator. Always-on, in-app, ongoing relationship. One session, chronologically whole. Discover by going to the main surface; never listed.
-2. **Content chat** — scoped to a task or note. "Talk to the AI about this piece of content." A *focused harness session* (the user's Claude/Codex subscription) pinned to one entity, acting through the same orchestrator tool surface. Sessions exist as loose conversations attached to the content they're about. Its edits are snapshotted so the human can diff + undo what the agent changed. See [In-document content chat (implementation)](#in-document-content-chat-implementation).
+1. **Orchestration** — your main thread with the coordinator. Always-on, in-app, ongoing relationship. One session, chronologically whole. Discover by going to the main surface; never listed.
+2. **Content chat** — scoped to a task or note. "Talk to the AI about this piece of content." A *focused harness session* (the user's Claude/Codex subscription) pinned to one entity, acting through the same Ri tool surface. Sessions exist as loose conversations attached to the content they're about. Its edits are snapshotted so the human can diff + undo what the agent changed. See [In-document content chat (implementation)](#in-document-content-chat-implementation).
 3. **Execution** — CLI-backed work sessions (Claude Code, Codex, other agentex providers). Discrete jobs with their own scope. Run interactively, autonomously, or on cron. Pull in tasks/notes as context via refs. Report back via notifications. These are the "isolated execution channels" — each one its own context-hungry Claude Code-style thread.
 
 Other principles that hold across all three:
@@ -29,7 +29,7 @@ Other principles that hold across all three:
 - **Full transcripts always.** No summaries replacing messages. Search/retrieval runs over transcripts; memory is a future index over them, not a precondition.
 - **Two resets:** undo last turn, `+` to archive current and start fresh.
 - **Background/cron/agent-initiated activity goes to notifications**, not into any active chat. Notifications are the entry point to cron-spawned executions.
-- **Source of truth follows execution.** For in-app sessions (orchestration, content) our DB is authoritative. For CLI-backed executor sessions, provider-owned history is the durable record and `chat_events` projects from it. App-spawned sessions get rows through Agentex live events and the live-session reconciler. Explicitly imported Claude and Codex chats use Agentex file-backed `localHistory`. Explicitly imported OpenCode chats use service-backed `savedHistory`.
+- **Source of truth follows execution.** For in-app sessions (coordinator, content) our DB is authoritative. For CLI-backed executor sessions, provider-owned history is the durable record and `chat_events` projects from it. App-spawned sessions get rows through Agentex live events and the live-session reconciler. Explicitly imported Claude and Codex chats use Agentex file-backed `localHistory`. Explicitly imported OpenCode chats use service-backed `savedHistory`.
 - **No DB-enforced uniqueness on partition.** You decide how many sessions exist and how they overlap. The app picks sensible defaults; schema doesn't constrain.
 
 Internally in the data model: call them `chat_sessions` with a `type` discriminator. Externally in the UI: the word "session" doesn't appear to users.
@@ -53,7 +53,7 @@ Most tools pick one failure mode and suffer the other. ChatGPT picked fragmentat
 
 An agent row is a *definition* — persona, prompt, harness, cwd. A session is an *instance* of that definition running against whatever the user is doing. One agent definition can have many concurrent sessions. Same Claude executor working on three tasks at once = one `agents` row + three `chat_sessions` rows. This is how people already use coding agents, and the schema shouldn't fight it.
 
-Chat types serve different purposes (orchestration, content, execution) and the schema records the type explicitly. The UX for each type is tuned to what that type is for.
+Chat types serve different purposes (coordinator, content, execution) and the schema records the type explicitly. The UX for each type is tuned to what that type is for.
 
 ### 2. Chronology is inviolable
 
@@ -65,7 +65,7 @@ This is the argument that killed "filtered views" as a design option. Either you
 
 Transcripts are local to their thread. Retrieval runs across all of them — it's what lets the agent feel continuous across surfaces. The agent doesn't need every message co-located in context; it needs to be able to *find* the relevant messages when asked.
 
-Concretely: when a user chats about task X in the task's thread, the orchestrator's main thread doesn't have those messages verbatim. But a later question in main ("where did we land on task X?") resolves by searching across `chat_events` — the task-thread is where the answer lives, and the orchestrator can reach it.
+Concretely: when a user chats about task X in the task's thread, the coordinator's main thread doesn't have those messages verbatim. But a later question in main ("where did we land on task X?") resolves by searching across `chat_events` — the task-thread is where the answer lives, and the coordinator can reach it.
 
 **Search is over our DB, not the JSONL files.** Our `chat_events` table mirrors everything the CLI transcript has, plus in-app rows. We never read JSONL files to answer queries — those are just the wire format; the DB has the queryable form. For v1, SQLite FTS5 over `content` gives fast full-text search across a user's entire history. Vector embeddings (via `sqlite-vec`, already in the stack) become a layered optimization when semantic match matters more than keyword match — future concern, not a precondition.
 
@@ -103,7 +103,7 @@ This drives a concrete decision: the CLI transcript is the source of truth for e
 
 ### Agents (retired)
 
-This doc originally designed an `agents` table: a definition row (persona, prompt, harness, cwd) with sessions as its instances. Only the harness ever landed. Workspaces took over the cwd in May 2026 (`docs/workspaces-spec.md`), the persona fields were never built, and the table ended up as four rows mapping an id to an engine name (one per engine for executors, one per engine for the orchestrator). Every reader only ever took that engine name.
+This doc originally designed an `agents` table: a definition row (persona, prompt, harness, cwd) with sessions as its instances. Only the harness ever landed. Workspaces took over the cwd in May 2026 (`docs/workspaces-spec.md`), the persona fields were never built, and the table ended up as four rows mapping an id to an engine name (one per engine for executors, one per engine for the coordinator). Every reader only ever took that engine name.
 
 It was deleted in September 2026 (`docs/agents-view-spec.md`, Phase 1): the migrations were collapsed into a fresh generated baseline without it, and existing databases were rebuilt and refilled with `scripts/db-rebuild.ts`. Each chat now stores the engine it runs on directly in `chat_sessions.harness` (`claude | codex | cursor | opencode | antigravity`, the `HarnessId` values), and `triggers` and `runs` carry the same column. What a chat is for still lives in `type`.
 
@@ -116,7 +116,7 @@ chat_sessions
   id                        // our session id; stable across CLI rollovers
   user_id
   harness                   // engine that runs it: "claude" | "codex" | "cursor" | "opencode"
-  type                      // "orchestration" | "content" | "execution" — app-level enum
+  type                      // "coordinator" | "content" | "execution" — app-level enum
   surface_kind              // "main" | "task" | "note" | null for execution (refs-based)
   surface_ref               // task_id / note_id / etc.; null otherwise
   status                    // "active" | "archived"
@@ -146,7 +146,7 @@ external_session_imports
 
 **`type` discriminates the three kinds.** Each type has its own behavior:
 
-- `orchestration` — main thread with orchestrator agent. App convention: one active session per user; `+` archives and starts new. `external_*` null. `surface_kind` null or `"main"`.
+- `coordinator` — main thread with coordinator agent. App convention: one active session per user; `+` archives and starts new. `external_*` null. `surface_kind` null or `"main"`.
 - `content` — scoped chat about a task or note. `surface_kind` and `surface_ref` point to it. `external_*` null. App convention: one active per `(user, agent, surface)` by default, but not DB-enforced — multiple is fine if the user wants it.
 - `execution` — CLI-backed work session. Live sessions populate `external_*`. Historical imports use `surface_kind = "imported_agent"` and keep source state in `external_session_imports`. Many execution chats can exist simultaneously. `label` carries a human-readable execution title.
 
@@ -171,8 +171,8 @@ Session-level is the right granularity — the primary queries are "what session
 
 Examples:
 
-- Main chat with orchestrator → `type="orchestration"`, no surface, no external fields
-- Chat on task X with orchestrator → `type="content"`, `surface_kind="task"`, `surface_ref=X`, no external fields
+- Main chat with coordinator → `type="coordinator"`, no surface, no external fields
+- Chat on task X with coordinator → `type="content"`, `surface_kind="task"`, `surface_ref=X`, no external fields
 - Claude executing "refactor auth middleware" → `type="execution"`, `harness="claude"`, `label="Refactor auth middleware"`, `refs={task_ids:[42]}`, `external_session_id` set
 - Second concurrent execution on a different task → another row, same `harness`, different `external_session_id`, different `label` and `refs`
 
@@ -282,7 +282,7 @@ Transcripts are searchable by content — principle §3 ("transcripts are the re
 - **Index maintenance** is trigger-driven (insert/update/delete on `chat_events`). It's a *regular* fts5 table, not a `content='chat_events'` external-content one: because indexing is conditional (only user/agent rows), the delete trigger drops by `rowid` unconditionally — a no-op for never-indexed rows — so the index can't drift. `session_id`/`event_id` ride along `UNINDEXED`, so a hit carries enough to group-by-session and deep-link without joining back to `chat_events`.
 - **Backfill** is a one-shot idempotent `INSERT … WHERE NOT EXISTS (SELECT 1 FROM chat_events_fts)` in `EXTRA_SQL`. Existing + imported history becomes searchable the first time the index is created (i.e. the next server start after this ships, when `getDb()` re-runs `EXTRA_SQL`), and it never re-runs after that.
 - **Query** — `searchChatSessions()` (queries.ts) first lists chats whose own title or execution title contains every word of the search (`matchedIn: 'title'`, ranked exact, then prefix, then newest), then scans the index, groups event hits to one result per session keeping the best-ranked hit's snippet (`matchedIn: 'messages'`, skipping chats already listed), and hydrates via the `listHistorySessions` join. Branch names aren't matched (most chats share `main`). Scoped to `type='execution'` chats (native + imported); searches active + archived by default; filters by status/workspace/source. `snippet()` wraps matched terms in the control-char sentinels from `@/lib/search/highlight`.
-- **Surfaces** — the chat search modal (`ChatSearchModal`, opened from the rail's search icon or ⌘K's "Search chats" command, scoped to one agent by the chip beside its query), the `GET /api/sessions/search` endpoint, and the orchestrator `search_sessions` action (which strips the highlight sentinels for plain-text tool output). Transcript hits are deliberately **not** among ⌘K's own results, to keep that launcher high-precision.
+- **Surfaces** — the chat search modal (`ChatSearchModal`, opened from the rail's search icon or ⌘K's "Search chats" command, scoped to one agent by the chip beside its query), the `GET /api/sessions/search` endpoint, and Ri's `search_sessions` action (which strips the highlight sentinels for plain-text tool output). Transcript hits are deliberately **not** among ⌘K's own results, to keep that launcher high-precision.
 - **Reserved / deferred** — a `tool_summary` FTS column exists but is empty; indexing tool-call names/args is an additive follow-up needing no reindex of message rows. Semantic/vector search over chats is likewise deferred (FTS-only today; the entity search stack already degrades to FTS-only without an OpenAI key). Orchestration and content chats aren't searched yet — the surface is the execution rail.
 
 ### Links in chat replies
@@ -432,7 +432,7 @@ For execution chat (Claude Code subprocess via agentex), each `[[file:<file_name
 - An inline `<attachment filename="...">…</attachment>` block carrying extracted text, if the file has text Ri can extract, done by `expandMarkers` at home wherever the chat runs (docx, xlsx, pptx via mammoth/`xlsx`/officeparser; audio via STT through `pickProvider`). A docx, xlsx or pptx that arrives labeled as its zip container is stored as the document it is (`resolveMime`), so it is extracted, never handed over as an archive.
 - The file's path on the computer the chat runs on, for everything else: text, code, images, PDF, JSON, XML, archives, models, and any type Ri has no name for. `expandMarkers` leaves these markers, and `executor.dispatch` places them with the message's attachments: the home's attachments directory for a chat at home, or the worker's own checked copy for a chat on a connected computer (see `docs/homes-build.md`, P2.5). The agent opens the file with its own tools.
 
-Orchestrator and content chats are harness sessions too, so the same substitution covers them — there is no separate ai-sdk inlining path anymore. (The old `inlineTextAttachments` rewrite for direct-API Anthropic/OpenAI chat, including `sharp` image normalization and `unpdf` PDF extraction, was deleted along with the legacy `/api/chat` route.)
+Coordinator and content chats are harness sessions too, so the same substitution covers them — there is no separate ai-sdk inlining path anymore. (The old `inlineTextAttachments` rewrite for direct-API Anthropic/OpenAI chat, including `sharp` image normalization and `unpdf` PDF extraction, was deleted along with the legacy `/api/chat` route.)
 
 A 200k-char cap applies to every extraction so a single large document can't blow the context window.
 
@@ -530,7 +530,7 @@ The routing rule: **did the user ask for this in an active thread they're curren
 
 ### Execution sessions (CLI as source of truth)
 
-In-app sessions (orchestration, content chat) are authoritative in our DB. We own their transcript.
+In-app sessions (coordinator, content chat) are authoritative in our DB. We own their transcript.
 
 Execution sessions — CLI-backed work runs via agentex (Claude Code, Codex, others) — are different. The CLI already maintains its own transcript — Claude Code writes JSONL files at `~/.claude/projects/{escaped-cwd}/{session-id}.jsonl`. That file is what the agent actually saw on its next turn. If we try to maintain a parallel authoritative record in our DB, they will drift, and the drift will always be in the direction of our UI lying about the agent's state.
 
@@ -574,7 +574,7 @@ Adapter responsibilities (on top of agentex):
 - `parseStreamEvent(event) → chat_event | null` — maps agentex StreamEvents to `chat_events` rows (app-spawned path).
 - Agentex `localHistory.read()` and `savedHistory.read()` normalize imported history. Ri has no provider-specific file parser.
 
-v1 ships one adapter: Claude Code. Codex is the next adapter and its spec is documented below so we know the interface survives it. In-app sessions (orchestration, content) skip the adapter layer entirely — those are direct API calls whose events we write to `chat_events` directly.
+v1 ships one adapter: Claude Code. Codex is the next adapter and its spec is documented below so we know the interface survives it. In-app sessions (coordinator, content) skip the adapter layer entirely — those are direct API calls whose events we write to `chat_events` directly.
 
 **Where events get written: keep the seam clean (`EventWriter`).** The adapter doesn't call `insertChatEvent` directly. It takes an `EventWriter` interface (`write(event): Promise<void>`) and routes all `chat_events` writes through it. v1 has one implementation — a one-liner that calls `insertChatEvent` — so behavior is identical to writing inline. The reason for the parameter is forward-compatibility with cross-machine execution: when a laptop runs an executor as a client of a canonical server (see `docs/workspaces-spec.md` §"Deferred: cross-machine execution"), the same adapter swaps in an `HttpEventWriter` that POSTs events to the canonical API. Same parsing, same error handling, different write path. Cost today is ~10 lines; cost of retrofitting later is rewriting the adapter's inner loop, so we pay it now.
 
@@ -823,10 +823,10 @@ The original cross-ingest concern was that stdio and rollout-file identifiers do
 
 ## UX rules
 
-- **Orchestration thread follows you.** Main view → you see the orchestrator's main thread. No picker, no list.
+- **Coordinator thread follows you.** Main view → you see the coordinator's main thread. No picker, no list.
 - **Content chat lives with its content.** Opening a task or note shows the content chat for that item (or an empty pane if none exists yet; first message creates it). It doesn't write to the main thread. It's its own session, chronologically whole.
 - **Execution sessions are entered, not browsed.** You get into an execution via (a) dispatching a new one (intentional act, from anywhere), (b) a notification (work happened / needs you), or (c) cross-references from a task/note that touched it. No list view of past executions.
-- **Agents are the only navigable chat entities.** A small agents list (maybe 2–8 agents, not hundreds) replaces what would have been a thread list. Clicking an agent opens the agent's current context — for the orchestrator that's your main/content chat; for an executor it's the new-execution or recent-execution view.
+- **Agents are the only navigable chat entities.** A small agents list (maybe 2–8 agents, not hundreds) replaces what would have been a thread list. Clicking an agent opens the agent's current context — for the coordinator that's your main/content chat; for an executor it's the new-execution or recent-execution view.
 - **When a task or note chat is first opened, the pane is empty.** That's fine. The agent still knows you — retrieval spans all transcripts. First message starts the content chat.
 - **Full transcripts. No collapsed exchanges. No summarized past.** Orientation markers are OK. Collapsed tool-call detail is OK. Hidden messages are not.
 - **CLI rollovers are visible.** When an execution's CLI session rotates (died, expired, machine changed, user hit `+`), the transcript shows a divider and the handoff message. Never a silent continuation claiming state the agent doesn't have.
@@ -835,7 +835,7 @@ The original cross-ingest concern was that stdio and rollout-file identifiers do
 ## In-document content chat (implementation)
 
 The content chat is realized as a **focused harness session**, not a bespoke per-page
-agent. It reuses the orchestrator's surface end to end:
+agent. It reuses the coordinator's surface end to end:
 
 - **Session.** A `chat_sessions` row with `type='content'`, scoped to the entity via
   `surface_kind` (`'task' | 'note'`) + `surface_ref` (the entity id). `GET
@@ -844,8 +844,8 @@ agent. It reuses the orchestrator's surface end to end:
   affordance). Messages send + stream through the shared `/api/sessions/[id]/messages` and
   `/api/sessions/[id]/stream` transport — identical to executions and orchestration — and
   the slideout renders the same `HarnessChatSession` surface (transcript + composer).
-- **Agent surface.** `ensureAgentSession` treats `content` like `orchestration`: it
-  installs the orchestrator brief + MCP tool set at the app data root. **No new tools** — the agent edits the focused entity with the
+- **Agent surface.** `ensureAgentSession` treats `content` like `coordinator`: it
+  installs the coordinator brief + MCP tool set at the app data root. **No new tools** — the agent edits the focused entity with the
   existing `get_/update_task|note` actions. A per-session **focus directive**
   (`renderContentFocusPrompt`, delivered via Claude's `--append-system-prompt` so it never
   shows in the transcript) pins it to the one entity and tells it to act decisively, since
@@ -854,7 +854,7 @@ agent. It reuses the orchestrator's surface end to end:
 - **Provider-agnostic, subscription-only.** Runs on whatever harness the user has
   configured (Claude or Codex subscription today; future local/free agents are just more
   providers). The old direct-to-OpenAI copilot path is gone — there's no API-key fallback,
-  and because edits now flow through the orchestrator MCP they go through `queries.ts`
+  and because edits now flow through the home MCP they go through `queries.ts`
   (embeddings, mirror, attachment derivation, versioning) instead of bypassing it.
 
 ### Change versioning, diff & undo
@@ -865,7 +865,7 @@ history (`entity_type`, `entity_id`, `snapshot` JSON, `source` `human|ai|system`
 three write paths (UI, agent MCP, CLI) are tracked through one place. It's lazy (the first
 edit seeds a baseline from the pre-edit state so the first diff has a "before") and skips
 no-op bumps (sortKey, lastViewedAt) via a structural snapshot comparison. UI edits are
-`human`; agent edits via the orchestrator actions are tagged `ai`.
+`human`; agent edits via the Ri actions are tagged `ai`.
 
 That backs a reviewable, reversible loop for "the AI changed it — assume it's right, but
 let me check":
@@ -900,7 +900,7 @@ let me check":
 
 ## The tradeoffs we are accepting
 
-- **The three types don't share a transcript.** Orchestration chat, content chat on task X, and an execution that worked on task X are three separate sessions with three separate transcripts. Retrieval connects them when the user asks cross-cutting questions; they're not co-located in one view. This is the deliberate tradeoff for scoping context appropriately per type.
+- **The three types don't share a transcript.** Coordinator chat, content chat on task X, and an execution that worked on task X are three separate sessions with three separate transcripts. Retrieval connects them when the user asks cross-cutting questions; they're not co-located in one view. This is the deliberate tradeoff for scoping context appropriately per type.
 - **Each content-chat on a task accumulates a session.** Not a graveyard because sessions aren't listed, but the database grows. Cheap; worth it.
 - **Executions fragment by design.** Many short-to-medium executions rather than one long-running one. This matches how coding agents actually get used — fresh context per job — but means "what has Claude been up to lately?" requires search/notifications, not a thread to scroll.
 - **Notifications need discipline.** If cron jobs fire every 5 minutes and each writes a card, notifications become a new graveyard. Solution: batched cards, auto-dismiss for benign results, grouping by source. Out of scope for first cut; keep an eye on it.
@@ -910,7 +910,7 @@ let me check":
 
 - **Should opening a task auto-surface recent executions that touched it?** Probably yes, as a notification-style strip above the content chat pane — informational chips linking to the execution sessions, not part of the thread itself.
 - **Should `+` require confirmation?** Users might hit it accidentally and fear they lost something. Probably add a tiny "undo" toast for the first 30 seconds post-archive.
-- **When the orchestrator dispatches a subagent mid-conversation, does the subagent get a real `agents` row or is it ephemeral?** V1: ephemeral, merged back into the dispatching session on completion. If users want to "join" in-flight subagents, promote to real agent rows later.
+- **When the coordinator dispatches a subagent mid-conversation, does the subagent get a real `agents` row or is it ephemeral?** V1: ephemeral, merged back into the dispatching session on completion. If users want to "join" in-flight subagents, promote to real agent rows later.
 - **Per-session cwd override.** Not built in v1 (one executor = one project). If users ask to span multiple projects with one executor, add a `cwd` field on `chat_sessions` that overrides `agents.config.cwd`.
 - **Multi-device agent config.** A `device_config` JSON keyed by device id on `agents` is probably enough. But: what's "device id" — app install id? Machine hostname? Something the user can name? Deferred; not needed until we actually support multi-device.
 - **Codex adapter.** Spec documented (see the Codex adapter section). Unblocked — agentex v2 provider ships with the required fields. Main Codex-specific behavior to implement is proactive rollover on token pressure, since Codex silently truncates instead of writing a compaction summary.
@@ -955,11 +955,11 @@ chat_events
 
 Files referenced by `chat_events.attachments` live under `<brain>/attachments/<file_name>` and are served via `GET /api/attachments/:file_name` — the same plumbing tasks/notes/areas use.
 
-`type` on `chat_sessions` discriminates the three kinds: `orchestration`, `content`, `execution`. Behavior varies by type; schema is shared.
+`type` on `chat_sessions` discriminates the three kinds: `coordinator`, `content`, `execution`. Behavior varies by type; schema is shared.
 
 `id` columns are UUIDv7 (time-ordered) — sort order via `(created_at, id)` is stable, monotonic within a session, and no sequence column is required.
 
-For in-app sessions (orchestration, content), `external_*` fields are null and our DB is authoritative.
+For in-app sessions (coordinator, content), `external_*` fields are null and our DB is authoritative.
 
 For live execution sessions, `external_provider_type` and `external_session_id` identify the current provider binding, which can rotate on rollover. Historical imports keep their provider-qualified source identity, file fingerprint or service checkpoint, and synchronization status in `external_session_imports`. Agentex owns provider history normalization. Ri owns the read-only projection and explicit sync transaction.
 

@@ -21,7 +21,7 @@ import { Switch } from '@/components/ui/switch';
 import { RunsOnPicker } from '@/components/triggers/runs-on-picker';
 import { closeSettings } from '@/components/settings/settings-store';
 import { useCheckInNow, useHeartbeat, useUpdateHeartbeat, type HeartbeatUpdate } from '@/hooks/use-heartbeat';
-import { useOrchestratorName, useUserState } from '@/hooks/use-user-state';
+import { useCoordinatorName, useUserState } from '@/hooks/use-user-state';
 import {
   DEFAULT_HEARTBEAT_INSTRUCTIONS,
   HEARTBEAT_LIMITED_HOURS_END,
@@ -90,7 +90,7 @@ function HeartbeatSettingsBody({
   const update = useUpdateHeartbeat();
   const checkIn = useCheckInNow();
   const { data: userState } = useUserState();
-  const assistant = useOrchestratorName();
+  const assistant = useCoordinatorName();
   const userTz = userState?.timezone || browserTimezone();
   const status = describeHeartbeat(config, new Date(), assistant);
 

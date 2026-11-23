@@ -39,7 +39,7 @@ it.each([['personal', 18], ['team', 18], ['personal', 19], ['team', 19], ['perso
   });
   q.createTask({ title: 'Findable task', body: 'Findable task body' });
   q.createNote({ title: 'Findable note', body: 'Findable note body' });
-  insert('chat_sessions', { id: 'kept-chat', type: 'orchestration', harness: 'claude', status: 'active', permission_mode: 'auto_all', surface_kind: kind === 'team' ? q.TEAM_CHAT_SURFACE : null });
+  insert('chat_sessions', { id: 'kept-chat', type: 'coordinator', harness: 'claude', status: 'active', permission_mode: 'auto_all', surface_kind: kind === 'team' ? q.TEAM_CHAT_SURFACE : null });
   insert('chat_events', { id: 'event-z', session_id: 'kept-chat', role: 'user', source: 'user', content: 'Earlier question', created_at: '2026-10-18T10:00:00.000Z' });
   insert('chat_events', { id: 'event-a', session_id: 'kept-chat', role: 'assistant', source: 'agent', content: 'Earlier answer', created_at: '2026-10-18T10:00:01.000Z' });
   if (predecessorIndex >= 20) raw.prepare('UPDATE chat_sessions SET service_tier = ? WHERE id = ?').run('fast', 'kept-chat');

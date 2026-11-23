@@ -1,8 +1,8 @@
 # Spec: agentex `installInstructions` — cross-runtime instruction files
 
-**Status:** shipped in 0.0.21. Superseded on 2026-09-29 by AGENTS.md-only: Claude Code reads `AGENTS.md` since 2.1.277 (only where the folder has no `CLAUDE.md`), so every runtime's workspace file is now `AGENTS.md` and `CLAUDE.md` is an opt-in one-line `@AGENTS.md` pointer. agentex 0.0.38 ships this: the default writes `AGENTS.md` only, `includeNativeFiles` adds the pointer, and an existing `CLAUDE.md` is reconciled. Ri uses it from `installOrchestratorSurface` (see `docs/orchestrator-harness.md`). The mapping table below is the original 0.0.20 picture.
+**Status:** shipped in 0.0.21. Superseded on 2026-09-29 by AGENTS.md-only: Claude Code reads `AGENTS.md` since 2.1.277 (only where the folder has no `CLAUDE.md`), so every runtime's workspace file is now `AGENTS.md` and `CLAUDE.md` is an opt-in one-line `@AGENTS.md` pointer. agentex 0.0.38 ships this: the default writes `AGENTS.md` only, `includeNativeFiles` adds the pointer, and an existing `CLAUDE.md` is reconciled. Ri uses it from `installCoordinatorSurface` (see `docs/coordinator-harness.md`). The mapping table below is the original 0.0.20 picture.
 **Originally written against** `@agentex/agent@0.0.20`.
-**Audience:** the agentex repo's coding agent. (Ri = host app embedding agentex sessions; see `docs/orchestrator-harness.md`.)
+**Audience:** the agentex repo's coding agent. (Ri = host app embedding agentex sessions; see `docs/coordinator-harness.md`.)
 **One-liner:** the instruction-file twin of `installSkills` — drop a brief into the right per-runtime filename(s), with a **managed-region merge** that preserves user edits.
 
 ---
@@ -16,7 +16,7 @@ agentex already centralizes "where does each runtime discover skills" (`installS
 | Claude Code | `CLAUDE.md` |
 | Codex / Gemini / Cursor / OpenCode / Pi | `AGENTS.md` |
 
-Today `resolveInstructions(path)` only **reads** a file. Every host that wants to *install* an orientation brief hand-rolls: the per-runtime filename mapping, the global-vs-workspace location logic, and — the actually-hard part — merging into an existing file without clobbering the user's own edits. Ri re-implements all three in `src/lib/config/claude-md-template.ts` + `src/lib/orchestrator/harness-surface.ts`.
+Today `resolveInstructions(path)` only **reads** a file. Every host that wants to *install* an orientation brief hand-rolls: the per-runtime filename mapping, the global-vs-workspace location logic, and — the actually-hard part — merging into an existing file without clobbering the user's own edits. Ri re-implements all three in `src/lib/config/claude-md-template.ts` + `src/lib/coordinator/harness-surface.ts`.
 
 ## Priority order (this determines host adoption)
 

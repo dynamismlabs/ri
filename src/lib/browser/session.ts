@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright-core';
 import { ensureBrowserProfileDir, getBrowserProfileDir, ensureBrowserWorkDir } from '@/lib/config/paths';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { resolveChromium } from './chromium';
 import { getConfiguredChromiumPath } from './config';
 import { findProfileBrowserPids, isProfileBrowserPid } from './profile-processes';

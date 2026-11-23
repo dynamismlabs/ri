@@ -10,14 +10,14 @@ Related: `docs/deck-proactive-spec.md` (§Trigger model, "cron is never load-bea
 The daily deck is guaranteed two ways:
 
 1. **Lazy first-look (load-bearing).** `GET /api/deck` → `ensureTodaysDeck()` (`src/lib/deck/ensure-todays-deck.ts:32`) generates today's deck on the first read of the local day. No scheduler required. This is the guarantee and does not change here.
-2. **Optional overnight pre-bake.** `setMorningDeckConfig()` (`src/lib/deck/trigger.ts:77`) upserts a row in `triggers` named `"Morning deck refresh"` (`kind:'cron'`, `targetKind:'orchestrator'`) whose prompt asks the orchestrator to call `regenerate_deck`. The generic scheduler tick (`src/lib/scheduler/runner.ts`) fires it.
+2. **Optional overnight pre-bake.** `setMorningDeckConfig()` (`src/lib/deck/trigger.ts:77`) upserts a row in `triggers` named `"Morning deck refresh"` (`kind:'cron'`, `targetKind:'coordinator'`) whose prompt asks the coordinator to call `regenerate_deck`. The generic scheduler tick (`src/lib/scheduler/runner.ts`) fires it.
 
 Path 2 has two structural problems and one product gap.
 
 ### 1.1 Problems
 
-- **Fragile linkage (correctness bug).** The deck config surface finds its row **by name**: `findTriggerByName(MORNING_DECK_TRIGGER_NAME, null)` (`src/lib/deck/trigger.ts:64`). The same row is fully editable in the generic Triggers UI (`/api/triggers` → orchestrator `list_triggers`, no name filter, `src/lib/orchestrator/registry.ts:951`). **Rename it there and the deck toggle orphans the row** — the freed name lets the next toggle `createTrigger` a *second* `"Morning deck refresh"`. Two sources of truth joined by a mutable string.
-- **Two editors, no guardrails.** The friendly deck pane (`/api/deck/trigger`, `{enabled, time}`) and the raw generic Triggers UI both write the same row. A user can rewrite the prompt, flip `targetKind`, or change `kind` in the generic UI and silently break the refresh contract (`regenerate_deck` assumes an orchestrator target + that specific prompt).
+- **Fragile linkage (correctness bug).** The deck config surface finds its row **by name**: `findTriggerByName(MORNING_DECK_TRIGGER_NAME, null)` (`src/lib/deck/trigger.ts:64`). The same row is fully editable in the generic Triggers UI (`/api/triggers` → Ri `list_triggers`, no name filter, `src/lib/actions/registry.ts:951`). **Rename it there and the deck toggle orphans the row** — the freed name lets the next toggle `createTrigger` a *second* `"Morning deck refresh"`. Two sources of truth joined by a mutable string.
+- **Two editors, no guardrails.** The friendly deck pane (`/api/deck/trigger`, `{enabled, time}`) and the raw generic Triggers UI both write the same row. A user can rewrite the prompt, flip `targetKind`, or change `kind` in the generic UI and silently break the refresh contract (`regenerate_deck` assumes a coordinator target + that specific prompt).
 - **On-by-default gap.** The row is opt-in / default off. Product intent is for the morning refresh to exist by default while staying **visible and controllable**, not hidden app magic.
 
 ### 1.2 What we are NOT building
@@ -59,7 +59,7 @@ export const RESERVED_LOCKED_FIELDS = [
 
 - Sentinel is `...001`, not the nil UUID `...000`, so it never collides with an "empty id" check.
 - Valid `8-4-4-4-12` hex, so ids stay type-uniform with the uuidv7 rows around it. `createTrigger` already accepts a caller id (`input.id ?? uuidv7()`, `queries.ts:2726`); no validation rejects a sentinel.
-- Neutral location so the orchestrator registry imports a constant, not deck internals.
+- Neutral location so the action registry imports a constant, not deck internals.
 
 ## 4. Deck trigger module (`src/lib/deck/trigger.ts`)
 
@@ -89,9 +89,9 @@ export function ensureMorningDeckTrigger(): void {
 
 `DEFAULT_MORNING_ENABLED` is the single knob for the on-by-default decision (§9). Wire `ensureMorningDeckTrigger()` into `instrumentation.ts` next to `startScheduler()` (~line 185).
 
-## 5. Edit guardrails (`src/lib/orchestrator/registry.ts`)
+## 5. Edit guardrails (`src/lib/actions/registry.ts`)
 
-The generic Triggers UI routes through orchestrator actions (`/api/triggers/[id]` → `update_trigger` / `delete_trigger`, `remote:false`). Enforce there so CLI + HTTP both get it:
+The generic Triggers UI routes through Ri actions (`/api/triggers/[id]` → `update_trigger` / `delete_trigger`, `remote:false`). Enforce there so CLI + HTTP both get it:
 
 - **`update_trigger`**: if `isReservedTrigger(id)` and the patch touches any `RESERVED_LOCKED_FIELDS` key → `ActionError('conflict', 'This trigger is managed by the app. You can change its schedule and delivery, but not its name, prompt, or target.')`. Schedule (`enabled`, `cronExpression`, `timezone`) and delivery (`deliverResultTo`, `model`, `effort`, `timeoutSeconds`) edits pass through.
 - **`delete_trigger`**: if `isReservedTrigger(id)` → `ActionError('conflict', 'This trigger is managed. Disable it instead.')`. Reserved rows are disabled, never deleted, so `ensureMorningDeckTrigger` never re-seeds over a user's off state.

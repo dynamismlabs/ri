@@ -1,7 +1,7 @@
 /**
- * `<cli> agent <action> [params]` — agent orchestrator CLI surface.
+ * `<cli> agent <action> [params]` — Ri's actions as a CLI.
  *
- * Subcommands are auto-generated from `src/lib/orchestrator/registry.ts`.
+ * Subcommands are auto-generated from `src/lib/actions/registry.ts`.
  * Adding a new action there wires it up here automatically.
  *
  * Conventions:
@@ -22,7 +22,7 @@
 import fs from 'node:fs';
 import { Command } from 'commander';
 import type { z } from 'zod';
-import { actionCatalog } from '@/lib/orchestrator/registry';
+import { actionCatalog } from '@/lib/actions/registry';
 import { dispatchAction } from '../lib/dispatch';
 import { mergeActionInput } from '@/lib/team/mcp/input';
 
@@ -30,7 +30,7 @@ export function registerAgentCommand(program: Command) {
   const agent = program
     .command('agent')
     .description(
-      `Agent orchestrator surface. Typed, auto-generated CLI twin of the orchestrator MCP.`,
+      `Ri's actions. Typed, auto-generated CLI twin of Ri's MCP.`,
     );
 
   for (const action of actionCatalog()) {

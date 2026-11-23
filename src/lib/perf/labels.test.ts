@@ -13,8 +13,8 @@ describe('requestLabel', () => {
     expect(requestLabel('POST', '/api/workers/me/commands/42/ack')).toBe('http:POST /api/workers/me/commands/:id/ack');
   });
 
-  it('keeps named segments, like orchestrator actions, and collapses Next assets', () => {
-    expect(requestLabel('POST', '/api/orchestrator/actions/update_task')).toBe('http:POST /api/orchestrator/actions/update_task');
+  it('keeps named segments, like Ri actions, and collapses Next assets', () => {
+    expect(requestLabel('POST', '/api/home/actions/update_task')).toBe('http:POST /api/home/actions/update_task');
     expect(requestLabel('GET', '/api/live')).toBe('http:GET /api/live');
     expect(requestLabel('GET', '/_next/static/chunks/app-4f2a91c0d3.js')).toBe('http:GET /_next/*');
     expect(requestLabel('GET', '/')).toBe('http:GET /');

@@ -36,7 +36,7 @@ interface TriggerSpec {
   name: string;
   description: string;
   enabled: boolean;
-  target: { agent: AgentSlug } | 'orchestrator';
+  target: { agent: AgentSlug } | 'coordinator';
   kind: 'manual' | 'cron' | 'webhook' | 'every';
   cron?: string;
   intervalSeconds?: number;
@@ -51,7 +51,7 @@ const specs: TriggerSpec[] = [
     name: 'Weekly review',
     description: 'Sunday evening: what got done, what slipped, what next week needs.',
     enabled: false,
-    target: 'orchestrator',
+    target: 'coordinator',
     kind: 'cron',
     cron: '0 18 * * 0',
     prompt: 'Run my weekly review. List what I finished this week, what slipped and why, and the three things next week depends on. Write it as a note titled "Weekly review: <date>".',
@@ -99,7 +99,7 @@ const specs: TriggerSpec[] = [
     name: 'Draft the subscription box insert',
     description: 'Write the card that goes in this month\'s subscription box.',
     enabled: true,
-    target: 'orchestrator',
+    target: 'coordinator',
     kind: 'manual',
     prompt: 'Draft this month\'s subscription box insert: the two coffees, tasting notes from the roast profile notes, a brewing tip, under 120 words. Save it as a note.',
     createdAt: daysAgo(35, 15, 0),
@@ -112,7 +112,7 @@ const specs: TriggerSpec[] = [
     name: 'Market day prep',
     description: 'Friday afternoon: the Saturday market packing list from current stock.',
     enabled: false,
-    target: 'orchestrator',
+    target: 'coordinator',
     kind: 'cron',
     cron: '0 15 * * 5',
     prompt: 'Make the packing list for tomorrow\'s farmers market from current stock and last month\'s sales. Note anything we are short on.',
@@ -132,14 +132,14 @@ export function seedAutomations(ctx: AutomationCtx): { triggers: number; runs: n
 
 
   for (const spec of specs) {
-    const workspaceId = spec.target === 'orchestrator' ? null : workspaceIds.get(spec.target.agent)!;
+    const workspaceId = spec.target === 'coordinator' ? null : workspaceIds.get(spec.target.agent)!;
     const trigger = q.createTrigger({
       name: spec.name,
       description: spec.description,
       enabled: spec.enabled,
       harness: 'claude',
       workspaceId,
-      targetKind: spec.target === 'orchestrator' ? 'orchestrator' : 'workspace',
+      targetKind: spec.target === 'coordinator' ? 'coordinator' : 'workspace',
       prompt: spec.prompt,
       kind: spec.kind,
       cronExpression: spec.cron ?? null,

@@ -55,7 +55,7 @@ async function until(check: () => boolean, ms = 30_000) {
   while (!check()) { if (Date.now() - start > ms) throw new Error('timeout: ' + text()); await act(async () => { await new Promise(r => setTimeout(r, 100)); }); }
 }
 
-it.each(['orchestration', 'execution'])('a failed %s refresh keeps the loaded view mounted and Retry recovers', async type => {
+it.each(['coordinator', 'execution'])('a failed %s refresh keeps the loaded view mounted and Retry recovers', async type => {
   const { ApiError } = await import('@/lib/api/client');
   h.url = new URL('http://team.test/?view=chat&chat=X'); let fail = false;
   h.get = async id => {

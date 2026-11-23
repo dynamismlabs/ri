@@ -32,7 +32,7 @@ export interface SessionSpec {
    * finishes before this send starts.
    */
   preparedWorktreeOf?: string | null;
-  sessionType: 'orchestration' | 'content' | 'execution';
+  sessionType: 'coordinator' | 'content' | 'execution';
   /** The harness's own session id to resume, when the chat has one. */
   nativeSessionId: string | null;
   permissionMode: PermissionMode;

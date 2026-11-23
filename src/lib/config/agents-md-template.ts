@@ -3,14 +3,14 @@
  *
  * Every harness reads AGENTS.md at the app root, Claude Code included (since
  * 2.1.277, where the folder has no CLAUDE.md). CLAUDE.md is opt-in: see
- * `installOrchestratorSurface` in `src/lib/orchestrator/harness-surface.ts`.
+ * `installCoordinatorSurface` in `src/lib/coordinator/harness-surface.ts`.
  *
  * Written by `ensureAppRoot()` when the file is missing — orientation for a
- * walk-up agent session opened in the data root before any orchestrator
+ * walk-up agent session opened in the data root before any coordinator
  * chat exists. The content sits inside a managed region (agentex's
- * `upsertManagedBlock`, tag `ri`) so the orchestrator harness surface can
+ * `upsertManagedBlock`, tag `ri`) so the coordinator harness surface can
  * later swap the managed block per mode (see
- * `src/lib/orchestrator/harness-surface.ts`, which calls
+ * `src/lib/coordinator/harness-surface.ts`, which calls
  * `installInstructions` with the same tag) while anything the user adds
  * outside the markers survives every rewrite.
  *
@@ -32,7 +32,7 @@ export const RI_MANAGED_TAG = APP_SHORT_ID;
 
 /** Base orientation brief — the managed content written on first init. */
 export function renderBaseBrief(): string {
-  return `# Orchestrator session
+  return `# Coordinator session
 
 You are operating ${APP_NAME}, a productivity system combining tasks, notes,
 and a curated daily deck. This directory is the app's data root: config, the
@@ -40,7 +40,7 @@ SQLite database, the markdown mirror, and attachments live here.
 
 ## How to operate
 
-Interact through the orchestrator surface, never by editing files here
+Interact through Ri's actions, never by editing files here
 directly. Direct edits bypass embeddings, the markdown mirror, and attachment
 derivation. The UI and search rely on those invariants. Corrupting them is
 silent and only surfaces later.
@@ -54,7 +54,7 @@ The \`${AGENT_SKILL_NAME}\` skill has the full conventions (status values,
 energy, effort, task-vs-note, title style, error envelope). Load it before
 acting if you haven't already.
 
-## This is an orchestrator session, not a dev session
+## This is a coordinator session, not a dev session
 
 Reasoning about what ${APP_NAME} can do → use the \`${AGENT_SKILL_NAME}\` skill. If a
 capability you need isn't exposed, say so. Don't invent a workaround by
@@ -75,7 +75,7 @@ source repo. That's a different role with different conventions.`;
  * lazy-import agentex.
  *
  * The markers are hashless but regex-compatible with agentex's
- * `installInstructions`; the first orchestrator session spawn replaces this
+ * `installInstructions`; the first coordinator session spawn replaces this
  * region in place (and upgrades it to the hash format). Stays synchronous,
  * so `ensureAppRoot` does too.
  */

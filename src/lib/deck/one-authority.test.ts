@@ -72,7 +72,7 @@ describe("today's deck", () => {
     ensureMorningDeckTrigger();
     const { RESERVED_TRIGGER_IDS } = await import('@/lib/triggers/reserved');
     const trigger = q.getTrigger(RESERVED_TRIGGER_IDS.morningDeck)!;
-    expect(trigger).toMatchObject({ targetKind: 'orchestrator', kind: 'cron', enabled: true });
+    expect(trigger).toMatchObject({ targetKind: 'coordinator', kind: 'cron', enabled: true });
     const { dispatchRun } = await import('@/lib/runs/dispatch');
     const { chatSession } = await dispatchRun({ trigger, triggerKind: 'cron', scheduledFor: new Date().toISOString() });
     expect(q.chatPlacement(chatSession!.id)).toMatchObject({ isHome: true });

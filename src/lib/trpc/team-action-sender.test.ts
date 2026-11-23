@@ -13,7 +13,7 @@ import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
 import { preloadTeamRoutes, serveTeam } from '@/test/fixtures/team-home';
 import * as q from '@/lib/db/queries';
-import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { API_PROTOCOL, API_PROTOCOL_HEADER } from '@/lib/releases/api-contract';
 import { ApiClient } from '@/lib/api/client';
 import { createAppTRPCClient } from '@/lib/trpc/client';
@@ -62,7 +62,7 @@ function target(label: string) {
 }
 
 it('WS: disclosed agent action-bar prompts keep sender attribution', async () => {
-  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask', label: 'Sending chat', createdByMemberId: fixture.member.member.id });
+  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask', label: 'Sending chat', createdByMemberId: fixture.member.member.id });
   const agent = client(fixture.member.token.plaintext, sessionCredential(parent.id)!);
   const prompts: Record<string, string> = {};
   let current = '';
@@ -92,7 +92,7 @@ it('WS: disclosed agent action-bar prompts keep sender attribution', async () =>
 
 it('HTTP: disclosed agent commit prompt keeps sender attribution', async () => {
   vi.stubGlobal('fetch', serveTeam);
-  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask', label: 'Sending chat', createdByMemberId: fixture.member.member.id });
+  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask', label: 'Sending chat', createdByMemberId: fixture.member.member.id });
   const prompts: string[] = [];
   fake.onTurn(async turn => { prompts.push(turn.message); await turn.say('ok'); });
   const chat = target('http-commit');

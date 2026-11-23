@@ -8,7 +8,7 @@ const ACTIONS = new Set(['completed', 'archived', 'returned to Todo']);
 /**
  * Tell a kept-running workstream that one of its associated tasks changed
  * lifecycle, so the agent stops pursuing that outcome. Server-side so the CLI/MCP
- * orchestrator can deliver it through the same control path REST uses. Body is a
+ * coordinator can deliver it through the same control path REST uses. Body is a
  * {@link ScopeChange}.
  */
 export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, _request: OperationContext) {

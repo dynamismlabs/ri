@@ -54,7 +54,7 @@ async function seedLaptopHome(): Promise<void> {
   q.createPlacement({ executionId: ids.miniWork, deviceId: ids.mini, startReason: 'created', worktreePath: '/Users/mini/.work/worktrees/docs/docs-1' });
   // Main chats with native sessions on the laptop, and a terminal import from its disk.
   const main = (workspaceId: string | null, native: string) => {
-    const c = q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId, externalSessionId: native });
+    const c = q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId, externalSessionId: native });
     q.recordNativeSession({ chatSessionId: c.id, harness: 'claude', nativeSessionId: native, deviceId: null, placementId: null });
     return c.id;
   };

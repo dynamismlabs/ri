@@ -637,7 +637,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     }, [voice, autoSend, handleSend]);
 
     const handleEditorBackspaceOnEmpty = useCallback(() => {
-      // No-op for execution composer — the orchestrator may use this
+      // No-op for execution composer — the coordinator may use this
       // to drop a stale chip from a parallel attachment list. Wired
       // through so the editor doesn't swallow the keystroke.
     }, []);
@@ -1040,7 +1040,7 @@ function ModePicker({ iconOnly, size = "compact", harness, open, onOpenChange, c
 //
 // Labeled iOS-style switch. Lives in the toolbar's left slot while
 // recording so it's clearly voice-related and easy to flip without
-// breaking the recording state. Mirrors the orchestrator chat's
+// breaking the recording state. Mirrors the coordinator chat's
 // VoiceSentBadge popover toggle.
 
 function AutoSendSwitch({

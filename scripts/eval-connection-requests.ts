@@ -265,7 +265,7 @@ async function newChat(c: Case): Promise<{ id: string; agentId: string | null }>
     const created = await call<{ session?: { id: string }; id?: string }>('POST', `/workspaces/${agentId}/sessions`, { label: c.id });
     return { id: (created.session?.id ?? created.id)!, agentId };
   }
-  return { id: (await call<{ session: { id: string } }>('POST', '/orchestrator-chat', {})).session.id, agentId: null };
+  return { id: (await call<{ session: { id: string } }>('POST', '/coordinator-chat', {})).session.id, agentId: null };
 }
 
 /** Why a card check failed, or null when a card matches it. */

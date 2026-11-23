@@ -58,7 +58,7 @@ const PER_COPY: Record<string, string> = {
   'src/lib/harness/runtime.ts:cache': 'cache: TTL',
   'src/lib/reference-folders/resolve.ts:gitCache': 'cache: TTL',
   'src/lib/preview/portless.ts:detectCache': 'cache: TTL',
-  'src/lib/orchestrator/claude-agents-md.ts:cached': 'cache: TTL',
+  'src/lib/coordinator/claude-agents-md.ts:cached': 'cache: TTL',
   'src/lib/worker/history.ts:listing': 'cache: TTL',
   'src/lib/config/tls-x509.ts:cached': 'cache: a loaded module',
   'src/lib/preview/beamd/cli.ts:cachedBinInfo': 'cache: a binary probe',

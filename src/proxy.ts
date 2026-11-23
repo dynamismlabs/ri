@@ -1,4 +1,5 @@
-import { SESSION_CREDENTIAL_HEADER, activeSessionCredential, verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { currentHomeApiPath, isLegacyHomeApiPath } from '@/lib/coordinator/legacy-names';
+import { SESSION_CREDENTIAL_HEADER, activeSessionCredential, verifySessionCredential } from '@/lib/actions/session-credential';
 import { API_PROTOCOL_HEADER, apiCompatibilityIssue, hasIndependentProtocol } from '@/lib/releases/api-contract';
 import { SPACE_HEADER, SPACE_PATH_PREFIX, spaceIdFromPath } from '@/lib/spaces/document';
 import { CURRENT_COMPATIBILITY } from '@/lib/releases/compatibility';
@@ -39,17 +40,28 @@ function unauthorized() {
 }
 
 /**
+ * The path a request is for, with Ri's tools at their current `/api/home/`
+ * address when it came in on the old one (legacy-names.ts). Every rule below
+ * reads this, so an old address gets exactly the same answer as the new one.
+ */
+function homePath(request: NextRequest): string {
+  return currentHomeApiPath(request.nextUrl.pathname);
+}
+
+/**
  * A refusal from the MCP endpoint says where to sign in (RFC 9728), which is
  * how ChatGPT, Claude and other clients start Ri's OAuth (docs/mcp-oauth.md).
  * Elsewhere a refusal stays plain.
  */
 function refuse(request: NextRequest, presented: boolean) {
   const response = unauthorized();
-  if (request.nextUrl.pathname === HOME_MCP_PATH) {
-    response.headers.set('WWW-Authenticate', mcpChallenge(issuerFor(request.headers, request.url), presented ? 'invalid_token' : undefined));
+  if (homePath(request) === HOME_MCP_PATH) {
+    // A client that connected at the old address signs in for that address.
+    const resourcePath = isLegacyHomeApiPath(request.nextUrl.pathname) ? request.nextUrl.pathname : HOME_MCP_PATH;
+    response.headers.set('WWW-Authenticate', mcpChallenge(issuerFor(request.headers, request.url), presented ? 'invalid_token' : undefined, resourcePath));
   }
   // The hub: a personal app finds where to connect from here (docs/personal-apps.md).
-  if (request.nextUrl.pathname === HUB_MCP_PATH) {
+  if (homePath(request) === HUB_MCP_PATH) {
     response.headers.set('WWW-Authenticate', hubChallenge(issuerFor(request.headers, request.url), presented ? 'invalid_token' : undefined));
   }
   return response;
@@ -120,7 +132,7 @@ function nextWithoutKeyHeaders(request: NextRequest) {
  * Every personal route answers as if it weren't there.
  */
 function teamProxy(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
+  const pathname = homePath(request);
   if (isTeamPublicPath(pathname)) return nextWithoutKeyHeaders(request);
 
   const cookieName = teamSessionCookieName();
@@ -194,7 +206,7 @@ function teamAiTurnProxy(request: NextRequest, token: string) {
   const bound = turn ? { turnId: turn.id, chatId: turn.chatSessionId, memberId: turn.memberId } : null;
   const active = bound ? activeTeamChatTurn(bound) : null;
   if (!bound || !active) return unauthorized();
-  if (request.nextUrl.pathname !== TEAM_MCP_PATH && !request.nextUrl.pathname.startsWith('/api/orchestrator/actions/')) {
+  if (homePath(request) !== TEAM_MCP_PATH && !homePath(request).startsWith('/api/home/actions/')) {
     return forbidden('team_ai_turn', "The team AI's credential reaches only the team's tools.");
   }
   const headers = new Headers(request.headers);
@@ -211,24 +223,24 @@ function teamAiTurnProxy(request: NextRequest, token: string) {
 
 export function proxy(request: NextRequest) {
   // A Buzz bridge authenticates its own connection-scoped bearer in its protocol route.
-  if (/^\/api\/integrations\/conversations\/acp\/[a-f0-9-]{36}$/.test(request.nextUrl.pathname)) return nextWithoutKeyHeaders(request);
+  if (/^\/api\/integrations\/conversations\/acp\/[a-f0-9-]{36}$/.test(homePath(request))) return nextWithoutKeyHeaders(request);
   // A team's space in My Ri (docs/homes-spec.md §3.2, P7.1) is a page of its
   // own. Pages aren't authenticated here: its API calls are, through
   // `/api/space/<team>`. The layout learns which team from this header,
   // which only the proxy sets.
-  if (request.nextUrl.pathname.startsWith(SPACE_PATH_PREFIX)) {
+  if (homePath(request).startsWith(SPACE_PATH_PREFIX)) {
     const headers = new Headers(request.headers);
-    const id = spaceIdFromPath(request.nextUrl.pathname);
+    const id = spaceIdFromPath(homePath(request));
     if (id) headers.set(SPACE_HEADER, id);
     else headers.delete(SPACE_HEADER);
     return NextResponse.next({ request: { headers } });
   }
   if (process.env.NODE_ENV === 'production' &&
-      /^\/api\/(dev|playground|benchmark)(\/|$)/.test(request.nextUrl.pathname)) {
+      /^\/api\/(dev|playground|benchmark)(\/|$)/.test(homePath(request))) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
   }
-  if (PUBLIC_PATHS.has(request.nextUrl.pathname)) {
-    if (request.nextUrl.pathname === '/api/session' && !permitsCookieMutation(request)) {
+  if (PUBLIC_PATHS.has(homePath(request))) {
+    if (homePath(request) === '/api/session' && !permitsCookieMutation(request)) {
       return NextResponse.json({ error: 'request origin is not allowed' }, { status: 403 });
     }
     return nextWithoutKeyHeaders(request);
@@ -261,14 +273,14 @@ export function proxy(request: NextRequest) {
   }
   if (team) return teamProxy(request);
 
-  if (request.nextUrl.pathname.startsWith('/api/webhooks/')) {
+  if (homePath(request).startsWith('/api/webhooks/')) {
     return nextWithoutKeyHeaders(request);
   }
 
   // An app's OAuth token, registration and revocation requests carry their
   // own credential (a code with its PKCE verifier, the token being revoked)
   // or need none, like the provider callbacks below (docs/mcp-oauth.md).
-  if (OAUTH_PUBLIC_PATHS.has(request.nextUrl.pathname)) {
+  if (OAUTH_PUBLIC_PATHS.has(homePath(request))) {
     return nextWithoutKeyHeaders(request);
   }
 
@@ -278,21 +290,21 @@ export function proxy(request: NextRequest) {
   // is the single-use, unguessable `state` it validates against the stored
   // AuthRequest — a strictly weaker, single-purpose credential. Exempted so the
   // round-trip completes.
-  if (request.nextUrl.pathname === '/api/integrations/callback') {
+  if (homePath(request) === '/api/integrations/callback') {
     return nextWithoutKeyHeaders(request);
   }
 
   // `/api/integrations/managed/callback` is where a managed source (Composio) returns the browser
   // after consent. Its only input is an unguessable single-use attempt id, and completion is
   // verified server-side through the source against that stored attempt, never the redirect.
-  if (request.nextUrl.pathname === '/api/integrations/managed/callback') {
+  if (homePath(request) === '/api/integrations/managed/callback') {
     return nextWithoutKeyHeaders(request);
   }
 
   // `/api/integrations/mcp-oauth/<sid>` is the OAuth redirect target for an ingested MCP server.
   // Same rationale as the integrations callback: the provider redirects the user's browser here
   // without the app Bearer; the SDK's single-use authorization code + PKCE verifier are the auth.
-  if (request.nextUrl.pathname.startsWith('/api/integrations/mcp-oauth/')) {
+  if (homePath(request).startsWith('/api/integrations/mcp-oauth/')) {
     return nextWithoutKeyHeaders(request);
   }
 
@@ -300,7 +312,7 @@ export function proxy(request: NextRequest) {
   // Redeeming an enroll grant is how a device gets its first worker key, so
   // the grant in the body is the credential: short-lived, single-use, and
   // issued by an owner (docs/homes-build.md, P2.2).
-  if (request.nextUrl.pathname === '/api/workers/enroll') {
+  if (homePath(request) === '/api/workers/enroll') {
     return nextWithoutKeyHeaders(request);
   }
 
@@ -317,7 +329,7 @@ export function proxy(request: NextRequest) {
   if (isSessionToken(token)) {
     const session = verifySessionToken(token);
     if (!session) return unauthorized();
-    if (!sessionMayReach(session.chat, request.nextUrl.pathname, request.nextUrl.searchParams)) {
+    if (!sessionMayReach(session.chat, homePath(request), request.nextUrl.searchParams)) {
       return forbidden('session_token', "A session's token reaches only that session's own servers.");
     }
     const headers = new Headers(request.headers);
@@ -336,7 +348,7 @@ export function proxy(request: NextRequest) {
   if (isHubToken(token)) {
     const app = verifyHubAccessToken(token);
     if (!app) return refuse(request, true);
-    if (request.nextUrl.pathname !== HUB_MCP_PATH) return forbidden('hub_app', 'An app’s token reaches only Ri’s hub for apps.');
+    if (homePath(request) !== HUB_MCP_PATH) return forbidden('hub_app', 'An app’s token reaches only Ri’s hub for apps.');
     const headers = new Headers(request.headers);
     for (const h of FORWARDED_KEY_HEADERS) headers.delete(h);
     headers.set(API_KEY_ID_HEADER, `${HUB_KEY_PREFIX}${app.id}`);
@@ -351,7 +363,7 @@ export function proxy(request: NextRequest) {
   // An outside assistant reaches only the content-scoped MCP, never a viewer route.
   if (key.role === 'ai_client') {
     if (!isPersonalAiClientKey(key)) return refuse(request, true);
-    if (request.nextUrl.pathname !== HOME_MCP_PATH) return forbidden('ai_client', 'This connection can only use Ri’s MCP tools.');
+    if (homePath(request) !== HOME_MCP_PATH) return forbidden('ai_client', 'This connection can only use Ri’s MCP tools.');
     touchApiKey(key.id, { ip: request.headers.get('x-forwarded-for'), userAgent: request.headers.get('user-agent') });
     const headers = new Headers(request.headers);
     for (const h of FORWARDED_KEY_HEADERS) headers.delete(h);
@@ -367,7 +379,7 @@ export function proxy(request: NextRequest) {
 
   // An authenticated stale view is refused before route writes or effects.
   // Worker and MCP transports retain their own authenticated negotiation.
-  if (!isWorkerApiKey(key.id) && !hasIndependentProtocol(request.nextUrl.pathname) && request.nextUrl.pathname !== '/api/version') {
+  if (!isWorkerApiKey(key.id) && !hasIndependentProtocol(homePath(request)) && homePath(request) !== '/api/version') {
     const mismatch = apiCompatibilityIssue(request.headers.get(API_PROTOCOL_HEADER), CURRENT_COMPATIBILITY.apiProtocols);
     if (mismatch) return NextResponse.json(mismatch, { status: 426, headers: { 'Cache-Control': 'no-store' } });
   }
@@ -384,7 +396,7 @@ export function proxy(request: NextRequest) {
   // A worker key reaches only the worker routes, and only a worker key
   // reaches them: a worker can't read the owner's data, and a viewing key
   // can't pose as a worker.
-  const workerRoute = isWorkerRoute(request.nextUrl.pathname);
+  const workerRoute = isWorkerRoute(homePath(request));
   const workerKey = isWorkerApiKey(key.id);
   if (workerKey && !workerRoute) {
     return forbidden('worker_key', 'A worker key can only reach the worker routes.');

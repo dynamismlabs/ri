@@ -2,7 +2,7 @@
  * The dev seed's chats outside executions: the main chat (today's planning,
  * yesterday's request that started an agent), an older main chat, focused
  * chats on a note and a task, and the Fieldnote iOS agent's own main chat.
- * Orchestrator actions appear as the `mcp__orchestrator__*` tool calls a real
+ * Ri actions appear as the `mcp__ri_home__*` tool calls a real
  * main chat makes.
  */
 
@@ -129,10 +129,10 @@ export async function seedConversations(ctx: ConversationCtx): Promise<void> {
     let session;
     let cwd = getAppRoot();
     if (def.kind === 'main') {
-      session = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', model: 'opus' });
+      session = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', model: 'opus' });
     } else if (def.kind === 'agent-main') {
       const workspaceId = workspaceIds.get(def.on as AgentSlug)!;
-      session = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', workspaceId, model: 'opus' });
+      session = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', workspaceId, model: 'opus' });
       cwd = q.getWorkspace(workspaceId)!.cwd;
     } else {
       const surfaceRef = def.kind === 'note' ? note(def.on!) : task(def.on!);

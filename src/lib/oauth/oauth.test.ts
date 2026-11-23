@@ -19,6 +19,8 @@ vi.setConfig({ testTimeout: 60_000 });
 
 const BASE = 'https://home.test';
 const MCP = `${BASE}${HOME_MCP_PATH}`;
+/** Where Ri's MCP lived before the coordinator rename. Clients set up then still use it. */
+const LEGACY_MCP = `${BASE}/api/orchestrator/mcp`;
 const CALLBACK = 'https://client.example/callback';
 let home: TestHome;
 let viewer: string;
@@ -26,7 +28,7 @@ const clients: Client[] = [];
 
 beforeAll(async () => {
   await Promise.all([
-    import('@/proxy'), import('@/app/api/orchestrator/[transport]/route'),
+    import('@/proxy'), import('@/app/api/home/[transport]/route'),
     import('@/app/api/oauth/token/route'), import('@/app/api/oauth/authorize/route'),
   ]);
 }, 120_000);
@@ -65,7 +67,8 @@ async function serve(input: string | URL | Request, init?: RequestInit): Promise
   const auth = proxy(request);
   if (auth.headers.get('x-middleware-next') !== '1') return auth;
   const next = new NextRequest(request, { headers: forwarded(auth) });
-  if (path === HOME_MCP_PATH) return (await import('@/app/api/orchestrator/[transport]/route'))[request.method as 'GET' | 'POST' | 'DELETE'](next);
+  if (path === HOME_MCP_PATH) return (await import('@/app/api/home/[transport]/route'))[request.method as 'GET' | 'POST' | 'DELETE'](next);
+  if (path === '/api/orchestrator/mcp') return (await import('@/app/api/orchestrator/[transport]/route'))[request.method as 'GET' | 'POST' | 'DELETE'](next);
   if (path === '/api/integrations/mcp') return (await import('@/app/api/integrations/[transport]/route'))[request.method as 'GET' | 'POST' | 'DELETE'](next);
   const routes: Record<string, () => Promise<{ POST(request: Request): Promise<Response> }>> = {
     '/api/oauth/register': () => import('@/app/api/oauth/register/route'),
@@ -121,10 +124,10 @@ function provider(options: { metadataUrl?: string; name?: string } = {}): TestPr
 }
 
 /** The SDK's whole flow: discover, register or use the document, send the owner to Ri, exchange the code, connect. */
-async function signIn(p: TestProvider): Promise<Client> {
+async function signIn(p: TestProvider, mcp = MCP): Promise<Client> {
   const first = new Client({ name: 'outside-assistant', version: '1.0.0' });
-  await expect(first.connect(new StreamableHTTPClientTransport(new URL(MCP), { authProvider: p, fetch: serve as typeof fetch }))).rejects.toBeInstanceOf(UnauthorizedError);
-  const transport = new StreamableHTTPClientTransport(new URL(MCP), { authProvider: p, fetch: serve as typeof fetch });
+  await expect(first.connect(new StreamableHTTPClientTransport(new URL(mcp), { authProvider: p, fetch: serve as typeof fetch }))).rejects.toBeInstanceOf(UnauthorizedError);
+  const transport = new StreamableHTTPClientTransport(new URL(mcp), { authProvider: p, fetch: serve as typeof fetch });
   const callback = await approve(p.authorizationUrl!);
   expect(callback.origin + callback.pathname).toBe(CALLBACK);
   expect(callback.searchParams.get('state')).toBe('state-123');
@@ -199,6 +202,17 @@ describe('signing in', () => {
     expect(keys).toHaveLength(1);
     expect(keys[0]).toMatchObject({ name: 'Test Assistant', client: 'other' });
     expect(keys[0].lastUsedAt).not.toBeNull();
+  });
+
+  it('keeps signing in and serving a client still set up with the old address', async () => {
+    const none = await serve(LEGACY_MCP, { method: 'POST', body: '{}', headers: { 'content-type': 'application/json' } });
+    expect(none.headers.get('www-authenticate')).toBe(`Bearer resource_metadata="${BASE}/.well-known/oauth-protected-resource/api/orchestrator/mcp", scope="content"`);
+    expect(await (await serve(`${BASE}/.well-known/oauth-protected-resource/api/orchestrator/mcp`)).json()).toMatchObject({ resource: LEGACY_MCP });
+    const client = await signIn(provider({ name: 'Set Up Before' }), LEGACY_MCP);
+    const tools = (await client.listTools()).tools.map(tool => tool.name);
+    expect(tools).toEqual(expect.arrayContaining(['list_tasks', 'show_deck']));
+    const created = await client.callTool({ name: 'create_task', arguments: { title: 'Still connected', rawInput: 'Still connected' } });
+    expect(created.isError).toBeFalsy();
   });
 
   it('connects a client by its metadata document, without registering', async () => {

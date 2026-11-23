@@ -202,7 +202,7 @@ transient UI churn can't fire it:
 | `execution.needs_input` | after the `permission_request`/`question_request` **chat_event is persisted** (not the in-memory `pending_input` signal) | execution title | the agent's question/prompt | `/executions/<id>` | `…:<requestEventId>` |
 | `execution.finished` | the **shared run terminal path** (covers manual AND scheduled executions) | `✅/❌ <title>` | built: the turn's final reply as plain text, one line as `body` and whole as `fullBody` (fallback: the failure's message, then status) | `/executions/<id>` | `…:<runId>` |
 | `integration.approval_required` | integrations `approval-events.ts`, once per burst of one kind after register-pending (`'ask'`) | `Approval needed` | toolkit + account + action (× count) | the asking chat, `/?session=<id>`, where the approval card is | `…:<first approvalId>` |
-| `schedule.run_completed` | `runs/dispatch.ts` terminal, **orchestrator-target runs only** (execution-target → `execution.finished`, §2.8) | schedule name | built: the turn's final reply, as `execution.finished` (for a digest, the produced content, §2.9) | `/schedules/<id>` | `…:<runId>` |
+| `schedule.run_completed` | `runs/dispatch.ts` terminal, **coordinator-target runs only** (execution-target → `execution.finished`, §2.8) | schedule name | built: the turn's final reply, as `execution.finished` (for a digest, the produced content, §2.9) | `/schedules/<id>` | `…:<runId>` |
 | `deck.surfaced` | when proactive-deck logic writes a **durable deck/change record** (**pending** that work, §2.11) | `New on your deck` | what surfaced | `/deck` | `…:<deckChangeId>` |
 
 The `dedupeKey` makes each emission point safe to fire more than once (reconcile replays, retries,
@@ -221,7 +221,7 @@ and decision durably, so its approval card reads as expired after a restart. See
 - **`matrix`** — routed by the per-channel `events[]` toggles (§2.7). The ambient lifecycle events.
 - **`binding`** — `schedule.run_completed` is routed by the **schedule's** `deliverResultTo[]`
   (§2.9), **not** the channel matrix. You opt a *specific* scheduled job into notifying; you don't
-  broadcast every orchestrator run to all channels. So it does **not** appear in the channel
+  broadcast every coordinator run to all channels. So it does **not** appear in the channel
   event-toggle UI — it appears as "deliver result to […]" on the schedule/digest.
 
 ### 2.5 Connection vs Channel (the bit that blurs)
@@ -243,7 +243,7 @@ The model resolves into **three independent axes**:
 
 1. **Trigger** — what fires a notification. Two classes:
    - **(A) System/lifecycle events** (reactive): `execution.needs_input`, `execution.finished`,
-     `integration.approval_required`, `schedule.run_completed` (orchestrator-target runs only — see
+     `integration.approval_required`, `schedule.run_completed` (coordinator-target runs only — see
      2.8), `deck.surfaced`.
    - **(B) Custom digests** (proactive, user-defined): "summarize my unread emails every morning" —
      a *schedule + prompt + delivery binding* whose **content is the point** (see 2.9).
@@ -260,15 +260,15 @@ and a short **summary** — `execution.finished` carries the derived `result.sum
 ### 2.8 schedule.run_completed vs execution.finished (no double-notify)
 
 A fired schedule → a `run` (the `runs` table) → either an **execution** (harness) or an
-**orchestrator turn**. Rule: **`execution.finished` covers ALL executions** (scheduled or ad-hoc;
+**coordinator turn**. Rule: **`execution.finished` covers ALL executions** (scheduled or ad-hoc;
 payload tags the triggering schedule when applicable); **`schedule.run_completed` fires ONLY for
-runs that did not spawn an execution** (orchestrator turns). Every completed unit notifies exactly
+runs that did not spawn an execution** (coordinator turns). Every completed unit notifies exactly
 once. Emission points: execution-completion site, `runs/dispatch.ts` run-completion.
 
 ### 2.9 Custom digests (class B)
 
 A digest = a `schedule` (cron) + a prompt + a `deliver_result_to: channelId[]` binding. It runs as a
-scheduled orchestrator turn that uses integrations (Gmail, Calendar, …) + the agent to produce a
+scheduled coordinator turn that uses integrations (Gmail, Calendar, …) + the agent to produce a
 summary; the Notifier delivers that summary as the notification body. This is `schedule.run_completed`
 with **intentional content** — same plumbing, different intent + authoring ("Scheduled digests"
 builder: prompt + cadence + channels). It's where integrations + schedules + notifier compose.
@@ -452,12 +452,12 @@ the journal or apply via `sqlite3`).
 5. **Adapters:** *IntegrationChannel* → `runtime.runAction(<allowlisted action>, input, { caller: {type:'app',id:'notifier'} })` (§2.3), with `render` prefixing `APP_PUBLIC_URL` for the phone-reachable link (§2.17); *WebPushChannel* → `web-push.sendNotification` to each of the user's subscriptions, pruning 410/404.
 6. **Record:** mark the delivery `sent` (+`providerMessageId`) / `failed` (+`lastError`, `attempts++`). Web push = **`sent` if ≥1 subscription accepted**, else `failed` (per-subscription rows deferred, §2.16). Errors never throw back into the emitting path; a `failed` row is recoverable on the next re-fire.
 
-**Digest (binding):** scheduler fires a digest schedule → orchestrator run (integrations + agent) → `runs/dispatch.ts` terminal of an orchestrator-target run → `notify({ type:'schedule.run_completed', body: summary, dedupeKey:'…:<runId>' })`, routed to the schedule's `deliverResultTo[]` (NOT the matrix). Same outbox → render → adapter path.
+**Digest (binding):** scheduler fires a digest schedule → coordinator run (integrations + agent) → `runs/dispatch.ts` terminal of a coordinator-target run → `notify({ type:'schedule.run_completed', body: summary, dedupeKey:'…:<runId>' })`, routed to the schedule's `deliverResultTo[]` (NOT the matrix). Same outbox → render → adapter path.
 
 **Setup / config:**
 - *Telegram channel:* pick connection → discover `chat_id` (message bot → `telegram.get_updates`, or paste) → choose events → insert a `integration` channel row (`providerId:'telegram'`, `config:{chatId}`).
 - *Web push:* client requests permission → subscribes via the service worker (VAPID public key) → POST subscription → insert a `web_push_subscriptions` row + ensure a `web_push` channel with chosen events.
-- *Digest:* create a `schedules` row (cron + prompt, `targetKind:'orchestrator'`) + set `deliverResultTo`.
+- *Digest:* create a `schedules` row (cron + prompt, `targetKind:'coordinator'`) + set `deliverResultTo`.
 - *Disconnect a connection:* the Connect disconnect path calls `deleteChannelsForConnection(connectionId)` (§2.13).
 - *Delete a channel:* `removeChannelFromScheduleBindings(channelId)` scrubs it from every `schedules.deliverResultTo[]` (§2.13).
 

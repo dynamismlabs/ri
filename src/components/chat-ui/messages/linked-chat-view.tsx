@@ -7,7 +7,7 @@ import { ExecutionTranscript } from '@/components/executions/execution-transcrip
 import { useWorkspace } from '@/hooks/use-workspaces';
 import { useOptionalHomeContext } from '@/components/home/home-context';
 import { LegacyTeamChatAgentChoice } from '@/components/team/team-chat';
-import { useOrchestratorName } from '@/hooks/use-user-state';
+import { useCoordinatorName } from '@/hooks/use-user-state';
 import { useSessionStream } from '@/hooks/use-session-stream';
 import { agentView, executionView, HOME_VIEW, viewHref } from '@/lib/client/active-view';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
@@ -17,11 +17,11 @@ export function LinkedChatView({ session }: { session: ChatSessionWithExecution 
   const team = useOptionalHomeContext()?.home.kind === 'team';
   const navigation = useOptionalWorkNavigation();
   const { data: workspace } = useWorkspace(session.workspaceId ?? null);
-  const orchestratorName = useOrchestratorName();
+  const coordinatorName = useCoordinatorName();
   const archived = session.status === 'archived';
   useSessionStream(archived ? session.id : null);
   const currentView = session.workspaceId ? agentView(session.workspaceId) : HOME_VIEW;
-  const title = session.label ?? workspace?.name ?? orchestratorName;
+  const title = session.label ?? workspace?.name ?? coordinatorName;
   return <section className="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Linked chat">
     <header className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3">
       <div className="min-w-0 flex-1">

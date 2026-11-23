@@ -21,8 +21,8 @@ async function setup() {
   q.updateChatSession(session.id, { label: 'Long test run', lastActivityAt: '2026-11-05T10:00:00Z' });
   const sibling = q.createChatSession({ executionId: execution.id, workspaceId: workspace.id, harness: 'claude', type: 'execution', userId: 'local' });
   q.updateChatSession(sibling.id, { lastActivityAt: '2026-11-05T11:00:00Z' });
-  const agentMain = q.createChatSession({ workspaceId: workspace.id, harness: 'claude', type: 'orchestration', userId: 'local' });
-  const main = q.createChatSession({ harness: 'claude', type: 'orchestration', userId: 'local' });
+  const agentMain = q.createChatSession({ workspaceId: workspace.id, harness: 'claude', type: 'coordinator', userId: 'local' });
+  const main = q.createChatSession({ harness: 'claude', type: 'coordinator', userId: 'local' });
   const { GET } = await import('./rail');
   const read = async () => unwrapOperation(await GET({}, { headers: new Headers() } as never));
   return { q, session, sibling, agentMain, main, read };

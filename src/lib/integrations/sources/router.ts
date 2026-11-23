@@ -8,7 +8,7 @@ import { TRPCError } from '@trpc/server';
 import { z } from 'zod/v4';
 import { viewerProcedure as p, router } from '@/lib/trpc/init';
 import type { TRPCContext } from '@/lib/trpc/init';
-import { SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { isComposioApiError } from './composio/client';
 import { ConnectionRequestError } from '../connection-requests';
 import { PreferencesUnavailableError } from './preferences';

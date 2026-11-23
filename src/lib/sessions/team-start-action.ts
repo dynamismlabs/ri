@@ -1,8 +1,8 @@
 /** Native tool adapter onto the same launch and message operations as the UI. */
 import { createHash } from 'node:crypto';
 import * as q from '@/lib/db/queries';
-import type { ActionContext } from '@/lib/orchestrator/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import type { ActionContext } from '@/lib/actions/types';
+import { ActionError } from '@/lib/actions/types';
 import { actorFromAction } from '@/lib/auth/actor';
 import { authorizeTeamActorExecution } from '@/lib/home/execution-authority';
 import { dispatchExecutionSession, TaskNotStartableForDispatch, type DispatchExecutionSessionArgs } from './dispatch';

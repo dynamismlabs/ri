@@ -5,7 +5,7 @@
  * Installing is moving out of the drafts, and uninstalling is moving back.
  * Everything here keeps the folder, its `.agents/skills` link and the
  * skill's builder and try chats in step. The API routes (src/app/api/skills)
- * and the orchestrator actions (list_skills, get_skill, create_skill,
+ * and the Ri actions (list_skills, get_skill, create_skill,
  * save_skill, move_skill) both call through here.
  */
 

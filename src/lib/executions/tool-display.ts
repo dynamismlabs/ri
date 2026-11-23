@@ -15,6 +15,8 @@
  * component maps `glyph` → a lucide icon.
  */
 
+import { APP_NAME } from '@/constants/app';
+
 export type ToolGlyph =
   | 'read'
   | 'edit'
@@ -80,11 +82,15 @@ function hostOf(url: string): string {
 }
 
 /**
- * MCP servers whose wire name means nothing to a person. `codex_apps` is the
+ * MCP servers whose wire name means nothing to a person. `ri_home` is Ri's
+ * own tools (tasks, notes, chats, schedules). Older chats called that server
+ * `orchestrator`, so their rows read the same. `codex_apps` is the
  * apps connected to the user's ChatGPT account (GitHub, Gmail, ...), which
  * Codex brings into every session it runs. They are not Ri's connectors.
  */
 const MCP_SERVER_LABELS: Record<string, string> = {
+  ri_home: APP_NAME,
+  orchestrator: APP_NAME,
   codex_apps: 'ChatGPT apps',
 };
 

@@ -184,9 +184,9 @@ export const tools = {
     result: 'Todos have been modified successfully. Ensure that you continue to use the todo list to track your progress.',
     seconds: 1,
   }),
-  /** A Ri orchestrator action called over MCP. */
+  /** A Ri Ri action called over MCP. */
   ri: (action: string, input: unknown, result: unknown): Step => ({
-    tool: `mcp__orchestrator__${action}`, input, result: JSON.stringify(result), seconds: 1,
+    tool: `mcp__ri_home__${action}`, input, result: JSON.stringify(result), seconds: 1,
   }),
   /** A Codex shell command. */
   shell: (command: string, result: string, exitCode = 0, seconds = 3): Step => ({

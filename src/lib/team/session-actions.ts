@@ -2,11 +2,11 @@ import { parseTeamContentInput, teamContentResult } from './mcp/input';
 /** Team session tools use the Home's domain operations, never the agent's database connection. */
 import * as q from '@/lib/db/queries';
 import type { RequestKey } from '@/lib/auth/request-key';
-import type { DispatchEnvelope } from '@/lib/orchestrator/dispatch';
+import type { DispatchEnvelope } from '@/lib/actions/dispatch';
 import { TEAM_TOOLS, runTeamTool } from './mcp/tools';
 import { nativeTeamTools } from './mcp/native-tools';
 import { hasTeamCapability } from './capabilities';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 export async function runTeamSessionAction(key: RequestKey | null, name: string, raw: unknown): Promise<DispatchEnvelope> {
   const refuse = (message: string): DispatchEnvelope => ({ ok: false, action: name, error: { code: 'unsupported', message } });

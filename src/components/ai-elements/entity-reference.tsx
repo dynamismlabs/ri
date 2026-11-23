@@ -124,7 +124,7 @@ const ENTITY_CONFIG: Record<EntityType, {
     borderColor: 'border-l-violet-500',
     iconColor: 'text-violet-500',
     // The marker id is the chat session id — the same handle the
-    // orchestrator's oversight actions deal in.
+    // coordinator's oversight actions deal in.
     fetch: (id) => trpcClient.sessions.get.query({params: {id: id}}),
     queryKey: (id) => ['entity', 'execution', id],
   },
@@ -305,7 +305,7 @@ function DeckCard({ data, onClick }: { data: { id: string; framing?: string | nu
  * Card for `[[execution:<sessionId>]]` references. Four data points, no
  * more: glyph, label, workspace, one status line. The card is a handle —
  * branch/PR/cost live one click away in the execution view. Actions on
- * executions are sentences to the orchestrator, not chip menus, so click
+ * executions are sentences to the coordinator, not chip menus, so click
  * = open, nothing else.
  */
 function ExecutionCard({ data, onClick }: { data: ChatSessionWithExecution; onClick: () => void }) {
@@ -437,7 +437,7 @@ function MissingEntity({ kind, id }: { kind: RemoteRecordKind; id: string }) {
   return <EntityNotFound entityType={kind} detail={unreachable.length ? `${ENTITY_CONFIG[kind].label} not found in My Ri. ${unreachable.join(' and ')} can't be reached right now, so it may be there.` : undefined} />
 }
 
-// ─── EntityChip (orchestrator) ──────────────────────────────
+// ─── EntityChip (coordinator) ──────────────────────────────
 
 // Cheap sanity gate so LLM hallucinations like `[[area:null]]` don't hit the
 // API. UUIDv7 (what we mint) always matches /^[0-9a-f-]{36}$/i — anything

@@ -294,7 +294,7 @@ The deck updates in place. No regeneration ceremony — adjustments are incremen
 - [ ] **1.6** Build `plan-light-tasks.tsx` — Light tasks list with estimated minutes and "new" badge
 - [ ] **1.7** Build `plan-routines.tsx` — Recurring tasks row
 - [ ] **1.8** Build `deck-conductor.tsx` — Extract and simplify energy toggle + scope pill from current conductor row
-- [ ] **1.9** Build `deck-container.tsx` — Orchestrator component that manages beat progression and renders the appropriate state (needs check-in / checked in / needs refresh)
+- [ ] **1.9** Build `deck-container.tsx` — Coordinator component that manages beat progression and renders the appropriate state (needs check-in / checked in / needs refresh)
 - [ ] **1.10** Add check-in and plan types to `types/dashboard.ts`
 - [ ] **1.11** Replace `DeckContent()` in `content-panel.tsx` with new `DeckContainer`
 - [ ] **1.12** Wire up deck state in `dashboard-context.tsx` — check-in status, beat progression, plan data

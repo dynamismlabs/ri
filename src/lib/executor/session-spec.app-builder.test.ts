@@ -55,7 +55,7 @@ describe('the app builder chat', () => {
   });
 
   it('leaves every other chat\'s PATH alone', async () => {
-    const spec = await buildSessionSpec(input({ sessionType: 'orchestration' }));
+    const spec = await buildSessionSpec(input({ sessionType: 'coordinator' }));
     expect(spec.env.PATH ?? '').not.toContain(path.join('app-tools', 'bin'));
   });
 });

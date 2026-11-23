@@ -20,7 +20,7 @@ export function teamRequestTimeout(url: string, method = 'GET'): number {
   const path = new URL(url).pathname;
   if (/\/api\/attachments(?:\/|$)/.test(path)) return 60_000;
   const procedures = path.split('/api/trpc/')[1] ?? '';
-  const lifecycle = /(?:^|,)(?:sessions\.(?:archivePost|closeChatPost|restartPost)|workspaces\.(?:chatNewPost|chatResumePost|archivePost)|orchestratorChat\.(?:resumePost|create)|team\.ai\.(?:setEnabled|stop|chats\.archive))(?:,|$)/;
+  const lifecycle = /(?:^|,)(?:sessions\.(?:archivePost|closeChatPost|restartPost)|workspaces\.(?:chatNewPost|chatResumePost|archivePost)|coordinatorChat\.(?:resumePost|create)|team\.ai\.(?:setEnabled|stop|chats\.archive))(?:,|$)/;
   return method !== 'GET' && lifecycle.test(procedures) ? TEAM_LIFECYCLE_TIMEOUT_MS : TEAM_REQUEST_TIMEOUT_MS;
 }
 

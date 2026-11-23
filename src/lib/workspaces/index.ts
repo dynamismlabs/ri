@@ -6,7 +6,7 @@
  *
  * The library is loaded via dynamic `import()` because its package.json
  * exports only the ESM `"import"` condition. Static imports fail in CJS
- * resolution paths (the orchestrator CLI dispatched via tsx). Same trick
+ * resolution paths (the Ri CLI dispatched via tsx). Same trick
  * `src/cli/commands/skills.ts` uses for `@agentex/agent`.
  */
 

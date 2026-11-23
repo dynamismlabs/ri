@@ -29,8 +29,8 @@ afterEach(async () => {
 function input(harness: HarnessId, over: Partial<SessionSpecInput>): SessionSpecInput {
   fake = installFakeHarness(harness);
   return {
-    chatSessionId: q.createChatSession({ type: over.sessionType ?? 'orchestration', harness, status: 'active', workspaceId: over.workspaceId ?? null }).id,
-    harness, cwd: home.root, sessionType: 'orchestration', workspaceId: null, surfaceKind: null, surfaceRef: null,
+    chatSessionId: q.createChatSession({ type: over.sessionType ?? 'coordinator', harness, status: 'active', workspaceId: over.workspaceId ?? null }).id,
+    harness, cwd: home.root, sessionType: 'coordinator', workspaceId: null, surfaceKind: null, surfaceRef: null,
     existingExternalSessionId: null, permissionMode: 'auto_all', prePlanMode: null, model: null, modelVariant: null, effort: null,
     ...over,
   };

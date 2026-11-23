@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import * as q from '@/lib/db/queries';
 import { setWorkResultCapabilities } from '@/lib/work-results/capabilities';
-import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { resultsRouter } from './results-router';
 
 let home: TestHome;
@@ -22,7 +22,7 @@ afterEach(async () => { await home.cleanup(); });
 
 describe('durable results through shared typed procedures', () => {
   it('saves the selected answer verbatim and keeps retries and reads consistent', async () => {
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'codex' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'codex' });
     const body = '    Indented Markdown\n\nA finished deliverable.\n';
     const event = q.insertChatEvent({ sessionId: chat.id, source: 'agent', role: 'assistant', content: body })!;
     const input = { requestId: 'typed-save', sourceChatSessionId: chat.id, sourceEventId: event.id, body };
@@ -37,7 +37,7 @@ describe('durable results through shared typed procedures', () => {
   });
 
   it('keeps saved records readable and committed retries available after disable', async () => {
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'codex' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'codex' });
     const event = q.insertChatEvent({ sessionId: chat.id, source: 'agent', role: 'assistant', content: 'Finished work.' })!;
     const api = caller();
     const input = { requestId: 'before-disable', sourceChatSessionId: chat.id, sourceEventId: event.id, body: 'Finished work.' };
@@ -57,7 +57,7 @@ describe('durable results through shared typed procedures', () => {
       scope: { requested: { resultId: target.id, capturedAt: new Date().toISOString(), attachments: [] } },
       provenance: { method: 'fresh_session', independence: 'observed' },
     }).review;
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'codex', surfaceKind: 'result_review', surfaceRef: review.id });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'codex', surfaceKind: 'result_review', surfaceRef: review.id });
     const run = q.createRun({ harness: 'codex', triggerKind: 'manual', chatSessionId: chat.id });
     q.linkWorkResultAiReviewRuntime(review.id, { reviewerSessionId: chat.id, runId: run.id });
     const reviewer = caller(chat.id);

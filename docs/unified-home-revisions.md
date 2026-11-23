@@ -77,14 +77,14 @@ OWNER DECISIONS (update spec §7, §8 and §9, the acceptance matrix, W07, W08, 
    - Keep public URLs resolving.
 
 4. Team-wide control. Work running on the team belongs to the team. Any active member may stop any turn, cancel any queued message, answer a pending question, approve or deny a permission prompt, and archive or close any team chat. Anyone who wants sole control runs the work in their personal Ri.
-   - Only a signed-in person may answer or approve. An agent, a team AI client key, a session token or the orchestrator never approves its own or another chat's prompt.
+   - Only a signed-in person may answer or approve. An agent, a team AI client key, a session token or the coordinator never approves its own or another chat's prompt.
    - Replace §7's "Own requested turn" and "Approve operations" rows.
    - Relax the ordinary paths that enforce the old rule: interrupt, retireChatForHome, execution-lifecycle-authority, and the stop/answer branch at home/execution-authority.ts:48-53.
 
 5. Roles later, without tech debt. Roles stay owner and member, with no role builder and no new role values.
    - Put every team permission in ONE server-side capability table (role -> named actions) behind one function.
    - Name the actions: read, edit shared content, delete permanently, administer members, configure agent, run team agent, stop turn, cancel queued, answer question, approve permission, archive chat, edit agent folder, open agent terminal, manage sign-ins.
-   - Every entry point asks that function: tRPC, HTTP routes, WebSocket and terminal admission, team MCP tools, orchestrator actions and CLI. No role or 'owner' comparisons anywhere else.
+   - Every entry point asks that function: tRPC, HTTP routes, WebSocket and terminal admission, team MCP tools, Ri actions and CLI. No role or 'owner' comparisons anywhere else.
    - Add a guard test, like process-state.test.ts, that fails on new direct role checks.
    - The UI reads server-derived capabilities from HomeContext, never member.role. Today team-record-controls.tsx:77,148 branch on role, while deletePermanently and administerMembers are computed and unused.
    - Adding a role later should mean editing the table and its tests.

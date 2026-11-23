@@ -10,7 +10,7 @@ let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>;
 beforeEach(async () => { fixture = await createTeamExecutionFixture(); });
 afterEach(async () => { await fixture.cleanup(); });
 it('preserves legacy insertion order through agent binding, pagination, snapshots and live merges despite skewed timestamps', () => {
-  const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
   const events = [
     q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'First', createdAt: '2026-10-20T12:00:02Z' })!,
     q.insertChatEvent({ sessionId: chat.id, role: 'assistant', source: 'agent', content: 'Second', createdAt: '2026-10-20T12:00:01Z' })!,
@@ -34,7 +34,7 @@ it('preserves legacy insertion order through agent binding, pagination, snapshot
 });
 
 it('does not turn legacy boot or binding into recent chat activity', () => {
-  const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
   const at = '2026-01-01T00:00:00.000Z';
   q.updateChatSession(chat.id, { lastActivityAt: at });
   for (let boot = 0; boot < 2; boot++) {

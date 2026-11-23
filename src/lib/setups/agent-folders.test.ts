@@ -156,7 +156,7 @@ describe('making a folder primary', () => {
 
 describe('the agent actions', () => {
   async function run(name: string, input: Record<string, unknown>) {
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     return runAction(name, input, { remote: false } as never) as Promise<{ ok: boolean; result?: { id: string; cwd: string }; error?: { message: string } }>;
   }
 

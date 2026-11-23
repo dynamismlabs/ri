@@ -85,7 +85,7 @@ describe('tracedSourceFiles', () => {
 
   it('allows only files the server really reads', () => {
     expect(TRACED_SOURCE_ALLOWED).toEqual(['src/lib/db/schema.ts']);
-    expect(fs.readFileSync(path.resolve(__dirname, '../src/lib/orchestrator/registry.ts'), 'utf8')).toContain("require.resolve('@/lib/db/schema')");
+    expect(fs.readFileSync(path.resolve(__dirname, '../src/lib/actions/registry.ts'), 'utf8')).toContain("require.resolve('@/lib/db/schema')");
   });
 });
 

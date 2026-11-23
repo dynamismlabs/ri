@@ -35,7 +35,7 @@ const responses: Record<string, unknown> = {
   'integrations.mcpServersGet': { servers: [customServer], approvalSettings: { defaultPolicy: 'writes', override: null } },
   'skills.list': { skills, projects: [] },
   'skills.create': { skill: { ref: 'draft:new-skill' } },
-  'orchestratorChat.list': { session: { id: chatId, harness: 'claude' } },
+  'coordinatorChat.list': { session: { id: chatId, harness: 'claude' } },
 };
 
 beforeAll(async () => {

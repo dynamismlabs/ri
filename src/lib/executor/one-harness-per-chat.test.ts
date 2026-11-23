@@ -39,7 +39,7 @@ async function chat() {
   fake = installFakeHarness('claude');
   fake.withProcess = true;
   const q = await import('@/lib/db/queries');
-  return q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
+  return q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
 }
 
 const alive = (proc: ChildProcess) => proc.exitCode === null && proc.signalCode === null;

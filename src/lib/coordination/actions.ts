@@ -5,13 +5,13 @@ import { EFFORT_LEVELS, PERMISSION_MODES } from '@/db/types';
 import { KNOWN_HARNESS_IDS } from '@/lib/harness/registry';
 import { INTEGRATION_LABELS } from '@/constants/integrations';
 import { isBrowserEnabled } from '@/lib/browser/config';
-import { defineAction, ActionError } from '@/lib/orchestrator/types';
+import { defineAction, ActionError } from '@/lib/actions/types';
 import { stableCoordinationId } from './ids';
 import { TURN_STATUS_EFFORTS } from '@/lib/sessions/turn-status';
 import { callerChat, currentAgentAddresses, drainAgentCoordination, inCoordinationServer, personalChat, submitAgentRequest, verifiedCoordinationRun } from './service';
 
 const requestShape = {
-  target: z.string().min(1).describe('orchestrator, agent (this execution\'s own agent), requester, agent:<workspace id>, or session:<chat id>.'),
+  target: z.string().min(1).describe('coordinator, agent (this execution\'s own agent), requester, agent:<workspace id>, or session:<chat id>.'),
   request_id: z.string().min(1).max(200).describe('Caller retry key for unchanged intent, not a server request ID. Reuse this key on retry.'),
   content: z.string().trim().min(1).max(100_000),
 };
@@ -30,7 +30,7 @@ function agentRequestReceipt(delivery: AgentDeliveryRecord) {
 export const coordinationActions = [
   defineAction({
     name: 'get_session_context',
-    description: `Describe this signed chat, its stable agent and orchestrator addresses, actual harness capabilities, configured ${INTEGRATION_LABELS.singular} and browser reach, and incoming requests. Use before consulting or delegating. Addresses survive New chat. Team and internal reviewer chats use separate surfaces.`,
+    description: `Describe this signed chat, its stable agent and coordinator addresses, actual harness capabilities, configured ${INTEGRATION_LABELS.singular} and browser reach, and incoming requests. Use before consulting or delegating. Addresses survive New chat. Team and internal reviewer chats use separate surfaces.`,
     params: {},
     handler: async (ctx) => {
       const chat = callerChat(ctx);

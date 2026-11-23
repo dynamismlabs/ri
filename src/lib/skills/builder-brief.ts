@@ -13,7 +13,7 @@
  */
 
 import { APP_NAME, APP_SHORT_ID } from '@/constants/app';
-import { ORCHESTRATOR_MCP_SERVER_NAME } from '@/lib/orchestrator/harness-surface';
+import { HOME_MCP_SERVER_NAME } from '@/lib/coordinator/harness-surface';
 import { COMPATIBILITY_MAX, DESCRIPTION_MAX, NAME_MAX } from './format';
 import { parseSkillRef, projectFor } from './locations';
 
@@ -52,7 +52,7 @@ unless they clearly say otherwise.
 - Write with \`save_skill\` (ref "${ref}"), passing \`baseHash\` from your
   last read. If it comes back as changed, read it again and redo your edit
   on the new version. Never overwrite the user's edits.
-- These are ${APP_NAME} actions: tools on the \`${ORCHESTRATOR_MCP_SERVER_NAME}\` MCP server, or
+- These are ${APP_NAME} actions: tools on the \`${HOME_MCP_SERVER_NAME}\` MCP server, or
   \`${APP_SHORT_ID} agent get_skill\` / \`${APP_SHORT_ID} agent save_skill --input @-\` from the shell,
   whichever this session has. Don't edit the skill's files any other way.
 - When the user describes what the skill should do, write a first draft

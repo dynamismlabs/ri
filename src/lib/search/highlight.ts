@@ -14,7 +14,7 @@
  * them with `highlightTerms`.
  *
  * Kept out of `queries.ts` (server) and `api/sessions.ts` (client) so both
- * sides — and the orchestrator — share one definition without either dragging
+ * sides — and the coordinator — share one definition without either dragging
  * in the other's deps.
  */
 

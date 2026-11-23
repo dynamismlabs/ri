@@ -3,7 +3,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { z } from 'zod/v4';
 import { readAuthConfig } from '@/lib/auth/config-file';
-import { resolveServerPort } from '@/lib/orchestrator/harness-surface';
+import { resolveServerPort } from '@/lib/coordinator/harness-surface';
 import { beginAccountChat, accountChatStatus } from './account-chat';
 import { runHarnessText } from '@/lib/harness/one-shot';
 import { OperationError } from '@/lib/server/operation';

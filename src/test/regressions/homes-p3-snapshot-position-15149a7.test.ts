@@ -44,7 +44,7 @@ afterEach(async () => {
 it('does not skip an event on reconnect after ready overtakes an older in-flight snapshot', async () => {
   home = await createTestHome({ prefix: 'ri-snapshot-position-' });
   const q = await import('@/lib/db/queries');
-  const chat = q.createChatSession({type:'orchestration', harness:'claude'}).id;
+  const chat = q.createChatSession({type:'coordinator', harness:'claude'}).id;
   q.insertChatEvent({sessionId:chat, role:'user', source:'user', content:'A', createdAt:new Date().toISOString()});
   const client = new QueryClient({defaultOptions:{queries:{retry:false}}}); state.client = client;
   const sources: Source[] = [];

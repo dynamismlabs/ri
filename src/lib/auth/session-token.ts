@@ -1,6 +1,6 @@
 /**
  * Session tokens: how a harness session on a connected device reaches the
- * home's orchestrator, integrations and browser servers (docs/homes-build.md,
+ * home's Ri, integrations and browser servers (docs/homes-build.md,
  * P2.7).
  *
  * A session at home uses the home's own key. A session elsewhere must not:
@@ -22,6 +22,7 @@
  * the chat's own token, not a revival: only its session held it.
  */
 
+import { currentHomeApiPath } from '@/lib/coordinator/legacy-names';
 import crypto from 'node:crypto';
 import { APP_SHORT_ID } from '@/constants/app';
 import type { ChatSessionRecord } from '@/db/types';
@@ -95,28 +96,30 @@ export function verifySessionToken(
 }
 
 /** The servers a session is given, by path, and the scope each is locked to. */
-const ORCHESTRATOR_MCP = '/api/orchestrator/mcp';
+const HOME_MCP = '/api/home/mcp';
 const INTEGRATIONS_MCP = '/api/integrations/mcp';
-const BROWSER_MCP = '/api/orchestrator/browser/mcp';
+const BROWSER_MCP = '/api/home/browser/mcp';
 
 /**
  * Whether a session may make this request: one of the servers it's given,
  * in its own scope, and nothing else. An execution gets its agent's
- * integrations and its agent's browser profile. An agent's main chat gets the
- * orchestrator too. Other chats never run elsewhere and get nothing.
+ * integrations and its agent's browser profile. An agent's main chat gets
+ * Ri's tools too. Other chats never run elsewhere and get nothing.
  */
-export function sessionMayReach(chat: ChatSessionRecord, pathname: string, params: URLSearchParams): boolean {
+export function sessionMayReach(chat: ChatSessionRecord, requested: string, params: URLSearchParams): boolean {
+  // A session started before Ri's tools moved still has their old addresses.
+  const pathname = currentHomeApiPath(requested);
   const agent = chat.workspaceId ?? null;
   const isExecution = chat.type === 'execution';
-  const isAgentMainChat = chat.type === 'orchestration' && agent !== null;
+  const isAgentMainChat = chat.type === 'coordinator' && agent !== null;
   if (!isExecution && !isAgentMainChat) return false;
-  if (chat.surfaceKind === 'result_review') return pathname === '/api/orchestrator/results/mcp';
+  if (chat.surfaceKind === 'result_review') return pathname === '/api/home/results/mcp';
   switch (pathname) {
-    case '/api/orchestrator/results/mcp':
-    case '/api/orchestrator/email/mcp':
+    case '/api/home/results/mcp':
+    case '/api/home/email/mcp':
     case '/api/email/action':
       return isExecution || isAgentMainChat;
-    case ORCHESTRATOR_MCP:
+    case HOME_MCP:
       return isAgentMainChat;
     case '/api/chat-sources/action':
       return isExecution || isAgentMainChat;

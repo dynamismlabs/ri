@@ -6,7 +6,7 @@ import {
   startCardSignIn,
 } from '@/lib/integrations/connection-requests';
 import { safeReturnPath } from '@/lib/integrations/oauth-return';
-import { SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { reply, type OperationContext } from '@/lib/server/operation';
 import { isAuthConfigRequiredError, isIntegrationError } from '@integrations/engine';
 import { z as rpcZ } from 'zod/v4';

@@ -3,7 +3,7 @@ import { and, desc, eq, inArray, lt, lte, or, sql } from 'drizzle-orm';
 import { getDb } from './index';
 import { chatEvents, runs, workResultAiReviews, chatSessions } from './schema';
 import { createRun, getChatEventById, getChatSessionWithExecution, getRun, insertChatEvent, bumpSessionOutcome, getHome, acceptTeamChatSend } from './queries';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import type { Attachment, WorkResultActor, RunRecord } from '@/db/types';
 import { publishChatEvent } from '@/lib/realtime/bus';
 import { dehydrateAttachments } from './hydrate';

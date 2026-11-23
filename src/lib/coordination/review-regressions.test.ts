@@ -3,7 +3,7 @@ import { uuidv7 } from 'uuidv7';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import * as q from '@/lib/db/queries';
 import type { AgentDeliveryRecord, ChatSessionRecord } from '@/db/types';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import { drainAgentCoordination } from '@/lib/coordination/service';
 import { finishRun } from '@/lib/runs/finish';
 import { applyChatEvent } from '@/lib/executor/apply';
@@ -23,9 +23,9 @@ let accepted: Array<{ sessionId: string; content: string; eventId: string; runId
 beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-coord-review-' });
   q.setAgentCoordinationPolicy('global', '1', 'allow');
-  main = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  main = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   agent = q.createWorkspace({ name: 'Frontend', cwd: home.root, isGit: false, filesToCopy: [] });
-  agentMain = q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId: agent.id });
+  agentMain = q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId: agent.id });
   accepted = []; fake.busy.clear(); fake.producers.clear(); fake.concurrentSend = true; fake.dispatch.mockReset(); fake.abort.mockReset(); fake.launch.mockReset();
   fake.dispatch.mockImplementation(async (sessionId: string, content: string, options: { runId: string; sourceEventId: string; coordinationDeliveryIds: string[]; onTaken?: () => void }) => {
     q.markRunStarted(options.runId);
@@ -81,9 +81,9 @@ it('F1: delegate_work into the requester agent skips Ask approval (third chat tr
   expect(delivery.status).toBe('awaiting_approval');
 });
 
-it('F2: a scheduled orchestration chat gets a stable orchestrator return address, so its answer lands in the main chat', async () => {
+it('F2: a scheduled coordinator chat gets a stable coordinator return address, so its answer lands in the main chat', async () => {
   const fire = q.createRun({ harness: 'claude', triggerKind: 'manual', status: 'completed' });
-  const scheduled = q.createChatSession({ type: 'orchestration', harness: 'claude', createdByRunId: fire.id });
+  const scheduled = q.createChatSession({ type: 'coordinator', harness: 'claude', createdByRunId: fire.id });
   expect(q.getChatSession(scheduled.id)!.createdByRunId).toBe(fire.id);
   const initial = await send(scheduled);
   const request = q.getAgentRequest(initial.requestId!)!;
@@ -125,7 +125,7 @@ it('requires approval for a stable agent address after the requester main chat i
   q.setAgentCoordinationPolicy('chat', worker.id, 'ask');
   await send(agentMain, { target: `session:${worker.id}` });
   q.updateChatSession(agentMain.id, { status: 'archived' });
-  const replacement = q.createChatSession({ type: 'orchestration', workspaceId: agent.id, harness: 'claude' });
+  const replacement = q.createChatSession({ type: 'coordinator', workspaceId: agent.id, harness: 'claude' });
   const result = await act(worker, 'message_agent', { target: `agent:${agent.id}`, request_id: 'replacement', content: 'Unrelated contact.', response: 'none' });
   expect(result).toMatchObject({ ok: true, result: { status: 'awaiting_approval' } });
   expect(q.listChatEvents(replacement.id)).toHaveLength(0);

@@ -496,7 +496,7 @@ function Advanced({
             <option value="coalesce_if_active">
               {target === 'session' ? 'Add it to the turn under way' : 'Add it to the running chat'}
             </option>
-            {target === 'orchestrator' && (
+            {target === 'coordinator' && (
               <option value="allow_concurrent">Run alongside it</option>
             )}
           </NativeSelect>

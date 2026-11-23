@@ -10,7 +10,7 @@ import { createDatabaseAt } from '@/test/fixtures/migrations';
 const seen = vi.hoisted(() => ({ dispatch: [] as Array<{ sessionId: string; runId: string; ids: string[]; first: string }>, launch: [] as unknown[], fetch: [] as string[] }));
 vi.mock('@/lib/executor/adapter', () => ({ isRunning: () => false, hasBackgroundTasks: () => false, abort: async () => {}, dispatch: async (sessionId: string, content: string, options: { runId: string; coordinationDeliveryIds?: string[]; onTaken?: () => void }) => { seen.dispatch.push({ sessionId, runId: options.runId, ids: options.coordinationDeliveryIds ?? [], first: content.split('\n')[0].slice(0, 120) }); options.onTaken?.(); } }));
 vi.mock('@/lib/sessions/dispatch', () => ({ WorkspaceNotFoundForDispatch: class extends Error {}, DeviceUnavailableForDispatch: class extends Error {}, TaskNotStartableForDispatch: class extends Error {}, dispatchExecutionSession: async (input: unknown) => { seen.launch.push(input); throw new Error('launch suppressed in rehearsal'); } }));
-vi.mock('@/lib/orchestrator/server-client', async original => ({ ...await original<object>(), serverFetch: async (route: string) => { seen.fetch.push(route); throw new Error('suppressed'); } }));
+vi.mock('@/lib/actions/server-client', async original => ({ ...await original<object>(), serverFetch: async (route: string) => { seen.fetch.push(route); throw new Error('suppressed'); } }));
 vi.mock('@/lib/executor/devices', async original => ({ ...await original<object>(), harnessCapabilitiesOn: async () => ({ sessions: true, concurrentSend: true }) }));
 
 const PROD = process.env.RI_COORDINATION_REHEARSAL_DB;

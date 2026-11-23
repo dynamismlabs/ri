@@ -4,14 +4,14 @@ import { z as rpcZ } from 'zod/v4';
  * GET /api/heartbeat  — the heartbeat's settings and status
  * PUT /api/heartbeat  — change any of its settings (partial)
  *
- * Server-side wrapper around the orchestrator's `get_heartbeat` and
+ * Server-side wrapper around Ri's `get_heartbeat` and
  * `update_heartbeat` actions, so Settings, the deck chip, the CLI, and agents
  * all share one validated path. "Check in now" is `run_trigger` on the
  * returned `triggerId` (POST /api/triggers/:id?action=run).
  * See docs/heartbeat-spec.md §6.
  */
 
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 // Compressed when the body is JSON and over ~1KiB. See lib/api/compression.ts.
 

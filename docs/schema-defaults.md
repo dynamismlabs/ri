@@ -13,7 +13,7 @@
 > in creators; `voiceAutoSend` → nullable + read-time `?? true`;
 > `workspaces.isGit` → required fact, no fallback), so the schema now carries
 > ZERO boolean defaults. The four `user_state`
-> policy columns (`workdayStart/End`, `voiceModel`, `orchestratorMode`) became
+> policy columns (`workdayStart/End`, `voiceModel`, `coordinatorMode`) became
 > nullable with app-level resolvers. Creator inputs re-optionalize the policy
 > fields via `PolicyOptional` in `src/db/types.ts`. Existing data was carried
 > into a rebuilt DB (permission modes remapped in-flight) by
@@ -187,7 +187,7 @@ Not just misplaced, but the value itself is brittle or surprising.
 | Table.column | schema.ts | Default | Why it is a problem |
 |---|---|---|---|
 | `userState.voiceModel` | 98 | `'local/parakeet-tdt-0.6b-v3'` | A concrete model id frozen into the schema. Model names churn constantly. This is the textbook policy-that-will-change. Resolve from the STT provider config at read time, not a schema literal. |
-| `userState.orchestratorMode` | 113 | `'legacy'` | A brand-new install defaulting to `legacy` is almost certainly wrong for a fresh user. Confirm the intended initial mode and default a new row to that, not the migration-era fallback. |
+| `userState.coordinatorMode` | 113 | `'legacy'` | A brand-new install defaulting to `legacy` is almost certainly wrong for a fresh user. Confirm the intended initial mode and default a new row to that, not the migration-era fallback. |
 | `apiKeys.env` | 697 | `'live'` | Defaulting an environment/key to `live` rather than `test` is the less-safe direction. A forgotten field silently mints a live-scoped record. Consider defaulting to `test`, or requiring it. |
 | `userState.workdayStart/End` | 90, 91 | `'09:00'`/`'18:00'` | Working-hours policy baked into the schema. Fine as a seeded app default, but it is a product decision, not an invariant. Move to app/config seed. |
 | `triggers.timezone` | 1674 | `'UTC'` | Reasonable fallback, but a scheduling policy. Prefer resolving from user state at trigger-create time. |
@@ -353,7 +353,7 @@ piecemeal migration now.
 | 4 | `stream.media` / `stream.origin` set in `streamInsertValues` | DONE |
 | 5 | `decks.origin`, `triggers.concurrencyPolicy` / `catchUpPolicy` / `timezone` set in creators | DONE |
 | 6 | `runs.status`, `externalSessionImports.status`, `notificationDeliveries.status` set in creators | DONE |
-| 7a | `voiceModel`, `workdayStart/End`, `orchestratorMode` — already app-resolved (`resolveVoiceModel`, `getWorkdayBounds`, `resolveOrchestratorMode`) | NO ACTION (pre-existing) |
+| 7a | `voiceModel`, `workdayStart/End`, `coordinatorMode` — already app-resolved (`resolveVoiceModel`, `getWorkdayBounds`, `resolveCoordinatorMode`) | NO ACTION (pre-existing) |
 | 8a | `apiKeys.env` — `createApiKey` now defers to `getTokenEnv()` (env-aware) instead of hardcoding `'live'`, fixing test-env mislabeling; explicit `input.env` still wins | DONE |
 | 9 | `source` / `actorSource` / `createdBy` now REQUIRED on `updateTask`, `updateNote`, `transitionTask`, `completeTask`, `reviewExecutionOutput`, `acceptOutputAndCompleteTask`, `materializeEventRefs`, `pinSessionRef`; internal `?? 'human'` / `?? 'user'` fallbacks removed | DONE |
 
@@ -365,9 +365,9 @@ default `auto_all`, NOT NULL preserved, indexes intact).
 
 Deferred (from code review, not blocking, need a product call):
 
-- **Orchestrator-posted message authorship.** `send_session_message` posts
+- **Coordinator-posted message authorship.** `send_session_message` posts
   through `POST /sessions/:id/messages`, which hard-codes the event as
-  `role: 'user'` and now `createdBy: 'user'`. So when the orchestrator (an agent)
+  `role: 'user'` and now `createdBy: 'user'`. So when the coordinator (an agent)
   injects a message, its entity refs are recorded as user-authored. This predates
   the rename (the route always assumed a human poster) and fixing it means
   threading a real author/source through the route + `send_session_message`
@@ -453,7 +453,7 @@ To do in the pass — remove the now-inert policy literals from `schema.ts`:
   (make nullable, drop default — `resolveVoiceModel(null)` already handles it),
   `workdayStart` / `workdayEnd` (drop defaults; `getWorkdayBounds` covers),
   `triggers.timezone` (drop default; `createTrigger` now covers),
-  `orchestratorMode` (set default `'harness_mcp'` or drop; `resolveOrchestratorMode`
+  `coordinatorMode` (set default `'harness_mcp'` or drop; `resolveCoordinatorMode`
   covers), `apiKeys.env` (now inert — `createApiKey` defers to `getTokenEnv()` —
   so drop the schema default, or set it to `getTokenEnv()`'s baseline `'live'`).
 - Status/policy enums now set in the query layer: `stream.media/origin`,

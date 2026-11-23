@@ -57,7 +57,7 @@ async function main() {
     q.saveTeamAiSettings({ enabled: true, harness: 'claude', model: FAKE_MODEL_ID }, owner.member.id);
     if (extra === 'running-turn') {
       // A turn the previous server left running when it died (claimed in the durable queue).
-      const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', model: FAKE_MODEL_ID, workspaceId: workspace.id, deviceId: home.hostDeviceId, surfaceKind: q.TEAM_CHAT_SURFACE, createdByMemberId: owner.member.id });
+      const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', model: FAKE_MODEL_ID, workspaceId: workspace.id, deviceId: home.hostDeviceId, surfaceKind: q.TEAM_CHAT_SURFACE, createdByMemberId: owner.member.id });
       const lookup = (await import('@/lib/auth/api-token')).lookupApiToken(owner.token.plaintext)!;
       q.acceptTeamChatSend({ chatId: chat.id, memberId: owner.member.id, requestingApiKeyId: lookup.key.id, clientSendId: 'left-running-1', text: 'Work that was running at the crash' });
       const claimed = q.claimNextTeamChatTurn(chat.id)!;

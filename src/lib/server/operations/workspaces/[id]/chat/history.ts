@@ -8,7 +8,7 @@ import { z as rpcZ } from 'zod/v4';
 
 /**
  * The agent's past and current main chats, newest activity first. Same
- * shape as `/api/orchestrator-chat/history`.
+ * shape as `/api/coordinator-chat/history`.
  */
 // Compressed when the body is JSON and over ~1KiB; a streamed or
 // non-JSON response passes through untouched. See lib/api/compression.ts.

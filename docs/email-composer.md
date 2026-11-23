@@ -17,8 +17,8 @@ provider tools retain their separate capabilities and normal approval policy.
 
 ## Draft tools
 
-All four actions are generated from `src/lib/orchestrator/email-actions.ts` and
-are available through the CLI and orchestrator MCP:
+All four actions are generated from `src/lib/actions/email-actions.ts` and
+are available through the CLI and home MCP:
 
 | Action | Input | Result |
 | --- | --- | --- |
@@ -33,9 +33,9 @@ message and a live sending account. Header fields reject line breaks.
 
 Identity always comes from the signed chat credential. A tool cannot create,
 read or edit another chat's draft by supplying a session id. Execution chats get
-a narrow email MCP at `/api/orchestrator/email/mcp` when their harness supports
+a narrow email MCP at `/api/home/email/mcp` when their harness supports
 strict MCP isolation, plus CLI guidance. Main and content chats use their existing
-orchestrator tools. Background result reviewers receive no email tools.
+Ri tools. Background result reviewers receive no email tools.
 
 CLI operations forward to `/api/email/action` in the running Home so changes
 broadcast immediately. That signed protocol supports drafting operations only.

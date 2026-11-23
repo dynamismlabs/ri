@@ -19,7 +19,7 @@ it('uses the ordinary local runner for Team server placements, including cleanup
 });
 it('keeps the ordinary placement resolver for remote personal workers', () => {
   const device = q.createDevice({ name: 'Worker', kind: 'computer' });
-  const chat = q.createChatSession({ harness: 'codex', type: 'orchestration', deviceId: device.id });
+  const chat = q.createChatSession({ harness: 'codex', type: 'coordinator', deviceId: device.id });
   expect(runnerFor(chat.id)).toEqual({ id: device.id });
   expect(seams.sink).not.toHaveBeenCalled();
 });

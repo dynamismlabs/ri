@@ -107,9 +107,9 @@ import * as operation89 from "@/lib/server/operations/notifications/web-push/sub
 import * as operation90 from "@/lib/server/operations/notifications/web-push/unsubscribe";
 import * as operation93 from "@/lib/server/operations/onboarding/about-suggestion";
 import * as operation94 from "@/lib/server/operations/onboarding/area-suggestions";
-import * as operation95 from "@/lib/server/operations/orchestrator-chat";
-import * as operation96 from "@/lib/server/operations/orchestrator-chat/history";
-import * as operation97 from "@/lib/server/operations/orchestrator-chat/resume";
+import * as operation95 from "@/lib/server/operations/coordinator-chat";
+import * as operation96 from "@/lib/server/operations/coordinator-chat/history";
+import * as operation97 from "@/lib/server/operations/coordinator-chat/resume";
 import * as operation98 from "@/lib/server/operations/preview/settings";
 import * as operation99 from "@/lib/server/operations/preview/settings/test";
 import * as operation100 from "@/lib/server/operations/recents";
@@ -447,11 +447,11 @@ export const internalRouters = {
     aboutSuggestionPost: p.input(operation93.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation93.POST(input, operationContext(ctx.request, input, "/onboarding/about-suggestion")))),
     areaSuggestionsPost: p.input(operation94.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation94.POST(input, operationContext(ctx.request, input, "/onboarding/area-suggestions")))),
   }),
-  orchestratorChat: router({
-    list: p.input(operation95.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation95.GET(input, operationContext(ctx.request, input, "/orchestrator-chat")))),
-    create: p.input(operation95.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation95.POST(input, operationContext(ctx.request, input, "/orchestrator-chat")))),
-    historyGet: sp.input(operation96.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation96.GET(input, operationContext(ctx.request, input, "/orchestrator-chat/history")))),
-    resumePost: p.input(operation97.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation97.POST(input, operationContext(ctx.request, input, "/orchestrator-chat/resume")))),
+  coordinatorChat: router({
+    list: p.input(operation95.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation95.GET(input, operationContext(ctx.request, input, "/coordinator-chat")))),
+    create: p.input(operation95.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation95.POST(input, operationContext(ctx.request, input, "/coordinator-chat")))),
+    historyGet: sp.input(operation96.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation96.GET(input, operationContext(ctx.request, input, "/coordinator-chat/history")))),
+    resumePost: p.input(operation97.POSTInput).mutation(async ({ input, ctx }) => unwrapOperation(await operation97.POST(input, operationContext(ctx.request, input, "/coordinator-chat/resume")))),
   }),
   preview: router({
     settingsGet: sp.input(operation98.GETInput).query(async ({ input, ctx }) => unwrapOperation(await operation98.GET(input, operationContext(ctx.request, input, "/preview/settings")))),

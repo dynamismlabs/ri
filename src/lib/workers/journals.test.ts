@@ -286,7 +286,7 @@ describe('commands', () => {
 describe('events', () => {
   async function chatOnWorker() {
     const q = await import('@/lib/db/queries');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
     q.updateChatSession(chat.id, { deviceId } as never);
     return chat;
   }
@@ -378,7 +378,7 @@ describe('events', () => {
 
   it("for a chat that doesn't run on this device are refused, and the journal moves on", async () => {
     const q = await import('@/lib/db/queries');
-    const elsewhere = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
+    const elsewhere = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
     const { applyWorkerEvents } = await import('@/lib/executor/apply');
     const result = applyWorkerEvents(deviceId, [
       {
@@ -551,7 +551,7 @@ describe('placements in the heartbeat', () => {
 describe('cumulative parts', () => {
   it('are replaced only by a newer revision', async () => {
     const q = await import('@/lib/db/queries');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'opencode', status: 'active', permissionMode: 'auto_all' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'opencode', status: 'active', permissionMode: 'auto_all' });
     const { applyChatEvent } = await import('@/lib/executor/apply');
     const part = (content: string, partRevision: number) => ({
       sessionId: chat.id,

@@ -17,14 +17,14 @@ vi.mock('next/navigation', async () => {
   return { usePathname: () => '/', useSearchParams: () => new URLSearchParams(useSyncExternalStore(sub, () => h.url.search)), useRouter: () => ({ push: go, replace: go }) };
 });
 vi.mock('@/lib/trpc/client', async original => ({ ...await original<typeof import('@/lib/trpc/client')>(), trpcClient: {
-  orchestratorChat: { list: { query: async () => { h.calls.push('orchGet'); if (h.fail) { const { ApiError } = await import('@/lib/api/client'); throw new ApiError(503, { error: 'Temporary network failure' }, '/fixture'); } return { session: { id: 'X', workspaceId: null, executionId: null, status: 'active' } }; } } },
+  coordinatorChat: { list: { query: async () => { h.calls.push('orchGet'); if (h.fail) { const { ApiError } = await import('@/lib/api/client'); throw new ApiError(503, { error: 'Temporary network failure' }, '/fixture'); } return { session: { id: 'X', workspaceId: null, executionId: null, status: 'active' } }; } } },
   workspaces: {
     chatGet: { query: async () => { h.calls.push('chatGet'); if (h.fail) { const { ApiError } = await import('@/lib/api/client'); throw new ApiError(503, { error: 'Temporary network failure' }, '/fixture'); } return { session: h.pointer ? { id: h.pointer, workspaceId: 'agent', executionId: null, status: 'active' } : null }; } },
     chatNewPost: { mutate: async () => { h.calls.push('chatNewPost'); h.pointer = 'C'; return { session: { id: 'C', workspaceId: 'agent', executionId: null, status: 'active' } }; } },
   },
   sessions: { messagesPost: { mutate: async (input: { params: { id: string } }) => { h.calls.push('messagesPost:' + input.params.id); return {}; } } },
 } }));
-vi.mock('@/lib/api/sessions', async original => ({ ...await original<typeof import('@/lib/api/sessions')>(), sessionsApi: new Proxy({ restart: async (id: string) => { h.calls.push('restart:' + id); return {}; }, get: async (id: string) => { h.calls.push('sessionGet:' + id); return { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration' }; } } as Record<string, unknown>, { get: (t, k: string) => t[k] ?? (async () => []) }) }));
+vi.mock('@/lib/api/sessions', async original => ({ ...await original<typeof import('@/lib/api/sessions')>(), sessionsApi: new Proxy({ restart: async (id: string) => { h.calls.push('restart:' + id); return {}; }, get: async (id: string) => { h.calls.push('sessionGet:' + id); return { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator' }; } } as Record<string, unknown>, { get: (t, k: string) => t[k] ?? (async () => []) }) }));
 vi.mock('@/hooks/use-workspaces', async original => ({ ...await original<typeof import('@/hooks/use-workspaces')>(), useWorkspaces: () => ({ data: [{ id: 'agent', name: 'Agent', status: 'active' }], isLoading: false }) }));
 vi.mock('@/components/executions/execution-composer', async () => {
   const React = await import('react');

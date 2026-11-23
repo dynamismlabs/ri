@@ -5,7 +5,7 @@
 
 Implementation and operator setup now live in [Slack and Buzz conversations](slack-buzz-conversations.md). This earlier proposal remains background and was not independently approved as a specification.
 
-Slack could become another place to talk with a personal Ri orchestrator or a team's AI. The value is continuity: ask for something where the discussion is happening, answer Ri's questions, change direction, and receive the result without moving the conversation between tools.
+Slack could become another place to talk with a personal Ri coordinator or a team's AI. The value is continuity: ask for something where the discussion is happening, answer Ri's questions, change direction, and receive the result without moving the conversation between tools.
 
 The recommended foundation is an ordinary Ri conversation served through Slack's native agent interface. Ri owns its conversation state and actions. Slack provides another place to participate. The main product decisions are which Ri instance answers, who can see the conversation, and when Ri should participate.
 
@@ -45,7 +45,7 @@ These concepts answer different questions:
 | Requesting person | Whose authority applies to the current request and its actions? |
 | Entry point | Is someone participating through Slack or through Ri? |
 
-A connection should name its destination explicitly. A team channel connected to Acme's Ri addresses Acme's AI consistently. A personal connection addresses that person's orchestrator. Routing should not silently switch between the team and personal homes according to who last spoke.
+A connection should name its destination explicitly. A team channel connected to Acme's Ri addresses Acme's AI consistently. A personal connection addresses that person's coordinator. Routing should not silently switch between the team and personal homes according to who last spoke.
 
 A team-owned AI can have a private conversation with one member. Team ownership determines its capabilities, while the conversation's audience determines who can read it. Treating those as the same thing would make private Slack messages unexpectedly visible to colleagues.
 
@@ -134,7 +134,7 @@ Start with one team instance, one Slack workspace, one explicitly shared channel
 
 The decisions to settle before implementation are:
 
-1. **Destination:** begin with the team's AI, a personal orchestrator, or both? The recommendation is a team pilot.
+1. **Destination:** begin with the team's AI, a personal coordinator, or both? The recommendation is a team pilot.
 2. **Audience:** approve the pilot's explicit all-team visibility and determine the policy for private team conversations.
 3. **Participation:** define how Ri recognizes follow-ups, handles another member answering its question, and stays quiet during unrelated discussion.
 4. **Delivery:** choose a user-created internal Slack app or a shared installable app. Socket Mode is a candidate for the former.

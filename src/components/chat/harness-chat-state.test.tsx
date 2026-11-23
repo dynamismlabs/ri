@@ -23,7 +23,7 @@ vi.mock('@/lib/trpc/client', async original => ({ ...await original<typeof impor
   },
   sessions: { messagesPost: { mutate: async (input: { params: { id: string } }) => { h.calls.push('messagesPost:' + input.params.id); return {}; } } },
 } }));
-vi.mock('@/lib/api/sessions', async original => ({ ...await original<typeof import('@/lib/api/sessions')>(), sessionsApi: new Proxy({ runtimeStatus: async () => ({ running: h.running, backgroundTasks: false, backgroundTaskIds: [], closeUnconfirmed: h.closeUnconfirmed }), restart: async (id: string) => { h.calls.push('restart:' + id); return {}; }, get: async (id: string) => { h.calls.push('sessionGet:' + id); return { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'orchestration' }; } } as Record<string, unknown>, { get: (t, k: string) => t[k] ?? (async () => []) }) }));
+vi.mock('@/lib/api/sessions', async original => ({ ...await original<typeof import('@/lib/api/sessions')>(), sessionsApi: new Proxy({ runtimeStatus: async () => ({ running: h.running, backgroundTasks: false, backgroundTaskIds: [], closeUnconfirmed: h.closeUnconfirmed }), restart: async (id: string) => { h.calls.push('restart:' + id); return {}; }, get: async (id: string) => { h.calls.push('sessionGet:' + id); return { id, workspaceId: 'agent', executionId: null, status: 'active', type: 'coordinator' }; } } as Record<string, unknown>, { get: (t, k: string) => t[k] ?? (async () => []) }) }));
 vi.mock('@/hooks/use-workspaces', async original => ({ ...await original<typeof import('@/hooks/use-workspaces')>(), useWorkspaces: () => ({ data: [{ id: 'agent', name: 'Agent', status: 'active' }], isLoading: false }) }));
 vi.mock('@/components/executions/execution-composer', async () => {
   const React = await import('react');

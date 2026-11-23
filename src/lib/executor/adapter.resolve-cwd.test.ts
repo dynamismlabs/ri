@@ -84,8 +84,8 @@ describe('resolveCwd — worktree isolation safety', () => {
     expect(resolveCwd(exec(null, 'ws2'))).toBe(sourceCheckout);
   });
 
-  it('no workspace (orchestrator/content) → the app root', () => {
-    expect(resolveCwd({ worktreePath: null, workspaceId: null, type: 'orchestration', executionId: null }))
+  it('no workspace (coordinator/content) → the app root', () => {
+    expect(resolveCwd({ worktreePath: null, workspaceId: null, type: 'coordinator', executionId: null }))
       .toBe('/tmp/test-app-root');
     expect(getWorkspace).not.toHaveBeenCalled();
   });
@@ -98,7 +98,7 @@ describe('resolveCwd — worktree isolation safety', () => {
 
 describe("resolveCwd — an agent's main chat", () => {
   const mainChat = (workspaceId: string) =>
-    ({ worktreePath: null, workspaceId, type: 'orchestration' as const, executionId: null });
+    ({ worktreePath: null, workspaceId, type: 'coordinator' as const, executionId: null });
 
   it('runs in the agent folder, git or not (it has no worktree by design)', () => {
     getWorkspace.mockReturnValue(gitWs);

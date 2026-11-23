@@ -14,7 +14,7 @@ import { reply, type OperationContext } from '@/lib/server/operation';
 import { createInsertSchema } from 'drizzle-zod';
 import path from 'node:path';
 import { z as rpcZ } from 'zod/v4';
-import { requestHasSessionAuthority } from '@/lib/orchestrator/mcp-caller';
+import { requestHasSessionAuthority } from '@/lib/actions/mcp-caller';
 import { WorkResultGuidanceError, normalizeWorkResultGuidance } from '@/lib/instructions/preferences';
 import { workspaceReviewPreferencesSchema } from '@/lib/workspaces/review-preferences';
 

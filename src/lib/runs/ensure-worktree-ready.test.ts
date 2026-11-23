@@ -99,7 +99,7 @@ afterAll(() => {
 });
 
 describe('ensureWorktreeReady', () => {
-  it('no execution (orchestrator target) → ok, no provisioning', async () => {
+  it('no execution (coordinator target) → ok, no provisioning', async () => {
     const { ensureWorktreeReady } = await import('./dispatch');
     const res = await ensureWorktreeReady('chat1', null);
     expect(res).toEqual({ ok: true });

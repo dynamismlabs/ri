@@ -96,7 +96,7 @@ One shared day model, rendered at three densities:
   `api.get('/deck')` (deck-container.tsx:247) and
   `api.patch('/deck/'+id, {items, alternatives})` for reorder (:171).
   Cross-surface sync must therefore be explicit (CustomEvent, see 3.2).
-- **Orchestrator** — `update_deck` action exists (items/alternatives/framing).
+- **Coordinator** — `update_deck` action exists (items/alternatives/framing).
   **No `get_day_shape` action** — agents outside deck generation must read raw
   integration events and do their own free/busy math, which the deck prompt
   itself forbids ("never do free/busy math yourself").
@@ -201,7 +201,7 @@ Bearer-auth middleware as every `/api` route; client always uses the `api`
 client. No new query functions in `queries.ts` — this route reads integrations,
 not SQLite, so the queries-layer rule doesn't apply.
 
-**Orchestrator action** `get_day_shape` (registry.ts, non-mutating):
+**Ri action** `get_day_shape` (registry.ts, non-mutating):
 
 ```
 params: { date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
@@ -564,8 +564,8 @@ run `pnpm test`. Order within a phase is the dependency order.
 - [x] **0.6** `[new]` Route `src/app/api/calendar/route.ts`: `GET` per §A
   (`start` default today, `days` clamp 1–14, `fresh=1`). Returns
   `CalendarRangeResult` as JSON. Error envelope shape matches sibling routes.
-- [x] **0.7** `[new]` Orchestrator action `get_day_shape` in
-  `src/lib/orchestrator/registry.ts` (place beside the deck actions):
+- [x] **0.7** `[new]` Ri action `get_day_shape` in
+  `src/lib/actions/registry.ts` (place beside the deck actions):
   params/return/description exactly per §A, non-mutating, lazy service
   import. Acceptance: `<cli> agent get_day_shape --date 2026-07-20` returns
   gaps identical to what deck generation logs for the same date; visible via
@@ -668,7 +668,7 @@ run `pnpm test`. Order within a phase is the dependency order.
   lazy imports must not drag the integrations runtime into the CLI boot graph).
 - [x] `pnpm build` clean.
 - [x] Deck regen on a calendar-connected day: slots render in strip, tab, and
-  pills consistently, `get_day_shape` (orchestrator) matches the tab's gaps.
+  pills consistently, `get_day_shape` (coordinator) matches the tab's gaps.
 - [x] Kill network → HUD shows `Calendar unreachable`, tab shows stale dot,
   strip keeps last data. Reconnect → refresh recovers. *(Verified at the unit
   level: service status matrix + degraded-day tests; hudLabel error state

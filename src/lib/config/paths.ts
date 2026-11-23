@@ -323,9 +323,9 @@ export function ensureAppRoot(): string {
   }
 
   // Orient any agent that opens a session in the home. Written once — never
-  // overwritten — so users can edit freely. The orchestrator brief's managed
+  // overwritten — so users can edit freely. The coordinator brief's managed
   // block is regenerated separately (installInstructions). A team space runs
-  // no orchestrator, so it gets none.
+  // no coordinator, so it gets none.
   const agentsMdPath = path.join(/* turbopackIgnore: true */ dir, 'AGENTS.md');
   if (!isTeamRoot() && !fs.existsSync(/* turbopackIgnore: true */ agentsMdPath)) {
     fs.writeFileSync(agentsMdPath, renderAppRootAgentsMd(), { mode: 0o600 });
@@ -345,7 +345,7 @@ export function ensureAppRoot(): string {
 /**
  * Ensure the home exists and seed the content files that live at its root:
  * MEMORY.md (agent memory) + USER.md / SOUL.md (user-owned personalization
- * the orchestrator brief references). All write-once — never overwritten, so
+ * the coordinator brief references). All write-once — never overwritten, so
  * user edits survive while the app regenerates the brief around them.
  *
  * Named `ensureBrainDir` for transitional compatibility; there's no `brain/`

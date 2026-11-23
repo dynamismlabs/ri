@@ -94,7 +94,7 @@ Connectors reuse [the existing Connect/Allow flow](connecting-from-chat.md). Sou
 
 After acceptance, retain the original markers in the event. Supply the model a bounded source-context block with the canonical label, target kind, message ID, `source_ref`, availability of a view and instructions for discovering/calling that source. Limit this initial block to 16 KiB across all sources. It contains no credentials, full data dump or automatic record fetch. Descriptions remain lower-trust app/provider data.
 
-Add a thin domain layer at `src/lib/chat-sources/`, with the existing integrations adapter and an optional installed-app adapter. Register the following orchestrator actions independently of the local-app action registry. They were gated on `RI_CHAT_SOURCES` until October 19 and are now always registered. Recheck names for collisions before implementation. Their parameter validators are Zod raw shapes, and the same domain operations serve tRPC, CLI and MCP:
+Add a thin domain layer at `src/lib/chat-sources/`, with the existing integrations adapter and an optional installed-app adapter. Register the following Ri actions independently of the local-app action registry. They were gated on `RI_CHAT_SOURCES` until October 19 and are now always registered. Recheck names for collisions before implementation. Their parameter validators are Zod raw shapes, and the same domain operations serve tRPC, CLI and MCP:
 
 | Action | Input and behavior |
 | --- | --- |
@@ -145,7 +145,7 @@ Use the existing plugins worktree at `/Users/agent/worktrees/ri-local-apps`, bra
 | `src/components/chat/editor/chat-input-editor.tsx` | Source-chip node, marker serialization in both output modes and draft rehydration. Preserve other chip behavior. |
 | `src/lib/entity-refs/` and transcript reference rendering | Shared source parser and native chip interaction, without coercing sources into task/note reference rows. |
 | `src/lib/server/operations/sessions/[id]/messages.ts` and shared send preparation | Source preflight, stable accepted-message identity and bounded harness context on all send/redispatch paths. |
-| `src/lib/chat-sources/`, tRPC router and orchestrator registry | Shared source contract, Connector adapter and two public actions, always available. Read core entities through queries, never raw SQL in transport handlers. |
+| `src/lib/chat-sources/`, tRPC router and action registry | Shared source contract, Connector adapter and two public actions, always available. Read core entities through queries, never raw SQL in transport handlers. |
 | `src/lib/integrations/scope-pins.ts`, `workspace-filter.ts`, connection requests and engine | Reuse exact account pins, current scopes, action dispatch, access cards and approval identity. |
 | Existing MCP client/capability snapshots, account-view evaluation and shared view host | Project connected apps into the catalog, preserve standard results/resources, and bind the common host to the exact authorized connection. See section 9. |
 | `src/lib/local-apps/`, manifest/operations and app-kit public exports | Optional app source adapter/registration, optional UI, tools-only fixture, native summary link and current authorized descriptors. |

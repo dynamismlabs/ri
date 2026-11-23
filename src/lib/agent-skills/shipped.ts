@@ -1,7 +1,7 @@
 /**
  * Lifecycle for skills shipped with the app.
  *
- * The app-root install is always present so orchestrator and content sessions
+ * The app-root install is always present so coordinator and content sessions
  * discover the skill from their own cwd. The user-level install makes the same
  * skills available to ordinary coding-tool sessions in any project, for every
  * harness Ri can run. First-run setup turns it on as the conversation opens,
@@ -47,7 +47,7 @@ const SKILLS_ROOT = path.join(/* turbopackIgnore: true */ findPackageRoot(MODULE
  * materialization step below.
  */
 const SHIPPED_SKILLS = [
-  { template: 'orchestrator', name: AGENT_SKILL_NAME },
+  { template: 'tasks-notes', name: AGENT_SKILL_NAME },
   { template: 'browser', name: AGENT_BROWSER_SKILL_NAME },
 ] as const;
 

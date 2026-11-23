@@ -6,7 +6,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
 import * as q from '@/lib/db/queries';
-import { sessionCredential } from '@/lib/orchestrator/session-credential';
+import { sessionCredential } from '@/lib/actions/session-credential';
 import { ApiClient } from '@/lib/api/client';
 import { createAppTRPCClient } from './client';
 import { appRouter } from './router';
@@ -45,7 +45,7 @@ function client(token: string, credential?: string) {
   clients.push(value); return value;
 }
 it('retains agent identity for person-only controls, launch permissions and live revalidation', async () => {
-  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'codex', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'auto_edits' });
+  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'codex', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'auto_edits' });
   const agent = client(fixture.owner.token.plaintext, sessionCredential(parent.id)!);
   await expect(agent.team.ai.setEnabled.mutate({ enabled: false })).rejects.toThrow();
   expect(q.getTeamAiSettings()?.enabled).toBe(true);
@@ -60,8 +60,8 @@ it('retains agent identity for person-only controls, launch permissions and live
 }, 30_000);
 
 it('preserves a disclosed sending chat in shared messages and the delivered prompt', async () => {
-  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'codex', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask', label: 'Sending chat' });
-  const target = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'codex', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'auto_all' });
+  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'codex', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask', label: 'Sending chat' });
+  const target = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'codex', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'auto_all' });
   const prompts: string[] = [];
   fake.onTurn(async turn => { prompts.push(turn.message); await turn.say('Done'); });
   const agent = client(fixture.member.token.plaintext, sessionCredential(parent.id)!);

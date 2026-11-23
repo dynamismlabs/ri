@@ -18,16 +18,16 @@ it('lets the owner set, replace and remove an uploaded logo while members read t
   const owner = await teamTrpc(fixture.owner.token), reader = await teamTrpc(member.token);
   const first = await image();
   expect(await owner.team.setLogo.mutate({ image: first })).toEqual({ image: first });
-  expect((await reader.userState.list.query({}))?.orchestratorImage).toEqual(first);
+  expect((await reader.userState.list.query({}))?.coordinatorImage).toEqual(first);
   expect((await reader.team.me.query()).team.logo).toEqual(first);
   const second = await image();
   await owner.team.setLogo.mutate({ image: second });
-  expect(q.getUserState()?.orchestratorImage).toEqual(second);
+  expect(q.getUserState()?.coordinatorImage).toEqual(second);
   expect((await reader.team.me.query()).team.logo).toEqual(second);
   expect(q.getHome()?.name).toBe('Acme');
   await owner.team.setLogo.mutate({ image: null });
   await owner.team.setLogo.mutate({ image: null });
-  expect(q.getUserState()?.orchestratorImage).toBeNull();
+  expect(q.getUserState()?.coordinatorImage).toBeNull();
   expect((await reader.team.me.query()).team.logo).toBeNull();
 });
 
@@ -39,7 +39,7 @@ it('refuses member and revoked credentials without changing the logo', async () 
   await expect(writer.team.setLogo.mutate({ image: null })).rejects.toMatchObject({ data: { httpStatus: 403 } });
   q.removeMember(member.id);
   await expect(writer.team.setLogo.mutate({ image: logo })).rejects.toThrow();
-  expect(q.getUserState()?.orchestratorImage).toEqual(logo);
+  expect(q.getUserState()?.coordinatorImage).toEqual(logo);
 });
 
 it('refuses non-images, unsafe paths and image metadata without an upload', async () => {
@@ -52,6 +52,6 @@ it('refuses non-images, unsafe paths and image metadata without an upload', asyn
     { ...logo, fileName: '00000000-0000-7000-8000-000000000000.svg' },
   ]) {
     await expect(owner.team.setLogo.mutate({ image: invalid })).rejects.toMatchObject({ data: { httpStatus: 400 } });
-    expect(q.getUserState()?.orchestratorImage).toEqual(logo);
+    expect(q.getUserState()?.coordinatorImage).toEqual(logo);
   }
 });

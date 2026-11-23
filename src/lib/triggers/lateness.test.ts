@@ -24,7 +24,7 @@ describe('lateBy', () => {
 });
 
 describe('overdueLabel', () => {
-  const job = { enabled: true, kind: 'cron', targetKind: 'orchestrator', nextRunAt: DUE } as const;
+  const job = { enabled: true, kind: 'cron', targetKind: 'coordinator', nextRunAt: DUE } as const;
 
   it('says a repeating job past its time has not started', () => {
     expect(overdueLabel(job, at('18:39:32'))).toBe("Hasn't started, 3h 39m late");
