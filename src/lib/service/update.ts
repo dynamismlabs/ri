@@ -22,8 +22,13 @@ export type UpdatePhase = 'idle' | 'available' | 'downloading' | 'ready' | 'wait
 /** A release built on this computer from a checkout (docs/always-on-spec.md
  * section 8). It takes the same switch as a published one, without the feed. */
 export interface LocalRelease { commit?: string; checkout?: string }
+/** The release an update moves to. One from the feed has every field. One built
+ * here from a checkout has no feed entry, so it knows only its version and
+ * runtime: no notes, sizes, signature or compatibility. */
+export type UpdateRelease = Pick<Release, 'version'> & Partial<Omit<Release, 'version' | 'runtime'>>
+  & { runtime: Pick<Release['runtime'], 'id'> & Partial<Release['runtime']> };
 export interface UpdateRecord {
-  format: 1; phase: UpdatePhase; release?: Release; priorId?: string; checkpoint?: string;
+  format: 1; phase: UpdatePhase; release?: UpdateRelease; priorId?: string; checkpoint?: string;
   approved?: boolean; bytes?: number; reason?: string; error?: string; changedAt: string;
   committedAt?: string; window?: MaintenanceWindow;
   local?: LocalRelease;
@@ -259,7 +264,7 @@ export class UpdateCoordinator {
       const version = JSON.parse(fs.readFileSync(/* turbopackIgnore: true */ path.join(/* turbopackIgnore: true */ target.repo, 'package.json'), 'utf8')).version as string;
       const reset = { approved: false, force: false, bytes: 0, error: undefined, reason: undefined, committedAt: undefined, checkpoint: undefined, priorId: undefined, ...NOT_WAITING };
       if (installedRuntime(this.directory)?.id === id) this.save({ ...reset, phase: 'idle', release: undefined, local: undefined });
-      else this.save({ ...reset, phase: 'ready', local, release: { version, runtime: { id } } as unknown as Release });
+      else this.save({ ...reset, phase: 'ready', local, release: { version, runtime: { id } } });
       return this.status();
     });
   }

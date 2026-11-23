@@ -55,6 +55,16 @@ it('shows the version, notes and actions as soon as a downloaded update is waiti
   expect(button('Update now')).toBeDefined();
 });
 
+it('shows a build from a checkout, which has no notes, by its commit', async () => {
+  // The record `offer` writes for `ri update` from a checkout. Its missing notes blanked the whole app.
+  mocks.status.mockResolvedValue({ ...waiting(), update: { phase: 'waiting', automatic: true,
+    release: { version: '0.1.0', runtime: { id: 'a'.repeat(64) } }, local: { commit: 'fc418c0a4d2e9b7f', checkout: '/src/ri' } } });
+  await mount();
+  expect(container.textContent).toContain('Ri main fc418c0a is ready to update');
+  expect(container.querySelectorAll('[role="status"] p')).toHaveLength(2);
+  expect(button('Update now')).toBeDefined();
+});
+
 it('opens update details and keeps the ready card out of the way while reading them', async () => {
   await mount();
   await act(async () => button('View update').click());

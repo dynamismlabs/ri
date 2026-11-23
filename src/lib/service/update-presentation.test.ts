@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import type { Release } from './release-trust';
 import type { UpdateRecord } from './update';
-import { maintenanceWindowText, railUpdateNotice, readyUpdateNotice, updateProgress, updateStatusText } from './update-presentation';
+import { maintenanceWindowText, railUpdateNotice, readyUpdateNotice, releaseLabel, updateProgress, updateStatusText } from './update-presentation';
 
 const record: UpdateRecord = { format: 1, phase: 'downloading', changedAt: '', release: { runtime: { size: 4 * 1024 ** 2 } } as Release };
 it('distinguishes byte transfer from verification after the last byte', () => {
@@ -36,12 +36,22 @@ it('puts a waiting update in the rail only for people who can act on it, and onl
 
 it('shows a downloaded update immediately, with its version and release notes', () => {
   const update = { ...record, phase: 'waiting' as const, automatic: true, release: { ...record.release!, version: '0.2.0', notes: 'Faster chats' } };
-  expect(readyUpdateNotice({ canUseUpdates: true, update })).toEqual({ version: '0.2.0', notes: 'Faster chats', automatic: true });
+  expect(readyUpdateNotice({ canUseUpdates: true, update })).toEqual({ label: '0.2.0', notes: 'Faster chats', automatic: true });
   expect(readyUpdateNotice({ canUseUpdates: false, update })).toBeNull();
   expect(readyUpdateNotice({ canUseUpdates: true })).toBeNull();
   for (const phase of ['available', 'downloading', 'ready', 'draining', 'committed', 'failed'] as const) {
     expect(readyUpdateNotice({ canUseUpdates: true, update: { ...update, phase } })).toBeNull();
   }
+});
+
+it('names a build from a checkout by its commit, with no notes', () => {
+  // What `offer` records: no feed entry, and the checkout's version can be the one running.
+  const update: UpdateRecord = { format: 1, phase: 'waiting', changedAt: '', automatic: true,
+    release: { version: '0.1.0', runtime: { id: 'a'.repeat(64) } }, local: { commit: 'fc418c0a4d2e9b7f', checkout: '/src/ri' } };
+  expect(readyUpdateNotice({ canUseUpdates: true, update })).toEqual({ label: 'main fc418c0a', notes: '', automatic: true });
+  expect(releaseLabel(update.release!, update.local)).toBe('main fc418c0a');
+  expect(releaseLabel(update.release!, {})).toBe('0.1.0');
+  expect(releaseLabel(update.release!)).toBe('0.1.0');
 });
 
 it('keeps a postponed notice hidden until the hold ends', () => {
