@@ -20,6 +20,12 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, _request: Opera
       return reply({ error: 'kind is "note" or "decision".' }, { status: 400 });
     }
     const noteKind = (kindParam ?? undefined) as 'note' | 'decision' | undefined;
+    // One type of record only, so a narrowed search fills its limit with that type.
+    const typeParam = searchParams(rpcInput.query).get('type');
+    if (typeParam && typeParam !== 'task' && typeParam !== 'note' && typeParam !== 'stream') {
+      return reply({ error: 'type is "task", "note" or "stream".' }, { status: 400 });
+    }
+    const filter = { noteKind, entityType: (typeParam ?? undefined) as 'task' | 'note' | 'stream' | undefined };
 
     if (!q || q.trim().length === 0) {
       return reply([]);
@@ -28,21 +34,21 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, _request: Opera
     let hits: Array<{ entityType: string; entityId: string; score: number }>;
 
     if (mode === 'keyword') {
-      hits = ftsSearch(q, limit, { noteKind });
+      hits = ftsSearch(q, limit, filter);
     } else if (mode === 'vector') {
       try {
-        hits = await vectorSearch(q, limit, { noteKind });
+        hits = await vectorSearch(q, limit, filter);
       } catch {
         // Fall back to keyword if embedding fails
-        hits = ftsSearch(q, limit, { noteKind });
+        hits = ftsSearch(q, limit, filter);
       }
     } else {
       // hybrid (default)
       try {
-        hits = await hybridSearch(q, { limit, noteKind });
+        hits = await hybridSearch(q, { limit, ...filter });
       } catch {
         // Fall back to keyword if embedding fails
-        hits = ftsSearch(q, limit, { noteKind });
+        hits = ftsSearch(q, limit, filter);
       }
     }
 
@@ -69,4 +75,4 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, _request: Opera
   }
 }
 
-export const GETInput = rpcZ.object({ query: rpcZ.object({ "q": rpcZ.string().optional(), "mode": rpcZ.string().optional(), "limit": rpcZ.string().optional(), "kind": rpcZ.string().optional() }).strict().optional() }).strict().default({});
+export const GETInput = rpcZ.object({ query: rpcZ.object({ "q": rpcZ.string().optional(), "mode": rpcZ.string().optional(), "limit": rpcZ.string().optional(), "kind": rpcZ.string().optional(), "type": rpcZ.string().optional() }).strict().optional() }).strict().default({});

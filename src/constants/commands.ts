@@ -170,17 +170,23 @@ export const PALETTE_COMMANDS: PaletteCommand[] = [
   { id: 'toggle-theme', label: 'Toggle theme', keywords: 'theme dark light mode switch', icon: 'Sun', group: 'settings' },
 ];
 
-// ── Type filter prefixes ─────────────────────────────────────
+// ── Search filters ───────────────────────────────────────────
 
-/** An entity type, or `decision`: notes marked as decisions (docs/homes-spec.md §9.7). */
-export type EntityTypeFilter = 'task' | 'note' | 'decision' | 'stream';
+/**
+ * What the ⌘K palette can narrow to, shown as a row of choices under the
+ * search box. `decision` is notes marked as decisions (docs/homes-spec.md
+ * §9.7). Each Home offers the ones it can search. Typing a prefix ("task:",
+ * ">") picks its filter too.
+ */
+export type SearchFilter = 'all' | 'task' | 'note' | 'decision' | 'stream' | 'chat' | 'app' | 'command';
 
-export const TYPE_PREFIXES: Record<string, EntityTypeFilter> = {
-  'task:': 'task',
-  'tasks:': 'task',
-  'note:': 'note',
-  'notes:': 'note',
-  'decision:': 'decision',
-  'decisions:': 'decision',
-  'stream:': 'stream',
+export const SEARCH_FILTERS: Record<SearchFilter, { label: string; prefixes: readonly string[]; placeholder: string; hint: string }> = {
+  all: { label: 'All', prefixes: [], placeholder: 'Search or type > for commands...', hint: 'Type to search across tasks, notes, and stream' },
+  task: { label: 'Tasks', prefixes: ['task:', 'tasks:'], placeholder: 'Search tasks...', hint: 'Type to search tasks' },
+  note: { label: 'Notes', prefixes: ['note:', 'notes:'], placeholder: 'Search notes...', hint: 'Type to search notes' },
+  decision: { label: 'Decisions', prefixes: ['decision:', 'decisions:'], placeholder: 'Search decisions...', hint: 'Type to search decisions' },
+  stream: { label: 'Stream', prefixes: ['stream:'], placeholder: 'Search the stream...', hint: 'Type to search the stream' },
+  chat: { label: 'Chats', prefixes: ['chat:', 'chats:'], placeholder: 'Search chats...', hint: 'Type to search chats' },
+  app: { label: 'Apps', prefixes: ['app:', 'apps:'], placeholder: 'Find an app...', hint: 'Type to find an app' },
+  command: { label: 'Commands', prefixes: ['>'], placeholder: 'Type a command...', hint: 'Type a command' },
 };

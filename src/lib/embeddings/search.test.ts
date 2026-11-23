@@ -8,8 +8,12 @@ const mocks = vi.hoisted(() => ({
   generateEmbedding: vi.fn(),
 }));
 
-vi.mock('./embed', () => ({
+// Records made through the query layer keep their real embedding text, and
+// never reach a model: their upserts do nothing here.
+vi.mock('./embed', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('./embed')>()),
   generateEmbedding: mocks.generateEmbedding,
+  upsertEmbedding: vi.fn(async () => undefined),
 }));
 
 const ENV_KEYS = ['RI_ROOT', 'RI_DB_PATH', 'RI_MIRROR_DISABLED'] as const;
@@ -88,6 +92,59 @@ describe('vector search', () => {
       { entityType: 'task', entityId: 'exact-match', score: 1 },
       { entityType: 'note', entityId: 'orthogonal-match', score: 0 },
     ]);
+  });
+
+  it('narrows nearest neighbours to one type and still fills the limit with it', async () => {
+    const queryVector = unitVector(0);
+    // Two tasks nearer the query than any note, so a mixed top 2 holds no note.
+    await insertEmbedding('task', 'near-task', queryVector);
+    const close = new Float32Array(1536);
+    close[0] = 0.9;
+    close[1] = 0.1;
+    await insertEmbedding('task', 'close-task', close);
+    await insertEmbedding('note', 'far-note', unitVector(1));
+    await insertEmbedding('stream', 'far-capture', unitVector(2));
+    mocks.generateEmbedding.mockResolvedValue(Array.from(queryVector));
+
+    const { vectorSearch } = await import('./search');
+    expect((await vectorSearch('plan', 2)).map((hit) => hit.entityId)).toEqual(['near-task', 'close-task']);
+    expect(await vectorSearch('plan', 2, { entityType: 'note' })).toEqual([
+      { entityType: 'note', entityId: 'far-note', score: 0 },
+    ]);
+    expect((await vectorSearch('plan', 2, { entityType: 'stream' })).map((hit) => hit.entityId)).toEqual(['far-capture']);
+    // Outside clients never reach the stream, even by asking for it.
+    expect(await vectorSearch('plan', 2, { entityType: 'stream', includeStream: false })).toEqual([]);
+  });
+
+  it('narrows keyword search to one type, and the search operation takes it as type', async () => {
+    await openAsServer();
+    const q = await import('@/lib/db/queries');
+    const task = q.createTask({ title: 'Zebra crossing repaint' });
+    const note = q.createNote({ title: 'Zebra field notes', body: 'Stripes' });
+    const decision = q.createNote({ title: 'Zebra decision', body: 'Paint it', kind: 'decision' });
+    const capture = q.createStream({ rawText: 'saw a zebra today' });
+
+    const { ftsSearch, hybridSearch } = await import('./search');
+    const ids = (hits: Array<{ entityId: string }>) => hits.map((hit) => hit.entityId).sort();
+    expect(ids(ftsSearch('zebra'))).toEqual([task.id, note.id, decision.id, capture.id].sort());
+    expect(ids(ftsSearch('zebra', 20, { entityType: 'task' }))).toEqual([task.id]);
+    expect(ids(ftsSearch('zebra', 20, { entityType: 'note' }))).toEqual([note.id, decision.id].sort());
+    expect(ids(ftsSearch('zebra', 20, { entityType: 'stream' }))).toEqual([capture.id]);
+    expect(ftsSearch('zebra', 20, { entityType: 'stream', includeStream: false })).toEqual([]);
+    // A note kind keeps notes of that kind, whatever type is asked for.
+    expect(ids(ftsSearch('zebra', 20, { entityType: 'task', noteKind: 'decision' }))).toEqual([decision.id]);
+    // No embedding key: hybrid falls back to keyword hits, narrowed the same way.
+    mocks.generateEmbedding.mockRejectedValue(new Error('no key'));
+    expect(ids(await hybridSearch('zebra', { entityType: 'task' }))).toEqual([task.id]);
+
+    const { GET } = await import('@/lib/server/operations/search');
+    const context = { headers: new Headers(), url: 'http://ri.test/api/search', nextUrl: new URL('http://ri.test/api/search'), signal: new AbortController().signal };
+    const tasks = await GET({ query: { q: 'zebra', mode: 'keyword', type: 'task' } }, context);
+    expect(tasks.ok && tasks.data.map((hit) => [hit.entityType, hit.id])).toEqual([['task', task.id]]);
+    const decisions = await GET({ query: { q: 'zebra', mode: 'keyword', kind: 'decision' } }, context);
+    expect(decisions.ok && decisions.data.map((hit) => hit.id)).toEqual([decision.id]);
+    const wrong = await GET({ query: { q: 'zebra', type: 'area' } }, context);
+    expect(wrong).toMatchObject({ ok: false, status: 400 });
   });
 
   it('upgrades an existing L2 vec0 table to cosine without losing vectors', async () => {

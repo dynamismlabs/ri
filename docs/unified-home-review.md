@@ -11,7 +11,7 @@ The owner's [20 October decisions](unified-home-revisions.md) supersede the cont
 | Home shell | `HomeShell`, `RailContainer`, `RailLayout`, `RailRows`, `useRailCollapse`, `HomePhoneBar`, `MobileTopBar`, `SpaceSelector`, WorkContext | Team identity, membership, assignment, Decisions and AI availability |
 | Tasks | `TaskSurface`, `TaskList`, `TaskRow`, `TaskKanban`, `TaskDocument`, `PersonalTaskDocument`, `TaskPlanningProperties`, `TaskDateField`, `EntitySheet`, `EntityDetailHeader`, `EntityActionsMenu` | Shared audience/assignment versus private planning, My Area and publication |
 | Notes and editor | `NoteList`, `NoteRow`, `NoteEditor`, RichEditor, history/diff and autosave | Shared revision and author checks |
-| Search | `SearchPalette`, `parseSearchQuery`, `CommandSearchItems`, `RecentSearchItems` and common keyboard/focus behavior | Personal versus Team query adapters |
+| Search | `SearchPalette` (with its filter row), `usePaletteQuery`, `CommandSearchItems`, `RecentSearchItems` and common keyboard/focus behavior | Personal versus Team query adapters |
 | Work entry | `StartWithAgentButton`, continue-target lookup, task launcher seed and ordinary launcher | One destination entry, with a choice only when personal and Team execution are both available |
 | Agents | `AgentView`, `AgentSetup`, `WorkspaceCreateModal`, Files and terminal | Owner-only configuration, member file edits and terminal opens, member activity log |
 | Chats | `ExecutionView`, `ExecutionTranscript`, `ChatTranscript`, `ChatComposer`, `ChatInputEditor` | Audience, creator, per-message requester and turn outcome controls |

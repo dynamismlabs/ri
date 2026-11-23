@@ -19,6 +19,15 @@ On Windows and Linux, use Ctrl wherever this page says ⌘. Shortcuts that say C
 
 In a team, ⌘J and ⌘⇧K are off.
 
+## Search
+
+| Keys | What it does |
+| --- | --- |
+| Tab and Shift+Tab | Move to the next or previous filter across the top, like Tasks or Notes. |
+| Backspace | Go back to All, when the cursor is at the start of the box. |
+| `>` | Show commands. `task:`, `note:`, `decision:` and `stream:` pick their filter the same way. |
+| ↑ and ↓ | Move through the results. Enter opens one. |
+
 ## Writing a message
 
 | Keys | What it does |

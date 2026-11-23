@@ -2,7 +2,7 @@
 
 
 import { RecentSearchItems } from './recent-search-items';
-import { parseSearchQuery } from '@/lib/client/search-query';
+import { keepsRecord, searchNarrowing, usePaletteQuery } from '@/lib/client/search-query';
 
 import { SearchPalette } from './search-palette';
 import { CommandSearchItems } from './command-search-items';
@@ -16,7 +16,9 @@ import { openChatSearch } from '@/components/workspaces/chat-search-store';
 import {
 	HOTKEYS, matchesHotkey,
 	PALETTE_COMMANDS,
+	SEARCH_FILTERS,
 	type PaletteCommand,
+	type SearchFilter,
 } from '@/constants/commands';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useCreateNote } from '@/hooks/use-notes';
@@ -47,22 +49,6 @@ export function SearchOverlay() {
   const scratchpadAvailable = useScratchpadAvailable();
   const tier = useViewportTier();
   const [open, setOpen] = useState(false);
-  const [rawQuery, setRawQuery] = useState('');
-  if (!open && rawQuery !== '') setRawQuery('');
-  const { searchQuery, typeFilter, isCommand } = parseSearchQuery(rawQuery);
-
-  // Defer the query so we fire one request per settle, not one per keystroke.
-  // Command mode ('>') is purely local — it filters PALETTE_COMMANDS and never
-  // touches the network.
-  const deferredQuery = useDeferredValue(isCommand ? '' : searchQuery);
-
-  // One debounced request per settle. `useSearch` defaults to hybrid (semantic +
-  // keyword) and keeps the previous hits visible while refining, so the list
-  // updates in place rather than reflowing. The skeleton below covers the wait.
-  // `decision:` asks the server for decisions by their stored kind.
-  const { data, isFetching } = useSearch(deferredQuery, undefined, typeFilter === 'decision' ? 'decision' : undefined);
-  const results = data ?? [];
-
   const { openTask, openNote, toggleTheme, theme, showPanelTab, triggerVoiceChat, setActiveView } = useDashboard();
   // One Open <app> per app the rail's Apps flyout lists: connections whose
   // MCP server declares a standalone screen.
@@ -75,18 +61,42 @@ export function SearchOverlay() {
     icon: 'LayoutGrid',
     group: 'navigate',
   }));
+
+  // Everything this palette can search, across the top. Apps once one is connected.
+  const filters: SearchFilter[] = ['all', 'task', 'note', 'decision', 'stream', ...(appList.length ? ['app' as const] : []), 'command'];
+  const palette = usePaletteQuery(filters);
+  const { filter, query } = palette;
+  // Every open starts from All with an empty box.
+  if (!open && (query !== '' || filter !== 'all')) palette.reset();
+  const searchQuery = query.trim();
+  const isCommand = filter === 'command';
+  // Tasks, notes and the stream come from the server. Apps and commands match here.
+  const searchesRecords = filter !== 'command' && filter !== 'app';
+
+  // Defer the query so we fire one request per settle, not one per keystroke.
+  // Commands and apps are purely local and never touch the network.
+  const deferredQuery = useDeferredValue(searchesRecords ? searchQuery : '');
+
+  // One debounced request per settle. `useSearch` defaults to hybrid (semantic +
+  // keyword) and keeps the previous hits visible while refining, so the list
+  // updates in place rather than reflowing. The skeleton below covers the wait.
+  // A filter narrows on the server, so Tasks fills its list with tasks.
+  const narrowing = searchNarrowing(filter);
+  const { data, isFetching } = useSearch(deferredQuery, undefined, narrowing.kind, narrowing.type);
+  const results = data ?? [];
+
   const createTask = useCreateTask();
   const createNote = useCreateNote();
   const newSkill = useStartSkill();
   const { data: recents } = useRecents(25, open);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filter results by type if prefix is active
-  const filteredResults = typeFilter
-    ? results.filter((r) => r.entityType === (typeFilter === 'decision' ? 'note' : typeFilter))
-    : results;
+  // The previous filter's hits stay on screen while the new ones load, so keep
+  // only the ones this filter wants.
+  const filteredResults = searchesRecords ? results.filter((r) => keepsRecord(filter, r)) : [];
+  const recentItems = (recents ?? []).filter((item) => keepsRecord(filter, item));
 
-  const hasQuery = !isCommand && searchQuery.trim().length > 0;
+  const hasQuery = searchesRecords && searchQuery.length > 0;
   // The deferred query trails the input while React catches up; treat that lag
   // (and any in-flight fetch) as "still searching" so we show the skeleton
   // rather than a premature "no results".
@@ -197,6 +207,7 @@ export function SearchOverlay() {
   }, [createTask, createNote, newSkill, openTask, openNote, toggleTheme, handleNavigate, triggerVoiceChat, router, setActiveView, appList, tier]);
 
   // Hotkey + custom event listeners
+  const { reset } = palette;
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (matchesHotkey(e, HOTKEYS.search)) {
@@ -207,14 +218,12 @@ export function SearchOverlay() {
     const handleOpen = (e: Event) => {
       const detail = (e as CustomEvent).detail;
       if (detail?.initialQuery) {
-        setRawQuery(detail.initialQuery);
+        // "task: " opens on Tasks with an empty box.
+        reset(detail.initialQuery);
         // Collapse selection to end after cmdk focuses and selects the input
         requestAnimationFrame(() => {
           const el = inputRef.current;
-          if (el) {
-            const len = detail.initialQuery.length;
-            el.setSelectionRange(len, len);
-          }
+          if (el) el.setSelectionRange(el.value.length, el.value.length);
         });
       }
       setOpen(true);
@@ -225,7 +234,7 @@ export function SearchOverlay() {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('open-search', handleOpen);
     };
-  }, []);
+  }, [reset]);
 
   // Resolve theme-aware icon name for toggle-theme command
   const getCommandIcon = (cmd: PaletteCommand) => {
@@ -238,24 +247,25 @@ export function SearchOverlay() {
     return cmd.label;
   };
 
-  return <SearchPalette open={open} onOpenChange={setOpen} query={rawQuery} onQueryChange={setRawQuery}
-    searchQuery={isCommand ? '' : searchQuery} results={filteredResults} searching={isSearching} fetching={isFetching}
-    onSelect={handleSelect} inputRef={inputRef} typeFilter={typeFilter}
-    placeholder={isCommand ? 'Type a command...' : 'Search or type > for commands...'}
+  return <SearchPalette open={open} onOpenChange={setOpen} query={query} onQueryChange={palette.type}
+    filters={filters} filter={filter} onFilterChange={palette.setFilter}
+    searchQuery={searchesRecords ? searchQuery : ''} results={filteredResults} searching={isSearching} fetching={isFetching}
+    onSelect={handleSelect} inputRef={inputRef}
     beforeResults={<>          {isCommand && <CommandSearchItems commands={[...PALETTE_COMMANDS, ...appCommands].filter(command => (command.capability !== 'handoffs' || capabilities.data?.handoffsEnabled) && (command.capability !== 'privatePlanning' || scratchpadAvailable))} query={searchQuery} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
 
-          {/* ── Apps a search names: "Bookmarks" finds Open Bookmarks without > ── */}
-          {hasQuery && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty={null} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
+          {/* ── Apps: every connected app under Apps, or the ones a search names under All ── */}
+          {filter === 'app' && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty="No matching apps" onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
+          {filter === 'all' && hasQuery && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty={null} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
 
-          {/* ── Recent items (empty query, no command mode) ── */}
-          {!isCommand && searchQuery.length === 0 && recents && recents.length > 0 && (
-            <RecentSearchItems items={recents} onSelect={handleSelect} />
+          {/* ── Recent items of this filter (empty query) ── */}
+          {searchesRecords && searchQuery.length === 0 && recentItems.length > 0 && (
+            <RecentSearchItems items={recentItems} onSelect={handleSelect} />
           )}
 
-          {/* ── Idle hint (empty query, no recents yet) ─────── */}
-          {!isCommand && searchQuery.length === 0 && (!recents || recents.length === 0) && (
+          {/* ── Idle hint (empty query, no recents of this filter) ─────── */}
+          {searchesRecords && searchQuery.length === 0 && recentItems.length === 0 && (
             <p className="p-8 text-center text-muted-foreground text-[11px]">
-              Type to search across tasks, notes, and stream
+              {SEARCH_FILTERS[filter].hint}
             </p>
           )}
 
