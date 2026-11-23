@@ -37,6 +37,9 @@
 .ri-surface--track { border-color: transparent; background-color: var(--track); }
 .ri-surface--plain { border-color: transparent; background-color: transparent; }
 .ri-card--shadow { box-shadow: var(--shadow-card); }
+/* A strip of actions along the bottom of a card belongs to the card: a hairline
+   above it, never a second frame. */
+.ri-card-band { padding: 8px; border-top: 1px solid var(--line); }
 .ri-card:is(button, a, [role='button']) { cursor: pointer; }
 .ri-card:is(button, a, [role='button']):hover:not(:disabled, [aria-disabled='true']),
 .ri-card:where([aria-pressed='true'], [aria-checked='true'], [aria-selected='true'], .ri-content--selected) { background-color: var(--selected); }
