@@ -1,5 +1,4 @@
 'use client';
-import { Card } from '@/components/system/card';
 
 import { NativeSelect } from '@/components/system/native-select';
 import { cn } from '@/lib/utils';
@@ -27,7 +26,7 @@ function AvailableCoordinationControls({ sessionId }: { sessionId: string }) {
   const active = !!data.heldAt || data.active.starting || data.active.chatIds.length > 0 || data.pending > 0;
   return <>
     <PendingCoordinationApprovals sessionId={sessionId} approvals={data.approvals} />
-    {active && <Card padding="md" density="compact" aria-label="Chat collaboration" className="flex min-w-0 items-center justify-between gap-3">
+    {active && <div data-slot="composer-band" aria-label="Chat collaboration" className="flex min-w-0 items-center justify-between gap-3">
     <div className="min-w-0 flex-1 space-y-0.5 leading-4">
     {data.heldAt ? <span role="status" className="text-amber-700 dark:text-amber-400">Incoming agent messages paused{data.pending > 0 ? ` · ${data.pending} waiting` : ''}</span>
       : data.active.chatIds.length === 1 ? <ChatMessageLink sessionId={data.active.chatIds[0]} label="Working with" direction="outgoing" compact />
@@ -41,7 +40,7 @@ function AvailableCoordinationControls({ sessionId }: { sessionId: string }) {
     {data.heldAt && data.assignmentsWaiting > 0 && <p>{data.assignmentsWaiting} assignment{data.assignmentsWaiting === 1 ? '' : 's'} waiting</p>}
     </div>
     <IncomingPauseButton sessionId={sessionId} />
-  </Card>}
+  </div>}
   </>;
 }
 

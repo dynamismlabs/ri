@@ -3,3 +3,6 @@ html:root [data-slot="chat-composer-card"]:focus-within { border-color: transpar
 /* Chips in the message box stay one text line tall: their remove control is a
    small mark inside the chip, not a full-size button. */
 html:root .ri-chip-remove { --control-size: 16px; --control-icon: 10px; border-radius: 4px; }
+/* A note across the top of the message box (who this chat is working with)
+   is part of the box: a band above a hairline, not a card inside it. */
+html:root [data-slot="composer-band"] { padding: 6px 12px; border-bottom: 1px solid var(--line); color: var(--t3); font-size: 12px; line-height: 16px; }
