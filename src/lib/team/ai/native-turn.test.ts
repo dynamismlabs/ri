@@ -9,9 +9,9 @@ import { HARNESS_IDS } from '@/lib/harness/registry';
 import { answerPrompt } from '@/lib/executor/answer-prompt';
 import { closeAllSessions, _resetExecutorState } from '@/lib/runner/local-runner';
 import { resetDb } from '@/lib/db';
-import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
+import { sessionCredential, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
 import { API_PROTOCOL, API_PROTOCOL_HEADER } from '@/lib/releases/api-contract';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import { checkTeamChatHealth } from './chat';
 import { homeSink } from '@/lib/executor/home-sink';
 
@@ -94,7 +94,7 @@ it('requires an explicit running-agent choice through the real Team MCP lifecycl
 it('inherits an agent sender permission mode and refuses agent widening through launch and HTTP', async () => {
   fake = installFakeHarness('claude');
   q.saveTeamAiSettings({ harness: 'claude', model: fake.modelId }, fixture.owner.member.id);
-  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask' });
+  const parent = q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode: 'ask' });
   const ctx = { remote: true, actor: { source: 'ai' as const, sessionId: parent.id, memberId: fixture.member.member.id }, caller: { location: 'elsewhere' as const, apiKeyId: fixture.member.key.id } };
   const input = { workspaceId: fixture.workspace.id, prompt: 'Inspect', requestId: 'inherit-ask', provider: 'claude' as const };
   const result = await runAction('start_execution', input, ctx);
@@ -224,7 +224,7 @@ it('coordinates completing and archiving shared tasks, preserves other work on K
 it('labels an agent-started Team prompt with its sending chat while retaining the requesting member', async () => {
   fake = installFakeHarness('claude');
   q.saveTeamAiSettings({ harness: 'claude', model: FAKE_MODEL_ID }, fixture.owner.member.id);
-  const sender = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'orchestration', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const sender = q.createChatSession({ workspaceId: fixture.workspace.id, type: 'coordinator', harness: 'claude', surfaceKind: q.TEAM_CHAT_SURFACE });
   q.acceptTeamChatSend({ chatId: sender.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'source-turn', text: 'Coordinate work' });
   q.claimNextTeamChatTurn(sender.id);
   const { startTeamExecutionAction } = await import('@/lib/sessions/team-start-action');

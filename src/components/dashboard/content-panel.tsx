@@ -21,7 +21,7 @@ import { DeckContainer } from '@/components/deck/deck-container';
 import { useNeedsYourCall } from '@/hooks/use-stream';
 import { PersonalMainChatContent } from '@/components/chat/main-chat-content';
 import { Tip } from '@/components/ui/tip';
-import { TeamOrchestratorChat } from '@/components/team/team-orchestrator-chat';
+import { TeamCoordinatorChat } from '@/components/team/team-coordinator-chat';
 import { TeamBoard } from '@/components/team/team-board';
 import { TeamNotes } from '@/components/team/team-notes';
 import { HomeTerminal } from '@/components/dashboard/home-terminal';
@@ -35,7 +35,7 @@ import { BesideFileTab, BesideFileView } from '@/components/chat-ui/artifacts/ar
 
 // ─── Tab definitions ───────────────────────────────────────────
 
-// Chat leads: it's the orchestrator, the front door to everything else. The
+// Chat leads: it's the coordinator, the front door to everything else. The
 // home opens with it on the left and the deck on the right (dashboard-context
 // DEFAULT_PANEL_*_TAB).
 const CORE_TABS: { id: PanelTab; label: string }[] = [
@@ -268,7 +268,7 @@ export function ContentPanel({ panelId, mobileTab, besideOf }: ContentPanelProps
           >
             <div inert={fileShown} aria-hidden={fileShown || undefined} className="h-full">
               {activeTab === "deck" && <DeckContainer />}
-              {activeTab === "chat" && (team ? <TeamOrchestratorChat /> : <PersonalMainChatContent />)}
+              {activeTab === "chat" && (team ? <TeamCoordinatorChat /> : <PersonalMainChatContent />)}
               {activeTab === "tasks" &&
                 (team ? (
                   <TeamBoard />

@@ -11,12 +11,12 @@ import { useUserState, useUpdateUserState } from '@/hooks/use-user-state';
 /**
  * "Sent with voice" badge — anchors to the bottom-right of a user
  * message and reveals an auto-send toggle popover. Same shape used by
- * the orchestrator chat (content-panel.tsx VoiceSentBadge), pulled
+ * the coordinator chat (content-panel.tsx VoiceSentBadge), pulled
  * into a shared module so both surfaces render identically.
  *
  * Toggle writes through `useUpdateUserState({ voiceAutoSend })`.
  * That setting is global, but it's the same setting all our voice
- * surfaces share — touching it here flips the orchestrator chat too.
+ * surfaces share — touching it here flips the coordinator chat too.
  */
 export function VoiceSentBadge() {
   const { data: userState } = useUserState();

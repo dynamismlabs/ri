@@ -153,7 +153,7 @@ it.skipIf(!enabled)('shows status groups and real deadline order, with persisted
 
 it.skipIf(!enabled || !personalRoot)('uploads and removes a company logo through a connected Team while members have read-only branding', async () => {
   const api = client();
-  const original = (await api.userState.list.query({}))?.orchestratorImage ?? null;
+  const original = (await api.userState.list.query({}))?.coordinatorImage ?? null;
   const personal = load(personalRoot!);
   const owner = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   testTimeouts(owner, 20_000);
@@ -163,14 +163,14 @@ it.skipIf(!enabled || !personalRoot)('uploads and removes a company logo through
     await owner.goto(personal.ownerUrl);
     await owner.goto(`${personal.spaceUrl}?panel=settings&settings=general`);
     await owner.getByLabel('Team logo file', { exact: true }).setInputFiles({ name: 'Company logo.svg', mimeType: 'image/svg+xml', buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="96" height="48"><rect width="96" height="48" fill="#167451"/><text x="8" y="34" font-size="30" fill="white">FN</text></svg>') });
-    await expect.poll(async () => (await api.userState.list.query({}))?.orchestratorImage?.fileName).not.toBe(original?.fileName);
+    await expect.poll(async () => (await api.userState.list.query({}))?.coordinatorImage?.fileName).not.toBe(original?.fileName);
     const logo = owner.locator('aside button[aria-label="Field Notes, home"] img');
     await logo.waitFor({ state: 'attached' });
     await expect.poll(() => logo.evaluate(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0)).toBe(true);
     expect(await logo.getAttribute('src')).toMatch(/\/api\/space\/[^/]+\/attachments\//);
     await owner.getByRole('button', { name: 'Change logo', exact: true }).waitFor();
     await capture(owner, 'team-logo-settings');
-    const uploaded = (await api.userState.list.query({}))!.orchestratorImage!;
+    const uploaded = (await api.userState.list.query({}))!.coordinatorImage!;
     await owner.goto(new URL(personal.ownerUrl).origin);
     await owner.getByText('Long run: 18 miles', { exact: true }).first().waitFor();
     await owner.getByRole('button', { name: 'Space: My Ri. Switch space', exact: true }).click();
@@ -189,7 +189,7 @@ it.skipIf(!enabled || !personalRoot)('uploads and removes a company logo through
     expect(await member.getByRole('button', { name: /Upload logo|Change logo|Remove logo/ }).count()).toBe(0);
     expect(await member.locator('aside button[aria-label="Field Notes, home"] img').getAttribute('src')).toContain('/api/attachments/');
     await owner.getByRole('button', { name: 'Remove logo', exact: true }).click();
-    await expect.poll(async () => (await api.userState.list.query({}))?.orchestratorImage).toBeNull();
+    await expect.poll(async () => (await api.userState.list.query({}))?.coordinatorImage).toBeNull();
     await owner.getByRole('button', { name: 'Upload logo', exact: true }).waitFor();
   } finally {
     await member?.close(); await owner.close();

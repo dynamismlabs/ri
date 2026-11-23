@@ -47,7 +47,7 @@ async function chat(opts: { permissionMode?: 'auto_all' | 'ask' | 'plan'; prePla
   fake = installFakeHarness('claude');
   const q = await import('@/lib/db/queries');
   const session = q.createChatSession({
-    type: 'orchestration',
+    type: 'coordinator',
     harness: 'claude',
     status: 'active',
     permissionMode: opts.permissionMode ?? 'auto_all',
@@ -83,7 +83,7 @@ describe('sending', () => {
       chatSessionId: session.id,
       harness: 'claude',
       cwd: home!.root,
-      sessionType: 'orchestration',
+      sessionType: 'coordinator',
       workspaceId: null,
       surfaceKind: null,
       surfaceRef: null,
@@ -210,7 +210,7 @@ describe('a harness that takes one message at a time', () => {
     home = await createTestHome({ prefix: 'ri-runner-split-' });
     fake = installFakeHarness('opencode');
     const q = await import('@/lib/db/queries');
-    const session = q.createChatSession({ type: 'orchestration', harness: 'opencode', status: 'active', permissionMode: 'auto_all' });
+    const session = q.createChatSession({ type: 'coordinator', harness: 'opencode', status: 'active', permissionMode: 'auto_all' });
     let release!: () => void;
     const held = new Promise<void>((r) => (release = r));
     fake.onTurn(async (turn) => {
@@ -285,7 +285,7 @@ describe('runs finish from the turn result', () => {
       chatSessionId: session.id,
       harness: 'claude',
       cwd: home!.root,
-      sessionType: 'orchestration',
+      sessionType: 'coordinator',
       workspaceId: null,
       surfaceKind: null,
       surfaceRef: null,
@@ -327,7 +327,7 @@ describe('pending prompts', () => {
   it("answers only the chat that asked", async () => {
     const session = await chat({ permissionMode: 'ask' });
     const other = (await import('@/lib/db/queries')).createChatSession({
-      type: 'orchestration',
+      type: 'coordinator',
       harness: 'claude',
       status: 'active',
       permissionMode: 'ask',
@@ -373,14 +373,14 @@ describe('pending prompts', () => {
 });
 
 describe('who may answer a prompt (P2.6)', () => {
-  async function orchestrator() {
+  async function coordinator() {
     const q = await import('@/lib/db/queries');
-    return q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode: 'ask' });
+    return q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode: 'ask' });
   }
 
   async function answerRoute(chatId: string, requestId: string, body: object, credential?: string) {
     const { POST } = await import('@/app/api/sessions/[id]/pending-input/[requestId]/route');
-    const { SESSION_CREDENTIAL_HEADER } = await import('@/lib/orchestrator/session-credential');
+    const { SESSION_CREDENTIAL_HEADER } = await import('@/lib/actions/session-credential');
     const { NextRequest } = await import('next/server');
     const request = new NextRequest(`http://127.0.0.1/api/sessions/${chatId}/pending-input/${requestId}`, {
       method: 'POST',
@@ -392,10 +392,10 @@ describe('who may answer a prompt (P2.6)', () => {
 
   it('only a person approves a permission, and an agent may deny one', async () => {
     const session = await chat({ permissionMode: 'ask' });
-    const agent = await orchestrator();
+    const agent = await coordinator();
     const { dispatch } = await import('./adapter');
     const pending = await import('./pending-input');
-    const { sessionCredential } = await import('@/lib/orchestrator/session-credential');
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
     const { HUMAN_ONLY_APPROVAL } = await import('@/lib/runner/pending');
     const answers: UserInputResponse[] = [];
     fake!.onTurn(async (turn) => {
@@ -418,17 +418,17 @@ describe('who may answer a prompt (P2.6)', () => {
     expect((await answerRoute(session.id, second, { allow: true })).status).toBe(200);
     await turn;
     expect(answers).toEqual([
-      { allow: false, message: "Denied by the orchestrator (the user's main chat)." },
+      { allow: false, message: "Denied by the coordinator (the user's main chat)." },
       { allow: true, updatedInput: { command: 'ls' } },
     ]);
   });
 
   it("an agent may answer a question, through the action", async () => {
     const session = await chat({ permissionMode: 'ask' });
-    const agent = await orchestrator();
+    const agent = await coordinator();
     const { dispatch } = await import('./adapter');
     const pending = await import('./pending-input');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const answer = actions.find((a) => a.name === 'answer_pending_input')!;
     const answers: UserInputResponse[] = [];
     const question = { question: 'Which database?', header: 'DB', options: [{ label: 'SQLite', description: '' }, { label: 'Postgres', description: '' }] };
@@ -446,10 +446,10 @@ describe('who may answer a prompt (P2.6)', () => {
 
   it("the action refuses an agent's approval, and a caller elsewhere without a session is an agent", async () => {
     const session = await chat({ permissionMode: 'ask' });
-    const agent = await orchestrator();
+    const agent = await coordinator();
     const { dispatch } = await import('./adapter');
     const pending = await import('./pending-input');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const { HUMAN_ONLY_APPROVAL } = await import('@/lib/runner/pending');
     const answer = actions.find((a) => a.name === 'answer_pending_input')!;
     fake!.onTurn(async (turn) => {
@@ -551,7 +551,7 @@ describe('the P0.4 gaps closed with P2.4', () => {
     const close = vi.fn(async () => {});
     const { _cacheHarnessSession, hasHarnessSession } = await import('./adapter');
     _cacheHarnessSession(session.id, { state: 'idle', close } as unknown as AgentSession);
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     // As the server runs it; from the home's CLI it's handed to the server.
     await actions.find((a) => a.name === 'archive_workspace')!.handler({ remote: true }, { id: ws.id } as never);
     expect(close).toHaveBeenCalledOnce();
@@ -603,7 +603,7 @@ describe('a quiet heartbeat check-in', () => {
     const { _cacheHarnessSession, hasHarnessSession } = await import('./adapter');
     const { finishRun } = await import('@/lib/runs/finish');
     await ensureHeartbeatTrigger();
-    const session = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
+    const session = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode: 'auto_all' });
     q.insertChatEvent({ sessionId: session.id, role: 'assistant', source: 'agent', content: HEARTBEAT_QUIET_REPLY, createdAt: new Date().toISOString() });
     const run = q.createRun({
       triggerId: RESERVED_TRIGGER_IDS.heartbeat,

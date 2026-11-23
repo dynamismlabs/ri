@@ -152,7 +152,7 @@ export function omittedNotice(app: string, count: number): string {
 }
 
 /** A chat as the router needs it: what kind it is and whose. */
-export interface RoutedSession { id: string; type: 'orchestration' | 'content' | 'execution'; workspaceId: string | null }
+export interface RoutedSession { id: string; type: 'coordinator' | 'content' | 'execution'; workspaceId: string | null }
 export interface MessageRouting {
   session(chatId: string): Promise<RoutedSession | null>;
   /** The person's main chat, as it is now. */
@@ -184,7 +184,7 @@ export async function routeAppMessage(viewChatId: string | null | undefined, tar
   if (target === 'active') return { chatId: await active() };
   const session = viewChatId ? await routing.session(viewChatId) : null;
   if (session?.type === 'execution') return { chatId: await routing.newExecutionChat(session.id) };
-  const scope = session?.type === 'orchestration' ? session.workspaceId : null;
+  const scope = session?.type === 'coordinator' ? session.workspaceId : null;
   const chatId = await routing.newMainChat(scope);
   if (chatId === null) return { chatId: await active(), kept: true };
   return { chatId };

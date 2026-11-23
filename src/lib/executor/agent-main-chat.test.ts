@@ -60,7 +60,7 @@ async function seed(overrides: Partial<{ isGit: boolean; purpose: string | null;
     purpose: overrides.purpose === undefined ? 'Ship Ri' : overrides.purpose,
     instructions: overrides.instructions === undefined ? 'Run pnpm ts before every commit.' : overrides.instructions,
   });
-  const chat = q.createChatSession({ type: 'orchestration', workspaceId: ws.id, harness: 'claude', status: 'active' });
+  const chat = q.createChatSession({ type: 'coordinator', workspaceId: ws.id, harness: 'claude', status: 'active' });
   return { q, ws, chat };
 }
 
@@ -86,7 +86,7 @@ function listTree(dir: string): string[] {
 
 describe('the brief', () => {
   it('covers the scope, role, reading tools, the git rule, the permission doctrine and provenance', async () => {
-    const { renderAgentMainChatBrief } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentMainChatBrief } = await import('@/lib/coordinator/harness-surface');
     const ws = { id: 'ws-1', name: 'ri', cwd: FOLDER, isGit: true, purpose: 'Ship Ri', instructions: 'Plain English.' };
     const brief = renderAgentMainChatBrief(ws);
     for (const expected of [
@@ -118,7 +118,7 @@ describe('the brief', () => {
   });
 
   it('draws the line by how much work it takes, not whether it is code, so research goes to an execution too', async () => {
-    const { renderAgentMainChatBrief } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentMainChatBrief } = await import('@/lib/coordinator/harness-surface');
     const ws = { id: 'ws-1', name: 'ri', cwd: FOLDER, isGit: true, purpose: null, instructions: null };
     // Wrapping is cosmetic, so compare the words.
     const brief = renderAgentMainChatBrief(ws).replace(/\s+/g, ' ');
@@ -148,7 +148,7 @@ describe('the brief', () => {
   });
 
   it('gives a shared team main chat the same rule, naming the team launch tool', async () => {
-    const { renderAgentWorkPolicy } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentWorkPolicy } = await import('@/lib/coordinator/harness-surface');
     const git = renderAgentWorkPolicy({ id: 'ws-1', isGit: true }, 'execution').replace(/\s+/g, ' ');
     expect(git).toContain('Wider reading, like research or debugging, is an execution\'s job.');
     expect(git).toContain('That work and every change go through `start_execution` with `workspaceId` "ws-1"');
@@ -160,7 +160,7 @@ describe('the brief', () => {
   });
 
   it('sends a non-git agent\'s building and research to an execution too, editing directly only on request', async () => {
-    const { renderAgentMainChatBrief } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentMainChatBrief } = await import('@/lib/coordinator/harness-surface');
     const brief = renderAgentMainChatBrief({ id: 'ws-2', name: 'notes', cwd: FOLDER, isGit: false, purpose: null, instructions: null });
     expect(brief).toContain('not a git repository');
     expect(brief).toContain('building and wider reading, like research or debugging, still\nhappen in an execution');
@@ -172,7 +172,7 @@ describe('the brief', () => {
   });
 
   it('archives a chat only when the user asks, since every returned result has its own Archive button', async () => {
-    const { renderAgentMainChatBrief } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentMainChatBrief } = await import('@/lib/coordinator/harness-surface');
     const brief = renderAgentMainChatBrief({ id: 'ws-1', name: 'ri', cwd: FOLDER, isGit: true, purpose: null, instructions: null }).replace(/\s+/g, ' ');
     expect(brief).toContain('`archive_execution`: close out a chat, only when the user asks. Each returned result has an Archive button for the user, so don\'t offer to archive or remind them.');
     expect(brief).toContain('Only pass `force` when the user has said that work can go.');
@@ -180,7 +180,7 @@ describe('the brief', () => {
   });
 
   it('mentions integrations and the browser only when they are attached', async () => {
-    const { renderAgentMainChatBrief } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentMainChatBrief } = await import('@/lib/coordinator/harness-surface');
     const ws = { id: 'ws-1', name: 'ri', cwd: FOLDER, isGit: true, purpose: null, instructions: null };
     const bare = renderAgentMainChatBrief(ws, { integrations: false, browser: false });
     expect(bare).not.toContain('`integrations` MCP');
@@ -207,13 +207,13 @@ describe('prepareAgentMainChatSpawn', () => {
     expect(spawn.firstTurnPreamble).toBeNull();
   });
 
-  it('attaches the orchestrator MCP with this chat\'s credential, isolated from ambient MCP config', async () => {
+  it('attaches the home MCP with this chat\'s credential, isolated from ambient MCP config', async () => {
     const seeded = await seed();
     const spawn = await prepare(seeded);
     expect(spawn.config.strictMcpConfig).toBe(true);
-    const orchestrator = spawn.config.mcpServers!.find((s) => s.name === 'orchestrator')!;
-    const headers = (orchestrator as { headers?: Record<string, string> }).headers ?? {};
-    const { verifySessionCredential } = await import('@/lib/orchestrator/session-credential');
+    const home = spawn.config.mcpServers!.find((s) => s.name === 'ri_home')!;
+    const headers = (home as { headers?: Record<string, string> }).headers ?? {};
+    const { verifySessionCredential } = await import('@/lib/actions/session-credential');
     expect(verifySessionCredential(headers['x-ri-session'])).toBe(seeded.chat.id);
   });
 
@@ -317,14 +317,14 @@ describe('on a connected device (P2.7)', () => {
   it("carries the persona as text and memory as actions, and names none of the home's files", async () => {
     fs.writeFileSync(path.join(ROOT, 'USER.md'), 'Trey. Prefers terse answers.\n');
     fs.writeFileSync(path.join(ROOT, 'SOUL.md'), 'Dry, direct.\n');
-    const { renderAgentMainChatBrief } = await import('@/lib/orchestrator/harness-surface');
+    const { renderAgentMainChatBrief } = await import('@/lib/coordinator/harness-surface');
     const ws = { id: 'ws-1', name: 'ri', cwd: FOLDER, isGit: true, purpose: null, instructions: null };
     const elsewhere = renderAgentMainChatBrief(ws, { integrations: false, browser: false, elsewhere: { folder: '/Users/trey/code/ri' } });
     expect(elsewhere).toContain('### USER.md\n\nTrey. Prefers terse answers.');
     expect(elsewhere).toContain('### SOUL.md\n\nDry, direct.');
     expect(elsewhere).toContain('`read_memory`');
     expect(elsewhere).toContain('`message_agent`');
-    expect(elsewhere).toContain('"orchestrator", `response` "none"');
+    expect(elsewhere).toContain('"coordinator", `response` "none"');
     expect(elsewhere).toContain('- Folder: `/Users/trey/code/ri`');
     expect(elsewhere).not.toContain(ROOT);
     const atHome = renderAgentMainChatBrief(ws, { integrations: false, browser: false });
@@ -346,7 +346,7 @@ describe('on a connected device (P2.7)', () => {
         chatSessionId: seeded.chat.id,
         harness: 'claude',
         cwd: '/Users/trey/code/ri',
-        sessionType: 'orchestration',
+        sessionType: 'coordinator',
         workspaceId: seeded.ws.id,
         surfaceKind: null,
         surfaceRef: null,
@@ -359,10 +359,10 @@ describe('on a connected device (P2.7)', () => {
       },
       { deviceId: laptop, isHome: false, generation: null },
     );
-    const orchestrator = spec.mcpServers.find((s) => s.name === 'orchestrator') as { url: string; headers: Record<string, string> };
-    expect(orchestrator.url).toBe('ri-home:/api/orchestrator/mcp');
-    expect(orchestrator.headers.Authorization).toMatch(new RegExp(`^Bearer ri_session_${seeded.chat.id}\\.${laptop}\\.n\\.`));
-    expect(orchestrator.headers['x-ri-session']).toBeUndefined();
+    const home = spec.mcpServers.find((s) => s.name === 'ri_home') as { url: string; headers: Record<string, string> };
+    expect(home.url).toBe('ri-home:/api/home/mcp');
+    expect(home.headers.Authorization).toMatch(new RegExp(`^Bearer ri_session_${seeded.chat.id}\\.${laptop}\\.n\\.`));
+    expect(home.headers['x-ri-session']).toBeUndefined();
     expect(spec.instructions).toContain('### USER.md\n\nTrey.');
     expect(spec.instructions).not.toContain(ROOT);
   });

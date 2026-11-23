@@ -17,7 +17,7 @@
 
 import { APP_NAME, APP_SHORT_ID } from '@/constants/app';
 import { getUserState } from '@/lib/db/queries';
-import { ORCHESTRATOR_MCP_SERVER_NAME } from '@/lib/orchestrator/harness-surface';
+import { HOME_MCP_SERVER_NAME } from '@/lib/coordinator/harness-surface';
 import { NEW_SCHEDULE_REF } from './schedule-chat';
 
 function homeTimezone(): string {
@@ -53,7 +53,7 @@ Each time it fires, the message goes to one of these:
 - a new chat in an agent each time: \`target_kind: "workspace"\` with
   \`workspace_id\` (\`list_workspaces\` lists the agents). For independent
   recurring work: a morning briefing, a weekly cleanup.
-- a new ${APP_NAME} chat each time: \`target_kind: "orchestrator"\`. For work across
+- a new ${APP_NAME} chat each time: \`target_kind: "coordinator"\`. For work across
   tasks, notes, the deck and connected accounts, with no folder.
 - one existing chat: \`target_kind: "session"\` with \`target_session_id\`. For
   checking back on work that chat is doing. Always pass the chat's id here.
@@ -81,7 +81,7 @@ Each time it fires, the message goes to one of these:
   their defaults.
 - To try it, \`run_trigger\` fires it once now. Only when the user asks.
 - Delete only when asked (\`delete_trigger\`). To stop one, pause it.
-- These are ${APP_NAME} actions: tools on the \`${ORCHESTRATOR_MCP_SERVER_NAME}\` MCP server, or
+- These are ${APP_NAME} actions: tools on the \`${HOME_MCP_SERVER_NAME}\` MCP server, or
   \`${APP_SHORT_ID} agent <action> --input @-\` from the shell, whichever this session has.
 - Stay on schedules. Don't do the scheduled work yourself here.
 - Keep replies short. The form shows the details.`;

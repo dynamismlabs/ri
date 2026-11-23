@@ -3,10 +3,10 @@ import { z as rpcZ } from 'zod/v4';
 /**
  * GET /api/runs — list runs across all triggers + manual chats.
  *
- * Thin wrapper around the `list_runs` orchestrator action.
+ * Thin wrapper around the `list_runs` Ri action.
  */
 
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 /**
  * Parse a `status`/`trigger`-style param that may carry one value or a

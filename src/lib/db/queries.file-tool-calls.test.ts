@@ -97,7 +97,7 @@ describe('fileToolCallNamed', () => {
     expect(q.fileToolCallNamed(scope, '/tmp/from-sibling.png')).toBe(true);
     expect(q.fileToolCallNamed(scope, '/tmp/from-other.png')).toBe(false);
     // A chat with no execution sees only itself.
-    const loose = q.createChatSession({ type: 'orchestration', harness: 'claude', label: 'Main', status: 'active' });
+    const loose = q.createChatSession({ type: 'coordinator', harness: 'claude', label: 'Main', status: 'active' });
     toolCall(loose.id, 'Read', { file_path: '/tmp/loose.png' });
     expect(q.fileToolCallNamed({ sessionId: loose.id, executionId: null }, '/tmp/loose.png')).toBe(true);
     expect(q.fileToolCallNamed({ sessionId: loose.id, executionId: null }, '/tmp/from-sibling.png')).toBe(false);

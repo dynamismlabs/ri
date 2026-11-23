@@ -29,7 +29,7 @@
 @import '../components/home/home-navigation.css';
 @import '../components/mobile/mobile-create-sheet.css';
 @import '../components/mobile/mobile-tab-bar.css';
-@import '../components/orchestrator/identity-editor.css';
+@import '../components/coordinator/identity-editor.css';
 @import '../components/settings/agent-skill-access.css';
 @import '../components/settings/connect-agents.css';
 @import '../components/settings/desktop-controls.css';

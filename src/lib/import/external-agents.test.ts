@@ -284,7 +284,7 @@ describe('external agent imports', () => {
     const chat = q.listChatSessions({ type: 'execution' }).find((session) => session.surfaceRef === 'claude')!;
     expect(isImportMirror(chat)).toBe(true);
 
-    // The path the orchestrator found: a send into the import would start a
+    // The path the coordinator found: a send into the import would start a
     // blank provider session under a transcript it never saw.
     const { dispatch } = await import('@/lib/executor/adapter');
     await expect(dispatch(chat.id, 'Hello')).rejects.toThrow(/can only be read here/);

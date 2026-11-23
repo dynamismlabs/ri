@@ -46,7 +46,7 @@ const listed = (q: typeof import('@/lib/db/queries'), id: string) =>
 describe('set_chat_status', () => {
   it("sets the calling chat's own status line", async () => {
     const { q, chat } = await executionChat();
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const response = await runAction('set_chat_status', {
       line: 'Pick A or B for the pricing table', needs_you: true, effort: 'quick', unblocks: 'the pricing page release',
     }, caller(chat.id));
@@ -58,14 +58,14 @@ describe('set_chat_status', () => {
 
   it("keeps a report's line and drops the size and payoff that only an ask has", async () => {
     const { q, chat } = await executionChat();
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     await runAction('set_chat_status', { line: 'Merged the login fix, nothing needed', needs_you: false, effort: 'block', unblocks: 'x' }, caller(chat.id));
     expect(q.getChatSession(chat.id)?.turnStatus).toMatchObject({ line: 'Merged the login fix, nothing needed', needsYou: false, effort: null, unblocks: null });
   });
 
   it('needs a signed chat, and refuses while status lines are off', async () => {
     const { q, chat } = await executionChat();
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     expect((await runAction('set_chat_status', { line: 'x', needs_you: false }, { remote: true })).error?.code).toBe('unsupported');
     q.updateUserState({ chatStatusLines: false });
     expect((await runAction('set_chat_status', { line: 'x', needs_you: false }, caller(chat.id))).error?.code).toBe('unsupported');

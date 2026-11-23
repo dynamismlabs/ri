@@ -157,7 +157,7 @@ Retain separate page/document boundaries initially if needed. Sharing components
 | Models | `src/lib/harness/registry.ts`, `src/components/settings/model-list.tsx`, `provider-model-selector.tsx`, `src/components/executions/composer-provider-menu.tsx` | One registry, availability model and picker family. |
 | Chat UI | `src/components/chat-ui/`, `src/components/team/team-chat.tsx` | Reuse transcript/composer/result interfaces while retaining member authors and team audience. |
 | Existing team AI | `src/lib/team/ai/`, team AI settings and chat tables | Migrate or adapt existing conversations and settings, then remove replaced duplicate runtime/presentation paths. |
-| External access | `src/lib/team/mcp/`, `src/lib/external-ai/`, `src/lib/orchestrator/` | Shared operations, explicit targeting and unchanged existing public contracts. |
+| External access | `src/lib/team/mcp/`, `src/lib/external-ai/`, `src/lib/actions/` | Shared operations, explicit targeting and unchanged existing public contracts. |
 | Desktop | `src/components/desktop/`, `src/app/globals.css`, `desktop/team-window.ts`, `desktop/viewer-trust*` | Consistent chrome and navigation without granting team content personal native privileges. |
 
 Verify filenames in the actual checkout. Extract reusable pieces in their existing component families rather than creating a giant Home component with conditionals for every feature.
@@ -172,7 +172,7 @@ Keep remote shared edits online and revision-checked. On failure retain the draf
 
 ## 6. Native agent access contract
 
-Add connected-Home discovery to the orchestrator registry if no equivalent action exists. It should expose stable Home IDs, display names, connection state and allowed operations, not credentials. A new `list_homes` action is suitable. Use the existing action generation for CLI and signed MCP.
+Add connected-Home discovery to the action registry if no equivalent action exists. It should expose stable Home IDs, display names, connection state and allowed operations, not credentials. A new `list_homes` action is suitable. Use the existing action generation for CLI and signed MCP.
 
 Preserve existing action names and personal behavior. Add an optional `target_home_id` to appropriate content actions, with omitted meaning the calling session's bound Home. Never change that default because a browser switched spaces.
 

@@ -1,5 +1,5 @@
 import { TRPCError } from '@trpc/server';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { toChatEventDTO } from '@/lib/api/dto/chat-event';
 import { z } from 'zod/v4';
 import { viewerProcedure as p, router } from '@/lib/trpc/init';

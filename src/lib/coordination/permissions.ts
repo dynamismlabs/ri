@@ -4,7 +4,7 @@ import * as q from '@/lib/db/queries';
 import { assertSupportedPermissionMode, UnsupportedPermissionModeError } from '@/lib/executor/permission-map';
 import { DEFAULT_PERMISSION_MODE } from '@/lib/permissions/modes';
 import { requestScopedId } from './start-id';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 /** Authority can only decrease across an agent launch boundary. */
 export function agentLaunchPermission(actor: WorkerCommandActor | undefined, requested: PermissionMode | undefined, harness: HarnessId, existing?: ChatSessionRecord | null): PermissionMode | undefined {

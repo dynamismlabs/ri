@@ -3,7 +3,7 @@
  *
  * The chat code paths use this to convert file attachments into a
  * shape any model can read: plain text wrapped in `<attachment>`
- * tags. Harness chats (orchestrator, content, execution — via
+ * tags. Harness chats (coordinator, content, execution — via
  * `expand-markers.ts`) use it for formats that aren't natively
  * model-readable:
  *

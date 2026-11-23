@@ -108,8 +108,8 @@ describe('which chat gets the message', () => {
     return { deps, calls };
   };
   const sessions: Record<string, RoutedSession> = {
-    main: { id: 'main', type: 'orchestration', workspaceId: null },
-    agent: { id: 'agent', type: 'orchestration', workspaceId: 'agent-1' },
+    main: { id: 'main', type: 'coordinator', workspaceId: null },
+    agent: { id: 'agent', type: 'coordinator', workspaceId: 'agent-1' },
     work: { id: 'work', type: 'execution', workspaceId: 'agent-1' },
     note: { id: 'note', type: 'content', workspaceId: null },
   };

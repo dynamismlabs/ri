@@ -11,7 +11,7 @@ This is a plan to move the system from **AI-as-copilot** (you type, AI responds)
 
 The v1 substrate is small but load-bearing:
 
-- **Schedules** — cron or interval triggers that dispatch a prompt against a workspace or the orchestrator. The user's authored recurring work.
+- **Schedules** — cron or interval triggers that dispatch a prompt against a workspace or the coordinator. The user's authored recurring work.
 - **Heartbeat** as a property of the agent (not a schedule row) — the AI's pulse. Lives on the `agents` table; protected by code invariants.
 - **A code-controlled system tick** (60s) that processes both heartbeats and due schedules. Schedules and heartbeat configs are data; the tick that drives them is code.
 - **Scheduled runs surface as executions** in the existing UI, with provenance linking back to the schedule. No separate "automation runs" feed. The existing unread machinery is the review surface — no new review-gate status.
@@ -125,7 +125,7 @@ export const schedules = sqliteTable('schedules', {
 
   // Target
   target_kind: text('target_kind', {
-    enum: ['workspace', 'orchestrator'],
+    enum: ['workspace', 'coordinator'],
   }).notNull(),
   workspace_id: text('workspace_id').references(() => workspaces.id, { onDelete: 'cascade' }),
   session_strategy: text('session_strategy', {
@@ -185,8 +185,8 @@ export const schedules = sqliteTable('schedules', {
 Defaults that matter:
 
 - `target_kind='workspace'` defaults `session_strategy='persistent'` (the workspace's "AI lane" — replies continue the conversation).
-- `target_kind='orchestrator'` defaults `session_strategy='isolated'` (each run is a fresh starting point).
-- `context_scope` defaults to `narrow` (this workspace only) for workspace targets, `wide` for orchestrator. Heartbeats use `supervisor` (a curated scan-of-everything snapshot).
+- `target_kind='coordinator'` defaults `session_strategy='isolated'` (each run is a fresh starting point).
+- `context_scope` defaults to `narrow` (this workspace only) for workspace targets, `wide` for coordinator. Heartbeats use `supervisor` (a curated scan-of-everything snapshot).
 
 ### 3.3 Schedule runs
 
@@ -275,9 +275,9 @@ The default heartbeat prompt (the seeded value of `heartbeat_prompt_template`):
 
 The system finalizer strips `HEARTBEAT_OK` (at start or end of reply, with body under 300 chars) and suppresses notification. Otherwise the reply becomes a notification + a chip in the inbox.
 
-The orchestrator agent is seeded with `heartbeat_interval_seconds = 1800` (30 min), active hours `09:00 → 22:00` in the user's tz, and the default prompt template. The user can disable (set interval to null), reschedule, or edit the prompt. Code invariants on agent save: if heartbeat columns are set, they must be a coherent set (interval > 60, prompt non-empty).
+The coordinator agent is seeded with `heartbeat_interval_seconds = 1800` (30 min), active hours `09:00 → 22:00` in the user's tz, and the default prompt template. The user can disable (set interval to null), reschedule, or edit the prompt. Code invariants on agent save: if heartbeat columns are set, they must be a coherent set (interval > 60, prompt non-empty).
 
-This addresses the clobbering concern: heartbeat lives on the agent row, which is harder to corrupt than a schedules row. Agents rarely write to themselves; we can add a `is_system: true` flag on the orchestrator agent to make destructive updates require explicit user confirmation. If a bad write happens anyway, the tick keeps running — only that one agent's heartbeat goes silent until repaired.
+This addresses the clobbering concern: heartbeat lives on the agent row, which is harder to corrupt than a schedules row. Agents rarely write to themselves; we can add a `is_system: true` flag on the coordinator agent to make destructive updates require explicit user confirmation. If a bad write happens anyway, the tick keeps running — only that one agent's heartbeat goes silent until repaired.
 
 ### 3.5 Scheduled runs surface as executions
 
@@ -309,7 +309,7 @@ description: Review a PR for correctness, security, and style
 When invoked, look up the PR via the gh CLI, read the diff, and check for...
 ```
 
-Resolution: workspace overrides global on name collision (inside that workspace). The orchestrator action `list_skills` returns the merged set. A schedule's `skills` field references skill names; on dispatch, the runner injects each skill body as a `<skill name="...">…</skill>` block in the prompt (Hermes' pattern: preserves prompt cache, edits take effect immediately, no registration step).
+Resolution: workspace overrides global on name collision (inside that workspace). The Ri action `list_skills` returns the merged set. A schedule's `skills` field references skill names; on dispatch, the runner injects each skill body as a `<skill name="...">…</skill>` block in the prompt (Hermes' pattern: preserves prompt cache, edits take effect immediately, no registration step).
 
 What skills are *not*:
 
@@ -367,10 +367,10 @@ Shape, injected as the first user message of each scheduled dispatch:
 
 Per-schedule customization via `context_scope`:
 - `narrow` (default for workspace schedules) — just this workspace's data.
-- `wide` (default for orchestrator schedules) — everything.
+- `wide` (default for coordinator schedules) — everything.
 - `supervisor` (default for heartbeat) — needs-attention scan: unread sessions >6h, silent runs >2h, stale tasks, missed fires.
 
-Token budget: bootstrap files always included intact (the user authored them, they're load-bearing). Dynamic section caps at ~4-8k tokens (configurable per schedule), truncating lowest-priority items first. Above the cap, the agent can query the rest via existing orchestrator actions if it needs more — the snapshot is a starter, not an exhaustive dump.
+Token budget: bootstrap files always included intact (the user authored them, they're load-bearing). Dynamic section caps at ~4-8k tokens (configurable per schedule), truncating lowest-priority items first. Above the cap, the agent can query the rest via existing Ri actions if it needs more — the snapshot is a starter, not an exhaustive dump.
 
 ### 3.8 Decisions as a directory convention
 
@@ -391,7 +391,7 @@ If patterns emerge (search across decisions, link decisions to tasks/projects, s
 
 The minimum substrate, no native integrations:
 
-**Outbound (the AI calls external systems)**: user-registered MCP servers. The user adds their Linear MCP, Gmail MCP, Slack MCP, etc. once; the orchestrator + executor agents pick them up as tool providers. The agent calls them like any other tool. We don't build native Linear / Gmail / Slack adapters; the MCP ecosystem already handles this and gets better every quarter.
+**Outbound (the AI calls external systems)**: user-registered MCP servers. The user adds their Linear MCP, Gmail MCP, Slack MCP, etc. once; the coordinator + executor agents pick them up as tool providers. The agent calls them like any other tool. We don't build native Linear / Gmail / Slack adapters; the MCP ecosystem already handles this and gets better every quarter.
 
 **Inbound (external events trigger schedule runs)**: a schedule with `trigger_kind='webhook'` gets a unique URL + HMAC secret on creation. External services POST to `/api/webhooks/:schedule_id` with a JSON body; the runner verifies HMAC, runs the schedule, passes the payload through as `trigger_payload` available to the prompt. This is the same pattern OpenClaw and Hermes use.
 
@@ -448,9 +448,9 @@ Migrations needed:
 - One Drizzle migration for the agents column additions (nullable, no backfill required).
 - One migration for the `chat_sessions.triggered_by_schedule_run_id` FK.
 - One migration for `schedules` + `schedule_runs`.
-- A seed script that creates the orchestrator agent's default heartbeat config and seeds `COMPANY.md` template (and optionally an example schedule) on first run.
+- A seed script that creates the coordinator agent's default heartbeat config and seeds `COMPANY.md` template (and optionally an example schedule) on first run.
 
-New orchestrator actions:
+New Ri actions:
 - `list_schedules`, `get_schedule`, `list_schedule_runs`, `run_schedule_now`
 - `list_skills`
 - `list_decisions`, `get_decision`
@@ -467,7 +467,7 @@ Mutating actions (`create_schedule`, `update_schedule`, `delete_schedule`, `crea
 Add **Automations** to the left nav (sibling to Workspaces):
 - **Schedules** (default view) — list, status pills, next/last run
 - **Runs** — timeline filtered by schedule
-- **Heartbeat** — the orchestrator agent's heartbeat config + HEARTBEAT.md editor
+- **Heartbeat** — the coordinator agent's heartbeat config + HEARTBEAT.md editor
 
 Add **Activity** to the left nav:
 - Timeline of recent runs across all sources
@@ -481,7 +481,7 @@ One form, no tabs. Top to bottom:
 
 1. **What** — name, prompt, optional description.
 2. **When** — `[ Run on a schedule | Every N minutes | When triggered (webhook) ]`. For "on a schedule," a natural-language input ("every weekday at 9am") that compiles to cron + timezone, with the resolved cron expression shown beneath plus a preview of the next 3 fire times.
-3. **Where** — target (workspace dropdown or "orchestrator"). Session strategy (persistent / isolated, with help text). Skills selector (multi).
+3. **Where** — target (workspace dropdown or "coordinator"). Session strategy (persistent / isolated, with help text). Skills selector (multi).
 4. **Settings** — model override, effort, timeout, context scope, active hours, optional preferred window (defer to overnight).
 5. **Save** — preview of the next fire, then save.
 
@@ -531,18 +531,18 @@ Clicking any schedule_run takes you to the chat_session it created (or continued
 - Skills directory discovery (global + workspace) + `list_skills` action
 - Skill body injection on dispatch
 - Heartbeat indicator dot in the top status bar
-- Seed orchestrator agent's default heartbeat config
+- Seed coordinator agent's default heartbeat config
 
 **Phase 3 — Activity timeline, decisions, webhooks (~2 weeks)**
 - Activity page (timeline + cost rollup)
 - Decisions directory + UI tab
 - Webhook trigger schedules (`POST /api/webhooks/:schedule_id` with HMAC)
-- `list_decisions` / `get_decision` orchestrator actions
+- `list_decisions` / `get_decision` Ri actions
 - Per-schedule context scope enforcement
 
 **Phase 4 — Context engine refinement + integration docs (~1-2 weeks)**
 - Context engine token budgeting + truncation rules
-- `describe_world` orchestrator action
+- `describe_world` Ri action
 - Catch-up runs (bounded)
 - Quiet-hours / preferred-window scheduling
 - Documentation: MCP setup guide, webhook setup guide, schedule prompt patterns
@@ -593,11 +593,11 @@ This is the layer that makes the world model **smart** rather than just **search
 
 The killer differentiator for AI as coworker: the user asks "why did we decide X?" and the AI traverses decision files → the tasks that led to them → the notes from those tasks → the chat history → the original stream items. Six months later, the AI can reconstruct the reasoning behind any past decision.
 
-Requires v1 + ingestion + synthesis to be working. Then it's a graph traversal exposed as an orchestrator action plus a prompt convention.
+Requires v1 + ingestion + synthesis to be working. Then it's a graph traversal exposed as a Ri action plus a prompt convention.
 
 ### 7.5 Multi-agent / role specialization
 
-Today: one orchestrator agent + one executor agent. The autonomy thesis suggests team roles — a "marketing agent," "ops agent," "dev agent," each with its own pulse, scope, standing instructions, and skill library.
+Today: one coordinator agent + one executor agent. The autonomy thesis suggests team roles — a "marketing agent," "ops agent," "dev agent," each with its own pulse, scope, standing instructions, and skill library.
 
 The data model already supports multiple agents (`agents.kind`, `agents.name`, `agents.role`, `agents.config`). What's missing:
 
@@ -648,7 +648,7 @@ This is the place to be slowest. The cost of getting it wrong is high; the cost 
 
 These are tempting and wrong. Putting them in writing so they don't sneak back in:
 
-- **Declarative pipelines / DAGs.** Skills are recipes the agent decides to use, not stages in a workflow. The agent loop is the orchestrator.
+- **Declarative pipelines / DAGs.** Skills are recipes the agent decides to use, not stages in a workflow. The agent loop is the coordinator.
 - **A separate review-gate status machine.** Existing unread / `last_outcome_event_at` is the review surface.
 - **"Dream mode" as a primitive.** Overnight work is a schedule at 3am. Memory consolidation is a future system; not a runtime mode.
 - **Subagents-as-pipeline-stages.** Claude Code's Task tool is for parallel forks within a turn. Not coordination across stages.
@@ -719,7 +719,7 @@ Existing ai-task-manager files most relevant to implementation:
 - `src/lib/db/schema.ts` — column / table additions
 - `src/lib/db/queries.ts` — per AGENTS.md, route handlers go through this layer
 - `src/lib/executor/adapter.ts` — `dispatch()` caller from the new runner
-- `src/lib/orchestrator/registry.ts` — new orchestrator actions
+- `src/lib/actions/registry.ts` — new Ri actions
 - New: `src/lib/scheduler/runner.ts`, `src/lib/scheduler/cron.ts`, `src/lib/scheduler/lock.ts`, `src/lib/scheduler/context-engine.ts`
 - New: `src/lib/pricing/models.ts`, `src/lib/pricing/models.json`
 - New: `src/app/(...)/automations/`, `src/app/(...)/activity/`, decisions tab

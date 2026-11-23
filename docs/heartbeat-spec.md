@@ -61,7 +61,7 @@ It's seeded at boot, only if missing, by `ensureHeartbeatTrigger()` (new, in `sr
 | Model, effort | `model`, `effort` | `null` (the program's defaults) | yes |
 | Instructions | `prompt` | the default instructions (§8) | yes |
 | Name, description | `name`, `description` | `Heartbeat`, `Checks in on your work on a schedule.` | locked |
-| Target | `targetKind` | `orchestrator` | locked |
+| Target | `targetKind` | `coordinator` | locked |
 | Recurrence | `kind` | `every` | locked |
 | No overlap | `concurrencyPolicy` | `skip_if_running` | locked |
 | Missed slots | `catchUpPolicy` / `maxCatchUpRuns` | same as the other app-managed triggers | locked |
@@ -81,7 +81,7 @@ export const RESERVED_LOCKED_FIELDS: Record<ReservedTriggerId, readonly Lockable
 };
 ```
 
-The existing four keep exactly what they locked before. `update_trigger` (`src/lib/orchestrator/registry.ts`) reads the map for the given id. The trigger detail page's "managed" notice names that trigger's own locked fields and links to the right settings section, which is `?settings=heartbeat` for the heartbeat.
+The existing four keep exactly what they locked before. `update_trigger` (`src/lib/actions/registry.ts`) reads the map for the given id. The trigger detail page's "managed" notice names that trigger's own locked fields and links to the right settings section, which is `?settings=heartbeat` for the heartbeat.
 
 `reserved.ts` says that past a handful of managed triggers it should switch to a `managed_kind` column. Five is still a handful. Revisit at the sixth.
 
@@ -97,7 +97,7 @@ None. The heartbeat uses existing columns only.
 
 ### 5.1 Firing
 
-The existing scheduler tick fires it like any `every` trigger and respects active hours (`isWithinActiveHours`, `src/lib/scheduler/runner.ts:201`). With `skip_if_running`, a check-in never overlaps the previous one. Each fire creates a fresh orchestration chat, as orchestrator triggers already do (`resolveTarget`, `src/lib/runs/dispatch.ts`).
+The existing scheduler tick fires it like any `every` trigger and respects active hours (`isWithinActiveHours`, `src/lib/scheduler/runner.ts:201`). With `skip_if_running`, a check-in never overlaps the previous one. Each fire creates a fresh coordinator chat, as coordinator triggers already do (`resolveTarget`, `src/lib/runs/dispatch.ts`).
 
 ### 5.2 Prompt composition
 
@@ -141,7 +141,7 @@ When a heartbeat run completes (`finalizeRunSuccessIfPending` in `src/lib/runs/d
 
 ## 6. API and agent surface
 
-Two new orchestrator actions in `registry.ts`, so the app, the CLI, and agents all go through one path. That also lets an agent handle a request like "check in every two hours" from chat.
+Two new Ri actions in `registry.ts`, so the app, the CLI, and agents all go through one path. That also lets an agent handle a request like "check in every two hours" from chat.
 
 | Action | Params | Returns |
 |---|---|---|
@@ -246,7 +246,7 @@ To let it start work on its own, change "Offer to start them" to "Start them."
 
 ## 9. Cost
 
-Each check-in is one orchestrator session on the default subscription harness. Every 30 minutes, 24/7, is 48 sessions a day, and quiet ones are short. Runs record their cost like any trigger run, and the existing monthly budget applies.
+Each check-in is one coordinator session on the default subscription harness. Every 30 minutes, 24/7, is 48 sessions a day, and quiet ones are short. Runs record their cost like any trigger run, and the existing monthly budget applies.
 
 ## 10. Tests
 
@@ -288,7 +288,7 @@ Steps 1 and 2 can land and be tested without any UI, through `ri agent get_heart
 
 ## 14. Built: decisions made during implementation
 
-1. **Run change tracking was broken, and is fixed at the action layer.** The spec assumed `runs.artifactRefs` already listed what a run changed. It was empty for every run (0 of 785 since 2026-09-01): the old code read refs back out of the harness's tool-result stream, where MCP tool names arrive prefixed (`mcp__orchestrator__update_task`) and the tool output arrives empty. It now records at `runAction`, which has the real action name, input, and result, and knows the calling chat from its session credential (`src/lib/runs/artifact-refs.ts`). That covers MCP and the CLI alike, for every trigger run, not just the heartbeat. The broken stream path is removed.
+1. **Run change tracking was broken, and is fixed at the action layer.** The spec assumed `runs.artifactRefs` already listed what a run changed. It was empty for every run (0 of 785 since 2026-09-01): the old code read refs back out of the harness's tool-result stream, where MCP tool names arrive prefixed (`mcp__ri_home__update_task`) and the tool output arrives empty. It now records at `runAction`, which has the real action name, input, and result, and knows the calling chat from its session credential (`src/lib/runs/artifact-refs.ts`). That covers MCP and the CLI alike, for every trigger run, not just the heartbeat. The broken stream path is removed.
 2. **The run page lists changes by title.** It used to print raw `kind: id` pairs. "Changes" is the heartbeat's audit path, so it now shows each task and note by title, linked to where its history and undo live.
 3. **Settings show everything even when it's off.** A settings page that is only a switch leaves nothing to set up. You can write instructions and try "Check in now" first, then turn it on.
 4. **The first check-in is placed inside the active hours.** The scheduler drops slots outside the hours but keeps the cadence anchored to them, so a daily heartbeat turned on at 22:30 would never have fired inside 09:00 to 21:00. Turning it on, or changing when it runs, schedules one interval out, moved into the hours. When it's turned on before the hours start, the window opening wins if it comes sooner. Resending the same schedule never pushes the next check-in back.
@@ -298,8 +298,8 @@ Steps 1 and 2 can land and be tested without any UI, through `ri agent get_heart
 8. ~~**The deck bar always renders.** It carries the heartbeat chip, so the focused layout's bar no longer hides when nothing is done yet.~~ Superseded by 15.
 9. **The quiet reply check tolerates wrapping.** Backticks, bold, quotes, and a trailing period around `HEARTBEAT_OK` still count as quiet. Any other words make it a report.
 10. **"Check in now" works while it's off.** It fires the trigger once through `run_trigger`, independent of the schedule.
-11. **Provenance on task and note versions is unchanged.** `entity_versions.actorSessionId` is defined as the content chat that made an edit, and pointing it at an orchestrator chat could confuse the in-document diff features. The run's change list is the audit path instead. Linking versions to runs is a candidate follow-up.
-12. **Report formatting mirrors the orchestrator brief.** The first real reports showed the agent opening with a preamble, putting references inside bullets (where chips don't render), and once mistyping an id. The ground rules now spell out the same reference rules as the orchestrator brief (`[[task:ID]]`, `[[note:ID]]`, `[[execution:SESSION_ID]]`, each on its own line, ids copied from tool results) and ask for one opening line on what it checked and found fine (the agent wrote one anyway, and it's useful: it says what came back clean), then the sections.
+11. **Provenance on task and note versions is unchanged.** `entity_versions.actorSessionId` is defined as the content chat that made an edit, and pointing it at a coordinator chat could confuse the in-document diff features. The run's change list is the audit path instead. Linking versions to runs is a candidate follow-up.
+12. **Report formatting mirrors the coordinator brief.** The first real reports showed the agent opening with a preamble, putting references inside bullets (where chips don't render), and once mistyping an id. The ground rules now spell out the same reference rules as the coordinator brief (`[[task:ID]]`, `[[note:ID]]`, `[[execution:SESSION_ID]]`, each on its own line, ids copied from tool results) and ask for one opening line on what it checked and found fine (the agent wrote one anyway, and it's useful: it says what came back clean), then the sections.
 13. **Run summaries drop entity references.** A summary is one plain line for run lists. The raw `[[task:…]]` ids were noise there, and the chat already renders them as chips. This applies to every run's summary, not just the heartbeat's (`summarizeText` in `src/lib/runs/event-hooks.ts`).
 14. **Area changes are now part of task and note history.** Setting an area is the one thing the default instructions have the heartbeat do on its own, and history snapshots didn't record `areaId`, so that change couldn't be seen or undone. Snapshots now include it, the history view shows it by area name, and undo restores it. Older snapshots lack the field, which means "not recorded", so the diff skips it and undo leaves the current area alone. Undo also leaves the area alone if the recorded area no longer exists. Verified in the app: an agent's area change appears as "Area: Ri Product → Work", and "Undo this change" puts it back.
 15. **The deck shows the heartbeat only when it needs you.** With the chip always on the day bar, the bar rendered as a near-empty row holding one status the user rarely needs, on a surface whose job is today's work. The heartbeat's home is Settings > Heartbeat, so the deck now follows its own rule that a healthy status is silent: the chip appears only when it is never set up, paused, failed, or holding an unread report, and it lives in the Today status row with the other "needs you" chips (2026-10-08). The day bar no longer carries it, so it no longer renders an empty row.

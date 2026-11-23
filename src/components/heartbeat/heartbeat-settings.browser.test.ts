@@ -48,7 +48,7 @@ beforeAll(async () => {
     export const useUpdateHeartbeat=()=>({isPending:false,mutate:(patch)=>{window.patches.push(patch);window.setSaved(patch);}});
     export const useCheckInNow=()=>({isPending:false,mutate:()=>{}});
     export const useUserState=()=>({data:{timezone:'America/Denver'}});
-    export const useOrchestratorName=()=>'Rye';
+    export const useCoordinatorName=()=>'Rye';
     export const useHarnessModels=()=>({models:query.has('opencode')?[{id:'anthropic/claude-sonnet-5-5',label:'Claude Sonnet 5.5',supportedEfforts:['none','low','medium','high','xhigh','max']}]:[{id:'opus',label:'Opus'}]});
     export const useDefaultSelection=()=>null;
     export const useSettingsLink=()=>null;

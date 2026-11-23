@@ -6,7 +6,7 @@ import { z as rpcZ } from 'zod/v4';
 
 /**
  * Thin HTTP wrapper over the deck generation pipeline. The pipeline
- * itself lives in `src/lib/ai/generate-deck.ts` so the orchestrator
+ * itself lives in `src/lib/ai/generate-deck.ts` so the coordinator
  * `regenerate_deck` action (CLI + MCP) can call it without HTTP.
  */
 export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, _request: OperationContext) {

@@ -28,7 +28,7 @@ Locked during alignment on 2026-09-22.
 4. **Agent view layout:** chat on the left, tools on the right as tabs: **Overview** (default), **Files**, **Terminal**, **Preview**, **Setup**.
    - **Amended 2026-11-02: the terminal is a drawer across the bottom**, and the tools, header buttons and hotkeys work as an execution's do. The tabs are Overview, Files, Preview and Setup (§10).
 5. **The agent's main chat manages work:** see, answer, steer, start, close out. In a git agent it never edits the checkout. Code changes go through executions so it cannot collide with running worktrees. Agents that are not git repos may act directly.
-   - **Amended 2026-10-31: it is a coordinator.** The line is how much reading or work a job takes, not whether it is code. Research, investigation, debugging, a doc or report, and anything that reads more than a few files or runs more than a couple of minutes start an execution too, so the chat's context, which has to last for days, stays free for coordination and quick lookups. The rule and its reasons are in `docs/orchestrator-harness.md` (Agent main chats).
+   - **Amended 2026-10-31: it is a coordinator.** The line is how much reading or work a job takes, not whether it is code. Research, investigation, debugging, a doc or report, and anything that reads more than a few files or runs more than a couple of minutes start an execution too, so the chat's context, which has to last for days, stays free for coordination and quick lookups. The rule and its reasons are in `docs/coordinator-harness.md` (Agent main chats).
 6. **One persistent main chat per agent**, resumed when the agent view opens. History and "new chat" sit behind a menu.
 7. **Both the app's main chat and an agent's main chat may message any execution directly.** No chain of command. The execution transcript is the shared record, and every message records who sent it.
 8. **The old `agents` table is deleted.** The engine moves onto chats, triggers and runs as a `harness` column.
@@ -43,7 +43,7 @@ Locked during alignment on 2026-09-22.
 
 Not decided. None of these block the phases below.
 
-- **Rename `workspaces` to `agents` in code** (table, types, API paths, orchestrator actions). Trey is not convinced it is the right move. Revisit once purpose and instructions exist and we can see whether they feel like part of the folder's settings or a separate layer. If it happens, it is a separate spec.
+- **Rename `workspaces` to `agents` in code** (table, types, API paths, Ri actions). Trey is not convinced it is the right move. Revisit once purpose and instructions exist and we can see whether they feel like part of the folder's settings or a separate layer. If it happens, it is a separate spec.
 - **The `ri agent <action>` CLI namespace.** It means "the command group agents use to call Ri". With "agent" meaning a scope in the UI, `ri agent list_workspaces` reads oddly. Changing it breaks every skill that learned it. Decide together with the rename above.
 - **The app's main chat as an agent record** (a "home agent"). Nothing in this project needs it. The main chat stays a chat with no workspace.
 - **Integrations vs Plugins naming.** Decided 2026-09-30: the catalog is Plugins, and Skills and Integrations keep their names inside it. See docs/skills.md.
@@ -70,8 +70,8 @@ How each chat is stored (all existing columns, only the agent main chat is new):
 
 | Chat | `type` | `workspace_id` | `execution_id` | `surface_kind` | Runs in |
 |---|---|---|---|---|---|
-| App main chat | `orchestration` | null | null | null | the Ri home (`getAppRoot()`) |
-| Agent main chat (new) | `orchestration` | set | null | null | the agent's folder |
+| App main chat | `coordinator` | null | null | null | the Ri home (`getAppRoot()`) |
+| Agent main chat (new) | `coordinator` | set | null | null | the agent's folder |
 | Execution chat | `execution` | set | set | null | its worktree, or the folder |
 | Note or task chat | `content` | null | null | `note` / `task` | the Ri home |
 
@@ -83,11 +83,11 @@ Evidence gathered while aligning. Line numbers are as of 2026-09-22.
 
 ### 5.1 The old `agents` table is an engine lookup
 
-- Schema: `kind` (`orchestrator` / `executor`), `name`, `role`, `harness`, `config`, `status` (`src/lib/db/schema.ts`, `agents`).
-- Prod has 4 rows: `Claude Code` (executor, `claude_code`), `codex` (executor, `codex`), `Orchestrator` (`claude_code`), `Orchestrator` (`codex`). `role` is empty and `config` is `{}` on all of them.
+- Schema: `kind` (`coordinator` / `executor`), `name`, `role`, `harness`, `config`, `status` (`src/lib/db/schema.ts`, `agents`).
+- Prod has 4 rows: `Claude Code` (executor, `claude_code`), `codex` (executor, `codex`), `Coordinator` (`claude_code`), `Coordinator` (`codex`). `role` is empty and `config` is `{}` on all of them.
 - `chat_sessions.agent_id`, `triggers.agent_id` and `runs.agent_id` are required foreign keys to it.
-- **Every read of a row reads only `.harness`.** Call sites: the session routes (`sessions/[id]`, `messages`, `new-chat`, `slash-commands`, `dev/sessions/scratch`), `derive-label.ts`, `executor/adapter.ts`, `executor/reconcile.ts`, `queries.ts`, and `orchestrator/registry.ts`.
-- `kind` is only used to find the right row at creation time (`getOrCreateDefaultExecutor`, `getOrCreateDefaultOrchestrator`, `getOrCreateTriggerAgent`). It always matches the chat's own `type`: in prod all 616 chats line up (206 execution chats on executor rows, 410 orchestration and content chats on Orchestrator rows).
+- **Every read of a row reads only `.harness`.** Call sites: the session routes (`sessions/[id]`, `messages`, `new-chat`, `slash-commands`, `dev/sessions/scratch`), `derive-label.ts`, `executor/adapter.ts`, `executor/reconcile.ts`, `queries.ts`, and `coordinator/registry.ts`.
+- `kind` is only used to find the right row at creation time (`getOrCreateDefaultExecutor`, `getOrCreateDefaultCoordinator`, `getOrCreateTriggerAgent`). It always matches the chat's own `type`: in prod all 616 chats line up (206 execution chats on executor rows, 410 orchestration and content chats on Coordinator rows).
 - The names are never shown. `/api/agents` and `useAgents` have no callers.
 - The only public reach: `create_trigger` / `update_trigger` accept `agentId` as a second way to pick the engine, next to `provider`. The CLI mirrors it as `ri trigger --agent <id>` (help text already says "Prefer --provider").
 
@@ -107,21 +107,21 @@ Evidence gathered while aligning. Line numbers are as of 2026-09-22.
 
 ### 5.4 Caller identity is defined but never set
 
-`ActionContext.actor` (`src/lib/orchestrator/types.ts`) has `source`, `sessionId`, `executionId`, `runId`. No transport sets it: the MCP route calls `runAction(..., { remote: true })` and the CLI passes `{ remote: false }`. So today an action cannot know which chat called it. Provenance (Phase 4) needs this wired.
+`ActionContext.actor` (`src/lib/actions/types.ts`) has `source`, `sessionId`, `executionId`, `runId`. No transport sets it: the MCP route calls `runAction(..., { remote: true })` and the CLI passes `{ remote: false }`. So today an action cannot know which chat called it. Provenance (Phase 4) needs this wired.
 
 ### 5.5 Pieces the agent view can reuse, and pieces it can't
 
 - **Folder resolution already fits.** `resolveCwd` (`src/lib/executor/adapter.ts`) returns the worktree if there is one, else the workspace folder, else the Ri home. An agent main chat runs in the agent's folder with no change.
 - **Session file tree and terminal are worktree-centric.** `sessions/[id]/tree` returns an empty tree without a worktree. The terminal only falls back to the folder for non-git workspaces. The agent view needs workspace-level routes.
 - ~~**Preview already has a workspace route:** `/api/workspaces/:id/preview`.~~ Wrong, found in Phase 5: previews are per execution (`/api/executions/:id/preview/*`, `preview_targets.execution_id`). The only workspace route is `preview/restore-set`. See the Phase 5 note.
-- **The app's main chat is found by type alone.** `/api/orchestrator-chat` (plus `/history` and `/resume`) uses `listChatSessions({ type: 'orchestration', status: 'active' })`. Agent main chats would leak into it unless filtered by `workspace_id IS NULL`.
-- **Needs Review already excludes interactive orchestration chats** (`listNeedsReviewSessionCandidates`), and the rail lists executions, so agent main chats stay out of both without new code. Verify, don't assume.
-- **The orchestrator surface installs files into the Ri home** (`installOrchestratorSurface`, `agents-md-template.ts`). An agent main chat runs inside the user's own folder, so it must never install files there.
-- **The write guard** is `disallowedTools: ['Write', 'Edit', 'NotebookEdit']` (`ORCHESTRATOR_DISALLOWED_TOOLS` in `harness-surface.ts`). Codex ignores tool filtering upstream, so there it is prompt-only.
+- **The app's main chat is found by type alone.** `/api/coordinator-chat` (plus `/history` and `/resume`) uses `listChatSessions({ type: 'coordinator', status: 'active' })`. Agent main chats would leak into it unless filtered by `workspace_id IS NULL`.
+- **Needs Review already excludes interactive coordinator chats** (`listNeedsReviewSessionCandidates`), and the rail lists executions, so agent main chats stay out of both without new code. Verify, don't assume.
+- **The coordinator surface installs files into the Ri home** (`installCoordinatorSurface`, `agents-md-template.ts`). An agent main chat runs inside the user's own folder, so it must never install files there.
+- **The write guard** is `disallowedTools: ['Write', 'Edit', 'NotebookEdit']` (`COORDINATOR_DISALLOWED_TOOLS` in `harness-surface.ts`). Codex ignores tool filtering upstream, so there it is prompt-only.
 
 ### 5.6 Instructions at alignment, per chat type
 
-- App main chat: the orchestrator brief, installed into the Ri home.
+- App main chat: the coordinator brief, installed into the Ri home.
 - Note and task chats: a document prompt via `--append-system-prompt` (Claude only).
 - Execution chats: the repo's own `CLAUDE.md` / `AGENTS.md`, plus the reference-folder block via the session `instructionsFile` (adapter, around line 1095). Harnesses that ignore session instructions get a logged warning.
 
@@ -168,7 +168,7 @@ A first pass shipped this as a hand-edited `0001` migration. Trey asked for it t
 
 **Code: writes**
 
-- [x] Chat creation sets `harness` directly: `src/lib/sessions/dispatch.ts`, `createExecutionWithChat`, `createExecutionSession`, `createExecutionChat` (`queries.ts`), `/api/orchestrator-chat`, `/api/document-chat`, `sessions/[id]/new-chat`.
+- [x] Chat creation sets `harness` directly: `src/lib/sessions/dispatch.ts`, `createExecutionWithChat`, `createExecutionSession`, `createExecutionChat` (`queries.ts`), `/api/coordinator-chat`, `/api/document-chat`, `sessions/[id]/new-chat`.
 - [x] Triggers and runs: `create_trigger` / `update_trigger` store `harness` from `provider`. `src/lib/runs/dispatch.ts` copies `trigger.harness` onto runs and chats. `src/lib/deck/trigger.ts` and `src/lib/stream-triage/triggers.ts` pass a harness.
 
 **Code: reads**
@@ -180,7 +180,7 @@ A first pass shipped this as a hand-edited `0001` migration. Trey asked for it t
 
 **Code: delete**
 
-- [x] `getOrCreateDefaultExecutor`, `getOrCreateDefaultOrchestrator`, `getOrCreateTriggerAgent`, `createAgent`, `listAgents`, `getAgent`, and the `providerForAgent` / `agentProvider` helpers.
+- [x] `getOrCreateDefaultExecutor`, `getOrCreateDefaultCoordinator`, `getOrCreateTriggerAgent`, `createAgent`, `listAgents`, `getAgent`, and the `providerForAgent` / `agentProvider` helpers.
 - [x] `/api/agents` and `src/hooks/use-agents.ts`.
 - [x] Update tests that seed `agents` rows (scheduler, runs, notifications, triggers, oversight).
 
@@ -241,7 +241,7 @@ Current follow-up: unsupported session-instruction transports no longer leave st
 
 **Status 2026-09-22:** done. The agent main chat line landed with Phase 6.
 
-### Phase 4: Orchestrator actions (MCP and `ri agent` CLI)
+### Phase 4: Ri actions (MCP and `ri agent` CLI)
 
 One registry generates both surfaces, so every item lands on both.
 
@@ -256,14 +256,14 @@ One registry generates both surfaces, so every item lands on both.
 
 **Caller identity** (§5.4)
 
-- [x] Give every harness session a way to identify itself to the orchestrator:
-  - MCP mode: the executor adds a per-session credential to the orchestrator MCP server config it attaches to the session. The `/api/orchestrator/[transport]` route resolves it to `ctx.actor`.
+- [x] Give every harness session a way to identify itself to the coordinator:
+  - MCP mode: the executor adds a per-session credential to the home MCP server config it attaches to the session. The `/api/home/[transport]` route resolves it to `ctx.actor`.
   - Skills mode: the executor exports the session id and a per-session token into the harness environment, and the CLI forwards them.
-  - One value carries both: `<chatSessionId>.<HMAC-SHA256(localToken, "ri-session:<id>")>` (`src/lib/orchestrator/session-credential.ts`). Nothing is stored, since any process holding the local token can re-verify it. MCP sends it as the `x-ri-session` header (`orchestratorMcpServer(port, { sessionId })`). Every session's env gets `RI_SESSION_CREDENTIAL`, which `ri agent` reads (`actorFromSessionCredential`).
+  - One value carries both: `<chatSessionId>.<HMAC-SHA256(localToken, "ri-session:<id>")>` (`src/lib/actions/session-credential.ts`). Nothing is stored, since any process holding the local token can re-verify it. MCP sends it as the `x-ri-session` header (`homeMcpServer(port, { sessionId })`). Every session's env gets `RI_SESSION_CREDENTIAL`, which `ri agent` reads (`actorFromSessionCredential`).
 - [x] A bare header or env var without a valid token is ignored, so an untrusted caller cannot claim to be a session. Human CLI calls keep today's behavior (actor unset).
   - A forged signature, a bare id, or a credential for a deleted chat all resolve to no actor. This is identity only. `ctx.remote` still decides what the transport may do.
 - [x] Test: an action called from a session sees that session in `ctx.actor.sessionId`, and a forged id does not.
-  - `session-credential.test.ts` (sign, verify, forge, header parsing, actor lookup) and `app/api/orchestrator/[transport]/route.test.ts`, which drives the real MCP handler with signed, forged, bare and missing headers.
+  - `session-credential.test.ts` (sign, verify, forge, header parsing, actor lookup) and `app/api/home/[transport]/route.test.ts`, which drives the real MCP handler with signed, forged, bare and missing headers.
 
 **New actions**
 
@@ -282,19 +282,19 @@ One registry generates both surfaces, so every item lands on both.
   - **Changed to a soft reference (no FK).** A scratch generate showed drizzle-kit emits `ADD sender_session_id text REFERENCES chat_sessions(id)` and silently drops the `ON DELETE SET NULL`, so existing databases would get a stricter constraint than fresh installs, and deleting a chat that had sent a message would fail. Fixing that needs hand-edited SQL, so the column is a plain nullable text id and readers treat an unresolvable id as "a deleted chat".
 - [x] `message_agent` and `delegate_work` pass `ctx.actor.sessionId` to the messages route, which stores it on the event.
   - Passed as a signed `x-ri-session` header, not a body field, so the route verifies it and a request cannot claim a sender. The acceptance receipt identifies the durable request.
-- [x] The receiving harness gets the message with a one-line header naming the sender, for example `[Message from the ri agent's main chat]` or `[Message from the orchestrator]`. Messages you type are unchanged.
+- [x] The receiving harness gets the message with a one-line header naming the sender, for example `[Message from the ri agent's main chat]` or `[Message from the coordinator]`. Messages you type are unchanged.
   - `src/lib/sessions/sender.ts`: `[Message from the "ri" agent's main chat, sent on the user's behalf]`, then a blank line. The stored event keeps the text as sent, so the label is only in what the harness receives. Orphan redispatch (`health.ts`) applies the same label.
 - [x] Enforce "never send to your own session" using the actor.
   - Both layers: the action refuses before calling the server, and the messages route refuses a credential naming the target (400).
 
 **Briefs and skills**
 
-- [x] Update the orchestrator brief (`harness-surface.ts`, `agents-md-template.ts`) and `skills/orchestrator/SKILL.md`: the new actions, provenance, and "a workspace is what the user calls an agent".
+- [x] Update the coordinator brief (`harness-surface.ts`, `agents-md-template.ts`) and `skills/tasks-notes/SKILL.md`: the new actions, provenance, and "a workspace is what the user calls an agent".
   - SKILL.md also had stale `schedule` action names from before triggers. Fixed.
 - [x] Registry tests for every change above (`registry.triggers.test.ts`, `registry.oversight.test.ts`, new tests for the new actions).
   - `registry.agents.test.ts` covers the new actions, provenance, the capability gate and the executions-only list. Trigger changes were tested with Phase 1. `server-client.test.ts` covers the structured `ServerResponseError`.
 
-**Done when:** an orchestrator session can start, message and archive an execution. The execution's transcript shows who sent each message, and retries do not duplicate work.
+**Done when:** a coordinator session can start, message and archive an execution. The execution's transcript shows who sent each message, and retries do not duplicate work.
 
 **Status 2026-09-22:** landed. Every action is tested through `runAction` with the app server mocked and the database and credentials real, and caller identity through the real MCP handler. `get_session_messages` marks steered rows with `sentBy`, so an overseeing agent can tell them from typed ones. The transcript chip in the UI is Phase 7. A live run against a real harness is part of the Phase 10 end-to-end pass.
 
@@ -316,8 +316,8 @@ One registry generates both surfaces, so every item lands on both.
   - `GET /api/workspaces/:id/chat/history`
   - `POST /api/workspaces/:id/chat/resume`
   - Query: `listMainChats(workspaceId | null)`. Behavior: `src/lib/sessions/main-chat.ts` (ensure, new, history, resume), which both route families wrap. Concurrent opens of one scope share a single create. Resume refuses a chat from another scope (another agent, the app, an execution). An archived agent still returns its current chat and history, but never starts or resumes one (409).
-- [x] `/api/orchestrator-chat`, `/history` and `/resume` filter on `workspace_id IS NULL` so agent main chats never appear in the app's main chat.
-  - Also verified the other places an orchestration chat could leak: the rail (`listRailSessions`) inner-joins executions, session search is executions only, and `list_workspace_sessions` lists executions (Phase 4).
+- [x] `/api/coordinator-chat`, `/history` and `/resume` filter on `workspace_id IS NULL` so agent main chats never appear in the app's main chat.
+  - Also verified the other places a coordinator chat could leak: the rail (`listRailSessions`) inner-joins executions, session search is executions only, and `list_workspace_sessions` lists executions (Phase 4).
 - [x] `PATCH /api/workspaces/:id` accepts `purpose` and `instructions`. (Landed with Phase 3: the route already forwards fields, the query layer validates, and validation errors map to 400.)
 - [x] Session, trigger and run responses carry `harness` (Phase 1).
   - Confirmed no route emits `agentHarness` or `agentId`. `GET /api/runs` now forwards the `harness` filter too (it only forwarded the rejected `agentId`).
@@ -332,12 +332,12 @@ One registry generates both surfaces, so every item lands on both.
 
 ### Phase 6: The agent's main chat (backend)
 
-- [x] Row shape per §4: `type = 'orchestration'`, `workspace_id` set, no execution. `harness` is the user's default provider.
+- [x] Row shape per §4: `type = 'coordinator'`, `workspace_id` set, no execution. `harness` is the user's default provider.
   - Created by `src/lib/sessions/main-chat.ts` (Phase 5).
 - [x] Test that `resolveCwd` returns the agent's folder for it.
-  - **Surprise:** §5.5 said this needed no change. It did. `resolveCwd` refuses a git workspace without a worktree (it returns null so an execution never runs in the source checkout), which would have refused every git agent's main chat. It now takes the chat's `type` and `executionId` and lets exactly one case through: an orchestration chat with a workspace and no execution runs in the folder, git or not, and a folder that is gone is refused. Executions keep the old rule, and a test pins that. All callers already passed full rows, so making the fields required cost nothing.
-- [x] **Never write into the agent's folder.** No surface install there, whatever `user_state.orchestratorMode` says. The brief goes through session instructions. Orchestrator actions go through the session MCP config (the `harness_mcp` path).
-  - `src/lib/executor/agent-main-chat.ts` (`prepareAgentMainChatSpawn`) builds the whole spawn: brief and reference folders in the instructions file under the work dir, MCP servers, write guard. The adapter's orchestration branch skips `installOrchestratorSurface` for it.
+  - **Surprise:** §5.5 said this needed no change. It did. `resolveCwd` refuses a git workspace without a worktree (it returns null so an execution never runs in the source checkout), which would have refused every git agent's main chat. It now takes the chat's `type` and `executionId` and lets exactly one case through: a coordinator chat with a workspace and no execution runs in the folder, git or not, and a folder that is gone is refused. Executions keep the old rule, and a test pins that. All callers already passed full rows, so making the fields required cost nothing.
+- [x] **Never write into the agent's folder.** No surface install there, whatever `user_state.coordinatorMode` says. The brief goes through session instructions. Ri actions go through the session MCP config (the `harness_mcp` path).
+  - `src/lib/executor/agent-main-chat.ts` (`prepareAgentMainChatSpawn`) builds the whole spawn: brief and reference folders in the instructions file under the work dir, MCP servers, write guard. The adapter's orchestration branch skips `installCoordinatorSurface` for it.
   - Two more writers found and handled. **Codex symlinks `skillDirs` into `<cwd>/.agents/skills`** (agentex `injectWorkspaceSkills`), so an agent main chat on Codex gets no `skillDirs` and logs that. Claude builds a temp dir, and the rest use the home dir. **Cursor and OpenCode drop session instructions**, so the brief rides the first message of a fresh chat instead (`withFirstTurnPreamble`), framed as app instructions the user did not type. A resumed chat keeps the brief it started with.
 - [x] The brief covers:
   - the scope: name, folder, purpose, instructions
@@ -346,14 +346,14 @@ One registry generates both surfaces, so every item lands on both.
   - the git rule: changes go through `delegate_work`
   - permission prompts: answer questions when the user's intent is clear, pass permission prompts to the user
   - provenance: its messages are labeled as coming from it
-  - `renderAgentMainChatBrief`. It also reuses the orchestrator brief's shared sections (the domain brief was split into named sections, and the app main chat's brief was verified byte-identical before and after). Home-relative paths (`@USER.md`, `attachments/`) are absolute here, since the working directory is the agent's folder.
-- [x] Write guard for git agents: the same `disallowedTools` as the orchestrator. On Codex it is prompt-only, and the adapter logs it.
+  - `renderAgentMainChatBrief`. It also reuses the coordinator brief's shared sections (the domain brief was split into named sections, and the app main chat's brief was verified byte-identical before and after). Home-relative paths (`@USER.md`, `attachments/`) are absolute here, since the working directory is the agent's folder.
+- [x] Write guard for git agents: the same `disallowedTools` as the coordinator. On Codex it is prompt-only, and the adapter logs it.
   - Only Claude enforces argv tool filtering, so every other harness gets the prompt-only warning. A non-git agent has no guard, and its brief still sends building to an execution, editing directly only when the user asks for that edit in the chat.
 - [x] Integrations: the agent's integration scopes, the same set its executions get.
   - Same gate as executions: attached only when the agent has scopes and the harness isolates MCP. **Decision:** "the same set its executions get" applied to the rest of the scope too, so the main chat also gets the agent browser (the isolated `ws-<id>` profile, when the app and the agent allow it) and the agent's reference folders (read-only then, editable unless marked read only since 2026-10-08, docs/reference-folders-spec.md). Scope and reference-folder edits recycle the main chat along with the executions.
-- [x] It can use the full orchestrator surface (tasks, notes, deck). The brief keeps it focused on its agent.
+- [x] It can use the full coordinator surface (tasks, notes, deck). The brief keeps it focused on its agent.
 - [x] Labels: none while live, retrospective summary at archive (the existing orchestration rule).
-  - Unchanged code: the messages route never titles orchestration chats, and `retireMainChat` derives the retrospective label.
+  - Unchanged code: the messages route never titles coordinator chats, and `retireMainChat` derives the retrospective label.
 - [x] Verify it stays out of Needs Review and the rail.
   - `src/lib/db/main-chats.test.ts`: not a Needs Review candidate even with an unread reply, not in `listRailSessions`, not in `listWorkspaceExecutions`. Session search is executions only.
 - [x] Tests: brief contents, write guard on git versus non-git, no files created in the agent folder, integration scoping.
@@ -391,7 +391,7 @@ One registry generates both surfaces, so every item lands on both.
 **Chat panel**
 
 - [x] Renders the agent's main chat with the existing harness chat components (`src/components/chat/harness-chat.tsx`), loaded from `/api/workspaces/:id/chat`. A menu offers history and "New chat".
-  - `HarnessChat` takes a scope (null for the app's chat). The history menu moved out of `content-panel.tsx` into `main-chat-history-menu.tsx`, and the hooks into `use-main-chat.ts` (`use-orchestrator-chat.ts` binds them to null).
+  - `HarnessChat` takes a scope (null for the app's chat). The history menu moved out of `content-panel.tsx` into `main-chat-history-menu.tsx`, and the hooks into `use-main-chat.ts` (`use-coordinator-chat.ts` binds them to null).
 - [x] Composer placeholder: "Ask ri about its work, or what to start next". UI copy uses no em dashes and no semicolons.
 
 **Tools panel**
@@ -431,8 +431,8 @@ One registry generates both surfaces, so every item lands on both.
 
 **Provenance in transcripts**
 
-- [x] Messages with a `sender_session_id` show who sent them ("From ri", "From orchestrator"), linking to the sending chat.
-  - `src/components/chat-ui/messages/sender-chip.tsx`. The agent chip opens the agent view, the orchestrator chip goes Home, and an execution chip opens that execution. A deleted sender reads "From a chat that was deleted". Verified with seeded events.
+- [x] Messages with a `sender_session_id` show who sent them ("From ri", "From coordinator"), linking to the sending chat.
+  - `src/components/chat-ui/messages/sender-chip.tsx`. The agent chip opens the agent view, the coordinator chip goes Home, and an execution chip opens that execution. A deleted sender reads "From a chat that was deleted". Verified with seeded events.
 
 **Trial preference**
 
@@ -496,17 +496,17 @@ One registry generates both surfaces, so every item lands on both.
 ### Phase 10: Docs and final verification
 
 - [x] `docs/workspaces-spec.md`: replace "Agent = the persona" in the mental model with a pointer to this spec. (Landed with Phase 1.)
-- [x] `docs/chat-sessions.md`: the Agents section says the table is gone and the harness lives on the chat. (Landed with Phase 1, along with `docs/async-agents-v1.md` and the one stale line in `docs/orchestrator-harness.md`.)
-- [x] `docs/orchestrator-harness.md`: new actions, caller identity, provenance, the agent main chat.
+- [x] `docs/chat-sessions.md`: the Agents section says the table is gone and the harness lives on the chat. (Landed with Phase 1, along with `docs/async-agents-v1.md` and the one stale line in `docs/coordinator-harness.md`.)
+- [x] `docs/coordinator-harness.md`: new actions, caller identity, provenance, the agent main chat.
   - Also fixed two stale names there (`ensureAgentSession`, `create_schedule`).
-- [x] AGENTS.md: the glossary line (Phase 2), the migration note (Phase 0), and a line in the Orchestrator section about agent main chats.
+- [x] AGENTS.md: the glossary line (Phase 2), the migration note (Phase 0), and a line in the Coordinator section about agent main chats.
   - The "agent in the UI" half of the glossary lands with Phase 8's copy sweep.
 - [x] `pnpm ts`, `pnpm lint`, `pnpm test`, `pnpm smoke`, `pnpm smoke:agent`, `pnpm smoke:harness`, `pnpm build`.
   - `pnpm ts`: no errors in source. The only errors are in the running prod build's generated `.next/types`, which still names the old `/api/agent/*` routes. The cutover `pnpm build` regenerates it.
   - `pnpm lint`: 134 errors, all older than this work. Every file this spec touched has the same count it had at `58a7464`.
   - `pnpm test`: 216 files, 2070 tests pass.
   - `pnpm build` (into `.next-verify`, so prod's `.next` is untouched): compiles, type-checks, and emits every route, including the new `/api/workspaces/:id/{chat,tree,file,terminals,previews}` families.
-  - `pnpm smoke`, `smoke:agent`, `smoke:harness`: all pass. **Surprise:** `smoke` and `smoke:agent` had been failing on `main` since the home layout change, checking for `brain/`, a root `config.json` and a skill named `orchestrator`. They now read paths from `src/lib/config/paths.ts` and skills from `shippedSkillNames()`, so they can't go stale that way again. Two more old smoke bugs: `smoke:agent` called `process.exit()` inside `try`, so its `finally` never ran and its server stayed up. And neither network smoke removed the route types Next writes into `.next-smoke/dev/types`, which tsconfig includes. After this spec's route renames, those stale types failed `pnpm build`, and they would have failed the cutover build too. Both smokes now remove them on teardown.
+  - `pnpm smoke`, `smoke:agent`, `smoke:harness`: all pass. **Surprise:** `smoke` and `smoke:agent` had been failing on `main` since the home layout change, checking for `brain/`, a root `config.json` and a skill named `coordinator`. They now read paths from `src/lib/config/paths.ts` and skills from `shippedSkillNames()`, so they can't go stale that way again. Two more old smoke bugs: `smoke:agent` called `process.exit()` inside `try`, so its `finally` never ran and its server stayed up. And neither network smoke removed the route types Next writes into `.next-smoke/dev/types`, which tsconfig includes. After this spec's route renames, those stale types failed `pnpm build`, and they would have failed the cutover build too. Both smokes now remove them on teardown.
 - [x] End-to-end run on dev (port 42241):
   1. Create an agent.
   2. Open its agent view.
@@ -555,8 +555,8 @@ Found during the work and left open:
 | Area | Files |
 |---|---|
 | Schema, types, queries | `src/lib/db/schema.ts`, `src/db/types.ts`, `src/lib/db/queries.ts`, `src/lib/db/index.ts`, `drizzle/` |
-| Orchestrator | `src/lib/orchestrator/registry.ts`, `types.ts`, `harness-surface.ts`, `server-client.ts`, `src/app/api/orchestrator/[transport]/route.ts`, `skills/orchestrator/SKILL.md`, `src/lib/config/agents-md-template.ts` |
-| Chats and execution | `src/lib/sessions/dispatch.ts`, `src/lib/executor/adapter.ts`, `src/lib/executor/harness.ts`, `src/lib/executor/reconcile.ts`, `src/lib/sessions/derive-label.ts`, `src/app/api/sessions/[id]/*`, `src/app/api/orchestrator-chat/*`, `src/app/api/document-chat/route.ts` |
+| Coordinator | `src/lib/actions/registry.ts`, `types.ts`, `harness-surface.ts`, `server-client.ts`, `src/app/api/home/[transport]/route.ts`, `skills/tasks-notes/SKILL.md`, `src/lib/config/agents-md-template.ts` |
+| Chats and execution | `src/lib/sessions/dispatch.ts`, `src/lib/executor/adapter.ts`, `src/lib/executor/harness.ts`, `src/lib/executor/reconcile.ts`, `src/lib/sessions/derive-label.ts`, `src/app/api/sessions/[id]/*`, `src/app/api/coordinator-chat/*`, `src/app/api/document-chat/route.ts` |
 | Triggers and runs | `src/lib/runs/dispatch.ts`, `src/lib/deck/trigger.ts`, `src/lib/stream-triage/triggers.ts`, `src/cli/commands/trigger.ts` |
 | Harness naming | `src/lib/harness/*` (was `src/lib/agents/*` and `src/lib/agent-options.ts`), `src/app/api/harness/*` (was `src/app/api/agent/*`), `src/hooks/use-harness*.ts` |
 | Rail | `src/components/dashboard/power-rail.tsx`, `src/components/workspaces/rail-tabs.tsx`, `workspace-nav.tsx`, `workspace-row.tsx`, `pinned-rail.tsx`, `status-view.tsx`. `workspace-settings-sheet.tsx` is gone, its fields live in the Setup tab. |

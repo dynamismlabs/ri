@@ -29,7 +29,7 @@ function connectionCard(sessionId: string) {
 it('agent settings and connector scopes save repeatedly after failed idle close, and a send confirms the close before it starts fresh', async () => {
   const cwd = path.join(home.root, 'project'); fs.mkdirSync(cwd);
   const workspace = q.createWorkspace({ name: 'Personal agent', cwd, isGit: false });
-  const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', workspaceId: workspace.id, type: 'orchestration' });
+  const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', workspaceId: workspace.id, type: 'coordinator' });
   const close = vi.fn(async () => { throw new Error('Shutdown failed'); });
   const sendMessage = vi.fn(); executor._cacheHarnessSession(chat.id, { close, send: sendMessage } as unknown as AgentSession);
   const frames: SessionStreamMessage[] = [];

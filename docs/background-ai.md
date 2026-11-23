@@ -2,7 +2,7 @@
 
 Every server-side background AI call runs through the user's default
 subscription harness (Claude Code, Codex, ...) — the same runtime the
-orchestrator chat, document chat, and executions already use. No background
+coordinator chat, document chat, and executions already use. No background
 feature bills a model API key. The one sanctioned direct OpenAI API use in
 the app is **embeddings** (`src/lib/embeddings/`), which silently no-op
 without `OPENAI_API_KEY` (search degrades to FTS-only).
@@ -73,7 +73,7 @@ tightly-bounded `provider.execute` through `@agentex/agent`, read
   parses tolerantly (`extractJsonObject` strips fences/prose), validates
   with zod, and retries once with the rejection reason before throwing.
 - `resolveBackgroundHarness()` — `defaultHarness` from user state
-  (the same default the orchestrator chat uses), falling back to Codex
+  (the same default the coordinator chat uses), falling back to Codex
   when no choice is saved. Existing saved choices are preserved.
 - `backgroundModelFor(provider, tier)` — `fast` = the provider's cheap
   alias (`CHEAPEST_MODEL`: haiku / gpt-5.4-mini); `standard` = the user's
@@ -102,7 +102,7 @@ slugs have no stable cheap alias.
 ### Tool wiring per harness
 
 Claude supports MCP attachment (`capabilities.mcp`), so tool-using calls
-attach the orchestrator MCP (and the integrations MCP where relevant) over
+attach the home MCP (and the integrations MCP where relevant) over
 localhost + the local bearer token. Codex has no MCP wiring in agentex yet:
 call sites check `harnessSupportsMcp()` and fall back to running at the app
 data root, where the installed AGENTS.md surface routes the same actions
@@ -123,7 +123,7 @@ disappears and the allowlists light up there too.
 
 The NL MCP agent harvests its `entities` / `innerSteps` payload from
 harness `tool_call` / `tool_result` stream events instead of ai-sdk steps:
-MCP tool names carry the action (`mcp__orchestrator__<action>`), and on the
+MCP tool names carry the action (`mcp__ri_home__<action>`), and on the
 CLI path the action envelope (`{ok, action, result}`) printed on stdout
 names it. Uncited/hallucinated ids remain impossible — entities come only
 from observed successful results.

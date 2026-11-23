@@ -68,7 +68,7 @@ describe('1. only the home’s own key counts as the home machine', () => {
       params: Promise.resolve({ id: device.id }),
     });
     expect(res.status).toBe(400);
-    const next = proxy(request('/api/orchestrator/actions/register_device', 'POST', {}, token.plaintext));
+    const next = proxy(request('/api/home/actions/register_device', 'POST', {}, token.plaintext));
     expect(forwarded(next, 'x-ri-caller-location')).toBe('elsewhere');
   });
 

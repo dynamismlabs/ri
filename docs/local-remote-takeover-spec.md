@@ -348,7 +348,7 @@ No server persistence — these are per-browser/per-origin preferences.
 
 The CLI is the existing Ri CLI (same binary that runs `ri start`
 on the host). New commands live in `src/cli/commands/` per the
-"shared CLI commands" convention in AGENTS.md (not orchestrator
+"shared CLI commands" convention in AGENTS.md (not coordinator
 registry — these are user-facing commands, not agent actions).
 
 ### `ri takeover <url>`

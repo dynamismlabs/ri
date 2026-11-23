@@ -2,7 +2,7 @@ import { useOptionalHomeContext } from '@/components/home/home-context';
 import { trpc } from '@/lib/trpc/client';
 import { useQuery, useMutation, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { userStateApi } from '@/lib/api/user-state';
-import { resolveOrchestratorName } from '@/lib/orchestrator/name';
+import { resolveCoordinatorName } from '@/lib/coordinator/name';
 import { attachmentUrl } from '@/lib/attachments/view';
 import type { UpdateUserStateInput, UserStateRecord } from '@/db/types';
 import { toast } from 'sonner';
@@ -62,16 +62,16 @@ export function useUpdateUserState() {
 }
 
 /**
- * What the user calls the orchestrator (the app's main chat), resolved to the
- * default until they pick a name. See src/lib/orchestrator/name.ts.
+ * What the user calls the coordinator (the app's main chat), resolved to the
+ * default until they pick a name. See src/lib/coordinator/name.ts.
  */
-export function useOrchestratorName(): string {
+export function useCoordinatorName(): string {
   const home = useOptionalHomeContext();
   const { data } = useUserState();
-  return home && !home.capabilities.privatePlanning ? home.home.name : resolveOrchestratorName(data?.orchestratorName);
+  return home && !home.capabilities.privatePlanning ? home.home.name : resolveCoordinatorName(data?.coordinatorName);
 }
 
-export interface OrchestratorIdentity {
+export interface CoordinatorIdentity {
   name: string;
   emoji: string | null;
   /** Where its image is served, when it has one. */
@@ -80,15 +80,15 @@ export interface OrchestratorIdentity {
   color: string | null;
 }
 
-/** The orchestrator's name and look, as `OrchestratorMark` draws them. */
-export function useOrchestratorIdentity(): OrchestratorIdentity {
+/** The coordinator's name and look, as `CoordinatorMark` draws them. */
+export function useCoordinatorIdentity(): CoordinatorIdentity {
   const home = useOptionalHomeContext();
   const { data } = useUserState();
-  if (home?.home.kind === 'team') return { name: home.home.name, emoji: null, imageUrl: data?.orchestratorImage ? attachmentUrl(data.orchestratorImage.fileName) : null, imageFit: 'contain', color: null };
+  if (home?.home.kind === 'team') return { name: home.home.name, emoji: null, imageUrl: data?.coordinatorImage ? attachmentUrl(data.coordinatorImage.fileName) : null, imageFit: 'contain', color: null };
   return {
-    name: resolveOrchestratorName(data?.orchestratorName),
-    emoji: data?.orchestratorEmoji ?? null,
-    imageUrl: data?.orchestratorImage ? attachmentUrl(data.orchestratorImage.fileName) : null,
-    color: data?.orchestratorColor ?? null,
+    name: resolveCoordinatorName(data?.coordinatorName),
+    emoji: data?.coordinatorEmoji ?? null,
+    imageUrl: data?.coordinatorImage ? attachmentUrl(data.coordinatorImage.fileName) : null,
+    color: data?.coordinatorColor ?? null,
   };
 }

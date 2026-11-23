@@ -29,7 +29,7 @@ describe('deliberate model choices populate recents', () => {
     const q = await import('@/lib/db/queries');
     const { dispatch } = await import('./adapter');
     const { PATCH } = await import('@/lib/server/operations/sessions/[id]');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'opus' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'opus' });
     const before = q.ensureHarnessSettings('claude');
     expect(q.listRecentHarnessModelIds('claude')).toEqual([]);
     await dispatch(chat.id, 'First turn');
@@ -44,8 +44,8 @@ describe('deliberate model choices populate recents', () => {
     const q = await import('@/lib/db/queries');
     const { dispatch } = await import('./adapter');
     const { PATCH } = await import('@/lib/server/operations/sessions/[id]');
-    const draft = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'opus' });
-    const invalid = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'sonnet', serviceTier: 'fast' });
+    const draft = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'opus' });
+    const invalid = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'sonnet', serviceTier: 'fast' });
     await expect(dispatch(invalid.id, 'Must not start')).rejects.toThrow();
     expect((await PATCH({ params: { id: draft.id }, body: { model: 'no-such-model' } }, ctx)).status).toBe(400);
     expect(q.listRecentHarnessModelIds('claude')).toEqual([]);
@@ -55,7 +55,7 @@ describe('deliberate model choices populate recents', () => {
   it('does not let background schedules populate the personal shortlist', async () => {
     const q = await import('@/lib/db/queries');
     const { dispatchRun } = await import('@/lib/runs/dispatch');
-    const trigger = q.createTrigger({ name: 'Background work', harness: 'claude', model: 'sonnet', prompt: 'Check in', kind: 'manual', targetKind: 'orchestrator' });
+    const trigger = q.createTrigger({ name: 'Background work', harness: 'claude', model: 'sonnet', prompt: 'Check in', kind: 'manual', targetKind: 'coordinator' });
     const fire = await dispatchRun({ trigger, triggerKind: 'manual' });
     await vi.waitFor(() => expect(q.getRun(fire.run.id)?.status).toBe('completed'), { timeout: 15_000 });
     expect(fake.sessions).toHaveLength(1);

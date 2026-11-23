@@ -193,13 +193,13 @@ What exists and is sound:
 
 - **Schema** (`src/lib/db/schema.ts:169-207`): `stream` table with `rawText`, `source` (capture/chat/webhook), `media` (text/voice/image), `origin`, external dedupe fields (`externalSource`, `externalId`, `externalPayload`, uniquely indexed when both identifiers are present), `status` (pending/promoted/dismissed), `dismissedBy`, `promotedToType/Id/At`, `promotionPass`, `attachments`.
 - **Query layer** (`src/lib/db/queries.ts`): `listStream`, `getStream`, `findStreamByExternalId`, `createStream`, `updateStream`, `dismissStream`. Embedding upsert and mirror sync fire on create/update. No hard delete exists anywhere.
-- **Orchestrator actions** (`src/lib/orchestrator/registry.ts`): `list_stream`, `get_stream_item`, `create_stream_item`, `promote_stream` (one item to one new task or note, guards status pending, throws conflict on re-promote), `dismiss_stream`.
+- **Ri actions** (`src/lib/actions/registry.ts`): `list_stream`, `get_stream_item`, `create_stream_item`, `promote_stream` (one item to one new task or note, guards status pending, throws conflict on re-promote), `dismiss_stream`.
 - **Capture surface**: `POST /api/capture` (`src/app/api/capture/route.ts`) handles text, voice (transcription), image (vision extraction). Failure paths already preserve the original: failed transcription saves the audio attachment, failed image extraction saves the images. Pocket and Pebble Index webhook adapters dedupe via `externalId`. Pebble's multipart adapter also preserves an included M4A attachment.
 - **Manual triage UI** (`src/components/stream/`): `stream-list.tsx`, `stream-triage.tsx`, `promote-actions.tsx`, `stream-attachments.tsx`.
 - **Search**: stream is a first-class entity in sqlite-vec and FTS5, participates in hybrid search.
 - **Triggers infrastructure** (`src/lib/db/schema.ts:1037`, `src/lib/scheduler/runner.ts`): kinds `manual | at | every | cron | webhook`, `nextRunAt` advanced atomically before dispatch, `concurrencyPolicy`, per-trigger model/effort, `findTriggerByName` query, `run_trigger` action, `runs` table. Dispatches harness sessions.
 - **Entity versions** (`src/lib/db/schema.ts:872`): full snapshot per change, `source` human/ai/system, `revertedFromVersionId`. `updateTask` and `updateNote` accept `meta?: EntityVersionMeta`.
-- **Harness triage prompt**: `src/lib/orchestrator/harness-surface.ts` has a "Stream triage" section instructing per-item promote/dismiss. On-demand only. Nothing runs it automatically.
+- **Harness triage prompt**: `src/lib/coordinator/harness-surface.ts` has a "Stream triage" section instructing per-item promote/dismiss. On-demand only. Nothing runs it automatically.
 
 The critical gap: **no automated triage exists at all.** Nothing calls the stream actions proactively. The feature as built is a manual GTD inbox with agent-shaped plumbing.
 
@@ -407,7 +407,7 @@ Changed functions:
 - `updateStream`: reject changes to `rawText` when the row already has a non-empty value, except the transcription-retry path filling in a previously failed transcript (guard: current `rawText` is empty or a placeholder and `media` is voice or image). Reject invalid status transitions.
 - `promoteStream` logic moves fully server-side and also writes `tasks.streamItemId`, `stream_links`, and a `triage_decisions` row.
 
-## 3.5 Orchestrator actions
+## 3.5 Ri actions
 
 Names are the public wire contract: snake_case, params as Zod raw shapes, `ActionError` with stable codes (`not_found | invalid_params | conflict | unsupported`), plain-data returns, no console.log, retry-safe. Existing `promote_stream` and `dismiss_stream` keep their names and semantics.
 
@@ -448,7 +448,7 @@ Embedding and mirror side effects fire through the existing query-layer paths af
 
 Location: `src/lib/stream-triage/` (`context.ts`, `sweep.ts`, `prompt.ts`, `schema.ts`, `autonomy.ts`).
 
-Runs as a harness session dispatched by the triggers infrastructure (targetKind `orchestrator`), consistent with the orchestrator-on-harness direction. The sweep flow:
+Runs as a harness session dispatched by the triggers infrastructure (targetKind `coordinator`), consistent with the coordinator-on-harness direction. The sweep flow:
 
 1. `sweep.ts` creates the pass row (single-flight check), assembles context, and dispatches the session with the sweep prompt.
 2. The agent works through the action vocabulary (3.5). The action layer enforces autonomy policy per decision.
@@ -602,8 +602,8 @@ Decisions an implementer must not re-litigate:
 - Use pnpm. Typecheck with `pnpm ts` after every task (lint is not required per project convention).
 - Schema: every new table is `id`, then the shared `timestamps` spread, then fields. New columns on existing tables are nullable or defaulted, appended, never reordered. Generate migrations with `pnpm db:generate`. Never apply migrations via sqlite3 directly (use `pnpm db:push` in dev or let `getDb()` auto-migrate). Never hand-edit the drizzle journal.
 - Types derive from the Drizzle schema through `src/db/types.ts`. No duplicate type definitions.
-- API routes and orchestrator handlers dispatch through `src/lib/db/queries.ts`. Never raw SQL, never direct Drizzle in a handler. The query layer enforces embedding upsert, markdown-mirror sync, and attachment derivation.
-- Orchestrator actions: names are `snake_case` and permanent. Params are Zod raw shapes (not `z.object(...)`). Throw `ActionError` with stable codes. Return plain data. No console.log in handlers. Every mutating action safe under retry. Branch on `ctx.remote` for security-sensitive work.
+- API routes and action handlers dispatch through `src/lib/db/queries.ts`. Never raw SQL, never direct Drizzle in a handler. The query layer enforces embedding upsert, markdown-mirror sync, and attachment derivation.
+- Ri actions: names are `snake_case` and permanent. Params are Zod raw shapes (not `z.object(...)`). Throw `ActionError` with stable codes. Return plain data. No console.log in handlers. Every mutating action safe under retry. Branch on `ctx.remote` for security-sensitive work.
 - Client-side API calls use `authFetch`, not `fetch`.
 - Hotkeys come from `src/constants/commands.ts` via `matchesHotkey`.
 - Paths resolve via `src/lib/config/paths.ts` helpers. Never hardcode the data-directory name.
@@ -641,7 +641,7 @@ Fixes real bugs and starts telemetry accumulating before any agent exists. No be
 
 ### T0.2: Consolidate promotion server-side
 
-**Files:** `src/lib/db/queries.ts`, `src/lib/orchestrator/registry.ts`, `src/app/api/stream/[id]/route.ts` (or new route files), `src/components/stream/stream-list.tsx`, `src/components/stream/stream-triage.tsx`, `src/components/stream/promote-actions.tsx`, `src/hooks/use-stream.ts`.
+**Files:** `src/lib/db/queries.ts`, `src/lib/actions/registry.ts`, `src/app/api/stream/[id]/route.ts` (or new route files), `src/components/stream/stream-list.tsx`, `src/components/stream/stream-triage.tsx`, `src/components/stream/promote-actions.tsx`, `src/hooks/use-stream.ts`.
 
 - [x] Move promotion into a single transactional query function used by both the `promote_stream` action and new UI routes
 - [x] Write `tasks.streamItemId` on task promotion
@@ -736,7 +736,7 @@ The agent shows up. Everything is proposed, nothing auto-applies. Acceptance mea
 
 ### T1.1: Action vocabulary
 
-**Files:** `src/lib/orchestrator/registry.ts`, `src/lib/db/queries.ts`, `src/lib/stream-triage/schema.ts`, registry tests.
+**Files:** `src/lib/actions/registry.ts`, `src/lib/db/queries.ts`, `src/lib/stream-triage/schema.ts`, registry tests.
 
 - [x] Zod schemas for `TriageDraft` and decision inputs in `src/lib/stream-triage/schema.ts` (single source, reused by actions and routes)
 - [x] Implement `merge_stream`, `combine_stream`, `mark_stream_reviewed`, `propose_stream_triage`, `undo_triage_decision` per 3.5
@@ -772,7 +772,7 @@ The agent shows up. Everything is proposed, nothing auto-applies. Acceptance mea
 
 ### T1.3: Sweep runner and constitution
 
-**Files:** new `src/lib/stream-triage/sweep.ts`, `prompt.ts`, `constants.ts`, `src/lib/orchestrator/harness-surface.ts`, tests.
+**Files:** new `src/lib/stream-triage/sweep.ts`, `prompt.ts`, `constants.ts`, `src/lib/coordinator/harness-surface.ts`, tests.
 
 - [x] Pass lifecycle: create with single-flight check (10-minute staleness rule), finalize with counts and summary, fail cleanly leaving items pending
 - [x] Dispatch a harness session with the constitution prompt (3.7) and the context bundle

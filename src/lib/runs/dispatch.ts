@@ -131,7 +131,7 @@ export async function dispatchRun(args: DispatchRunArgs): Promise<DispatchedRunR
     return recordTargetFailure(args, 'invalid_selection', err instanceof Error ? err.message : String(err));
   }
 
-  // 1. Resolve the target execution (or null for orchestrator triggers)
+  // 1. Resolve the target execution (or null for coordinator triggers)
   //    + the chat session this run will speak through.
   let resolved: ReturnType<typeof resolveTarget>;
   try {
@@ -153,7 +153,7 @@ export async function dispatchRun(args: DispatchRunArgs): Promise<DispatchedRunR
   //    `skip_if_running` (with a one-line warn) because V1 doesn't
   //    support true parallel worktree mutation — two runs writing to
   //    the same .git directory race. True parallel is a V2 feature.
-  //    Orchestrator targets have no shared worktree, so
+  //    Coordinator targets have no shared worktree, so
   //    `allow_concurrent` falls through naturally and a second run
   //    spawns.
   const blocker = resolved.execution
@@ -219,7 +219,7 @@ export async function dispatchRun(args: DispatchRunArgs): Promise<DispatchedRunR
 
   // 3. Materialize the chat session for this fire. Recurring workspace
   //    triggers accumulate chats inside the owned execution; one-offs
-  //    and orchestrator triggers get a fresh chat each fire. If
+  //    and coordinator triggers get a fresh chat each fire. If
   //    resolveTarget already created one (eager-creation path), reuse it.
   const chat = resolved.chat ?? createChatForFire(trigger, resolved.execution, selected.selection);
 
@@ -378,8 +378,8 @@ function resolveTarget(trigger: TriggerRecord, selected: Awaited<ReturnType<type
    *  coalesce into a known target. Otherwise null = create a fresh chat. */
   chat: ChatSessionRecord | null;
 } {
-  // Orchestrator targets: no execution, always fresh chat.
-  if (trigger.targetKind === 'orchestrator') {
+  // Coordinator targets: no execution, always fresh chat.
+  if (trigger.targetKind === 'coordinator') {
     return { execution: null, chat: null };
   }
 
@@ -449,8 +449,8 @@ function resolveTarget(trigger: TriggerRecord, selected: Awaited<ReturnType<type
 
 /**
  * Materialize a brand-new chat against an execution (or no execution,
- * for orchestrator fires). Always creates a `type='execution'` chat
- * when there's a workspace, `type='orchestration'` otherwise.
+ * for coordinator fires). Always creates a `type='execution'` chat
+ * when there's a workspace, `type='coordinator'` otherwise.
  */
 function createChatForFire(
   trigger: TriggerRecord,
@@ -464,7 +464,7 @@ function createChatForFire(
     .values({
       id,
       harness: trigger.harness,
-      type: execution ? 'execution' : 'orchestration',
+      type: execution ? 'execution' : 'coordinator',
       workspaceId: execution?.workspaceId ?? trigger.workspaceId ?? null,
       executionId: execution?.id ?? null,
       label: trigger.name,
@@ -812,7 +812,7 @@ function runsElsewhere(execution: ExecutionRecord | null): boolean {
 /**
  * For git workspaces, ensure the execution's worktree is provisioned
  * before we hand off to the executor. Skips when there's no execution
- * (orchestrator targets), the workspace isn't git, or the worktree is
+ * (coordinator targets), the workspace isn't git, or the worktree is
  * already there (subsequent fires reuse the artifact — the V1 speed
  * payoff). Returns `{ ok: false }` with a human-readable error when
  * provisioning has failed in a way the run row should reflect.

@@ -12,6 +12,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { Button, type ButtonSize } from '@/components/system/button';
 import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { useDeferredValue, useState } from 'react';
+import { APP_NAME } from '@/constants/app';
 import { Forward, Search } from 'lucide-react';
 import { uuidv7 } from 'uuidv7';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -104,7 +105,7 @@ function SendToChatDialog({ eventId, sessionId, size, onClose, onSendingChange }
         <label className="flex items-center gap-2 text-xs"><RadioGroupItem value="new" />New chat</label>
       </RadioGroup>
       {newChat ? <div className="space-y-2 rounded-lg border p-3"><p className="text-xs text-muted-foreground">{workspaceId ? 'Start a new chat in the selected agent.' : 'Choose an agent above for the new chat.'}</p><div className="flex flex-wrap gap-2"><ModelControl size={size === 'touch' ? 'touch' : 'compact'} selection={{ harness, model }} label={selectedModel?.label ?? (model || 'Default model')} variant={variant} effort={effort} serviceTier={serviceTier} onChange={setSelection} onEffortChange={next => setSelection({ harness, model, variant, effort: next, serviceTier })} /></div></div>
-        : <div className="min-w-0 max-h-56 overflow-x-hidden overflow-y-auto rounded-lg border" aria-label="Chats by recent activity">{isLoading ? <p className="p-3 text-xs text-muted-foreground">Loading chats…</p> : chats.length === 0 ? <p className="p-3 text-xs text-muted-foreground">No matching chats.</p> : chats.map(chat => <MenuAction key={chat.id} type="button" aria-pressed={target === chat.id} onClick={() => setTarget(chat.id)} className="block w-full text-left"><span className="block truncate text-sm font-medium">{chat.label ?? (chat.type === 'orchestration' ? chat.workspaceId ? 'Agent main chat' : 'Orchestrator' : 'Untitled chat')}</span><span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{chat.agentName ?? 'Orchestrator'} · {new Date(chat.lastActivityAt ?? chat.updatedAt).toLocaleString()}</span></MenuAction>)}</div>}
+        : <div className="min-w-0 max-h-56 overflow-x-hidden overflow-y-auto rounded-lg border" aria-label="Chats by recent activity">{isLoading ? <p className="p-3 text-xs text-muted-foreground">Loading chats…</p> : chats.length === 0 ? <p className="p-3 text-xs text-muted-foreground">No matching chats.</p> : chats.map(chat => <MenuAction key={chat.id} type="button" aria-pressed={target === chat.id} onClick={() => setTarget(chat.id)} className="block w-full text-left"><span className="block truncate text-sm font-medium">{chat.label ?? (chat.type === 'coordinator' ? chat.workspaceId ? 'Agent main chat' : 'Main chat' : 'Untitled chat')}</span><span className="mt-0.5 block truncate text-[11px] text-muted-foreground">{chat.agentName ?? APP_NAME} · {new Date(chat.lastActivityAt ?? chat.updatedAt).toLocaleString()}</span></MenuAction>)}</div>}
       <TextArea
         value={directions}
         onChange={(event) => setDirections(event.target.value)}

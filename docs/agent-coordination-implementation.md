@@ -45,7 +45,7 @@ production restart, migration, full app build or dependency install was needed.
 Enabling a schedule authorizes communication needed for its assignment. Each trigger-fired chat starts with the existing chat-level Allow automatically preference, including fresh chats in an existing recurring execution. The schedule keeps its existing enabled state. No additional permission table, per-recipient grant or permission column is required. Human Pause incoming and Stop remain independent controls.
 
 - [x] Initialize all trigger-fired chat creation paths with Allow automatically
-- [x] Verify one-time, recurring, orchestrator and manual/webhook fires under Ask first defaults
+- [x] Verify one-time, recurring, coordinator and manual/webhook fires under Ask first defaults
 - [x] Report a scheduled run ending with unresolved send approval as an actionable failure
 - [x] Complete chat-menu access for embedded chats and clarify scheduling guidance
 - [x] Verify focused tests, typecheck, lint and browser behavior and reconcile this follow-up with the specification
@@ -59,7 +59,7 @@ Typecheck and production build pass, including local app catalog qualification a
 - [x] Ordinary idle chats and completed exchanges have no collaboration row above the composer
 - [x] Approved unfinished work, one-way deliveries and pending returns show linked participating chats with Pause incoming
 - [x] Incoming pause remains visible while idle, with waiting messages and Resume
-- [x] Standing preferences and a pause control remain reachable from the execution, agent main and orchestrator chat menus
+- [x] Standing preferences and a pause control remain reachable from the execution, agent main and coordinator chat menus
 - [x] Approval cards state that an unapproved message has not been sent, including messages attempted by scheduled runs
 - [x] Send to chat stays centered without transforms or horizontal overflow, preserving the nested model picker and dialog focus restoration
 

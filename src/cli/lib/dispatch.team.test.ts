@@ -7,14 +7,14 @@ import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { createTeamExecutionFixture } from '@/test/fixtures/team-execution';
 import { listenTeam, preloadTeamRoutes } from '@/test/fixtures/team-home';
 import * as q from '@/lib/db/queries';
-import { sessionCredential } from '@/lib/orchestrator/session-credential';
+import { sessionCredential } from '@/lib/actions/session-credential';
 let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>;
 let server: Awaited<ReturnType<typeof listenTeam>>;
 beforeAll(preloadTeamRoutes, 120_000);
 beforeEach(async () => { fixture = await createTeamExecutionFixture(); server = await listenTeam(); });
 afterEach(async () => { await server.close(); await fixture.cleanup(); vi.unstubAllEnvs(); });
 it('uses live member authority over HTTP and never opens a Team session local database', async () => {
-  const chat = q.createChatSession({ type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, harness: 'codex', createdByMemberId: fixture.member.member.id });
+  const chat = q.createChatSession({ type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, harness: 'codex', createdByMemberId: fixture.member.member.id });
   const turn = q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'cli-turn', text: 'Use shared tools' }); q.claimNextTeamChatTurn(chat.id);
   const root = path.join(fixture.home.root, 'cli-no-database'); fs.mkdirSync(root); fs.writeFileSync(path.join(root, 'data.db'), 'DO NOT OPEN THIS DATABASE');
   const file = path.join(root, 'call.ts');

@@ -21,7 +21,7 @@ it('pages team transcripts by session and insertion position without sorting the
 });
 
 it('keeps a delivered cursor valid through VACUUM on the actual indexed schema', () => {
-  const chat = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Cursor' });
+  const chat = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Cursor' });
   const first = q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'One' })!;
   q.insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'Two' });
   const before = q.listTeamChatEventsLatest(chat.id);
@@ -39,8 +39,8 @@ it('looks up historical turn states through their message index', () => {
 });
 
 it('replays only newer requested parts from the same chat through primary-key probes', () => {
-  const chat = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Streaming' });
-  const other = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Other' });
+  const chat = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Streaming' });
+  const other = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Other' });
   const part = q.replaceChatEventPart({ sessionId: chat.id, role: 'assistant', source: 'agent', content: 'First', externalEventId: 'stable-part', partRevision: 0 })!;
   const privatePart = q.replaceChatEventPart({ sessionId: other.id, role: 'assistant', source: 'agent', content: 'Other chat', externalEventId: 'stable-part', partRevision: 3 })!;
   const before = q.listTeamChatEventsLatest(chat.id).cursor;

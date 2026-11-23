@@ -1,6 +1,6 @@
 /** Existing restricted Team launch contract, on the common execution operations. */
 import { z } from 'zod';
-import { defineAction } from '@/lib/orchestrator/types';
+import { defineAction } from '@/lib/actions/types';
 import { KNOWN_HARNESS_IDS } from '@/lib/harness/registry';
 import { PERMISSION_MODES, EFFORT_LEVELS } from '@/db/types';
 export const nativeTeamExecutionAction = defineAction({

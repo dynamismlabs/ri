@@ -12,7 +12,7 @@ Companion to [`async-agents-v1.md`](./async-agents-v1.md). Each task has accepta
 
 ```
 Lift first:    #26 (executions lift — per docs/executions-spec.md)
-Foundation:    #9 (schema) → #10 (scheduler infra) → #19 (orchestrator actions)
+Foundation:    #9 (schema) → #10 (scheduler infra) → #19 (Ri actions)
 Dispatch:      #11 (scheduled) + #12 (manual) — parallel
 Telemetry:     #13 (cost) → #14 (artifacts) → #15 (summary)
 Triggers:      #16 (webhook) → #17 (budget)
@@ -61,7 +61,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 - [ ] Existing execution sessions migrate cleanly (worktree/branch/PR/takeover state preserved per row, verified by read-back in the script)
 - [ ] No code reads or writes worktree state from `chat_sessions` directly (grep + check script verify)
 - [ ] An end-to-end execution (commit + push + PR + takeover round-trip) works identically post-lift
-- [ ] A `chat_session` with `type='execution' AND status='active'` always has `execution_id` set; orchestrator/content chats have it NULL; historical orphaned chats (execution hard-deleted) may have `type='execution'` with `execution_id=NULL` (read-only artifact)
+- [ ] A `chat_session` with `type='execution' AND status='active'` always has `execution_id` set; coordinator/content chats have it NULL; historical orphaned chats (execution hard-deleted) may have `type='execution'` with `execution_id=NULL` (read-only artifact)
 - [ ] Manifest file at `~/ri/backups/executions-migration-<ts>.json` documents every chat session's migration outcome
 
 **Depends on:** nothing (lands first)
@@ -140,7 +140,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 **Steps:**
 - [ ] Implement `dispatchRun(schedule, { trigger, triggerPayload, scheduledFor })`:
   - **Resolve target execution** (derived per `docs/executions-spec.md` §6, FK lives on schedules):
-    - `target_kind='orchestrator'`: no execution, create a fresh `chat_sessions` row (`type='execution'`, `execution_id=NULL`)
+    - `target_kind='coordinator'`: no execution, create a fresh `chat_sessions` row (`type='execution'`, `execution_id=NULL`)
     - `target_kind='workspace'` and `kind='at'`: create a new `executions` row (status=active, worktree fields all NULL), then a fresh `chat_sessions` row inside it (`execution_id` set). One-offs do not set `schedule.owning_execution_id`
     - `target_kind='workspace'` and recurring (`cron`/`every`/`interval`): look up `schedule.owning_execution_id` directly from the row. If set AND the execution is `status='active'`, reuse it. If null OR the execution is archived, create a new active execution, set `schedule.owning_execution_id` to it, persist. Then create a fresh `chat_sessions` row inside the execution
   - **Worktree provisioning is lazy.** The execution row is created eagerly with worktree fields NULL. The existing provisioning code (`src/lib/workspaces/*`) kicks in at first dispatch against the execution — it sets `executions.setup_started_at`, runs the clone, sets `worktree_path`/`branch_name`/`base_sha` on success or `setup_error` on failure. Subsequent fires against the same execution skip provisioning entirely (this is the speed payoff of the lift)
@@ -148,7 +148,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
     - `skip_if_running`: record the run as `status='skipped'`, `status_reason='execution_busy'`
     - `coalesce_if_active`: append a follow-up message to the active run's chat with a source marker (`[from schedule <name>] ...`) — per V1 open question, may revisit
     - `allow_concurrent`: in V1, treat as `skip_if_running` for workspace targets and log a warning (true parallel execution mutation is a V2 feature)
-  - Insert `runs` row with `status='queued'`, `trigger`, `scheduled_for`, `chat_session_id`, `execution_id` (denormalized from the resolved execution; NULL for orchestrator targets)
+  - Insert `runs` row with `status='queued'`, `trigger`, `scheduled_for`, `chat_session_id`, `execution_id` (denormalized from the resolved execution; NULL for coordinator targets)
   - Set `chat_sessions.created_by_run_id` FK back to the new run
   - Schedule-level `concurrency_policy` check still applies for the *same* schedule firing twice (separate from the execution-level mutex)
   - Transition run to `running`, set `started_at`
@@ -162,7 +162,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 **Acceptance:**
 - [ ] Create a recurring workspace schedule → first fire creates a new execution + chat → second fire reuses the execution and creates a *new chat* inside it → both runs share `executions.id` but have distinct `chat_session_id`
 - [ ] Create a `kind='at'` workspace schedule → fires create a new execution + chat (one-shot)
-- [ ] Create an orchestrator schedule → fires create chats with `execution_id=NULL`
+- [ ] Create a coordinator schedule → fires create chats with `execution_id=NULL`
 - [ ] `skip_if_running` test: two close-firing schedules with same id → second is `skipped`
 - [ ] Crash recovery test: kill server while a run is in `running` → restart → run promoted to `failed`
 
@@ -180,12 +180,12 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 **Steps:**
 - [ ] In `executor.dispatch(sessionId, message)`, after the user `chat_event` is inserted:
   - **Execution-level run mutex (workspace chats only):** if the session has `execution_id IS NOT NULL`, query `runs WHERE execution_id = E AND status = 'running'`. If any exists, reject the dispatch with a clear error returned to the chat UI ("A scheduled run is in flight; try again in a few seconds"). The user's message is *not* persisted as a run (their inputbox content can stay locally so they don't lose it, but the message doesn't enter the chat transcript yet). V1 default per open question — wait-then-drain is a V2 option
-  - For chats with `execution_id IS NULL` (orchestrator/content), no mutex check — these don't share a worktree
+  - For chats with `execution_id IS NULL` (coordinator/content), no mutex check — these don't share a worktree
   - Insert a `runs` row with:
     - `trigger='manual'`
     - `schedule_id=null`
     - `chat_session_id=sessionId`
-    - `execution_id` = `chat_session.execution_id` (denormalized; NULL for orchestrator/content)
+    - `execution_id` = `chat_session.execution_id` (denormalized; NULL for coordinator/content)
     - `agent_id` from the session's agent
     - `status='queued'`, then `'running'` when the subprocess actually spawns
 - [ ] On terminal `result` event, populate cost/summary/artifacts (tasks #13/14/15) and set `status='completed'`
@@ -233,7 +233,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 **Goal:** every run knows what entities it produced. Inferred, not declared.
 
 **Files:**
-- Wherever the orchestrator's tool-use events are handled in the dispatcher
+- Wherever the coordinator's tool-use events are handled in the dispatcher
 
 **Steps:**
 - [ ] In the dispatch path, maintain an in-memory `Map<runId, ArtifactRef[]>` indexed by the currently-active run
@@ -355,20 +355,20 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 - [ ] If the gap is bigger than expected, file a follow-up ticket and ship a minimal version that works on Claude Code first
 
 **Acceptance:**
-- [ ] Author a global skill at `~/ri-dev/skills/test-skill/SKILL.md` → orchestrator dispatched against any workspace can invoke it by description
+- [ ] Author a global skill at `~/ri-dev/skills/test-skill/SKILL.md` → coordinator dispatched against any workspace can invoke it by description
 - [ ] Author a workspace skill at `<workspace>/.ri/skills/test-skill/SKILL.md` (same name) → workspace-scoped dispatch sees the workspace version, brain-scoped sees the global
-- [ ] Skills appear in the orchestrator's `listInstalledSkills()` inventory at session boot
+- [ ] Skills appear in the coordinator's `listInstalledSkills()` inventory at session boot
 
 **Depends on:** none (can ship anytime)
 
 ---
 
-## #19 — New orchestrator actions
+## #19 — New Ri actions
 
 **Goal:** programmatic + agent-accessible CRUD for schedules + runs.
 
 **Files:**
-- `src/lib/orchestrator/registry.ts` (additions)
+- `src/lib/actions/registry.ts` (additions)
 - `src/lib/db/queries.ts` (shared helpers)
 
 **Steps:**
@@ -388,7 +388,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 
 **Acceptance:**
 - [ ] Each action callable via CLI: `ri agent <action> [params]`
-- [ ] Each action callable via HTTP MCP at `/api/orchestrator/[transport]`
+- [ ] Each action callable via HTTP MCP at `/api/home/[transport]`
 - [ ] `create_schedule` rejects invalid cron expressions
 - [ ] `cancel_run` on a running run terminates within 10s
 
@@ -413,7 +413,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 - [ ] Creation form per §8.3:
   - **What:** name (validated for scope uniqueness), prompt (Tiptap), description
   - **When:** picker for `[Schedule | Every | At | Webhook]`. For Schedule, NL input that compiles to cron — start with a small heuristic parser (`every weekday at 9am`, `daily at 3pm`, `every 30 minutes`) and fall back to a Haiku call if heuristic fails. Show resolved cron + next 3 fire times
-  - **Where:** target dropdown (workspace dropdown or "Orchestrator"). Session strategy radio (Persistent / Isolated) with help text. Skills multi-select
+  - **Where:** target dropdown (workspace dropdown or "Coordinator"). Session strategy radio (Persistent / Isolated) with help text. Skills multi-select
   - **Settings:** model override, effort, timeout, active hours (start + end + days)
   - **Save:** preview the next fire, then submit
 - [ ] PowerRail: add "Schedules" group per workspace (collapsible), brain-level group at top
@@ -500,7 +500,7 @@ Estimated total: **5–7 focused weeks** (lift adds ~1 week to the original 4–
 - [ ] `ri run cancel <run-id>`
 - [ ] `ri spend` — today / week / month totals
 - [ ] `ri spend --by agent|schedule` — grouped
-- [ ] All commands route through orchestrator actions from task #19
+- [ ] All commands route through Ri actions from task #19
 
 **Acceptance:**
 - [ ] Full flow: `ri schedule create … --name test --cron "* * * * *"` → `ri schedule list` shows it → wait 1 min → `ri runs --schedule test` shows the fire → `ri schedule delete test`
@@ -589,7 +589,7 @@ Don't pull these into V1 even if they feel close:
 - Work queue + `tasks.ai_eligible` flag
 - Subagent lineage columns
 - Activity timeline as a dedicated page
-- `describe_world` orchestrator action
+- `describe_world` Ri action
 - Self-directed autonomy mode
 - `session_strategy` enum / `continuous` chat-persists mode — V1 derives dispatch behavior from `kind` + `target_kind`. Adding a `continuous_chat: boolean` later is a non-breaking additive column.
 - Multi-chat-per-execution UI — schema supports it (executions can host many chats); V1 renders only the primary (most-recently-active) chat per execution

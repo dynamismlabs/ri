@@ -526,7 +526,7 @@ describe('chat/session search', () => {
       [said, 'messages', false],
     ]);
 
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const env = await runAction('search_sessions', { query: 'wireframes' }, { remote: false });
     expect(env.ok).toBe(true);
     expect(env.result).toEqual([

@@ -22,7 +22,7 @@
 import type { Locator, Page } from 'playwright-core';
 import { attachmentPath } from '@/lib/attachments/save';
 import type { Attachment } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { detectBlocked, settleInterstitial, type BlockedSignal } from './read';
 import {
   drainNewDownloads,

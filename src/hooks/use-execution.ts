@@ -45,7 +45,7 @@ import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
  * every open file. Keying by execution lets siblings share one cache
  * entry, so the hop is instant and only the transcript changes.
  *
- * Chats with no execution (orchestration / content sessions) keep session
+ * Chats with no execution (coordinator / content sessions) keep session
  * scope — they have no worktree, but the hooks stay usable either way.
  *
  * Mirrors `usePreviewState`, which already keys on `['execution', id, …]`

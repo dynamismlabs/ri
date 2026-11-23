@@ -20,7 +20,7 @@ vi.mock('@/lib/harness/model-discovery', async () => {
 
 /**
  * Focused (note/task) chats seed model + effort from the user's saved defaults
- * the same way orchestrator chats do — a per-entity new chat should start with
+ * the same way coordinator chats do — a per-entity new chat should start with
  * the last selection, not reset to Default/Effort. Real throwaway DB; migration
  * cost is paid in the hook so cold-start doesn't flake the first test.
  */
@@ -105,7 +105,7 @@ describe('GET /api/document-chat — schedule builder chats', () => {
     expect(fresh.session).toMatchObject({ type: 'content', surfaceKind: 'trigger', surfaceRef: 'new' });
     expect(again.session.id).toBe(fresh.session.id);
 
-    const trigger = createTrigger({ name: 'daily', targetKind: 'orchestrator', harness: 'codex', prompt: 'P', kind: 'manual', enabled: true });
+    const trigger = createTrigger({ name: 'daily', targetKind: 'coordinator', harness: 'codex', prompt: 'P', kind: 'manual', enabled: true });
     const existing = await (await GET(new Request(url(trigger.id)))).json();
     expect(existing.session).toMatchObject({ surfaceKind: 'trigger', surfaceRef: trigger.id });
     expect(existing.session.id).not.toBe(fresh.session.id);

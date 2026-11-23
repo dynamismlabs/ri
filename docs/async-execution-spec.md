@@ -9,7 +9,7 @@ Date: 2026-05-22
 
 1. The goal is to move the app from **AI-as-copilot** (you type, AI responds) toward **AI-as-coworker** (AI has presence, picks up scheduled work, lives between your sessions). v1 ships the substrate; the autonomy gradient extends in v2+.
 2. **Build the confident core in one push**: schedules + runs + integrations + skills (harness-agnostic) + cost tracking + rate leases + destructive-action pre-gate + budget guardrails. These belong together.
-3. **Schedules trigger work; the orchestrator agent executes.** Cron, interval, webhook, or internal-event triggers. Schedules dispatch through the same `executor.dispatch()` path user messages already use.
+3. **Schedules trigger work; the coordinator agent executes.** Cron, interval, webhook, or internal-event triggers. Schedules dispatch through the same `executor.dispatch()` path user messages already use.
 4. **One unified `runs` table** for all executions — manual, cron, webhook, integration. Simple status enum (`queued | running | completed | failed | skipped`). The richer completion vocabulary (awaiting_input, blocked, continue_work) is deferred until autonomous loops pressure it.
 5. **No new review-gate state.** Scheduled runs surface in the existing executions view with a trigger badge. "Needs review" is just unread (existing `last_outcome_event_at` vs `last_viewed_at` machinery).
 6. **Heartbeat deferred to v2**, alongside the notifications primitive it needs. v1 users can simulate it with a supervisor-style schedule that runs every 30 min. We promote heartbeat to its own primitive when usage patterns warrant.
@@ -37,7 +37,7 @@ v1 ships the foundation for co-worker. Self-directed sits on top of v1 without r
 ## 2. What we have, what we're adding
 
 **Already shipped**:
-- Typed orchestrator action registry (`src/lib/orchestrator/registry.ts`) — 15 actions, source of truth for CLI + MCP
+- Typed Ri action registry (`src/lib/actions/registry.ts`) — 15 actions, source of truth for CLI + MCP
 - Multi-provider executor (`src/lib/executor/adapter.ts`) via `@agentex/agent` — Claude Code, Codex, OpenClaw
 - 60s background health sweep (`instrumentation.ts:86-105`, `executor/health.ts`) — reconcile + redispatch
 - Session reconcile from on-disk JSONL (`executor/reconcile.ts`)
@@ -127,7 +127,7 @@ A `runs` row is "this execution happened (or is happening)."
 
 Status enum (v1): `queued | running | completed | failed | skipped`.
 
-Each run gets a `chat_session` (existing table, `type='execution'`). The orchestrator runs inside it. `runs` holds metadata (trigger, lane, status, cost, timing, summary). `chat_events` holds the transcript.
+Each run gets a `chat_session` (existing table, `type='execution'`). The coordinator runs inside it. `runs` holds metadata (trigger, lane, status, cost, timing, summary). `chat_events` holds the transcript.
 
 **Why runs separate from sessions:**
 - A session may host multiple runs (initial → iterate → re-iterate = three runs on the same session).
@@ -151,7 +151,7 @@ External integrations (Gmail, Linear, Todoist, Notion, Calendar, GitHub). Two tr
 | Sync-out | "Mark Linear ticket done when our task done"  | Hook on `complete_task` → fire-and-forget integration outbound (not a run) |
 
 Each native integration ships:
-- Typed actions added to the orchestrator action registry (`gmail.list_recent`, etc.)
+- Typed actions added to the Ri action registry (`gmail.list_recent`, etc.)
 - A skill (`<brain>/skills/integration-gmail/SKILL.md`)
 - Webhook payload schema (for push)
 - OAuth flow handled by CLI (`ri integration add gmail`)
@@ -160,7 +160,7 @@ Each native integration ships:
 - `/api/triggers/:public_id` — user-defined schedule webhooks. Auth: HMAC-SHA256.
 - `/api/integrations/:id/webhook` — integration-platform webhooks (Gmail Pub/Sub, Linear HMAC). Different auth schemes per platform; keeping these split means no incompatible-auth merge.
 
-**MCP servers as the BYO escape hatch**: users with niche needs (or who want an integration we haven't built natively) can register external MCP servers via existing config; the orchestrator's tool list picks them up. We document the pattern. Native integrations are for the common cases where one-click OAuth + a curated skill beat BYO MCP setup.
+**MCP servers as the BYO escape hatch**: users with niche needs (or who want an integration we haven't built natively) can register external MCP servers via existing config; the coordinator's tool list picks them up. We document the pattern. Native integrations are for the common cases where one-click OAuth + a curated skill beat BYO MCP setup.
 
 **First v1 integration**: Gmail or Linear, decided at build time. Both have merit; Linear's HMAC auth is simpler, Gmail's reach is broader. Open question.
 
@@ -199,7 +199,7 @@ A single global semaphore. Default 4 concurrent. Any code calling `@agentex/agen
 
 ### 3.7 Destructive action pre-gate
 
-Orchestrator actions can be tagged `destructive: true` in the registry. Examples: `send_email`, `merge_pr`, `delete_*`, anything that writes to an external system or causes irreversible local damage.
+Ri actions can be tagged `destructive: true` in the registry. Examples: `send_email`, `merge_pr`, `delete_*`, anything that writes to an external system or causes irreversible local damage.
 
 Destructive actions refuse to execute mid-run unless either:
 - The schedule has `require_approval_for_destructive=false` (opt-out, default true), or
@@ -376,7 +376,7 @@ monthly_budget_usd: real('monthly_budget_usd'),
 
 ---
 
-## 5. New orchestrator actions
+## 5. New Ri actions
 
 | Action                 | Purpose                                          | Mutating | Agent-only |
 |------------------------|--------------------------------------------------|----------|------------|
@@ -395,7 +395,7 @@ monthly_budget_usd: real('monthly_budget_usd'),
 | `delete_integration`     | Remove + revoke tokens                           | Yes      | No         |
 | `approve_action`       | Pre-approve a destructive action in current run  | Yes      | Yes        |
 
-The destructive-action pre-gate lives on the dispatcher, not as a separate orchestrator action — it inspects the registry's `destructive: true` tag on every action invocation.
+The destructive-action pre-gate lives on the dispatcher, not as a separate Ri action — it inspects the registry's `destructive: true` tag on every action invocation.
 
 ---
 
@@ -437,7 +437,7 @@ Single form, top to bottom:
 
 1. **What** — name, prompt, optional description.
 2. **When** — `[ Run on a schedule | Every N minutes | When triggered (webhook) ]`. For "on a schedule," natural-language input ("every weekday at 9am") that compiles to cron + timezone, with the resolved expression and next 3 fire times shown beneath.
-3. **Where** — target workspace or orchestrator session. Session strategy (persistent / isolated, with help text). Skills selector.
+3. **Where** — target workspace or coordinator session. Session strategy (persistent / isolated, with help text). Skills selector.
 4. **Settings** — model override, timeout, active hours, concurrency policy.
 5. **Save** — preview of next fire, then save.
 
@@ -461,7 +461,7 @@ Each of these is intentionally out of v1 with a note on why:
 
 - **Heartbeat as a primitive**. v1 users simulate it with a schedule. Promote when we know what the right cadence + output shape + cost model is. Needs notifications first.
 - **Notifications table**. Global inbox primitive — heartbeat output, run state transitions, integration events, cost alerts. Build with heartbeat.
-- **4-state completion protocol** (`awaiting_input`, `blocked`, `continue_work`). Locks the orchestrator contract; right time is when autonomous loops genuinely need it. Migration is additive.
+- **4-state completion protocol** (`awaiting_input`, `blocked`, `continue_work`). Locks the coordinator contract; right time is when autonomous loops genuinely need it. Migration is additive.
 - **Subagent lineage** (`parent_run_id`, `depth` on runs). Add when multi-agent coordination exists. Today, Claude Code subagents are within-turn and roll up into parent run's cost.
 - **Goals entity**. Load-bearing for self-directed autonomy. Shape: title, description, area_id, target_date, success_criteria, status, parent_goal_id.
 - **Work queue + `tasks.ai_eligible` flag**. The "agent picks from a queue" pattern. Build after goals.
@@ -481,7 +481,7 @@ These don't block v1 — most are decisions made at build time or after a few we
 
 1. **First integration**: Gmail or Linear? Linear is easier (HMAC, no OAuth), Gmail has broader reach. Decide at build time.
 2. **Notifications table name** (when we build it in v2): `notifications`, `agent_signals`, `inbox_items`?
-3. **Heartbeat output destination** (when we build it): write to notifications, or to a special-typed `chat_event` on the orchestrator session? Tradeoff is reusing existing chat machinery vs polluting the chat transcript.
+3. **Heartbeat output destination** (when we build it): write to notifications, or to a special-typed `chat_event` on the coordinator session? Tradeoff is reusing existing chat machinery vs polluting the chat transcript.
 4. **Destructive action registry**: what specifically gets tagged `destructive: true`? Start opinionated (`send_email`, `merge_pr`, `delete_*`, `publish_*`, anything writing to external systems), expand as patterns emerge.
 5. **Budget auto-pause UX**: when budget hits 100% mid-run, do in-flight runs finish or terminate? v1 default: let them finish, pause new ones.
 6. **Catch-up policy default**: off in this proposal (skip_missed), opt-in per schedule, max 3 catch-ups. Validate after first weeks of usage.
@@ -496,7 +496,7 @@ These don't block v1 — most are decisions made at build time or after a few we
 
 These are tempting and wrong. Putting them in writing so they don't sneak back in:
 
-1. **A pipeline DSL.** The orchestrator picks the next move from state. Skills are recipes, not stages.
+1. **A pipeline DSL.** The coordinator picks the next move from state. Skills are recipes, not stages.
 2. **Proposal staging on every entity write.** All writes go through the live query layer. Review is post-hoc (via unread); destructive actions have an explicit pre-gate.
 3. **External worker pool / Redis / BullMQ.** SQLite is the broker. Single in-process tick.
 4. **External cron / systemd timers / k8s CronJobs.** Scheduler lives in `instrumentation.ts`.
@@ -525,13 +525,13 @@ Implementation order within v1, no ship gates between them:
 3. **`runs` dispatch path** — create chat_session, attach to schedule, call `executor.dispatch`.
 4. **Cost capture** from `@agentex/agent` `result` event into `runs.{tokens, cost_usd}`.
 5. **Rate-lease semaphore** wrapping all `@agentex/agent` invocations.
-6. **Destructive action pre-gate** on orchestrator action registry + dispatcher.
+6. **Destructive action pre-gate** on Ri action registry + dispatcher.
 7. **Budget guardrails** — settings table column + threshold check on dispatch.
 8. **Schedules CRUD UI** + creation form with NL → cron.
 9. **Runs view extension** — trigger badge + filter pills + bundling.
 10. **TopHud extension** — spend, runs, unread, budget %.
 11. **Webhook endpoint** `/api/triggers/:public_id` with HMAC.
-12. **First integration** (Gmail or Linear) — OAuth flow, sync skill, webhook handler, actions in orchestrator registry.
+12. **First integration** (Gmail or Linear) — OAuth flow, sync skill, webhook handler, actions in action registry.
 13. **CLI surface** for everything.
 14. **Skills harness-agnostic loading** — verify/complete `@agentex/agent` integration.
 
@@ -548,7 +548,7 @@ Estimated effort: 6-8 focused weeks. Ships as one release.
 - `src/lib/scheduler/cron.ts` — cron parsing + next_run_at computation (uses `croner`)
 - `src/lib/scheduler/rate-lease.ts` — global semaphore
 - `src/lib/executor/adapter.ts` — gains dispatch caller from runner
-- `src/lib/orchestrator/registry.ts` — new actions + `destructive: true` tags
+- `src/lib/actions/registry.ts` — new actions + `destructive: true` tags
 - `src/lib/pricing/models.json` — provider/model → cents per million tokens
 - `src/lib/pricing/models.ts` — loader + cost computation
 - `src/lib/integrations/<kind>/` — per-integration OAuth + sync + webhook handler

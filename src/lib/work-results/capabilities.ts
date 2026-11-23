@@ -1,5 +1,5 @@
 import { readAuthConfig, writeAuthConfig } from '@/lib/auth/config-file';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 /** Gates admit new work only. Saved records and retention always remain available. */
 export function getWorkResultCapabilities() {

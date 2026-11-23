@@ -58,7 +58,7 @@ beforeEach(async () => {
     });
     q.createPreviewTarget({ executionId: ids.fixLoginExecution, service: 'web', previewName: 'web', port: 3000 });
     const main = (workspaceId: string | null, activity: string) =>
-      q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId, lastActivityAt: activity, startedAt: activity }).id;
+      q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId, lastActivityAt: activity, startedAt: activity }).id;
     ids.riMainOnLaptop = main(ids.riOnLaptop, '2026-09-25T00:00:00.000Z');
     ids.bounceMain = main(ids.bounce, '2026-09-24T00:00:00.000Z');
     ids.appMainOnLaptop = main(null, '2026-09-26T00:00:00.000Z');
@@ -72,7 +72,7 @@ beforeEach(async () => {
     raw.pragma('foreign_keys = OFF');
     ids.scheduled = '01a0f000-0000-7000-8000-00000000005c';
     raw.prepare(
-      "INSERT INTO chat_sessions (id, created_at, updated_at, user_id, harness, type, status, created_by_run_id, permission_mode) VALUES (?, datetime('now'), datetime('now'), 'local', 'claude', 'orchestration', 'active', 'a-run', 'default')",
+      "INSERT INTO chat_sessions (id, created_at, updated_at, user_id, harness, type, status, created_by_run_id, permission_mode) VALUES (?, datetime('now'), datetime('now'), 'local', 'claude', 'coordinator', 'active', 'a-run', 'default')",
     ).run(ids.scheduled);
     raw.prepare(
       `INSERT INTO external_session_imports (id, created_at, updated_at, chat_session_id, provider_type, external_session_id, source_kind, source_path, sync_offset, status, source_content_sha256)
@@ -98,8 +98,8 @@ beforeEach(async () => {
   q.createArea({ name: 'work' });
   ids.riOnMini = q.createWorkspace({ name: 'AI Task Manager', cwd: mini.root, isGit: true, filesToCopy: [], collapsed: false, skipLiveConfirm: false, browserEnabled: false }).id;
   q.updateWorkspace(ids.riOnMini, { name: 'ai-task-manager' });
-  ids.riMainOnMini = q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId: ids.riOnMini, lastActivityAt: '2026-09-01T00:00:00.000Z' }).id;
-  q.createChatSession({ type: 'orchestration', harness: 'claude', workspaceId: null, lastActivityAt: '2026-09-01T00:00:00.000Z' });
+  ids.riMainOnMini = q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId: ids.riOnMini, lastActivityAt: '2026-09-01T00:00:00.000Z' }).id;
+  q.createChatSession({ type: 'coordinator', harness: 'claude', workspaceId: null, lastActivityAt: '2026-09-01T00:00:00.000Z' });
 });
 
 afterEach(async () => {
@@ -299,7 +299,7 @@ describe('importing', () => {
 
   it("stops at a chat that continues a conversation a chat here already has", async () => {
     const q = await import('@/lib/db/queries');
-    q.createChatSession({ type: 'orchestration', harness: 'claude', externalProviderType: 'claude', externalSessionId: 'native-fix-login' });
+    q.createChatSession({ type: 'coordinator', harness: 'claude', externalProviderType: 'claude', externalSessionId: 'native-fix-login' });
     const src = new Database(path.join(laptopRoot, 'data.db'));
     src.prepare("UPDATE chat_sessions SET external_provider_type = 'claude' WHERE id = ?").run(ids.fixLogin);
     src.close();

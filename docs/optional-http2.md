@@ -224,7 +224,7 @@ Automated tests (all green, `pnpm test`):
   Linux-Chromium-NSS, and untrust safety (never removes an entry it did not create;
   retains the record on Linux-refresh and partial-Firefox failures, converging on
   retry).
-- `src/lib/orchestrator/server-client.test.ts` — internal self-calls route to the
+- `src/lib/actions/server-client.test.ts` — internal self-calls route to the
   private HTTP loopback under HTTP/2, never the public HTTPS origin.
 - `src/lib/config/http2.test.ts`, `src/lib/server-runtime/record.test.ts` — flag
   precedence and the discovery record (publish/read, liveness, owned-clear).

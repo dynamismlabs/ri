@@ -4,9 +4,9 @@ import path from 'node:path';
 import { vi, beforeAll, afterAll, beforeEach, afterEach, describe, it, expect } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { startTeamProcess, type TeamProcess } from '@/test/fixtures/team-process';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import * as q from '@/lib/db/queries';
-import type { ActionContext } from '@/lib/orchestrator/types';
+import type { ActionContext } from '@/lib/actions/types';
 import { teamTRPC } from './remote';
 import { connectTeam, disconnectTeam } from './connect';
 import { syncTeam } from './sync';
@@ -28,7 +28,7 @@ beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-team-links-personal-' });
   const { ensureHomeIdentity } = await import('@/lib/home/identity');
   ensureHomeIdentity();
-  const chat = q.createChatSession({ type: 'orchestration', harness: 'codex' });
+  const chat = q.createChatSession({ type: 'coordinator', harness: 'codex' });
   ctx = { remote: true, actor: { source: 'ai', sessionId: chat.id }, caller: { location: 'home' } };
 });
 afterEach(async () => { vi.unstubAllGlobals(); await home.cleanup(); vi.unstubAllEnvs(); });
@@ -220,7 +220,7 @@ describe('text on its way to a team', () => {
     const note = q.createNote({ body: 'Private note' });
     const area = q.createArea({ name: 'Private Area' });
     const agent = q.createWorkspace({ name: 'Mine', cwd: '/tmp/mine', isGit: false });
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'codex' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'codex' });
     for (const marker of [
       `[[task:${task.id}]]`, `[[note:${note.id}]]`, `[[area:${area.id}]]`, `[[agent:${agent.id}]]`, `[[execution:${chat.id}]]`,
       `[[note:${task.id}]]`, `[[task:${note.id}]]`, `[[area:${task.id}]]`,

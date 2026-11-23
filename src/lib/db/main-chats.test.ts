@@ -6,7 +6,7 @@ import path from 'node:path';
 /**
  * Where main chats live and where they must not show up
  * (docs/agents-view-spec.md §4, Phases 5 and 6). An agent's main chat is an
- * orchestration chat with a workspace and no execution. Its replies are the
+ * coordinator chat with a workspace and no execution. Its replies are the
  * conversation, not work owed review, so it stays out of Needs Review, and
  * the rail and the agent's execution list only ever show executions.
  */
@@ -31,11 +31,11 @@ async function seed() {
   const q = await import('@/lib/db/queries');
   const ws = q.createWorkspace({ name: 'ri', cwd: os.tmpdir(), isGit: false, filesToCopy: [], status: 'active' });
   const other = q.createWorkspace({ name: 'bounce', cwd: os.tmpdir(), isGit: false, filesToCopy: [], status: 'active' });
-  const appChat = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
-  const agentChat = q.createChatSession({ type: 'orchestration', workspaceId: ws.id, harness: 'claude', status: 'active' });
-  const otherAgentChat = q.createChatSession({ type: 'orchestration', workspaceId: other.id, harness: 'claude', status: 'active' });
+  const appChat = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
+  const agentChat = q.createChatSession({ type: 'coordinator', workspaceId: ws.id, harness: 'claude', status: 'active' });
+  const otherAgentChat = q.createChatSession({ type: 'coordinator', workspaceId: other.id, harness: 'claude', status: 'active' });
   const { session: execution } = q.createExecutionWithChat({ workspaceId: ws.id, harness: 'claude', label: 'Refactor auth' });
-  const fired = q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+  const fired = q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
   const run = q.createRun({ harness: 'claude', chatSessionId: fired.id, triggerKind: 'manual', status: 'completed' });
   q.updateChatSession(fired.id, { createdByRunId: run.id });
   return { q, ws, other, appChat, agentChat, otherAgentChat, execution, fired };
@@ -58,7 +58,7 @@ describe('listMainChats', () => {
 
   it('orders by latest activity and honors a limit', async () => {
     const { q, ws, agentChat } = await seed();
-    const newer = q.createChatSession({ type: 'orchestration', workspaceId: ws.id, harness: 'claude', status: 'active' });
+    const newer = q.createChatSession({ type: 'coordinator', workspaceId: ws.id, harness: 'claude', status: 'active' });
     q.updateChatSession(agentChat.id, { lastActivityAt: past(10) });
     q.updateChatSession(newer.id, { lastActivityAt: past(1) });
     expect(q.listMainChats(ws.id).map((s) => s.id)).toEqual([newer.id, agentChat.id]);
@@ -90,7 +90,7 @@ describe("an agent's main chat stays out of work surfaces", () => {
 describe('listAgentMainChats (the rail)', () => {
   it("returns each active agent's current main chat, the same one currentMainChat picks", async () => {
     const { q, ws, other, agentChat, otherAgentChat } = await seed();
-    const newer = q.createChatSession({ type: 'orchestration', workspaceId: ws.id, harness: 'claude', status: 'active' });
+    const newer = q.createChatSession({ type: 'coordinator', workspaceId: ws.id, harness: 'claude', status: 'active' });
     q.updateChatSession(agentChat.id, { lastActivityAt: past(10) });
     q.updateChatSession(newer.id, { lastActivityAt: past(1) });
     const { currentMainChat } = await import('@/lib/sessions/main-chat');

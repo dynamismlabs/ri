@@ -56,8 +56,8 @@ const SESSION_ID = 'sess-1';
 
 function descriptor(overrides: Partial<SkillCommandDescriptor> = {}): SkillCommandDescriptor {
   return {
-    id: 'claude:orchestrator:/path',
-    name: 'orchestrator',
+    id: 'claude:coordinator:/path',
+    name: 'coordinator',
     description: 'A skill',
     source: 'installed-workspace',
     userInvocable: true,
@@ -65,7 +65,7 @@ function descriptor(overrides: Partial<SkillCommandDescriptor> = {}): SkillComma
     execution: {
       kind: 'provider-slash',
       provider: 'claude',
-      commandText: '/orchestrator',
+      commandText: '/coordinator',
     },
     ...overrides,
   };
@@ -178,7 +178,7 @@ describe('GET /api/sessions/[id]/slash-commands', () => {
       provider: 'claude',
       sessionId: 'claude-abc',
       slashCommands: [],
-      skills: ['orchestrator'],
+      skills: ['coordinator'],
       source: 'provider-init',
     };
     getSessionInventory.mockReturnValue(inventory);
@@ -193,7 +193,7 @@ describe('GET /api/sessions/[id]/slash-commands', () => {
       provider: 'claude',
       sessionId: null,
       slashCommands: [],
-      skills: ['orchestrator'],
+      skills: ['coordinator'],
       source: 'provider-init',
     };
     getSessionInventory.mockReturnValue(inventory);

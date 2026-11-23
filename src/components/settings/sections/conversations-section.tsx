@@ -132,7 +132,7 @@ export function ConversationsSection() {
       required={query.data?.team}
       label="Ri destination"
     >
-      <option value="">{query.data?.team ? 'Select a team agent' : 'Personal orchestrator'}</option>
+      <option value="">{query.data?.team ? 'Select a team agent' : 'Your main chat'}</option>
       {query.data?.agents.map((agent) => (
         <option key={agent.id} value={agent.id}>
           {agent.name}
@@ -173,11 +173,11 @@ export function ConversationsSection() {
     {connections.map(connection => <section key={connection.id} id={`conversation-${connection.id}`} ref={connection.id === newConnectionId ? savedConnectionRef : undefined} tabIndex={-1} className="ri-conversations-section-frame scroll-mt-4 space-y-3 rounded-lg border p-4 focus:outline-none focus:ring-2 focus:ring-ring" aria-label={connection.name}>
       {connection.id === newConnectionId && <div role="status" className="space-y-1 rounded-md bg-muted p-3">
         <p className="font-medium">{connection.provider === 'slack' ? 'Slack app saved' : 'Buzz connection saved'}</p>
-        <p className="text-sm">{connection.name} will talk to {query.data?.agents.find(agent => agent.id === connection.workspaceId)?.name ?? 'your personal orchestrator'} in Ri.</p>
+        <p className="text-sm">{connection.name} will talk to {query.data?.agents.find(agent => agent.id === connection.workspaceId)?.name ?? 'your main chat'} in Ri.</p>
         <p className="text-sm">{connection.provider === 'slack' ? connection.identities.some(identity => identity.mine) ? 'Your Slack identity is linked. Follow the conversation test below.' : 'Your tokens are saved. Next, link your Slack identity below, then send a test message.' : 'Next, save the bridge credentials below and use them to start buzz-acp.'}</p>
       </div>}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div><h3 className="font-medium">{connection.name}</h3><p className="text-xs text-muted-foreground">{connection.provider === 'slack' ? 'Slack' : 'Buzz'} · {connection.enabled ? 'Enabled' : 'Paused'} · {query.data?.agents.find(agent => agent.id === connection.workspaceId)?.name ?? 'Personal orchestrator'}</p></div>
+        <div><h3 className="font-medium">{connection.name}</h3><p className="text-xs text-muted-foreground">{connection.provider === 'slack' ? 'Slack' : 'Buzz'} · {connection.enabled ? 'Enabled' : 'Paused'} · {query.data?.agents.find(agent => agent.id === connection.workspaceId)?.name ?? 'Main chat'}</p></div>
         {query.data?.canManage && <div className="flex gap-2"><Button
           disabled={disabled}
           onClick={() => mutate.mutate(() => trpcClient.conversationIntegrations.setEnabled.mutate({ id: connection.id, enabled: !connection.enabled }))}

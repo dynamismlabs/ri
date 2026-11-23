@@ -57,7 +57,7 @@ async function assigned(me: TeamConnectionRecord, title: string, body = 'From th
 }
 
 async function action(name: string, input: Record<string, unknown>) {
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const { runAction } = await import('@/lib/actions/dispatch');
   return runAction(name, input, { remote: false, actor: { source: 'ai' } });
 }
 

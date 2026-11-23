@@ -3,7 +3,7 @@ import { rpcQuery } from '@/lib/trpc/request-options';
 /**
  * Typed client for the triggers + runs API.
  *
- * Routes proxy through to the orchestrator action layer on the server,
+ * Routes proxy through to the Ri action layer on the server,
  * so behavior matches CLI + MCP exactly.
  */
 
@@ -19,7 +19,7 @@ import type { ProviderId } from '@/lib/harness/options';
 /**
  * The wire picks the engine by `provider`. The create_trigger action stores it
  * as the row's `harness`, defaulting to the user's default provider. See
- * src/lib/orchestrator/registry.ts.
+ * src/lib/actions/registry.ts.
  */
 export type CreateTriggerPayload = Omit<CreateTriggerInput, 'harness'> & {
   provider?: ProviderId;

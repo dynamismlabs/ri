@@ -5,6 +5,7 @@ import { getInstallationRole } from '../src/lib/config/role';
 import { readConnection, writeConnection, rememberDeviceId, rememberedDeviceId, type ConnectionConfig } from '../src/lib/connection/config';
 import { parsePairingLink } from '../src/lib/connection/connect';
 import { homeFetch, HomeRequestError, type HomeSummary } from '../src/lib/connection/home-client';
+import { fetchHomeApi } from '../src/lib/coordinator/legacy-names';
 import { thisDeviceFacts } from '../src/lib/home/device-name';
 import { readWorkerConfig, writeWorkerConfig } from '../src/lib/worker/config';
 import { resolveServiceRole, type ServiceRole } from '../src/lib/service/role';
@@ -83,9 +84,10 @@ function checkedAddress(connection: ConnectionConfig, development: boolean) {
 }
 
 async function jsonAtHome(connection: ConnectionConfig, route: string, body?: unknown): Promise<unknown> {
-  const response = await homeFetch(connection, route, {
+  // A home on an older release serves its actions at their old address (legacy-names.ts).
+  const response = await fetchHomeApi(route, (path) => homeFetch(connection, path, {
     redirect: 'error', ...(body === undefined ? {} : { method: 'POST', body: JSON.stringify(body) }),
-  });
+  }));
   // Never echo an untrusted response, which could contain the credential we sent.
   if (!response.ok) throw new HomeRequestError(response.status >= 500 || response.status === 408 || response.status === 429 ? 'unreachable' : 'error',
     `Your Ri could not complete setup (HTTP ${response.status}). Check its version and device access, then retry.`, response.status);
@@ -144,7 +146,7 @@ function inspect(): ConnectionSetupStatus {
 
 const registeredSchema = z.object({ ok: z.literal(true), result: z.object({ device: z.object({ id: z.string().min(1) }) }) });
 async function registerDevice(connection: ConnectionConfig, home: HomeSummary, preferredId: string | null) {
-  const response = registeredSchema.safeParse(await jsonAtHome(connection, '/api/orchestrator/actions/register_device', { ...thisDeviceFacts(), deviceId: preferredId }));
+  const response = registeredSchema.safeParse(await jsonAtHome(connection, '/api/home/actions/register_device', { ...thisDeviceFacts(), deviceId: preferredId }));
   if (!response.success) throw new Error('Your Ri did not register this device. Make a pairing link for this computer in Devices settings.');
   const deviceId = response.data.result.device.id;
   if (deviceId === home.host.id) throw new Error('That link belongs to the computer running your Ri. Make a separate pairing link for this computer in Devices settings.');

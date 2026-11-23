@@ -93,7 +93,7 @@ export function workingFolderOn(
     // Not prepared yet: the worktree it's preparing there, once it has.
     return placement.worktreePath ? { cwd: placement.worktreePath } : { preparing: placement.executionId };
   }
-  if ((session.type === 'orchestration' || session.surfaceKind === 'result_review') && session.workspaceId) {
+  if ((session.type === 'coordinator' || session.surfaceKind === 'result_review') && session.workspaceId) {
     const setup = getWorkspaceSetup(session.workspaceId, placement.deviceId);
     if (setup && setupUsable(setup.status)) return { cwd: setup.sourcePath };
     return {

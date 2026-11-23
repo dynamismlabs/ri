@@ -63,7 +63,7 @@ it.each(['Restart', 'Close chat', 'New'] as const)('%s waits through the real SD
   if (action === 'Close chat') q.createChatSession({ workspaceId, executionId: q.getChatSession(chatId)!.executionId, type: 'execution', harness: 'cursor' });
   if (action === 'New') {
     q.archiveChatSession(chatId);
-    chatId = q.createChatSession({ workspaceId, type: 'orchestration', harness: 'cursor' }).id;
+    chatId = q.createChatSession({ workspaceId, type: 'coordinator', harness: 'cursor' }).id;
   }
   const event = q.insertChatEvent({ sessionId: chatId, source: 'user', role: 'user', content: 'Work', createdAt: new Date().toISOString() })!;
   void executor.dispatch(chatId, 'Work', { sourceEventId: event.id }).catch(() => {});

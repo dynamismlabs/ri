@@ -28,7 +28,7 @@ beforeEach(async () => {
   fixture = await createTeamExecutionFixture(); calls = []; gates = new Map();
   availability.signedIn = true; availability.beforeAuth = null;
   member = await teamTrpc(fixture.member.token.plaintext); owner = await teamTrpc(fixture.owner.token.plaintext);
-  chat = q.createChatSession({ type: 'orchestration', harness: 'codex', model: 'gpt-6.1-sol', workspaceId: fixture.workspace.id, deviceId: q.getHome()!.hostDeviceId, surfaceKind: q.TEAM_CHAT_SURFACE, createdByMemberId: fixture.owner.member.id });
+  chat = q.createChatSession({ type: 'coordinator', harness: 'codex', model: 'gpt-6.1-sol', workspaceId: fixture.workspace.id, deviceId: q.getHome()!.hostDeviceId, surfaceKind: q.TEAM_CHAT_SURFACE, createdByMemberId: fixture.owner.member.id });
   setTeamAiRunnerForTests(async input => {
     calls.push(input);
     return new Promise(resolve => {
@@ -134,7 +134,7 @@ it('interrupts running turns at boot, resumes only bound queued work, and never 
   q.claimNextTeamChatTurn(chat.id); q.finishTeamChatTurn(done.turn.id, 'done');
   const cut = q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'cut-before-boot', text: 'Interrupted' }); q.claimNextTeamChatTurn(chat.id);
   const queued = q.acceptTeamChatSend({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: 'waiting-before-boot', text: 'Continue bound work' });
-  const legacy = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const legacy = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE });
   const old = q.acceptTeamChatSend({ chatId: legacy.id, memberId: fixture.member.member.id, clientSendId: 'legacy-before-boot', text: 'Old engine request' });
   resumeTeamAiAfterStart(); await waitFor(1);
   expect(calls[0].text).toBe('Continue bound work'); finish(queued.turn.id); await settledTeamAi();
@@ -144,7 +144,7 @@ it('interrupts running turns at boot, resumes only bound queued work, and never 
 });
 
 it('binds a legacy chat on its next send without inventing a creator or changing its history cursor', async () => {
-  const legacy = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const legacy = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE });
   const original = q.insertChatEvent({ sessionId: legacy.id, source: 'agent', role: 'assistant', content: 'Preserved history' });
   const before = q.listTeamChatEventsLatest(legacy.id, 50);
   await member.team.ai.send.mutate({ chatId: legacy.id, clientSendId: 'legacy-next-send', text: 'Continue' }); await waitFor(1);
@@ -171,7 +171,7 @@ it('runs one drain loop per chat despite repeated kicks', async () => {
 });
 
 it('keeps a legacy chat unbound when its selected harness is not signed in', async () => {
-  const legacy = q.createChatSession({ harness: 'claude', model: 'legacy-choice', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE });
+  const legacy = q.createChatSession({ harness: 'claude', model: 'legacy-choice', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE });
   availability.signedIn = false;
   await expect(member.team.ai.send.mutate({ chatId: legacy.id, clientSendId: 'refused-legacy-send', text: 'Continue' })).rejects.toThrow(/Sign in/);
   expect(q.getChatSession(legacy.id)).toMatchObject({ workspaceId: null, harness: 'claude', model: legacy.model });

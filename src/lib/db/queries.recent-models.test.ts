@@ -19,7 +19,7 @@ beforeEach(async () => {
 afterEach(async () => { await home?.cleanup(); });
 
 function used(harness: 'codex' | 'claude', model: string, at: string, overrides: Partial<CreateChatSessionInput> = {}) {
-  return q.createChatSession({ harness, model, type: 'orchestration', externalSessionId: `native-${++sequence}`, lastActivityAt: at, ...overrides });
+  return q.createChatSession({ harness, model, type: 'coordinator', externalSessionId: `native-${++sequence}`, lastActivityAt: at, ...overrides });
 }
 
 describe('recent harness model history', () => {

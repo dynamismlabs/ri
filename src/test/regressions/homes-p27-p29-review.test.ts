@@ -108,10 +108,10 @@ describe('P2.7 session authority', () => {
     fs.mkdirSync(newRef);
     q.createReferenceFolder({ workspaceId: agentId, alias: 'docs', path: oldRef, readOnly: true });
     await setUpAgentOn(agentId, deviceId, home.root, { links: { docs: newRef } });
-    const mainChat = q.createChatSession({ type: 'orchestration', workspaceId: agentId, harness: 'claude', status: 'active' });
+    const mainChat = q.createChatSession({ type: 'coordinator', workspaceId: agentId, harness: 'claude', status: 'active' });
     const { buildSessionSpec } = await import('@/lib/executor/session-spec');
     const spec = await buildSessionSpec({ chatSessionId: mainChat.id, harness: 'claude', cwd: home.root,
-      sessionType: 'orchestration', workspaceId: agentId, surfaceKind: null, surfaceRef: null,
+      sessionType: 'coordinator', workspaceId: agentId, surfaceKind: null, surfaceRef: null,
       existingExternalSessionId: null, permissionMode: 'ask', prePlanMode: null, model: 'fake-model', modelVariant: null, effort: null,
     }, { deviceId, isHome: false, generation: null });
     expect(spec.instructions ?? '').not.toContain(oldRef);
@@ -159,18 +159,18 @@ describe('P2.7 session authority', () => {
     const { proxy } = await import('@/proxy');
     for (const method of ['GET', 'POST', 'DELETE', 'PUT']) {
       for (const url of [
-        '/api/tasks', '/api/workers/me', '/api/orchestrator/mcp',
+        '/api/tasks', '/api/workers/me', '/api/home/mcp',
         '/api/integrations/mcp?ws=other', `/api/integrations/mcp?ws=other&ws=${agentId}`,
         `/api/integrations/mcp?ws=${agentId}%26ws%3Dother`,
         `/api/integrations/mcp/?ws=${agentId}`, `/api/integrations/%6dcp?ws=${agentId}`,
         `/api/integrations/mcp/../run?ws=${agentId}`,
-        `/api/orchestrator/browser/mcp?profile=default&profile=ws-${agentId}`,
+        `/api/home/browser/mcp?profile=default&profile=ws-${agentId}`,
       ]) expect(proxy(request(url, token, method)).status, `${method} ${url}`).toBe(403);
     }
     for (const url of [
       `/api/integrations/mcp?ws=${agentId}&ws=other`,
       `/api/integrations/mcp?%77s=${agentId}`,
-      `/api/orchestrator/browser/mcp?profile=ws-${agentId}&profile=default`,
+      `/api/home/browser/mcp?profile=ws-${agentId}&profile=default`,
     ]) {
       expect(proxy(request(url)).status).toBe(200);
       // Both downstream routes use URL.searchParams.get, exactly as the proxy does.

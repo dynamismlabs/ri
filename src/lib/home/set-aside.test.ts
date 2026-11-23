@@ -43,7 +43,7 @@ describe('setting aside a home started by mistake', () => {
 
   it('does not count the empty main chat a new home opens on', async () => {
     const { createChatSession } = await import('@/lib/db/queries');
-    createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     const { resetDb } = await import('@/lib/db');
     resetDb();
     expect(describeHomeUse()).toMatchObject({ unused: true, counts: expect.objectContaining({ chat_sessions: 0 }) });
@@ -51,7 +51,7 @@ describe('setting aside a home started by mistake', () => {
 
   it('counts a chat once anything was said in it', async () => {
     const { createChatSession, insertChatEvent } = await import('@/lib/db/queries');
-    const chat = createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const chat = createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     insertChatEvent({ sessionId: chat.id, role: 'user', source: 'user', content: 'Hello' });
     const { resetDb } = await import('@/lib/db');
     resetDb();

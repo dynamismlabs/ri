@@ -4,7 +4,7 @@
  * split"). This is the database half of what `ensureHarnessSession` did.
  * The runner adds what only its device knows.
  *
- * Orchestration sessions run in the app data root and act through the typed
+ * Coordinator sessions run in the app data root and act through the typed
  * action surface. Execution sessions fail closed on MCP and get their
  * agent's integrations, browser, instructions and reference folders. An
  * agent's main chat runs in the agent's own folder with its brief in the
@@ -33,17 +33,17 @@ import {
   INTEGRATIONS_MCP_SERVER_NAME,
   browserMcpServer,
   integrationsMcpServer,
-  installOrchestratorSurface,
-  orchestratorSessionConfig,
+  installCoordinatorSurface,
+  coordinatorSessionConfig,
   renderContentFocusPrompt,
-} from '@/lib/orchestrator/harness-surface';
-import { resolveOrchestratorName } from '@/lib/orchestrator/name';
+} from '@/lib/coordinator/harness-surface';
+import { resolveCoordinatorName } from '@/lib/coordinator/name';
 import { isBrowserEnabled } from '@/lib/browser/config';
 import { BROWSER_CONNECTION_INSTRUCTIONS } from '@/lib/browser/instructions';
 import { listUsableReferenceFolders } from '@/lib/reference-folders/resolve';
 import { buildReferenceFolderSessionConfig, referenceFolderProviderWiring } from '@/lib/reference-folders/session-config';
 import { isReadOnly } from '@/lib/reference-folders/read-only';
-import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/orchestrator/session-credential';
+import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/actions/session-credential';
 import { mintSessionToken } from '@/lib/auth/session-token';
 import { HOME_ADDRESS_SCHEME } from '@/lib/workers/protocol';
 import { harnessDefinition, type HarnessId } from '@/lib/harness/registry';
@@ -224,8 +224,8 @@ export interface SessionSpecInput {
   chatSessionId: string;
   harness: HarnessId;
   cwd: string;
-  /** chat_sessions.type — orchestration sessions get the data-root surface. */
-  sessionType: 'orchestration' | 'content' | 'execution';
+  /** chat_sessions.type — coordinator sessions get the data-root surface. */
+  sessionType: 'coordinator' | 'content' | 'execution';
   /** The session's workspace (for execution integration scoping); null for workspace-less. */
   workspaceId: string | null;
   /**
@@ -282,7 +282,7 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
   // The capabilities of the harness on the device that will run it: probed
   // here for the home's own, from its worker's report for a connected one.
   const caps = await harnessCapabilitiesOn(target, args.harness, target.isHome ? args.cwd : undefined);
-  // The orchestrator, integration and browser servers are built for this home's
+  // The coordinator, integration and browser servers are built for this home's
   // own sessions, at its localhost with its key. A session elsewhere reaches
   // them at the home's address with its own token (P2.7).
   const reachFromElsewhere = () => {
@@ -325,11 +325,11 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
     cleanLegacySkillLinks: args.sessionType === 'execution' && args.surfaceKind !== 'result_review',
   };
 
-  // An agent's main chat: an orchestration chat with a workspace, running in
+  // An agent's main chat: a coordinator chat with a workspace, running in
   // the user's own folder. Nothing is installed there: the brief rides the
   // session instructions file and the actions come over the session's MCP
   // config. See agent-main-chat.ts.
-  const agentMainChat = args.sessionType === 'orchestration' && args.workspaceId
+  const agentMainChat = args.sessionType === 'coordinator' && args.workspaceId
     ? getWorkspace(args.workspaceId) ?? null
     : null;
   if (args.teamTurnId) {
@@ -362,7 +362,7 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
     for (const warning of spawn.warnings) {
       console.warn(`[executor] agent main chat on provider "${providerType}": ${warning}.`);
     }
-  } else if ((args.sessionType === 'orchestration' || args.sessionType === 'content') && target.isHome) {
+  } else if ((args.sessionType === 'coordinator' || args.sessionType === 'content') && target.isHome) {
     // Install/refresh the on-disk brief (AGENTS.md, plus a CLAUDE.md pointer
     // only where Claude needs one) before spawn — this also `ensureAppRoot()`s
     // the cwd — and take the session's typed
@@ -372,14 +372,14 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
     // still only enforced by Claude.
     const userState = getUserState();
     try {
-      // The brief carries the name the user calls the orchestrator. A rename
+      // The brief carries the name the user calls the coordinator. A rename
       // recycles the app's main chat (PATCH /api/user-state), so this
       // reinstall is where the new name lands.
-      await installOrchestratorSurface({
-        name: resolveOrchestratorName(userState?.orchestratorName),
+      await installCoordinatorSurface({
+        name: resolveCoordinatorName(userState?.coordinatorName),
       });
-      applyProviderConfig(spec, orchestratorSessionConfig({ sessionId: args.chatSessionId }));
-      // A `content` session is a *focused* orchestrator session: same
+      applyProviderConfig(spec, coordinatorSessionConfig({ sessionId: args.chatSessionId }));
+      // A `content` session is a *focused* coordinator session: same
       // installed surface + tool set, narrowed to the one task/note the user
       // is viewing in the editor. The focus rides Claude's
       // --append-system-prompt so it never shows in the transcript; other
@@ -431,7 +431,7 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
     } catch (err) {
       // A failed surface install shouldn't kill the turn — the session
       // still runs against whatever brief is already on disk.
-      console.error('[executor] orchestrator surface install failed:', err);
+      console.error('[executor] coordinator surface install failed:', err);
     }
   }
 
@@ -568,9 +568,9 @@ export async function buildSessionSpec(args: SessionSpecInput, target: SpecTarge
     console.error('[executor] skill reach lookup failed:', err);
   }
 
-  // Every session carries its caller credential, so an orchestrator action it
+  // Every session carries its caller credential, so a Ri action it
   // runs (MCP header or the CLI from its shell) knows which chat is calling.
-  // See src/lib/orchestrator/session-credential.ts.
+  // See src/lib/actions/session-credential.ts.
   const credential = sessionCredential(args.chatSessionId);
   if (credential) spec.env[SESSION_CREDENTIAL_ENV] = credential;
   // And `ri` in its shell acts on this home through this server's CLI

@@ -1,5 +1,5 @@
 /**
- * How skill errors reach HTTP callers (the app and the orchestrator actions,
+ * How skill errors reach HTTP callers (the app and the Ri actions,
  * which call the same routes). One shape: `{ error, code }`, plus `current`
  * on a stale write so the caller can reload or merge without another read.
  */

@@ -114,8 +114,8 @@ stream pushes (`integration_approvals` frames, in-memory on the server):
 
 ## Security model
 
-- Only the user answers approvals. No orchestrator action or integration tool resolves one. The
-  approve route refuses any request carrying an agent session credential. The orchestrator's view
+- Only the user answers approvals. No Ri action or integration tool resolves one. The
+  approve route refuses any request carrying an agent session credential. The coordinator's view
   of a transcript (`get_session_messages`) drops approval ids from these rows.
 - A grant matches only the approved chat's retry of the exact call (same input digest and action
   version), once, within 5 minutes.

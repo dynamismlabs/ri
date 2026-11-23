@@ -1,12 +1,12 @@
 # First run: the main chat
 
 A new home has no setup wizard. It opens straight on the dashboard, and its main chat walks the
-person through setup as a conversation: the orchestrator introduces itself and asks, one message at
+person through setup as a conversation: the coordinator introduces itself and asks, one message at
 a time, only what this home doesn't have yet. Then it hands over to the starters.
 
 Built 2026-10-01. Code: `src/components/chat/onboarding/` (the steps and their order in
 `onboarding-flow.ts`, the conversation in `main-chat-onboarding.tsx`, one file per step that needs
-more than a field), the shared identity editor in `src/components/orchestrator/`, and the harness
+more than a field), the shared identity editor in `src/components/coordinator/`, and the harness
 picker in `src/components/onboarding/`.
 
 ## What a home actually needs
@@ -28,7 +28,7 @@ Each step shows only when it applies to this home (`stepApplies`).
 
 | Step | Shown when | It asks | What the answer writes |
 |---|---|---|---|
-| Name and look | Always | "What should I go by?" Name, a look (emoji, a picture, art made in the app, a color), ideas to start from. For a new home, a note about `ri connect` for people who meant to connect another computer. | `orchestratorName`, `orchestratorEmoji`, `orchestratorColor`, `orchestratorImage` |
+| Name and look | Always | "What should I go by?" Name, a look (emoji, a picture, art made in the app, a color), ideas to start from. For a new home, a note about `ri connect` for people who meant to connect another computer. | `coordinatorName`, `coordinatorEmoji`, `coordinatorColor`, `coordinatorImage` |
 | Harness | A home that was never set up, and the background check couldn't set one up | "I need a way to think." The harness picker (sign-in check, a real test request, model, billing consent for a key-only setup) | The active harness and its default model, user state's default tuple |
 | You | Always | "What should I call you?" | `user_state.name` |
 | Import | History from Claude Code, Codex or OpenCode in a folder still on disk (shown while the search runs, and finished silently if it finds nothing) | "I found 1,604 chats across 685 projects. Want to bring in the ones you're working on now?" The eight most recent projects, the latest three worked in within two weeks already ticked. Bringing them in starts the import in the background and moves straight on | Agents (one per project) and their chats |
@@ -36,7 +36,7 @@ Each step shows only when it applies to this home (`stepApplies`).
 | Areas | No areas yet | "Want me to keep things in areas?" Suggestions from what you said and the projects you brought in, Work and Personal, or your own | Areas |
 | Apps | Always | Popular apps in a row and a search over all of them. Notes that it checks before sending anything or doing anything that can't be undone (the default Ask first policy) | Connections, through Settings |
 | A first agent | No agents yet, and no import bringing some in | The New agent dialog, or Later | A workspace |
-| Done | Always | "You're all set", then the starters | `orchestratorIntroducedAt`, and `onboardedAt` for a new home |
+| Done | Always | "You're all set", then the starters | `coordinatorIntroducedAt`, and `onboardedAt` for a new home |
 
 Each answer shows as the user's reply bubble, and the next message picks up whichever answer came
 last (`acknowledge`), since which steps came before depends on the home. A short typing beat
@@ -82,7 +82,7 @@ Three things start in the background so the steps that need them rarely wait:
 
 - **Confirm, don't compose.** "What are you working on?" as a blank box was the step people stalled
   on. The history usually already says it, so the step offers a draft to accept or fix, and isn't
-  asked at all when there's nothing to draft from (the orchestrator learns from use, and Settings,
+  asked at all when there's nothing to draft from (the coordinator learns from use, and Settings,
   Profile keeps the field).
 - **Recent projects, not everything.** A machine can hold hundreds of project folders (every
   worktree is one). The step offers the eight most recent and ticks the ones in use, and Settings,
@@ -92,14 +92,14 @@ Three things start in the background so the steps that need them rarely wait:
   before it works. The route now redirects home, so old links and sign-in returns still land.
 - **Scripted, not stored.** The messages are drawn with the transcript's own components but aren't
   chat events. The harness conversation starts clean (events the model never saw would leave Ri's
-  record and the harness's out of step), and every answer lands in settings the orchestrator already
+  record and the harness's out of step), and every answer lands in settings the coordinator already
   reads. Sending a message replaces the conversation with the real transcript, as it does the usual
   intro.
 - **Connecting reuses Settings.** Every way of connecting already lives on a provider's page in
   Settings, Plugins. An app tile opens that page directly (`anchor: 'integrations:<id>'`), and closing
   Settings or returning from a sign-in page refreshes what the step shows.
 - **Art is made in the app.** "Make art" draws soft color fields from a seed
-  (`src/lib/orchestrator/art.ts`), instantly and for free, uploaded as SVG only if kept.
+  (`src/lib/coordinator/art.ts`), instantly and for free, uploaded as SVG only if kept.
 - **One editor everywhere.** The name and look step, Settings, Profile ("Your assistant") and the
   dialog behind the pencil on the rail's home row are the same `IdentityEditor`.
 - **An empty chat isn't use.** `describeHomeUse` (what lets `ri connect` set a fresh home aside)
@@ -121,7 +121,7 @@ left, a progress bar over remote access, notifications, Connectors, the agent br
 Ri in other agents. Those are extras, and listed as steps they read as part of getting Ri ready:
 a tester without the background spent his first evening trusting certificates to connect an
 agent Ri already ran on. The main chat offers each extra once, when what the person says calls
-for it (`EXTRAS_SECTION` in `src/lib/orchestrator/harness-surface.ts`). Settings opens where it
+for it (`EXTRAS_SECTION` in `src/lib/coordinator/harness-surface.ts`). Settings opens where it
 was last left, Profile at first, and `?settings=get-started` opens Profile.
 
 ## When it shows
@@ -129,7 +129,7 @@ was last left, Profile at first, and `?settings=get-started` opens Profile.
 Every empty main chat asks `MainChatOnboarding` what to show, once, from fresh user state (a message
 sent elsewhere may have skipped a step since it was cached):
 
-- **The conversation**, for a home whose `orchestrator_introduced_at` is null and that has a step
+- **The conversation**, for a home whose `coordinator_introduced_at` is null and that has a step
   left to ask. A home that has answered nothing opens with the welcome. One that has answered some
   of it, in an earlier chat or before steps were recorded, opens with "A few things are left from
   setting up" and only the steps still open. Steps finished in an earlier chat aren't replayed.
@@ -141,7 +141,7 @@ sent elsewhere may have skipped a step since it was cached):
   recorded as finished.
 
 Reaching the end, or "Skip setup", fills in every step not yet finished and records
-`orchestrator_introduced_at` (and `onboarded_at` for a new home). The conversation that just
+`coordinator_introduced_at` (and `onboarded_at` for a new home). The conversation that just
 finished stays up, starters and all, until the chat is used.
 
 Writing in the chat instead of answering means "not now" for the question on screen. The client
@@ -193,12 +193,12 @@ interface OnboardingRecord {
 
 ## Storage
 
-`user_state` gained `orchestrator_emoji`, `orchestrator_image` (an attachment, snake_case on disk
-and hydrated by `getUserState` / `updateUserState`), `orchestrator_color` and
-`orchestrator_introduced_at`, with `orchestrator_name`, in migration 0004. `onboarding` (the
+`user_state` gained `coordinator_emoji`, `coordinator_image` (an attachment, snake_case on disk
+and hydrated by `getUserState` / `updateUserState`), `coordinator_color` and
+`coordinator_introduced_at`, with `coordinator_name`, in migration 0004. `onboarding` (the
 progress above) came in 0008. All nullable, no schema defaults: null progress means a home that
 never started, or one that finished before steps were recorded.
-`PATCH /api/user-state` checks them through `parseOrchestratorLook`. `onboarded_at` now means the
+`PATCH /api/user-state` checks them through `parseCoordinatorLook`. `onboarded_at` now means the
 first run finished in a home that was new, and is still what `describeHomeUse` reads.
 
 ## Not built

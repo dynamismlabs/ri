@@ -40,7 +40,7 @@ it('streams ordinary native events and replay cursors over the real member socke
   const subscription = follow(first.id);
   await until(() => frames.some(frame => frame.event === 'ready'));
   expect(frames).toContainEqual(expect.objectContaining({ event: 'session', data: expect.objectContaining({ s: chat, e: 'chat_event', i: missed.id, d: expect.objectContaining({ content: 'Missed reply' }) }) }));
-  const unrelated = q.createChatSession({ harness: 'codex', type: 'orchestration', surfaceKind: 'private-skill' });
+  const unrelated = q.createChatSession({ harness: 'codex', type: 'coordinator', surfaceKind: 'private-skill' });
   publishRuntime(unrelated.id, true); publishDeviceUpdated(q.getHome()!.hostDeviceId!);
   publishRuntime(chat, true); publishDeviceUpdated(q.getHome()!.hostDeviceId);
   const live = q.insertChatEvent({ sessionId: chat, role: 'user', source: 'user', content: 'Live member message', authorMemberId: fixture.member.member.id })!;
@@ -54,7 +54,7 @@ it('streams ordinary native events and replay cursors over the real member socke
 });
 
 it('closes an idle authorized subscription when membership is removed and refuses unrelated chat identity', async () => {
-  const unrelated = q.createChatSession({ harness: 'codex', type: 'orchestration', surfaceKind: 'private-skill' });
+  const unrelated = q.createChatSession({ harness: 'codex', type: 'coordinator', surfaceKind: 'private-skill' });
   const refused: unknown[] = [];
   subscriptions.push(client.live.output.subscribe({ s: [[unrelated.id, null, null]], t: [] }, { onError: error => refused.push(error) }));
   await until(() => refused.length > 0);
@@ -69,7 +69,7 @@ it('closes an idle authorized subscription when membership is removed and refuse
 });
 
 it('preserves the restricted legacy projection in both common snapshots and live replay', async () => {
-  const legacy = q.createChatSession({ harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Retained conversation' });
+  const legacy = q.createChatSession({ harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, label: 'Retained conversation' });
   const first = q.insertChatEvent({ sessionId: legacy.id, role: 'user', source: 'user', content: 'Existing member request', authorMemberId: fixture.member.member.id })!;
   q.insertChatEvent({ sessionId: legacy.id, role: 'system', source: 'system', content: 'host-observation-canary', raw: { model: 'host-observation-canary' } });
   q.insertChatEvent({ sessionId: legacy.id, role: 'assistant', source: 'agent', content: 'Retained answer', raw: { subtype: 'host-observation-canary', model: 'host-observation-canary', usage: { note: 'host-observation-canary' } } });

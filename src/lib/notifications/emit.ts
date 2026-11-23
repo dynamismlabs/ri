@@ -11,12 +11,12 @@ import { FULL_BODY_MAX, LINE_BODY_MAX, fitText, messageText, oneLine } from './m
 import { turnReply, turnReplyText, nameEntity } from './turn-reply';
 import { checkInNoteForRun } from '@/lib/heartbeat/handoff';
 import { isNoMessageReply } from '@/lib/heartbeat/prompt';
-import { resolveOrchestratorName } from '@/lib/orchestrator/name';
+import { resolveCoordinatorName } from '@/lib/coordinator/name';
 import { RESERVED_TRIGGER_IDS } from '@/lib/triggers/reserved';
 
 /**
  * A run reached a terminal status. Picks the event by target:
- *   - orchestrator-target scheduled run (no execution) → `trigger.run_completed` (binding routing,
+ *   - coordinator-target scheduled run (no execution) → `trigger.run_completed` (binding routing,
  *     delivered to the trigger's `deliverResultTo[]`);
  *   - any execution run (manual or scheduled) → `execution.finished` (matrix routing);
  *   - the main agent's turn on a heartbeat check-in's note → `agent.message` (matrix routing).
@@ -32,7 +32,7 @@ export function runTerminalNotification(runId: string): { event: NotificationEve
   if (note) return agentMessageNotification(run, note);
   const trigger = run.triggerId ? getTrigger(run.triggerId) : undefined;
 
-  if (!run.executionId && trigger?.targetKind === 'orchestrator') {
+  if (!run.executionId && trigger?.targetKind === 'coordinator') {
     const deliverTo = trigger.deliverResultTo ?? [];
     if (deliverTo.length === 0) return null; // digest not bound to any channel
     return {
@@ -61,7 +61,7 @@ export function runTerminalNotification(runId: string): { event: NotificationEve
       // Deep-link opens the chat where the transcript lives. The home route is
       // the only surface that renders a session (`?session=<chatSessionId>`);
       // there is no `/executions/<id>` page. `runs.chatSessionId` is the exact
-      // chat that ran (null for orchestration/content chats → fall back to home).
+      // chat that ran (null for coordinator/content chats → fall back to home).
       url: run.chatSessionId ? `/?session=${run.chatSessionId}` : '/',
     },
   };
@@ -75,7 +75,7 @@ export function runTerminalNotification(runId: string): { event: NotificationEve
 function agentMessageNotification(run: RunRecord, note: NonNullable<ReturnType<typeof checkInNoteForRun>>): { event: NotificationEvent } | null {
   const chat = run.chatSessionId ? getChatSession(run.chatSessionId) : undefined;
   if (!chat) return null;
-  const name = resolveOrchestratorName(getUserState()?.orchestratorName);
+  const name = resolveCoordinatorName(getUserState()?.coordinatorName);
   const failed = run.status !== 'completed';
   if (!failed && isNoMessageReply(turnReply(chat.id))) return null;
   const text = failed ? messageText(note.payload.content, nameEntity) : turnReplyText(chat.id);

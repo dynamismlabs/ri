@@ -59,7 +59,7 @@ export function chatScheduleInput(
     prompt,
     ...(chat.workspaceId
       ? { targetKind: 'workspace' as const, workspaceId: chat.workspaceId }
-      : { targetKind: 'orchestrator' as const }),
+      : { targetKind: 'coordinator' as const }),
     provider: chat.harness,
     model: chat.model ?? null,
     effort: chat.effort ?? null,

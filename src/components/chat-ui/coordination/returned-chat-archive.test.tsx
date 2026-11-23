@@ -62,7 +62,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   server.chats.clear();
   server.chats.set(WORK, execution('active'));
-  server.chats.set(MAIN, { id: MAIN, type: 'orchestration', status: 'active', executionId: null, workspaceId: 'agent-1', label: null });
+  server.chats.set(MAIN, { id: MAIN, type: 'coordinator', status: 'active', executionId: null, workspaceId: 'agent-1', label: null });
   server.archive.mockReset().mockImplementation(async (id: string) => {
     server.chats.set(id, { ...server.chats.get(id), status: 'archived' });
     return server.chats.get(id);

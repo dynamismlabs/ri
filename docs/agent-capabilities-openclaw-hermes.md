@@ -2,7 +2,7 @@
 
 > Source study of two vendored runtimes, OpenClaw (`examples/openclaw`) and Hermes (`examples/hermes-agent`), and a proposal for what Ri should adopt. Includes a full ranked and tagged catalog of everything both runtimes give their agent, including the items we recommend skipping.
 >
-> Status: Draft, 2026-08-20. Author: orchestrator session.
+> Status: Draft, 2026-08-20. Author: coordinator session.
 
 ## Contents
 

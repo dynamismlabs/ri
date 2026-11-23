@@ -9,7 +9,7 @@ import { prepareAutomaticWorkResultReview, dispatchAutomaticWorkResultReviews } 
 import { saveWorkResultSchema, workResultDecisionSchema, requestAiReviewSchema, prepareWorkResultSchema } from '@/lib/work-results/validation';
 import { KNOWN_HARNESS_IDS } from '@/lib/harness/registry';
 import { requireWorkResultOwner, validateWorkResultActor } from '@/lib/work-results/home-policy';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 const id = z.string().min(1);
 const requestId = z.string().min(1).max(200);

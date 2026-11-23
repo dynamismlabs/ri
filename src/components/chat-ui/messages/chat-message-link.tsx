@@ -5,7 +5,7 @@ import { ArrowDownLeft, ArrowUpRight, MessageSquare } from 'lucide-react';
 import { useOptionalWorkNavigation } from '@/contexts/work-context';
 import { useSession } from '@/hooks/use-execution';
 import { useWorkspace } from '@/hooks/use-workspaces';
-import { useOrchestratorName } from '@/hooks/use-user-state';
+import { useCoordinatorName } from '@/hooks/use-user-state';
 import { executionView, viewHref } from '@/lib/client/active-view';
 import { apiErrorStatus } from '@/lib/api/error-status';
 import { Tip } from '@/components/ui/tip';
@@ -26,12 +26,12 @@ export function ChatMessageLink({ sessionId, eventId, label, title: givenTitle, 
   const navigation = useOptionalWorkNavigation();
   const { data: session, error } = useSession(sessionId);
   const { data: agent } = useWorkspace(session?.workspaceId ?? null);
-  const orchestratorName = useOrchestratorName();
+  const coordinatorName = useCoordinatorName();
   const unavailable = apiErrorStatus(error) === 404;
   const title = givenTitle ?? (unavailable ? 'Deleted chat'
-    : session?.type === 'orchestration' ? session.label ?? agent?.name ?? (session.workspaceId ? 'Agent main chat' : orchestratorName)
+    : session?.type === 'coordinator' ? session.label ?? agent?.name ?? (session.workspaceId ? 'Agent main chat' : coordinatorName)
     : session?.label ?? session?.execution?.label ?? (session ? 'Untitled chat' : error ? 'Chat temporarily unavailable' : 'Loading chat…'));
-  const context = session?.type === 'orchestration' ? (session.workspaceId ? 'Agent main chat' : session.createdByRunId ? 'Scheduled run' : 'Main chat') : agent?.name ? `${agent.name} agent` : null;
+  const context = session?.type === 'coordinator' ? (session.workspaceId ? 'Agent main chat' : session.createdByRunId ? 'Scheduled run' : 'Main chat') : agent?.name ? `${agent.name} agent` : null;
   const view = executionView(sessionId, eventId, true);
   const className = cn(
     'group/chat-link flex min-w-0 text-left transition-colors',

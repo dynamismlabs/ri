@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import * as q from '@/lib/db/queries';
-import { defineAction, ActionError, type ActionContext } from '@/lib/orchestrator/types';
+import { defineAction, ActionError, type ActionContext } from '@/lib/actions/types';
 import { personalChat } from './service';
 
 function authorizedChat(ctx: ActionContext, id: string) {
@@ -11,7 +11,7 @@ function authorizedChat(ctx: ActionContext, id: string) {
 export const historyActions = [
   defineAction({
     name: 'get_session_events',
-    description: 'Read a bounded page of complete personal chat messages and tool events, including orchestrator and agent main chats. No provider raw records. before is an event ID from this chat. Large text continues with get_chat_event. Use next_before for older pages.',
+    description: 'Read a bounded page of complete personal chat messages and tool events, including coordinator and agent main chats. No provider raw records. before is an event ID from this chat. Large text continues with get_chat_event. Use next_before for older pages.',
     params: { session_id: z.string().min(1), before: z.string().optional(), limit: z.number().int().min(1).max(50).optional() },
     handler: (ctx, input) => {
       authorizedChat(ctx, input.session_id);

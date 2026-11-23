@@ -27,10 +27,10 @@ const ROUTES: RouteEntry[] = [
   { pattern: /^\/api\/health$/, load: () => import('@/app/api/health/route') as Promise<RouteModule> },
   { pattern: /^\/api\/home$/, load: () => import('@/app/api/home/route') as Promise<RouteModule> },
   {
-    pattern: /^\/api\/orchestrator\/actions\/(register_device)$/,
+    pattern: /^\/api\/home\/actions\/(register_device)$/,
     params: ['name'],
     load: async () => {
-      const { POST } = await import('@/app/api/orchestrator/actions/[name]/route');
+      const { POST } = await import('@/app/api/home/actions/[name]/route');
       return { POST: (request, { params }) => POST(request, { params: params.then(({ name }) => ({ name })) }) };
     },
   },
@@ -64,9 +64,9 @@ const ROUTES: RouteEntry[] = [
     load: () => import('@/app/api/integrations/[transport]/route') as Promise<RouteModule>,
   },
   {
-    pattern: /^\/api\/orchestrator\/browser\/(mcp)$/,
+    pattern: /^\/api\/home\/browser\/(mcp)$/,
     params: ['transport'],
-    load: () => import('@/app/api/orchestrator/browser/[transport]/route') as Promise<RouteModule>,
+    load: () => import('@/app/api/home/browser/[transport]/route') as Promise<RouteModule>,
   },
   {
     pattern: /^\/api\/sessions\/([^/]+)\/messages$/,

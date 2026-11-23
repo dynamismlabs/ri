@@ -6,7 +6,7 @@ import path from 'node:path';
 import { getDb, resetDb } from '@/lib/db';
 import { createChatSession, createWorkspace, getWorkspace, getUserState } from '@/lib/db/queries';
 import { writeAuthConfig } from '@/lib/auth/config-file';
-import { sessionCredential } from '@/lib/orchestrator/session-credential';
+import { sessionCredential } from '@/lib/actions/session-credential';
 import { getWorkResultCapabilities } from '@/lib/work-results/capabilities';
 
 const recycle = vi.hoisted(() => vi.fn());

@@ -6,12 +6,12 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
 import { operationResponse, type OperationContext } from '@/lib/server/operation';
-import { verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { verifySessionCredential } from '@/lib/actions/session-credential';
 import * as q from '@/lib/db/queries';
 
 const bridge = vi.hoisted(() => ({ fetch: vi.fn() }));
 const worktrees = vi.hoisted(() => ({ beforeCreate: null as (() => Promise<void>) | null }));
-vi.mock('@/lib/orchestrator/server-client', async (original) => ({ ...await original<object>(), serverFetch: bridge.fetch }));
+vi.mock('@/lib/actions/server-client', async (original) => ({ ...await original<object>(), serverFetch: bridge.fetch }));
 vi.mock('@/lib/workspaces', async original => {
   const actual = await original<typeof import('@/lib/workspaces')>();
   return { ...actual, createWorktreeForSession: async (args: Parameters<typeof actual.createWorktreeForSession>[0]) => {
@@ -159,9 +159,9 @@ async function setupRuntime() {
   const folder = path.join(home.root, 'project');
   fs.mkdirSync(folder);
   const workspace = q.createWorkspace({ name: 'Frontend', cwd: folder, isGit: false, browserEnabled: false });
-  const main = q.createChatSession({ harness: 'claude', type: 'orchestration' });
-  const agentMain = q.createChatSession({ harness: 'claude', type: 'orchestration', workspaceId: workspace.id });
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const main = q.createChatSession({ harness: 'claude', type: 'coordinator' });
+  const agentMain = q.createChatSession({ harness: 'claude', type: 'coordinator', workspaceId: workspace.id });
+  const { runAction } = await import('@/lib/actions/dispatch');
   const { POST: postMessage, POSTInput: messageInput } = await import('@/lib/server/operations/sessions/[id]/messages');
   const { POST: createExecution, POSTInput: executionInput } = await import('@/lib/server/operations/workspaces/[id]/sessions');
   const context = (url: string, init?: RequestInit): OperationContext => ({ url, nextUrl: new URL(url), headers: new Headers(init?.headers), signal: new AbortController().signal });
@@ -218,7 +218,7 @@ it('returns a useful reply to an approved one-way message under Ask first throug
   }
 }, 15_000);
 
-it('runs an orchestrator delegation through executor consultation and returns the finished work automatically', async () => {
+it('runs a coordinator delegation through executor consultation and returns the finished work automatically', async () => {
   const { workspace, main, agentMain, runAction, postMessage, messageInput, context } = await setupRuntime();
   harness!.onTurn(async turn => {
     const chatId = verifySessionCredential(turn.session.ctx.env?.RI_SESSION_CREDENTIAL, home!.token);
@@ -410,7 +410,7 @@ it.each(['at', 'cron'] as const)('delivers an unattended %s message under Ask fi
     await turn.say('The scheduled message is queued for delivery.');
   });
   (await import('./service')).startAgentCoordination();
-  const trigger = q.createTrigger({name:'Scheduled message',targetKind:'orchestrator',harness:'claude',prompt:'Send the requested message once.',kind,runAt:kind==='at'?new Date().toISOString():null,cronExpression:kind==='cron'?'* * * * *':null});
+  const trigger = q.createTrigger({name:'Scheduled message',targetKind:'coordinator',harness:'claude',prompt:'Send the requested message once.',kind,runAt:kind==='at'?new Date().toISOString():null,cronExpression:kind==='cron'?'* * * * *':null});
   const {run,chatSession} = await (await import('@/lib/runs/dispatch')).dispatchRun({trigger,triggerKind:kind,scheduledFor:new Date().toISOString()});
   await vi.waitFor(()=>expect(received).toHaveLength(1),{timeout:10_000,interval:25});
   const deliveries = q.activeCoordinationChats(chatSession!.id);
@@ -440,7 +440,7 @@ it('allows a scheduled assignment to delegate and receive the finished outcome u
     }
   });
   (await import('./service')).startAgentCoordination();
-  const trigger = q.createTrigger({name:'Scheduled review',targetKind:'orchestrator',harness:'claude',prompt:'Delegate the review and bring back the outcome.',kind:'at',runAt:new Date().toISOString()});
+  const trigger = q.createTrigger({name:'Scheduled review',targetKind:'coordinator',harness:'claude',prompt:'Delegate the review and bring back the outcome.',kind:'at',runAt:new Date().toISOString()});
   const {chatSession} = await (await import('@/lib/runs/dispatch')).dispatchRun({trigger,triggerKind:'at'});
   await vi.waitFor(()=>expect(q.getLastChatEventBySource(chatSession!.id,'agent')?.content).toBe('Your scheduled review is ready.'),{timeout:15_000,interval:25});
   const [request] = q.listAgentRequests(chatSession!.id);
@@ -459,7 +459,7 @@ it('surfaces a scheduled send blocked by a later human policy change as failed i
     expect(await runAction('message_agent',{response:'none',target:`session:${agentMain.id}`,request_id:'human-policy-changed',content:'Scheduled message.'},{remote:true,actor:{source:'ai',sessionId:chatId}})).toMatchObject({ok:true,result:{status:'awaiting_approval'}});
     await turn.say('This message needs your approval before it can be sent.');
   });
-  const trigger = q.createTrigger({name:'Changed policy',targetKind:'orchestrator',harness:'claude',prompt:'Send the message.',kind:'at',runAt:new Date().toISOString()});
+  const trigger = q.createTrigger({name:'Changed policy',targetKind:'coordinator',harness:'claude',prompt:'Send the message.',kind:'at',runAt:new Date().toISOString()});
   const {run,chatSession} = await (await import('@/lib/runs/dispatch')).dispatchRun({trigger,triggerKind:'at'});
   await vi.waitFor(()=>expect(q.getRun(run.id)).toMatchObject({status:'failed',errorCode:'coordination_approval_required'}),{timeout:10_000,interval:25});
   expect(q.getTrigger(trigger.id)?.lastRunStatus).toBe('failed');

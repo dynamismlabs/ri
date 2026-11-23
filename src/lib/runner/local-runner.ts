@@ -781,7 +781,7 @@ async function startSession(spec: SessionSpec, admission?: () => boolean | Promi
   // Shipped skills are discovered from the app root or the user's explicit
   // global install. Never pass them through skillDirs here. The Codex provider
   // materializes configured skillDirs inside the project, which previously
-  // left an app-owned .agents/skills/orchestrator symlink in every workspace.
+  // left an app-owned .agents/skills/tasks-notes symlink in every workspace.
   // Clean that legacy link only when it points to our shipped skill.
   if (spec.cleanLegacySkillLinks) {
     try {

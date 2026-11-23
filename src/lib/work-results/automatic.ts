@@ -11,7 +11,7 @@ import type { WorkResultOrigin } from './queries';
 import { aiReviewEnabled } from './capabilities';
 import { getAppRoot } from '@/lib/config/paths';
 import { getHarnessRuntime } from '@/lib/harness/runtime';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { getWorkResultSourceWorkspace } from './reviewer-preferences';
 import { preferredWorkResultReviewerSelection, reviewerPreferenceHarness } from './reviewer-selection-defaults';
 import {

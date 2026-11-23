@@ -8,7 +8,7 @@
 
 **Primary surfaces:** Quick Capture, Stream, Chat, Deck, Notes, Tasks
 
-**Authoritative scope:** This document replaces the stream-specific behavior in `docs/prd.md`, the manual stream triage behavior in `docs/deck-checkin-spec.md`, and the one-item-to-one-entity assumptions in the current orchestrator stream contract. `docs/deck-v2-spec.md` remains authoritative for the Deck.
+**Authoritative scope:** This document replaces the stream-specific behavior in `docs/prd.md`, the manual stream triage behavior in `docs/deck-checkin-spec.md`, and the one-item-to-one-entity assumptions in the current coordinator stream contract. `docs/deck-v2-spec.md` remains authoritative for the Deck.
 
 ## How to use this document
 
@@ -1095,8 +1095,8 @@ Phase 0: Contract and safety
 **Likely files:**
 
 - `docs/stream-reconciliation-prd.md`
-- `src/lib/orchestrator/harness-surface.ts`
-- `skills/orchestrator/SKILL.md`
+- `src/lib/coordinator/harness-surface.ts`
+- `skills/tasks-notes/SKILL.md`
 - New stream evaluation fixture directory
 
 **Tasks:**
@@ -1128,7 +1128,7 @@ Phase 0: Contract and safety
 - `src/components/stream/stream-triage.tsx`
 - `src/app/api/stream/[id]/route.ts`
 - `src/lib/db/queries.ts`
-- `src/lib/orchestrator/registry.ts`
+- `src/lib/actions/registry.ts`
 - Stream tests
 
 **Tasks:**
@@ -1431,7 +1431,7 @@ Phase 0: Contract and safety
 
 - New `src/lib/stream-triage/apply.ts`
 - `src/lib/db/queries.ts`
-- `src/lib/orchestrator/registry.ts`
+- `src/lib/actions/registry.ts`
 - Entity-version helpers
 - Transaction and retry tests
 
@@ -1592,15 +1592,15 @@ Phase 0: Contract and safety
 
 **Depends on:** STREAM-09, STREAM-10, STREAM-12
 
-### STREAM-15: Integrate Chat and orchestrator actions
+### STREAM-15: Integrate Chat and Ri actions
 
 **Goal:** make human and agent behavior share the same safe contracts.
 
 **Likely files:**
 
-- `src/lib/orchestrator/registry.ts`
-- `src/lib/orchestrator/harness-surface.ts`
-- `skills/orchestrator/SKILL.md`
+- `src/lib/actions/registry.ts`
+- `src/lib/coordinator/harness-surface.ts`
+- `skills/tasks-notes/SKILL.md`
 - Chat tools and prompt
 - Registry tests
 
@@ -1713,7 +1713,7 @@ Phase 0: Contract and safety
 - [ ] Generate the destructive cleanup migration
 - [ ] Remove old manual triage components and dead types
 - [ ] Remove unrestricted Stream PATCH route
-- [ ] Update `docs/prd.md`, knowledge rationale, README, and orchestrator docs
+- [ ] Update `docs/prd.md`, knowledge rationale, README, and coordinator docs
 - [ ] Rebuild and smoke-test the CLI distribution
 - [ ] Run `pnpm ts`, `pnpm lint`, targeted tests, and `pnpm build`
 - [ ] Perform an accessibility and copy review
@@ -1739,7 +1739,7 @@ Phase 0: Contract and safety
 7. Undo, correction, and acceptance telemetry
 8. Recent Captures and brain-dump summaries
 9. Needs your call, Deck prompt, and notifications
-10. Chat and orchestrator contract update
+10. Chat and coordinator contract update
 11. Integration-event separation
 12. Legacy cleanup after rollout gates pass
 

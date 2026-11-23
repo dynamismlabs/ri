@@ -133,7 +133,7 @@ describe('Claude Code, when adding Ri’s entry fails', () => {
     harnesses({ CLAUDE: fake });
     const { client, token } = (await queries()).createPersonalAiClient('Claude Code on Test Mac', 'claude_code');
     // What Set up wrote before: the HTTPS address no outside agent trusts.
-    const original = { type: 'http', url: 'https://localhost:42242/api/orchestrator/mcp', headers: { Authorization: `Bearer ${token.plaintext}` } };
+    const original = { type: 'http', url: 'https://localhost:42242/api/home/mcp', headers: { Authorization: `Bearer ${token.plaintext}` } };
     fs.mkdirSync(path.join(folder, '.claude-config'), { recursive: true });
     fs.writeFileSync(path.join(folder, '.claude-config/.claude.json'), JSON.stringify({ mcpServers: { ri: original } }));
     return { original, keyId: client.keyId };
@@ -326,9 +326,9 @@ describe('the address agents here use', () => {
     vi.stubEnv('PORT', '42243');
     fs.mkdirSync(path.join(folder, '.cursor'));
     const { connectLocalAgent, localMcpUrl } = await setup();
-    expect(localMcpUrl()).toBe('http://127.0.0.1:42243/api/orchestrator/mcp');
+    expect(localMcpUrl()).toBe('http://127.0.0.1:42243/api/home/mcp');
     await connectLocalAgent('cursor');
-    expect(await cursorUrl()).toBe('http://127.0.0.1:42243/api/orchestrator/mcp');
+    expect(await cursorUrl()).toBe('http://127.0.0.1:42243/api/home/mcp');
   });
 
   it('moves its own entry from an old address on this computer, keeping its key', async () => {
@@ -336,7 +336,7 @@ describe('the address agents here use', () => {
     const { connectLocalAgent, localAgentState, localMcpUrl, repairLocalAgents } = await setup();
     const first = await connectLocalAgent('cursor');
     // What Set up wrote before: the HTTPS address no outside agent trusts.
-    setCursorUrl('https://localhost:42242/api/orchestrator/mcp');
+    setCursorUrl('https://localhost:42242/api/home/mcp');
     expect(await localAgentState('cursor')).toMatchObject({ connection: null, stale: 'moved' });
 
     expect(await repairLocalAgents()).toEqual(['cursor']);
@@ -352,16 +352,16 @@ describe('the address agents here use', () => {
     fs.mkdirSync(path.join(folder, '.gemini'));
     const { connectLocalAgent, localAgentState, repairLocalAgents } = await setup();
     await connectLocalAgent('cursor');
-    setCursorUrl('https://ri-trey.beamd.run/api/orchestrator/mcp');
+    setCursorUrl('https://ri-trey.beamd.run/api/home/mcp');
     const gemini = await connectLocalAgent('gemini_cli');
     (await queries()).revokePersonalAiClient(gemini.connection.keyId);
     const settings = read('.gemini/settings.json');
-    settings.mcpServers.ri.url = 'https://localhost:42242/api/orchestrator/mcp';
+    settings.mcpServers.ri.url = 'https://localhost:42242/api/home/mcp';
     fs.writeFileSync(path.join(folder, '.gemini/settings.json'), JSON.stringify(settings));
 
     expect(await repairLocalAgents()).toEqual([]);
-    expect(await cursorUrl()).toBe('https://ri-trey.beamd.run/api/orchestrator/mcp');
-    expect(read('.gemini/settings.json').mcpServers.ri.url).toBe('https://localhost:42242/api/orchestrator/mcp');
+    expect(await cursorUrl()).toBe('https://ri-trey.beamd.run/api/home/mcp');
+    expect(read('.gemini/settings.json').mcpServers.ri.url).toBe('https://localhost:42242/api/home/mcp');
     expect(await localAgentState('gemini_cli')).toMatchObject({ connection: null, stale: 'revoked' });
   });
 

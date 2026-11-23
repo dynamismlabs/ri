@@ -49,7 +49,7 @@ it('keeps a populated AI-off Team canonical while one existing member privately 
   expect((await saveTeamNoteToMyNotes(connection.id, seed.noteId)).id).toBe(saved.id);
   q.createTask({ title: 'Same name', rawInput: 'Same name' });
   q.createNote({ title: 'Same name', body: 'Private reference' });
-  const privateChat = q.createChatSession({ harness: 'codex', type: 'orchestration', label: 'Private planning' });
+  const privateChat = q.createChatSession({ harness: 'codex', type: 'coordinator', label: 'Private planning' });
   q.insertChatEvent({ sessionId: privateChat.id, role: 'user', source: 'user', content: 'Private conversation' });
 
   expect((await syncTeam(connection.id)).ok).toBe(true);

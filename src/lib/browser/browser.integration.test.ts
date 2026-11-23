@@ -19,7 +19,7 @@ import { getSession, getActivePage, listTabs, selectTab, closeTab, rememberBasel
 import { readPage, detectBlocked, isInterstitial } from './read';
 import { performAct, performBatch, type EvaluateRecord } from './act';
 import { readAuditTail } from './audit';
-import { browser_act_action } from '@/lib/orchestrator/browser-actions';
+import { browser_act_action } from '@/lib/actions/browser-actions';
 import { isBrowserOpen, closeBrowser, openOrConnect } from './session';
 import { ensureBrowserProfileDir } from '@/lib/config/paths';
 import { findProfileBrowserPids } from './profile-processes';

@@ -5,7 +5,7 @@ import { preloadTeamRoutes, serveTeam, teamTrpc } from '@/test/fixtures/team-hom
 import * as q from '@/lib/db/queries';
 import * as chat from '@/lib/team/ai/chat';
 import { closeAllSessions, _resetExecutorState } from '@/lib/runner/local-runner';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 
 let fixture: Awaited<ReturnType<typeof createTeamExecutionFixture>>, fake: FakeHarness;
 const missingAuth = vi.hoisted(() => new Set<string>());
@@ -60,7 +60,7 @@ it('concurrent identical launches and archived retries return one accepted execu
 });
 const context = (sessionId: string) => ({ remote: true, actor: { source: 'ai' as const, sessionId, memberId: fixture.member.member.id }, caller: { location: 'elsewhere' as const, apiKeyId: fixture.member.key.id } });
 function sender(permissionMode: 'ask' | 'auto_all') {
-  return q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode, createdByMemberId: fixture.member.member.id });
+  return q.createChatSession({ workspaceId: fixture.workspace.id, harness: 'claude', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, permissionMode, createdByMemberId: fixture.member.member.id });
 }
 
 it('refuses invalid prompts before creating a child and returns a stable policy code', async () => {

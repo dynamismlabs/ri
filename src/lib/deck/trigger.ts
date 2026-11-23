@@ -2,8 +2,8 @@
  * The morning deck cron — opt-in overnight pre-bake.
  *
  * Built on the existing scheduler (`src/lib/scheduler/runner.ts`): an
- * orchestrator-targeted `cron` trigger that fires at the user's chosen local
- * time and asks the orchestrator to refresh today's deck. This is the "it's
+ * coordinator-targeted `cron` trigger that fires at the user's chosen local
+ * time and asks the coordinator to refresh today's deck. This is the "it's
  * already right before you wake" path; the lazy first-look ensure remains the
  * load-bearing guarantee (the scheduler only ticks while the app is running).
  *
@@ -110,7 +110,7 @@ export function setMorningDeckConfig(input: { enabled?: boolean; time?: string }
       enabled,
       harness: defaultTriggerHarness(),
       workspaceId: null,
-      targetKind: 'orchestrator',
+      targetKind: 'coordinator',
       prompt: MORNING_PROMPT,
       kind: 'cron',
       cronExpression,

@@ -7,7 +7,7 @@ import { completeTask, getTask, lifecyclePreflight, type LifecycleOutcome } from
 import type { WorkResultActor, WorkResultCodeRevision, WorkResultDecisionRecord, TaskRecord } from '@/db/types';
 import { validateWorkResultActor } from './home-policy';
 import { canApply, normalizeTaskStatus } from '@/lib/tasks/lifecycle';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import type { RuntimeChoice } from '@/lib/sessions/workstream';
 import { assertHandoffsEnabled } from './capabilities';
 import { getWorkResult, workResultIntentHash, workResultRequestScopedId } from './queries';

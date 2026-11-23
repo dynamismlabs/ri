@@ -21,7 +21,7 @@ This page is generated from the code by `pnpm guide:reference`. Edit the code, n
 | `ri snapshot` | Write a local, dated snapshot (DB + markdown) to `<app-root>/snapshots/` |
 | `ri commit` | Flush the mirror and git-commit the brain dir (init git if needed) |
 | `ri export` | Force a full sync of the live markdown mirror |
-| `ri agent` | Agent orchestrator surface. Typed, auto-generated CLI twin of the orchestrator MCP. |
+| `ri agent` | Ri's actions. Typed, auto-generated CLI twin of Ri's MCP. |
 | `ri skills` | Install and manage the skills this app ships for agent sessions |
 | `ri trigger` | Manage scheduled agent work (cron, interval, one-shot, webhook). |
 | `ri runs` | List recent runs across all triggers + manual chats. |
@@ -346,7 +346,7 @@ ri export status [options]
 
 ## ri agent
 
-Agent orchestrator surface. Typed, auto-generated CLI twin of the orchestrator MCP.
+Ri's actions. Typed, auto-generated CLI twin of Ri's MCP.
 
 ```sh
 ri agent [options] [command]
@@ -431,7 +431,7 @@ ri trigger create [options]
 | `--run-at <iso>` | Absolute ISO timestamp for a one-shot trigger. |
 | `--webhook` | Webhook-triggered trigger. |
 | `--timezone <tz>` | IANA timezone for cron interpretation. (default: "UTC") |
-| `--target <kind>` | workspace (a fresh chat in that agent each fire) \| orchestrator (a fresh Ri chat each fire) \| session (one existing chat each fire) (default: "workspace") |
+| `--target <kind>` | workspace (a fresh chat in that agent each fire) \| coordinator (a fresh Ri chat each fire) \| session (one existing chat each fire) (default: "workspace") |
 | `--workspace <id-or-slug>` | Target workspace (required when target=workspace). |
 | `--session <chat-id>` | Chat each fire sends to (target=session). Run from inside a chat, omit it to target that chat. |
 | `--provider <id>` | Who runs it: codex \| claude \| cursor \| opencode \| antigravity. Defaults to your default provider. |

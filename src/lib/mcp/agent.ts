@@ -3,7 +3,7 @@
  *
  * External agents hit the MCP with natural language via `query` or `update`.
  * This function runs the user's default subscription harness (Claude Code,
- * Codex, ... — see src/lib/harness/one-shot.ts) against the orchestrator
+ * Codex, ... — see src/lib/harness/one-shot.ts) against the coordinator
  * action surface and emits a structured payload:
  * { response, entities, innerSteps } — all three are part of the public
  * contract and advertised in the tool descriptions and server instructions.
@@ -12,12 +12,12 @@
  *     hallucinated UUIDs). Update mode lists mutations; query mode lists
  *     singular reads as action='referenced'.
  *   - innerSteps: the tool calls the inner agent made, surfaced to the
- *     caller for observability. Names are orchestrator action names.
+ *     caller for observability. Names are Ri action names.
  *
  * `query` → read-only actions. `update` → the full action surface.
  *
  * Tool wiring per harness: when the harness supports MCP (Claude), the
- * orchestrator MCP attaches with an action allowlist enforced by the CLI's
+ * home MCP attaches with an action allowlist enforced by the CLI's
  * tool filtering. When it doesn't (Codex today), the call runs at the app
  * root where the installed AGENTS.md surface routes the same actions
  * through the CLI — the mode's read-only rule then rides on the prompt, and
@@ -31,9 +31,9 @@ import {
   harnessSupportsMcp,
 } from '@/lib/harness/one-shot';
 import {
-  orchestratorMcpServer,
-  ORCHESTRATOR_MCP_SERVER_NAME,
-} from '@/lib/orchestrator/harness-surface';
+  homeMcpServer,
+  HOME_MCP_SERVER_NAME,
+} from '@/lib/coordinator/harness-surface';
 import { APP_NAME } from '@/constants/app';
 import type { McpEntity, McpInnerStep, McpResponsePayload } from '@/lib/mcp/types';
 
@@ -41,7 +41,7 @@ export type { McpEntity, McpInnerStep, McpResponsePayload };
 
 export type McpMode = 'query' | 'update';
 
-/** Orchestrator actions the query (read-only) mode may call. */
+/** Ri actions the query (read-only) mode may call. */
 const READ_ACTION_NAMES = [
   'list_tasks', 'get_task',
   'list_notes', 'get_note', 'list_backlinks',
@@ -73,7 +73,7 @@ Today's date: ${new Date().toISOString().slice(0, 10)}`;
 
 // ─── Event harvesting ─────────────────────────────────────────
 
-/** Mutating orchestrator actions whose successful results become entities. */
+/** Mutating Ri actions whose successful results become entities. */
 const MUTATING_ACTIONS: Record<string, { type: McpEntity['type']; action: McpEntity['action'] }> = {
   create_task:     { type: 'task', action: 'created' },
   update_task:     { type: 'task', action: 'updated' },
@@ -105,10 +105,10 @@ function asString(v: unknown): string | undefined {
   return typeof v === 'string' && v.length > 0 ? v : undefined;
 }
 
-const MCP_TOOL_PREFIX = `mcp__${ORCHESTRATOR_MCP_SERVER_NAME}__`;
+const MCP_TOOL_PREFIX = `mcp__${HOME_MCP_SERVER_NAME}__`;
 
 interface ObservedAction {
-  /** Orchestrator action name, when identifiable. */
+  /** Ri action name, when identifiable. */
   action: string | null;
   /** Raw tool name as the harness reported it. */
   toolName: string;
@@ -120,7 +120,7 @@ interface ObservedAction {
  * Normalize one tool_call/tool_result pair into an observed action.
  *
  * Two wire shapes:
- *   - MCP (Claude): tool name `mcp__orchestrator__<action>`, result content
+ *   - MCP (Claude): tool name `mcp__ri_home__<action>`, result content
  *     is the action result as JSON.
  *   - CLI (Codex): a shell tool whose stdout is the CLI's action envelope
  *     `{ok, action, result}` — the envelope names the action for us.
@@ -239,7 +239,7 @@ export async function runMcpAgent(
     skipPermissions?: boolean;
   };
   if (harnessSupportsMcp(providerType)) {
-    const server = orchestratorMcpServer();
+    const server = homeMcpServer();
     const allowedTools =
       mode === 'query'
         ? READ_ACTION_NAMES.map((name) => `${MCP_TOOL_PREFIX}${name}`)

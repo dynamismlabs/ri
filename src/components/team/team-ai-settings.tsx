@@ -24,7 +24,7 @@ export function TeamAiSection() {
   const refresh = () => {
     void qc.invalidateQueries({ queryKey: trpc.team.ai.status.queryKey() });
     void qc.invalidateQueries({ queryKey: trpc.team.ai.configuration.queryKey() });
-    void qc.invalidateQueries({ queryKey: trpc.team.ai.orchestrator.queryKey() });
+    void qc.invalidateQueries({ queryKey: trpc.team.ai.coordinator.queryKey() });
     void qc.invalidateQueries({ queryKey: trpc.homeContext.queryKey() });
     void qc.invalidateQueries({ queryKey: trpc.homeExecutionChoices.queryKey() });
   };

@@ -212,10 +212,10 @@ const MOCK_TASKS: Task[] = [
 const MOCK_STREAM_EVENTS: StreamEvent[] = [
   { text: "Decided: Weaviate for Ri vector layer", time: "9:04 am", color: "bg-muted-foreground" },
   { text: "Beacon agent: competitor price change flagged", time: "8:52 am", color: "bg-blue-400" },
-  { text: "Rationale queued to Slack via Orchestrator", time: "8:10 am", color: "bg-zinc-500" },
+  { text: "Rationale queued to Slack via Ri", time: "8:10 am", color: "bg-zinc-500" },
 ];
 
-// Chat (the orchestrator) on the left, the deck on the right.
+// Chat (the coordinator) on the left, the deck on the right.
 const DEFAULT_PANEL_A_TAB: AnyPanelTab = DEFAULT_HOME_PANELS.a;
 const NO_FILES_IN_FRONT: Readonly<Record<PanelId, boolean>> = { a: false, b: false };
 const DEFAULT_PANEL_B_TAB: AnyPanelTab = DEFAULT_HOME_PANELS.b;

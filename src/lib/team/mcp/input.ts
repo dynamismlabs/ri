@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { z } from 'zod';
 /** How a team server refuses an operation it doesn't have. Older servers already say this, so it can't change. */
 export const UNKNOWN_CONTENT_OPERATION = 'Unknown content operation.';

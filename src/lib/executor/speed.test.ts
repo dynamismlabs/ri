@@ -35,7 +35,7 @@ afterEach(async () => {
  * can start sessions on the same fake harness meanwhile, so the latest one isn't necessarily it.
  */
 async function sessionOf(chatId: string) {
-  const { SESSION_CREDENTIAL_ENV, actorFromSessionCredential } = await import('@/lib/orchestrator/session-credential');
+  const { SESSION_CREDENTIAL_ENV, actorFromSessionCredential } = await import('@/lib/actions/session-credential');
   const session = fake.sessions.find(candidate => actorFromSessionCredential(candidate.ctx.env?.[SESSION_CREDENTIAL_ENV])?.sessionId === chatId);
   if (!session) throw new Error(`No harness session ran chat ${chatId}`);
   return session;
@@ -45,7 +45,7 @@ describe('saved model speed reaches the harness', () => {
   it.each([null, 'default'])('initializes a fresh heartbeat to Normal with global speed %s and carries it through dispatch', async preference => {
     const q = await import('@/lib/db/queries');
     const { ensureHeartbeatTrigger, getHeartbeatConfig } = await import('@/lib/heartbeat/trigger');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const { dispatchRun } = await import('@/lib/runs/dispatch');
     q.setHomeDefaultSelection({ harness: 'claude', model: 'opus', variant: null, effort: 'medium', serviceTier: preference });
     const seeds = await Promise.all([ensureHeartbeatTrigger(), ensureHeartbeatTrigger(), ensureHeartbeatTrigger()]);
@@ -63,11 +63,11 @@ describe('saved model speed reaches the harness', () => {
   it('preserves a legacy heartbeat NULL through first read, enabling, and dispatch', async () => {
     const q = await import('@/lib/db/queries');
     const { HEARTBEAT_TRIGGER_ID, ensureHeartbeatTrigger } = await import('@/lib/heartbeat/trigger');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const { dispatchRun } = await import('@/lib/runs/dispatch');
     q.setHomeDefaultSelection({ harness: 'claude', model: 'opus', variant: null, effort: 'medium', serviceTier: 'default' });
     const legacy = q.createTrigger({ id: HEARTBEAT_TRIGGER_ID, name: 'Heartbeat', harness: 'claude', model: 'opus',
-      prompt: 'Check in', kind: 'every', intervalSeconds: 3600, enabled: false, targetKind: 'orchestrator', serviceTier: null });
+      prompt: 'Check in', kind: 'every', intervalSeconds: 3600, enabled: false, targetKind: 'coordinator', serviceTier: null });
     expect((await ensureHeartbeatTrigger())?.serviceTier).toBeNull();
     await actions.find(action => action.name === 'update_heartbeat')!.handler({ remote: false }, { enabled: true } as never);
     const saved = q.getTrigger(legacy.id)!;
@@ -99,7 +99,7 @@ describe('saved model speed reaches the harness', () => {
     const q = await import('@/lib/db/queries');
     const { dispatch } = await import('./adapter');
     const { PATCH } = await import('@/lib/server/operations/sessions/[id]');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'opus', serviceTier: 'fast' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'opus', serviceTier: 'fast' });
     await dispatch(chat.id, 'First turn');
     const original = fake.latest();
     expect(original.ctx.config?.serviceTier).toBe('fast');
@@ -118,7 +118,7 @@ describe('saved model speed reaches the harness', () => {
   it('resets speed on an incompatible model change and rejects a direct unsupported selection', async () => {
     const q = await import('@/lib/db/queries');
     const { PATCH } = await import('@/lib/server/operations/sessions/[id]');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'opus', serviceTier: 'fast' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'opus', serviceTier: 'fast' });
     expect((await PATCH({ params: { id: chat.id }, body: { model: 'sonnet' } }, ctx)).status).toBe(200);
     expect(q.getChatSession(chat.id)).toMatchObject({ model: 'sonnet', serviceTier: 'default' });
     expect((await PATCH({ params: { id: chat.id }, body: { serviceTier: 'fast' } }, ctx)).status).toBe(400);
@@ -129,7 +129,7 @@ describe('saved model speed reaches the harness', () => {
   it('preserves legacy native defaults until an explicit speed is selected', async () => {
     const q = await import('@/lib/db/queries');
     const { dispatch } = await import('./adapter');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'opus' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'opus' });
     await dispatch(chat.id, 'Legacy turn');
     expect(fake.latest().ctx.config?.serviceTier).toBeUndefined();
     expect(q.getChatSession(chat.id)?.serviceTier).toBeNull();
@@ -138,7 +138,7 @@ describe('saved model speed reaches the harness', () => {
   it('rejects a saved unsupported speed at dispatch before opening a harness', async () => {
     const q = await import('@/lib/db/queries');
     const { dispatch } = await import('./adapter');
-    const chat = q.createChatSession({ type: 'orchestration', harness: 'claude', model: 'sonnet', serviceTier: 'fast' });
+    const chat = q.createChatSession({ type: 'coordinator', harness: 'claude', model: 'sonnet', serviceTier: 'fast' });
     await expect(dispatch(chat.id, 'Must not run')).rejects.toThrow('does not offer Fast');
     expect(fake.sessions).toHaveLength(0);
   });
@@ -148,10 +148,10 @@ describe('saved model speed reaches the harness', () => {
     const { resolveStartSelection } = await import('@/lib/harness/start-selection');
     q.setHomeDefaultSelection({ harness: 'claude', model: 'opus', variant: null, effort: 'medium', serviceTier: 'fast' });
     expect(await resolveStartSelection({})).toMatchObject({ serviceTier: 'fast' });
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const create = actions.find(action => action.name === 'create_trigger')!;
     const created = await create.handler({ remote: false }, {
-      name: 'Speed test', prompt: 'Check in', targetKind: 'orchestrator', kind: 'manual', provider: 'claude', model: 'opus', serviceTier: 'fast',
+      name: 'Speed test', prompt: 'Check in', targetKind: 'coordinator', kind: 'manual', provider: 'claude', model: 'opus', serviceTier: 'fast',
     } as never) as { trigger: { id: string; serviceTier: string } };
     const trigger = created.trigger;
     expect(q.getTrigger(trigger.id)?.serviceTier).toBe('fast');
@@ -171,7 +171,7 @@ describe('saved model speed reaches the harness', () => {
     { name: 'a model without speed metadata', model: 'custom-no-speed', speed: undefined, expected: null },
   ])('initializes a new agent-created schedule with $name and carries its speed into inference', async ({ model, speed, expected }) => {
     const q = await import('@/lib/db/queries');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const { dispatchRun } = await import('@/lib/runs/dispatch');
     q.addCustomHarnessModel('claude', 'custom-no-speed');
     // Scheduled NULL models use the catalog fallback at dispatch, even if
@@ -179,7 +179,7 @@ describe('saved model speed reaches the harness', () => {
     if (model === undefined) q.upsertHarnessSettings({ ...q.ensureHarnessSettings('claude'), defaultModel: 'sonnet' });
     const create = actions.find(action => action.name === 'create_trigger')!;
     const created = await create.handler({ remote: false }, {
-      name: 'New schedule speed', prompt: 'Check in', targetKind: 'orchestrator', kind: 'manual', provider: 'claude', model,
+      name: 'New schedule speed', prompt: 'Check in', targetKind: 'coordinator', kind: 'manual', provider: 'claude', model,
       ...(speed === undefined ? {} : { serviceTier: speed }),
     } as never) as { trigger: { id: string } };
     const trigger = q.getTrigger(created.trigger.id)!;
@@ -192,9 +192,9 @@ describe('saved model speed reaches the harness', () => {
 
   it('keeps a legacy NULL-speed schedule unchanged through edits and dispatch', async () => {
     const q = await import('@/lib/db/queries');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const { dispatchRun } = await import('@/lib/runs/dispatch');
-    const trigger = q.createTrigger({ name: 'Legacy schedule', prompt: 'Check in', targetKind: 'orchestrator', kind: 'manual', harness: 'claude', model: 'opus' });
+    const trigger = q.createTrigger({ name: 'Legacy schedule', prompt: 'Check in', targetKind: 'coordinator', kind: 'manual', harness: 'claude', model: 'opus' });
     await actions.find(action => action.name === 'update_trigger')!.handler({ remote: false }, { id: trigger.id, name: 'Legacy renamed' } as never);
     const saved = q.getTrigger(trigger.id)!;
     expect(saved.serviceTier).toBeNull();
@@ -206,10 +206,10 @@ describe('saved model speed reaches the harness', () => {
 
   it.each(['update_trigger', 'update_heartbeat'])('%s keeps compatible speed and resets incompatible speed to explicit Normal', async actionName => {
     const q = await import('@/lib/db/queries');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     const heartbeat = await import('@/lib/heartbeat/trigger');
     const trigger = actionName === 'update_heartbeat' ? (await heartbeat.ensureHeartbeatTrigger())!
-      : q.createTrigger({ name: 'Model speed change', targetKind: 'orchestrator', harness: 'claude', prompt: 'Check', kind: 'manual' });
+      : q.createTrigger({ name: 'Model speed change', targetKind: 'coordinator', harness: 'claude', prompt: 'Check', kind: 'manual' });
     q.updateTrigger(trigger.id, { harness: 'claude', model: 'opus', serviceTier: 'fast' });
     const action = actions.find(action => action.name === actionName)!;
     const change = (input: Record<string, unknown>) => action.handler({ remote: false }, { id: trigger.id, ...input } as never);

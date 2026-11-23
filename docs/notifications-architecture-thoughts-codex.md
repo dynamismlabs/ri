@@ -212,7 +212,7 @@ Recommended emission points:
   not merely when in-memory pending input changes.
 - `execution.finished`: from the shared run terminal path, covering manual and scheduled runs.
 - `integration.approval_required`: when the integration approval policy registers a pending approval.
-- `schedule.run_completed`: for orchestrator-target scheduled runs that do not already produce an
+- `schedule.run_completed`: for coordinator-target scheduled runs that do not already produce an
   execution-finished notification.
 - `deck.surfaced`: when proactive deck logic writes a durable deck/change record.
 

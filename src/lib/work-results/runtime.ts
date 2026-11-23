@@ -36,7 +36,7 @@ import { resolveWorkResultGuidance, renderWorkResultGuidance } from './handoff-c
 import { builtInHandoffInstructions, handoffCliCommand } from './instructions';
 import { preferredWorkResultReviewerSelection, reviewerPreferenceHarness } from './reviewer-selection-defaults';
 import type { WorkspaceRecord } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { aiReviewEnabled, assertAiReviewEnabled, assertHandoffsEnabled, handoffsEnabled } from './capabilities';
 import { getAppRoot } from '@/lib/config/paths';
 import { getHarnessModelCatalog, resolveHarnessSelection } from '@/lib/harness/model-discovery';

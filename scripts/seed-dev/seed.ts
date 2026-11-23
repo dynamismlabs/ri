@@ -108,7 +108,7 @@ export async function runSeed() {
     workdayStart: '07:30',
     workdayEnd: '17:30',
     onboardedAt: daysAgo(58, 21, 0),
-    orchestratorIntroducedAt: daysAgo(58, 21, 5),
+    coordinatorIntroducedAt: daysAgo(58, 21, 5),
   });
   console.log(pc.green('  ✓ user state (Maya Okafor, onboarded)'));
 

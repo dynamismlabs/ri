@@ -7,7 +7,7 @@ Carry the personal application forward as the common application. Keep the team 
 ## Work and acceptance
 
 - [x] Mount the same Dashboard, responsive layouts, power rail, agent tree, Recent list, history and chat selection for both Home kinds.
-- [x] Put the team orchestrator directly at Home, alongside shared tasks. Keep AI optional and history readable.
+- [x] Put the team coordinator directly at Home, alongside shared tasks. Keep AI optional and history readable.
 - [x] Use the same resizable TaskSlideout and NoteSlideout with team audience, assignment, revision conflicts, attachments, history and publication controls.
 - [x] Preserve standalone and connected-team navigation, legacy URLs, Back/Forward and Home/member-scoped preferences and drafts.
 - [x] Keep private Deck, Stream, capture, calendar and personal service settings outside team authority. Preserve member and owner restrictions below the UI.

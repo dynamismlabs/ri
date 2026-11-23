@@ -16,11 +16,11 @@ const coreRoutes = new Set([
 const protocolRoutes = new Set([
   '/[transport]', '/attachments', '/attachments/[fileName]', '/attachments/[fileName]/[...name]', '/capture', '/integrations/[transport]', '/integrations/callback', '/integrations/managed/callback',
   '/integrations/mcp-oauth/[sid]', '/desktop/activity', '/desktop/notifications', '/desktop/oauth/complete', '/desktop/oauth/events',
-  '/health', '/live', '/orchestrator/[transport]', '/orchestrator/actions/[name]', '/orchestrator/browser/[transport]', '/orchestrator/coordination/[transport]', '/orchestrator/results/[transport]', '/playground/chat',
+  '/health', '/live', '/home/[transport]', '/home/actions/[name]', '/home/browser/[transport]', '/home/coordination/[transport]', '/home/results/[transport]', '/playground/chat',
   // Signed harness reports and reviewer completion keep their language-neutral wire contract.
   '/results/reports', '/results/review-reports',
   // Signed email-draft forwarding and the narrow harness MCP. UI uses emailRouter.
-  '/email/action', '/orchestrator/email/[transport]',
+  '/email/action', '/home/email/[transport]',
   // Signed CLI forwarding.
   '/chat-sources/action',
   // OAuth for outside MCP apps (docs/mcp-oauth.md): RFC-defined form and JSON endpoints, and the consent form's POST.
@@ -47,6 +47,9 @@ const protocolRoutes = new Set([
   // A team's space in My Ri forwards the team's own typed API and files to it,
   // as this person's member (src/app/api/space/[teamId]/[...path]/route.ts).
   '/space/[teamId]/[...path]',
+  // The old addresses of Ri's tools, the same handlers as /home/* (src/lib/coordinator/legacy-names.ts).
+  '/orchestrator/[transport]', '/orchestrator/actions/[name]', '/orchestrator/browser/[transport]',
+  '/orchestrator/coordination/[transport]', '/orchestrator/email/[transport]', '/orchestrator/results/[transport]',
 ]);
 
 describe('complete UI migration coverage', () => {

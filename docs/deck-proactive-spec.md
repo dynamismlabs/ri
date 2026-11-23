@@ -71,8 +71,8 @@ What exists today, so the task list below is precise about reuse vs. net-new.
   (`DECK_SYSTEM_PROMPT`, `deckResponseSchema`, `buildDeckPrompt`).
 - **Triggers (all reactive)** — `POST /api/deck/generate`
   (`src/app/api/deck/generate/route.ts`, from `DeckContainer` check-in), chat tool
-  `regenerateDeck` (`src/lib/ai/chat-tools.ts:430`), orchestrator action
-  `regenerate_deck` (`src/lib/orchestrator/registry.ts:544` → calls `generateDeck`).
+  `regenerateDeck` (`src/lib/ai/chat-tools.ts:430`), Ri action
+  `regenerate_deck` (`src/lib/actions/registry.ts:544` → calls `generateDeck`).
 - **Read** — `GET /api/deck?limit=1` returns the newest deck by `createdAt`
   (`src/app/api/deck/route.ts`); the client decides if it's "today's." Query
   helpers `getLatestDeck` / `getDeck` / `updateDeck` at `src/lib/db/queries.ts:558`.
@@ -80,7 +80,7 @@ What exists today, so the task list below is precise about reuse vs. net-new.
 - **Scheduler (reusable!)** — `src/lib/scheduler/runner.ts`: 60s tick, file-locked
   single-process, at-most-once, active-hours windows. `schedules` table at
   `src/lib/db/schema.ts:697` supports `kind:'cron'`, `cronExpression`, `timezone`,
-  `activeHoursStart/End`, `targetKind:'orchestrator'|'workspace'`. Cron validation in
+  `activeHoursStart/End`, `targetKind:'coordinator'|'workspace'`. Cron validation in
   `src/lib/scheduler/cron.ts`, dispatch in `src/lib/runs/dispatch.ts`. Boots from
   `instrumentation.ts`. **Key nuance:** schedules dispatch a *prompt to an agent
   session*, they don't call functions directly.
@@ -162,8 +162,8 @@ New query helpers in `src/lib/db/queries.ts`: `getActiveDeckForDate(date)`,
   `ensureTodaysDeck()` so the deck is dealt on first look. This is the whole trigger
   story for the flip; local-first safe, no scheduler needed.
 - **Cron path (deferred → Phase 3, lands with the heartbeat)** — a `kind:'cron'`,
-  `targetKind:'orchestrator'` schedule at the user's configured time whose prompt is
-  the morning-reconciliation instruction; the orchestrator agent calls
+  `targetKind:'coordinator'` schedule at the user's configured time whose prompt is
+  the morning-reconciliation instruction; the coordinator agent calls
   `regenerate_deck`/`ensureTodaysDeck`. Reuses the whole scheduler. Added when the
   heartbeat goes in, not before.
 - Keep `regenerate_deck`, the chat tool, and `POST /api/deck/generate` — they remain
@@ -308,7 +308,7 @@ Tags: `[reuse]` extends existing code · `[new]` net-new · `[cal]` needs calend
 
 ### Phase 3 — Mid-day + change-router (lands with the heartbeat)
 - [ ] **3.1** `[new]` **4AM cron trigger** — deck-schedule manager creates/owns a
-  `kind:'cron'`, `targetKind:'orchestrator'` schedule at the user's configured time
+  `kind:'cron'`, `targetKind:'coordinator'` schedule at the user's configured time
   (configurable + on/off) driving the morning reconciliation. (`src/lib/deck/schedule.ts`,
   reuses `schedules` + `src/lib/scheduler/cron.ts`) *(deferred here from Phase 1)*
 - [ ] **3.2** `[new]` `change-router.ts`: absorb/digest/interrupt classification,
@@ -352,10 +352,10 @@ the calendar integration or the app heartbeat, against a **calendar provider sea
 - **Mid-day reconcile (inert until real calendar)** —
   `src/lib/deck/reconcile-external.ts`: deterministic diff of live calendar vs the
   deck's snapshot → router → auto-bump / freed-time nudge → new `midday` version.
-  Driven via `POST /api/deck/reconcile` + orchestrator action `reconcile_deck`
+  Driven via `POST /api/deck/reconcile` + Ri action `reconcile_deck`
   (a heartbeat/scheduler calls it later). Tested with a mock provider.
 - **4AM morning cron** — `src/lib/deck/schedule.ts` upsert of a `kind:'cron'`
-  orchestrator schedule on the existing scheduler; `GET/PUT /api/deck/schedule`;
+  coordinator schedule on the existing scheduler; `GET/PUT /api/deck/schedule`;
   conductor toggle. Default off (opt-in).
 - **Change channels + interrupt banner** — `DeckChange.channel`, `DeckInterruptBanner`,
   brief/bumped handling for `bumped`/`calendar`-sourced changes.

@@ -385,7 +385,7 @@ wraps the CLI subprocess, parses the JSONL internally, and hands Ri structured `
 - Flags (`adapter.ts:626-677`): `--permission-mode` (default|acceptEdits|plan), model override;
   surface modes — `harness_mcp` (`--mcp-config` + `--strict-mcp-config`, blocks Write/Edit) and
   `harness_skills` (`--add-dir` skill dirs); `extraArgs` (e.g. `--append-system-prompt`).
-  MCP config at `src/lib/orchestrator/harness-surface.ts:364-387`.
+  MCP config at `src/lib/coordinator/harness-surface.ts:364-387`.
 - Ri does **not** pass `--output-format stream-json` itself — agentex owns the wire format.
 
 ### 7.2 Event parsing → `chat_events`
@@ -490,7 +490,7 @@ exact thing missing from the transcript that started this investigation.
 | agentex session invocation | `src/lib/executor/adapter.ts` | 694-717 |
 | CLI flags / surface modes | `src/lib/executor/adapter.ts` | 626-677 |
 | `StreamEvent → chat_events` parse | `src/lib/executor/adapter.ts` | 984-1217 |
-| MCP harness config | `src/lib/orchestrator/harness-surface.ts` | 364-387 |
+| MCP harness config | `src/lib/coordinator/harness-surface.ts` | 364-387 |
 | SSE fan-out | `src/app/api/sessions/[id]/stream/route.ts` | 75-84 |
 | Client stream hook | `src/hooks/use-session-stream.ts` | 34-173 |
 | Task tool → subagent pill | `src/lib/executions/tool-display.ts` | 219-220, 255-258 |

@@ -25,8 +25,8 @@ describe('chatScheduleInput', () => {
   });
 
   it('starts a fresh Ri chat for a chat with no agent', () => {
-    const input = chatScheduleInput({ ...chat, type: 'orchestration', workspaceId: null }, { ...hourly, prompt: 'Plan my day', freshChat: true });
-    expect(input).toMatchObject({ targetKind: 'orchestrator' });
+    const input = chatScheduleInput({ ...chat, type: 'coordinator', workspaceId: null }, { ...hourly, prompt: 'Plan my day', freshChat: true });
+    expect(input).toMatchObject({ targetKind: 'coordinator' });
     expect(input).not.toHaveProperty('workspaceId');
   });
 

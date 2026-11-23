@@ -73,12 +73,12 @@ beforeAll(async () => {
           export const trpc={userState:{list:query('user-state',()=>({})),update:{mutationKey:()=>['user-state','update']}},homeContext:query('home'),homeExecutionChoices:query('execution'),team:{
             me:query('me'),members:query('members'),invitations:{list:query('invitations')},signIns:{list:query('signIns')},
             address:{get:query('address',()=>({address:teamAddress,tunnelName,suggestedName:'team-huffine',autoTunnel,nameLocked:false})),status:query('address-status',()=>{window.addressCalls.push('check');return {address:teamAddress,method:autoTunnel?'beamd':'custom',status:teamAddress?(window.addressOnline?'online':'offline'):'not_configured',checkedAt:new Date().toISOString(),message:window.addressOnline?null:'Could not verify this team at that address.'};})},
-            aiClients:{list:query('clients',()=>clients),address:query('teamAddress',()=>({mcpUrl:'https://team.example.test/api/team/mcp',reachable:true}))},ai:{orchestrator:query('orchestrator'),status:query('status',()=>status),configuration:query('configuration',()=>({enabled:status.enabled})),chats:{list:query('chats')}}
+            aiClients:{list:query('clients',()=>clients),address:query('teamAddress',()=>({mcpUrl:'https://team.example.test/api/team/mcp',reachable:true}))},ai:{coordinator:query('coordinator'),status:query('status',()=>status),configuration:query('configuration',()=>({enabled:status.enabled})),chats:{list:query('chats')}}
           }};
           for(const root of ['tasks','notes','areas']) trpc[root]={pathKey:()=>[root],list:query(root),get:query(root+'-detail')};
           trpc.spaces={list:query('connected-teams'),identity:query('team-identity',()=>null)};
           trpc.results={capabilities:query('result-capabilities',()=>({handoffsEnabled:false,aiReviewEnabled:false}))};
-          trpc.externalAi={list:query('personalClients',()=>clients),address:query('personalAddress',()=>({mcpUrl:(local?'http://localhost:4224':'https://home.example.test')+'/api/orchestrator/mcp',reachable:!local,server:'ri',tokenVar:'RI_MCP_TOKEN'})),local:query('localAgents',()=>({device:'Mac Mini',agents}))};
+          trpc.externalAi={list:query('personalClients',()=>clients),address:query('personalAddress',()=>({mcpUrl:(local?'http://localhost:4224':'https://home.example.test')+'/api/home/mcp',reachable:!local,server:'ri',tokenVar:'RI_MCP_TOKEN'})),local:query('localAgents',()=>({device:'Mac Mini',agents}))};
           trpc.harness={skillsGlobalGet:query('skill',()=>({appOnly:false,enabled:true,configured:true,installed:true,conflicts:[],folders:['~/.agents/skills','~/.claude/skills','~/.gemini/config/skills']}))};
           const link=kind=>({mutate:async()=>{window.linkCalls.push(kind);return window.addressOnline?{reachable:true,link:teamAddress+'/join#'+(kind==='invite'?'invite':'sign-in')+'=fictional-link',expiresAt:'2030-01-01'}:{reachable:false};}});
           export const trpcClient={team:{
@@ -99,7 +99,7 @@ beforeAll(async () => {
             moveRefPost:{mutate:async({params,body})=>{if(!skillOwner)throw Error('Owner only');const old=one(params.ref);const skill=makeSkill(body.to+':'+old.name,{...old,ref:body.to+':'+old.name,location:{kind:body.to}});skills=skills.map(value=>value.ref===params.ref?skill:value);return{skill};}}
           };
           trpcClient.harness={skillsGlobalPut:{mutate:async()=>({})}};
-          const personalAddress=()=>({mcpUrl:(local?'http://localhost:4224':'https://home.example.test')+'/api/orchestrator/mcp',reachable:!local,server:'ri',tokenVar:'RI_MCP_TOKEN'});
+          const personalAddress=()=>({mcpUrl:(local?'http://localhost:4224':'https://home.example.test')+'/api/home/mcp',reachable:!local,server:'ri',tokenVar:'RI_MCP_TOKEN'});
           trpcClient.externalAi={create:{mutate:async input=>{window.connectionCalls.push(input);const client=makeKey(input);clients=[...clients,client];return {client,token:'fictional-personal-token',...personalAddress()};}},revoke:{mutate:async()=>{clients=[];}},
             setUp:{mutate:async({client})=>{window.setUpCalls.push(client);const connection=makeKey({client,name:labels[client]+' on Mac Mini'});clients=[...clients,connection];agents=agents.map(a=>a.kind===client?{...a,connection}:a);return {kind:client,connection,config:'~/.codex/config.toml',server:'ri',skills:{state:'ready',blocked:[]},next:'Start a new Codex session, in the CLI or the Codex app. Run /mcp there to see ri.'};}},
             disconnectLocal:{mutate:async({client})=>{const id=agents.find(a=>a.kind===client)?.connection?.keyId;clients=clients.filter(c=>c.keyId!==id);agents=agents.map(a=>a.kind===client?{...a,connection:null}:a);return {removed:true,revoked:true};}}};
@@ -387,7 +387,7 @@ it.skipIf(!enabled)('sets up an agent on this computer in one click, and disconn
     await claude.getByRole('button', { name: /Claude Code/ }).click();
     await claude.getByText('Ri already runs on Claude Code, so you can chat with it in Ri now.', { exact: false }).waitFor();
     await claude.getByRole('button', { name: /Claude Code/ }).click();
-    await page.getByText('https://home.example.test/api/orchestrator/mcp', { exact: true }).waitFor();
+    await page.getByText('https://home.example.test/api/home/mcp', { exact: true }).waitFor();
     // Ri's skills close the section, with no key.
     await page.getByRole('heading', { name: 'Ri’s skills', exact: true }).waitFor();
     const codex = page.locator('[data-agent-client=codex]');
@@ -446,7 +446,7 @@ it.skipIf(!enabled)('explains local-only personal access on a phone and links to
     await other.getByRole('button', { name: /Any MCP client/ }).click();
     await other.getByRole('button', { name: 'Create key', exact: true }).first().click();
     await other.getByText('This is a local address', { exact: false }).waitFor();
-    expect(await other.locator('ol pre').first().textContent()).toBe('http://localhost:4224/api/orchestrator/mcp');
+    expect(await other.locator('ol pre').first().textContent()).toBe('http://localhost:4224/api/home/mcp');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await screenshot(page, 'personal-external-ai-phone.png');
     await page.getByRole('button', { name: 'Remote access in Devices', exact: true }).click();

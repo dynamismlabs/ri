@@ -11,10 +11,10 @@ import { archivedAgentResponse, resolveAgent } from "@/lib/workspaces/chat-agent
 import { z as rpcZ } from 'zod/v4';
 
 /**
- * The agent's main chat: an orchestration chat scoped to this workspace,
+ * The agent's main chat: a coordinator chat scoped to this workspace,
  * running in the agent's folder (docs/agents-view-spec.md §4). GET returns
  * the current one, creating it if the agent has none ("ensure" semantics,
- * like `/api/orchestrator-chat`). An archived agent still returns its
+ * like `/api/coordinator-chat`). An archived agent still returns its
  * current chat but never gets a new one.
  */
 // Compressed when the body is JSON and over ~1KiB; a streamed or

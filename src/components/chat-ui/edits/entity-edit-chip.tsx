@@ -44,7 +44,7 @@ export function EntityEditChip({
 
 /**
  * Detect an agent entity-edit tool call (`update_task`/`update_note`, bare or
- * MCP-namespaced like `mcp__orchestrator__update_note`) and pull the target
+ * MCP-namespaced like `mcp__ri_home__update_note`) and pull the target
  * id out of its input. Returns null for anything else.
  */
 export function parseEntityEditTool(

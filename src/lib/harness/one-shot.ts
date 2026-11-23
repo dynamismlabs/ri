@@ -4,7 +4,7 @@
  * Background features (deck generation, stream urgency, image capture
  * extraction, the NL MCP inner agent) used to call the OpenAI API directly
  * with an API key. They now route through @agentex/agent's provider CLIs
- * (Claude Code, Codex, ...) exactly like the orchestrator chat, document
+ * (Claude Code, Codex, ...) exactly like the coordinator chat, document
  * chat, and executions do: subscription auth, no separate API billing.
  * The only direct OpenAI API use left in the app is embeddings
  * (`src/lib/embeddings/`).
@@ -16,7 +16,7 @@
  * structured-JSON variant with zod validation plus one retry.
  *
  * Harness resolution: `defaultHarness` from user state (the same
- * default the orchestrator chat uses), falling back to Codex. Model:
+ * default the coordinator chat uses), falling back to Codex. Model:
  * `standard` prefers the user's `defaultModel` when it belongs to the
  * resolved provider, else the CLI's own default; `fast` uses the provider's
  * cheap model (haiku / gpt-6-luna) when the installed CLI offers it.
@@ -62,7 +62,7 @@ export interface HarnessOneShotOpts {
   maxTurns?: number;
   /** Defaults to 60. */
   timeoutSec?: number;
-  /** Defaults to the app data root (where the orchestrator surface lives). */
+  /** Defaults to the app data root (where the coordinator surface lives). */
   cwd?: string;
   /** Claude-only today; check harnessSupportsMcp() before relying on tools. */
   mcpServers?: McpServerConfig[];

@@ -1,10 +1,10 @@
 /**
- * Run an orchestrator action from the CLI wherever this device's data is
+ * Run a Ri action from the CLI wherever this device's data is
  * (docs/homes-spec.md §5.3).
  *
  * - On a home: in this process, as the trusted local CLI.
  * - On a connected device: on the home, through
- *   `POST /api/orchestrator/actions/:name`, with this device's key and the
+ *   `POST /api/home/actions/:name`, with this device's key and the
  *   calling harness session's signed credential when there is one. The home
  *   runs it as a remote call. If the home can't be reached the action fails
  *   and says so. Nothing is written locally.
@@ -13,24 +13,25 @@
  * way.
  */
 
-import { runAction, type DispatchEnvelope } from '@/lib/orchestrator/dispatch';
+import { runAction, type DispatchEnvelope } from '@/lib/actions/dispatch';
 import {
   SESSION_CREDENTIAL_ENV,
   SESSION_CREDENTIAL_HEADER,
   actorFromSessionCredential,
-} from '@/lib/orchestrator/session-credential';
+} from '@/lib/actions/session-credential';
 import { getInstallationRole } from '@/lib/config/role';
 import { readConnection } from '@/lib/connection/config';
 import { homeFetch, HomeRequestError } from '@/lib/connection/home-client';
+import { fetchHomeApi } from '@/lib/coordinator/legacy-names';
 
 export async function dispatchAction(name: string, input: unknown): Promise<DispatchEnvelope> {
   const sessionHome = process.env.RI_HOME_TOOLS_URL;
   const sessionCredential = process.env[SESSION_CREDENTIAL_ENV];
   if (sessionHome && sessionCredential) {
     try {
-      const response = await fetch(new URL(`/api/orchestrator/actions/${encodeURIComponent(name)}`, sessionHome), {
+      const response = await fetchHomeApi(`/api/home/actions/${encodeURIComponent(name)}`, (path) => fetch(new URL(path, sessionHome), {
         method: 'POST', headers: { 'content-type': 'application/json', Authorization: `Bearer ${sessionCredential}`, [SESSION_CREDENTIAL_HEADER]: sessionCredential }, body: JSON.stringify(input ?? {}),
-      });
+      }));
       const body = await response.json().catch(() => null) as DispatchEnvelope | { error?: string; message?: string } | null;
       if (body && 'ok' in body) return body;
       const unauthorized = response.status === 401 || response.status === 403;
@@ -51,11 +52,11 @@ export async function runActionAtHome(name: string, input: unknown): Promise<Dis
   }
   const credential = process.env[SESSION_CREDENTIAL_ENV];
   try {
-    const res = await homeFetch(connection, `/api/orchestrator/actions/${encodeURIComponent(name)}`, {
+    const res = await fetchHomeApi(`/api/home/actions/${encodeURIComponent(name)}`, (path) => homeFetch(connection, path, {
       method: 'POST',
       body: JSON.stringify(input ?? {}),
       headers: credential ? { [SESSION_CREDENTIAL_HEADER]: credential } : {},
-    });
+    }));
     if (res.status === 404) {
       return {
         ok: false,

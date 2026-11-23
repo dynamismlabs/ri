@@ -76,7 +76,7 @@ it('recycles shared skill sessions without cancelling accepted work, while draft
   setSkillSessionControlForTests({ recycleWhenIdle: recycle, close: async () => {} });
   const owner = await teamTrpc(fixture.owner.token.plaintext);
   const installed = await owner.skills.create.mutate({ body: { name: 'shared-policy', location: 'ri', description: 'Shared execution instructions.', body: 'Earlier instructions.' } });
-  const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, deviceId: q.getHome()!.hostDeviceId, createdByMemberId: fixture.member.member.id });
+  const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, deviceId: q.getHome()!.hostDeviceId, createdByMemberId: fixture.member.member.id });
   let calls = 0;
   setTeamAiRunnerForTests(async input => { calls++; return new Promise(resolve => input.signal!.addEventListener('abort', () => resolve({ status: 'cancelled' }), { once: true })); });
   const send = (id: string) => sendToTeamAi({ chatId: chat.id, memberId: fixture.member.member.id, requestingApiKeyId: fixture.member.key.id, clientSendId: id, text: 'Use the installed shared skill.' });
@@ -101,7 +101,7 @@ it('shared skill create and hash-checked saves succeed after an idle close failu
   const { setSkillSessionControlForTests } = await import('./manage');
   setSkillSessionControlForTests(null);
   const owner = await teamTrpc(fixture.owner.token.plaintext);
-  const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', type: 'orchestration', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, deviceId: q.getHome()!.hostDeviceId, createdByMemberId: fixture.member.member.id });
+  const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', type: 'coordinator', surfaceKind: q.TEAM_CHAT_SURFACE, workspaceId: fixture.workspace.id, deviceId: q.getHome()!.hostDeviceId, createdByMemberId: fixture.member.member.id });
   const close = vi.fn(async () => { throw new Error('Provider shutdown failed'); });
   executor._cacheHarnessSession(chat.id, { close } as unknown as import('@agentex/agent').AgentSession);
   const made = await owner.skills.create.mutate({ body: { name: 'restart-policy', location: 'ri', description: 'Keep saved shared instructions.', body: 'First shared instruction.' } });

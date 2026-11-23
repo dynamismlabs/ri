@@ -8,7 +8,7 @@ Context uses an explicit field allowlist. Credential values, skill bodies and ra
 
 ## Delivery and navigation
 
-The client resolves the app's existing main chat through `orchestratorChat.list`, which ensures one if absent. It sends through `sessions.messagesPost`, the same message transport as the composer. It does not archive the current chat, start a new unrelated execution or target the currently selected workspace's chat. Normal dispatch, budget, pending-input and active-turn behavior apply.
+The client resolves the app's existing main chat through `coordinatorChat.list`, which ensures one if absent. It sends through `sessions.messagesPost`, the same message transport as the composer. It does not archive the current chat, start a new unrelated execution or target the currently selected workspace's chat. Normal dispatch, budget, pending-input and active-turn behavior apply.
 
 The button stays pending during delivery and prevents double clicks. A failed send leaves Settings open, shows an error, and retains the same message ID and destination for retry, so an uncertain acknowledgment cannot duplicate the request. Once acknowledged, the client invalidates the chat caches, closes Settings and shows the main chat on desktop or mobile. Existing composer drafts are not changed.
 

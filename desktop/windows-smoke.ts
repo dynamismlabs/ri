@@ -219,7 +219,7 @@ $rules = $acl.GetAccessRules($true,$true,[System.Security.Principal.SecurityIden
     return saved.title === 'Windows note edited in the app' && saved.body.includes(editedBody);
   }, 'editor title and body autosave');
   pass('The installed note editor opens and autosaves real title and body edits');
-  const chat = await api<{ session: { id: string } }>(page, '/api/orchestrator-chat', 'POST', { providerId: 'claude', model: 'sonnet' });
+  const chat = await api<{ session: { id: string } }>(page, '/api/coordinator-chat', 'POST', { providerId: 'claude', model: 'sonnet' });
   await api(page, `/api/sessions/${chat.session.id}/messages`, 'POST', { content: 'Windows smoke message' });
   await eventually(async () => {
     const result = await api<{ role: string; content: string }[]>(page, `/api/sessions/${chat.session.id}/events`);

@@ -3,7 +3,7 @@ import { hasTeamCapability } from '@/lib/team/capabilities';
 import type { WorkResultActor } from '@/db/types';
 import * as q from '@/lib/db/queries';
 import { authorizeTeamActorExecution } from '@/lib/home/execution-authority';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 export function validateWorkResultActor(actor: WorkResultActor, chatId?: string | null, work = false) {
   if (q.getHome()?.kind !== 'team') return null;

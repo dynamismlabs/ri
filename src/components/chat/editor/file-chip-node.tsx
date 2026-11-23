@@ -7,7 +7,7 @@ import { IconButton } from '@/components/system/icon-button';
  * user pasted/dropped, the chip lives), removable (X click or
  * Backspace adjacent), serializable to a marker token
  * (`[[file:<fileName>]]`) for the execution chat path or a
- * `FileUIPart` for the orchestrator path.
+ * `FileUIPart` for the coordinator path.
  *
  * The node carries the same `Attachment` shape that tasks/notes/areas
  * use — `fileName | originalName | mimeType | size | uploadedAt`

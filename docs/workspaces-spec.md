@@ -4,7 +4,7 @@ Self-contained spec for building the workspace primitive, the execution-session 
 
 **Foundation docs (read first):**
 
-- `docs/chat-sessions.md` — chat data model. `chat_sessions`, `chat_events`, `chat_attachments`, the three chat types (orchestration / content / execution), the agentex adapter pattern. This spec assumes that doc as baseline and extends it.
+- `docs/chat-sessions.md` — chat data model. `chat_sessions`, `chat_events`, `chat_attachments`, the three chat types (coordinator / content / execution), the agentex adapter pattern. This spec assumes that doc as baseline and extends it.
 - `AGENTS.md` — project conventions (queries layer, no raw SQL in routes, types derived from Drizzle, paths via `src/lib/config/paths.ts`).
 
 ## Library dependencies
@@ -109,7 +109,7 @@ Our v1 doesn't surface these in UI (see below), but the library supports them wh
 
 **Applying on session create.** When an execution session spawns in a git workspace, the library reads the config and applies `fromSource` before running `setup`. This is automatic via `workspace.create`; we don't reimplement it.
 
-**Running dev servers.** v1: user runs the dev server in a terminal of their choice (`cd <worktree>` then their command). The session row shows the worktree path so they can copy it. The library's `AGENTEX_PORT` env var is set when we call `ws.runScript`; if the user wants the auto-port behavior, they can call `ws.runScript("run")` directly via the orchestrator (we expose the action — see API + queries below) or wait for the v1.5 Run button.
+**Running dev servers.** v1: user runs the dev server in a terminal of their choice (`cd <worktree>` then their command). The session row shows the worktree path so they can copy it. The library's `AGENTEX_PORT` env var is set when we call `ws.runScript`; if the user wants the auto-port behavior, they can call `ws.runScript("run")` directly via the coordinator (we expose the action — see API + queries below) or wait for the v1.5 Run button.
 
 **Running dev servers (v1.5).** Add a "Run scripts" panel in the session view that lists every script declared in `agentex.workspace.json` (excluding `setup`/`archive` lifecycle hooks). Each script gets its own start/stop control, output stream, and allocated port — backed by separate `ws.runScript(name)` calls and independent RunHandles. Single-service repos see one row; monorepos see one per service. Natural follow-on after the diff viewer; not blocking v1.
 
@@ -142,7 +142,7 @@ For actions where the *primitive* is mechanical but the *input* benefits from in
 
 ### Pattern 3: Agentic (button → dispatch prompt to per-session agent → agent calls library)
 
-For actions where the work involves judgment over multiple valid paths, or where failure recovery needs intelligence. The dispatch goes to the **per-session agent** (the executor with the worktree and recent context), not the orchestrator — same chat thread the user is already in. They see "User: [Ship it] → Agent: I'll commit and push…" continue naturally.
+For actions where the work involves judgment over multiple valid paths, or where failure recovery needs intelligence. The dispatch goes to the **per-session agent** (the executor with the worktree and recent context), not the coordinator — same chat thread the user is already in. They see "User: [Ship it] → Agent: I'll commit and push…" continue naturally.
 
 ### Escalation pattern (the safety net)
 
@@ -224,7 +224,7 @@ Concretely: `agents`, `chat_sessions`, `chat_events`, `chat_attachments` all get
 export const agents = sqliteTable('agents', {
   id: text('id').primaryKey(),                          // uuidv7
   user_id: text('user_id').notNull(),
-  kind: text('kind', { enum: ['orchestrator', 'executor'] }).notNull(),
+  kind: text('kind', { enum: ['coordinator', 'executor'] }).notNull(),
   name: text('name').notNull(),
   role: text('role'),
   harness: text('harness').notNull(),                   // 'in_app' | 'claude_code' | 'codex' | ...
@@ -244,7 +244,7 @@ export const chat_sessions = sqliteTable('chat_sessions', {
   id: text('id').primaryKey(),                          // uuidv7
   user_id: text('user_id').notNull(),
   agent_id: text('agent_id').notNull().references(() => agents.id),
-  type: text('type', { enum: ['orchestration', 'content', 'execution'] }).notNull(),
+  type: text('type', { enum: ['coordinator', 'content', 'execution'] }).notNull(),
   surface_kind: text('surface_kind'),                   // 'main' | 'task' | 'note' | null
   surface_ref: text('surface_ref'),                     // task_id / note_id / null
   status: text('status', { enum: ['active', 'archived'] }).notNull().default('active'),
@@ -408,7 +408,7 @@ Hard delete is not exposed in v1. If we need it later, add a confirm flow that w
 
 ## Left-nav UI
 
-Lives in `src/components/dashboard/power-rail.tsx`. The rail's only content is the workspace tree below — no separate "Command" / orchestrator entry at the top. The orchestrator is the always-on main chat surface, not a tab you switch to from a list, so giving it a row here would be the wrong mental model. The orchestrator UI lands in a later phase.
+Lives in `src/components/dashboard/power-rail.tsx`. The rail's only content is the workspace tree below — no separate "Command" / coordinator entry at the top. The coordinator is the always-on main chat surface, not a tab you switch to from a list, so giving it a row here would be the wrong mental model. The coordinator UI lands in a later phase.
 
 ### Layout
 
@@ -508,12 +508,12 @@ API routes to add under `src/app/api/`:
 
 Use `authFetch` on the client side for these (per `feedback_authfetch.md` memory).
 
-### Orchestrator action surface
+### Ri action surface
 
-The orchestrator already exposes actions via `src/lib/orchestrator/registry.ts`. Add:
+The coordinator already exposes actions via `src/lib/actions/registry.ts`. Add:
 
 - `list_workspaces` (read)
-- `create_workspace({ name, cwd, area_id?, emoji? })` — let the orchestrator agent create one when the user asks
+- `create_workspace({ name, cwd, area_id?, emoji? })` — let the coordinator agent create one when the user asks
 - `archive_workspace({ id })`
 - `list_workspace_sessions({ workspace_id })`
 
@@ -545,7 +545,7 @@ Keep these thin; they dispatch to the same `queries.ts` functions. Throw `Action
 - `src/lib/db/queries.ts` — add the queries listed above; the agentex stdio adapter (added separately) calls `bumpSessionOutcome` on `agent`/`result` rows when it inserts them into `chat_events`.
 - `src/components/dashboard/power-rail.tsx` — embed `<WorkspaceNav />` as the rail's only content. No standalone "Command" row.
 - `src/contexts/dashboard-context.tsx` — add workspace selection state, active session, drag state.
-- `src/lib/orchestrator/registry.ts` — register the new actions.
+- `src/lib/actions/registry.ts` — register the new actions.
 - `src/db/types.ts` — re-derive types after schema changes.
 
 ---
@@ -601,7 +601,7 @@ These were open questions in earlier drafts; locked now so the implementer doesn
 
 4. **Session row branch name: hidden in list, shown in detail.** Adding the branch string to every list row eats horizontal space without paying for itself for the common case (one session per branch, branch derivable from session label).
 
-5. **Orchestrator's `last_outcome_event_at`.** Set it (cheap, future-useful for cross-context "where did we last leave off"); never read for review state. Orchestrator chat doesn't surface in Needs Review.
+5. **Coordinator's `last_outcome_event_at`.** Set it (cheap, future-useful for cross-context "where did we last leave off"); never read for review state. Coordinator chat doesn't surface in Needs Review.
 
 If anything feels under-specified during implementation, leave a TODO in code with a one-line question and post it back.
 

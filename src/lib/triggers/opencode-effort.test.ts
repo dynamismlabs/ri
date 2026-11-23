@@ -33,7 +33,7 @@ afterEach(async () => {
 });
 
 async function run(name: string, input: Record<string, unknown> = {}) {
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const { runAction } = await import('@/lib/actions/dispatch');
   return runAction(name, input, { remote: false });
 }
 
@@ -66,7 +66,7 @@ describe('OpenCode effort', () => {
     q.updateUserState(defaults);
 
     const created = await run('create_trigger', {
-      name: 'OpenCode briefing', targetKind: 'orchestrator', kind: 'cron',
+      name: 'OpenCode briefing', targetKind: 'coordinator', kind: 'cron',
       cronExpression: '0 8 * * *', timezone: 'UTC',
       prompt: 'Prepare the briefing', provider: 'opencode', model: sonnet, effort: 'high',
     });

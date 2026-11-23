@@ -33,7 +33,7 @@ export function useOnboardingProgress() {
     const patch = (change: (record: OnboardingRecord) => OnboardingRecord, extra?: Partial<UserStateRecord>) => {
       const state = qc.getQueryData<UserStateRecord>(USER_STATE_KEY);
       if (!state) return;
-      const record = change(baseOnboardingRecord(state.onboarding, state.orchestratorIntroducedAt));
+      const record = change(baseOnboardingRecord(state.onboarding, state.coordinatorIntroducedAt));
       qc.setQueryData<UserStateRecord>(USER_STATE_KEY, { ...state, ...extra, onboarding: record });
     };
     const settle = (saved: UserStateRecord) => {
@@ -42,7 +42,7 @@ export function useOnboardingProgress() {
       qc.setQueryData<UserStateRecord>(USER_STATE_KEY, {
         ...state,
         onboarding: saved.onboarding,
-        orchestratorIntroducedAt: saved.orchestratorIntroducedAt,
+        coordinatorIntroducedAt: saved.coordinatorIntroducedAt,
         onboardedAt: saved.onboardedAt,
       });
     };
@@ -70,7 +70,7 @@ export function useOnboardingProgress() {
         const at = new Date().toISOString();
         const state = qc.getQueryData<UserStateRecord>(USER_STATE_KEY);
         patch((r) => withFinished(r, { ...input, at }), {
-          orchestratorIntroducedAt: state?.orchestratorIntroducedAt ?? at,
+          coordinatorIntroducedAt: state?.coordinatorIntroducedAt ?? at,
           onboardedAt: state?.onboardedAt ?? at,
         });
         return trpcClient.onboardingProgress.finish.mutate(input).then(settle, failed);

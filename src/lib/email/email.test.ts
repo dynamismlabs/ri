@@ -7,7 +7,7 @@ import { appApprovalPolicy, _resetApprovals, sessionCaller } from '@/lib/integra
 import { EMAIL_COMPOSER_CALLER } from './caller';
 import { emailAccounts, sendEmailDraft } from './service';
 import { emailDraftPatchSchema, emailSendProblem } from './validation';
-import { dispatchEmailOperation, emailActions } from '@/lib/orchestrator/email-actions';
+import { dispatchEmailOperation, emailActions } from '@/lib/actions/email-actions';
 import { isNewerRevision } from '@/lib/api/dto/chat-event';
 
 const fake = vi.hoisted(() => ({

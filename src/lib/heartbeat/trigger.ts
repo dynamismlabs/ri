@@ -96,7 +96,7 @@ export async function ensureHeartbeatTrigger(): Promise<TriggerRecord | null> {
     harness,
     serviceTier,
     workspaceId: null,
-    targetKind: 'orchestrator',
+    targetKind: 'coordinator',
     prompt: DEFAULT_HEARTBEAT_INSTRUCTIONS,
     kind: 'every',
     intervalSeconds: DEFAULT_HEARTBEAT_INTERVAL_SECONDS,

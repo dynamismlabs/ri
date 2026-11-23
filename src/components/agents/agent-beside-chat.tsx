@@ -25,7 +25,7 @@ import { requestWorkbenchView } from '@/components/executions/workbench/view-req
 import { useWorkActivity } from '@/contexts/work-context';
 import { useContinueSession, useExecutionChats, useSession } from '@/hooks/use-execution';
 import { useMarkSessionRead, useWorkspace } from '@/hooks/use-workspaces';
-import { useOrchestratorName } from '@/hooks/use-user-state';
+import { useCoordinatorName } from '@/hooks/use-user-state';
 import { useOpenFileListener } from '@/lib/entity-refs/open-file-event';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
 import type { WorkspaceRecord } from '@/db/types';
@@ -281,11 +281,11 @@ function BesideHeader({
  */
 function BesideOtherChat({ session, agent, active }: { session: ChatSessionWithExecution; agent: WorkspaceRecord; active: boolean }) {
   const { data: owner } = useWorkspace(session.workspaceId ?? null);
-  const orchestratorName = useOrchestratorName();
+  const coordinatorName = useCoordinatorName();
   const archived = session.status === 'archived';
   useReadWhileShown(session.id, active && !archived, false);
-  const whose = session.type === 'orchestration'
-    ? session.workspaceId === agent.id ? `${agent.name}'s earlier main chat` : session.workspaceId ? `${owner?.name ?? 'Agent'} main chat` : `${orchestratorName} main chat`
+  const whose = session.type === 'coordinator'
+    ? session.workspaceId === agent.id ? `${agent.name}'s earlier main chat` : session.workspaceId ? `${owner?.name ?? 'Agent'} main chat` : `${coordinatorName} main chat`
     : 'Chat';
   return (
     <div className="flex min-h-0 flex-1 flex-col">

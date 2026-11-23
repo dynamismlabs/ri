@@ -293,7 +293,7 @@ it('never sends private planning, ranks, Area defaults or personal notes during 
   const { syncTeam } = await import('./sync');
   const area = q.createArea({ name: 'PRIVATE-AREA-CANARY' });
   q.setPersonalAreaDefault({ teamId: me.id, sourceAreaId: null, areaId: area.id });
-  const personalChat = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  const personalChat = q.createChatSession({ type: 'coordinator', harness: 'claude' });
   q.insertChatEvent({ sessionId: personalChat.id, role: 'user', source: 'user', content: 'PRIVATE-CHAT-CANARY' });
   const remote = await owner.tasks.create.mutate({ title: 'Shared task', rawInput: 'Shared task', assigneeMemberId: me.memberId });
   await syncTeam(me.id);

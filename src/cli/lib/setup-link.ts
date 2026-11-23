@@ -7,7 +7,7 @@
 import { getInstallationRole } from '@/lib/config/role';
 import { readConnection, rememberDeviceId, rememberedDeviceId, writeConnection } from '@/lib/connection/config';
 import { thisDeviceFacts } from '@/lib/home/device-name';
-import type { DispatchEnvelope } from '@/lib/orchestrator/dispatch';
+import type { DispatchEnvelope } from '@/lib/actions/dispatch';
 import { dispatchAction } from './dispatch';
 
 export class SetupCommandError extends Error {}

@@ -39,7 +39,7 @@ async function loadAgentex() {
  * to resolve).
  *
  * Called by the `start` CLI command as a best-effort step so an agent session
- * opened in the app data dir auto-discovers the orchestrator skill.
+ * opened in the app data dir auto-discovers Ri's skill.
  */
 export async function installWorkspaceSkills() {
   return installAppRootSkills();

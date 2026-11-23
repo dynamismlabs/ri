@@ -11,7 +11,7 @@ it('adds conversation routing and delivery tables without rewriting chats, rowid
   const db = new Database(':memory:');
   try {
     sqliteVec.load(db); initDatabase(db, previous.folder);
-    db.exec(`INSERT INTO chat_sessions(rowid,id,harness,type,status,permission_mode) VALUES (41,'existing','claude','orchestration','active','ask');
+    db.exec(`INSERT INTO chat_sessions(rowid,id,harness,type,status,permission_mode) VALUES (41,'existing','claude','coordinator','active','ask');
       INSERT INTO chat_events(rowid,id,session_id,role,source,content) VALUES (73,'existing-event','existing','assistant','agent','Preserve quartz history');`);
     const applied = db.prepare('SELECT id FROM __drizzle_migrations').all().length;
     expect(runMigrations(db, path.resolve(__dirname, '../../../drizzle')).applied).toBe(migrationTags().length - applied);

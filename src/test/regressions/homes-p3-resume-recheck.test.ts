@@ -44,7 +44,7 @@ beforeEach(async () => {
   const identity = await import('@/lib/home/identity');
   identity.resetHomeIdentityCache(); identity.ensureHomeIdentity();
   const q = await import('@/lib/db/queries');
-  chat = q.createChatSession({ type: 'orchestration', harness: 'claude' }).id;
+  chat = q.createChatSession({ type: 'coordinator', harness: 'claude' }).id;
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   state.client = client;
   vi.spyOn(sessionsApi, 'events').mockImplementation(async (id, opts) => toChatEventDTOs(q.listChatEvents(id, opts)));

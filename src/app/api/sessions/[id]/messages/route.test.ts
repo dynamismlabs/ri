@@ -400,7 +400,7 @@ describe('POST /api/sessions/[id]/messages — sender provenance', () => {
     getWorkspace.mockReset().mockReturnValue({ id: 'ws-1', name: 'ri' });
     getChatSessionWithExecution.mockImplementation((id: string) =>
       id === AGENT_CHAT
-        ? { id: AGENT_CHAT, type: 'orchestration', workspaceId: 'ws-1', status: 'active', execution: null }
+        ? { id: AGENT_CHAT, type: 'coordinator', workspaceId: 'ws-1', status: 'active', execution: null }
         : {
             id: SESSION_ID,
             status: 'active',
@@ -418,7 +418,7 @@ describe('POST /api/sessions/[id]/messages — sender provenance', () => {
   });
 
   it('requires signed inter-chat sends to use the durable coordination interface', async () => {
-    const { sessionCredential } = await import('@/lib/orchestrator/session-credential');
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
     const res = await POST(requestFrom(sessionCredential(AGENT_CHAT, 'test-token'), { content: 'hello', id: CLIENT_ID }), makeParams());
     expect(res.status).toBe(409);
     expect(await res.json()).toMatchObject({ error: expect.stringContaining('message_agent') });
@@ -440,7 +440,7 @@ describe('POST /api/sessions/[id]/messages — sender provenance', () => {
   });
 
   it('refuses a chat messaging itself', async () => {
-    const { sessionCredential } = await import('@/lib/orchestrator/session-credential');
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
     const res = await POST(requestFrom(sessionCredential(SESSION_ID, 'test-token'), { content: 'hello' }), makeParams());
     expect(res.status).toBe(400);
     expect(insertChatEvent).not.toHaveBeenCalled();
@@ -473,11 +473,11 @@ describe('POST /api/sessions/[id]/messages — the first-run question on screen'
   });
 
   it('never counts a message another chat sent', async () => {
-    const { sessionCredential } = await import('@/lib/orchestrator/session-credential');
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
     getChatSessionWithExecution.mockImplementation((id: string) =>
       id === 'agent-chat-1'
-        ? { id: 'agent-chat-1', type: 'orchestration', workspaceId: 'ws-1', status: 'active', execution: null }
-        : { id: SESSION_ID, status: 'active', type: 'orchestration', harness: 'claude', label: null, workspaceId: null },
+        ? { id: 'agent-chat-1', type: 'coordinator', workspaceId: 'ws-1', status: 'active', execution: null }
+        : { id: SESSION_ID, status: 'active', type: 'coordinator', harness: 'claude', label: null, workspaceId: null },
     );
     const res = await POST(
       new Request('http://localhost/api/sessions/sess-1/messages', {

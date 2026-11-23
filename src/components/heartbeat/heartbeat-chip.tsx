@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { HeartPulse } from 'lucide-react';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/system/sheet';
 import { useHeartbeat } from '@/hooks/use-heartbeat';
-import { useOrchestratorName } from '@/hooks/use-user-state';
+import { useCoordinatorName } from '@/hooks/use-user-state';
 import { describeHeartbeat, heartbeatDeckSignal, type HeartbeatDeckSignal } from '@/lib/heartbeat/status';
 
 import { HeartbeatSettings } from './heartbeat-settings';
@@ -30,7 +30,7 @@ export function useHeartbeatDeckSignal(): HeartbeatDeckSignal | null {
 
 export function HeartbeatChip() {
   const { data: config } = useHeartbeat();
-  const assistant = useOrchestratorName();
+  const assistant = useCoordinatorName();
   const [open, setOpen] = useState(false);
   if (!config) return null;
 

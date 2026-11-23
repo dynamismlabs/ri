@@ -168,7 +168,7 @@ What neither nailed, and where Ri wins: a genuinely simple log-in-once experienc
 Phase 1, the core, runs on this Mac.
 
 - `src/lib/browser/`: the CDP client (connect-or-launch), the read ladder (snapshot via aria-snapshot, text via a readability pass, screenshot via set-of-marks), the flat act dispatch with idempotency keys, and Chromium-flavor detection.
-- `src/lib/orchestrator/registry.ts`: `browser_read`, `browser_act`, `browser_open`, `browser_status` as defineAction actions (Zod raw shapes, snake_case, ActionError codes, ctx.remote branching, auto-attached page state).
+- `src/lib/actions/registry.ts`: `browser_read`, `browser_act`, `browser_open`, `browser_status` as defineAction actions (Zod raw shapes, snake_case, ActionError codes, ctx.remote branching, auto-attached page state).
 - `src/cli/commands/browser.ts` plus a check appended to `doctor.ts`: login, status, doctor, stop.
 - `src/lib/config/paths.ts`: `getBrowserProfilesDir()` and `getBrowserWorkDir()`.
 - Config fields on `AuthConfig`, and a Settings panel with the browser picker and the "open agent browser" button.

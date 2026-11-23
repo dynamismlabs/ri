@@ -46,7 +46,7 @@ afterAll(() => {
 function freshHome() {
   db.getDb()
     .update(schema.userState)
-    .set({ onboarding: null, orchestratorIntroducedAt: null, onboardedAt: null })
+    .set({ onboarding: null, coordinatorIntroducedAt: null, onboardedAt: null })
     .where(eq(schema.userState.id, 1))
     .run();
 }
@@ -61,7 +61,7 @@ describe('a home going through the conversation', () => {
     const state = q.recordOnboardingStep({ step: 'identity', status: 'answered', reply: 'Rye', chatId: 'chat-1' });
     expect(state?.onboarding?.steps.identity).toMatchObject({ status: 'answered', reply: 'Rye', chatId: 'chat-1' });
     expect(state?.onboarding?.current).toBeUndefined();
-    expect(state?.orchestratorIntroducedAt).toBeNull();
+    expect(state?.coordinatorIntroducedAt).toBeNull();
   });
 
   it('keeps every answer when two windows finish steps one after the other', () => {
@@ -82,7 +82,7 @@ describe('a home going through the conversation', () => {
     // Nothing is on screen any more, so the next message changes nothing.
     expect(q.skipOnboardingStepOnScreen('chat-1')).toBe(false);
     // Still not finished: the rest come back on the next new chat.
-    expect(q.getUserState()?.orchestratorIntroducedAt).toBeNull();
+    expect(q.getUserState()?.coordinatorIntroducedAt).toBeNull();
   });
 
   it('never skips the harness step on a message', () => {
@@ -107,7 +107,7 @@ describe('finishing', () => {
     expect(Object.keys(state?.onboarding?.steps ?? {}).sort()).toEqual([...ONBOARDING_STEPS].sort());
     expect(state?.onboarding?.steps.identity?.status).toBe('answered');
     expect(state?.onboarding?.steps.apps?.status).toBe('not_asked');
-    expect(state?.orchestratorIntroducedAt).toBeTruthy();
+    expect(state?.coordinatorIntroducedAt).toBeTruthy();
     expect(state?.onboardedAt).toBeTruthy();
   });
 
@@ -121,7 +121,7 @@ describe('finishing', () => {
   it('changes nothing more when it runs twice', () => {
     const first = q.finishOnboarding({ skipped: false });
     const second = q.finishOnboarding({ skipped: true });
-    expect(second?.orchestratorIntroducedAt).toBe(first?.orchestratorIntroducedAt);
+    expect(second?.coordinatorIntroducedAt).toBe(first?.coordinatorIntroducedAt);
     expect(second?.onboarding?.steps.apps?.status).toBe('not_asked');
   });
 });
@@ -130,7 +130,7 @@ describe('a home that finished before steps were recorded', () => {
   beforeEach(() => {
     db.getDb()
       .update(schema.userState)
-      .set({ orchestratorIntroducedAt: '2026-10-02T00:00:00.000Z', onboardedAt: '2026-04-30T00:00:00.000Z' })
+      .set({ coordinatorIntroducedAt: '2026-10-02T00:00:00.000Z', onboardedAt: '2026-04-30T00:00:00.000Z' })
       .where(eq(schema.userState.id, 1))
       .run();
   });

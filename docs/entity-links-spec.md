@@ -20,7 +20,7 @@ v2 tried to make the markdown mirror a first-class consumer of the projection sp
 
 - Canonical application writes (through the query helpers) update body and links atomically. Immediately consistent.
 - External / raw-SQL writes are portable and never silently missed: a pure-SQL revision trigger marks them, and read-repair heals them.
-- Supported graph reads (backlinks API, orchestrator/NL-MCP actions) repair pending sources first and return a transactionally consistent result.
+- Supported graph reads (backlinks API, coordinator/NL-MCP actions) repair pending sources first and return a transactionally consistent result.
 - Raw SQL run directly against `entity_links` may be stale until the next repair. Explicit tradeoff for keeping external writes portable and JS-free.
 - Mirror vault link slugs have the **same rename-staleness the existing frontmatter wikilinks already have**. Hardening that is separate, out-of-scope work (Section 8, Section 13).
 
@@ -240,7 +240,7 @@ export function linksFromText(sourceType, sourceId, texts /* string[] */) {
 2. `INSERT ... ON CONFLICT (source_type, source_id, target_type, target_id) DO NOTHING`.
 3. Delete edges for this source whose `(target_type, target_id)` is not in `desired`.
 
-Upsert-and-prune: unchanged edges keep id and `created_at`, and it is row-identical under retry (an orchestrator invariant).
+Upsert-and-prune: unchanged edges keep id and `created_at`, and it is row-identical under retry (a coordinator invariant).
 
 ### 5.4 Links drain / read-repair
 
@@ -296,7 +296,7 @@ Explicitly out of scope (unchanged from today's behavior, tracked as separate fu
 - Route: `GET /api/entities/[type]/[id]/backlinks`, mirroring `api/entities/sessions/route.ts` + `referencing-sessions-button.tsx`, running the repair-then-query protocol.
 - UI: "Linked references" section in `task-slideout.tsx` and `note-slideout.tsx`, incoming links (optional outgoing/unresolved), loads on open.
 - Cache invalidation points at targets: editing A changes B/C backlink caches, and renaming A changes A's title everywhere it appears. The current settlement invalidates only the mutated entity's root (`optimistic-entity.ts:125`), the wrong direction. v1: broad-invalidate `['entity-backlinks']` on every task/note mutation, plus refetch-on-open/focus for agent/external writes.
-- Agent surfaces (both): add `list_backlinks` (+ optional `list_outgoing_links`) to the orchestrator registry (`registry.ts`) AND implement the actual `chatTools.listBacklinks` tool for the NL MCP (`src/lib/mcp/agent.ts:32`), not merely an allowlist entry. Document the `[[task:id]]`/`[[note:id]]` body syntax in the agent prompt.
+- Agent surfaces (both): add `list_backlinks` (+ optional `list_outgoing_links`) to the action registry (`registry.ts`) AND implement the actual `chatTools.listBacklinks` tool for the NL MCP (`src/lib/mcp/agent.ts:32`), not merely an allowlist entry. Document the `[[task:id]]`/`[[note:id]]` body syntax in the agent prompt.
 
 ## 10. Migration and backfill
 
@@ -359,7 +359,7 @@ A chat-session context/pin mechanism, not a derived link index. Shared only at t
 - [ ] Body link rewrite in `render.ts` for task description/body and note body via `opts.links` + shared extraction, emitting the exact `[[tasks|notes/<slug>--<id>]]` form; unresolved markers preserved verbatim (Section 8).
 
 ### Phase 8 — agent surfaces + lifecycle
-- [ ] `list_backlinks` (+ optional `list_outgoing_links`) in the orchestrator registry AND a real `chatTools.listBacklinks` for the NL MCP (`mcp/agent.ts:32`). Document body syntax in the agent prompt.
+- [ ] `list_backlinks` (+ optional `list_outgoing_links`) in the action registry AND a real `chatTools.listBacklinks` for the NL MCP (`mcp/agent.ts:32`). Document body syntax in the agent prompt.
 - [ ] Post-migration automatic `rebuildAllEntityLinks()` (atomic) + repair CLI.
 
 ### Phase 9 — tests

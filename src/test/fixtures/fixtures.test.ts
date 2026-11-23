@@ -114,7 +114,7 @@ describe('fake harness through the real executor', () => {
     home = await createTestHome();
     fake = installFakeHarness('claude');
     const q = await import('@/lib/db/queries');
-    return q.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active', permissionMode });
+    return q.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active', permissionMode });
   }
 
   it('runs a turn: events persist and the native session id is captured', async () => {

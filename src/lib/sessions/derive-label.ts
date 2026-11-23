@@ -20,7 +20,7 @@ export function truncateLabel(content: string): string {
 
 export async function deriveAndSetSessionLabel(sessionId: string, content: string, harness: HarnessId): Promise<void> {
   const session = getChatSession(sessionId);
-  if (!session || session.label !== null || session.labelSource === 'manual' || session.type === 'orchestration' || isImportMirror(session)) return;
+  if (!session || session.label !== null || session.labelSource === 'manual' || session.type === 'coordinator' || isImportMirror(session)) return;
   const request: TitleRequest = {
     harness, description: content, fallbackPrompt: TITLE_PROMPT(content), fallbackModel: session.model,
     expectedRevision: session.labelRevision, reuseExisting: true, truncateOnFailure: true,

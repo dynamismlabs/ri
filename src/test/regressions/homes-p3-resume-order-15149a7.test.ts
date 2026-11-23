@@ -10,7 +10,7 @@ let q: typeof import('@/lib/db/queries');
 beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-resume-order-' });
   q = await import('@/lib/db/queries');
-  chat = q.createChatSession({ type: 'orchestration', harness: 'claude' }).id;
+  chat = q.createChatSession({ type: 'coordinator', harness: 'claude' }).id;
 });
 afterEach(async () => { await home?.cleanup(); });
 

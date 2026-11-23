@@ -1,7 +1,7 @@
 # Agent task ordering
 
 `reorder_tasks` moves an explicit ordered selection to the top of an Area's
-existing Priority Order. It is available through the shared CLI and orchestrator
+existing Priority Order. It is available through the shared CLI and coordinator
 MCP registry. It does not create another priority field or change task lifecycle.
 
 ```json
@@ -83,8 +83,8 @@ settles on the same order.
 ## Verification
 
 ```sh
-pnpm exec vitest run src/lib/db/queries.reorder.test.ts src/lib/orchestrator/registry.reorder.test.ts
-pnpm exec vitest run src/lib/tasks/priority-rank.test.ts src/lib/db/queries.rank.test.ts src/lib/orchestrator/registry.rank.test.ts
+pnpm exec vitest run src/lib/db/queries.reorder.test.ts src/lib/actions/registry.reorder.test.ts
+pnpm exec vitest run src/lib/tasks/priority-rank.test.ts src/lib/db/queries.rank.test.ts src/lib/actions/registry.rank.test.ts
 pnpm ts
 ```
 

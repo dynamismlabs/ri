@@ -215,7 +215,7 @@ describe('a team space reaching its team through My Ri', () => {
 
 it('refuses signed-agent pending-input relay before forwarding, including batches', async () => {
   const team = await connected('Human');
-  const { SESSION_CREDENTIAL_HEADER } = await import('@/lib/orchestrator/session-credential');
+  const { SESSION_CREDENTIAL_HEADER } = await import('@/lib/actions/session-credential');
   for (const procedure of ['sessions.pendingInputRequestIdPost', 'team.me,sessions.pendingInputRequestIdPost']) {
     const response = await viaHome(team.id, `trpc/${procedure}`, { method: 'POST', headers: { [SESSION_CREDENTIAL_HEADER]: 'signed-agent-marker', 'content-type': 'application/json' }, body: '{}' });
     expect(response.status).toBe(403);

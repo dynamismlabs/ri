@@ -42,7 +42,7 @@ afterAll(wipe);
 /** A chat with a run in flight, as a trigger fire leaves it mid-turn. */
 async function chatWithActiveRun() {
   const queries = await import('@/lib/db/queries');
-  const chat = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+  const chat = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
   const run = queries.createRun({
     harness: 'claude', triggerKind: 'manual', status: 'running', chatSessionId: chat.id,
   });
@@ -50,9 +50,9 @@ async function chatWithActiveRun() {
 }
 
 describe('ACTION_ARTIFACT_REFS', () => {
-  it('only names real, mutating orchestrator actions', async () => {
+  it('only names real, mutating Ri actions', async () => {
     const { ACTION_ARTIFACT_REFS } = await import('./artifact-refs');
-    const { actions } = await import('@/lib/orchestrator/registry');
+    const { actions } = await import('@/lib/actions/registry');
     for (const name of Object.keys(ACTION_ARTIFACT_REFS)) {
       const action = actions.find((a) => a.name === name);
       expect(action, name).toBeDefined();
@@ -79,7 +79,7 @@ describe('ACTION_ARTIFACT_REFS', () => {
 describe('recording through runAction', () => {
   it('records a mutating action from a chat with a run in flight, deduped across calls', async () => {
     const queries = await import('@/lib/db/queries');
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const { chat, run } = await chatWithActiveRun();
     const actor = { source: 'ai' as const, sessionId: chat.id };
 
@@ -97,7 +97,7 @@ describe('recording through runAction', () => {
 
   it('ignores reads, failed actions, callers with no chat, and chats with no run in flight', async () => {
     const queries = await import('@/lib/db/queries');
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
+    const { runAction } = await import('@/lib/actions/dispatch');
     const { chat, run } = await chatWithActiveRun();
     const task = queries.createTask({ title: 'T' });
 
@@ -106,7 +106,7 @@ describe('recording through runAction', () => {
     // A human in the app or at the CLI: no calling chat.
     await runAction('update_task', { id: task.id, description: 'human' }, { remote: false });
     // A chat with no run in flight (a manual chat send).
-    const idle = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const idle = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     await runAction('update_task', { id: task.id, description: 'idle chat' }, { remote: true, actor: { source: 'ai', sessionId: idle.id } });
 
     expect(queries.getRun(run.id)!.artifactRefs ?? []).toEqual([]);
@@ -114,8 +114,8 @@ describe('recording through runAction', () => {
 
   it('attributes to the run in flight, not a finished one in the same chat', async () => {
     const queries = await import('@/lib/db/queries');
-    const { runAction } = await import('@/lib/orchestrator/dispatch');
-    const chat = queries.createChatSession({ type: 'orchestration', harness: 'claude', status: 'active' });
+    const { runAction } = await import('@/lib/actions/dispatch');
+    const chat = queries.createChatSession({ type: 'coordinator', harness: 'claude', status: 'active' });
     const done = queries.createRun({ harness: 'claude', triggerKind: 'manual', status: 'completed', chatSessionId: chat.id });
     const live = queries.createRun({ harness: 'claude', triggerKind: 'manual', status: 'running', chatSessionId: chat.id });
     const task = queries.createTask({ title: 'T' });

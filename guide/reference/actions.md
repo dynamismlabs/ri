@@ -519,7 +519,7 @@ ri agent create_task [--param value]
 
 ## create_trigger
 
-Create a trigger. Kind-specific fields are enforced (cron requires cron_expression, every requires interval_seconds, at requires run_at, webhook generates credentials, manual takes no cadence fields and only fires via run_trigger). target_kind decides where each fire runs. session sends the prompt into one existing chat as a message from the trigger: target_session_id names it, and called from a chat it defaults to that chat, so a chat can schedule its own check-ins. The chat keeps its own provider and model, and a fire while it is busy is skipped unless concurrency_policy says otherwise, except a one-time fire, which waits until the chat is free. workspace starts a fresh chat in that agent on every fire. orchestrator starts a fresh Ri chat on every fire. provider picks who runs a workspace or orchestrator trigger (defaults to the user's default provider). Model and effort are validated against that provider. Enabling an automation authorizes its run chats to message and delegate within the assignment without per-send coordination approval. Create schedules only within the user's intent, never to bypass a denied send.
+Create a trigger. Kind-specific fields are enforced (cron requires cron_expression, every requires interval_seconds, at requires run_at, webhook generates credentials, manual takes no cadence fields and only fires via run_trigger). target_kind decides where each fire runs. session sends the prompt into one existing chat as a message from the trigger: target_session_id names it, and called from a chat it defaults to that chat, so a chat can schedule its own check-ins. The chat keeps its own provider and model, and a fire while it is busy is skipped unless concurrency_policy says otherwise, except a one-time fire, which waits until the chat is free. workspace starts a fresh chat in that agent on every fire. coordinator starts a fresh Ri chat on every fire. provider picks who runs a workspace or coordinator trigger (defaults to the user's default provider). Model and effort are validated against that provider. Enabling an automation authorizes its run chats to message and delegate within the assignment without per-send coordination approval. Create schedules only within the user's intent, never to bypass a denied send.
 
 Changes data. A tool in every chat.
 
@@ -531,7 +531,7 @@ Changes data. A tool in every chat.
 | `provider` | "codex" or "claude" or "cursor" or "opencode" or "antigravity" | no |   |
 | `agentId` | string | no |   |
 | `workspaceId` | string or null | no |   |
-| `targetKind` | "workspace" or "orchestrator" or "session" | yes |   |
+| `targetKind` | "workspace" or "coordinator" or "session" | yes |   |
 | `targetSessionId` | string or null | no |   |
 | `prompt` | string | yes |   |
 | `skillHints` | list of string or null | no |   |
@@ -923,7 +923,7 @@ ri agent get_scratchpad
 
 ## get_session_context
 
-Describe this signed chat, its stable agent and orchestrator addresses, actual harness capabilities, configured Connector and browser reach, and incoming requests. Use before consulting or delegating. Addresses survive New chat. Team and internal reviewer chats use separate surfaces.
+Describe this signed chat, its stable agent and coordinator addresses, actual harness capabilities, configured Connector and browser reach, and incoming requests. Use before consulting or delegating. Addresses survive New chat. Team and internal reviewer chats use separate surfaces.
 
 Reads only. A tool in every chat.
 
@@ -933,7 +933,7 @@ ri agent get_session_context
 
 ## get_session_events
 
-Read a bounded page of complete personal chat messages and tool events, including orchestrator and agent main chats. No provider raw records. before is an event ID from this chat. Large text continues with get_chat_event. Use next_before for older pages.
+Read a bounded page of complete personal chat messages and tool events, including coordinator and agent main chats. No provider raw records. before is an event ID from this chat. Large text continues with get_chat_event. Use next_before for older pages.
 
 Reads only. A tool in every chat.
 
@@ -949,7 +949,7 @@ ri agent get_session_events [--param value]
 
 ## get_session_messages
 
-Read the latest messages of a session (execution or orchestrator chat) as a condensed transcript tail (user/agent text, one-line tool calls, errors), plus whether the session is running or blocked on a permission/question prompt. The response includes app and provider ids plus a provider resume command when one is available. A user row with `sentBy` was sent by that chat (message_agent or delegate_work), not typed by the user. Read this before nudging a session. To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
+Read the latest messages of a session (execution or coordinator chat) as a condensed transcript tail (user/agent text, one-line tool calls, errors), plus whether the session is running or blocked on a permission/question prompt. The response includes app and provider ids plus a provider resume command when one is available. A user row with `sentBy` was sent by that chat (message_agent or delegate_work), not typed by the user. Read this before nudging a session. To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
 
 Reads only. A tool in every chat.
 
@@ -1459,7 +1459,7 @@ Reads only. A tool in every chat.
 | --- | --- | --- | --- |
 | `enabled` | boolean | no |   |
 | `kind` | "manual" or "at" or "every" or "cron" or "webhook" | no |   |
-| `targetKind` | "workspace" or "orchestrator" or "session" | no |   |
+| `targetKind` | "workspace" or "coordinator" or "session" | no |   |
 | `workspaceId` | string or null | no |   |
 | `limit` | integer | no |   |
 | `offset` | integer | no |   |
@@ -1576,7 +1576,7 @@ Changes data. A tool in every chat.
 
 | Parameter | Type | Required | What it is |
 | --- | --- | --- | --- |
-| `target` | string | yes | orchestrator, agent (this execution's own agent), requester, `agent:<workspace id>`, or `session:<chat id>`. |
+| `target` | string | yes | coordinator, agent (this execution's own agent), requester, `agent:<workspace id>`, or `session:<chat id>`. |
 | `request_id` | string | yes | Caller retry key for unchanged intent, not a server request ID. Reuse this key on retry. |
 | `content` | string | yes |   |
 | `related_request_id` | string | no | Server request ID for one-way steering of participating work, only with response:none. Does not create or reopen an obligation. |
@@ -1698,7 +1698,7 @@ ri agent read_docs [--param value]
 
 ## read_memory
 
-Read MEMORY.md, the durable memory this Ri keeps across conversations. It lives only on the computer running Ri. A session that can't read Ri's files reads it here, and sends anything worth remembering to target orchestrator with message_agent, response:"none", and a stable request_id. Ask the orchestrator to consider recording it in MEMORY.md.
+Read MEMORY.md, the durable memory this Ri keeps across conversations. It lives only on the computer running Ri. A session that can't read Ri's files reads it here, and sends anything worth remembering to target coordinator with message_agent, response:"none", and a stable request_id. Ask the coordinator to consider recording it in MEMORY.md.
 
 Reads only. A tool in every chat.
 
@@ -1979,7 +1979,7 @@ ri agent search <query> [--param value]
 
 ## search_sessions
 
-Search chat + execution titles and transcripts (the message content of user and agent turns, including imported Claude, Codex, and OpenCode history). Titles that contain every word of the query come first (matchedIn "title"), then transcript matches ranked by relevance (matchedIn "messages"), each with the best-matching passage as a snippet (null for a title match whose messages do not match). Use it to find "the chat where we discussed X" or a chat by its name. Searches personal execution, orchestrator, agent main, and content chats, active AND archived by default. Use get_session_events or get_chat_event for complete messages, or get_session_messages for a condensed tail. To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
+Search chat + execution titles and transcripts (the message content of user and agent turns, including imported Claude, Codex, and OpenCode history). Titles that contain every word of the query come first (matchedIn "title"), then transcript matches ranked by relevance (matchedIn "messages"), each with the best-matching passage as a snippet (null for a title match whose messages do not match). Use it to find "the chat where we discussed X" or a chat by its name. Searches personal execution, coordinator, agent main, and content chats, active AND archived by default. Use get_session_events or get_chat_event for complete messages, or get_session_messages for a condensed tail. To work in a connected team, call list_homes then pass target_home_id. Connected writes require idempotency_key and use canonical team IDs. Each record in a connected result has a ref. Copy it to link that record, since a bare [[task:ID]] means this Home's record: a task's or note's works in chat or any body, an Area's only in chat.
 
 Reads only. A tool in every chat.
 
@@ -1988,7 +1988,7 @@ Reads only. A tool in every chat.
 | `query` | string | yes |   |
 | `status` | "active" or "archived" | no |   |
 | `workspaceId` | string | no |   |
-| `type` | "orchestration" or "content" or "execution" | no |   |
+| `type` | "coordinator" or "content" or "execution" | no |   |
 | `source` | "native" or "imported" or "claude" or "codex" or "opencode" | no |   |
 | `limit` | integer | no |   |
 | `target_home_id` | string | no | Stable Home ID from list_homes. Omit for the calling chat’s own Home. Never infer a destination from the current browser view or a record title. |

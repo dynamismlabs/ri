@@ -4,11 +4,11 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { installFakeHarness, type FakeHarness } from '@/test/fixtures/fake-harness';
 import { type OperationContext } from '@/lib/server/operation';
-import { verifySessionCredential } from '@/lib/orchestrator/session-credential';
+import { verifySessionCredential } from '@/lib/actions/session-credential';
 import * as q from '@/lib/db/queries';
 
 const bridge = vi.hoisted(() => ({ fetch: vi.fn() }));
-vi.mock('@/lib/orchestrator/server-client', async (original) => ({ ...await original<object>(), serverFetch: bridge.fetch }));
+vi.mock('@/lib/actions/server-client', async (original) => ({ ...await original<object>(), serverFetch: bridge.fetch }));
 let home: TestHome | undefined;
 let harness: FakeHarness | undefined;
 afterEach(async () => {
@@ -27,9 +27,9 @@ async function setupRuntime() {
   const folder = path.join(home.root, 'project');
   fs.mkdirSync(folder);
   const workspace = q.createWorkspace({ name: 'Frontend', cwd: folder, isGit: false, browserEnabled: false });
-  const main = q.createChatSession({ harness: 'claude', type: 'orchestration' });
-  const agentMain = q.createChatSession({ harness: 'claude', type: 'orchestration', workspaceId: workspace.id });
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const main = q.createChatSession({ harness: 'claude', type: 'coordinator' });
+  const agentMain = q.createChatSession({ harness: 'claude', type: 'coordinator', workspaceId: workspace.id });
+  const { runAction } = await import('@/lib/actions/dispatch');
   const { POST: postMessage, POSTInput: messageInput } = await import('@/lib/server/operations/sessions/[id]/messages');
   const context = (url: string): OperationContext => ({ url, nextUrl: new URL(url), headers: new Headers(), signal: new AbortController().signal });
   bridge.fetch.mockImplementation(async () => { throw new Error('unexpected'); });

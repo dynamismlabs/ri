@@ -153,19 +153,19 @@ describe('runHarnessText', () => {
 
   it('MCP-attached calls deny unattended instead of skipping permissions', async () => {
     const { runHarnessText } = await import('./one-shot');
-    const server = { name: 'orchestrator', type: 'http' as const, url: 'http://localhost:1/mcp' };
+    const server = { name: 'coordinator', type: 'http' as const, url: 'http://localhost:1/mcp' };
     await runHarnessText({
       label: 't',
       prompt: 'x',
       maxTurns: 5,
       mcpServers: [server],
-      allowedTools: ['mcp__orchestrator__search'],
+      allowedTools: ['mcp__ri_home__search'],
     });
     const { config } = lastCall();
     expect(config.skipPermissions).toBeUndefined();
     expect(config.unattendedPermissionPolicy).toBe('deny');
     expect(config.mcpServers).toEqual([server]);
-    expect(config.allowedTools).toEqual(['mcp__orchestrator__search']);
+    expect(config.allowedTools).toEqual(['mcp__ri_home__search']);
     expect(config.maxTurns).toBe(5);
   });
 

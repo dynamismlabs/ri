@@ -40,7 +40,7 @@ OAuth returns still opens Plugins through `SECTION_ALIASES` in
 `src/components/settings/settings-sections.ts`.
 
 Shipped skills are Markdown and cannot import `INTEGRATION_LABELS`.
-`skills/browser/SKILL.md` and `skills/orchestrator/SKILL.md` write the label
+`skills/browser/SKILL.md` and `skills/tasks-notes/SKILL.md` write the label
 directly ("connector"), so update them by hand when the label changes.
 
 ## Existing local data

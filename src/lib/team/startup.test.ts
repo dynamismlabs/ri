@@ -100,7 +100,7 @@ it('starts a team as a team, with nothing personal made or started', async () =>
   // No personal schedules were seeded: the morning deck, stream triage and
   // the heartbeat are a person's (src/lib/deck/trigger.ts and friends).
   expect(q.listTriggers()).toEqual([]);
-  // No persona, memory, orchestrator brief or markdown mirror in a team's folder.
+  // No persona, memory, coordinator brief or markdown mirror in a team's folder.
   for (const file of ['USER.md', 'SOUL.md', 'MEMORY.md', 'AGENTS.md']) {
     expect(fs.existsSync(path.join(home.root, file)), file).toBe(false);
   }

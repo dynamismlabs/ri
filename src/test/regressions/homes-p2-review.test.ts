@@ -266,7 +266,7 @@ it('the homes migration preserves populated chat records and the set-null FK', a
   createDatabaseAt(file, migrationTags()[1]!);
   const sqlite = new Database(file);
   try {
-    sqlite.prepare("INSERT INTO chat_sessions (id, type, status, permission_mode, harness) VALUES ('old-chat', 'orchestration', 'active', 'ask', 'claude')").run();
+    sqlite.prepare("INSERT INTO chat_sessions (id, type, status, permission_mode, harness) VALUES ('old-chat', 'coordinator', 'active', 'ask', 'claude')").run();
     sqlite.prepare("INSERT INTO chat_events (id, session_id, role, source, content) VALUES ('old-event', 'old-chat', 'assistant', 'agent', 'preserve me')").run();
     const before = sqlite.prepare('SELECT rowid, * FROM chat_events').all() as Array<{ rowid: number; id: string; session_id: string; content: string }>;
     // Every migration after the one the database was built at.

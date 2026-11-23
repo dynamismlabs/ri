@@ -93,7 +93,7 @@ export function updateMemberPreferences(memberId: string, patch: UpdateMemberPre
 export function setMemberCurrentMainChat(memberId: string, workspaceId: string, chatId: string) {
   member(memberId);
   const chat = getChatSessionWithExecution(chatId);
-  if (!chat || chat.workspaceId !== workspaceId || chat.executionId || chat.type !== 'orchestration') throw new TeamError('not_allowed', 'Choose a main chat of this agent.');
+  if (!chat || chat.workspaceId !== workspaceId || chat.executionId || chat.type !== 'coordinator') throw new TeamError('not_allowed', 'Choose a main chat of this agent.');
   const patch = { currentMainChats: { ...getMemberPreferences(memberId)?.currentMainChats, [workspaceId]: chatId } };
   return preferences(getDb().insert(memberPreferences).values({ id: uuidv7(), memberId, ...patch })
     .onConflictDoUpdate({ target: memberPreferences.memberId, set: patch }).returning(preferenceColumns).get());

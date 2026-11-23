@@ -176,6 +176,6 @@ describe('issuer', () => {
   });
 
   it('challenges with the resource metadata on the same origin', () => {
-    expect(mcpChallenge('https://ri.example', 'invalid_token')).toBe('Bearer resource_metadata="https://ri.example/.well-known/oauth-protected-resource/api/orchestrator/mcp", scope="content", error="invalid_token"');
+    expect(mcpChallenge('https://ri.example', 'invalid_token')).toBe('Bearer resource_metadata="https://ri.example/.well-known/oauth-protected-resource/api/home/mcp", scope="content", error="invalid_token"');
   });
 });

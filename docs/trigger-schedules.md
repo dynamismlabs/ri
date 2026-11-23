@@ -121,7 +121,7 @@ run waits instead. If the chat is archived or deleted, the next run pauses the
 schedule and says why. Agents and the CLI create these too
 (`ri trigger create --target session --session <chat id>`).
 
-All saves use the existing tRPC procedures and orchestrator actions.
+All saves use the existing tRPC procedures and Ri actions.
 
 ## When a run can't start on time
 
@@ -160,7 +160,7 @@ Two things tell you. Neither needs to know the cause in advance.
 Verification:
 
 ```sh
-pnpm test src/lib/scheduler/frequency.test.ts src/lib/orchestrator/registry.triggers.test.ts \
+pnpm test src/lib/scheduler/frequency.test.ts src/lib/actions/registry.triggers.test.ts \
   src/lib/triggers src/app/api/document-chat
 RI_REVIEW_CHROMIUM=<chrome-headless-shell> pnpm test src/components/triggers/trigger-schedule.browser.test.ts
 pnpm ts

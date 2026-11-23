@@ -18,7 +18,7 @@ const clients: Client[] = [];
 const BASE = 'http://home.test';
 
 beforeAll(async () => {
-  await Promise.all([import('@/proxy'), import('@/app/api/orchestrator/[transport]/route'), import('./router')]);
+  await Promise.all([import('@/proxy'), import('@/app/api/home/[transport]/route'), import('./router')]);
 }, 120_000);
 beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-personal-mcp-' });
@@ -42,7 +42,7 @@ async function serve(input: string | URL | Request, init?: RequestInit): Promise
   const { proxy } = await import('@/proxy');
   const auth = proxy(request);
   if (auth.headers.get('x-middleware-next') !== '1') return auth;
-  const route = await import('@/app/api/orchestrator/[transport]/route');
+  const route = await import('@/app/api/home/[transport]/route');
   return route[request.method as 'GET' | 'POST' | 'DELETE'](new NextRequest(request, { headers: forwarded(auth) }));
 }
 async function connect(token: string, headers: Record<string, string> = {}) {
@@ -145,7 +145,7 @@ it('keeps capture stream entries out of external search without changing normal 
 it('refuses browser, WebSocket, team, files, NL MCP and administrative access', async () => {
   const { token } = await (await settings()).create({ name: 'Outside' });
   const { proxy } = await import('@/proxy');
-  for (const path of ['/api/trpc/tasks.list', '/api/trpc/externalAi.create', '/api/orchestrator/sse', '/api/mcp', '/api/team/mcp', '/api/attachments/example.txt', '/api/workers/me', '/api/settings/base-url']) {
+  for (const path of ['/api/trpc/tasks.list', '/api/trpc/externalAi.create', '/api/home/sse', '/api/mcp', '/api/team/mcp', '/api/attachments/example.txt', '/api/workers/me', '/api/settings/base-url']) {
     const response = proxy(new NextRequest(`${BASE}${path}`, { headers: { authorization: `Bearer ${token}`, 'x-ri-api-key-scope': 'viewer' } }));
     expect(response.status, path).toBe(403);
   }
@@ -186,7 +186,7 @@ it('does not claim external keys as host sign-ins at restart or revoke browser k
   expect((await call(await connect(made.token), 'list_tasks')).json().ok).toBe(true);
 });
 
-it('still gives a regular viewer the full orchestrator tools', async () => {
+it('still gives a regular viewer the full Ri tools', async () => {
   const client = await connect(viewer);
   expect((await client.listTools()).tools.map(tool => tool.name)).toEqual(expect.arrayContaining(['describe_paths', 'delegate_work', 'search']));
 });
@@ -194,7 +194,7 @@ it('still gives a regular viewer the full orchestrator tools', async () => {
 it('checks expiration and the scoped dispatcher again, even if a request passed the proxy earlier', async () => {
   const q = await import('@/lib/db/queries');
   const made = await (await settings()).create({ name: 'Temporary' });
-  const { runAction } = await import('@/lib/orchestrator/dispatch');
+  const { runAction } = await import('@/lib/actions/dispatch');
   const ctx = { remote: true, caller: { location: 'elsewhere' as const, scope: 'home_content' as const, apiKeyId: made.client.keyId } };
   expect((await runAction('describe_paths', {}, ctx)).ok).toBe(false);
   q.revokePersonalAiClient(made.client.keyId);

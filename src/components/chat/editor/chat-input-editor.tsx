@@ -8,7 +8,7 @@ import { useHomeDocumentScope, useOptionalHomeContext } from '@/components/home/
 
 /**
  * Shared chat-input editor used by both the execution composer and the
- * orchestrator chat. Tiptap-based so we get inline `FileChip` atoms
+ * coordinator chat. Tiptap-based so we get inline `FileChip` atoms
  * that flow with typed text — Conductor-style. The editor is text-only
  * (paragraph + text + hardBreak) plus the chip node; no headings,
  * lists, marks, etc. The composer is a single utterance, not a doc.
@@ -30,7 +30,7 @@ import { useHomeDocumentScope, useOptionalHomeContext } from '@/components/home/
  *   - `getMarkerOutput()` — for execution chat. Returns
  *     `{ text: "with [[file:<fileName>]] markers", attachments: [...] }`.
  *     The server resolves markers to absolute paths before dispatching.
- *   - `getUiMessageParts()` — for orchestrator chat. Returns an
+ *   - `getUiMessageParts()` — for coordinator chat. Returns an
  *     ai-sdk `parts: [{type:'text',...}, {type:'file',...}]` array in
  *     document order so the chat model sees the same structure as
  *     today, just with chip-position fidelity. File parts carry the
@@ -184,7 +184,7 @@ export interface ChatInputEditorHandle {
     attachments: Attachment[];
   };
   /**
-   * Orchestrator-chat output: ai-sdk parts in document order. Text
+   * Coordinator-chat output: ai-sdk parts in document order. Text
    * runs and chip atoms interleave so a sentence like
    * `look at [chip] please` survives intact through both the model
    * input and the UI re-render. File parts use the HTTP attachment
@@ -1413,7 +1413,7 @@ export function buildUiMessageParts(editor: Pick<Editor, 'state'> | null): {
       return false;
     }
     if (node.type.name === PR_CHIP_NAME) {
-      // PR chips inline as expanded text — the orchestrator chat model
+      // PR chips inline as expanded text — the coordinator chat model
       // doesn't have a native PR part type, so we surface the context
       // as a text run that flows with the surrounding sentence.
       const attrs = node.attrs as PrChipAttrs;
@@ -1446,7 +1446,7 @@ export function buildUiMessageParts(editor: Pick<Editor, 'state'> | null): {
     }
     if (node.type.name === ENTITY_CHIP_NAME) {
       // Entity chips inline as `[[task:id]]` / `[[note:id]]` / `[[scratchpad]]`.
-      // The orchestrator chat doesn't hydrate these (that's an execution
+      // The coordinator chat doesn't hydrate these (that's an execution
       // path); we still emit the marker so a user looking at the message
       // later sees a stable reference token rather than a vanished chip.
       const attrs = node.attrs as EntityChipAttrs;

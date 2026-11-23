@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NextRequest } from 'next/server';
 import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { API_KEY_SCOPE_HEADER, SESSION_CHAT_HEADER } from '@/lib/auth/request-key';
-import { SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/orchestrator/session-credential';
-import { requestHasSessionAuthority } from '@/lib/orchestrator/mcp-caller';
+import { SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/actions/session-credential';
+import { requestHasSessionAuthority } from '@/lib/actions/mcp-caller';
 import { workResultActorFromRequest } from './http';
 
 let home: TestHome;

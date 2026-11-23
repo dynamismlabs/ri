@@ -994,7 +994,7 @@ export async function recycleAgentMainChats(workspaceId: string): Promise<void> 
 
 /**
  * Recycle the app's own main chat, for settings only its brief carries: the
- * name the user calls the orchestrator. The brief is reinstalled at spawn, so
+ * name the user calls the coordinator. The brief is reinstalled at spawn, so
  * the next turn starts a process that reads the new one.
  */
 export async function recycleAppMainChats(): Promise<void> {
@@ -1029,7 +1029,7 @@ export async function recycleEveryAgentSession(opts: { includeAppMainChat?: bool
   const sessions = [
     ...listChatSessions({ status: 'active', type: 'execution' }),
     // Every agent's main chat, not the app's (listMainChats(null)).
-    ...listChatSessions({ status: 'active', type: 'orchestration' }).filter(
+    ...listChatSessions({ status: 'active', type: 'coordinator' }).filter(
       (s) => s.workspaceId && !s.executionId && !s.createdByRunId,
     ),
     ...(opts.includeAppMainChat ? listMainChats(null, { status: 'active' }) : []),
@@ -1107,7 +1107,7 @@ export function resolveCwd(session: {
   surfaceRef?: string | null;
   worktreePath: string | null;
   workspaceId: string | null;
-  type: 'orchestration' | 'content' | 'execution';
+  type: 'coordinator' | 'content' | 'execution';
   executionId: string | null;
 }): string | null {
   if (session.surfaceKind === 'result_review' && session.surfaceRef) {
@@ -1121,21 +1121,21 @@ export function resolveCwd(session: {
   if (session.worktreePath && existsSync(session.worktreePath)) return session.worktreePath;
   if (!session.workspaceId) {
     // No workspace → the session runs in the app data root. This is the
-    // orchestrator/content path: interactive orchestrator chats and
-    // scheduled `targetKind='orchestrator'` fires both land here (the
+    // coordinator/content path: interactive coordinator chats and
+    // scheduled `targetKind='coordinator'` fires both land here (the
     // latter previously dead-ended with "no resolvable cwd"). The
-    // orchestrator branch in `ensureHarnessSession` runs `ensureAppRoot()`
+    // coordinator branch in `ensureHarnessSession` runs `ensureAppRoot()`
     // via the surface installer before the process spawns.
     return getAppRoot();
   }
   const workspace = getWorkspace(session.workspaceId);
   if (!workspace) return null;
-  // An agent's main chat (orchestration with a workspace, no execution)
+  // An agent's main chat (coordinator with a workspace, no execution)
   // runs in the agent's own folder, git or not. It manages work there
   // rather than doing it: in a git agent its file-editing tools are denied
   // and changes go through executions (see agent-main-chat.ts). A folder
   // that has gone away is refused like a missing worktree.
-  if (session.type === 'orchestration' && !session.executionId) {
+  if (session.type === 'coordinator' && !session.executionId) {
     return existsSync(workspace.cwd) ? workspace.cwd : null;
   }
   // Git workspace with no usable worktree → refuse rather than silently

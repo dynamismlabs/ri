@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { ActionError, defineAction, type ActionContext } from '@/lib/orchestrator/types';
-import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER } from '@/lib/orchestrator/session-credential';
-import { serverFetch } from '@/lib/orchestrator/server-client';
+import { ActionError, defineAction, type ActionContext } from '@/lib/actions/types';
+import { SESSION_CREDENTIAL_ENV, SESSION_CREDENTIAL_HEADER } from '@/lib/actions/session-credential';
+import { serverFetch } from '@/lib/actions/server-client';
 import { SourceError } from './service';
 
 const binding = { message_id: z.string().uuid(), source_ref: z.string().min(1).max(2731) };

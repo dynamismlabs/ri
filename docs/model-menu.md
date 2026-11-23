@@ -197,7 +197,7 @@ Review regressions include a home and worker in separate processes: Fast to Norm
 
 Schedule selection regressions deliberately put a live provider model ahead
 of a different bundled model. They verify manual and timed workspace fires,
-first and subsequent cron/every fires, and orchestrator fires through the actual
+first and subsequent cron/every fires, and coordinator fires through the actual
 dispatcher into the fake harness. Coverage includes explicit Ultrafast, newly
 initialized Normal, legacy NULL, explicit models, provider-owned IDs outside
 bundled naming conventions, changing catalog order, and simultaneous first

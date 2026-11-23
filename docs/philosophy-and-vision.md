@@ -43,7 +43,7 @@ Two properties follow. The product gets better for free as models improve, while
 1. **The rot diagnosis is correct.** Every PKM and todo system fails the same way. The insight that structure exists for human retrieval and triage, and that AI makes the first free and the second delegable, is the right reading of the moment. Most competitors bolt a chat panel onto a structured task list. Ri inverts it.
 2. **Right side of the model improvement curve.** Structure-light products ride the frontier instead of being eroded by it.
 3. **Delegation as the primitive is the most original part.** Executions as a first-class table, propose-approve-run-review. Software rebuilt around negotiation of work. Very few are building it natively.
-4. **The substrate decisions are trustworthy.** One home directory that is simultaneously the human's data, the agent's cwd, and the sync unit. Content as plain markdown at the root. SQLite locally. The orchestrator registry as single source of truth with action names as public contract. queries.ts as the invariant chokepoint. entity_versions for diff and undo. Local-first matters more here than in most apps: handing an agent your whole life context requires trust that is much easier to extend to software running on your machine against your files. User-owned hooks over baked-in magic is the right immune response to over-automation.
+4. **The substrate decisions are trustworthy.** One home directory that is simultaneously the human's data, the agent's cwd, and the sync unit. Content as plain markdown at the root. SQLite locally. The action registry as single source of truth with action names as public contract. queries.ts as the invariant chokepoint. entity_versions for diff and undo. Local-first matters more here than in most apps: handing an agent your whole life context requires trust that is much easier to extend to software running on your machine against your files. User-owned hooks over baked-in magic is the right immune response to over-automation.
 
 ## 5. Assessment: what is at risk
 
@@ -71,7 +71,7 @@ A zoom-out on 2026-07-07 found the earlier framing refined *how to build what we
 
 ## 7. Philosophy refinements
 
-Refinements, not reversals. The pillars stay untouched: local-first, files plus SQLite, the orchestrator registry as public contract, user-owned hooks over baked-in magic, open source.
+Refinements, not reversals. The pillars stay untouched: local-first, files plus SQLite, the action registry as public contract, user-owned hooks over baked-in magic, open source.
 
 ### 7.1 Concentrate decisions, do not "minimize" them
 
@@ -105,11 +105,11 @@ Plus the standing items: finish the triggers rename and freeze the vocabulary, a
 
 Horizon 1 is less greenfield than the sections above imply. Much of the raw material exists, and the real work is finishing, unifying, and instrumenting:
 
-- **Learn:** entity_versions already carries `source: human|ai|system` and `actorSessionId`, and reverts record `revertedFromVersionId`. Acceptance semantics are largely derivable from existing data (AI version reverted = rejected, human-edited soon after = corrected, untouched = accepted). Gaps: provenance on orchestrator/MCP write paths that lack a session, structured deck-correction events, and the aggregation/metric layer (time-to-verify).
+- **Learn:** entity_versions already carries `source: human|ai|system` and `actorSessionId`, and reverts record `revertedFromVersionId`. Acceptance semantics are largely derivable from existing data (AI version reverted = rejected, human-edited soon after = corrected, untouched = accepted). Gaps: provenance on coordinator/MCP write paths that lack a session, structured deck-correction events, and the aggregation/metric layer (time-to-verify).
 - **Capture:** the integrations runtime exists (toolkit connections, OAuth, per-workspace scopes, approvals), the deck already reconciles external items (`reconcile-external`), and calendar is wired in (`calendar-integration`). The gap is the inbound path: email and Slack ingestion into the stream and triage (`integrations-mcp-ingest-spec.md` exists, unbuilt). Notifier design is locked, build pending.
 - **Triage:** proactive deck machinery is largely built (`ensure-todays-deck`, deck trigger, morning refresh trigger, calendar sizing). `triage/llm.ts` exists for stream triage. Gap: correction telemetry and accuracy iteration.
 - **Review:** diff plus undo exists for content-chat edits, execution view refactor (code review) is in flight. Gap: one unified "changes while you were away" surface over entity_versions plus executions-in-review, with diff, accept, undo per item. Mostly a query plus UI, the primitives exist.
-- **Route:** autonomy pieces exist scattered (permission-modes, integration approvals and scopes, trigger scheduling). Gap: unify into one visible per-action-type autonomy surface enforced at the orchestrator dispatch chokepoint.
+- **Route:** autonomy pieces exist scattered (permission-modes, integration approvals and scopes, trigger scheduling). Gap: unify into one visible per-action-type autonomy surface enforced at the coordinator dispatch chokepoint.
 - **Housekeeping:** executions prod migration and column drop pending, triggers naming half-renamed, `roadmap.md` marked historical (pre-pivot Eon doc, some ideas still worth mining: radar, avoidance detection, temporal memory, import agent).
 
 ### 8.2 Execution order
@@ -121,7 +121,7 @@ The sequenced plan, with rough sizing. Each step is valuable standalone even if 
 - **Step 2: Capture, the front door (several weeks, the biggest build).** Inbound email first, then Slack, into the stream, through triage, routed onward. The ingest spec exists and the integrations runtime it needs is built. Notifier Telegram phase alongside (shared plumbing). Exit criterion: a day's real work lands in Ri without the human carrying it there.
 - **Step 3: Triage hardening (continuous, rides on 1 and 2).** Feed correction telemetry into the proactive deck and iterate accuracy against time-to-verify. Tuning, not construction, but where trust is won.
 - **Step 4: unified Review surface (medium).** One "changes while you were away" pane: recent AI entity_versions plus executions in review state, each with diff, accept, undo. Primitives exist, mostly query plus UI, most defensible surface in the plan.
-- **Step 5: Route, unify autonomy (medium).** Consolidate permission-modes, integration approvals and scopes, and trigger settings into one per-action-type autonomy surface enforced at the orchestrator dispatch chokepoint. V1 is propose-versus-auto defaults. Acceptance data from step 1 later earns autonomy upgrades.
+- **Step 5: Route, unify autonomy (medium).** Consolidate permission-modes, integration approvals and scopes, and trigger settings into one per-action-type autonomy surface enforced at the coordinator dispatch chokepoint. V1 is propose-versus-auto defaults. Acceptance data from step 1 later earns autonomy upgrades.
 - **The gate.** With telemetry live, single-player indispensability becomes measurable: does work land automatically, and does the morning review beat manual triage? Only past that gate does Horizon 2a (the team bot) start. By then step 5's approval machinery is half its prerequisite list.
 
 ## 9. Impact: how this matters
@@ -162,12 +162,12 @@ Team mode is the same binary running with a hub personality. **A team is a princ
 
 - **Team standing agents fall out for free.** Triage, digest, reconciliation, project-shepherd agents living in the team home the way personal agents live in yours. The org chart of the future includes software, and the team home is where it is staffed.
 - **The commons-rot argument.** Shared systems rot an order of magnitude faster than personal ones because maintenance of a commons is nobody's job. The rot thesis is therefore MORE valuable for teams than individuals. Notion, Linear, and Asana all have sync and boards. Nobody has a groundskeeper. The killer feature of team mode is the standing agent that keeps the shared database from rotting. The philosophy compounds in teams. In loop terms: the groundskeeper is Learn applied to the commons.
-- **One codebase, one mental model.** Orchestrator actions, queries.ts invariants, entity_versions, embeddings, attachments work identically on the hub.
+- **One codebase, one mental model.** Ri actions, queries.ts invariants, entity_versions, embeddings, attachments work identically on the hub.
 - **Deployment is a spectrum.** Shared box, cheap VPS, or hosted service. Self-hosted fits the open source ethos. Hosted is the business model (section 13).
 
 ### 11.1 Shared agentic use: the team agent surface
 
-Because the team home is a full Ri instance, it inherits most of the product by construction: chat harness, executions, triggers, integrations, notifier, embeddings, orchestrator surface. A "smart Slack bot" for the team is therefore not a new system. It is the team home's chat surface exposed through the team's Slack integration: a member mentions the bot, the message routes into a session on the team home with the team commons as context, and actions dispatch through the same orchestrator registry. Same primitives, new principal.
+Because the team home is a full Ri instance, it inherits most of the product by construction: chat harness, executions, triggers, integrations, notifier, embeddings, coordinator surface. A "smart Slack bot" for the team is therefore not a new system. It is the team home's chat surface exposed through the team's Slack integration: a member mentions the bot, the message routes into a session on the team home with the team commons as context, and actions dispatch through the same action registry. Same primitives, new principal.
 
 What the team home deliberately does NOT get: a deck (decks belong to humans, a team digest is notifier output), personal enrichment, personal agent memory about individuals.
 
@@ -180,7 +180,7 @@ What is genuinely new work:
 
 Strategic consequence: **the bot can ship before sync.** A team adopts "a bot with a brain in your Slack" with zero behavior change. Shared context accretes in the team home through use. The app view and personal mounting come after. This is the second adoption wedge: team-down via the bot, individual-up via sources. They meet in the middle.
 
-Restraint note: the bot is powerful precisely because it is a thin channel over the same primitives. If it grows a parallel brain or state outside the orchestrator surface and the team home, it becomes the grab-bag chatbot every company builds and abandons.
+Restraint note: the bot is powerful precisely because it is a thin channel over the same primitives. If it grows a parallel brain or state outside the coordinator surface and the team home, it becomes the grab-bag chatbot every company builds and abandons.
 
 ## 12. Sync model sketch
 
@@ -208,7 +208,7 @@ Restraint note: the bot is powerful precisely because it is a thin channel over 
 - **Decks.** Humans touch one small, finite, warm surface. The deck's endpoint is a judgment schedule: it allocates the human's decision hours the way a calendar allocates meeting hours. Decisions to make, reviews to do, human-only work, protected deep time.
 - **Standing agents.** Teams and individuals staff software the way teams staff people: roles, schedules, budgets (attention, tokens, money), and performance built on acceptance data. Maintenance of the commons is finally somebody's job.
 - **The autonomy layer.** Graduated, inspectable authority over what acts on your behalf, earned through the Learn loop.
-- **Protocol.** Homes and spaces speak a common contract (the orchestrator action surface is the seed). The long-term ambition is to be the git and email of work: the reference implementation for how humans and agents cohabit shared context, valuable even where the app does not run.
+- **Protocol.** Homes and spaces speak a common contract (the Ri action surface is the seed). The long-term ambition is to be the git and email of work: the reference implementation for how humans and agents cohabit shared context, valuable even where the app does not run.
 
 A workday in this world: your deck is composed overnight from your personal home, two team spaces, and your external tools, sized to your calendar and your decision budget. You review it over coffee in one concentrated pass: approve three agent proposals, decline one, reorder the rest. Work that arrived overnight was already triaged and routed, most of it executed by agents whose autonomy was earned, the exceptions waiting in review with legible diffs. The team space was groundskept while you slept, all attributed, all undoable. You spend the day on judgment, relationships, and the work only you can do.
 

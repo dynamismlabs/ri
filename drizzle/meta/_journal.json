@@ -288,6 +288,13 @@
       "when": 1795033415393,
       "tag": "0040_usage-warning-above-zero",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "6",
+      "when": 1795460062577,
+      "tag": "0041_coordinator-rename",
+      "breakpoints": true
     }
   ]
 }

@@ -4,9 +4,9 @@
  * current chat at a time. "New chat" retires it and starts another, history
  * lists past ones, and resume brings one back.
  *
- * `/api/orchestrator-chat/*` (scope `null`) and `/api/workspaces/:id/chat/*`
+ * `/api/coordinator-chat/*` (scope `null`) and `/api/workspaces/:id/chat/*`
  * (scope = the workspace id) are thin wrappers over this, so the two can
- * never drift apart. Scheduled orchestrator fires also create orchestration
+ * never drift apart. Scheduled coordinator fires also create coordinator
  * chats, but they carry `createdByRunId` and are never main chats
  * (`listMainChats`).
  */
@@ -71,7 +71,7 @@ export function currentMainChat(scope: MainChatScope): ChatSessionRecord | null 
     const selected = getMemberPreferences(authority.member.id)?.currentMainChats[scope!];
     if (!selected) return null;
     const chat = selected ? getChatSession(selected) : null;
-    return chat?.workspaceId === scope && chat.status === 'active' && chat.type === 'orchestration' && !chat.executionId && !chat.createdByRunId ? chat : null;
+    return chat?.workspaceId === scope && chat.status === 'active' && chat.type === 'coordinator' && !chat.executionId && !chat.createdByRunId ? chat : null;
   }
   return listMainChats(scope, { status: 'active', limit: 1 })[0] ?? null;
 }
@@ -89,7 +89,7 @@ async function createMainChat(
     ...permissions,
     ...(contextual?.permissionMode ? { permissionMode: contextual.permissionMode, prePlanMode: contextual.prePlanMode ?? null } : {}),
     ...(contextual ? { createdByMemberId: contextual.memberId, surfaceKind: contextual.surfaceKind } : {}),
-    type: 'orchestration',
+    type: 'coordinator',
     workspaceId: scope,
     // An agent's main chat is pinned where the agent lives (P3.4). The app's
     // own main chat, and an agent set up at home, run at home.
@@ -102,7 +102,7 @@ async function createMainChat(
     // Label stays null while the chat is live. Main chats get a
     // retrospective summary when they are retired (`retireMainChat`), and
     // the messages route never derives a first-message title for
-    // orchestration chats.
+    // coordinator chats.
     label: null,
     status: 'active',
   });
@@ -197,7 +197,7 @@ async function startNewMainChatUnlocked(scope: MainChatScope, override: ChatOver
   }
   const viewed = options.sourceChatId ? getChatSession(options.sourceChatId) : current;
   if (options.sourceChatId) {
-    if (!viewed || viewed.workspaceId !== scope || viewed.type !== 'orchestration' || viewed.executionId || viewed.createdByRunId) throw new TeamError('not_found', 'Choose a main chat of this agent.');
+    if (!viewed || viewed.workspaceId !== scope || viewed.type !== 'coordinator' || viewed.executionId || viewed.createdByRunId) throw new TeamError('not_found', 'Choose a main chat of this agent.');
     sessionAuthority(executionRequestKey(), viewed.id, 'read');
     if (chatLifecycleClosing(viewed.id)) throw new TeamError('conflict', 'This chat is being closed. Try again after it finishes.');
   }
@@ -264,7 +264,7 @@ async function resumeMainChatUnlocked(scope: MainChatScope, sessionId: string): 
   const authority = mainChatAuthority(scope);
   const target = getChatSession(sessionId);
   const inScope = target
-    && target.type === 'orchestration'
+    && target.type === 'coordinator'
     && target.createdByRunId === null
     && target.executionId === null
     && (target.workspaceId ?? null) === scope;
@@ -272,7 +272,7 @@ async function resumeMainChatUnlocked(scope: MainChatScope, sessionId: string): 
     return {
       ok: false,
       status: 404,
-      error: scope === null ? 'Not an interactive orchestrator chat' : "Not one of this agent's main chats",
+      error: scope === null ? 'Not an interactive coordinator chat' : "Not one of this agent's main chats",
     };
   }
 

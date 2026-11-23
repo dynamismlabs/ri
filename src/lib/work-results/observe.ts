@@ -3,7 +3,7 @@ import { requestWorker } from '@/lib/workers/hub';
 import type { WorkingState } from '@/lib/transfer/git-checkpoint';
 import { openFolderHandle } from '@/lib/workspaces';
 import type { WorkResultCodeRevision } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 
 /** Observe on the execution computer. Never promote a submitted SHA to evidence. */
 export async function observeWorkResultCodeRevision(sessionId: string | null | undefined, userId: string): Promise<WorkResultCodeRevision | null> {

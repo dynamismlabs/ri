@@ -16,7 +16,7 @@ import { Readability } from '@mozilla/readability';
 import type { Page } from 'playwright-core';
 import { saveAttachment } from '@/lib/attachments/save';
 import type { Attachment } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { handoffsEnabled } from '@/lib/work-results/capabilities';
 import { parseHTML } from '@/lib/linkedom';
 import { applyCap } from './cap';

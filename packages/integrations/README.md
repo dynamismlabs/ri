@@ -183,7 +183,7 @@ const runtime = createIntegrationRuntime({
 
 ## Deliberately not built yet (later spec phases)
 
-- **Phase 3** — deep app integration (chat-orchestrator wiring, connect UI, a
+- **Phase 3** — deep app integration (chat-coordinator wiring, connect UI, a
   SQLite `ConnectionStore` via the app query layer, bridging `ApprovalPolicy` to the
   app's permission prompts).
 - Sync, webhooks, hosted multi-tenant adapters — seams, not builds (spec §16/§20).

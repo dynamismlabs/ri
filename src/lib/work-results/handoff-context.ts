@@ -1,6 +1,6 @@
 import { getChatSessionWithExecution, getUserState } from '@/lib/db/queries';
 import type { UserStateRecord, WorkspaceRecord, WorkResultActor } from '@/db/types';
-import { ActionError } from '@/lib/orchestrator/types';
+import { ActionError } from '@/lib/actions/types';
 import { isImportMirror } from '@/lib/import/mirror';
 import { assertHandoffsEnabled } from './capabilities';
 import { builtInHandoffInstructions } from './instructions';

@@ -1,0 +1,411 @@
+/**
+ * Native agent browser actions. Registered into the action registry, so
+ * they light up on both the CLI (`ri agent browser_...`) and the HTTP MCP.
+ *
+ * Small, stable surface: two verbs the agent drives (`browser_read`,
+ * `browser_act`) plus operational actions. See docs/browser-capability-proposal.md.
+ *
+ * Profiles: a `profile` is a separate logged-in identity (its own cookie jar).
+ * Every action takes an optional `profile` (default "agent"). Pass a different
+ * name to use a different logged-in browser. `browser_profiles` lists them.
+ *
+ * Trust is the login scope (proposal §6): every act, `evaluate` included, runs
+ * for any caller within what the profile is signed into. What is recorded is
+ * oversight, never a gate: the audit trail names the chat, and an evaluate's
+ * whole script is kept (audit.ts).
+ */
+
+import { z } from 'zod';
+import { defineAction, ActionError, type ActionContext } from './types';
+import {
+  requireBrowser,
+  isBrowserEnabled,
+  getHeadlessDefault,
+  browserConfigSummary,
+  listBrowserProfiles,
+  resolveProfile,
+  getDefaultProfile,
+} from '@/lib/browser/config';
+import {
+  getSession,
+  getActivePage,
+  setMarks,
+  forgetSession,
+  listTabs,
+  selectTab,
+  closeTab,
+  openTab,
+  rememberBaseline,
+} from '@/lib/browser/runtime';
+import { isBrowserOpen, closeBrowser } from '@/lib/browser/session';
+import { readPage } from '@/lib/browser/read';
+import { performAct, performBatch, type ActInput, type ActOptions } from '@/lib/browser/act';
+import { assertNavigable } from '@/lib/browser/confine';
+import { importCookies } from '@/lib/browser/cookie-import';
+import { appendAudit, readAuditTail, storeScript } from '@/lib/browser/audit';
+
+const readMode = z.enum(['snapshot', 'text', 'screenshot', 'pdf']);
+const actKind = z.enum([
+  'click',
+  'type',
+  'press',
+  'hover',
+  'select',
+  'scroll',
+  'wait',
+  'upload',
+  'evaluate',
+  'back',
+  'forward',
+  'reload',
+]);
+const waitFor = z.enum(['load', 'domcontentloaded', 'networkidle']);
+const typing = z.enum(['keys', 'fill']);
+const profileParam = z.string().optional().describe(
+  'Signed-in browser identity. An already-open profile is reused automatically. Use browser_tabs to select an existing tab or open a new one.',
+);
+
+/** The fields shared by a single act and a batch step (minus the kind). */
+const actStepFields = {
+  ref: z.string().optional(),
+  text: z.string().optional(),
+  submit: z.boolean().optional(),
+  typing: typing.optional(),
+  key: z.string().optional(),
+  values: z.array(z.string()).optional(),
+  attachment: z.string().optional(),
+  ms: z.number().int().nonnegative().optional(),
+  selector: z.string().optional(),
+  wait_for: waitFor.optional(),
+  fn: z.string().optional(),
+  accept_dialog: z.boolean().optional(),
+  dialog_text: z.string().optional(),
+};
+const actStepSchema = z.object({ kind: actKind, ...actStepFields });
+
+/** Map the wire (snake_case) act shape to the internal ActInput. */
+function toActInput(s: z.infer<typeof actStepSchema>): ActInput {
+  return {
+    kind: s.kind,
+    ref: s.ref,
+    text: s.text,
+    submit: s.submit,
+    typing: s.typing,
+    key: s.key,
+    values: s.values,
+    attachmentFile: s.attachment,
+    ms: s.ms,
+    selector: s.selector,
+    waitFor: s.wait_for,
+    fn: s.fn,
+    acceptDialog: s.accept_dialog,
+    dialogText: s.dialog_text,
+  };
+}
+
+/** The chat whose agent is calling, when the transport knew it. */
+function chatOf(ctx: ActionContext): string | undefined {
+  return ctx.actor?.sessionId ?? undefined;
+}
+
+/** Act options that audit each evaluate in full, success or failure. */
+function actOptions(ctx: ActionContext, profile: string): ActOptions {
+  return {
+    session: profile,
+    onEvaluate: (record) =>
+      appendAudit({
+        action: 'evaluate',
+        session: profile,
+        chat: chatOf(ctx),
+        origin: record.origin ?? undefined,
+        script: storeScript(record.fn),
+        resultChars: record.resultChars,
+        requests: record.requests,
+        error: record.error,
+      }),
+  };
+}
+
+async function goto(url: string, profile: string, headless: boolean) {
+  assertNavigable(url);
+  const session = await getSession({ profile, headless });
+  const page = await getActivePage(session);
+  try {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+  } catch (err) {
+    throw new ActionError(
+      'unsupported',
+      `Navigation to ${url} failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+  return session;
+}
+
+export const browser_read_action = defineAction({
+  name: 'browser_read',
+  description:
+    'Read a web page through the agent browser. Reuses an already-open profile automatically, launching only when needed. Do not ask the user to close the browser to take it over. Navigates when a url is given, then returns the page. mode "snapshot" (default) is the accessibility tree of the whole page with [ref=..] ids to act on (selector narrows it to one element\'s subtree, the way to look at part of a big page), "text" is the readable article body, "screenshot" is a set-of-marks image for canvas or shadow-DOM pages, "pdf" files the page as a Ri attachment. Reads are ungated within the login scope you curate. If a login or challenge wall is detected, the result carries a "blocked" field: hand back to the user, do not try to log in. profile selects which logged-in identity to use (default "agent").',
+  params: {
+    url: z.string().url().optional(),
+    profile: profileParam,
+    mode: readMode.optional(),
+    selector: z.string().optional(),
+    max_chars: z.number().int().positive().optional(),
+    efficient: z.boolean().optional(),
+    full_page: z.boolean().optional(),
+  },
+  cli: { positional: ['url'] },
+  handler: async (ctx, input) => {
+    requireBrowser();
+    const profile = resolveProfile(input.profile);
+    const headless = getHeadlessDefault();
+    const session = input.url
+      ? await goto(input.url, profile, headless)
+      : await getSession({ profile, headless });
+
+    const page = await getActivePage(session);
+    const result = await readPage(page, {
+      mode: input.mode,
+      selector: input.selector,
+      maxChars: input.max_chars,
+      efficient: input.efficient,
+      fullPage: input.full_page,
+      session: profile,
+      // What the agent just saw, so the next act can say what is new.
+      onSnapshot: (baseline) => rememberBaseline(session, page, baseline),
+    });
+    if (result.marks) setMarks(session, result.marks);
+
+    appendAudit({
+      action: 'browser_read',
+      session: profile,
+      chat: chatOf(ctx),
+      url: result.url,
+      detail: `mode=${result.mode} refs=${result.refCount ?? ''}`,
+      blocked: result.blocked?.kind,
+    });
+    return result;
+  },
+});
+
+export const browser_act_action = defineAction({
+  name: 'browser_act',
+  description:
+    'Perform one interaction on the current tab: click, type, press, hover, select, scroll, wait, upload, evaluate, back, forward, or reload. Target with ref (an aria-ref id like e12 from a snapshot read) or a mark id (m3 from a screenshot read). type replaces the field\'s text using real key presses, so autocompletes, comboboxes and rich editors react as they do for a person (typing="fill" sets the value at once instead, the default above 1,000 chars). After an act the page settles, so suggestions that load after a debounce are in the result. pageState lists what appeared since your last look first (a suggestion list that just opened is there). On a big page pageState holds only the new and changed elements and the region around the ref, and the refs you already have keep working. browser_read returns the whole page. wait can take a selector or a wait_for load state, not only ms. evaluate runs JS (fn, an expression, a promise is awaited) in the page, signed in as the profile. To send an HttpOnly cookie such as an xsrf token, write {{cookie:<name>}} in a request header or body: it is filled as the request leaves, only for the page\'s own origin, and the value never reaches you. evalRequests reports which placeholders were filled. Pass an idempotency_key so a retry never repeats a side effect. Set accept_dialog=true (with dialog_text for a prompt) to accept a JS dialog the action triggers, otherwise dialogs are dismissed. The result includes the new page state, downloads (as Ri attachments), a dialog it triggered, a blocked signal, and newTab if it opened one (the active tab switches to it).',
+  mutating: true,
+  params: {
+    profile: profileParam,
+    kind: actKind,
+    ...actStepFields,
+    idempotency_key: z.string().optional(),
+  },
+  handler: async (ctx, input) => {
+    requireBrowser();
+    const profile = resolveProfile(input.profile);
+    const session = await getSession({ profile, headless: getHeadlessDefault() });
+
+    if (input.idempotency_key && session.appliedKeys.has(input.idempotency_key)) {
+      return session.appliedKeys.get(input.idempotency_key);
+    }
+
+    const result = await performAct(session, toActInput(input), actOptions(ctx, profile));
+
+    if (input.idempotency_key) session.appliedKeys.set(input.idempotency_key, result);
+    appendAudit({
+      action: 'browser_act',
+      session: profile,
+      chat: chatOf(ctx),
+      url: result.pageState.url,
+      kind: input.kind,
+      ref: input.ref,
+      detail: `navigated=${result.navigated} downloads=${result.downloads.length}`,
+    });
+    return result;
+  },
+});
+
+export const browser_batch_action = defineAction({
+  name: 'browser_batch',
+  description:
+    'Run several acts in one call, one round-trip. Each step has the same fields as browser_act (kind, ref, text, typing, fn, ...). Good for a known sequence like filling a form: type, type, click. Stops if a step errors or navigates (refs are for the pre-navigation page) and reports which step and why. Returns the final page state once, led by what appeared since your last look.',
+  mutating: true,
+  params: {
+    profile: profileParam,
+    steps: z.array(actStepSchema).min(1),
+    idempotency_key: z.string().optional(),
+  },
+  handler: async (ctx, input) => {
+    requireBrowser();
+    const profile = resolveProfile(input.profile);
+    const session = await getSession({ profile, headless: getHeadlessDefault() });
+
+    if (input.idempotency_key && session.appliedKeys.has(input.idempotency_key)) {
+      return session.appliedKeys.get(input.idempotency_key);
+    }
+
+    const result = await performBatch(session, input.steps.map(toActInput), actOptions(ctx, profile));
+    if (input.idempotency_key) session.appliedKeys.set(input.idempotency_key, result);
+    appendAudit({
+      action: 'browser_batch',
+      session: profile,
+      chat: chatOf(ctx),
+      url: result.pageState.url,
+      detail: `steps=${input.steps.length} aborted=${result.aborted?.reason ?? 'no'}`,
+    });
+    return result;
+  },
+});
+
+export const browser_tabs_action = defineAction({
+  name: 'browser_tabs',
+  description:
+    'Use the already-open browser without closing or restarting it. action=list (default) returns every tab with its index, url, title, and which is active. action=select needs index (makes that tab active). action=close needs index. action=new opens a tab (optionally at url) in the same signed-in profile and makes it active. Reads and acts operate on the active tab. If another driver reports the profile is already in use, use this tool instead of asking the user to close the browser.',
+  mutating: true,
+  params: {
+    profile: profileParam,
+    action: z.enum(['list', 'select', 'close', 'new']).optional(),
+    index: z.number().int().nonnegative().optional(),
+    url: z.string().url().optional(),
+  },
+  handler: async (ctx, input) => {
+    requireBrowser();
+    const profile = resolveProfile(input.profile);
+    const session = await getSession({ profile, headless: getHeadlessDefault() });
+    const action = input.action ?? 'list';
+
+    if (action === 'select') {
+      if (input.index === undefined) throw new ActionError('invalid_params', 'select needs an index.');
+      selectTab(session, input.index);
+    } else if (action === 'close') {
+      if (input.index === undefined) throw new ActionError('invalid_params', 'close needs an index.');
+      await closeTab(session, input.index);
+    } else if (action === 'new') {
+      const page = await openTab(session);
+      if (input.url) {
+        assertNavigable(input.url);
+        await page.goto(input.url, { waitUntil: 'domcontentloaded', timeout: 45_000 }).catch((err) => {
+          throw new ActionError('unsupported', `Navigation failed: ${err instanceof Error ? err.message : String(err)}`);
+        });
+      }
+    }
+
+    const tabs = await listTabs(session);
+    appendAudit({ action: 'browser_tabs', session: profile, chat: chatOf(ctx), detail: `${action} tabs=${tabs.length}` });
+    return { action, tabs };
+  },
+});
+
+export const browser_open_action = defineAction({
+  name: 'browser_open',
+  description:
+    'Connect to the agent browser if it is already open, or launch a headed window so a human can sign in. An open browser is supported and does not need to be closed first. The human signs in by hand and the session persists. For ordinary browsing use browser_read or browser_tabs directly, which also connect automatically. Not for automated login. profile selects which identity to open (default "agent").',
+  mutating: true,
+  params: {
+    url: z.string().url().optional(),
+    profile: profileParam,
+    headless: z.boolean().optional(),
+  },
+  cli: { positional: ['url'] },
+  handler: async (ctx, input) => {
+    requireBrowser();
+    const profile = resolveProfile(input.profile);
+    const headless = input.headless ?? false; // headed by default: the point is a human logging in
+    const session = input.url
+      ? await goto(input.url, profile, headless)
+      : await getSession({ profile, headless });
+    const url = (await getActivePage(session)).url();
+    appendAudit({ action: 'browser_open', session: profile, chat: chatOf(ctx), url });
+    return { ok: true, opened: true, profile, headless, url };
+  },
+});
+
+export const browser_profiles_action = defineAction({
+  name: 'browser_profiles',
+  description:
+    'List the agent browser profiles. Each profile is a separate logged-in identity with its own cookie jar. The default is "agent". Pass profile=<name> to any browser action to use a different one, and open a new one with browser_open profile=<name> to log into it.',
+  params: {},
+  handler: () => {
+    return { default: getDefaultProfile(), profiles: listBrowserProfiles() };
+  },
+});
+
+export const browser_import_cookies_action = defineAction({
+  name: 'browser_import_cookies',
+  description:
+    'macOS only, trusted local callers only. Copy a domain\'s cookies from your everyday Chrome or Brave into an agent profile, so it is signed in without a manual login. Triggers a one-time Keychain prompt. source defaults to chrome, chrome_profile to Default, profile (the target agent profile) to "agent".',
+  mutating: true,
+  params: {
+    domain: z.string().min(1),
+    source: z.enum(['chrome', 'brave']).optional(),
+    chrome_profile: z.string().optional(),
+    profile: profileParam,
+  },
+  handler: async (ctx, input) => {
+    requireBrowser();
+    if (ctx.remote ?? true) {
+      throw new ActionError('unsupported', 'Cookie import is restricted to trusted local callers.');
+    }
+    const profile = resolveProfile(input.profile);
+    const result = await importCookies({
+      domain: input.domain,
+      source: input.source,
+      chromeProfile: input.chrome_profile,
+      profile,
+    });
+    appendAudit({
+      action: 'browser_import_cookies',
+      session: profile,
+      detail: `${result.source} ${result.domain} imported=${result.imported}`,
+    });
+    return result;
+  },
+});
+
+export const browser_status_action = defineAction({
+  name: 'browser_status',
+  description:
+    'Report the agent browser status: whether one is open, the configured browser, the profiles that exist, and the recent audit trail (which pages were read and what was done). open=true means the profile is available to connect to with browser_read or browser_tabs. Do not ask the user to close an open browser before using it.',
+  params: {
+    profile: profileParam,
+    audit_limit: z.number().int().positive().max(200).optional(),
+  },
+  handler: async (_ctx, input) => {
+    const open = await isBrowserOpen(resolveProfile(input.profile));
+    return {
+      enabled: isBrowserEnabled(),
+      open,
+      config: browserConfigSummary(),
+      profiles: listBrowserProfiles(),
+      audit: readAuditTail(input.audit_limit ?? 20),
+    };
+  },
+});
+
+export const browser_close_action = defineAction({
+  name: 'browser_close',
+  description:
+    'Stop the agent browser and every tab in the profile. The kill switch, not routine cleanup after browsing. Connecting to an open browser or opening another tab does not require this tool. Idempotent: closing when nothing is open is a no-op. profile selects which one to close (default "agent").',
+  mutating: true,
+  params: {
+    profile: profileParam,
+  },
+  handler: async (_ctx, input) => {
+    const profile = resolveProfile(input.profile);
+    const result = await closeBrowser(profile);
+    forgetSession(profile);
+    appendAudit({ action: 'browser_close', session: profile, detail: `closed=${result.closed}` });
+    return result;
+  },
+});
+
+export const browserActions = [
+  browser_read_action,
+  browser_act_action,
+  browser_batch_action,
+  browser_tabs_action,
+  browser_open_action,
+  browser_profiles_action,
+  browser_import_cookies_action,
+  browser_status_action,
+  browser_close_action,
+];

@@ -276,7 +276,7 @@ function TryInChat({app}: {app: App}) {
     setBusy(true); setFailure(null);
     try {
       if (!app.sourceRef) throw new Error('Reconnect this account to use it in chat.');
-      const main = await queryClient.fetchQuery({queryKey: mainChatKey(null), queryFn: () => trpcClient.orchestratorChat.list.query({}), staleTime: 0});
+      const main = await queryClient.fetchQuery({queryKey: mainChatKey(null), queryFn: () => trpcClient.coordinatorChat.list.query({}), staleTime: 0});
       offerSourceToChat(main.session.id, app.sourceRef, {prompt});
       dashboard.goHome(); dashboard.showPanelTab('chat'); dashboard.setMobileTab('chat');
       if (dashboard.isFocusMode) dashboard.exitFocusMode();

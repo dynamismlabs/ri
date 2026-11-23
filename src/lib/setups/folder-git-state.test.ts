@@ -108,7 +108,7 @@ describe('a live session of the agent', () => {
   /** A main chat with a harness running, whose tools depend on the agent being a git agent. */
   async function liveMainChat(workspaceId: string) {
     const executor = await import('@/lib/executor/adapter');
-    const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', workspaceId, type: 'orchestration' });
+    const chat = q.createChatSession({ harness: 'codex', model: 'gpt-6.1-sol', workspaceId, type: 'coordinator' });
     const close = vi.fn(async () => {});
     executor._cacheHarnessSession(chat.id, { close, send: vi.fn() } as unknown as AgentSession);
     return close;

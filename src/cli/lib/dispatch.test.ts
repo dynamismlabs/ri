@@ -69,7 +69,7 @@ describe('dispatchAction on a connected device', () => {
     process.env.RI_SESSION_CREDENTIAL = 'chat-1.signature';
     const result = await dispatchAction('create_task', { title: 'Buy milk' });
     expect(result).toEqual({ ok: true, action: 'create_task', result: { id: 't1', title: 'Buy milk' } });
-    expect(seen.path).toBe('/api/orchestrator/actions/create_task');
+    expect(seen.path).toBe('/api/home/actions/create_task');
     expect(JSON.parse(seen.body!)).toEqual({ title: 'Buy milk' });
     expect(seen.headers?.authorization).toBe('Bearer ri_live_laptop');
     expect(seen.headers?.['x-ri-session']).toBe('chat-1.signature');

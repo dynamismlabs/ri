@@ -1,7 +1,7 @@
 /**
  * `<cli> trigger …` — ergonomic CLI surface for scheduled work.
  *
- * Wraps the orchestrator's `create_trigger`, `list_triggers`,
+ * Wraps Ri's `create_trigger`, `list_triggers`,
  * `update_trigger`, `delete_trigger`, `run_trigger`,
  * `cancel_run`, etc. with friendlier flag shapes, name-based lookups,
  * and pretty terminal output. Everything routes through `dispatchAction`
@@ -58,7 +58,7 @@ function registerTriggerCommand(program: Command) {
     // ── Target / provider ──
     .option(
       '--target <kind>',
-      'workspace (a fresh chat in that agent each fire) | orchestrator (a fresh Ri chat each fire) | ' +
+      'workspace (a fresh chat in that agent each fire) | coordinator (a fresh Ri chat each fire) | ' +
         'session (one existing chat each fire)',
       'workspace',
     )
@@ -285,7 +285,7 @@ function registerSpendCommand(program: Command) {
     .option('--by <group>', 'Group by harness or trigger.')
     .action(async (opts) => {
       // We compute the rollup client-side from list_runs since V1 has
-      // no dedicated spend orchestrator action.
+      // no dedicated spend Ri action.
       const since = new Date();
       since.setUTCDate(1);
       since.setUTCHours(0, 0, 0, 0);

@@ -130,7 +130,7 @@ The explicit exceptions are protocols rather than application JSON consumers:
 - Cookie session bootstrap, health/version discovery and device connection
   negotiation that must work before the typed viewer client is available.
 - OAuth callbacks and event delivery, webhooks, MCP transports and public
-  orchestrator action calls.
+  Ri action calls.
 - Native desktop IPC, worker enrollment, grants, heartbeat, command/event
   delivery and worker byte streams.
 - Live page/chat SSE, external terminal SSE compatibility and the playground's model stream.

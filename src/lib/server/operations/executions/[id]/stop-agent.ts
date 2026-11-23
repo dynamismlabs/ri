@@ -7,7 +7,7 @@ import { z as rpcZ } from 'zod/v4';
  * Stop the running agent turns for an execution, in the server process that
  * owns the live handles. Preserves the durable execution, worktree, chats, and
  * associations — this is a runtime stop, not an archive. Used by the CLI/MCP
- * orchestrator (which cannot touch the in-memory handles) via the server
+ * coordinator (which cannot touch the in-memory handles) via the server
  * control path, and reports failure honestly so the caller never claims the
  * agent stopped when it did not.
  */

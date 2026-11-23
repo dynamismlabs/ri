@@ -25,7 +25,7 @@ import { withdrawQueuedSend } from '@/lib/workers/undelivered';
 export function followAgentUntilRun(chatSessionId: string): { moved: boolean; withdrawn: number } {
   const chat = getChatSession(chatSessionId);
   const unchanged = { moved: false, withdrawn: 0 };
-  if (!chat || chat.status !== 'active' || chat.type !== 'orchestration' || !chat.workspaceId || chat.executionId || chat.createdByRunId) {
+  if (!chat || chat.status !== 'active' || chat.type !== 'coordinator' || !chat.workspaceId || chat.executionId || chat.createdByRunId) {
     return unchanged;
   }
   const workspace = getWorkspace(chat.workspaceId);

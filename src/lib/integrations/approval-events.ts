@@ -17,7 +17,7 @@ import { preserveSystemContext } from '@/lib/db/queries';
  *     and can be turned back.
  *
  * Only the approve route (human, from the UI) reaches `recordApprovalDecision` and
- * `allowWithoutAsking`. No orchestrator action or integration tool resolves an approval.
+ * `allowWithoutAsking`. No Ri action or integration tool resolves an approval.
  */
 import type { IntegrationRuntime } from '@integrations/engine';
 import type { ChatEventSource } from '@/db/types';

@@ -36,7 +36,7 @@ afterAll(() => {
 async function seed() {
   const q = await import('@/lib/db/queries');
   const ws = q.createWorkspace({ name: 'demo', cwd: os.tmpdir(), isGit: false, filesToCopy: [], status: 'active' });
-  const chat = q.createChatSession({ type: 'orchestration', workspaceId: ws.id, harness: 'claude', status: 'active' });
+  const chat = q.createChatSession({ type: 'coordinator', workspaceId: ws.id, harness: 'claude', status: 'active' });
   q.insertChatEvent({ sessionId: chat.id, role: 'assistant', source: 'agent', content: '**Done.** The login page is in.', createdAt: new Date().toISOString() });
   return { ws, chat };
 }

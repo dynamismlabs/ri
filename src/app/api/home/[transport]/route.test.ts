@@ -1,0 +1,120 @@
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+/**
+ * The home MCP route resolves the calling chat from the signed
+ * `x-ri-session` header (docs/agents-view-spec.md Phase 4, "Caller
+ * identity"). Driven through the real MCP handler with a JSON-RPC tools/call.
+ * The observable effect: `message_agent` refuses a chat messaging
+ * itself, which it can only know when the route resolved the caller.
+ */
+
+const ROOT = fs.mkdtempSync(path.join(os.tmpdir(), 'ri-home-mcp-'));
+const TOKEN = 'tok_home_mcp';
+const saved = { root: process.env.RI_ROOT, db: process.env.RI_DB_PATH, config: process.env.RI_CONFIG_DIR };
+
+const serverFetch = vi.fn<(path: string, init?: RequestInit) => Promise<unknown>>();
+vi.mock('@/lib/actions/server-client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/actions/server-client')>();
+  return { ...actual, serverFetch: (p: string, init?: RequestInit) => serverFetch(p, init) };
+});
+
+beforeAll(async () => {
+  process.env.RI_ROOT = ROOT;
+  process.env.RI_DB_PATH = path.join(ROOT, 'data.db');
+  process.env.RI_CONFIG_DIR = path.join(ROOT, '.config');
+  fs.mkdirSync(process.env.RI_CONFIG_DIR, { recursive: true });
+  fs.writeFileSync(path.join(process.env.RI_CONFIG_DIR, 'config.json'), JSON.stringify({ version: 1, localToken: TOKEN }));
+  const { getDb, resetDb } = await import('@/lib/db');
+  resetDb();
+  getDb();
+});
+
+afterAll(() => {
+  for (const [key, value] of [['RI_ROOT', saved.root], ['RI_DB_PATH', saved.db], ['RI_CONFIG_DIR', saved.config]] as const) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+  fs.rmSync(ROOT, { recursive: true, force: true });
+});
+
+beforeEach(() => {
+  serverFetch.mockReset();
+  serverFetch.mockResolvedValue({ id: 'evt-1' });
+});
+
+async function callTool(name: string, args: Record<string, unknown>, headers: Record<string, string> = {}) {
+  const { POST } = await import('./route');
+  const response = await POST(new Request('http://127.0.0.1/api/home/mcp', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      accept: 'application/json, text/event-stream',
+      ...headers,
+    },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }),
+  }));
+  const raw = await response.text();
+  // Streamable HTTP answers as a single SSE `data:` frame or plain JSON.
+  const json = raw.includes('data:')
+    ? raw.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('')
+    : raw;
+  const message = JSON.parse(json) as { result: { content: Array<{ text: string }> } };
+  return JSON.parse(message.result.content[0].text) as { ok: boolean; error?: { code: string; message: string } };
+}
+
+async function seedExecution() {
+  const q = await import('@/lib/db/queries');
+  const ws = q.createWorkspace({ name: 'ri', cwd: ROOT, isGit: false, filesToCopy: [], status: 'active' });
+  return q.createExecutionWithChat({ workspaceId: ws.id, harness: 'claude', label: 'Work' }).session;
+}
+
+describe('home MCP caller identity', () => {
+  it('refuses unsupported destinations before MCP can turn them into personal writes', async () => {
+    const q = await import('@/lib/db/queries');
+    const task = q.createTask({ title: 'Keep my rank' });
+    for (const destination of [{ target_home_id: 'remote-home' }, { targetHomeId: 'remote-home' }, { target_home: 'remote-home' }]) {
+      for (const [name, input] of [
+        ['create_area', { name: 'Must stay absent' }],
+        ['rank_task', { id: task.id, rank: 1 }],
+        ['create_stream_item', { rawText: 'Must stay absent' }],
+      ] as const) {
+        const envelope = await callTool(name, { ...input, ...destination });
+        expect(envelope.ok, JSON.stringify({ name, destination, envelope })).toBe(false);
+      }
+    }
+    expect(q.listAreas().some(area => area.name === 'Must stay absent')).toBe(false);
+    expect(q.getTask(task.id)?.sortKey).toBe(task.sortKey);
+  });
+
+  it('resolves a signed header to the calling chat', async () => {
+    const session = await seedExecution();
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
+    const envelope = await callTool('message_agent', { target: `session:${session.id}`, content: 'hi', response: 'none', request_id: 'identity-test' }, {
+      'x-ri-session': sessionCredential(session.id)!,
+    });
+    expect(envelope).toMatchObject({ ok: false, error: { code: 'invalid_params' } });
+    expect(envelope.error!.message).toContain('this chat');
+    expect(serverFetch).not.toHaveBeenCalled();
+  });
+
+  it('ignores a forged or bare session id, so the call runs with no actor', async () => {
+    const session = await seedExecution();
+    for (const header of [`${session.id}.forged`, session.id]) {
+      serverFetch.mockClear();
+      const envelope = await callTool('message_agent', { target: `session:${session.id}`, content: 'hi', response: 'none', request_id: 'identity-test' }, {
+        'x-ri-session': header,
+      });
+      expect(envelope).toMatchObject({ ok: false, error: { code: 'unsupported' } });
+      expect(serverFetch).not.toHaveBeenCalled();
+    }
+  });
+
+  it('runs with no actor when the header is absent', async () => {
+    const session = await seedExecution();
+    const envelope = await callTool('message_agent', { target: `session:${session.id}`, content: 'hi', response: 'none', request_id: 'identity-test' });
+    expect(envelope).toMatchObject({ ok: false, error: { code: 'unsupported' } });
+  });
+});

@@ -67,7 +67,7 @@ async function serve(handle: (method: string, input: Record<string, unknown>) =>
       const method = url.pathname.slice('/api/trpc/'.length);
       let data: unknown;
       if (method === 'connectedApps.catalog') data = [todoist, canvas];
-      else if (method === 'orchestratorChat.list') data = {session: {id: 'main-chat'}};
+      else if (method === 'coordinatorChat.list') data = {session: {id: 'main-chat'}};
       // The client's own probe for a WebSocket link. Plain HTTP serves the fixture.
       else if (method === 'transport.capabilities') data = {websocket: false};
       else data = await handle(method, input);

@@ -22,7 +22,7 @@ Two opposite directions; only one is built end-to-end.
 - **SERVE (built).** `serveMcp` projects our integration actions as MCP tools.
   `src/app/api/integrations/[transport]/route.ts` (`createMcpHandler` + `serveMcp`)
   is registered into the Claude Code harness by `integrationsMcpServer()` in
-  `src/lib/orchestrator/harness-surface.ts`. The in-app SDK chat gets the same
+  `src/lib/coordinator/harness-surface.ts`. The in-app SDK chat gets the same
   actions via `getIntegrationTools()` → `toToolSet` (`src/lib/integrations/runtime.ts`).
 - **INGEST (engine-only, this spec).** `ingestMcpServer` + `connectMcpClient` exist
   in `packages/integrations/src/mcp/` and are tested, but nothing in the host calls

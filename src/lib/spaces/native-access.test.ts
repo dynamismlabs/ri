@@ -6,9 +6,9 @@ import { createTestHome, type TestHome } from '@/test/fixtures/home';
 import { startTeamProcess, type TeamProcess } from '@/test/fixtures/team-process';
 import { teamTRPC } from './remote';
 import { connectTeam } from './connect';
-import { runAction } from '@/lib/orchestrator/dispatch';
+import { runAction } from '@/lib/actions/dispatch';
 import * as q from '@/lib/db/queries';
-import type { ActionContext } from '@/lib/orchestrator/types';
+import type { ActionContext } from '@/lib/actions/types';
 import { callAgentCli } from '@/test/fixtures/agent-cli';
 
 let team: TeamProcess;
@@ -25,7 +25,7 @@ beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-native-personal-' });
   const { ensureHomeIdentity } = await import('@/lib/home/identity');
   ensureHomeIdentity();
-  const chat = q.createChatSession({ type: 'orchestration', harness: 'codex' });
+  const chat = q.createChatSession({ type: 'coordinator', harness: 'codex' });
   ctx = { remote: true, actor: { source: 'ai', sessionId: chat.id }, caller: { location: 'home' } };
 });
 afterEach(async () => { await home.cleanup(); vi.unstubAllEnvs(); });
@@ -55,9 +55,9 @@ describe('a signed personal chat using connected Home operations', () => {
   it('preserves snake-case assignment and Area through the real MCP route', async () => {
     const { o, c } = await connect();
     const area = await o.areas.create.mutate({ name: 'MCP area' });
-    const { POST } = await import('@/app/api/orchestrator/[transport]/route');
-    const { sessionCredential } = await import('@/lib/orchestrator/session-credential');
-    const response = await POST(new Request('http://127.0.0.1/api/orchestrator/mcp', {
+    const { POST } = await import('@/app/api/home/[transport]/route');
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
+    const response = await POST(new Request('http://127.0.0.1/api/home/mcp', {
       method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'x-ri-session': sessionCredential(ctx.actor!.sessionId!)! },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'create_task', arguments: { title: 'MCP assigned', targetHomeId: c.id, area_id: area.id, assignee_member_id: c.memberId, idempotency_key: 'mcp-assignment-0001' } } }),
     }));
@@ -274,12 +274,12 @@ describe('a connected team\'s Areas', () => {
     expect(q.getArea(id)).toBeUndefined();
   });
 
-  it('reaches the team through the real orchestrator MCP route, which publishes the destination', async () => {
+  it('reaches the team through the real home MCP route, which publishes the destination', async () => {
     const { o, c } = await connect();
-    const { POST } = await import('@/app/api/orchestrator/[transport]/route');
-    const { sessionCredential } = await import('@/lib/orchestrator/session-credential');
+    const { POST } = await import('@/app/api/home/[transport]/route');
+    const { sessionCredential } = await import('@/lib/actions/session-credential');
     const mcp = async (method: string, params?: unknown) => {
-      const response = await POST(new Request('http://127.0.0.1/api/orchestrator/mcp', {
+      const response = await POST(new Request('http://127.0.0.1/api/home/mcp', {
         method: 'POST', headers: { 'content-type': 'application/json', accept: 'application/json, text/event-stream', 'x-ri-session': sessionCredential(ctx.actor!.sessionId!)! },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, ...(params ? { params } : {}) }),
       }));

@@ -11,8 +11,8 @@ let sender: ReturnType<typeof q.createChatSession>;
 let target: ReturnType<typeof q.createChatSession>;
 beforeEach(async () => {
   home = await createTestHome({ prefix: 'ri-chat-receipts-' });
-  sender = q.createChatSession({ type: 'orchestration', harness: 'codex' });
-  target = q.createChatSession({ type: 'orchestration', harness: 'claude' });
+  sender = q.createChatSession({ type: 'coordinator', harness: 'codex' });
+  target = q.createChatSession({ type: 'coordinator', harness: 'claude' });
 });
 afterEach(async () => { await home.cleanup(); });
 
