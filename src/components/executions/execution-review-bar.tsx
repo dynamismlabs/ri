@@ -85,7 +85,7 @@ export function ExecutionReviewBar({ executionId }: { executionId: string }) {
         )}
       >
         <span data-slot="review-bar-title" className="text-[11px] font-medium text-foreground">
-          {ctx.hasUnreviewedOutput ? 'Review the agent’s latest output' : `Reviewed: ${reviewed ? DISPOSITION_LABEL[reviewed] : ''}`}
+          {ctx.hasUnreviewedOutput ? 'Review the latest output' : `Reviewed: ${reviewed ? DISPOSITION_LABEL[reviewed] : ''}`}
         </span>
 
         {/* On a narrow chat the buttons drop below the title and wrap whole,

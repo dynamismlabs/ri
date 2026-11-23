@@ -9,9 +9,9 @@
   --content-inset: 12px;
   --content-block: initial;
   padding: var(--content-block, var(--content-inset)) var(--content-inset);
-  border: 0 solid transparent;
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background-color: var(--raised);
+  background-color: var(--pane);
   background-image: none;
   box-shadow: none;
   color: var(--t2);
@@ -34,8 +34,8 @@
 .ri-density--comfortable { --content-block: 10px; }
 .ri-surface--pane { background-color: var(--pane); }
 .ri-surface--card { background-color: var(--card); }
-.ri-surface--track { background-color: var(--track); }
-.ri-surface--plain { background-color: transparent; }
+.ri-surface--track { border-color: transparent; background-color: var(--track); }
+.ri-surface--plain { border-color: transparent; background-color: transparent; }
 .ri-card--shadow { box-shadow: var(--shadow-card); }
 .ri-card:is(button, a, [role='button']) { cursor: pointer; }
 .ri-card:is(button, a, [role='button']):hover:not(:disabled, [aria-disabled='true']),

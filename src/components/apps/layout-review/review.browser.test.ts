@@ -147,7 +147,15 @@ for (const theme of ['light', 'dark'] as const) {
       const card = page.locator('button.ri-card').first();
       await card.hover();
       expect(await card.evaluate(el => getComputedStyle(el).borderRadius)).toBe('14px');
-      expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe('rgba(0, 0, 0, 0)');
+      // Cards sit on the pane color with a hairline border, not a gray fill.
+      const hairline = await page.evaluate(() => {
+        const probe = document.createElement('span');
+        probe.style.borderColor = 'var(--line)'; document.body.append(probe);
+        const color = getComputedStyle(probe).borderColor; probe.remove();
+        return color;
+      });
+      expect(await card.evaluate(el => getComputedStyle(el).borderColor)).toBe(hairline);
+      expect(await card.evaluate(el => getComputedStyle(el).borderTopWidth)).toBe('1px');
       await page.getByRole('button', { name: 'Manage Private workflow', exact: true }).click();
       const details = page.getByRole('tablist', {name:'Addition details'});
       await details.waitFor();

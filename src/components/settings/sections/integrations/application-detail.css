@@ -1,2 +1,2 @@
-html:root [data-settings-scroll] .ri-application-detail-frame { border-color: transparent; border-radius: 14px; background-color: var(--raised); }
+html:root [data-settings-scroll] .ri-application-detail-frame { border-radius: 14px; }
 html:root [data-settings-scroll] .ri-application-detail-frame-plain { border-color: transparent; border-radius: 14px; }

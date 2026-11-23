@@ -12,12 +12,16 @@ pairs and shadows. `src/app/globals.css` registers the tokens with Tailwind,
 imports each component's CSS, and owns the document base and scrollbar rules.
 Domain drawing lives beside its owning component.
 
-The canvas holds navigation and the top bar. The pane holds work. Raised fills
-sit inside a pane. Columns meet the window and each other without floating
-rounded pane frames. Hairlines divide structural panes. Content uses soft fills
-and shadows rather than outlines. Plain task, note and Stream rows stay
-transparent. User messages keep their inverted bubble without an added Card
-frame. Bare connected forms retain their host layout.
+The canvas holds navigation and the top bar. The pane holds work. Columns meet
+the window and each other without floating rounded pane frames. Hairlines divide
+structural panes. A container (a card, a Settings panel, an empty state, a list
+frame, a field) sits on the pane color, white in light and near black in dark,
+with a hairline border. Gray fills belong to controls (secondary buttons,
+segmented tracks, chips and badges) and to states (hover, selected, pressed),
+so gray marks controls, small labels and states, never a box. Plain task,
+note and Stream rows stay transparent. User messages keep their inverted
+bubble without an added Card frame. Bare connected forms retain their host
+layout.
 
 Neutral colors use a low-chroma gray in both themes. `--t1` through `--t4` mean
 title, body, secondary and faint. Semantic tones include attention, warning,
@@ -139,7 +143,7 @@ Add/Close actions stay outside the tablist.
 
 | Component | Variants and ownership |
 | --- | --- |
-| `Card` | 14px raised content, as element, padding/density, raised/pane/card/track/plain surface, selected, shadow, code, dimmed or dragging state |
+| `Card` | 14px content frame on the pane color with a hairline border, as element, padding/density, raised (the default frame)/pane/card/track/plain surface, selected, shadow, code, dimmed or dragging state |
 | `ChoiceRow` | 8px descriptive option, title/description associations, leading/trailing content, rich children, selection, density and touch minimum |
 | `ChoiceGroup`, `ChoiceIndicator` | Installed radio/form keyboard and a decorative selection mark |
 | `Callout` | 14px semantic content frame with info/warning/error/success tone |

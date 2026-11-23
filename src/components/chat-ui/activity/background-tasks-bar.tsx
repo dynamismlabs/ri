@@ -1,6 +1,5 @@
 'use client';
 import { MenuAction } from '@/components/system/menu-action';
-import { InlineAction } from '@/components/system/inline-action';
 
 import { Button } from '@/components/system/button';
 import type { ChatEventRecord } from '@/lib/api/dto/records';
@@ -227,7 +226,7 @@ function TaskListRow({
   return (
     <li className="border-b last:border-b-0">
       <div className={cn('flex items-center gap-2.5 pr-2 text-xs', muted && 'opacity-70')}>
-        <InlineAction
+        <MenuAction
           type="button"
           onClick={onSelect}
           className="flex min-w-0 flex-1 items-center gap-2.5 text-left"
@@ -243,7 +242,7 @@ function TaskListRow({
             <div className="truncate text-[10px] text-muted-foreground/70">{metaLine(task)}</div>
           </div>
           <StatusBadge status={task.status} active={task.isActive} />
-        </InlineAction>
+        </MenuAction>
         {task.isActive && (
           <StopButton
             sessionId={sessionId}

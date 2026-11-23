@@ -259,70 +259,69 @@ export function WorkspaceCreateModal({ open, onOpenChange }: WorkspaceCreateModa
                 handleSubmit();
               }}
             >
-              <Card padding="none" className="flex items-center">
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
-                <EmojiPicker
-                  onSelect={(picked) => {
-                    setEmoji(picked);
-                    setAttachment(null);
-                    coverEditedRef.current = true;
-                  }}
-                  actions={[
-                    { label: 'Upload image', icon: <ImagePlus size={13} />, onSelect: () => fileInputRef.current?.click() },
-                    ...(image || emoji
-                      ? [{
-                          label: 'Remove',
-                          icon: <Trash2 size={13} />,
-                          tone: 'destructive' as const,
-                          onSelect: () => {
-                            setEmoji(null);
-                            setAttachment(null);
-                            coverEditedRef.current = true;
-                          },
-                        }]
-                      : []),
-                  ]}
-                >
-                  <Button
-                    type="button"
-                    aria-label="Agent icon"
-                    disabled={uploading}
-                    variant="ghost"
-                    size="sm"
-                    focus="inside"
-                    clip
-                  className="ml-1.5 flex w-8 shrink-0 items-center justify-center"
-                  >
-                    {uploading ? (
-                      <Loader2 size={15} className="animate-spin" />
-                    ) : image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={image} alt="" className="h-6 w-6 rounded-md object-cover" />
-                    ) : emoji ? (
-                      <span className="text-lg leading-none">{emoji}</span>
-                    ) : initials ? (
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-foreground/80">{initials}</span>
-                    ) : (
-                      <SmilePlus size={16} />
-                    )}
-                  </Button>
-                </EmojiPicker>
-                <span aria-hidden className="mx-1.5 h-5 w-px bg-border" />
-                <Field
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    // A name cleared back to nothing follows the primary folder again.
-                    nameEditedRef.current = e.target.value.trim().length > 0;
-                  }}
-                  placeholder="Agent name"
-                  aria-label="Agent name"
-                  autoFocus
-                  className="min-w-0 flex-1"
-                  purpose="title"
-                  titleSize="form"
-                />
-              </Card>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={(e) => void uploadImage(e)} className="hidden" />
+              <Field
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  // A name cleared back to nothing follows the primary folder again.
+                  nameEditedRef.current = e.target.value.trim().length > 0;
+                }}
+                placeholder="Agent name"
+                aria-label="Agent name"
+                autoFocus
+                leading={
+                  <>
+                    <EmojiPicker
+                      onSelect={(picked) => {
+                        setEmoji(picked);
+                        setAttachment(null);
+                        coverEditedRef.current = true;
+                      }}
+                      actions={[
+                        { label: 'Upload image', icon: <ImagePlus size={13} />, onSelect: () => fileInputRef.current?.click() },
+                        ...(image || emoji
+                          ? [{
+                              label: 'Remove',
+                              icon: <Trash2 size={13} />,
+                              tone: 'destructive' as const,
+                              onSelect: () => {
+                                setEmoji(null);
+                                setAttachment(null);
+                                coverEditedRef.current = true;
+                              },
+                            }]
+                          : []),
+                      ]}
+                    >
+                      <Button
+                        type="button"
+                        aria-label="Agent icon"
+                        disabled={uploading}
+                        variant="ghost"
+                        size="sm"
+                        focus="inside"
+                        clip
+                        className="flex w-8 shrink-0 items-center justify-center"
+                      >
+                        {uploading ? (
+                          <Loader2 size={15} className="animate-spin" />
+                        ) : image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={image} alt="" className="h-6 w-6 rounded-md object-cover" />
+                        ) : emoji ? (
+                          <span className="text-lg leading-none">{emoji}</span>
+                        ) : initials ? (
+                          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-[10px] font-semibold text-foreground/80">{initials}</span>
+                        ) : (
+                          <SmilePlus size={16} />
+                        )}
+                      </Button>
+                    </EmojiPicker>
+                    <span aria-hidden className="h-5 w-px bg-border" />
+                  </>
+                }
+              />
 
               <SharedComputerWarning />
 
