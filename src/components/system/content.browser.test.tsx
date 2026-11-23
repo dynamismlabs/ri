@@ -153,7 +153,9 @@ for (const theme of ['light', 'dark']) {
       const link = page.locator('a[href="#details"]'); await link.waitFor();
       expect(await link.getAttribute('role')).toBe('menuitem');
       await page.keyboard.press('ArrowDown'); await link.focus();
-      expect(await link.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('2px');
+      // In a menu the highlight is the focus mark: a soft fill, no ring.
+      expect(await link.evaluate(el => getComputedStyle(el).outlineWidth)).toBe('0px');
+      expect(await link.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)');
       await page.keyboard.press('Enter');
       await expect.poll(() => page.getByRole('menu').count()).toBe(0);
       expect(new URL(page.url()).hash).toBe('#details');

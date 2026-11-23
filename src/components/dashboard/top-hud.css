@@ -1,1 +1,8 @@
 html:root [data-slot="top-hud"] { background-color: var(--canvas); }
+/* The top bar is window chrome: one size smaller than controls in the work,
+   and quiet until you point at something. A control keeps its fill while it is
+   open or pressed, and a count that carries a tone (needs you, working) keeps
+   its color. Create stays the one solid action. */
+html:root [data-slot="top-hud"] .ri-button { --control-size: 24px; --control-icon: 13px; gap: 4px; padding-inline: 8px; font-size: 12px; }
+html:root [data-slot="top-hud"] .ri-button.ri-button--icon { padding-inline: 0; }
+html:root [data-slot="top-hud"] .ri-button--secondary:not([class*='ri-tone--'], [aria-expanded='true'], [aria-pressed='true'], .ri-button--pressed):not(:hover) { background-color: transparent; }

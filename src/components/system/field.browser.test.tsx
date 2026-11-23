@@ -522,7 +522,8 @@ for (const theme of ['light', 'dark']) {
         .poll(() => embedded.evaluate((el) => getComputedStyle(el).borderColor))
         .toBe('rgba(0, 0, 0, 0)');
       await embedded.focus();
-      expect(await embedded.evaluate((el) => getComputedStyle(el).outlineOffset)).toBe('-2px');
+      // An embedded field leaves focus to its host, so it draws no ring of its own.
+      expect(await embedded.evaluate((el) => getComputedStyle(el).outlineWidth)).toBe('0px');
     } finally {
       await page.close();
     }

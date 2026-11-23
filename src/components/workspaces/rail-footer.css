@@ -1,1 +1,3 @@
 [data-slot="rail-foot"] { --button-hover-fill: var(--hover); }
+/* The rail's footer rows are chrome too: no fill until you point at one. */
+html:root [data-slot="rail-foot"] .ri-button--secondary:not([class*='ri-tone--'], [aria-expanded='true'], [aria-pressed='true'], .ri-button--pressed):not(:hover) { background-color: transparent; }

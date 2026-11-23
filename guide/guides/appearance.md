@@ -23,6 +23,8 @@ Every screen stays where you know it. What changed is how it's drawn, so the who
 - Text fields keep their labels, help and errors together, with more room to type on a phone.
 - A white message box that stands out from the page.
 
+The top bar and the bottom of the sidebar stay quiet: their buttons and counts sit plainly until you point at them, and a count that needs you keeps its color.
+
 Hover over an icon button, or move to it with the keyboard, to see what it does.
 
 Use the arrow keys, Home or End to move along a rounded switch. Tabs open their panel as you move. Filters such as Unread and Working apply the focused choice when you press Space or Enter. On a task, press the selected Energy or Effort again to clear it.

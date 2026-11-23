@@ -663,8 +663,8 @@ function LaunchModalInner({
             (including an animated one) would become the containing block for
             the launcher's `position: fixed` popovers, which re-clips them
             inside the panel's `overflow-hidden`. See `launcher-popover.tsx`. */}
-        <DialogPrimitive.Content placement="custom" padding="md" data-slot="dialog-content"
-          className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl"
+        <DialogPrimitive.Content placement="custom" padding="none" data-slot="dialog-content"
+          className="fixed inset-x-0 top-[8vh] z-50 mx-auto w-full max-w-2xl overflow-hidden"
           onOpenAutoFocus={(e) => {
             // Land in the prompt, not on the first focusable (the workspace
             // chip). This is the whole express lane: open, type, Enter.
@@ -700,7 +700,7 @@ function LaunchModalInner({
           </VisuallyHidden.Root>
 
           <ChatDropZone
-            className="ri-launch-frame flex max-h-[84vh] animate-in flex-col overflow-hidden rounded-xl border border-border bg-card fade-in-0 shadow-2xl duration-150"
+            className="ri-launch-frame flex max-h-[84vh] animate-in flex-col overflow-hidden fade-in-0 duration-150"
             // The panel sits 8vh down. Its bottom stops 0.75rem above the
             // keyboard's top edge, so the footer never slides under it.
             style={touch && visibleBottom ? { maxHeight: `min(84vh, calc(${visibleBottom}px - 8vh - 0.75rem))` } : undefined}

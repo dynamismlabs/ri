@@ -305,7 +305,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                   className="flex items-center gap-1"
                 ><Square size={12} />Stop</Button>
               </div>}
-              <Card padding="sm" className="flex flex-wrap items-center justify-between gap-2">
+              <div className="ri-card-band flex flex-wrap items-center justify-between gap-2">
                 <div className="flex gap-1">
                   <Button
                     type="button"
@@ -338,7 +338,7 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 >
                   {imageUploading || createStream.isPending ? <Loader2 size={15} className="animate-spin" /> : <ArrowUp size={15} />}Capture
                 </Button>
-              </Card>
+              </div>
             </Card>
             <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
               <p>Paste or drop images. Closing keeps your draft.</p>
