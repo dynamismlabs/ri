@@ -1,5 +1,5 @@
 {
-  "serial": 8,
+  "serial": 9,
   "apps": [
     {
       "id": "people",
@@ -12,8 +12,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-people.git",
-      "version": "v0.1.5",
-      "checksum": "sha256-22f5e6f1effa15c24c8c89df2b9fa610309d016c2666d89fa38190a35edce829"
+      "version": "v0.1.6",
+      "checksum": "sha256-7ab19cb1c9aa24263a6141fe0dafacf980a2e7339cf62e3071ce4b6800e4ec1c"
     },
     {
       "id": "bookmarks",
@@ -23,8 +23,8 @@
         "the web pages you save (read through Ri)"
       ],
       "git": "https://github.com/dynamismlabs/app-bookmarks.git",
-      "version": "v0.1.6",
-      "checksum": "sha256-e7b7fbc525fcdbfcc834047d9119e867612f4dfb94c678541393fb04bad422e7"
+      "version": "v0.1.7",
+      "checksum": "sha256-045f704ac16b0f144fc199f5d4a95c04c980f3239533db50483cbfa6f210c1e6"
     },
     {
       "id": "job-search",
@@ -37,8 +37,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-job-search.git",
-      "version": "v0.1.6",
-      "checksum": "sha256-fc5dda1bf22bb85bcd2b27d6552b6c9acc86f52dd0d135bca58516afc27143b2"
+      "version": "v0.1.7",
+      "checksum": "sha256-ee791d1493f7d4772eb54f2d5da62e49bf1f89e2b2c2c459e13626ea65ec8054"
     },
     {
       "id": "travel",
@@ -51,8 +51,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-travel.git",
-      "version": "v0.1.6",
-      "checksum": "sha256-b7b60f9dda03557eb3beba4a1f2dd6c975352f0d9279f2ace6b51940d4ed8db5"
+      "version": "v0.1.7",
+      "checksum": "sha256-0cc6098ca703e974d87a6e67f3103c2934c465b4d87315a18edacb5e625bca88"
     },
     {
       "id": "bloom",
@@ -62,8 +62,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-bloom.git",
-      "version": "v0.1.1",
-      "checksum": "sha256-0a21ff3ae1e3c8f283ea2a1fba7c34ddc51d605b5a2e42a69d421ef933f13e69"
+      "version": "v0.1.2",
+      "checksum": "sha256-a933547de26246f0b6da07406656ebee0979cd055a56c7de907e2165bfae587a"
     }
   ]
 }
