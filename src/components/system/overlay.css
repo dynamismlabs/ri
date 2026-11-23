@@ -415,3 +415,7 @@
 .ri-dialog-body--compact { font-size: 12.5px; }
 
 .ri-form-actions--separated { padding-top: 8px; }
+/* A row in a menu or list box is something you press, so it gets the hand
+   cursor like a button. Outside the layer so an item's own cursor utility
+   doesn't win. */
+:is([role='menuitem'], [role='menuitemradio'], [role='menuitemcheckbox'], [role='option']):not([aria-disabled='true'], [data-disabled=''], [data-disabled='true']) { cursor: pointer; }
