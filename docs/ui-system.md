@@ -63,6 +63,18 @@ Icon-only siblings in a toolbar or row are ghost at rest. Fill indicates pressed
 or open. A lone icon beside a filled field matches that field's fill. Labeled
 standalone actions may use secondary. Floating actions own their opaque surface.
 
+Window chrome (the top bar and the rail's footer) is one step quieter and
+smaller than the work. Its controls use the xs size and rest without a fill.
+The fill appears on hover and stays while a control is open or pressed. A
+count with a tone (needs you, working) keeps its color, the top bar's icon
+group keeps its track, and Create stays primary. A box that holds controls,
+like the chat's git bar, is a hairline border on the pane color, so a gray
+button never sits on gray. A band across the top or bottom of a frame (who a
+chat is working with, a card's action row) is a hairline inside that frame,
+never a second card. Chips in the message box stay one text line tall. In a
+menu the highlight is the focus mark, with no ring. An embedded field draws no
+ring either: the card or menu that holds it shows focus.
+
 The installed Button is the family's single native/Slot implementation.
 `ActionPrimitive` shares refs, native events and disabled behavior without
 forcing Button drawing onto rich content. Disabled Slot links cannot activate.
