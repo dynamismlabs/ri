@@ -208,6 +208,9 @@ if (!headless) {
       // Notarized in afterSign instead (desktop/notarize.mjs), which rides out network drops.
       notarize: false,
       extendInfo: { NSMicrophoneUsageDescription: 'Ri uses the microphone when you record a voice message.', NSCameraUsageDescription: 'Ri uses the camera when you scan a pairing code.' } },
+    // The mounted disk is named Ri, as the app is. The file keeps its version and
+    // architecture, which the release, checksums, feed and updater name it by.
+    dmg: { title: '${productName}' },
     linux: { executableName: 'ri', syncDesktopName: true, icon: path.join(repo, LINUX_ICON_RELATIVE_PATH), category: 'Office', maintainer: 'Ri contributors' },
     // The package manager owns a deb install, so its app never replaces itself
     // (desktop/shell-update.ts). No updater files: without them electron-builder
