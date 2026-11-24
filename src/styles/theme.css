@@ -7,6 +7,9 @@
   --control-radius: 999px;
   --control-radius-inner: 999px;
   --badge-radius: 999px;
+  /* Frames that hold a row of controls nest them: control radius plus the inset. */
+  --composer-radius: 22px;
+  --review-bar-radius: 16px;
   --series-1: #2a78d6;
   --series-2: #eb6834;
   --series-3: #1baf7a;
@@ -212,4 +215,6 @@ html[data-control-shape='rect'] {
   --control-radius: 8px;
   --control-radius-inner: 6px;
   --badge-radius: 6px;
+  --composer-radius: 15px;
+  --review-bar-radius: 14px;
 }
