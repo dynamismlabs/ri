@@ -1,13 +1,18 @@
 ---
 title: Appearance
-description: Choose light or dark for the browser or app you use Ri in.
+description: Choose automatic, light or dark for the browser or app you use Ri in.
 ---
 
 Ri should feel calm to sit in all day, so how it looks is yours to set. Your choice belongs to the browser or app you set it in. Your phone and your computer can look different, and nothing changes for anyone else on your Ri.
 
-## Light or dark
+## Automatic, light or dark
 
-In **Settings**, open **General** and turn **Dark mode** on or off.
+In **Settings**, open **General** and pick a **Theme**:
+
+- **Automatic** matches your computer or phone. When it switches between light and dark, at sunset for example, Ri switches too. Ri starts on Automatic.
+- **Light** and **Dark** stay the same whatever your device does.
+
+On a phone, the same choice is in **More**. You can also search Ri (⌘K or Ctrl+K) for "theme" to switch without opening Settings.
 
 ## Ri's design
 

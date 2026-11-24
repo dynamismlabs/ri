@@ -4,7 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { IconButton } from '@/components/system/icon-button';
 import { useState } from 'react';
 import {
-  CheckSquare, FileText, Activity, Layers, LayoutGrid, Calendar, Sun, Moon, Settings, ChevronLeft, FileCheck2, MessageSquarePlus,
+  CheckSquare, FileText, Activity, Layers, LayoutGrid, Calendar, Moon, Settings, Sun, SunMoon, ChevronLeft, FileCheck2, MessageSquarePlus,
 } from 'lucide-react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { TaskList } from '@/components/tasks/task-list';
@@ -17,14 +17,17 @@ import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useResultCapabilities } from '@/hooks/use-results';
 import { SAVED_RESULTS_COMMAND } from '@/constants/commands';
+import { SegmentedControl } from '@/components/system/segmented-control';
+import { THEME_OPTIONS } from '@/components/settings/sections/theme-settings';
 
 type MoreSubView = 'menu' | 'tasks' | 'notes' | 'stream' | 'calendar';
 
 export function MobileMoreView() {
   const router = useRouter();
   const capabilities = useResultCapabilities();
-  const { theme, toggleTheme, openAreasList, setActiveView, openTask, openNote } = useDashboard();
+  const { theme, themePreference, setThemePreference, openAreasList, setActiveView, openTask, openNote } = useDashboard();
   const isDark = theme === 'dark';
+  const ThemeIcon = themePreference === 'system' ? SunMoon : themePreference === 'dark' ? Moon : Sun;
   const [subView, setSubView] = useState<MoreSubView>('menu');
 
   // Sub-view rendering
@@ -94,20 +97,18 @@ export function MobileMoreView() {
 
       {/* Settings-like items */}
       <div className="px-4 space-y-1">
-        <MenuAction
-          onClick={toggleTheme}
-          className="w-full flex items-center gap-3 text-left"
-        >
-          <div className={cn(
-            'w-9 h-9 rounded-lg flex items-center justify-center',
-            isDark ? 'bg-secondary' : 'bg-muted'
-          )}>
-            {isDark ? <Sun size={18} className="text-muted-foreground" /> : <Moon size={18} className="text-muted-foreground" />}
+        <div className="space-y-2 px-3 py-2">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              'w-9 h-9 rounded-lg flex items-center justify-center',
+              isDark ? 'bg-secondary' : 'bg-muted'
+            )}>
+              <ThemeIcon size={18} className="text-muted-foreground" />
+            </div>
+            <span className="text-sm font-medium text-foreground">Theme</span>
           </div>
-          <span className="text-sm font-medium text-foreground">
-            {isDark ? 'Light Mode' : 'Dark Mode'}
-          </span>
-        </MenuAction>
+          <SegmentedControl mode="choice" selection="radio" size="touch" stretch distribution="natural" ariaLabel="Theme" value={themePreference} onChange={setThemePreference} options={THEME_OPTIONS} />
+        </div>
 
         <MenuAction
           onClick={() => openSettings()}

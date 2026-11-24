@@ -19,6 +19,25 @@ it('remembers only a valid cosmetic theme without creating an installation', () 
   expect(fs.readdirSync(path.dirname(target))).toEqual(['appearance.json']);
   fs.writeFileSync(target, '{broken'); expect(desktopAppearance(target).get()).toBe('dark');
 });
+it('follows the device on a fresh profile and keeps only a theme that differs from it', () => {
+  const target = file(); let device: 'light' | 'dark' = 'light';
+  const appearance = desktopAppearance(target, () => device);
+  expect(appearance.get()).toBe('light');
+  // Automatic drew the device's theme: nothing to keep.
+  expect(appearance.set('light')).toBe(false); expect(fs.existsSync(target)).toBe(false);
+  // The device turned dark and Automatic followed: still nothing to keep, but Ri changed.
+  device = 'dark';
+  expect(appearance.set('dark')).toBe(true); expect(fs.existsSync(target)).toBe(false);
+  // A chosen Light while the device is dark is kept for the next launch.
+  expect(appearance.set('light')).toBe(true);
+  expect(desktopAppearance(target, () => 'dark').get()).toBe('light');
+  // Back to the device's theme: the next launch follows the device again.
+  expect(appearance.set('dark')).toBe(true);
+  device = 'light';
+  expect(desktopAppearance(target, () => device).get()).toBe('light');
+  // What this launch drew stays until the app reports a change.
+  expect(appearance.get()).toBe('dark');
+});
 it('keeps theme changes usable if the cosmetic file cannot be written', () => {
   const appearance = desktopAppearance(path.join(file(), 'missing/appearance.json'));
   expect(appearance.set('light')).toBe(true); expect(appearance.get()).toBe('light');

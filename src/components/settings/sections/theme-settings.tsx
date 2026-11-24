@@ -1,27 +1,28 @@
 'use client';
 import { Card } from '@/components/system/card';
 
-import { Moon, Sun } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { useClientTheme } from '@/lib/client/theme';
+import { Moon, Sun, SunMoon } from 'lucide-react';
+import { SegmentedControl, type SegmentOption } from '@/components/system/segmented-control';
+import { useThemePreference } from '@/lib/client/theme';
+import type { ThemePreference } from '@/types/dashboard';
+
+/** The three theme choices, in the order every settings surface shows them. */
+export const THEME_OPTIONS = [
+  { value: 'system', label: 'Automatic', icon: <SunMoon /> },
+  { value: 'light', label: 'Light', icon: <Sun /> },
+  { value: 'dark', label: 'Dark', icon: <Moon /> },
+] as const satisfies ReadonlyArray<SegmentOption<ThemePreference>>;
 
 /** Shared appearance controls. They never read or write a Home's server settings. */
 export function ThemeSettings() {
-  const { theme, toggleTheme } = useClientTheme();
-  const isDark = theme === 'dark';
+  const { preference, setPreference } = useThemePreference();
   return <section className="space-y-2">
     <h3 className="text-[12px] font-medium text-foreground">Theme</h3>
-    <Card as="label" padding="md" className="flex cursor-pointer items-center justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-          {isDark ? <Moon size={16} className="text-primary" /> : <Sun size={16} className="text-primary" />}
-        </div>
-        <div>
-          <p className="text-sm font-medium text-foreground">Dark mode</p>
-          <p className="text-[11px] text-muted-foreground/60">Switch between light and dark themes for the whole app.</p>
-        </div>
-      </div>
-      <Switch checked={isDark} onCheckedChange={toggleTheme} aria-label="Dark mode" />
+    <p className="text-[11px] text-muted-foreground/85">
+      Automatic follows your device&apos;s light or dark setting and changes when it does.
+    </p>
+    <Card padding="md" className="flex items-center">
+      <SegmentedControl mode="choice" selection="radio" ariaLabel="Theme" value={preference} onChange={setPreference} options={THEME_OPTIONS} />
     </Card>
   </section>;
 }

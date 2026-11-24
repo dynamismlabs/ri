@@ -18,6 +18,7 @@ import { Tip } from '@/components/ui/tip';
 import { pickMcpIcon, type McpIcon } from '@/lib/integrations/mcp-icons';
 import { acceptsFile, type FormContent, type FormField, type FormOption, type ResourceOption } from '@/lib/mcp-apps/form-schema';
 import { cn } from '@/lib/utils';
+import { useDocumentTheme } from '@/lib/client/theme';
 
 /**
  * The fields of a server's form (docs/connected-mcp-apps.md, "Forms"), one
@@ -137,7 +138,7 @@ function Suggestions({options, chosen, onPick, disabled}: {options: FormOption[]
 /** An image the server supplied, or a neutral mark when an option has none. */
 function Thumbnail({icon, className}: {icon?: McpIcon; className?: string}) {
   const [failed, setFailed] = useState(false);
-  const theme = typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+  const theme = useDocumentTheme();
   const src = icon && pickMcpIcon([icon], theme)?.src;
   if (!src || failed) return <span aria-hidden className={cn('flex items-center justify-center rounded-md bg-muted text-muted-foreground', className)}><Box size={16} /></span>;
   // eslint-disable-next-line @next/next/no-img-element -- a server-supplied data or https image, not an app asset

@@ -1,8 +1,8 @@
 'use client';
 import { Command } from 'cmdk';
-import { Calendar, FileText, FileCheck2, LayoutDashboard, Layers3, ListTodo, MessageSquarePlus, MessagesSquare, Mic, Moon, NotebookPen, Plus, Radio, Settings, SquareKanban, StickyNote, Sun, TextSearch, LayoutGrid, type LucideIcon } from 'lucide-react';
+import { Calendar, FileText, FileCheck2, LayoutDashboard, Layers3, ListTodo, MessageSquarePlus, MessagesSquare, Mic, Moon, NotebookPen, Plus, Radio, Settings, SquareKanban, StickyNote, Sun, SunMoon, TextSearch, LayoutGrid, type LucideIcon } from 'lucide-react';
 import type { PaletteCommand } from '@/constants/commands';
-const icons: Record<string, LucideIcon> = { Calendar, FileText, FileCheck2, LayoutDashboard, Layers3, ListTodo, MessageSquarePlus, MessagesSquare, Mic, Moon, NotebookPen, Plus, Radio, Settings, SquareKanban, StickyNote, Sun, TextSearch, LayoutGrid };
+const icons: Record<string, LucideIcon> = { Calendar, FileText, FileCheck2, LayoutDashboard, Layers3, ListTodo, MessageSquarePlus, MessagesSquare, Mic, Moon, NotebookPen, Plus, Radio, Settings, SquareKanban, StickyNote, Sun, SunMoon, TextSearch, LayoutGrid };
 
 /** The commands a query finds, by their label and keywords. */
 export function matchCommands(commands: readonly PaletteCommand[], query: string, label: (command: PaletteCommand) => string = command => command.label): PaletteCommand[] {

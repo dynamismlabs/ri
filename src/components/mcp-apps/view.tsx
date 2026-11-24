@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppViewController } from '@ri/mcp-apps-host';
 import { Loader2, PanelRightOpen, X } from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { useDocumentTheme } from '@/lib/client/theme';
 import { Button } from '@/components/system/button';
 import { trpcClient } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/router';
@@ -196,7 +196,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
   const queryClient = useQueryClient();
   const mount = useRef<HTMLDivElement>(null);
   const controller = useRef<AppViewController | null>(null);
-  const {resolvedTheme} = useTheme();
+  const theme = useDocumentTheme();
   const [error, setError] = useState<string | null>(null);
   const [height, setHeight] = useState(420);
   const [pending, setPending] = useState<Pending | null>(null);
@@ -375,7 +375,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
     };
     // The capture is immutable. Refetch checks access without rebuilding the iframe.
   }, [view.id]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => controller.current?.theme(resolvedTheme === 'dark' ? 'dark' : 'light'), [resolvedTheme]);
+  useEffect(() => controller.current?.theme(theme), [theme]);
   // A deep link to this open screen moves it in place (OpenAI's deep links), and is kept for a remount.
   const sentLink = useRef(deepLink ?? view.deepLink);
   useEffect(() => {

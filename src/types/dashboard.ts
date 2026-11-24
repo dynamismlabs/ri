@@ -1,6 +1,8 @@
 import type { SharedTaskSource } from '@/db/types';
 
 export type Theme = 'dark' | 'light';
+/** A browser's theme choice. `system` (Automatic) follows the device's light or dark setting. */
+export type ThemePreference = 'system' | Theme;
 export type WorkMode = 'light' | 'deep' | null;
 /** Tabs in the agent view's tools panel (docs/agents-view-spec.md Phase 7). The terminal is a drawer, not a tab (§10). */
 export type AgentTab = 'overview' | 'files' | 'preview' | 'setup';

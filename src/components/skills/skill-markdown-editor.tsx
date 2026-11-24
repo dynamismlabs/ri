@@ -5,7 +5,7 @@ import CodeMirror from '@uiw/react-codemirror';
 import { EditorView, keymap, placeholder as cmPlaceholder } from '@codemirror/view';
 import { EditorState, type Extension } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
-import { useClientTheme } from '@/lib/client/theme';
+import { useDocumentTheme } from '@/lib/client/theme';
 import { cmTheme } from '@/components/executions/viewer/cm-theme';
 
 /**
@@ -39,7 +39,7 @@ export function SkillMarkdownEditor({
   /** Markdown when absent. Keep it stable (useMemo), like `onSave`. */
   language?: Extension;
 }) {
-  const { theme } = useClientTheme();
+  const theme = useDocumentTheme();
 
   const extensions = useMemo(
     () => [

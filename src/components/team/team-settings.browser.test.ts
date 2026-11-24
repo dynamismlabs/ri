@@ -20,6 +20,8 @@ beforeAll(async () => {
       import {createRoot} from 'react-dom/client';
       import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
       import {TeamSettings} from './src/components/team/team-settings';
+      import {APPEARANCE_SCRIPT} from './src/lib/client/appearance-script';
+      import {ClientAppearance} from './src/lib/client/theme';
       import {TeamContext,useTeamNav} from './src/components/team/team-context';
       import {TeamRailFooter} from './src/components/team/team-rail-footer';
       import {MobileTopBar} from './src/components/mobile/mobile-top-bar';
@@ -31,7 +33,9 @@ beforeAll(async () => {
       if(params.has('personal'))setSettingsSection(params.has('external')?'external-ai':'profile');
       const identity={team:{id:'team',name:'Team Huffine',members:2,hostedOn:'Mac Mini'},member:{id:'owner',name:'Trey',role:params.get('role')==='member'?'member':'owner'}};
       function TeamFixture(){const nav=useTeamNav();return <>{params.has('rail')&&<aside className={'fixed bottom-0 left-0 '+(params.has('collapsed')?'w-14':'w-64')}><TeamRailFooter collapsed={params.has('collapsed')}/></aside>}{params.has('phone-bar')&&<MobileTopBar onOpenSettings={()=>nav.openPanel('settings')} onOpenAccount={()=>nav.openSettings('access')}/>}<TeamSettings/></>;}
-      createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}>{params.has('personal')?<Personal/>:<TeamContext.Provider value={identity}><TeamFixture/></TeamContext.Provider>}</QueryClientProvider>);
+      // The root layout's head script and drawing component, as every document has them.
+      new Function(APPEARANCE_SCRIPT)();
+      createRoot(document.getElementById('root')).render(<><ClientAppearance/><QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false},mutations:{retry:false}}})}>{params.has('personal')?<Personal/>:<TeamContext.Provider value={identity}><TeamFixture/></TeamContext.Provider>}</QueryClientProvider></>);
     ` },
     bundle: true, write: false, platform: 'browser', format: 'iife', jsx: 'automatic',
     define: { 'process.env': '{"NODE_ENV":"development"}' },
@@ -132,16 +136,21 @@ afterAll(async () => {
 it.skipIf(!enabled).each(['owner', 'member'])('shares browser appearance with a standalone %s without personal settings authority', async role => {
   const page = await browser.newPage({ viewport: { width: 390, height: 812 } });
   try {
+    await page.emulateMedia({ colorScheme: 'dark' });
     await page.goto(`${address}/?panel=settings&settings=general&role=${role}`);
-    const theme = page.getByRole('switch', { name: 'Dark mode', exact: true });
-    await theme.waitFor();
-    expect(await theme.isChecked()).toBe(true);
-    await theme.click();
-    expect(await theme.isChecked()).toBe(false);
+    const themes = page.getByRole('radiogroup', { name: 'Theme' });
+    const automatic = themes.getByRole('radio', { name: 'Automatic', exact: true });
+    const light = themes.getByRole('radio', { name: 'Light', exact: true });
+    await automatic.waitFor();
+    expect(await automatic.isChecked()).toBe(true);
+    expect(await page.locator('html').evaluate(element => element.classList.contains('dark'))).toBe(true);
+    await light.click();
+    expect(await light.isChecked()).toBe(true);
     expect(await page.locator('html').evaluate(element => element.classList.contains('dark'))).toBe(false);
     await page.reload();
-    await theme.waitFor();
-    expect(await theme.isChecked()).toBe(false);
+    await light.waitFor();
+    expect(await light.isChecked()).toBe(true);
+    expect(await page.locator('html').evaluate(element => element.classList.contains('dark'))).toBe(false);
     expect(await page.getByRole('dialog').innerText()).not.toMatch(/Restart service|Install update|Local desktop/);
     expect(await page.evaluate('document.documentElement.scrollWidth <= innerWidth')).toBe(true);
   } finally { await page.close(); }

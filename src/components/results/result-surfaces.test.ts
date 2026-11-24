@@ -14,7 +14,7 @@ vi.mock('@/hooks/use-results', () => ({
 }));
 vi.mock('@/components/chat-ui/handoffs/result-renderer', () => ({ ResultRenderer: () => createElement('span', null, 'Shared handoff renderer') }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
-vi.mock('@/contexts/dashboard-context', () => ({ useDashboard: () => ({ theme: 'light', toggleTheme: vi.fn(), openAreasList: vi.fn() }) }));
+vi.mock('@/contexts/dashboard-context', () => ({ useDashboard: () => ({ theme: 'light', themePreference: 'light', setThemePreference: vi.fn(), openAreasList: vi.fn() }) }));
 vi.mock('@/components/tasks/task-list', () => ({ TaskList: () => null }));
 vi.mock('@/components/notes/note-list', () => ({ NoteList: () => null }));
 vi.mock('@/components/stream/stream-list', () => ({ StreamList: () => null }));

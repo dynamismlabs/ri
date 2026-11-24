@@ -59,6 +59,9 @@ beforeEach(() => {
   vi.stubGlobal('window', window);
   vi.stubGlobal('document', document);
   vi.stubGlobal('Event', window.Event);
+  // The theme choice is a rounded switch, which measures itself.
+  vi.stubGlobal('HTMLElement', window.HTMLElement);
+  vi.stubGlobal('ResizeObserver', class { observe() {} unobserve() {} disconnect() {} });
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   container = document.createElement('div');
   root = createRoot(container);

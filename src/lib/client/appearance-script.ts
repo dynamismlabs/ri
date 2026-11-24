@@ -1,14 +1,18 @@
 /**
  * The browser's theme, applied before first paint.
  *
- * The server renders the dark theme on `<html>`. This script runs first in the
- * document head, before the page paints, and applies a light theme this browser
- * chose, so a person in light mode never sees a dark frame first.
- * `useClientTheme` keeps it in step afterwards.
+ * A browser's theme choice is Automatic, Light or Dark (`ThemePreference`).
+ * Automatic, also what a browser that never chose gets, follows the device's
+ * light or dark setting. The server can't know that setting, so it renders the
+ * dark theme on `<html>`. This script runs first in the document head, before
+ * the page paints, and applies the chosen or device theme, so a person in light
+ * never sees a dark frame first. `ClientAppearance` keeps it in step afterwards,
+ * including when the device switches while Ri is open.
  *
  * A plain module, not a client one, so the root layout (a server component) can
- * read the string. The key lives here and the hook imports it.
+ * read the string. The key and the media query live here and the hook imports them.
  */
 export const CLIENT_THEME_KEY = 'ri.client.theme';
+export const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
 
-export const APPEARANCE_SCRIPT = `(function(){try{var d=document.documentElement,t=window.localStorage.getItem(${JSON.stringify(CLIENT_THEME_KEY)});if(t==='light')d.classList.remove('dark');else if(t==='dark')d.classList.add('dark');}catch(e){}})();`;
+export const APPEARANCE_SCRIPT = `(function(){try{var d=document.documentElement,t=null;try{t=window.localStorage.getItem(${JSON.stringify(CLIENT_THEME_KEY)});}catch(e){}var m=window.matchMedia&&window.matchMedia(${JSON.stringify(DARK_SCHEME_QUERY)});d.classList.toggle('dark',t==='light'||t==='dark'?t==='dark':m?m.matches:true);}catch(e){}})();`;

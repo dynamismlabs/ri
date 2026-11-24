@@ -5,7 +5,7 @@ import { useRailCollapse } from '@/hooks/use-rail-collapse';
 import { createContext, useContext, useState, useCallback, useMemo, useRef, type ReactNode, useEffect } from 'react';
 import { useSearchParams, usePathname } from 'next/navigation';
 import { useQuickCaptureOpen, setQuickCaptureOpen, toggleQuickCapture } from '@/lib/client/quick-capture';
-import type { Theme, WorkMode, ActiveView, AnyPanelTab, PanelId, MobileTab, Task, StreamEvent } from '@/types/dashboard';
+import type { Theme, ThemePreference, WorkMode, ActiveView, AnyPanelTab, PanelId, MobileTab, Task, StreamEvent } from '@/types/dashboard';
 import { hot } from '@/lib/_debug/hot-path';
 import { DEFAULT_HOME_PANELS, panelForTab } from '@/lib/client/home-panels';
 import {
@@ -21,7 +21,7 @@ import {
   mobileTabForView,
 } from '@/lib/client/active-view';
 import type { AgentTab } from '@/types/dashboard';
-import { useClientTheme } from '@/lib/client/theme';
+import { useDocumentTheme, useThemePreference } from '@/lib/client/theme';
 import { WorkContext } from '@/contexts/work-context';
 import { useOptionalHomeContext, useHomeStorageScope } from '@/components/home/home-context';
 import { homeStorageIdentity } from '@/lib/home/document-scope';
@@ -52,7 +52,10 @@ export type SlideoutCloseBehavior = 'back' | 'dismiss';
 const SLIDEOUT_CLOSE_BEHAVIOR: SlideoutCloseBehavior = 'back';
 
 interface DashboardState {
+  /** The theme the page is drawn in. */
   theme: Theme;
+  /** This browser's choice: Automatic, Light or Dark. */
+  themePreference: ThemePreference;
   activeView: ActiveView;
   /** The execution chat on screen (`activeView.id` in the execution view), else null. */
   activeSessionId: string | null;
@@ -122,8 +125,7 @@ interface DashboardState {
 }
 
 interface DashboardActions {
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
+  setThemePreference: (preference: ThemePreference) => void;
   setActiveView: (view: ActiveView, opts?: { replace?: boolean }) => void;
   /** Open an execution chat (the execution view). */
   openExecution: (sessionId: string) => void;
@@ -226,7 +228,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const storageKey = (key: string) => homeStorageIdentity(key, storageScope);
   const lastExecutionKey = storageKey('ri.execution.lastId');
   const executionRailKey = storageKey('ri.rail.execution.open');
-  const { theme, setTheme, toggleTheme } = useClientTheme();
+  const theme = useDocumentTheme();
+  const { preference: themePreference, setPreference: setThemePreference } = useThemePreference();
   // ─── Active view (URL-canonical, local-mirror for snappy swaps) ──
   // Which primary surface fills the main area: Home (the deck and chat
   // panels), an agent's view, or an execution (see `ActiveView`).
@@ -618,6 +621,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   return (
     <DashboardContext.Provider value={{
       theme,
+      themePreference,
       activeView,
       activeSessionId,
       activeExecutionId,
@@ -633,8 +637,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       selectedProject,
       tasks: MOCK_TASKS,
       streamEvents: MOCK_STREAM_EVENTS,
-      setTheme,
-      toggleTheme,
+      setThemePreference,
       setActiveView,
       openExecution,
       openAgent,
