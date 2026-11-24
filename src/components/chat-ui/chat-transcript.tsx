@@ -425,10 +425,11 @@ export function filterRenderable(events: ChatEventDTO[]): ChatEventDTO[] {
   return events.filter((e) => {
     if (e.source === 'result') return false;
     if (e.source === 'agent' && e.content === NO_RESPONSE_REQUESTED) return false;
-    // Empty `thinking` rows carry no prose (Claude Code withholds it on
-    // current versions — see docs/agentex-thinking-capture-spec.md). An
-    // accordion that expands to nothing is pure noise, so drop them; the
-    // renderer auto-shows thinking again the moment prose is present.
+    // Empty `thinking` rows carry no prose: current Claude and Codex models
+    // return reasoning as a signature only (see
+    // docs/agentex-thinking-capture-spec.md). An accordion that expands to
+    // nothing is pure noise, so drop them. The renderer shows thinking again
+    // the moment prose is present.
     if (e.source === 'thinking' && !(e.content ?? '').trim()) return false;
     if (e.source !== 'system') return true;
     if (decodeChatMessageReceipt(e) || e.content?.startsWith('coordination_')) return true;

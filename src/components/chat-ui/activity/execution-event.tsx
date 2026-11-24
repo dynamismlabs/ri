@@ -284,9 +284,9 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
 
     case 'thinking': {
       const content = (event.content ?? '').trim();
-      // Empty thinking rows (Claude Code withholds prose on current
-      // versions — see docs/agentex-thinking-capture-spec.md) carry no
-      // signal; don't render a click-to-see-nothing accordion. The
+      // Empty thinking rows (current Claude and Codex models return no
+      // reasoning text, see docs/agentex-thinking-capture-spec.md) carry no
+      // signal, so don't render a click-to-see-nothing accordion. The
       // transcript also filters these, this is a belt-and-suspenders guard.
       if (!content) return null;
       return (

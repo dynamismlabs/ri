@@ -33,6 +33,8 @@ Next to the conversation, a panel shows what the chat is working with:
 
 ## Knowing where it stands
 
+While a chat works, it writes you short notes as it goes: what it found and what it will do next. The notes stay in the conversation after the turn ends, and the steps between them fold into one line you can open.
+
 When a chat ends a turn, it writes one line under its title: what it did and what, if anything, it needs from you. A chip says how much of your time that takes: **Quick for you**, **Few min for you** or **Needs your time**. Sending it a new message clears the line. Status lines are a trial and on by default. Turn them off in **Settings**, under **General**.
 
 The rail and the top bar sort your chats so you can see at a glance what needs you: **Needs approval**, **Unread**, **Waiting response** and **Working**. A chat counts as read once you engage with it or leave it.
