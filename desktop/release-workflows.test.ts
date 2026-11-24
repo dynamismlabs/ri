@@ -152,6 +152,30 @@ describe('release.yml', () => {
   });
 });
 
+describe('release notes', () => {
+  const folder = path.resolve(__dirname, 'release-notes');
+  it('uses a version\'s own notes when it has them, and the feat and fix subjects otherwise', () => {
+    const script = runs(release, 'publish');
+    const own = script.indexOf('if [ -f "desktop/release-notes/$VERSION.txt" ]; then cp "desktop/release-notes/$VERSION.txt" notes.txt');
+    expect(own).toBeGreaterThan(-1);
+    expect(script.indexOf("grep -E '^(feat|fix)(\\(|:)' > notes.txt")).toBeGreaterThan(own);
+    expect(own).toBeLessThan(script.indexOf('publish-release.mjs publish'));
+  });
+  it.each(fs.readdirSync(folder))('keeps %s plain, short and in the site voice', file => {
+    expect(file).toMatch(/^\d+\.\d+\.\d+\.txt$/);
+    const text = fs.readFileSync(path.join(folder, file), 'utf8');
+    const lines = text.trimEnd().split('\n');
+    // The update card shows three lines, and publishing keeps the first 10,000 characters.
+    expect(text.length).toBeLessThan(2000);
+    expect(lines.length).toBeGreaterThanOrEqual(3);
+    for (const line of lines) {
+      expect(line.trim()).not.toBe('');
+      expect(line).not.toMatch(/^\s*(#|[-*] )/);
+      expect(line).not.toMatch(/[\u2014\u2013;]/);
+    }
+  });
+});
+
 describe('alpha.yml', () => {
   it('writes and attests only from the publish job', () => {
     expect(alpha.permissions).toEqual({ contents: 'read', actions: 'read' });

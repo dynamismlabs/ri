@@ -285,7 +285,9 @@ jobs:
           # A feed with files must download, or publishing would lose its index and its check for a repeat.
           if [ "$(gh release view feed --json assets --jq '.assets | length')" -gt 0 ]; then gh release download feed --dir feed-now --pattern '*.json'; fi
           PREVIOUS="$(git describe --tags --abbrev=0 --match 'v[0-9]*' HEAD^ 2>/dev/null || true)"
-          git log --no-merges --format='%s' ${PREVIOUS:+"$PREVIOUS"..HEAD} | grep -E '^(feat|fix)(\(|:)' > notes.txt || true
+          # A version's own notes, written for people, win. Otherwise the feat: and fix: subjects since the last tag.
+          if [ -f "desktop/release-notes/$VERSION.txt" ]; then cp "desktop/release-notes/$VERSION.txt" notes.txt
+          else git log --no-merges --format='%s' ${PREVIOUS:+"$PREVIOUS"..HEAD} | grep -E '^(feat|fix)(\(|:)' > notes.txt || true; fi
           node desktop/publish-release.mjs publish --payloads payloads --channel latest --existing feed-now --out feed-next --notes notes.txt --feed "$RI_RELEASE_FEED"
           node desktop/release-downloads.mjs channel --record release-files/downloads.json --channel latest --out feed-next
           # The app shows notes.txt as what changed. The release page also says how to check a file.

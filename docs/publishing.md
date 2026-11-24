@@ -193,12 +193,13 @@ First run **Desktop and headless runtime** on main and wait for it to pass.
 
 ```sh
 npm version 0.2.0 --no-git-tag-version
-git commit -am "chore: release 0.2.0"
+$EDITOR desktop/release-notes/0.2.0.txt   # optional: what changed, for people
+git add -A && git commit -m "chore: release 0.2.0"
 git tag v0.2.0
 git push origin main v0.2.0
 ```
 
-CI builds all five platforms (Mac arm64 and x64, Linux x64 and arm64 as an AppImage and a deb, Windows x64). A Mac build with a Developer ID is signed, notarized, stapled and checked by Gatekeeper before anything uploads. Then the publish job writes `SHA256SUMS`, attests every file, signs the feed for `latest`, creates the version's release, writes `downloads-latest.json` and rebuilds the website. The notes come from the `feat:` and `fix:` commit subjects since the previous tag. Everyone on `latest` updates at their next quiet moment.
+CI builds all five platforms (Mac arm64 and x64, Linux x64 and arm64 as an AppImage and a deb, Windows x64). A Mac build with a Developer ID is signed, notarized, stapled and checked by Gatekeeper before anything uploads. Then the publish job writes `SHA256SUMS`, attests every file, signs the feed for `latest`, creates the version's release, writes `downloads-latest.json` and rebuilds the website. The notes come from `desktop/release-notes/<version>.txt` when the release commit adds one: plain lines written for people, with no Markdown, the most important three first since the update card shows three. Without one, they are the `feat:` and `fix:` commit subjects since the previous tag. Everyone on `latest` updates at their next quiet moment.
 
 Notarizing rides out the network drops GitHub's Mac runners have (`desktop/notarize.mjs`). Packaging uploads the app again if an upload fails before Apple returns a submission id, prints that id, then checks on that one submission for up to an hour, retrying timeouts and lost connections, and staples the ticket. If Apple finds the app Invalid, the build fails with the reasons from Apple's log. If a run stops anyway, `xcrun notarytool info <id>` with the same Apple credentials says what became of it.
 

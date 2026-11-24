@@ -1,0 +1,7 @@
+A new look across Ri: one set of buttons, quieter window controls, and white panels with a thin border.
+Search with ⌘K has filters across the top. Press Tab to move between them.
+Updates show what changed and install after a quiet minute.
+Board cards show the time on the agent row instead of a status line.
+Colored labels keep their color in light and dark mode.
+App builder chats can switch to another harness.
+People, Job Search, Travel, Bookmarks and Bloom have new versions in the app catalog.
