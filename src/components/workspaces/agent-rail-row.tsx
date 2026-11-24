@@ -4,6 +4,7 @@ import { InlineAction } from '@/components/system/inline-action';
 import { MenuAction } from '@/components/system/menu-action';
 
 import { Button } from '@/components/system/button';
+import { StatusBadge } from '@/components/system/status-badge';
 import { IconButton } from '@/components/system/icon-button';
 import { useMemo, useRef } from 'react';
 import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Eye, EyeOff, MessagesSquare, MoreHorizontal, Plus, SlidersHorizontal } from 'lucide-react';
@@ -455,21 +456,16 @@ function ChatCounts({ needsYou, working, blocked }: { needsYou: number; working:
     <span className="flex flex-shrink-0 items-center gap-1 group-hover:hidden group-focus-within:hidden group-has-[[data-state=open]]:hidden">
       <span className="sr-only">{said}</span>
       {needsYou > 0 && (
-        <span
-          aria-hidden
-          data-count="needs-you"
-          className={cn(COUNT, 'bg-amber-500/15 text-amber-600 dark:text-amber-400', blocked > 0 && 'animate-pulse')}
-        >
+        <StatusBadge aria-hidden data-count="needs-you" size="count" tone="attention" className={cn('justify-center', blocked > 0 && 'animate-pulse')}>
           {needsYou}
-        </span>
+        </StatusBadge>
       )}
       {working > 0 && (
-        <span aria-hidden data-count="working" className={cn(COUNT, 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400')}>
+        <StatusBadge aria-hidden data-count="working" size="count" tone="success" className="justify-center">
           {working}
-        </span>
+        </StatusBadge>
       )}
     </span>
   );
 }
 
-const COUNT = 'min-w-[18px] h-[16px] rounded-full px-1 text-center text-[10px] font-semibold leading-[16px] tabular-nums';

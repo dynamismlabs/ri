@@ -46,7 +46,7 @@ const eslintConfig = defineConfig([
   {
     files: ["src/**/*.tsx"],
     plugins: { "ui-system": uiSystem },
-    rules: { "no-restricted-syntax": ["error", ...uiSystemSelectors], "ui-system/native-controls": "error", "ui-system/drawing-classes": "error" },
+    rules: { "no-restricted-syntax": ["error", ...uiSystemSelectors], "ui-system/native-controls": "error", "ui-system/drawing-classes": "error", "ui-system/hand-drawn-pills": "error" },
   },
   {
     // Installed primitives own their drawing. Source labels still use sentence case.

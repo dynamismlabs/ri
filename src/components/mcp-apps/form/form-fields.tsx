@@ -11,6 +11,7 @@ import { IconButton } from '@/components/system/icon-button';
 import { useRef, useState } from 'react';
 import { Box, Eye, File as FileIcon, Folder, Plus, Upload, X } from 'lucide-react';
 import { Button } from '@/components/system/button';
+import { StatusBadge } from '@/components/system/status-badge';
 
 import { Switch } from '@/components/ui/switch';
 import { Tip } from '@/components/ui/tip';
@@ -176,7 +177,7 @@ function TextsControl({field, values, onChange, disabled}: FormFieldsProps & {fi
   const remove = (index: number) => onChange(field.name, current.filter((_, i) => i !== index));
   const titled = new Map(field.suggestions.map(option => [option.value, option.title]));
   return <div className="space-y-1.5">
-    {current.length > 0 && <ul className="flex flex-wrap gap-1.5">{current.map((value, index) => <li key={`${value}-${index}`} className="flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px]">
+    {current.length > 0 && <ul className="flex flex-wrap gap-1.5">{current.map((value, index) => <StatusBadge asChild key={`${value}-${index}`}><li>
       {titled.get(value) ?? value}
       <IconButton
         type="button"
@@ -184,9 +185,9 @@ function TextsControl({field, values, onChange, disabled}: FormFieldsProps & {fi
         onClick={() => remove(index)}
         label={`Remove ${titled.get(value) ?? value}`}
         variant="ghost"
-        size="sm"
-      ><X size={11} /></IconButton>
-    </li>)}</ul>}
+        size="xs"
+      ><X /></IconButton>
+    </li></StatusBadge>)}</ul>}
     <Suggestions options={field.suggestions.filter(option => !current.includes(option.value))} disabled={disabled} chosen={() => false} onPick={option => add(option.value)} />
     <div className="flex gap-1.5">
       <Field value={draft} disabled={disabled} aria-label={`Add to ${field.title ?? field.name}`} placeholder="Add your own"

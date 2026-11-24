@@ -573,9 +573,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
     case 'rate_limit':
       return (
         <div className="flex">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 text-amber-500 px-2.5 py-0.5 text-[10.5px] font-medium">
-            {event.content ?? 'Rate limit'}
-          </div>
+          <StatusBadge tone="warning">{event.content ?? 'Rate limit'}</StatusBadge>
         </div>
       );
 
@@ -612,17 +610,13 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       // The user's answer on an approval card, at the point in the
       // conversation where they gave it (right-aligned: it's their turn).
       const outcome = approvalResponseView(event)?.outcome;
-      const tone = outcome === 'deny'
-        ? 'bg-destructive/10 text-destructive'
-        : outcome === 'settled'
-          ? 'bg-muted text-muted-foreground'
-          : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
+      const tone = outcome === 'deny' ? 'danger' : outcome === 'settled' ? 'neutral' : 'success';
       return (
         <div className="flex justify-end">
-          <div className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-medium', tone)}>
-            {outcome === 'deny' ? <ShieldAlert size={11} /> : <ShieldCheck size={11} />}
+          <StatusBadge tone={tone}>
+            {outcome === 'deny' ? <ShieldAlert /> : <ShieldCheck />}
             <span>{event.content ?? (outcome === 'deny' ? 'Denied' : 'Approved')}</span>
-          </div>
+          </StatusBadge>
         </div>
       );
     }
@@ -635,15 +629,10 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
       const declined = event.toolIsError === true;
       return (
         <div className="flex justify-end">
-          <div
-            className={cn(
-              'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-medium',
-              declined ? 'bg-muted text-muted-foreground' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-            )}
-          >
-            {declined ? <CircleSlash size={11} /> : <ShieldCheck size={11} />}
+          <StatusBadge tone={declined ? 'neutral' : 'success'}>
+            {declined ? <CircleSlash /> : <ShieldCheck />}
             <span>{event.content ?? (declined ? 'Not now' : 'Connected')}</span>
-          </div>
+          </StatusBadge>
         </div>
       );
     }
@@ -681,20 +670,13 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
     case 'permission_response': {
       const allowed = !event.toolIsError;
       return (
-        <div
-          className={cn(
-            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-medium',
-            allowed
-              ? 'bg-emerald-500/10 text-emerald-500'
-              : 'bg-destructive/10 text-destructive',
-          )}
-        >
-          {allowed ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
+        <StatusBadge tone={allowed ? 'success' : 'danger'}>
+          {allowed ? <ShieldCheck /> : <ShieldAlert />}
           <span>{allowed ? 'Allowed' : 'Denied'}</span>
           {event.content && event.content !== (allowed ? 'allowed' : 'denied') && (
             <span className="font-normal opacity-80">: {event.content}</span>
           )}
-        </div>
+        </StatusBadge>
       );
     }
 

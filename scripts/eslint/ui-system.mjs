@@ -39,6 +39,50 @@ function ownerOf(node) {
 function fileMatches(entry, file) {
   return (!entry.file || entry.file === file) && (!entry.prefix || file.startsWith(entry.prefix)) && (!entry.suffix || file.endsWith(entry.suffix));
 }
+/** Every class string a className expression can produce: literals, cn() arguments, both branches, local aliases. */
+function classStrings(context) {
+  function values(node, seen = new Set()) {
+    if (!node || seen.has(node)) return [];
+    seen.add(node);
+    if (node.type === 'Identifier') {
+      let scope = context.sourceCode.getScope(node);
+      while (scope) {
+        const variable = scope.set.get(node.name);
+        if (variable) return variable.defs.flatMap(def => values(def.node.init, seen));
+        scope = scope.upper;
+      }
+      return [];
+    }
+    if (node.type === 'MemberExpression') {
+      const key = !node.computed && node.property.type === 'Identifier' ? node.property.name : node.property.type === 'Literal' ? node.property.value : undefined;
+      return values(node.object, seen).flatMap(object => object.type === 'ObjectExpression' ? object.properties.filter(property => property.type === 'Property' && (key === undefined || (property.key.name ?? property.key.value) === key)).flatMap(property => values(property.value, new Set(seen))) : []);
+    }
+    if (node.type === 'ConditionalExpression') return [...values(node.consequent, new Set(seen)), ...values(node.alternate, new Set(seen))];
+    return [node];
+  }
+  function strings(node, seen = new Set()) {
+    if (!node || seen.has(node)) return [];
+    seen.add(node);
+    if (node.type === 'Literal' && typeof node.value === 'string') return [node.value];
+    if (node.type === 'TemplateElement') return [node.value.raw];
+    if (node.type === 'MemberExpression') return values(node).flatMap(value => strings(value, seen));
+    if (node.type === 'Identifier') {
+      let scope = context.sourceCode.getScope(node);
+      while (scope) {
+        const variable = scope.set.get(node.name);
+        if (variable) return variable.defs.flatMap(def => strings(def.node.init, seen));
+        scope = scope.upper;
+      }
+      return [];
+    }
+    return (context.sourceCode.visitorKeys[node.type] ?? []).flatMap(key => {
+      const value = node[key]; return (Array.isArray(value) ? value : [value]).flatMap(child => strings(child, seen));
+    });
+  }
+  return strings;
+}
+// A capsule drawn by hand: fully round with side padding. Labels use StatusBadge, chips ChipButton.
+const handDrawnPill = tokens => tokens.some(token => baseUtility(token) === 'rounded-full') && tokens.some(token => /^p[xlrse]-/.test(baseUtility(token)));
 const uiSystem = {
   rules: {
     'native-controls': {
@@ -61,44 +105,7 @@ const uiSystem = {
       meta: { type: 'problem', schema: [], messages: { drawing: '{{component}} owns drawing. Replace {{utilities}} with its named variants. className accepts layout only.' } },
       create(context) {
         const bindings = new Set(), namespaces = new Set();
-        function values(node, seen = new Set()) {
-          if (!node || seen.has(node)) return [];
-          seen.add(node);
-          if (node.type === 'Identifier') {
-            let scope = context.sourceCode.getScope(node);
-            while (scope) {
-              const variable = scope.set.get(node.name);
-              if (variable) return variable.defs.flatMap(def => values(def.node.init, seen));
-              scope = scope.upper;
-            }
-            return [];
-          }
-          if (node.type === 'MemberExpression') {
-            const key = !node.computed && node.property.type === 'Identifier' ? node.property.name : node.property.type === 'Literal' ? node.property.value : undefined;
-            return values(node.object, seen).flatMap(object => object.type === 'ObjectExpression' ? object.properties.filter(property => property.type === 'Property' && (key === undefined || (property.key.name ?? property.key.value) === key)).flatMap(property => values(property.value, new Set(seen))) : []);
-          }
-          if (node.type === 'ConditionalExpression') return [...values(node.consequent, new Set(seen)), ...values(node.alternate, new Set(seen))];
-          return [node];
-        }
-        function strings(node, seen = new Set()) {
-          if (!node || seen.has(node)) return [];
-          seen.add(node);
-          if (node.type === 'Literal' && typeof node.value === 'string') return [node.value];
-          if (node.type === 'TemplateElement') return [node.value.raw];
-          if (node.type === 'MemberExpression') return values(node).flatMap(value => strings(value, seen));
-          if (node.type === 'Identifier') {
-            let scope = context.sourceCode.getScope(node);
-            while (scope) {
-              const variable = scope.set.get(node.name);
-              if (variable) return variable.defs.flatMap(def => strings(def.node.init, seen));
-              scope = scope.upper;
-            }
-            return [];
-          }
-          return (context.sourceCode.visitorKeys[node.type] ?? []).flatMap(key => {
-            const value = node[key]; return (Array.isArray(value) ? value : [value]).flatMap(child => strings(child, seen));
-          });
-        }
+        const strings = classStrings(context);
         return {
           ImportDeclaration(node) {
             if (!node.source.value.startsWith('@/components/system/')) return;
@@ -118,6 +125,18 @@ const uiSystem = {
             }
           },
         };
+      },
+    },
+
+    'hand-drawn-pills': {
+      meta: { type: 'problem', schema: [], messages: { pill: 'A fully round label with side padding is drawn by the system. Use StatusBadge for a fact or ChipButton for an action, so it shares their size, colors and corner shape.' } },
+      create(context) {
+        const strings = classStrings(context);
+        return { JSXOpeningElement(node) {
+          const attribute = attributesOf(node).get('className');
+          if (!attribute) return;
+          if (handDrawnPill(strings(attribute.value).flatMap(value => value.split(/\s+/)))) context.report({ node: attribute, messageId: 'pill' });
+        } };
       },
     },
   },

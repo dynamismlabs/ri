@@ -77,6 +77,7 @@ export function AgentsFlyout() {
         needsYou > 0 ? (
           <span
             aria-hidden
+            // eslint-disable-next-line ui-system/hand-drawn-pills -- a count on an icon's corner, round in every button shape like the phone tab bar's
             className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-[3px] rounded-full bg-amber-500 text-white text-[9px] font-semibold leading-[14px] text-center tabular-nums ring-2 ring-background"
           >
             {needsYou > 9 ? '9+' : needsYou}

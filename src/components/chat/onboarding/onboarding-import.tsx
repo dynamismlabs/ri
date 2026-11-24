@@ -2,12 +2,12 @@
 import { ChoiceRow } from '@/components/system/choice-row';
 
 import { Button } from '@/components/system/button';
+import { StatusBadge } from '@/components/system/status-badge';
 import { DISCOVERY_KEY } from '@/components/settings/sections/imports-section';
 import { openSettings } from '@/components/settings/settings-store';
 import type { ExternalAgentDiscovery, ExternalAgentSource } from '@/lib/import/types';
 import { trpcClient } from '@/lib/trpc/client';
 import { rpcOptions } from '@/lib/trpc/request-options';
-import { cn } from '@/lib/utils';
 import { formatCompactRelative } from '@/lib/utils/relative-time';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowRight, Check, Folder, Loader2 } from 'lucide-react';
@@ -243,26 +243,24 @@ export function ImportProgress() {
   const run = useImportRun();
   if (!run) return null;
   return (
-    <div
-      className={cn(
-        'flex items-center gap-1.5 self-start rounded-full border px-2.5 py-1 text-[11px]',
-        run.status === 'failed' ? 'border-destructive/30 text-destructive' : 'border-border text-muted-foreground',
-      )}
+    <StatusBadge
+      tone={run.status === 'failed' ? 'danger' : run.status === 'done' ? 'success' : 'neutral'}
+      className="self-start whitespace-normal"
       aria-live="polite"
     >
       {run.status === 'running' ? (
         <>
-          <Loader2 size={11} className="animate-spin" />
+          <Loader2 className="animate-spin" />
           Bringing in {plural(run.chats, 'chat')} from {listJoin(run.projects)}
         </>
       ) : run.status === 'done' ? (
         <>
-          <Check size={11} className="text-emerald-500" />
+          <Check />
           Brought in {plural(run.imported ?? run.chats, 'chat')} from {listJoin(run.projects)}
         </>
       ) : (
         <>Couldn’t bring those in: {run.error}</>
       )}
-    </div>
+    </StatusBadge>
   );
 }
