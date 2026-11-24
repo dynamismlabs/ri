@@ -1,0 +1,4 @@
+Theme is a choice of Automatic, Light or Dark. Automatic follows your computer or phone.
+Try rounded rectangle buttons in Settings, General, Button shape. Round stays the default.
+Connect accounts opens Apps, and each managed account has its own page there.
+The backdrop behind dialogs is a little darker.
