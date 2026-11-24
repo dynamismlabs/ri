@@ -163,6 +163,20 @@ it('remembers the selected view and independent column choices across close/reop
   } finally { await page.close(); }
 });
 
+it('leaves the state to the column and shows the time on the agent row of each card', async () => {
+  const page = await open();
+  try {
+    await page.getByRole('button', { name: 'Board', exact: true }).click();
+    const card = dialog(page).getByRole('region', { name: 'Needs approval', exact: true }).getByRole('button', { name: /Ship the board/ });
+    expect(await card.innerText()).not.toContain('Needs approval');
+    const time = card.locator('time');
+    expect(await time.innerText()).toBe('now');
+    const [timeBox, nameBox] = await Promise.all([time.boundingBox(), card.getByText('Builder', { exact: true }).boundingBox()]);
+    expect(Math.abs(timeBox!.y + timeBox!.height / 2 - (nameBox!.y + nameBox!.height / 2))).toBeLessThan(2);
+    expect(errors).toEqual([]);
+  } finally { await page.close(); }
+});
+
 it('expands a hidden HUD bucket without changing saved columns, matches counts and opens both conversation destinations', async () => {
   const page = await open();
   try {
