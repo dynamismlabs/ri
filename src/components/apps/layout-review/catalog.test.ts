@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { LibrarySources } from '../library-model';
-import { collectionItems, discoverable, inLibrary, itemType, matchesReview, primaryLabel, reviewItems, type CatalogApp } from './catalog';
+import { collectionItems, discoverable, inLibrary, itemType, matchesReview, popularItems, POPULAR_PROVIDERS, primaryLabel, reviewItems, type CatalogApp } from './catalog';
 
 const sources: LibrarySources = {
   providers: [{ id: 'google', displayName: 'Google', method: 'oauth2', configured: true }, { id: 'linear', displayName: 'Linear', method: 'api_key', configured: true }],
@@ -35,6 +35,14 @@ describe('one library across Apps', () => {
     expect(starter).toMatchObject({ added: false, target: { kind: 'catalog-skill', id: 'research-brief' } });
     expect(primaryLabel(starter)).toBe('Preview skill');
     expect(primaryLabel(items.find(item => item.key === 'provider:linear')!)).toBe('Connect');
+  });
+  it('offers familiar services first, in their order, leaving out what is connected and what Ri lacks', () => {
+    const provider = (id: string) => ({ id, displayName: id[0].toUpperCase() + id.slice(1), method: 'oauth2' as const, configured: true });
+    const some = reviewItems({ ...sources, providers: [...sources.providers!, provider('slack'), provider('microsoft')] });
+    // Google is connected and Linear isn't one of them.
+    expect(popularItems(some).map(item => item.key)).toEqual(['provider:microsoft', 'provider:slack']);
+    const every = reviewItems({ ...sources, connections: [], providers: POPULAR_PROVIDERS.map(provider) });
+    expect(popularItems(every).map(item => item.key)).toEqual(['provider:google', 'provider:microsoft', 'provider:slack', 'provider:notion']);
   });
   it('finds additions by name, purpose and type', () => {
     const items = reviewItems(sources);
