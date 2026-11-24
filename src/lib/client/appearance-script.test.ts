@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseHTML } from 'linkedom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { APPEARANCE_SCRIPT, CLIENT_THEME_KEY, DARK_SCHEME_QUERY } from './appearance-script';
+import { APPEARANCE_SCRIPT, CLIENT_CONTROL_SHAPE_KEY, CLIENT_THEME_KEY, DARK_SCHEME_QUERY } from './appearance-script';
 import { ThemeSettings } from '@/components/settings/sections/theme-settings';
 
 let values: Map<string, string>;
@@ -68,10 +68,19 @@ it('keeps the server dark when the browser has no media queries', () => {
   expect(dark()).toBe(true);
 });
 
-it('offers Automatic, Light and Dark as one choice in the shared appearance settings', () => {
+it('offers Automatic, Light and Dark as one choice, and the button shape trial, in the shared appearance settings', () => {
   const html = renderToStaticMarkup(createElement(ThemeSettings));
   expect(html).not.toContain('Classic');
   expect(html).not.toContain('role="switch"');
-  expect(html.match(/role="radio"/g)?.length).toBe(3);
-  expect([...html.matchAll(/role="radio"[^>]*>(?:<[^>]+>)*([^<]+)/g)].map(match => match[1])).toEqual(['Automatic', 'Light', 'Dark']);
+  expect(html.match(/role="radio"/g)?.length).toBe(5);
+  expect([...html.matchAll(/role="radio"[^>]*>(?:<[^>]+>)*([^<]+)/g)].map(match => match[1])).toEqual(['Automatic', 'Light', 'Dark', 'Round', 'Rounded']);
+  expect(html).toContain('Button shape');
+});
+
+it('applies a saved rounded-rectangle shape before first paint, and leaves capsules otherwise', () => {
+  runScript();
+  expect(document.documentElement.getAttribute('data-control-shape')).toBeNull();
+  values.set(CLIENT_CONTROL_SHAPE_KEY, 'rect');
+  runScript();
+  expect(document.documentElement.getAttribute('data-control-shape')).toBe('rect');
 });

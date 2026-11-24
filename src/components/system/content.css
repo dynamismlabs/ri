@@ -56,7 +56,7 @@
   gap: 4px;
   padding: 2px 6px;
   border: 0 solid transparent;
-  border-radius: 999px;
+  border-radius: var(--badge-radius);
   background-color: var(--control-fill, var(--track));
   color: var(--control-ink, var(--t3));
   box-shadow: none;
@@ -171,7 +171,7 @@
 .ri-menu-action[data-inset] { padding-inline-start: 32px; }
 .ri-menu-action--compact[data-inset] { padding-inline-start: 24px; }
 
-.ri-inline-action { height: auto; min-height: 0; padding: 0; gap: 4px; border: 0 solid transparent; border-radius: 999px; background: transparent; color: inherit; font: inherit; line-height: inherit; letter-spacing: normal; text-transform: none; text-decoration: none; }
+.ri-inline-action { height: auto; min-height: 0; padding: 0; gap: 4px; border: 0 solid transparent; border-radius: var(--badge-radius); background: transparent; color: inherit; font: inherit; line-height: inherit; letter-spacing: normal; text-transform: none; text-decoration: none; }
 .ri-inline-action:not(.ri-inline-action--chip):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background: transparent; color: inherit; }
 .ri-inline-action--link { text-decoration: underline; text-underline-offset: 3px; }
 .ri-inline-action--chip { padding: 1px 6px; background-color: var(--track); color: var(--t2); }

@@ -330,6 +330,34 @@ it('keeps split controls joined, content rectangular and chat tabs on their exis
   } finally { await page.close(); }
 });
 
+it('draws rounded rectangles under the Button shape trial and nests the frames that hold them', async () => {
+  const { page } = await open('light');
+  try {
+    const radii = () => page.evaluate(() => {
+      for (const slot of ['chat-composer-card', 'review-bar']) {
+        if (!document.querySelector(`body > [data-slot="${slot}"]`)) { const frame = document.createElement('div'); frame.dataset.slot = slot; document.body.append(frame); }
+      }
+      const radius = (selector: string) => parseFloat(getComputedStyle(document.querySelector(selector)!).borderRadius);
+      return {
+        chip: radius('[data-case="history"]'),
+        joined: radius('[data-slot="button-group"].ri-button-group--joined'),
+        track: radius('[data-case="settings-segments"] .ri-segment-track'),
+        option: radius('[data-case="settings-segments"] .ri-segment-track button'),
+        badge: radius('.ri-status-badge'),
+        tab: radius('[data-slot="chat-tab"]'),
+        composer: radius('body > [data-slot="chat-composer-card"]'),
+        reviewBar: radius('body > [data-slot="review-bar"]'),
+      };
+    });
+    // Badges animate every property, so read settled values.
+    await page.addStyleTag({ content: '*,*::before,*::after{transition:none!important}' });
+    const round = await radii();
+    for (const key of ['chip', 'joined', 'track', 'option', 'badge', 'tab'] as const) expect(round[key], key).toBeGreaterThan(100);
+    expect([round.composer, round.reviewBar]).toEqual([22, 16]);
+    await page.evaluate(() => document.documentElement.setAttribute('data-control-shape', 'rect'));
+    expect(await radii()).toEqual({ chip: 8, joined: 8, track: 8, option: 6, badge: 6, tab: 8, composer: 15, reviewBar: 14 });
+  } finally { await page.close(); }
+});
 it('keeps all Calendar view labels visible when the date needs to truncate', async () => {
   const { page } = await open('light');
   try {

@@ -1,3 +1,3 @@
 /* A box that holds controls gets a hairline border on the pane color, so the
    gray button inside never sits on gray. */
-html:root [data-slot="status-strip"] { border: 1px solid var(--line); border-radius: 999px; background-color: var(--pane); }
+html:root [data-slot="status-strip"] { border: 1px solid var(--line); border-radius: var(--control-radius); background-color: var(--pane); }

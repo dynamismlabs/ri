@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from 'react';
 import type { Theme, ThemePreference } from '@/types/dashboard';
-import { CLIENT_THEME_KEY, DARK_SCHEME_QUERY } from './appearance-script';
+import { CLIENT_CONTROL_SHAPE_KEY, CLIENT_THEME_KEY, DARK_SCHEME_QUERY } from './appearance-script';
 
 export { CLIENT_THEME_KEY };
 export const THEME_PREFERENCES = ['system', 'light', 'dark'] as const satisfies readonly ThemePreference[];
@@ -43,6 +43,36 @@ function subscribeDeviceTheme(listener: () => void) {
   return () => query?.removeEventListener('change', listener);
 }
 
+export type ControlShape = 'round' | 'rect';
+const SHAPE_EVENT = 'ri:client-control-shape';
+function readShape(): ControlShape {
+  try { return window.localStorage.getItem(CLIENT_CONTROL_SHAPE_KEY) === 'rect' ? 'rect' : 'round'; } catch { return 'round'; }
+}
+function subscribeShape(listener: () => void) {
+  const storage = (event: StorageEvent) => { if (event.key === CLIENT_CONTROL_SHAPE_KEY || event.key === null) listener(); };
+  window.addEventListener('storage', storage);
+  window.addEventListener(SHAPE_EVENT, listener);
+  return () => { window.removeEventListener('storage', storage); window.removeEventListener(SHAPE_EVENT, listener); };
+}
+function setControlShape(shape: ControlShape) {
+  try {
+    if (shape === 'rect') window.localStorage.setItem(CLIENT_CONTROL_SHAPE_KEY, 'rect');
+    else window.localStorage.removeItem(CLIENT_CONTROL_SHAPE_KEY);
+  } catch { /* The choice still applies to this page without storage. */ }
+  window.dispatchEvent(new Event(SHAPE_EVENT));
+}
+
+/** A browser preference trial: capsule controls or rounded rectangles. */
+export function useControlShape() {
+  const shape = useSyncExternalStore(subscribeShape, readShape, (): ControlShape => 'round');
+  useEffect(() => {
+    if (shape === 'rect') document.documentElement.setAttribute('data-control-shape', 'rect');
+    else document.documentElement.removeAttribute('data-control-shape');
+  }, [shape]);
+  return { shape, setControlShape };
+}
+
+
 export const resolveTheme = (preference: ThemePreference, device: Theme): Theme =>
   preference === 'system' ? device : preference;
 
@@ -81,5 +111,6 @@ export function ClientAppearance() {
     // server's dark, and the head script has already drawn the right theme.
     document.documentElement.classList.toggle('dark', resolveTheme(readPreference(), readDeviceTheme()) === 'dark');
   }, [preference, device]);
+  useControlShape();
   return null;
 }
