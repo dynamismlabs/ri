@@ -1,6 +1,6 @@
 # Apps library
 
-Apps at `/apps` is the shared library for personal apps and other connected services, custom MCP servers, and skills. A personal app is an MCP server Ri connects to like any connector ([personal apps](personal-apps.md)). The Plugins button in Settings closes Settings and opens Apps. Existing direct links, creation shortcuts, and sign-in returns to Settings → Plugins still open their targeted management flows. Both surfaces operate on the same accounts and records.
+Apps at `/apps` is the shared library for personal apps and other connected services, custom MCP servers, and skills. A personal app is an MCP server Ri connects to like any connector ([personal apps](personal-apps.md)). The Plugins button in Settings closes Settings and opens Apps, and so does Connect accounts at the foot of the rail, with Discover on Connectors, or on the page of an account that needs you (`docs/rail.md`). Existing direct links, creation shortcuts, and sign-in returns to Settings → Plugins still open their targeted management flows. Both surfaces operate on the same accounts and records.
 
 ## Product behavior
 
@@ -9,7 +9,8 @@ Apps at `/apps` is the shared library for personal apps and other connected serv
 - **Build** starts a skill draft with the existing builder.
 - **Add** offers service connection and custom MCP setup.
 - **Works in chat** describes tools. **Opens in Ri** identifies connected MCPs that offer an interface, a standalone screen or interactive results. Skills say **Agent workflow**. A connected app opens its native page, with Try in chat and its recent results, before any tool executes. The page has no tool forms (`docs/connected-mcp-apps.md`).
-- Multiple accounts belong to one service card. Provider-managed MCP servers stay under their provider. A standalone custom MCP server appears once, even when ingestion also exposes it as a provider.
+- Multiple accounts belong to one service card. Provider-managed MCP servers stay under their provider. Accounts a connection source holds (Gmail and Google Calendar through Composio) are one card per application, whichever sources hold them, and open that application's page, as in Connectors. A standalone custom MCP server appears once, even when ingestion also exposes it as a provider.
+- A connection's page opens beside the library from the query: `?provider=<id>`, `?application=<gmail|google_calendar>` or `?mcp=<server id>`. One is open at a time (`setupQuery` and `NO_SETUP` in `library-model.ts`).
 - Disabled, unavailable, or retired connections stay manageable. One failed catalog does not hide the other sources.
 
 Apps is reachable from desktop navigation, mobile More, and search. Individual launchers in the rail, search, and companion picker only list apps with a view. The rail's Apps flyout and search also list connected MCPs that declare a standalone screen, one per service (`docs/rail.md`). A service whose interface only comes back as a tool result, such as Todoist, stays in this library, Connectors and `@`.

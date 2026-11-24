@@ -7,6 +7,8 @@
 // Provider-owned menu labels and credential names use the provider's wording,
 // such as Wrike's Apps & Integrations or Docusign's integration key.
 
+import type { ApplicationId } from '@/lib/integrations/sources/types';
+
 export type IntegrationCategory =
   | 'Workspace'
   | 'Communication'
@@ -654,6 +656,9 @@ export const DEFAULT_CATEGORY: IntegrationCategory = 'Productivity';
 export function integrationMeta(providerId: string): IntegrationMeta {
   return INTEGRATION_META[providerId] ?? { category: DEFAULT_CATEGORY, description: '' };
 }
+
+/** The brand mark for an application a connection source connects (Gmail, Google Calendar), drawn with `IntegrationLogo`. */
+export const APPLICATION_LOGO: Record<ApplicationId, string> = { gmail: 'gmail', google_calendar: 'google' };
 
 /** What Try in chat asks a service: its curated starter, or a plain question for anything else. */
 export function starterPrompt(providerId: string | null | undefined, name: string): string {

@@ -54,6 +54,7 @@ beforeAll(async () => {
       import {createRoot} from 'react-dom/client';
       import {QueryClient,QueryClientProvider,useQuery} from '@tanstack/react-query';
       import {TooltipProvider} from '@/components/ui/tooltip';
+      import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {AppsLibraryScreen} from '@/components/apps/layout-review';
       import {Toaster} from 'sonner';
       const client=new QueryClient({defaultOptions:{queries:{retry:false}}});
@@ -69,7 +70,7 @@ beforeAll(async () => {
           {destination?<div><output data-destination>{destination}</output><button onClick={()=>setDestination('')}>Return to Apps</button></div>:<AppsLibraryScreen query={query} navigate={navigate}/>}
         </main><Toaster/></div>;
       }
-      createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><TooltipProvider><Fixture/></TooltipProvider></QueryClientProvider>);
+      createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><TooltipProvider><ConfirmProvider><Fixture/></ConfirmProvider></TooltipProvider></QueryClientProvider>);
     ` },
     bundle: true, write: false, outdir: '/fixture', format: 'iife', platform: 'browser', jsx: 'automatic', logLevel: 'silent',
     loader: { '.css': 'local-css' }, define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },
@@ -274,6 +275,40 @@ it('keeps browsing context through connector setup and opens apps and skills in 
     await page.getByRole('button', { name: 'Edit skill Private workflow', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { actions: string[][] }).actions)).toContainEqual(['skill', 'ri:private-workflow']);
   } finally { await page.close(); }
+});
+
+it('opens where the rail\'s Connect accounts points: Connectors, or the one page that fixes an account', async () => {
+  // Gmail through Composio, signed out: Connect accounts sends `?application=gmail`.
+  (responses['integrations.connectionsGet'] as { connections: unknown[] }).connections.push({ id: 'cmpabcd-work', providerId: 'cmpabcd_gmail', accountId: 'work',
+    email: 'mail@example.test', status: 'needs_reauth', scopes: [], config: { managed: true, sourceId: 'cmpabcd', applicationId: 'gmail' } });
+  responses['integrationSources.accounts'] = [{ connectionId: 'cmpabcd-work', accountId: 'work', toolkitId: 'cmpabcd_gmail', applicationId: 'gmail', applicationName: 'Gmail',
+    sourceId: 'cmpabcd', sourceKind: 'composio', sourceLabel: 'Composio', sourceEnabled: true, verifiedEmail: 'mail@example.test', label: null, status: 'needs_reauth', calendarUse: null, connectedAt: '2026-01-01' }];
+  responses['integrationSources.overview'] = { sources: [] };
+  const errors: string[] = [];
+  // Nothing waiting: Discover on Connectors, the services you can sign in to.
+  let page = await open('?filter=Connectors');
+  try {
+    const types = page.getByRole('group', { name: 'Discover types' });
+    expect(await types.getByRole('button', { name: 'Connectors', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    await page.getByRole('button', { name: 'Connect Linear', exact: true }).waitFor();
+  } finally { await page.close(); }
+  // One account waiting: its page beside the library, which marks it.
+  page = await open('?application=gmail');
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    const setup = page.getByRole('region', { name: 'Connection settings', exact: true });
+    await setup.getByRole('heading', { name: 'Gmail', exact: true }).waitFor();
+    await setup.getByRole('button', { name: 'Reconnect', exact: true }).waitFor();
+    const entry = page.getByRole('region', { name: 'Your library', exact: true }).getByRole('button', { name: 'Manage connection Gmail', exact: true });
+    expect(await entry.getAttribute('aria-current')).toBe('true');
+    expect(await entry.innerText()).toContain('Needs attention');
+    await page.screenshot({ path: '/tmp/ri-apps-review-managed-gmail.png' });
+  } finally { await page.close(); }
+  page = await open('?provider=google');
+  try {
+    await page.getByRole('region', { name: 'Connection settings', exact: true }).getByRole('heading', { name: 'Google', exact: true }).waitFor();
+  } finally { await page.close(); }
+  expect(errors).toEqual([]);
 });
 
 it('routes each visible creation button to its real workflow', async () => {

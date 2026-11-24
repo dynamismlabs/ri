@@ -13,7 +13,7 @@ beforeAll(async () => {
     import {Toaster} from 'sonner';
     import {IntegrationsSection} from './src/components/settings/sections/integrations-section';
     createRoot(document.getElementById('root')).render(<QueryClientProvider client={new QueryClient({defaultOptions:{queries:{retry:false}}})}>
-      <main className="@container mx-auto max-w-2xl p-4"><IntegrationsSection navigation={{providerId:'slack',onBack:()=>{}}}/></main><Toaster />
+      <main className="@container mx-auto max-w-2xl p-4"><IntegrationsSection navigation={{page:{kind:'provider',id:'slack'},onBack:()=>{}}}/></main><Toaster />
     </QueryClientProvider>);
   `, [{name:'slack-workflow-boundaries',setup(build) {
     build.onResolve({filter:/lib\/trpc\/client$/}, () => ({path:'slack-client',namespace:'fixture'}));

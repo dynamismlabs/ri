@@ -7,7 +7,7 @@ import { useDashboard } from '@/contexts/dashboard-context';
 import { useCreateSkill, SKILLS_KEY } from '@/hooks/use-skills';
 import { useStartSkill } from '@/hooks/use-start-skill';
 import { connectedAppsQuery } from '@/components/mcp-apps/catalog';
-import { libraryRoute, type LibraryItem } from '@/components/apps/library-model';
+import { isSetupTarget, libraryRoute, NO_SETUP, setupQuery, type LibraryItem } from '@/components/apps/library-model';
 import { useLibrary } from '@/components/apps/use-library';
 import { COLLECTIONS, collectionItems, discoverable, inLibrary as owned, matchesReview, primaryLabel, reviewItems, STARTER_SKILLS, type ReviewFilter, type ReviewItem } from '@/components/apps/layout-review/catalog';
 import { parseSkillFile } from '@/lib/skills/format';
@@ -64,16 +64,16 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
   const showDiscover = () => patch({ browse: undefined, item: undefined, panel: undefined, collection: undefined, filter: undefined });
   const details = (item: ReviewItem, settings = false) => {
     setTrySkill(null);
-    patch({ item: item.key, panel: settings ? 'settings' : undefined, provider: undefined, mcp: undefined });
+    patch({ item: item.key, panel: settings ? 'settings' : undefined, ...NO_SETUP });
   };
   const manage = (item: ReviewItem) => {
     const target = item.target;
     // An added catalog app's page: how its install went, its state, and its updates.
     if (target.kind === 'catalog-app' && item.catalogApp?.sourceId) navigate(`build/${item.catalogApp.sourceId}`);
     else if (target.kind === 'skill') dashboard.openSkill(target.ref);
-    else if (target.kind === 'provider' || target.kind === 'mcp') {
+    else if (isSetupTarget(target)) {
       setTrySkill(null);
-      patch({ provider: undefined, mcp: undefined, item: undefined, panel: undefined, [target.kind === 'provider' ? 'provider' : 'mcp']: target.id });
+      patch({ ...setupQuery(target), item: undefined, panel: undefined });
     }
     else details(item);
   };
@@ -84,7 +84,7 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
   const chat = (item: ReviewItem) => {
     const target = item.target;
     if (target.kind === 'skill') setTrySkill(item);
-    else if (target.kind === 'provider' || target.kind === 'mcp') setChatItem({ ...item, target });
+    else if (isSetupTarget(target)) setChatItem({ ...item, target });
   };
   const add = (item: ReviewItem) => void run(async () => {
     const target = item.target;

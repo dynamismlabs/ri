@@ -28,7 +28,7 @@ import { trpc } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { AppHeader, PrimaryAction, QuietAction } from './app-header';
 import { AppMark } from './app-mark';
-import { filterLibrary, libraryItems, libraryLocation, libraryRoute, type LibraryFilter, type LibraryItem } from './library-model';
+import { filterLibrary, isSetupTarget, libraryItems, libraryLocation, libraryRoute, NO_SETUP, setupQuery, type LibraryFilter, type LibraryItem } from './library-model';
 import { useLibrary } from './use-library';
 import { LibraryChat } from './library-chat';
 
@@ -47,19 +47,21 @@ export function AppLibrary({ query, navigate }: {
   const back = useCallback(() => {
     void qc.invalidateQueries({ queryKey: trpc.integrations.pathKey() });
     void qc.invalidateQueries({ queryKey: trpc.connectedApps.catalog.queryKey() });
-    navigate(libraryRoute(query, { provider: undefined, mcp: undefined }));
+    navigate(libraryRoute(query, NO_SETUP));
   }, [qc, navigate, query]);
-  const providerNavigation = useMemo(() => ({ providerId: location.provider ?? '', returnTo: `/apps${libraryRoute(query, {})}`, onBack: back }), [location.provider, query, back]);
+  const accountNavigation = useMemo(() => ({
+    page: location.application ? { kind: 'app' as const, id: location.application } : { kind: 'provider' as const, id: location.provider ?? '' },
+    returnTo: `/apps${libraryRoute(query, {})}`, onBack: back }), [location.application, location.provider, query, back]);
   const mcpNavigation = useMemo(() => ({ serverId: location.mcp === 'new' ? null : location.mcp ?? null,
     returnTo: `/apps${libraryRoute(query, location.mcp === 'new' ? { mcp: undefined } : {})}`,
     onSelect: (id: string) => navigate(libraryRoute(query, { mcp: id })), onBack: back }), [location.mcp, query, navigate, back]);
 
-  if (location.provider || location.mcp) return (
+  if (location.provider || location.application || location.mcp) return (
     <div className="flex min-h-0 flex-1 flex-col bg-background">
       <AppHeader title={location.mcp === 'new' ? 'Add custom MCP' : 'Connection'} mark={<LibraryMark />} onBack={back} subtitle="Accounts and access, shared with the rest of Ri." />
       <div className="min-h-0 flex-1 overflow-y-auto" data-settings-scroll>
         <div className="mx-auto max-w-3xl px-5 py-6 sm:px-8">
-          {location.provider ? <IntegrationsSection active={!settings.open} navigation={providerNavigation} /> : <McpServersSection active={!settings.open} navigation={mcpNavigation} />}
+          {location.provider || location.application ? <IntegrationsSection active={!settings.open} navigation={accountNavigation} /> : <McpServersSection active={!settings.open} navigation={mcpNavigation} />}
         </div>
       </div>
     </div>
@@ -87,8 +89,8 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
   const open = (item: LibraryItem) => {
     const target = item.target;
     if (item.connectedAppId) navigate(`~connected/${item.connectedAppId}`);
-    else if (target.kind === 'skill') openSkill(target.ref);
-    else patch({ [target.kind === 'provider' ? 'provider' : 'mcp']: target.id });
+    else if (isSetupTarget(target)) patch(setupQuery(target));
+    else openSkill(target.ref);
   };
   const loading = [sources.providers, sources.connections, sources.servers, sources.skills].some(result => result.isPending);
   const failures = [
@@ -325,9 +327,10 @@ function LibraryMark() { return <span className="flex size-8 shrink-0 items-cent
 function MenuCopy({ label, detail }: { label: string; detail: string }) { return <span><span className="block text-xs font-medium">{label}</span><span className="mt-0.5 block text-[11px] leading-snug text-muted-foreground">{detail}</span></span>; }
 
 function LibraryCard({ item, open, chat }: { item: LibraryItem; open: () => void; chat: () => void }) {
+  const logo = item.logo ?? item.providerId;
   return <Card as="article" padding="lg" shadow className="group flex min-w-0 flex-col">
     <InlineAction   type="button" onClick={open} aria-label={`Details for ${item.name}`} className="flex min-w-0 items-start gap-3 text-left">
-      {item.providerId ? <IntegrationLogo providerId={item.providerId} name={item.name} size={36} /> : item.kind === 'skills' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BookOpen size={18} /></span> : item.target.kind === 'mcp' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Server size={18} /></span> : <AppMark name={item.name} size="lg" />}
+      {logo ? <IntegrationLogo providerId={logo} name={item.name} size={36} /> : item.kind === 'skills' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"><BookOpen size={18} /></span> : item.target.kind === 'mcp' ? <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><Server size={18} /></span> : <AppMark name={item.name} size="lg" />}
       <div className="min-w-0 flex-1"><h3 className="truncate text-sm font-semibold">{item.name}</h3><p className="mt-1 line-clamp-2 break-words text-xs leading-relaxed text-muted-foreground">{item.description}</p></div>
     </InlineAction>
     <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
