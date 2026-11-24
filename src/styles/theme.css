@@ -78,7 +78,7 @@
   --user-bubble-foreground: oklch(0.985 0 0);
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI Variable Text', 'Segoe UI', system-ui, Inter, sans-serif;
   --dialog-radius: 20px;
-  --dialog-scrim: rgb(0 0 0 / 40%);
+  --dialog-scrim: rgb(0 0 0 / 50%);
   --energy-light: oklch(44.3% 0.11 240.79);
   --energy-deep: oklch(47% 0.157 37.304);
   --status-consider: oklch(47.3% 0.137 46.201);

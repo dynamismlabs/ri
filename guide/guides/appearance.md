@@ -38,7 +38,7 @@ In a narrow file header, More actions holds the actions for revealing the file o
 
 You can read your search and reach Clear even in a narrow Files column. The count and shortcut appear when there is room.
 
-Search, Settings and Schedules share the same quiet backdrop.
+Search, Settings and Schedules share one backdrop. It dims the screen behind them, so the window in front stands out.
 
 On a phone, filters have more room to tap. The message controls stay together. The model shows its name, with its settings in the model menu. On a narrow screen, the mode uses its icon. Run summaries sit above their smaller details, and the full calendar wraps its controls so you can reach them all.
 

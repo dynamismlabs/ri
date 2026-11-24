@@ -615,7 +615,7 @@ for (const theme of ['light', 'dark'] as const) {
     const { page } = await open(theme);
     try {
       for (let i=0;i<3;i++) expect(await page.locator('[data-case="dialog-'+i+'"]').evaluate(el=>getComputedStyle(el).borderRadius)).toBe('20px');
-      for (let i=0;i<2;i++) expect(await page.locator('[data-case="overlay-'+i+'"]').evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.backdropFilter];})).toEqual(['rgba(0, 0, 0, 0.4)','none']);
+      for (let i=0;i<2;i++) expect(await page.locator('[data-case="overlay-'+i+'"]').evaluate(el=>{const s=getComputedStyle(el);return [s.backgroundColor,s.backdropFilter];})).toEqual(['rgba(0, 0, 0, 0.5)','none']);
     } finally { await page.close(); }
   });
   it(`default audit phone filters, run summaries and calendar stay usable (${theme})`, async () => {
