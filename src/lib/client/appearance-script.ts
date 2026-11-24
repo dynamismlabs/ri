@@ -14,5 +14,7 @@
  */
 export const CLIENT_THEME_KEY = 'ri.client.theme';
 export const DARK_SCHEME_QUERY = '(prefers-color-scheme: dark)';
+/** `rect` draws controls as rounded rectangles instead of capsules (a trial). */
+export const CLIENT_CONTROL_SHAPE_KEY = 'ri.client.controlShape';
 
-export const APPEARANCE_SCRIPT = `(function(){try{var d=document.documentElement,t=null;try{t=window.localStorage.getItem(${JSON.stringify(CLIENT_THEME_KEY)});}catch(e){}var m=window.matchMedia&&window.matchMedia(${JSON.stringify(DARK_SCHEME_QUERY)});d.classList.toggle('dark',t==='light'||t==='dark'?t==='dark':m?m.matches:true);}catch(e){}})();`;
+export const APPEARANCE_SCRIPT = `(function(){try{var d=document.documentElement,t=null,s=null;try{t=window.localStorage.getItem(${JSON.stringify(CLIENT_THEME_KEY)});s=window.localStorage.getItem(${JSON.stringify(CLIENT_CONTROL_SHAPE_KEY)});}catch(e){}var m=window.matchMedia&&window.matchMedia(${JSON.stringify(DARK_SCHEME_QUERY)});d.classList.toggle('dark',t==='light'||t==='dark'?t==='dark':m?m.matches:true);if(s==='rect')d.setAttribute('data-control-shape','rect');}catch(e){}})();`;

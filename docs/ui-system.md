@@ -52,6 +52,8 @@ first paint. Desktop local pages use the same theme tokens and font fallback.
 | md | 32px | 13px | 13px | Main page action, form footer, setup and empty state |
 | touch | 40px | 15px | 16px | Phone and coarse-pointer controls |
 
+Control corners come from `--control-radius` (buttons, chips, segmented tracks, toolbar and joined groups, the git bar, chat and panel tabs), `--control-radius-inner` (segmented options) and `--badge-radius` (badges and chip-style inline actions). They are capsules by default. The Button shape trial in Settings > General sets `data-control-shape="rect"` on the document (applied before first paint), which makes them 8px, 6px and 6px. Dots, radio marks and the phone's Create stay round.
+
 Icon buttons are square with no horizontal padding. Chip compact is 28px with
 12px type, touch is 40px with 15px type. The phone navigation Create remains a
 48px navigation target. Content actions may grow with their text.

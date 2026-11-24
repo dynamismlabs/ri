@@ -3,6 +3,10 @@
  * All other colors, surfaces, inks and shadows belong to the product system.
  */
 :root {
+  /* Controls are capsules. The Button shape trial swaps in rounded rectangles. */
+  --control-radius: 999px;
+  --control-radius-inner: 999px;
+  --badge-radius: 999px;
   --series-1: #2a78d6;
   --series-2: #eb6834;
   --series-3: #1baf7a;
@@ -202,4 +206,10 @@
   --warning-fill: var(--attention-fill);
   --info: var(--working);
   --info-fill: var(--working-fill);
+}
+
+html[data-control-shape='rect'] {
+  --control-radius: 8px;
+  --control-radius-inner: 6px;
+  --badge-radius: 6px;
 }

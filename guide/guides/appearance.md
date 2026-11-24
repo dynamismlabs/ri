@@ -14,6 +14,10 @@ In **Settings**, open **General** and pick a **Theme**:
 
 On a phone, the same choice is in **More**. You can also search Ri (⌘K or Ctrl+K) for "theme" to switch without opening Settings.
 
+## Button shape
+
+Buttons, switches and small labels are fully round by default. To try softer square corners instead, open **General** in **Settings** and choose **Rounded** under **Button shape**. Choose **Round** to go back. Like the theme, the choice belongs to the browser or app you set it in.
+
 ## Ri's design
 
 Every screen stays where you know it. What changed is how it's drawn, so the whole app feels calm and consistent:

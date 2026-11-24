@@ -16,7 +16,7 @@
   height: var(--control-size);
   padding: 0 11px;
   border: 0 solid transparent;
-  border-radius: 999px;
+  border-radius: var(--control-radius);
   background: var(--control-fill);
   color: var(--control-ink);
   box-shadow: none;
@@ -98,14 +98,14 @@
 }
 .ri-button-group { display: inline-flex; width: fit-content; align-items: stretch; gap: 2px; }
 .ri-button-group--vertical { flex-direction: column; }
-.ri-button-group--toolbar { align-items: center; gap: 0; padding: 2px; border-radius: 999px; background-color: var(--track); }
+.ri-button-group--toolbar { align-items: center; gap: 0; padding: 2px; border-radius: var(--control-radius); background-color: var(--track); }
 .ri-button-group--toolbar .ri-button { background-color: transparent; }
 .ri-button-group--toolbar .ri-button:focus-visible { outline-offset: -2px; }
 .ri-button-group--toolbar .ri-button:is([aria-pressed='true'], .ri-button--pressed) { background-color: var(--thumb); color: var(--t1); box-shadow: var(--shadow-thumb); }
 
-.ri-button-group--joined { gap: 0; border-radius: 999px; background-color: var(--track); }
-.ri-button-group--joined > .ri-button { border-radius: 999px 0 0 999px; background-color: transparent; }
-.ri-button-group--joined > .ri-button + .ri-button { border-left: 1px solid var(--line-2); border-radius: 0 999px 999px 0; }
+.ri-button-group--joined { gap: 0; border-radius: var(--control-radius); background-color: var(--track); }
+.ri-button-group--joined > .ri-button { border-radius: var(--control-radius) 0 0 var(--control-radius); background-color: transparent; }
+.ri-button-group--joined > .ri-button + .ri-button { border-left: 1px solid var(--line-2); border-radius: 0 var(--control-radius) var(--control-radius) 0; }
 .ri-button-group--joined > .ri-button:hover:not(:disabled) { background-color: var(--button-hover-fill, var(--selected)); color: var(--t1); }
 .ri-button-group--joined > .ri-button:focus-visible { outline-offset: -2px; }
 
