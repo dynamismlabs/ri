@@ -1,13 +1,18 @@
 ---
 title: Appearance
-description: Choose light or dark for the browser or app you use Ri in.
+description: Choose automatic, light or dark for the browser or app you use Ri in.
 ---
 
 Ri should feel calm to sit in all day, so how it looks is yours to set. Your choice belongs to the browser or app you set it in. Your phone and your computer can look different, and nothing changes for anyone else on your Ri.
 
-## Light or dark
+## Automatic, light or dark
 
-In **Settings**, open **General** and turn **Dark mode** on or off.
+In **Settings**, open **General** and pick a **Theme**:
+
+- **Automatic** matches your computer or phone. When it switches between light and dark, at sunset for example, Ri switches too. Ri starts on Automatic.
+- **Light** and **Dark** stay the same whatever your device does.
+
+On a phone, the same choice is in **More**. You can also search Ri (⌘K or Ctrl+K) for "theme" to switch without opening Settings.
 
 ## Ri's design
 
@@ -33,7 +38,7 @@ In a narrow file header, More actions holds the actions for revealing the file o
 
 You can read your search and reach Clear even in a narrow Files column. The count and shortcut appear when there is room.
 
-Search, Settings and Schedules share the same quiet backdrop.
+Search, Settings and Schedules share one backdrop. It dims the screen behind them, so the window in front stands out.
 
 On a phone, filters have more room to tap. The message controls stay together. The model shows its name, with its settings in the model menu. On a narrow screen, the mode uses its icon. Run summaries sit above their smaller details, and the full calendar wraps its controls so you can reach them all.
 

@@ -10,17 +10,11 @@ import { HTML_PREVIEW_SANDBOX, htmlPreviewKey } from '@/lib/sessions/html-previe
 import { FileSkeleton } from '@/components/executions/skeletons';
 import { useQuery } from '@tanstack/react-query';
 import { captureHtmlThumbnail, htmlThumbnailVersion } from '@/lib/sessions/html-thumbnail';
+import { useDocumentTheme } from '@/lib/client/theme';
 
 const subscribeToHydration = () => () => {};
 const browserSnapshot = () => true;
 const serverSnapshot = () => false;
-const themeSnapshot = (): 'light' | 'dark' => document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-const serverThemeSnapshot = (): 'light' | 'dark' => 'dark';
-const subscribeToTheme = (notify: () => void) => {
-  const observer = new MutationObserver(notify);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-  return () => observer.disconnect();
-};
 
 /** One sandboxed renderer for chat artifacts and the file viewer. An opened
  * preview loads the file as its own document from the `html` route, streamed
@@ -32,7 +26,7 @@ export function HtmlView({ source, path, thumbnail = false }: { source: FolderSo
 }
 
 function HtmlPreview({ source, path }: { source: FolderSource; path: string }) {
-  const theme = useSyncExternalStore(subscribeToTheme, themeSnapshot, serverThemeSnapshot);
+  const theme = useDocumentTheme();
   const hydrated = useSyncExternalStore(subscribeToHydration, browserSnapshot, serverSnapshot);
   const cookieReady = useSessionCookieReady();
   const [generation, setGeneration] = useState(0);
@@ -88,7 +82,7 @@ function HtmlPreview({ source, path }: { source: FolderSource; path: string }) {
 
 function HtmlCardThumbnail({ source, path }: { source: FolderSource; path: string }) {
   const { data, error } = useFolderFile(source, path);
-  const theme = useSyncExternalStore(subscribeToTheme, themeSnapshot, serverThemeSnapshot);
+  const theme = useDocumentTheme();
   const hydrated = useSyncExternalStore(subscribeToHydration, browserSnapshot, serverSnapshot);
   // Too large to draw small is not too large to open: the full preview streams it.
   if (data?.tooLarge) return <span className="flex h-full items-center justify-center text-[11px] text-muted-foreground">Open to preview</span>;

@@ -1,20 +1,8 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { pickMcpIcon, type McpIcon } from '@/lib/integrations/mcp-icons';
 import { cn } from '@/lib/utils';
-
-/** The page's theme, following the `dark` class next-themes sets on the root. */
-function usePageTheme(): 'light' | 'dark' {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-  useEffect(() => {
-    const root = document.documentElement;
-    const update = () => setTheme(root.classList.contains('dark') ? 'dark' : 'light');
-    const observer = new MutationObserver(update);
-    observer.observe(root, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
-  }, []);
-  return theme;
-}
+import { useDocumentTheme } from '@/lib/client/theme';
 
 /**
  * An icon an MCP server supplied (`safeMcpIcons` already kept only `https:`
@@ -23,7 +11,7 @@ function usePageTheme(): 'light' | 'dark' {
  * none or it fails to load. A remote icon loads without a referrer.
  */
 export function McpIconImage({ icons, size = 14, className, fallback = null }: { icons?: readonly McpIcon[]; size?: number; className?: string; fallback?: React.ReactNode }) {
-  const icon = pickMcpIcon(icons, usePageTheme());
+  const icon = pickMcpIcon(icons, useDocumentTheme());
   const [failed, setFailed] = useState<string | null>(null);
   if (!icon || failed === icon.src) return <>{fallback}</>;
   return (

@@ -1,6 +1,6 @@
 import { historyMenuItems } from './history-menu';
 import { helpMenu } from './help-menu';
-import { app, BrowserWindow, dialog, type BaseWindow, ipcMain, Menu, nativeImage, Notification, session, shell, screen, clipboard, globalShortcut } from 'electron';
+import { app, BrowserWindow, dialog, type BaseWindow, ipcMain, Menu, nativeImage, nativeTheme, Notification, session, shell, screen, clipboard, globalShortcut } from 'electron';
 import { fork, execFile, type ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
 import { randomUUID } from 'node:crypto';
@@ -193,7 +193,7 @@ const desktopConnection = new DesktopConnection({
 });
 
 // Local setup has its own sandbox and session inside the persistent window.
-const appearance = desktopAppearance(path.join(profile, 'appearance.json'));
+const appearance = desktopAppearance(path.join(profile, 'appearance.json'), () => nativeTheme.shouldUseDarkColors ? 'dark' : 'light');
 let pageAssets: ReturnType<typeof localPageAssets> | undefined;
 const localSurface = createLocalWindow({
   window: () => window,

@@ -1,3 +1,5 @@
+import type { ThemePreference } from '@/types/dashboard';
+
 // ── Global hotkeys ───────────────────────────────────────────
 // Each hotkey defines the modifier + key combo and a human-readable label.
 // Components reference these instead of hardcoding key checks.
@@ -134,6 +136,13 @@ export const SAVED_RESULTS_COMMAND: PaletteCommand & { href: string } = {
   icon: 'FileCheck2', group: 'navigate', href: '/results', capability: 'handoffs',
 };
 
+/** One command per theme choice. The palette offers the two this browser isn't on. */
+export const THEME_COMMANDS = [
+  { id: 'theme-system', theme: 'system', label: 'Use automatic theme', keywords: 'theme appearance automatic auto system device match light dark mode', icon: 'SunMoon', group: 'settings' },
+  { id: 'theme-light', theme: 'light', label: 'Use light theme', keywords: 'theme appearance light mode', icon: 'Sun', group: 'settings' },
+  { id: 'theme-dark', theme: 'dark', label: 'Use dark theme', keywords: 'theme appearance dark mode night', icon: 'Moon', group: 'settings' },
+] as const satisfies ReadonlyArray<PaletteCommand & { theme: ThemePreference }>;
+
 export const PALETTE_COMMANDS: PaletteCommand[] = [
   // Create
   { id: 'create-task', label: 'Create task', keywords: 'new add task', icon: 'Plus', shortcut: 'T', group: 'create' },
@@ -167,7 +176,7 @@ export const PALETTE_COMMANDS: PaletteCommand[] = [
   // Settings
   { id: 'open-settings', label: 'Settings', keywords: 'settings preferences config profile account voice notifications billing devices', icon: 'Settings', group: 'settings' },
   { id: 'send-feedback', label: 'Feedback & bugs', keywords: 'feedback bug report issue suggestion question', icon: 'MessageSquarePlus', group: 'settings' },
-  { id: 'toggle-theme', label: 'Toggle theme', keywords: 'theme dark light mode switch', icon: 'Sun', group: 'settings' },
+  ...THEME_COMMANDS,
 ];
 
 // ── Search filters ───────────────────────────────────────────

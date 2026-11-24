@@ -16,6 +16,7 @@ import { openChatSearch } from '@/components/workspaces/chat-search-store';
 import {
 	HOTKEYS, matchesHotkey,
 	PALETTE_COMMANDS,
+	THEME_COMMANDS,
 	SEARCH_FILTERS,
 	type PaletteCommand,
 	type SearchFilter,
@@ -49,7 +50,7 @@ export function SearchOverlay() {
   const scratchpadAvailable = useScratchpadAvailable();
   const tier = useViewportTier();
   const [open, setOpen] = useState(false);
-  const { openTask, openNote, toggleTheme, theme, showPanelTab, triggerVoiceChat, setActiveView } = useDashboard();
+  const { openTask, openNote, themePreference, setThemePreference, showPanelTab, triggerVoiceChat, setActiveView } = useDashboard();
   // One Open <app> per app the rail's Apps flyout lists: connections whose
   // MCP server declares a standalone screen.
   const connectedApps = useQuery({ ...connectedAppsQuery(), enabled: open });
@@ -157,8 +158,10 @@ export function SearchOverlay() {
         setOpen(false);
         openSettings('plugins', { anchor: PLUGIN_CREATE_ANCHORS.connectService });
         break;
-      case 'toggle-theme':
-        toggleTheme();
+      case 'theme-system':
+      case 'theme-light':
+      case 'theme-dark':
+        setThemePreference(THEME_COMMANDS.find(command => command.id === cmd.id)!.theme);
         setOpen(false);
         break;
       case 'voice-chat':
@@ -204,7 +207,7 @@ export function SearchOverlay() {
         }
         break;
     }
-  }, [createTask, createNote, newSkill, openTask, openNote, toggleTheme, handleNavigate, triggerVoiceChat, router, setActiveView, appList, tier]);
+  }, [createTask, createNote, newSkill, openTask, openNote, setThemePreference, handleNavigate, triggerVoiceChat, router, setActiveView, appList, tier]);
 
   // Hotkey + custom event listeners
   const { reset } = palette;
@@ -236,26 +239,15 @@ export function SearchOverlay() {
     };
   }, [reset]);
 
-  // Resolve theme-aware icon name for toggle-theme command
-  const getCommandIcon = (cmd: PaletteCommand) => {
-    if (cmd.id === 'toggle-theme') return theme === 'dark' ? 'Sun' : 'Moon';
-    return cmd.icon;
-  };
-
-  const getCommandLabel = (cmd: PaletteCommand) => {
-    if (cmd.id === 'toggle-theme') return `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`;
-    return cmd.label;
-  };
-
   return <SearchPalette open={open} onOpenChange={setOpen} query={query} onQueryChange={palette.type}
     filters={filters} filter={filter} onFilterChange={palette.setFilter}
     searchQuery={searchesRecords ? searchQuery : ''} results={filteredResults} searching={isSearching} fetching={isFetching}
     onSelect={handleSelect} inputRef={inputRef}
-    beforeResults={<>          {isCommand && <CommandSearchItems commands={[...PALETTE_COMMANDS, ...appCommands].filter(command => (command.capability !== 'handoffs' || capabilities.data?.handoffsEnabled) && (command.capability !== 'privatePlanning' || scratchpadAvailable))} query={searchQuery} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
+    beforeResults={<>          {isCommand && <CommandSearchItems commands={[...PALETTE_COMMANDS, ...appCommands].filter(command => (command.capability !== 'handoffs' || capabilities.data?.handoffsEnabled) && (command.capability !== 'privatePlanning' || scratchpadAvailable) && command.id !== `theme-${themePreference}`)} query={searchQuery} onSelect={executeCommand}/>}
 
           {/* ── Apps: every connected app under Apps, or the ones a search names under All ── */}
-          {filter === 'app' && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty="No matching apps" onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
-          {filter === 'all' && hasQuery && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty={null} onSelect={executeCommand} icon={getCommandIcon} label={getCommandLabel}/>}
+          {filter === 'app' && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty="No matching apps" onSelect={executeCommand}/>}
+          {filter === 'all' && hasQuery && <CommandSearchItems commands={appCommands} query={searchQuery} heading="Apps" empty={null} onSelect={executeCommand}/>}
 
           {/* ── Recent items of this filter (empty query) ── */}
           {searchesRecords && searchQuery.length === 0 && recentItems.length > 0 && (

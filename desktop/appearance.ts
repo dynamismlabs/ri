@@ -5,21 +5,32 @@ import type { LocalPageStyleOptions } from './local-page-style';
 export type DesktopTheme = 'light' | 'dark';
 export const isDesktopTheme = (value: unknown): value is DesktopTheme => value === 'light' || value === 'dark';
 
-/** Cosmetic, per-profile state. Never opens a Home or changes its settings. */
-export function desktopAppearance(file: string) {
-  let theme: DesktopTheme = 'dark';
-  try { const saved = JSON.parse(fs.readFileSync(file, 'utf8')); if (isDesktopTheme(saved.theme)) theme = saved.theme; }
-  catch { /* Match the main app's default on a fresh profile. */ }
+/** Cosmetic, per-profile state. Never opens a Home or changes its settings.
+ * The app's theme can be Automatic, and only the page knows the choice, so this
+ * keeps the theme the app last drew only when it differs from `device`. A
+ * profile with nothing kept follows `device` until the app draws. */
+export function desktopAppearance(file: string, device: () => DesktopTheme = () => 'dark') {
+  let kept: DesktopTheme | undefined;
+  try { const saved = JSON.parse(fs.readFileSync(file, 'utf8')).theme; if (isDesktopTheme(saved)) kept = saved; }
+  catch { /* A fresh profile follows the device, like the app's default. */ }
+  let drawn: DesktopTheme | undefined;
+  const get = () => drawn ??= kept ?? device();
   return {
-    get: () => theme,
+    get,
+    /** Records the theme the app drew. True when it changed what Ri shows. */
     set(value: unknown) {
-      if (!isDesktopTheme(value) || value === theme) return false;
-      theme = value;
-      try {
-        fs.writeFileSync(`${file}.tmp`, JSON.stringify({ theme }), { mode: 0o600 });
-        fs.renameSync(`${file}.tmp`, file);
-      } catch { /* Cosmetic persistence must not interrupt the app. */ }
-      return true;
+      if (!isDesktopTheme(value)) return false;
+      const changed = value !== get();
+      drawn = value;
+      const keep = value === device() ? undefined : value;
+      if (keep !== kept) {
+        kept = keep;
+        try {
+          fs.writeFileSync(`${file}.tmp`, JSON.stringify(keep ? { theme: keep } : {}), { mode: 0o600 });
+          fs.renameSync(`${file}.tmp`, file);
+        } catch { /* Cosmetic persistence must not interrupt the app. */ }
+      }
+      return changed;
     },
   };
 }

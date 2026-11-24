@@ -58,9 +58,11 @@ const editor = () => fixtures.editor!;
 const type = (value: string) => act(() => editor().onChange(value));
 
 beforeEach(() => {
-  const { window, document } = parseHTML('<!doctype html><html><body><div id="root"></div></body></html>');
+  const { window, document, MutationObserver } = parseHTML('<!doctype html><html><body><div id="root"></div></body></html>');
   vi.stubGlobal('window', window);
   vi.stubGlobal('document', document);
+  // The editor follows the page's theme.
+  vi.stubGlobal('MutationObserver', MutationObserver);
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
   fixtures.files.clear();
   fixtures.editor = null;
