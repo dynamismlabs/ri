@@ -22,7 +22,7 @@ import { AppBuildsList } from '../../app-builds-list';
 import { installedApps, YourAppsList } from '../../app-status';
 import { useOpenApp } from '../../use-open-app';
 import { trpc } from '@/lib/trpc/client';
-import type { LibraryFilter } from '../../library-model';
+import { isSetupOpen, NO_SETUP, type LibraryFilter } from '../../library-model';
 import { useReview } from '../context';
 import { ItemDetails } from '../details';
 import { ItemMark, ItemStatus, ManageButton, PrimaryButton } from '../items';
@@ -48,12 +48,12 @@ export function SplitLibrary() {
   useEffect(() => {
     if (review.query.browse === 'yours') library.current?.focus({ preventScroll: false });
   }, [review.query.browse]);
+  const setup = !!review.query.provider || !!review.query.application || !!review.query.mcp;
   useEffect(() => {
-    if (!(review.query.provider || review.query.mcp || review.trySkill)) return;
+    if (!(setup || review.trySkill)) return;
     const root = pane.current?.closest('[data-apps-library]');
     if (root && root.clientWidth <= 760) pane.current?.scrollIntoView({ block: 'start' });
-  }, [review.query.provider, review.query.mcp, review.trySkill]);
-  const setup = !!review.query.provider || !!review.query.mcp;
+  }, [review.query.provider, review.query.application, review.query.mcp, setup, review.trySkill]);
   return (
     <>
       <LibraryHeader />
@@ -114,7 +114,7 @@ function LibraryHeader() {
   const [newApp, setNewApp] = useState(false);
   const newServer = () => {
     review.setTrySkill(null);
-    review.patch({ mcp: 'new', provider: undefined, item: undefined, panel: undefined });
+    review.patch({ ...NO_SETUP, mcp: 'new', item: undefined, panel: undefined });
   };
   return <header className={s.libraryHeader}>
     <div className={s.libraryHeading}><span className={s.mark}><LayoutGrid size={18} /></span><div><h1>Apps</h1><p>Apps, {INTEGRATION_LABELS.plural.toLowerCase()}, and skills for your work.</p></div></div>
@@ -194,7 +194,7 @@ function LibraryEntry({ item }: { item: ReviewItem }) {
   const review = useReview();
   const action = item.draft ? 'Continue setup' : item.kind === 'skills' ? 'Edit skill' : item.view ? 'Open' : 'Manage connection';
   const open = () => item.draft || item.kind === 'skills' || !item.view ? review.manage(item) : review.primary(item);
-  const selected = review.selected?.key === item.key || review.query.provider === (item.target.kind === 'provider' ? item.target.id : null) || review.query.mcp === (item.target.kind === 'mcp' ? item.target.id : null);
+  const selected = review.selected?.key === item.key || isSetupOpen(review.query, item.target);
   return <div className={s.libraryEntry} data-item={item.key} data-selected={selected || undefined}>
     <Tip label={item.name} onlyWhenTextHidden><InlineAction   type="button" className={s.ownedButton} onClick={open} aria-label={`${action} ${item.name}`} aria-current={selected ? 'true' : undefined}>
       <ItemMark item={item} small /><span><strong>{item.name}</strong><small className={item.attention ? s.attention : undefined}>{item.enabled === false ? 'Off' : item.attention ? 'Needs attention' : item.target.kind === 'mcp' ? 'Custom MCP' : item.status}</small></span>

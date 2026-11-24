@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterLibrary, libraryItems, libraryLocation, libraryRoute, type LibrarySources } from './library-model';
+import { filterLibrary, isSetupOpen, libraryItems, libraryLocation, libraryRoute, NO_SETUP, setupQuery, type LibrarySources } from './library-model';
 
 const timestamps = { createdAt: '2026-01-01', updatedAt: '2026-01-01' };
 const source: LibrarySources = {
@@ -46,6 +46,17 @@ describe('Apps library identity and capabilities', () => {
     expect(filterLibrary(rows, 'yours', 'apps', '')).toEqual([app]);
     expect(filterLibrary(rows, 'yours', 'connectors', 'Receipts')).toEqual([app]);
   });
+  it('lists accounts a connection source holds as their application, beside the direct provider', () => {
+    const managed = (id: string, sourceId: string, label: string, status: 'active' | 'needs_reauth') => ({ ...timestamps, ownerId: 'local', id, providerId: `${sourceId}_gmail`,
+      accountId: id, label, status, scopes: [], config: { managed: true, sourceId, applicationId: 'gmail' } });
+    const rows = libraryItems({ ...source, connections: [...source.connections!,
+      managed('m1', 'cmpabcd', 'Work', 'needs_reauth'), managed('m2', 'cmpwxyz', 'Side', 'active')] });
+    // One Gmail row for both sources, never a raw source-namespaced id as a retired provider.
+    expect(rows.map(row => row.key)).toEqual(['application:gmail', 'provider:google', 'mcp:custom']);
+    expect(rows[0]).toMatchObject({ name: 'Gmail', kind: 'connectors', logo: 'gmail', target: { kind: 'application', id: 'gmail' },
+      added: true, attention: true, status: 'Needs attention' });
+    expect(filterLibrary(rows, 'yours', 'connectors', 'side').map(row => row.key)).toEqual(['application:gmail']);
+  });
   it('keeps unavailable accounts and retired providers manageable', () => {
     const rows = libraryItems({ providers: [], connections: [{ ...timestamps, ownerId: 'local', id: 'old', providerId: 'old-service', accountId: 'work', status: 'needs_reauth', scopes: [] }] });
     expect(rows[0]).toMatchObject({ added: true, attention: true, target: { kind: 'provider', id: 'old-service' } });
@@ -59,6 +70,17 @@ it('keeps catalog location and search while opening and returning from setup', (
   expect(libraryLocation(location)).toMatchObject({ mode: 'discover', filter: 'connectors', search: 'work mail', provider: 'google' });
   expect(libraryRoute(location, { provider: undefined })).toBe('?browse=discover&filter=connectors&q=work+mail');
   expect(libraryLocation({ filter: 'something-unknown' }).filter).toBe('all');
+  expect(libraryLocation({ application: 'gmail' }).application).toBe('gmail');
+  expect(libraryLocation({ application: 'not-an-application' }).application).toBeUndefined();
+});
+
+it('opens one connection page at a time, whichever kind it is', () => {
+  const open = Object.fromEntries(new URLSearchParams(libraryRoute({ q: 'mail', provider: 'google' }, setupQuery({ kind: 'application', id: 'gmail' }))));
+  expect(open).toEqual({ q: 'mail', application: 'gmail' });
+  expect(isSetupOpen(open, { kind: 'application', id: 'gmail' })).toBe(true);
+  expect(isSetupOpen(open, { kind: 'provider', id: 'google' })).toBe(false);
+  expect(isSetupOpen({ ...open, mcp: 'receipts' }, { kind: 'skill', ref: 'receipts' })).toBe(false);
+  expect(libraryRoute(open, NO_SETUP)).toBe('?q=mail');
 
 });
 

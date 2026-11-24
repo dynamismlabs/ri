@@ -28,7 +28,7 @@ import { rpcQuery } from '@/lib/trpc/request-options';
  * `./integrations/` are presentational.
  */
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
-import { CATEGORY_ORDER, integrationMeta, type IntegrationCategory } from '@/components/integrations/integration-meta';
+import { APPLICATION_LOGO, CATEGORY_ORDER, integrationMeta, type IntegrationCategory } from '@/components/integrations/integration-meta';
 import { SettingsSkeleton } from '@/components/settings/settings-skeleton';
 import { setSettingsAnchor, useSettingsStore } from '@/components/settings/settings-store';
 import { APP_ANCHOR, PLUGIN_CREATE_ANCHORS } from './plugins/navigation';
@@ -89,7 +89,6 @@ function anchorFor(view: View): string {
 
 /** Where a managed application lives in the catalog when it isn't connected yet. */
 const APP_CATEGORY: Record<ApplicationId, IntegrationCategory> = { gmail: 'Email', google_calendar: 'Productivity' };
-const APP_LOGO: Record<ApplicationId, string> = { gmail: 'gmail', google_calendar: 'google' };
 
 const CATALOG: View = { kind: 'catalog' };
 
@@ -117,8 +116,8 @@ function connectedSubtitle(p: ProviderStatus, conns: Connection[]): string {
 
 export function IntegrationsSection({ active = true, navigation }: {
   active?: boolean;
-  /** Apps can reuse account setup without opening or changing Settings. */
-  navigation?: { providerId: string; returnTo?: string; onBack: () => void };
+  /** Apps can reuse account setup without opening or changing Settings: one provider's page, or one managed application's. */
+  navigation?: { page: { kind: 'provider'; id: string } | { kind: 'app'; id: ApplicationId }; returnTo?: string; onBack: () => void };
 }) {
   const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -139,7 +138,7 @@ export function IntegrationsSection({ active = true, navigation }: {
   const sourcesOverview = useSourcesOverview(active);
   const managedAccounts = useManagedAccounts(active);
 
-  const [view, setView] = useState<View>(() => navigation ? { kind: 'provider', id: navigation.providerId } : CATALOG);
+  const [view, setView] = useState<View>(() => navigation ? navigation.page : CATALOG);
   const [advancedOpen, setAdvancedOpen] = useState(false); // detail view's "Use your own OAuth app"
   const rootRef = useRef<HTMLDivElement>(null);
   const catalogScroll = useRef(0);
@@ -419,7 +418,8 @@ export function IntegrationsSection({ active = true, navigation }: {
   // provider's page (the main chat's first run links each app here). Once per
   // anchor, after the catalog has loaded, so Back still reaches the catalog.
   const { anchor, requestId } = useSettingsStore();
-  const appProviderId = navigation?.providerId;
+  const appProviderId = navigation?.page.kind === 'provider' ? navigation.page.id : undefined;
+  const appApplicationId = navigation?.page.kind === 'app' ? navigation.page.id : undefined;
   const openedRequest = useRef<number | null>(null);
   useEffect(() => {
     if (navigation || !active || isLoading || openedRequest.current === requestId) return;
@@ -453,6 +453,10 @@ export function IntegrationsSection({ active = true, navigation }: {
       void loadByo(provider.id).catch(error => setError(errMsg(error)));
     }
   }, [appProviderId, providers, loadByo]);
+
+  useEffect(() => {
+    if (appApplicationId) setView({ kind: 'app', id: appApplicationId });
+  }, [appApplicationId]);
 
   const connectOAuth = useCallback(
     async (p: ProviderStatus, authConfigId?: string, intent?: HostedConnectIntent) => {
@@ -769,7 +773,7 @@ export function IntegrationsSection({ active = true, navigation }: {
                       return (
                         <CatalogTile
                           key={`app:${id}`}
-                          logo={<IntegrationLogo providerId={APP_LOGO[id]} name={APPLICATIONS[id].displayName} size={36} />}
+                          logo={<IntegrationLogo providerId={APPLICATION_LOGO[id]} name={APPLICATIONS[id].displayName} size={36} />}
                           name={APPLICATIONS[id].displayName}
                           subtitle={`${who}, via ${[...new Set(accounts.map((a) => a.sourceLabel))].join(', ')}`}
                           tone={healthy ? 'ok' : 'warn'}
@@ -821,7 +825,7 @@ export function IntegrationsSection({ active = true, navigation }: {
                     {apps.map((id) => (
                       <CatalogTile
                         key={`app:${id}`}
-                        logo={<IntegrationLogo providerId={APP_LOGO[id]} name={APPLICATIONS[id].displayName} size={36} />}
+                        logo={<IntegrationLogo providerId={APPLICATION_LOGO[id]} name={APPLICATIONS[id].displayName} size={36} />}
                         name={APPLICATIONS[id].displayName}
                         subtitle="Connect through Composio, with no OAuth app of your own."
                         onOpen={() => navigate({ kind: 'app', id })}

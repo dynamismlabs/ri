@@ -7,11 +7,13 @@ Your work lives in other places too: your inbox, your calendar, Slack, Notion, L
 
 ## Connect an account
 
-Open **Apps** in the rail, then **Open your library**, and choose **Connectors**. **Plugins** in **Settings** opens the same library, and so does **Connect a service** in search (⌘K or Ctrl+K). Pick a service and sign in. Ri can connect Google (Gmail, Calendar, Drive, Docs and Sheets), Microsoft 365, Slack, Notion, Linear, Todoist, GitHub, Jira, Asana and dozens more. You can connect several accounts of the same service, like your work and personal Gmail.
+Click **Connect accounts** at the bottom of the rail to open **Apps** on its Connectors. **Apps** in the rail and **Plugins** in **Settings** open the same library, and so does **Connect a service** in search (⌘K or Ctrl+K). Pick a service and sign in. Ri can connect Google (Gmail, Calendar, Drive, Docs and Sheets), Microsoft 365, Slack, Notion, Linear, Todoist, GitHub, Jira, Asana and dozens more. You can connect several accounts of the same service, like your work and personal Gmail.
 
 Most services connect with a normal sign-in. Gmail and Google Calendar need one more choice first: connect through Composio, a service that stores the connection and handles its requests so you don't have to register anything with Google, or use your own Google OAuth app, which keeps the account's tokens in your Ri. Ri walks you through either.
 
 You don't have to set everything up in advance. When an agent needs an account you haven't connected, it shows a card in the chat with a button to connect it, or **Not now**.
+
+If an account stops working, for example when its sign-in expires, **Connect accounts** shows an amber count. Click it to go straight to that account's page in Apps and sign in again.
 
 ## Which agents can use which accounts
 

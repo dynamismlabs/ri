@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AccountNeedingYou } from '@/lib/integrations/attention';
-import { connectAccountsAnchor, reconnectLabel } from './accounts-needing-you';
+import { connectAccountsQuery, reconnectLabel } from './accounts-needing-you';
 
 const account = (name: string, target: AccountNeedingYou['target'], extra: Partial<AccountNeedingYou> = {}): AccountNeedingYou => ({
   key: `${target.kind}:${target.id}:${extra.account ?? ''}`, name, target, ...extra,
@@ -10,21 +10,21 @@ const gmail = account('Gmail', { kind: 'application', id: 'gmail' });
 const receipts = account('Receipts', { kind: 'server', id: 'receipts' });
 const docs = account('Docs', { kind: 'server', id: 'docs' });
 
-describe('connectAccountsAnchor', () => {
-  it('opens the Connectors list while nothing needs you', () => {
-    expect(connectAccountsAnchor([])).toBe('integrations');
+describe('connectAccountsQuery', () => {
+  it('opens Apps on Connectors while nothing needs you', () => {
+    expect(connectAccountsQuery([])).toEqual({ filter: 'Connectors' });
   });
 
-  it('goes straight to the one page that fixes every account', () => {
-    expect(connectAccountsAnchor([google('Work'), google('Home')])).toBe('integrations:google');
-    expect(connectAccountsAnchor([gmail])).toBe('integrations:app:gmail');
-    expect(connectAccountsAnchor([receipts])).toBe('mcp:receipts');
+  it('goes straight to the one page in Apps that fixes every account', () => {
+    expect(connectAccountsQuery([google('Work'), google('Home')])).toEqual({ provider: 'google' });
+    expect(connectAccountsQuery([gmail])).toEqual({ application: 'gmail' });
+    expect(connectAccountsQuery([receipts])).toEqual({ mcp: 'receipts' });
   });
 
-  it('opens the list that marks each, when they live on different pages', () => {
-    expect(connectAccountsAnchor([google('Work'), gmail])).toBe('integrations');
-    expect(connectAccountsAnchor([gmail, receipts])).toBe('integrations');
-    expect(connectAccountsAnchor([receipts, docs])).toBe('mcp');
+  it('opens your library, which marks each, when they live on different pages', () => {
+    expect(connectAccountsQuery([google('Work'), gmail])).toEqual({ browse: 'yours' });
+    expect(connectAccountsQuery([gmail, receipts])).toEqual({ browse: 'yours' });
+    expect(connectAccountsQuery([receipts, docs])).toEqual({ browse: 'yours' });
   });
 });
 

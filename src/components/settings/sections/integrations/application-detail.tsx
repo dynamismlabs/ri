@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, Bot, CalendarDays, Check, ChevronDown, ExternalLink, Loader2, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2, Unplug } from 'lucide-react';
 import { IntegrationLogo } from '@/components/integrations/integration-logo';
+import { APPLICATION_LOGO } from '@/components/integrations/integration-meta';
 import { Button } from '@/components/system/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useConfirm } from '@/components/system/confirm-dialog';
@@ -67,8 +68,6 @@ export interface ApplicationDetailProps {
   onChanged: () => void;
 }
 
-const LOGO: Record<ApplicationId, string> = { gmail: 'gmail', google_calendar: 'google' };
-
 export function ApplicationDetail(props: ApplicationDetailProps) {
   const app = APPLICATIONS[props.applicationId];
   const accounts = useManagedAccounts();
@@ -92,7 +91,7 @@ export function ApplicationDetail(props: ApplicationDetailProps) {
       <div className="space-y-4">
         <BackLink onBack={props.onBack} busy={accounts.isFetching && !accounts.data} />
         <DetailHeader
-          logo={<IntegrationLogo providerId={LOGO[props.applicationId]} name={app.displayName} size={48} />}
+          logo={<IntegrationLogo providerId={APPLICATION_LOGO[props.applicationId]} name={app.displayName} size={48} />}
           title={app.displayName}
           subtitle={props.applicationId === 'gmail' ? 'Let agents find, read, draft and send mail.' : 'Let agents see and create events, and show your calendar in Ri.'}
           meta={total > 0

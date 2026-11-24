@@ -1,4 +1,4 @@
-/** The rail's actual footer, wide and collapsed, against an isolated synthetic API: an account only you can fix shows, and leads to its page. An update waiting on running work shows, and leads to Settings, Updates. */
+/** The rail's actual footer, wide and collapsed, against an isolated synthetic API: Connect accounts opens Apps, and an account only you can fix shows and leads to its page there. An update waiting on running work shows, and leads to Settings, Updates. */
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -44,6 +44,12 @@ beforeAll(async () => {
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', logLevel: 'silent',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },
+    // The dashboard records the views the footer opens, as the real one would navigate to them.
+    // Anything that only reads it when there is one (Feedback & bugs) still finds none.
+    plugins: [{ name: 'isolated-dashboard', setup(api) {
+      api.onResolve({ filter: /^@\/contexts\/dashboard-context$/ }, () => ({ path: 'dashboard', namespace: 'fixture' }));
+      api.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: `window.views=[];const dashboard={setActiveView:view=>window.views.push(view)};export const useDashboard=()=>dashboard;export const useOptionalDashboard=()=>null;`, loader: 'js' }));
+    } }],
   });
   server = http.createServer(async (req, res) => {
     const url = new URL(req.url!, 'http://fixture');
@@ -84,6 +90,8 @@ async function open(): Promise<Page> {
   return page;
 }
 const settings = (page: Page) => page.locator('[data-settings]').innerText();
+const views = (page: Page) => page.evaluate(() => (window as unknown as { views: unknown[] }).views);
+const apps = (query: Record<string, string>) => ({ kind: 'apps', route: '', query });
 const wide = (page: Page) => page.locator('[data-rail="wide"]');
 const strip = (page: Page) => page.locator('[data-rail="strip"]');
 
@@ -103,7 +111,9 @@ it('counts accounts only you can fix, names them, and goes to the page that fixe
     await page.getByRole('tooltip').filter({ hasText: 'Reconnect Google (Work) and Google (Home)' }).first().waitFor();
     await page.screenshot({ path: '/tmp/ri-rail-footer-attention.png' });
     await connect.click();
-    expect(await settings(page)).toBe('plugins integrations:google');
+    // Google's page in Apps, not Settings.
+    expect(await views(page)).toEqual([apps({ provider: 'google' })]);
+    expect(await settings(page)).toBe('closed');
 
     // The collapsed rail shows the same accounts as a plug with a dot, above Feedback & bugs and Settings.
     const plug = strip(page).getByRole('button', { name: 'Reconnect Google (Work) and Google (Home)' });
@@ -111,6 +121,9 @@ it('counts accounts only you can fix, names them, and goes to the page that fixe
     expect(await strip(page).getByRole('button').evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label'))))
       .toEqual(['Reconnect Google (Work) and Google (Home)', 'Feedback & bugs', 'Settings']);
     expect(await plug.locator('.bg-amber-500').count()).toBe(1);
+    await plug.click();
+    expect(await views(page)).toEqual([apps({ provider: 'google' }), apps({ provider: 'google' })]);
+    expect(await settings(page)).toBe('closed');
     expect(errors).toEqual([]);
   } finally {
     await page.close();
@@ -130,7 +143,9 @@ it('stays quiet while every account works', async () => {
     expect(await strip(page).getByRole('button').evaluateAll(buttons => buttons.map(button => button.getAttribute('aria-label')))).toEqual(['Feedback & bugs', 'Settings']);
     await page.screenshot({ path: '/tmp/ri-rail-footer-quiet.png' });
     await connect.click();
-    expect(await settings(page)).toBe('plugins integrations');
+    // Apps, with Discover on Connectors, since connecting one is what the button says.
+    expect(await views(page)).toEqual([apps({ filter: 'Connectors' })]);
+    expect(await settings(page)).toBe('closed');
   } finally {
     await page.close();
   }

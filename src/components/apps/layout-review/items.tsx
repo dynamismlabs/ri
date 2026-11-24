@@ -12,7 +12,8 @@ import { useReview } from './context';
 import s from './review.module.css';
 
 export function ItemMark({ item, small = false }: { item: ReviewItem; small?: boolean }) {
-  if (item.providerId) return <IntegrationLogo providerId={item.providerId} name={item.name} size={small ? 24 : 36} />;
+  const logo = item.logo ?? item.providerId;
+  if (logo) return <IntegrationLogo providerId={logo} name={item.name} size={small ? 24 : 36} />;
   if (item.kind === 'skills' || (item.target.kind === 'mcp' && item.kind !== 'apps')) {
     const Icon = item.kind === 'skills' ? BookOpen : Server;
     return <span aria-hidden className={`${s.mark} ${small ? s.markSmall : ''} ${item.kind === 'skills' ? s.skillMark : ''}`}><Icon size={small ? 13 : 18} /></span>;

@@ -11,6 +11,7 @@ import { mainChatKey } from '@/hooks/use-main-chat';
 import { trpcClient } from '@/lib/trpc/client';
 import { offerSourceToChat } from '@/lib/client/source-handoff';
 import { SOURCE_STATUS_LABELS } from '@/lib/chat-sources/types';
+import { parseManagedToolkitId } from '@/lib/integrations/sources/applications';
 import type { LibraryItem } from './library-model';
 
 export function LibraryChat({ item, onClose, onOpenChat }: { item: LibraryItem | null; onClose: () => void; onOpenChat?: () => void }) {
@@ -40,7 +41,11 @@ function SourceChoices({ item, onClose, onOpenChat }: { item: LibraryItem; onClo
         const server = servers.find(server => server.id === id);
         if (server) providerId = `mcp_${server.slug.replace(/[^a-zA-Z0-9_]/g, '_')}`;
       }
-      const groups = toolkits.toolkits.filter(toolkit => toolkit.providerId === providerId);
+      // A managed application's accounts sit under each source that holds them (Gmail through Composio).
+      const target = item.target;
+      const groups = toolkits.toolkits.filter(toolkit => target.kind === 'application'
+        ? parseManagedToolkitId(toolkit.providerId)?.applicationId === target.id
+        : toolkit.providerId === providerId);
       const results = await Promise.all(groups.map(group => trpcClient.chatSources.search.query({ chatId: main.session.id, query: '', filter: 'connector', groupId: group.id })));
       return { chatId: main.session.id, items: results.flatMap(result => result.items.flatMap(entry => entry.kind === 'source' ? [entry.source] : [])).filter(source => !item.sourceRef || source.sourceRef === item.sourceRef) };
     },

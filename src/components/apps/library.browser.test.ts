@@ -48,6 +48,7 @@ beforeAll(async () => {
       import {createRoot} from 'react-dom/client';
       import {QueryClient,QueryClientProvider} from '@tanstack/react-query';
       import {TooltipProvider} from '@/components/ui/tooltip';
+      import {ConfirmProvider} from '@/components/ui/confirm-dialog';
       import {AppLibrary} from '@/components/apps/app-library';
       import {PluginsSection} from '@/components/settings/sections/plugins-section';
       import {SettingsNav} from '@/components/settings/settings-nav';
@@ -71,7 +72,7 @@ beforeAll(async () => {
           <output hidden data-settings-section>{settings.section}</output>
         </main>;
       }
-      createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><TooltipProvider><Fixture/></TooltipProvider></QueryClientProvider>);
+      createRoot(document.getElementById('root')).render(<QueryClientProvider client={client}><TooltipProvider><ConfirmProvider><Fixture/></ConfirmProvider></TooltipProvider></QueryClientProvider>);
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', logLevel: 'silent',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },
@@ -161,6 +162,41 @@ it('shows real capabilities, exact accounts and setup in Apps without opening Se
     await page.goBack();
     await page.getByRole('textbox', { name: 'Search library' }).waitFor();
     expect(await page.getByRole('button', { name: 'Discover', exact: true }).getAttribute('aria-pressed')).toBe('true');
+    expect(errors).toEqual([]);
+  } finally { await page.close(); }
+});
+
+it('opens a managed account\'s application page in Apps, where Connect accounts sends a Gmail that needs you', async () => {
+  // Gmail through Composio that needs signing in again: one Gmail row, and its page, without Settings.
+  const managed = { id: 'cmpabcd-work', providerId: 'cmpabcd_gmail', accountId: 'work', email: 'work@example.test', status: 'needs_reauth', scopes: [],
+    config: { managed: true, sourceId: 'cmpabcd', applicationId: 'gmail' } };
+  const account = { connectionId: managed.id, accountId: 'work', toolkitId: managed.providerId, applicationId: 'gmail', applicationName: 'Gmail', sourceId: 'cmpabcd',
+    sourceKind: 'composio', sourceLabel: 'Composio', sourceEnabled: true, verifiedEmail: managed.email, label: null, status: 'needs_reauth', calendarUse: null, connectedAt: '2026-01-01' };
+  const page = await open('?application=gmail');
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  const reply = (data: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: { data } }) });
+  const connections = responses['integrations.connectionsGet'] as { connections: unknown[] };
+  await page.route('**/api/trpc/integrations.connectionsGet*', route => route.fulfill(reply({ connections: [...connections.connections, managed] })));
+  await page.route('**/api/trpc/integrationSources.accounts*', route => route.fulfill(reply([account])));
+  await page.route('**/api/trpc/integrationSources.overview*', route => route.fulfill(reply({ sources: [] })));
+  await page.route('**/api/trpc/integrationSources.method*', route => route.fulfill(reply(null)));
+  try {
+    await page.reload();
+    await page.getByRole('heading', { name: 'Gmail', exact: true }).waitFor();
+    await page.getByText('work@example.test', { exact: false }).first().waitFor();
+    await page.screenshot({ path: '/tmp/ri-apps-managed-gmail.png' });
+    await page.getByText('Sign-in needed', { exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Reconnect', exact: true }).waitFor();
+    expect(await page.locator('[data-settings-open]').textContent()).toBe('false');
+
+    // Back to the library: one Gmail card, never the source-namespaced id, and it opens the same page.
+    await page.getByRole('button', { name: /^All connectors/ }).click();
+    await card(page, 'Gmail').waitFor();
+    expect(await card(page, 'Gmail').innerText()).toContain('Needs attention');
+    expect(await page.getByText('cmpabcd_gmail', { exact: false }).count()).toBe(0);
+    await card(page, 'Gmail').getByRole('button', { name: 'Manage' }).click();
+    await page.getByText('work@example.test', { exact: false }).first().waitFor();
+    expect(new URL(page.url()).searchParams.get('application')).toBe('gmail');
     expect(errors).toEqual([]);
   } finally { await page.close(); }
 });
