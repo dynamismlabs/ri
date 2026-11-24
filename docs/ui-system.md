@@ -160,7 +160,7 @@ Add/Close actions stay outside the tablist.
 | `ChoiceRow` | 8px descriptive option, title/description associations, leading/trailing content, rich children, selection, density and touch minimum |
 | `ChoiceGroup`, `ChoiceIndicator` | Installed radio/form keyboard and a decorative selection mark |
 | `Callout` | 14px semantic content frame with info/warning/error/success tone |
-| `StatusBadge` | Capsule fact with neutral or semantic tone and optional code type |
+| `StatusBadge` | Capsule fact with neutral or semantic tone and optional code type. `size="count"` for counts, `asChild` to draw a list item |
 | `Meta`, `MetaItem` | Wrapping facts, dot separators and semantic ink |
 
 Content type is 13px. Description and metadata are 12px, badges 11px. Choice
@@ -230,6 +230,14 @@ returns focus to its still-connected opener.
 a category and its file/owner/attributes. Product entries cap the number of
 reviewed native declarations. A new raw button, input, select, textarea or
 manual role=dialog outside it is an error, even with a data attribute.
+
+`ui-system/hand-drawn-pills` rejects a hand-drawn capsule anywhere in `src/`:
+a `className` with `rounded-full` and side padding (`px-`, `pl-`, `pr-`, `ps-`,
+`pe-`). A label that states a fact is a `StatusBadge` (counts use
+`size="count"`), an action is a `ChipButton`, and a floating notice is a
+`ToastSurface`, so they share one size, one set of tones and one corner
+shape. Dots and padded circles (`p-1`) stay as they are. A count on an icon's
+corner keeps its own round drawing with an inline disable that says so.
 
 | Category | Retained native role |
 | --- | --- |

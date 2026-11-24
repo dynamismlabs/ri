@@ -5,6 +5,7 @@ import { MenuAction } from '@/components/system/menu-action';
 
 import { IconButton } from '@/components/system/icon-button';
 import { Button } from '@/components/system/button';
+import { StatusBadge } from '@/components/system/status-badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/system/menu';
 import { BACKGROUND_DOT, BACKGROUND_LABEL } from '@/components/workspaces/activity-style';
 import { InactiveFold } from '@/components/workspaces/inactive-fold';
@@ -469,24 +470,19 @@ function ChatCounts({ needsYou, working, blocked }: { needsYou: number; working:
     <span className="flex flex-shrink-0 items-center gap-1">
       <span className="sr-only">{said}</span>
       {needsYou > 0 && (
-        <span
-          aria-hidden
-          data-count="needs-you"
-          className={cn(COUNT, 'bg-amber-500/15 text-amber-600 dark:text-amber-400', blocked > 0 && 'animate-pulse')}
-        >
+        <StatusBadge aria-hidden data-count="needs-you" size="count" tone="attention" className={cn('justify-center', blocked > 0 && 'animate-pulse')}>
           {needsYou}
-        </span>
+        </StatusBadge>
       )}
       {working > 0 && (
-        <span aria-hidden data-count="working" className={cn(COUNT, 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400')}>
+        <StatusBadge aria-hidden data-count="working" size="count" tone="success" className="justify-center">
           {working}
-        </span>
+        </StatusBadge>
       )}
     </span>
   );
 }
 
-const COUNT = 'min-w-[20px] h-[18px] rounded-full px-1.5 text-center text-[11px] font-semibold leading-[18px] tabular-nums';
 
 // ─── Chat row (phone sized) ───────────────────────────────────────
 

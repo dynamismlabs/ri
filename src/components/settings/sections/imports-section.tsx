@@ -43,25 +43,21 @@ const SOURCE_META: Record<ExternalAgentSource, {
   label: string;
   mark: string;
   cardClassName: string;
-  pillClassName: string;
 }> = {
   claude: {
     label: 'Claude Code',
     mark: 'C',
     cardClassName: 'bg-orange-500/10 text-orange-500',
-    pillClassName: 'bg-orange-500/10 text-orange-600 dark:text-orange-400',
   },
   codex: {
     label: 'Codex',
     mark: 'O',
     cardClassName: 'bg-emerald-500/10 text-emerald-500',
-    pillClassName: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   },
   opencode: {
     label: 'OpenCode',
     mark: 'OC',
     cardClassName: 'bg-sky-500/10 text-sky-500',
-    pillClassName: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
   },
 };
 
@@ -465,12 +461,7 @@ function ProjectRow({
                 <span className="block truncate text-[12px] text-foreground">{session.label}</span>
                 {session.note && <span className="mt-0.5 block text-[10px] text-muted-foreground">{session.note}</span>}
                 <span className="mt-0.5 flex items-center gap-2 text-[10px] text-muted-foreground">
-                  <span className={cn(
-                    'rounded-full px-1.5 py-0.5 font-medium',
-                    SOURCE_META[session.source].pillClassName,
-                  )}>
-                    {sourceLabel(session.source)}
-                  </span>
+                  <StatusBadge>{sourceLabel(session.source)}</StatusBadge>
                   {session.branchName && <span className="max-w-36 truncate">{session.branchName}</span>}
                 </span>
               </InlineAction>

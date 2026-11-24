@@ -4,6 +4,7 @@ import { MenuAction } from '@/components/system/menu-action';
 import { SegmentedRoot, SegmentedPanel } from '@/components/system/segmented-control';
 
 import { Button } from '@/components/system/button';
+import { ToastSurface } from '@/components/system/toast';
 import { EntityDetailHeader, EntityActionsMenu } from '@/components/entities/entity-detail-header';
 
 import { useDocumentAutosave, usePendingDocument } from '@/hooks/use-document-autosave';
@@ -371,10 +372,10 @@ export function TaskSlideout({ taskId, onClose, onCloseAll, hasHistory }: TaskSl
                   )}
                   {aiBusy && (
                     <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] flex items-center justify-center pointer-events-auto transition-opacity duration-200">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground/80 bg-card/90 border border-border/50 rounded-full px-4 py-2 shadow-md">
-                        <Pencil size={14} className="text-primary/70 animate-pulse" />
-                        <span>AI is editing...</span>
-                      </div>
+                      <ToastSurface padding="md" role="status" className="flex items-center gap-2">
+                        <Pencil size={14} className="text-muted-foreground animate-pulse" />
+                        <span className="text-muted-foreground">AI is editing...</span>
+                      </ToastSurface>
                     </div>
                   )}
                 </div>

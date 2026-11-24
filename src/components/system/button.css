@@ -45,7 +45,7 @@
 .ri-button:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, var(--selected)); color: var(--t1); }
 .ri-button:where([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']), .ri-button--pressed { background-color: var(--selected); color: var(--t1); }
 .ri-button--primary { --control-ink: var(--primary-foreground); --control-fill: var(--primary); background-color: var(--control-fill); color: var(--control-ink); }
-.ri-button--primary:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, color-mix(in oklch, var(--control-fill) 90%, var(--pane))); color: var(--control-ink); }
+.ri-button--primary:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, color-mix(in oklab, var(--control-fill) 90%, var(--pane))); color: var(--control-ink); }
 .ri-button--ghost { background-color: transparent; color: var(--t3); }
 .ri-button--ghost:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, var(--hover)); }
 .ri-button--ghost:where([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']) { background-color: var(--selected); color: var(--t1); }
@@ -67,11 +67,11 @@
 .ri-tone--status-progress { --control-ink: var(--status-progress); --control-fill: var(--mode-edits-fill); }
 .ri-tone--status-done { --control-ink: var(--status-done); --control-fill: var(--success-fill); }
 .ri-button:is([class*='ri-tone--'], .ri-button--destructive) { background-color: var(--control-fill); color: var(--control-ink); }
-.ri-button:is([class*='ri-tone--'], .ri-button--destructive):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, color-mix(in oklch, var(--control-fill) 50%, var(--pane))); color: var(--control-ink); }
+.ri-button:is([class*='ri-tone--'], .ri-button--destructive):where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, color-mix(in oklab, var(--control-fill) 50%, var(--pane))); color: var(--control-ink); }
 .ri-button--ghost[class*='ri-tone--'] { background-color: transparent; }
 .ri-button--ghost[class*='ri-tone--']:where([aria-pressed='true'], [aria-selected='true'], [aria-checked='true']) { background-color: var(--control-fill); color: var(--control-ink); }
 .ri-button--primary[class*='ri-tone--'] { background-color: var(--control-ink); color: var(--control-on-solid); }
-.ri-button--primary[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, color-mix(in oklch, var(--control-ink) 90%, var(--t1))); color: var(--control-on-solid); }
+.ri-button--primary[class*='ri-tone--']:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, color-mix(in oklab, var(--control-ink) 90%, var(--t1))); color: var(--control-on-solid); }
 .ri-button--clip { overflow: hidden; }
 .ri-button--floating { background-color: var(--popover); box-shadow: var(--shadow-thumb); pointer-events: auto; }
 .ri-button--floating:where(:hover, [aria-expanded='true']):not(:disabled, [aria-disabled='true']) { background-color: var(--button-hover-fill, var(--raised)); }

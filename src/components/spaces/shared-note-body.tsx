@@ -2,6 +2,7 @@
 import { Callout } from '@/components/system/callout';
 
 import { Button } from '@/components/system/button';
+import { StatusBadge } from '@/components/system/status-badge';
 import { teamDisplayName } from '@/lib/home/team-display-name';
 
 import { Lock, PencilLine, Users } from 'lucide-react';
@@ -46,9 +47,9 @@ export function SharedNoteBody({ note }: { note: NoteRecord }) {
       )}
       <section aria-label={`Shared with ${teamName}`} className="space-y-4">
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
-            <Users size={12} /> Shared with {teamName}
-          </span>
+          <StatusBadge>
+            <Users /> Shared with {teamName}
+          </StatusBadge>
           {/* The team's kind, like its text: changed where the note is edited. */}
           <DecisionLabel kind={note.kind} />
           <TeamLabel teamId={note.sourceTeamId} sourceArea={note.source?.area} />

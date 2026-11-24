@@ -69,6 +69,17 @@ describe('strict UI system lint', () => {
     expect((await messages(component('<Button title="More information" />'), file)).map(value => value.message)).toEqual([expect.stringContaining('passes title to the DOM')]);
     expect(await messages(component('<iframe title="Preview" />'), file)).toEqual([]);
   });
+  it.each([
+    '<span className="rounded-full bg-muted px-2 py-0.5 text-[11px]">Approved</span>',
+    `<span className={cn('inline-flex rounded-full', active ? 'pl-2 pr-1' : 'px-1')}>3</span>`,
+    `const LOOK = 'min-w-[18px] rounded-full px-1'; export function Probe() { return <span className={LOOK}>2</span>; }`,
+  ])('rejects a hand-drawn pill: %s', async source => {
+    const code = source.startsWith('const') ? source : component(source);
+    expect((await messages(code)).map(value => value.ruleId)).toEqual(['ui-system/hand-drawn-pills']);
+  });
+  it.each(['<span className="size-2 rounded-full bg-amber-500" />', '<div className="rounded-md px-2">Row</div>', '<div className="rounded-full p-1"><svg /></div>'])('keeps dots, rectangles and padded circles: %s', async jsx => {
+    expect(await messages(component(jsx))).toEqual([]);
+  });
   it('keeps ordinary content and owned primitives available', async () => {
     expect(await messages(component('<div className="border rounded-md">Use HTTP for this connection.</div>'))).toEqual([]);
     expect(await messages(systemImport + component('<Panel />'))).toEqual([]);

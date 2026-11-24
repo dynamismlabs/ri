@@ -188,3 +188,27 @@ for (const theme of ['light', 'dark']) {
     } finally { await page.close(); }
   });
 }
+for (const theme of ['light', 'dark']) {
+  it(`tints each tone's fill with its own hue, not the pane's (${theme})`, async () => {
+    const page = await open(theme);
+    try {
+      for (const tone of ['success', 'energy-light', 'energy-deep', 'mode-auto', 'mode-edits', 'mode-ask', 'mode-plan']) {
+        const [ink, fill] = await page.locator('#badge-' + tone).evaluate(el => {
+          const canvas = document.createElement('canvas'); canvas.width = canvas.height = 1;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
+          const hue = (color: string) => {
+            ctx.clearRect(0, 0, 1, 1); ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1);
+            const [r, g, b] = [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3).map(v => v / 255);
+            const max = Math.max(r, g, b), d = max - Math.min(r, g, b);
+            const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+            return (h * 60 + 360) % 360;
+          };
+          const style = getComputedStyle(el);
+          return [hue(style.color), hue(style.backgroundColor)];
+        });
+        const apart = Math.abs(ink - fill) % 360;
+        expect(Math.min(apart, 360 - apart), `${tone} fill hue ${fill.toFixed(0)} vs ink ${ink.toFixed(0)}`).toBeLessThan(35);
+      }
+    } finally { await page.close(); }
+  });
+}
