@@ -26,7 +26,7 @@ import { isSetupOpen, NO_SETUP, type LibraryFilter } from '../../library-model';
 import { useReview } from '../context';
 import { ItemDetails } from '../details';
 import { ItemMark, ItemStatus, ManageButton, PrimaryButton } from '../items';
-import { collectionItems, matchesReview, type ReviewFilter, type ReviewItem } from '../catalog';
+import { collectionItems, matchesReview, POPULAR_LIMIT, popularItems, type ReviewFilter, type ReviewItem } from '../catalog';
 import { SkillTry } from '../live-surfaces';
 import { CatalogSkeleton, LibraryRowsSkeleton } from '../loading';
 import { Cards, CollectionTiles, Empty, SearchBox, SectionTitle } from '../shared';
@@ -207,8 +207,11 @@ function Discover() {
   const tier = useViewportTier();
   const review = useReview();
   const types: ReviewFilter[] = ['All', 'Apps', INTEGRATION_LABELS.plural, 'Skills'];
-  const sorted = [...review.discovery].sort((a, b) => Number(a.kind === 'connectors') - Number(b.kind === 'connectors'));
   const showGoals = !review.search && review.filter === 'All';
+  // Familiar services lead, so the catalog below doesn't open with names only Ri uses. Each is listed once.
+  const popular = showGoals ? popularItems(review.discovery) : [];
+  const shown = new Set(popular.map(item => item.key));
+  const sorted = review.discovery.filter(item => !shown.has(item.key)).sort((a, b) => Number(a.kind === 'connectors') - Number(b.kind === 'connectors'));
   return (
     <>
       <div className={s.discoverHeading}>
@@ -225,6 +228,12 @@ function Discover() {
           options={types.map((type) => ({ value: type, label: type }))}
         />
       </div>
+      {showGoals && (review.loading || !!popular.length) && (
+        <section className={s.goalSection} aria-label="Popular">
+          <SectionTitle>Popular</SectionTitle>
+          {review.loading ? <CatalogSkeleton count={POPULAR_LIMIT} label="Loading popular services" /> : <Cards items={popular} />}
+        </section>
+      )}
       {showGoals && (
         <section className={s.goalSection} aria-label="Goal bundles">
           <SectionTitle>Start with a goal</SectionTitle>

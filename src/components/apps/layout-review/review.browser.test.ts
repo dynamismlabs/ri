@@ -388,7 +388,35 @@ it('handles an empty library and recovers a failed source without blocking disco
   } finally { await page.close(); }
 });
 
+// Familiar services Discover offers first: with Google connected in the fixture, the next four lead.
+const POPULAR = ['microsoft', 'slack', 'notion', 'github', 'zoom', 'dropbox'].map(id => ({ id, displayName: id === 'github' ? 'GitHub' : id[0].toUpperCase() + id.slice(1), method: 'oauth2', configured: true }));
+function addPopular() {
+  (responses['integrations.statusGet'] as { providers: unknown[] }).providers.push(...POPULAR);
+}
+
+it('opens Discover with familiar services above the goals, each listed once', async () => {
+  addPopular();
+  const page = await open();
+  try {
+    const discover = page.getByRole('region', { name: 'Discover and details', exact: true });
+    const popular = discover.getByRole('region', { name: 'Popular', exact: true });
+    await popular.getByRole('button', { name: 'Connect Microsoft', exact: true }).waitFor();
+    expect(await popular.getByRole('article').evaluateAll(cards => cards.map(card => card.querySelector('h3')?.textContent))).toEqual(['Microsoft', 'Slack', 'Notion', 'GitHub']);
+    // The rest wait in the catalog.
+    expect(await discover.getByRole('button', { name: 'Connect Zoom', exact: true }).count()).toBe(1);
+    expect(await popular.getByRole('button', { name: 'Connect Zoom', exact: true }).count()).toBe(0);
+    const goals = discover.getByRole('region', { name: 'Goal bundles', exact: true });
+    expect((await popular.boundingBox())!.y).toBeLessThan((await goals.boundingBox())!.y);
+    expect(await discover.getByRole('button', { name: 'Connect Slack', exact: true }).count()).toBe(1);
+    // A search or a type lists everything that matches, with no Popular section.
+    await discover.getByRole('button', { name: 'Connectors', exact: true }).click();
+    expect(await discover.getByRole('region', { name: 'Popular', exact: true }).count()).toBe(0);
+    expect(await discover.getByRole('button', { name: 'Connect Slack', exact: true }).count()).toBe(1);
+  } finally { await page.close(); }
+});
+
 it('loads rows and cards in place without moving the header or discovery content', async () => {
+  addPopular();
   for (const width of [1440, 390]) {
     const page = await browser.newPage({ viewport: { width, height: 1000 } });
     testTimeouts(page, 8_000);

@@ -90,6 +90,18 @@ export function discoverable(item: ReviewItem) {
   // Private servers and authored skills belong to the library, never the public catalog.
   return item.target.kind === 'provider' || item.target.kind === 'catalog-app' || !!item.starter;
 }
+/**
+ * Services most people already use, in the order Discover offers them first. Discover opens with the
+ * ones not connected yet, so someone new starts from names they know (Gmail, Outlook, Slack) before
+ * Ri's own apps and the long tail.
+ */
+export const POPULAR_PROVIDERS = ['google', 'microsoft', 'slack', 'notion', 'github', 'zoom', 'dropbox', 'todoist'] as const;
+/** One row of cards on a wide screen. */
+export const POPULAR_LIMIT = 4;
+export function popularItems(items: ReviewItem[]) {
+  return POPULAR_PROVIDERS.flatMap(id => items.filter(item => item.target.kind === 'provider' && item.target.id === id && (!item.added || !!item.draft)))
+    .slice(0, POPULAR_LIMIT);
+}
 export const COLLECTIONS = [
   { id: 'business', name: 'Run a small business', description: 'People, conversations, and your next proposal.', purpose: 'Work' },
   { id: 'life', name: 'Get life organized', description: 'Money, plans, and a weekly reset.', purpose: 'Life' },
