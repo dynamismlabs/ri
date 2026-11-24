@@ -48,7 +48,7 @@ export function statusSummary(status: Pick<Status, 'state' | 'since'> & { comput
 }
 
 /** An installed app's state from the kit, and its Restart and Logs, shared by its page and its card. */
-function useAppControls(sourceId: string) {
+export function useAppControls(sourceId: string) {
   const queryClient = useQueryClient();
   const [jobId, setJobId] = useState<string | null>(null);
   const [logsOpen, setLogsOpen] = useState(false);

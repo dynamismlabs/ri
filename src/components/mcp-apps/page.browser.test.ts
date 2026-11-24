@@ -56,6 +56,10 @@ const todoist = {id: 'todoist-server', name: 'Todoist', toolkitName: 'Todoist', 
 const canvas = {id: 'canvas-server', name: 'Canvas', toolkitName: 'Canvas', account: 'Canvas', sourceRef: null, available: true, ...none,
   standalone: true, entrypoints: [{name: 'open-canvas', title: 'Canvas', icons: []}], views: [],
   recent: [{id: 'earlier-screen', title: 'Canvas · Canvas', created: Date.now() - 5 * 60_000, launched: true, tool: 'open-canvas'}]};
+// An app Ri installed on this computer, its screen already open.
+const notes = {id: 'notes-server', name: 'Notes', toolkitName: 'Notes', account: 'Notes', sourceRef: null, available: true, ...none,
+  standalone: true, entrypoints: [{name: 'open-notes', title: 'Notes', icons: []}], views: [], app: {id: 'notes-app', place: {kind: 'ri'}},
+  recent: [{id: 'notes-screen', title: 'Notes · Notes', created: Date.now() - 60_000, launched: true, tool: 'open-notes'}]};
 
 async function serve(handle: (method: string, input: Record<string, unknown>) => Promise<unknown>) {
   const code = (await bundle()).outputFiles[0].text;
@@ -66,7 +70,7 @@ async function serve(handle: (method: string, input: Record<string, unknown>) =>
       const input = JSON.parse(body || url.searchParams.get('input') || '{}');
       const method = url.pathname.slice('/api/trpc/'.length);
       let data: unknown;
-      if (method === 'connectedApps.catalog') data = [todoist, canvas];
+      if (method === 'connectedApps.catalog') data = [todoist, canvas, notes];
       else if (method === 'coordinatorChat.list') data = {session: {id: 'main-chat'}};
       // The client's own probe for a WebSocket link. Plain HTTP serves the fixture.
       else if (method === 'transport.capabilities') data = {websocket: false};
@@ -96,9 +100,12 @@ it('uses a result-only service from chat: no forms, Try in chat writes the menti
     // The forms and their run path are gone, and a result-only service has nothing to open on its own.
     expect(await page.getByRole('button', {name: /Run workflow|Open app/}).count()).toBe(0);
     expect(await page.locator('form, textarea, input').count()).toBe(0);
-    await page.getByText('“What’s on my list today?”', {exact: true}).waitFor();
+    // The starter prompt is Try in chat's tooltip and description, not text in the row of buttons.
+    const tryInChat = page.getByRole('button', {name: 'Try in chat', exact: true});
+    expect(await tryInChat.getAttribute('aria-description')).toBe('Asks “What’s on my list today?”');
+    expect(await page.getByText('What’s on my list today?', {exact: false}).count()).toBe(0);
 
-    await page.getByRole('button', {name: 'Try in chat', exact: true}).click();
+    await tryInChat.click();
     await expect.poll(() => read(page, 'offers')).toEqual([{sourceRef: todoistRef, prompt: 'What’s on my list today?'}]);
     expect(await read(page, 'dashboard')).toEqual(['home', 'tab:chat']);
 
@@ -151,7 +158,10 @@ it('opens a standalone screen full screen with no inputs, through approval, and 
     await page.goto(`${origin}/?server=canvas-server`);
     const open = page.getByRole('button', {name: 'Open app', exact: true});
     await open.waitFor(); expect(prepared).toEqual([]); expect(effects).toBe(0);
-    await page.getByText('What can you do with Canvas?', {exact: false}).waitFor();
+    // Open app leads the row, then Try in chat with its starter prompt as its description.
+    const tryInChat = page.getByRole('button', {name: 'Try in chat', exact: true});
+    expect(await tryInChat.getAttribute('aria-description')).toBe('Asks “What can you do with Canvas?”');
+    expect((await open.boundingBox())!.x).toBeLessThan((await tryInChat.boundingBox())!.x);
 
     await open.click(); await page.getByText('Allow Canvas to open Canvas?', {exact: true}).waitFor();
     // The page names only the entrypoint. The server opens it with `{}`.
@@ -168,8 +178,13 @@ it('opens a standalone screen full screen with no inputs, through approval, and 
     expect(effects).toBe(1); expect(launches).toEqual(['view-1', 'view-2', 'view-2']);
     expect(await read(page, 'routes')).toEqual(['~connected/canvas-server?screen=screen-1 (replace)']);
 
-    // Back to the page. Its earlier screen reopens full screen without running anything.
-    await page.getByRole('button', {name: 'Canvas', exact: true}).click();
+    // The screen fills the page under a bar with Apps, its name and a menu. The menu leads to its page,
+    // where the earlier screen reopens full screen without running anything.
+    expect(await page.getByRole('button', {name: 'Apps', exact: true}).count()).toBe(1);
+    expect(await page.getByRole('button', {name: 'Connection', exact: true}).count()).toBe(0);
+    await page.getByRole('button', {name: 'More for Canvas', exact: true}).click();
+    expect(await page.getByRole('menuitem').allInnerTexts()).toEqual(['Reload', 'Settings and details', 'Connection']);
+    await page.getByRole('menuitem', {name: 'Settings and details', exact: true}).click();
     await page.getByRole('heading', {name: 'Canvas'}).waitFor();
     await page.getByRole('button', {name: /Canvas · Canvas/}).click();
     await page.getByText('Full screen earlier-screen for no chat', {exact: true}).waitFor();
@@ -180,8 +195,8 @@ it('opens a standalone screen full screen with no inputs, through approval, and 
     await page.goto(`${origin}/?server=canvas-server&open=open-canvas`);
     await page.getByText('Opening Canvas…', {exact: true}).waitFor();
     await expect.poll(() => launches.length).toBe(4);
-    await page.getByRole('button', {name: 'Canvas', exact: true}).click();
-    await page.getByRole('heading', {name: 'Canvas'}).waitFor();
+    await page.getByRole('button', {name: 'Apps', exact: true}).click();
+    await page.getByText('Left apps', {exact: true}).waitFor();
     await expect.poll(() => cancellations).toContainEqual({viewId: 'view-3', invocationId: 'invocation-3'});
     releaseLaunch();
     expect(effects).toBe(1); expect(errors).toEqual([]);
@@ -238,9 +253,36 @@ it('opens a deep link into a new screen, moves an open screen to the next one wi
     await page.getByText('Full screen screen-1 for no chat', {exact: true}).waitFor();
     expect(launches).toBe(1);
 
-    await page.getByRole('button', {name: 'Reload Canvas', exact: true}).click();
+    await page.getByRole('button', {name: 'More for Canvas', exact: true}).click();
+    await page.getByRole('menuitem', {name: 'Reload', exact: true}).click();
     await page.getByText('Full screen screen-2 for no chat', {exact: true}).waitFor();
     expect(prepared[2]).toEqual({serverId: 'canvas-server', name: 'open-canvas', fresh: true});
     expect(launches).toBe(2); expect(errors).toEqual([]);
+  } finally {await browser.close(); server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));}
+}, 30_000);
+
+it('keeps an installed app’s Restart and Logs in its open screen’s menu', async () => {
+  const calls: Array<[string, unknown]> = [];
+  const {server, origin} = await serve(async (method, input) => {
+    calls.push([method, input]);
+    if (method === 'appBuilds.forApp') return {id: 'notes-source', name: 'Notes', createdByRi: true, url: 'https://example.test/notes.git', folder: '/apps/notes'};
+    if (method === 'appBuilds.status') return {state: 'running', release: 'abc123', answering: 'abc123', problem: null, lastError: null};
+    if (method === 'appBuilds.restart') return {id: 'job-1'};
+    if (method === 'appBuilds.job') return {id: 'job-1', state: 'done', result: {message: 'Notes is running abc123.'}};
+    return undefined;
+  });
+  const browser = await chromium.launch({executablePath: chromium.executablePath(), headless: true, chromiumSandbox: true});
+  try {
+    const page = await browser.newPage(), errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.goto(`${origin}/?server=notes-server&screen=notes-screen`);
+    await page.getByText('Full screen notes-screen for no chat', {exact: true}).waitFor();
+    await page.getByRole('button', {name: 'More for Notes', exact: true}).click();
+    await expect.poll(() => page.getByRole('menuitem').allInnerTexts()).toEqual(['Reload', 'Settings and details', 'Connection', 'Restart', 'Logs']);
+    await page.getByRole('menuitem', {name: 'Restart', exact: true}).click();
+    await expect.poll(() => calls.filter(([method]) => method === 'appBuilds.restart')).toEqual([['appBuilds.restart', {id: 'notes-source'}]]);
+    // Still on its screen: Restart doesn't leave it.
+    expect(await page.getByText('Full screen notes-screen for no chat', {exact: true}).count()).toBe(1);
+    expect(errors).toEqual([]);
   } finally {await browser.close(); server.closeAllConnections(); await new Promise<void>(resolve => server.close(() => resolve()));}
 }, 30_000);

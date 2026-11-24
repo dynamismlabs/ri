@@ -53,7 +53,9 @@ export function reviewItems(sources: LibrarySources): ReviewItem[] {
   // Ri's own apps, in the catalog's order. One already added belongs to the library, as the app it became.
   for (const [rank, app] of (sources.catalogApps ?? []).entries()) {
     const words = { name: app.name, description: app.description, keywords: `${app.id} personal app ${APP_NAME} app ${app.reaches.join(' ')}`, kind: 'apps' as const };
-    items.push({ ...words, key: `catalog:${app.id}`, target: { kind: 'catalog-app', id: app.id }, chat: true, view: true,
+    // Ri's own connection to it, once it's added and allowed: Open opens it, and its page in Apps holds the rest.
+    const connected = app.personalAppId ? sources.connectedApps?.find(candidate => candidate.app?.id === app.personalAppId && candidate.app.place.kind === 'ri') : undefined;
+    items.push({ ...words, key: `catalog:${app.id}`, target: { kind: 'catalog-app', id: app.id }, chat: true, view: true, connectedAppId: connected?.id,
       status: !app.sourceId ? `${APP_NAME} app` : app.installedVersion ? `Added, ${versionLabel(app.installedVersion)}` : 'Not installed yet',
       // Added, but its install never finished: its page says why and offers it again.
       attention: !!app.sourceId && !app.installedVersion, added: !!app.sourceId, purpose: purpose(words), catalogApp: app, rank });
@@ -70,7 +72,7 @@ export function itemType(item: Pick<ReviewItem, 'kind'>) {
   return item.kind === 'skills' ? 'Skill' : item.kind === 'apps' ? 'App' : INTEGRATION_LABELS.singular;
 }
 export function primaryLabel(item: ReviewItem) {
-  if (item.target.kind === 'catalog-app') return item.added ? 'Manage' : 'Add';
+  if (item.target.kind === 'catalog-app') return !item.added ? 'Add' : item.connectedAppId && !item.attention ? 'Open' : 'Manage';
   if (item.draft) return 'Continue setup';
   if (!item.added) return item.kind === 'skills' ? 'Preview skill' : 'Connect';
   if (item.enabled === false || item.attention || item.usable === false) return 'Manage';

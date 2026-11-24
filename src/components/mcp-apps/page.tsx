@@ -7,7 +7,7 @@ import { NativeSelect } from '@/components/system/native-select';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AppWindow, ArrowLeft, FileBox, Loader2, MessageCircle, PanelRightOpen, RotateCcw, Server, Settings2 } from 'lucide-react';
+import { AppWindow, ArrowLeft, FileBox, Info, Loader2, MessageCircle, MoreHorizontal, PanelRightOpen, RefreshCw, RotateCcw, ScrollText, Server, Settings2 } from 'lucide-react';
 import { trpc, trpcClient } from '@/lib/trpc/client';
 import type { RouterOutputs } from '@/lib/trpc/router';
 import { Button } from '@/components/system/button';
@@ -22,6 +22,9 @@ import { connectedAppsQuery } from './catalog';
 import { ConnectedView } from './view';
 import { EntrypointIcon } from './entrypoint-icon';
 import { Tip } from '@/components/ui/tip';
+import { IconButton } from '@/components/system/icon-button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/system/menu';
+import { AppLogsDialog, installedApps, useAppControls } from '@/components/apps/app-status';
 import { PersonalAppAccess } from '@/components/apps/personal-app-access';
 import { useAllowApp } from '@/components/apps/allow-app';
 import { AppSourcePanel } from '@/components/apps/app-source-panel';
@@ -80,33 +83,26 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
   const screenTool = screenId ? app.recent.find(item => item.id === screenId)?.tool : undefined;
   const screenEntry = screenId ? app.entrypoints.find(entry => entry.name === screenTool) ?? (app.entrypoints.length === 1 ? app.entrypoints[0] : undefined) : undefined;
 
+  const connection = () => navigate(app.providerId ? `?provider=${encodeURIComponent(app.providerId)}` : `?mcp=${encodeURIComponent(app.id)}`);
+  // Back always leads to Apps. An open screen keeps its page (settings and details), Reload and the
+  // connection one menu away, so the app fills the window when it's opened.
   const header = <header className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-2.5">
-    {fullScreen
-      ? <Button
-        onClick={leaveScreen}
-        variant="ghost"
-        size="sm"
-      ><ArrowLeft size={14}/>{app.toolkitName}</Button>
-      : <Button
-        onClick={() => navigate('')}
-        variant="ghost"
-        size="sm"
-      ><ArrowLeft size={14}/>Apps</Button>}
-    <div className="flex-1"/>
-    {fullScreen && screenEntry && screen.state.kind === 'idle' && <Tip label={`Start ${screenEntry.title} over`}>
-      <Button
-        aria-label={`Reload ${screenEntry.title}`}
-        onClick={() => void screen.open(screenEntry, {fresh: true})}
-        variant="ghost"
-        size="sm"
-      ><RotateCcw size={14}/>Reload</Button>
-    </Tip>}
-    {accounts.length > 1 && <NativeSelect aria-label="Connected account" value={app.id} onChange={event => navigate(`~connected/${event.target.value}`)} className={cn("max-w-48", 'w-auto')}>{accounts.map(account => <option key={account.id} value={account.id}>{account.account}</option>)}</NativeSelect>}
     <Button
-      onClick={() => navigate(app.providerId ? `?provider=${encodeURIComponent(app.providerId)}` : `?mcp=${encodeURIComponent(app.id)}`)}
+      onClick={() => navigate('')}
       variant="ghost"
       size="sm"
-    ><Settings2 size={14}/>Connection</Button>
+    ><ArrowLeft size={14}/>Apps</Button>
+    {fullScreen && <span className="min-w-0 truncate text-sm font-medium">{app.toolkitName}</span>}
+    <div className="flex-1"/>
+    {accounts.length > 1 && <NativeSelect aria-label="Connected account" value={app.id} onChange={event => navigate(`~connected/${event.target.value}`)} className={cn("max-w-48", 'w-auto')}>{accounts.map(account => <option key={account.id} value={account.id}>{account.account}</option>)}</NativeSelect>}
+    {fullScreen
+      ? <ScreenMenu app={app} onSettings={leaveScreen} onConnection={connection}
+        reload={screenEntry && screen.state.kind === 'idle' ? () => void screen.open(screenEntry, {fresh: true}) : undefined}/>
+      : <Button
+        onClick={connection}
+        variant="ghost"
+        size="sm"
+      ><Settings2 size={14}/>Connection</Button>}
   </header>;
 
   if (fullScreen) return <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background">
@@ -132,16 +128,16 @@ export function ConnectedAppPage({serverId, navigate, resultId, screenId, launch
           {description && <p className="max-w-prose text-sm text-muted-foreground">{description}</p>}
           {!app.available && <p role="alert" className="text-sm text-amber-700 dark:text-amber-400">Reconnect or turn on this account to use it.</p>}
           <div className="flex flex-wrap items-center gap-2">
-            <TryInChat app={app}/>
-            {app.entrypoints.map(entry => <Button
+            {app.entrypoints.map((entry, index) => <Button
               key={entry.name}
               disabled={!app.available}
               onClick={() => void screen.open(entry)}
-              variant="secondary"
-              size="sm"
+              variant={index === 0 ? 'primary' : 'secondary'}
+              size="md"
             >
               <EntrypointIcon icons={entry.icons} size={14}/>{app.entrypoints.length > 1 ? `Open ${entry.title}` : 'Open app'}
             </Button>)}
+            <TryInChat app={app}/>
           </div>
           <AppPlaces app={app}/>
           <p className="max-w-prose text-xs text-muted-foreground">
@@ -256,6 +252,50 @@ function AppPlaces({app}: {app: App}) {
   </ul>;
 }
 
+interface ScreenMenuProps {app: App; onSettings: () => void; onConnection: () => void; reload?: () => void}
+
+/**
+ * An open screen's ⋯ menu: Reload, the app's page (its settings and details) and its connection,
+ * and for an app Ri installed on this computer, Restart and Logs as its card in Apps has them.
+ */
+function ScreenMenu(props: ScreenMenuProps) {
+  const source = useQuery({...trpc.appBuilds.forApp.queryOptions({personalAppId: props.app.app?.id ?? ''}), enabled: !!props.app.app});
+  const installed = source.data && installedApps([source.data]).length ? source.data : null;
+  return installed ? <InstalledScreenMenu {...props} sourceId={installed.id}/> : <ScreenMenuItems {...props}/>;
+}
+
+function InstalledScreenMenu({sourceId, ...props}: ScreenMenuProps & {sourceId: string}) {
+  const controls = useAppControls(sourceId);
+  return <>
+    {controls.restarting && <span role="status" className="flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 size={12} className="animate-spin"/>Restarting</span>}
+    {controls.failure && <Tip label={controls.failure} onlyWhenTextHidden><span role="alert" tabIndex={0} className="max-w-64 truncate text-xs text-destructive">{controls.failure}</span></Tip>}
+    <ScreenMenuItems {...props}>
+      {controls.canControl && <MenuAction kind="menu" disabled={controls.restarting || controls.restart.isPending} onSelect={() => controls.restart.mutate()}><RotateCcw size={14}/>Restart</MenuAction>}
+      {controls.canControl && <MenuAction kind="menu" onSelect={() => controls.setLogsOpen(true)}><ScrollText size={14}/>Logs</MenuAction>}
+    </ScreenMenuItems>
+    <AppLogsDialog sourceId={sourceId} name={props.app.toolkitName} open={controls.logsOpen} onOpenChange={controls.setLogsOpen}/>
+  </>;
+}
+
+function ScreenMenuItems({app, onSettings, onConnection, reload, children}: ScreenMenuProps & {children?: React.ReactNode}) {
+  return <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <IconButton
+        label={`More for ${app.toolkitName}`}
+        tooltip="Settings, reload and more"
+        variant="ghost"
+        size="sm"
+      ><MoreHorizontal size={16}/></IconButton>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent align="end">
+      {reload && <MenuAction kind="menu" onSelect={reload}><RefreshCw size={14}/>Reload</MenuAction>}
+      <MenuAction kind="menu" onSelect={onSettings}><Info size={14}/>Settings and details</MenuAction>
+      <MenuAction kind="menu" onSelect={onConnection}><Settings2 size={14}/>Connection</MenuAction>
+      {children}
+    </DropdownMenuContent>
+  </DropdownMenu>;
+}
+
 function ServiceLogo({app}: {app: App}) {
   if (app.providerId) return <IntegrationLogo providerId={app.providerId} name={app.toolkitName} size={56} className="rounded-2xl"/>;
   return <span aria-hidden className="inline-flex size-14 shrink-0 items-center justify-center rounded-2xl bg-muted text-muted-foreground"><Server size={24}/></span>;
@@ -284,15 +324,17 @@ function TryInChat({app}: {app: App}) {
     finally { setBusy(false); }
   };
   return <>
-    <Button
-      disabled={busy || !app.available || !app.sourceRef}
-      onClick={() => void start()}
-      variant="secondary"
-      size="md"
-    >
-      {busy ? <Loader2 size={14} className="animate-spin"/> : <MessageCircle size={14}/>}Try in chat
-    </Button>
-    <span className="text-xs text-muted-foreground">“{prompt}”</span>
+    <Tip label={`Asks “${prompt}”`}>
+      <Button
+        disabled={busy || !app.available || !app.sourceRef}
+        onClick={() => void start()}
+        aria-description={`Asks “${prompt}”`}
+        variant="secondary"
+        size="md"
+      >
+        {busy ? <Loader2 size={14} className="animate-spin"/> : <MessageCircle size={14}/>}Try in chat
+      </Button>
+    </Tip>
     {failure && <p role="alert" className="w-full text-xs text-destructive">{failure}</p>}
   </>;
 }

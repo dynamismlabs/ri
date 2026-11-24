@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { createIntegrationRuntime, createRegistry, defineProvider, defineToolkit, action, createRedactor, staticAuthConfigs, type IntegrationRuntime, type Connection } from '@integrations/engine';
 import { bearer } from '@integrations/engine/auth';
 import { inMemoryStore, plaintextSecretBox } from '@integrations/engine/testing';
-import { integrationSourceAdapter } from './integration-adapter';
+import { chipOpenHref, integrationSourceAdapter } from './integration-adapter';
 import { decodeSource, encodeSource } from './reference';
 import type { SourceContext } from './types';
 
@@ -77,4 +77,17 @@ it('marks an MCP server you added with a server glyph rather than a provider log
   servers = [{ entry: { id: 'server-1', slug: 'board', displayName: 'Board', enabled: true }, capabilities: { tools: [] } }];
   const [board] = await integrationSourceAdapter.list({ ...ctx, workspaceId: null });
   expect(board).toMatchObject({ service: 'Board', chipLabel: 'Board', mark: { kind: 'server' } });
+});
+
+it('opens a chip in the chat’s result, else the app’s own screen, else its page', () => {
+  const view = (global: boolean) => ({ _meta: { ui: { resourceUri: 'ui://screen' }, ...(global ? { 'openai/ui': { entrypoints: [{ type: 'global' }] } } : {}) } });
+  const tools = [{ name: 'show-result', ...view(false) }, { name: 'open-board', ...view(true) }, { name: 'open-archive', ...view(true) }];
+  const remote = { entry: { id: 'server-1', toolOverrides: {} }, capabilities: { tools } } as unknown as Parameters<typeof chipOpenHref>[0];
+  expect(chipOpenHref(remote, 'capture-1')).toBe('/apps/~connected/server-1?result=capture-1');
+  expect(chipOpenHref(remote)).toBe('/apps/~connected/server-1?open=open-board');
+  // A screen turned off is skipped; with none left, its page.
+  const off = { ...remote, entry: { id: 'server-1', toolOverrides: { 'open-board': { enabled: false } } } } as unknown as Parameters<typeof chipOpenHref>[0];
+  expect(chipOpenHref(off)).toBe('/apps/~connected/server-1?open=open-archive');
+  const resultOnly = { ...remote, capabilities: { tools: [tools[0]] } } as unknown as Parameters<typeof chipOpenHref>[0];
+  expect(chipOpenHref(resultOnly)).toBe('/apps/~connected/server-1');
 });

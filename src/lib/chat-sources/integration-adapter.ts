@@ -14,6 +14,20 @@ import { SourceError } from './service';
 import type { SourceAdapter, SourceContext, SourceDescriptor, SourceMark } from './types';
 import { viewMetadata } from '@/lib/mcp-apps/metadata';
 
+type Remote = Pick<NonNullable<Awaited<ReturnType<typeof integrationSourceMetadata>>['servers'][number]>, 'entry' | 'capabilities'>;
+
+/**
+ * Where a chip's Open goes in Apps: this chat's latest result from the app, or else the app's own
+ * screen when it has one (its first global entrypoint, as its page lists them), as Open does in
+ * Apps, or else its page.
+ */
+export function chipOpenHref(remote: Remote, captureId?: string) {
+  const href = `/apps/~connected/${remote.entry.id}`;
+  if (captureId) return `${href}?result=${captureId}`;
+  const screen = remote.capabilities?.tools.find(t => viewMetadata(t)?.global && remote.entry.toolOverrides?.[t.name]?.enabled !== false);
+  return screen ? `${href}?open=${encodeURIComponent(screen.name)}` : href;
+}
+
 async function exact(reference: SourceReference, context: SourceContext) {
   if (reference.kind !== 'integration') throw new SourceError('forbidden', 'Invalid account reference');
   const metadata = await integrationSourceMetadata();
@@ -68,8 +82,7 @@ export const integrationSourceAdapter: SourceAdapter = {
     if (!current.remote || process.env.RI_MCP_APPS === '0') throw new SourceError('unavailable', 'This connection has no available app view');
     const {mcpViews} = await import('@/lib/mcp-apps/service');
     const capture = [...mcpViews().captures.values()].findLast(c => c.chatId === ctx.chatId && c.sourceRef === encodeSource(ref));
-    const href = `/apps/~connected/${current.remote.entry.id}`;
-    return capture ? {captureId: capture.id, href: `${href}?result=${capture.id}`} : {href};
+    return capture ? {captureId: capture.id, href: chipOpenHref(current.remote, capture.id)} : {href: chipOpenHref(current.remote)};
   },
   // An item from the account's @ search, read again for this chat when the message goes out.
   async mentionContext(ref, ctx) {
