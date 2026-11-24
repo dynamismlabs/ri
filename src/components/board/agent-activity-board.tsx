@@ -74,7 +74,7 @@ export function AgentActivityBoard({ focusBucket }: { focusBucket: BucketId | nu
             <div className="min-h-0 flex-1 space-y-2 overflow-y-auto rounded-lg bg-muted/40 p-2 [scrollbar-width:thin]">
               {loading && !buckets[id].length ? <div aria-busy="true" aria-label={`Loading ${cfg.label}`} className="h-28 animate-pulse rounded-lg bg-muted" /> : null}
               {!loading && !error && !buckets[id].length && <p className="px-3 py-8 text-center text-xs text-muted-foreground">No conversations here</p>}
-              {buckets[id].map((row) => <ActivityCard key={row.id} row={row} bucket={id} />)}
+              {buckets[id].map((row) => <ActivityCard key={row.id} row={row} />)}
             </div>
           </section>;
         })}
@@ -83,7 +83,7 @@ export function AgentActivityBoard({ focusBucket }: { focusBucket: BucketId | nu
   </div>;
 }
 
-function ActivityCard({ row, bucket }: { row: ActivityItem; bucket: BucketId }) {
+function ActivityCard({ row }: { row: ActivityItem }) {
   const { openExecution, openAgent } = useDashboard();
   const main = row.kind === 'agent' ? row.item : null;
   const session = row.kind === 'execution' ? row.session : null;
@@ -95,18 +95,19 @@ function ActivityCard({ row, bucket }: { row: ActivityItem; bucket: BucketId }) 
   const context = main ? agentVoice({ activity: main.activity, waitingOn: main.chat.waitingOn, preview: main.chat.preview, purpose: main.workspace.purpose }).text
     : session?.waitingOn ?? (session?.label !== title ? session?.label : null);
   const at = main ? latestActivityAt(main.chat) : session?.lastActivityAt ?? session?.startedAt;
+  const ago = formatCompactRelative(at);
   const destination = activityDestination(row);
+  // The column says the state, so the card carries no status line. Time rides the agent row.
   return <Card as="button" padding="md" shadow  type="button" onClick={() => {
     closeTaskBoard();
     if (destination.kind === 'agent') openAgent(destination.id);
     else openExecution(destination.id);
   }} className="w-full text-left">
-    <span className="mb-2 flex items-center gap-2 text-xs text-muted-foreground"><AgentIcon workspace={identity} size="sm" /><span className="truncate">{name}</span></span>
-    <span className="line-clamp-3 block text-sm font-medium">{title}</span>
-    {context && <span className="mt-2 block line-clamp-3 whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">{context}</span>}
-    <span className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[10px] text-muted-foreground">
-      <span className={BUCKET_CONFIG[bucket].accentClass}>{BUCKET_CONFIG[bucket].label}</span>
-      {at && <span>{formatCompactRelative(at)}</span>}
+    <span className="mb-1.5 flex items-center gap-2 text-xs text-muted-foreground">
+      <AgentIcon workspace={identity} size="sm" /><span className="min-w-0 flex-1 truncate">{name}</span>
+      {at && ago && <time dateTime={at} className="shrink-0 text-[11px] tabular-nums">{ago}</time>}
     </span>
+    <span className="line-clamp-3 block text-sm font-medium">{title}</span>
+    {context && <span className="mt-1 block line-clamp-3 whitespace-pre-wrap break-words text-xs leading-relaxed text-muted-foreground">{context}</span>}
   </Card>;
 }
