@@ -121,7 +121,9 @@ left, a progress bar over remote access, notifications, Connectors, the agent br
 Ri in other agents. Those are extras, and listed as steps they read as part of getting Ri ready:
 a tester without the background spent his first evening trusting certificates to connect an
 agent Ri already ran on. The main chat offers each extra once, when what the person says calls
-for it (`EXTRAS_SECTION` in `src/lib/coordinator/harness-surface.ts`). Settings opens where it
+for it (`EXTRAS_SECTION` in `src/lib/coordinator/harness-surface.ts`). The heartbeat is one of them: while
+it's off, the main chat offers it when the person connects an account worth watching or mentions
+missing things there (docs/heartbeat-spec.md §17). Settings opens where it
 was last left, Profile at first, and `?settings=get-started` opens Profile.
 
 ## When it shows

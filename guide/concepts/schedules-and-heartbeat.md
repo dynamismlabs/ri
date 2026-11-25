@@ -35,7 +35,7 @@ From a terminal, `ri trigger` lists, creates and runs schedules. See the [`ri` c
 
 ## Heartbeat
 
-The heartbeat is a regular check-in on your work, following your instructions. It's off until you turn it on in **Settings**, under **Heartbeat**.
+The heartbeat is a regular check-in on your work, following your instructions. It's off until you turn it on in **Settings**, under **Heartbeat**, or ask your main chat to watch something for you. Your main chat may offer it once, when you connect an account it could watch.
 
 Each check-in looks over your work and decides whether anything needs you. Most of the time nothing does, and it stays quiet. When something does, your main chat tells you, so it arrives as one message in one place instead of a stream of alerts. **Recent check-ins** shows what each one did.
 

@@ -449,6 +449,13 @@ describe('renderCoordinatorBrief', () => {
     expect(brief).toContain(`Settings → ${APP_NAME} in other agents. Nobody needs it to use ${APP_NAME}.`);
     expect(brief).not.toContain('Get started');
   });
+
+  it('offers the heartbeat once, at a moment it would help, while it is off', () => {
+    const brief = renderCoordinatorBrief().replace(/\s+/g, ' ');
+    const extras = brief.slice(brief.indexOf('## Extras, when they\'d help'), brief.indexOf('## Rules that matter'));
+    expect(extras).toContain('the heartbeat, in Settings → Heartbeat. While it\'s off, offer it when they connect an account worth watching (email, GitHub, Slack) or mention missing things there');
+    expect(extras).toContain('A yes follows the steps in The heartbeat. A direct ask to watch something needs no offer: just add it.');
+  });
 });
 
 describe('renderContentFocusPrompt', () => {
