@@ -9,13 +9,19 @@ import { usePreviewVisibility } from '@/hooks/use-preview-visibility';
 import { cn } from '@/lib/utils';
 import { useArtifactCardMode, useArtifactPreview, useArtifactPreviewCard, type ArtifactPreview } from './artifact-preview-provider';
 
+/** How a card sits in the chat. `tile` is the thumbnail alone, for the row
+ * along the bottom of a person's message (`MessageFileStrip`), where the words
+ * already name each file. The row draws its marks around it, against the
+ * message, since any mark on the picture itself vanishes on some pictures. */
+export type ArtifactCardLayout = { tile?: boolean };
+
 /** A chat artifact's card. Clicking opens `preview` beside the chat, as a
  * tab in the panel next to it, or in the large dialog, whichever the person
  * last chose (`preview-place.ts`). Either way Previous and Next move through
  * the other cards in the same chat. The corner icon says which, and the
  * card whose file is beside the chat is marked. `children` is the
  * thumbnail, mounted only near the viewport. */
-export function ArtifactCard({ name, icon, details, preview, children, ...props }: Omit<ComponentProps<'button'>, 'onClick' | 'ref'> & { name: string; icon: ReactNode; details?: ReactNode; preview: ArtifactPreview }) {
+export function ArtifactCard({ name, icon, details, preview, tile, children, ...props }: Omit<ComponentProps<'button'>, 'onClick' | 'ref'> & ArtifactCardLayout & { name: string; icon: ReactNode; details?: ReactNode; preview: ArtifactPreview }) {
   const [overTitle, setOverTitle] = useState(false);
   const [card, setCard] = useState<HTMLButtonElement | null>(null);
   const open = useArtifactPreview();
@@ -30,6 +36,16 @@ export function ArtifactCard({ name, icon, details, preview, children, ...props 
   }, [visibilityRef, cardRef]);
   const shown = mode === 'shown';
   const Opens = mode === 'large' ? Expand : mode === 'left' ? PanelLeft : PanelRight;
+  if (tile) return (
+    <Tip label={details ?? name} side="bottom">
+      <Card as="button" padding="none" surface="pane" ref={ref} type="button" {...props}
+        data-artifact-card="" aria-current={shown || undefined}
+        onClick={event => open(preview, event.currentTarget)}
+        className="relative inline-flex w-32 shrink-0 overflow-hidden">
+        <span className="relative block aspect-[3/2] w-full overflow-hidden bg-muted/40">{visible && children}</span>
+      </Card>
+    </Tip>
+  );
   return (
     // Opaque, so a card reads the same in a person's message bubble, whose
     // colors invert, as in the transcript.

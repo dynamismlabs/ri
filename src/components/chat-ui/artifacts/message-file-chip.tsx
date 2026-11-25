@@ -1,8 +1,8 @@
 'use client';
 import { InlineAction } from '@/components/system/inline-action';
 
-import { useState } from 'react';
-import { ChevronDown, ChevronRight, FileText, Download, Loader2 } from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
+import { ChevronDown, ChevronRight, FileText, Download, ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { attachmentUrl } from '@/lib/attachments/view';
 import { getAuthToken } from '@/lib/api/client';
@@ -14,10 +14,17 @@ import { attachmentPdfUrl } from '@/lib/sessions/reply-pdf';
 import { useConnectedCompanion } from '@/lib/client/mcp-app-panel';
 import { OpenWithApp } from '@/components/mcp-apps/open-with';
 import { FilePreviewLink } from './file-preview-link';
+import { useArtifactPreview, useArtifactPreviewCard, type ArtifactPreview } from './artifact-preview-provider';
+import { useMessageFileStrip } from './message-file-strip';
+import { PreviewImage } from './preview-image';
+import { imageThumbnailUrl } from '@/lib/sessions/artifact-image';
+import { usePreviewVisibility } from '@/hooks/use-preview-visibility';
 
 interface MessageFileChipProps {
   attachment: Attachment;
-  /** Layout density. `inline` for chips embedded in a sentence; `block` for their own line. */
+  /** `inline` for a chip in a sentence, text-sized even for a picture or PDF,
+   * whose thumbnail goes in the message's row (`MessageFileStrip`). `block`
+   * for a file on its own line or in a gallery, a picture or PDF as its card. */
   variant?: 'inline' | 'block';
   /** Sent message bubbles invert the page's colors. */
   tone?: 'surface' | 'bubble';
@@ -29,9 +36,10 @@ interface MessageFileChipProps {
  * Read-only file chip rendered in the transcript under (or inside)
  * a chat message. Branches on mime type:
  *
- *   - image/* → small thumbnail; click to view full size in a lightbox.
- *   - PDF     → first-page thumbnail; click to read it in the lightbox,
- *               which also downloads it.
+ *   - image/* → `block`: a thumbnail card; `inline`: a chip. Either opens
+ *               it full size in the shared preview.
+ *   - PDF     → `block`: a first-page card; `inline`: a chip. Either opens
+ *               it to read in the shared preview, which also downloads it.
  *   - a type Ri has no name for → download chip. There is nothing to preview.
  *   - other local attachments → bordered chip opening the shared preview.
  *   - shared/custom URLs → expandable text or a download chip.
@@ -55,11 +63,9 @@ function FileChip({ attachment, variant = 'inline', tone = 'surface', fileUrl = 
   const isText = mimeType.startsWith('text/');
   const url = fileUrl(fileName);
 
-  if (isImage) {
-    return <span className={cn(variant === 'block' && 'block my-1')}><ImagePreviewCard src={url} name={display} /></span>;
-  }
-  if (mimeType === 'application/pdf') {
-    return <span className={cn(variant === 'block' && 'block my-1')}><PdfPreviewCard src={attachmentPdfUrl(url, display)} name={display} source={display} /></span>;
+  if (isImage || mimeType === 'application/pdf') {
+    if (variant === 'inline') return <VisualChip kind={isImage ? 'image' : 'pdf'} fileName={fileName} url={url} display={display} tone={tone} />;
+    return <span className="block my-1">{isImage ? <ImagePreviewCard src={url} name={display} /> : <PdfPreviewCard src={attachmentPdfUrl(url, display)} name={display} source={display} />}</span>;
   }
   if (mimeType !== 'application/octet-stream' && url === `/api/attachments/${fileName}`) {
     return <span className={cn(variant === 'block' && 'block my-1')}><FilePreviewLink source={{ kind: 'attachment', fileName, ...(/^(audio|video)\//.test(mimeType) ? { media: mimeType.startsWith('audio/') ? 'audio' as const : 'video' as const } : {}) }} name={display} appearance="chip" tone={tone} size={size} /></span>;
@@ -68,6 +74,47 @@ function FileChip({ attachment, variant = 'inline', tone = 'surface', fileUrl = 
     return <TextExpandChip url={url} display={display} variant={variant} tone={tone} size={size} />;
   }
   return <DownloadChip url={url} display={display} variant={variant} tone={tone} size={size} />;
+}
+
+// ─── Picture or PDF in a sentence ──────────────────────────────
+
+/** In a message with a row of thumbnails, the chip opens its file through the
+ * thumbnail and marks it on hover, and isn't a card of its own, so Previous
+ * and Next don't visit the file twice. Anywhere else it opens the file itself.
+ * A picture's chip leads with a tiny copy of it, as in the composer, from the
+ * same thumbnail the row shows, loaded once it nears the screen. */
+function VisualChip({ kind, fileName, url, display, tone }: { kind: 'image' | 'pdf'; fileName: string; url: string; display: string; tone: 'surface' | 'bubble' }) {
+  const strip = useMessageFileStrip();
+  const inStrip = !!strip?.has(fileName);
+  const open = useArtifactPreview();
+  const preview = useMemo<ArtifactPreview>(() => kind === 'image'
+    ? { kind, src: url, name: display, alt: display }
+    : { kind, src: attachmentPdfUrl(url, display), name: display, source: display }, [kind, url, display]);
+  const cardRef = useArtifactPreviewCard(preview);
+  const { ref: visibilityRef, visible } = usePreviewVisibility();
+  const ref = useCallback((node: HTMLButtonElement | null) => {
+    const observed = visibilityRef(node);
+    const registered = inStrip ? undefined : cardRef(node);
+    return () => { observed?.(); registered?.(); };
+  }, [visibilityRef, cardRef, inStrip]);
+  const point = (on: boolean) => strip?.point(on ? fileName : null);
+  const icon = kind === 'pdf' ? <FileText size={11} className="opacity-70 shrink-0" /> : <ImageIcon size={11} className="opacity-70 shrink-0" />;
+  return (
+    <Tip label={display} onlyWhenTextHidden>
+      <InlineAction appearance="chip" bubble={tone === 'bubble'} type="button"
+        ref={ref}
+        data-artifact-card={inStrip ? undefined : ''}
+        onClick={event => inStrip ? strip!.open(fileName) : open(preview, event.currentTarget)}
+        onPointerEnter={() => point(true)} onPointerLeave={() => point(false)}
+        onFocus={() => point(true)} onBlur={() => point(false)}
+        // Centered on the line, as in the composer: a picture would otherwise set the baseline and lift the chip.
+        className="inline-flex items-center align-middle gap-1 mx-0.5 cursor-pointer"
+      >
+        {kind === 'image' && visible ? <PreviewImage src={imageThumbnailUrl(url)} alt="" fallback={icon} className="size-4 shrink-0 rounded object-cover" /> : icon}
+        <span className="font-mono text-[11px] truncate max-w-[200px]">{display}</span>
+      </InlineAction>
+    </Tip>
+  );
 }
 
 // ─── Text variant ──────────────────────────────────────────────

@@ -23,6 +23,8 @@ import { CoordinationApproval, CoordinationText } from '@/components/chat-ui/coo
 import { CopyMessageButton } from '@/components/chat-ui/messages/copy-message-button';
 import { MessageEntityChip, type EntityLookup } from '@/components/chat-ui/references/message-entity-chip';
 import { MessageFileChip } from '@/components/chat-ui/artifacts/message-file-chip';
+import { MessageFileStrip } from '@/components/chat-ui/artifacts/message-file-strip';
+import { layoutMessageFiles } from '@/components/chat-ui/artifacts/message-file-strip-layout';
 import { isNoMessageReply } from '@/lib/heartbeat/prompt';
 import { SenderChip } from '@/components/chat-ui/messages/sender-chip';
 import { ChatMessageLink } from '@/components/chat-ui/messages/chat-message-link';
@@ -1434,10 +1436,11 @@ function UserMessageBody({
 
 /**
  * Render a message body that contains entity markers. Splits the
- * string into segments, swaps file markers for `MessageFileChip` (kept
- * for the existing image / text / download UX) and task/note/scratchpad
- * markers for `MessageEntityChip`. Tasks/notes look up against
- * `useSessionEntities`; the scratchpad text comes from `useScratchpad`.
+ * string into segments, swaps file markers for `MessageFileChip` and
+ * task/note/scratchpad markers for `MessageEntityChip`. Pictures and PDFs
+ * show as a row of thumbnails below the words (`layoutMessageFiles`).
+ * Tasks/notes look up against `useSessionEntities`; the scratchpad text
+ * comes from `useScratchpad`.
  */
 function RenderMessageSegments({
   prefix,
@@ -1458,6 +1461,7 @@ function RenderMessageSegments({
   // Agent chips draw from the rail's own list, already in the cache.
   const agentsQuery = useWorkspaces({ status: 'active' });
   const attachmentMap = new Map(attachments.map((a) => [a.fileName, a]));
+  const files = layoutMessageFiles(segments, attachmentMap);
 
   const lookup: EntityLookup = {
     tasksById: new Map((entitiesQuery.data?.tasks ?? []).map((t) => [t.id, t])),
@@ -1469,29 +1473,33 @@ function RenderMessageSegments({
 
   return (
     <SourceMetadataProvider chatId={sessionId} refs={segments.flatMap(segment => segment.kind === 'text' ? parseSourceMarkers(segment.text).flatMap(part => part.type === 'source' && part.valid ? [part.encoded] : []) : [])}>
-      {/* One flowing block: the bubble is a flex column, and chips belong inline with the words around them. */}
       <div className="min-w-0">
-      {prefix}
-      {segments.map((seg, i) => {
-        if (seg.kind === 'text') {
-          return <SourceText key={i} text={seg.text} resolve={false} tone={tone} />;
-        }
-        const m = seg.marker;
-        if (m.kind === 'file') {
-          const att = attachmentMap.get(m.fileName);
-          // Unknown attachment — fall back to literal token.
-          return att ? <MessageFileChip key={i} attachment={att} tone={tone} /> : <span key={i}>{seg.raw}</span>;
-        }
-        return (
-          <MessageEntityChip
-            key={i}
-            marker={m}
-            lookup={lookup}
-            tone={tone}
-            onOpen={(marker) => dispatchOpenReference(marker)}
-          />
-        );
-      })}
+        <MessageFileStrip files={files.strip}>
+          {/* One flowing block: the bubble is a flex column, and chips belong inline with the words around them. */}
+          {(prefix || files.inline.length > 0) && <div className="min-w-0">
+            {prefix}
+            {files.inline.map((seg, i) => {
+              if (seg.kind === 'text') {
+                return <SourceText key={i} text={seg.text} resolve={false} tone={tone} />;
+              }
+              const m = seg.marker;
+              if (m.kind === 'file') {
+                const att = attachmentMap.get(m.fileName);
+                // Unknown attachment — fall back to literal token.
+                return att ? <MessageFileChip key={i} attachment={att} tone={tone} /> : <span key={i}>{seg.raw}</span>;
+              }
+              return (
+                <MessageEntityChip
+                  key={i}
+                  marker={m}
+                  lookup={lookup}
+                  tone={tone}
+                  onOpen={(marker) => dispatchOpenReference(marker)}
+                />
+              );
+            })}
+          </div>}
+        </MessageFileStrip>
       </div>
     </SourceMetadataProvider>
   );

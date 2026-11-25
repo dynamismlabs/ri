@@ -186,11 +186,11 @@ function DecisionNote({ review, result }: { review: WorkResultDecisionRecord; re
   return <div className="space-y-2">
     {context && <div className="space-y-1 text-[11px] text-muted-foreground">
       {context.reviewId && <Link href={`/results/${result.id}#ai-review-${context.reviewId}`} className="block text-primary hover:underline">Feedback on this AI review</Link>}
-      {context.attachmentFileName && <div><p className="mb-1">Selected file</p>{selectedFile ? <MessageFileChip attachment={selectedFile} /> : <p>The selected file is unavailable.</p>}</div>}
+      {context.attachmentFileName && <div><p className="mb-1">Selected file</p>{selectedFile ? <MessageFileChip variant="block" attachment={selectedFile} /> : <p>The selected file is unavailable.</p>}</div>}
       {context.previewTargetId && (selectedPreview ? <Link href={`/results/${result.id}#preview-${context.previewTargetId}`} className="block text-primary hover:underline">Selected preview: {selectedPreview.label}</Link> : <p>The selected preview is unavailable.</p>)}
     </div>}
     {review.note && <div className="text-muted-foreground"><ResultBody result={{ body: review.note, attachments: review.attachments }} /></div>}
-    {!!galleryFiles.length && <div className="flex flex-wrap gap-2" aria-label="Saved feedback files">{galleryFiles.map((attachment) => <MessageFileChip key={attachment.fileName} attachment={attachment} />)}</div>}
+    {!!galleryFiles.length && <div className="flex flex-wrap gap-2" aria-label="Saved feedback files">{galleryFiles.map((attachment) => <MessageFileChip key={attachment.fileName} variant="block" attachment={attachment} />)}</div>}
   </div>;
 }
 

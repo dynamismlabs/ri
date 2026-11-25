@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ImageOff, Loader2 } from 'lucide-react';
 import { getAuthToken } from '@/lib/api/client';
@@ -8,8 +8,10 @@ import { imageResponseError, protectedImageUrl } from '@/lib/sessions/artifact-i
 import { ZoomableImage } from './zoomable-image';
 
 /** `zoomable` draws the full-size image a preview opens to (`ZoomableImage`),
- * which lays itself out, so `className` is for the plain image only. */
-type PreviewImageProps = { src: string; alt: string; className?: string; zoomable?: boolean; onErrorChange?: (message: string | undefined) => void };
+ * which lays itself out, so `className` is for the plain image only.
+ * `fallback` stands in while loading and on failure, for a slot too small
+ * for the spinner or the reason (a chip's thumbnail). */
+type PreviewImageProps = { src: string; alt: string; className?: string; zoomable?: boolean; fallback?: ReactNode; onErrorChange?: (message: string | undefined) => void };
 
 export function PreviewImage(props: PreviewImageProps) {
   return protectedImageUrl(props.src) ? <ProtectedImage {...props} /> : <NativeImage key={props.src} {...props} />;
@@ -34,8 +36,8 @@ function ProtectedImage({ src, ...image }: PreviewImageProps) {
   });
   const { onErrorChange } = image;
   useEffect(() => { onErrorChange?.(error?.message); }, [error, onErrorChange]);
-  if (error) return <Unavailable reason={error.message} />;
-  return data ? <BlobImage key={src} blob={data} {...image} /> : <span className="flex h-full items-center justify-center"><Loader2 size={16} className="animate-spin text-muted-foreground" /></span>;
+  if (error) return image.fallback ?? <Unavailable reason={error.message} />;
+  return data ? <BlobImage key={src} blob={data} {...image} /> : image.fallback ?? <span className="flex h-full items-center justify-center"><Loader2 size={16} className="animate-spin text-muted-foreground" /></span>;
 }
 
 function BlobImage({ blob, ...image }: Omit<PreviewImageProps, 'src'> & { blob: Blob }) {
@@ -51,13 +53,13 @@ function BlobImage({ blob, ...image }: Omit<PreviewImageProps, 'src'> & { blob: 
     });
     return () => { disposed = true; if (objectUrl) URL.revokeObjectURL(objectUrl); };
   }, [blob]);
-  return url ? <NativeImage key={url} src={url} {...image} /> : null;
+  return url ? <NativeImage key={url} src={url} {...image} /> : image.fallback ?? null;
 }
 
-function NativeImage({ src, alt, className, zoomable, onErrorChange }: PreviewImageProps) {
+function NativeImage({ src, alt, className, zoomable, fallback, onErrorChange }: PreviewImageProps) {
   const [failed, setFailed] = useState(false);
   const reason = 'The browser could not load or decode this image.';
-  if (failed) return <Unavailable reason={reason} />;
+  if (failed) return fallback ?? <Unavailable reason={reason} />;
   const onLoad = () => onErrorChange?.(undefined);
   const onError = () => { setFailed(true); onErrorChange?.(reason); };
   if (zoomable) return <ZoomableImage src={src} alt={alt} onLoad={onLoad} onError={onError} />;

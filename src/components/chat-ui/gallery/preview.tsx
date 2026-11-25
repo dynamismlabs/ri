@@ -56,7 +56,7 @@ import { ModelMenuPreview } from './model-menu-preview';
 import { galleryExample, type ChatUiExampleId } from './catalog';
 
 declare const __GALLERY_EXAMPLE__: ChatUiExampleId;
-import { CHAT_ID, DRAFT_ID, event, IMAGE_URL, mentionExample, NOW, PDF_PAGES, RECORD_ID, chatMessageExample, isReturnedAnswerState } from './fixtures';
+import { CHAT_ID, DRAFT_ID, event, IMAGE_URL, mentionExample, NOW, PDF_PAGES, RECORD_ID, SCREENSHOTS, chatMessageExample, isReturnedAnswerState } from './fixtures';
 import { fixtureConfig as config, fixtureQueryClient as client, fixtureRuntime as runtime } from './fixture-client';
 
 document.documentElement.classList.toggle('dark', config.theme === 'dark');
@@ -78,6 +78,8 @@ window.fetch = async input => {
   // can't host the browser's PDF viewer, so the preview shows these pages.
   const pdfPage = url.pathname === '/api/attachments/gallery-report.pdf' ? (url.searchParams.get('thumbnail') === '1' ? 1 : Number(url.searchParams.get('page'))) : 0;
   if (PDF_PAGES[pdfPage - 1]) return new Response(PDF_PAGES[pdfPage - 1], { headers: { 'content-type': 'image/svg+xml', 'x-pdf-pages': String(PDF_PAGES.length) } });
+  const screenshot = SCREENSHOTS[url.pathname.replace('/api/attachments/', '')];
+  if (screenshot) return new Response(screenshot, { headers: { 'content-type': 'image/svg+xml' } });
   throw new Error(`The gallery blocked a network request to ${url.pathname}`);
 };
 document.addEventListener('click', event => {
@@ -211,6 +213,20 @@ function ServerForm() {
 
 function FileChips() {
   return <div className="space-y-5 text-sm"><p>Here are the review materials:</p><MessageFileChip attachment={{ fileName: 'gallery-agenda.txt', originalName: 'friday-agenda.txt', mimeType: 'text/plain', size: 99, uploadedAt: NOW }} variant="block" /><MessageFileChip attachment={{ fileName: 'gallery-image.svg', originalName: 'a-little-room-to-think.svg', mimeType: 'image/svg+xml', size: 720, uploadedAt: NOW }} fileUrl={() => IMAGE_URL} variant="block" /><MessageFileChip attachment={{ fileName: 'gallery-report.pdf', originalName: 'friday-review.pdf', mimeType: 'application/pdf', size: 48210, uploadedAt: NOW }} variant="block" /></div>;
+}
+
+/** A person's messages with pictures: names stay in the words, thumbnails along the bottom. */
+function SentFiles() {
+  const shot = (fileName: string, originalName: string) => ({ fileName, originalName, mimeType: 'image/png', size: 48210, uploadedAt: NOW });
+  const menu = shot('gallery-shot-menu.png', 'Screenshot of the menu.png');
+  const rail = shot('gallery-shot-rail.png', 'Screenshot of the rail.png');
+  const report = { fileName: 'gallery-report.pdf', originalName: 'friday-review.pdf', mimeType: 'application/pdf', size: 48210, uploadedAt: NOW };
+  const events = [
+    event('user', { id: 'sent-between', role: 'user', content: `These rows feel tight and the hover doesn't fill them [[file:${menu.fileName}]] These too? Or maybe they have a little more [[file:${rail.fileName}]]`, attachments: [menu, rail] }),
+    event('agent', { id: 'sent-reply', content: 'I gave both the same row height, so the hover fills each row.' }),
+    event('user', { id: 'sent-end', role: 'user', content: `Here is the review for Friday\n\n[[file:${report.fileName}]]`, attachments: [report] }),
+  ].map(toChatEventDTO);
+  return <div className="flex h-[560px] flex-col rounded-xl border border-border"><ChatTranscript session={{ id: CHAT_ID, startedAt: NOW }} events={events} isLoading={false} isRunning={false} hasOlder={false} isLoadingOlder={false} loadOlder={async () => 0} /></div>;
 }
 
 /** A chat with a panel beside it, as Home's second panel or an execution's tools: its files open there as a tab. */
@@ -420,7 +436,7 @@ function Example() {
     {__GALLERY_EXAMPLE__ === 'model-menu' && <ModelMenuPreview state={config.state} />}
     {__GALLERY_EXAMPLE__ === 'add-menu' && <AddMenuExample />}
     {__GALLERY_EXAMPLE__ === 'edits' && <div className="space-y-4 text-sm"><p>I clarified the agenda and made the next steps easier to scan.</p><EntityEditChip entityType="note" entityId={RECORD_ID} /></div>}
-    {__GALLERY_EXAMPLE__ === 'files' && (config.state === 'beside' ? <FilesBeside /> : <FileChips />)}
+    {__GALLERY_EXAMPLE__ === 'files' && (config.state === 'beside' ? <FilesBeside /> : config.state === 'sent' ? <SentFiles /> : <FileChips />)}
     {__GALLERY_EXAMPLE__ === 'html' && <HtmlPreviewLink sessionId={CHAT_ID} path="review-plan.html">An interactive plan for the Friday review</HtmlPreviewLink>}
     {__GALLERY_EXAMPLE__ === 'handoffs' && <ResultRenderer resultId={RECORD_ID} />}
     {__GALLERY_EXAMPLE__ === 'activity' && <div className="space-y-5"><ExecutionEvent event={event('tool_call', { toolName: 'Bash', toolInput: { command: 'pnpm test --filter=calendar' } })} /><ExecutionEvent event={event('tool_result', { content: config.state === 'error' ? 'The calendar test failed. Friday overlaps with the existing review.' : 'All 12 calendar tests passed.', toolIsError: config.state === 'error' })} /><ExecutionEvent event={event(config.state === 'error' ? 'error' : 'agent', { content: config.state === 'error' ? 'The schedule needs one more adjustment.' : 'The review plan is ready.' })} handoffActions={false} /></div>}
