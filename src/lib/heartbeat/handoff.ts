@@ -30,6 +30,13 @@ const OUTCOME_LOOKBACK = 200;
 
 const DECLINE = `If they already know this, or it no longer matters, reply with exactly ${NO_MESSAGE_REPLY} and nothing else, and they won't see anything.`;
 
+/**
+ * A check-in can't send or draft anything outside Ri, so an instruction like
+ * "propose a reply" reaches the user through the main agent, who can open an
+ * email composer in its own chat for them to edit and send.
+ */
+const DRAFT = 'If it asks for something to be drafted, draft it: an email goes in create_email_draft, so they can edit and send it from this chat. ';
+
 const VOICE = "Write as yourself, the way you'd text someone you work with. Write only the message itself, with no narration before or after your checks. Don't mention the check-in, the heartbeat, or this note.";
 
 interface NoteOptions {
@@ -43,7 +50,7 @@ interface NoteOptions {
 export function composeMainAgentNote(note: string, options: NoteOptions = {}): string {
   const first = options.first ? " This is the first message they've had from a check-in, so add one line saying you check in on a schedule and they can change or stop it in Settings > Heartbeat." : '';
   const did = options.did ? `\n\nIt also did this, which you can mention in a line if it helps:\n\n${options.did}` : '';
-  return `A background check-in has something for the user while they're away. It can't reach them, so you decide whether and how to tell them. Your reply is sent to them as a message right away.\n\n${note}${did}\n\nLead with what matters and what they should do, as briefly as the content allows. Check with your tools if you need to. ${VOICE}${first} ${DECLINE}`;
+  return `A background check-in has something for the user while they're away. It can't reach them, so you decide whether and how to tell them. Your reply is sent to them as a message right away.\n\n${note}${did}\n\nLead with what matters and what they should do, as briefly as the content allows. Check with your tools if you need to. ${DRAFT}${VOICE}${first} ${DECLINE}`;
 }
 
 function deliveryId(sourceSessionId: string, runId: string): string {

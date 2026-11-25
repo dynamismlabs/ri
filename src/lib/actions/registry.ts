@@ -2910,6 +2910,7 @@ const update_heartbeat_action = defineAction({
     `intervalSeconds is the gap between check-ins, at least ${MIN_HEARTBEAT_INTERVAL_SECONDS}. ` +
     'activeHoursStart/activeHoursEnd are HH:MM in the heartbeat\'s timezone, set together, or both null for any time of day. ' +
     'instructions replace the user\'s instructions verbatim (the app\'s ground rules are added separately and cannot be edited). ' +
+    'To add, change or remove one item, read the current text with get_heartbeat first and send all of it back with only that item changed, so no line the user wrote is lost. ' +
     'resetInstructions restores the default instructions. Changing provider resets model and effort unless the same call sets them. ' +
     'Turning it on schedules the first check-in one interval out, inside the active hours. Use run_trigger with the returned triggerId to check in now.',
   params: {

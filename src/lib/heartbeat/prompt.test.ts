@@ -21,6 +21,11 @@ describe('composeHeartbeatPrompt', () => {
     expect(prompt).toContain('Copy every id exactly');
   });
 
+  it('hands a requested draft to the main agent instead of writing it anywhere', () => {
+    expect(HEARTBEAT_GROUND_RULES).toContain("When the instructions ask for a draft or a reply, don't write one anywhere");
+    expect(HEARTBEAT_GROUND_RULES).toContain("say in your Now note who it's for and what it should say, and their main agent drafts it for them.");
+  });
+
   it('makes the reply a private note with Did, Now and Later, and lets the instructions set the timing', () => {
     expect(HEARTBEAT_GROUND_RULES).toContain("The user is not watching and won't read this chat.");
     expect(HEARTBEAT_GROUND_RULES).toContain("private note to the user's main agent");

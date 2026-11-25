@@ -48,6 +48,12 @@ The default instructions:
 
 **Edit instructions** to change any of it. Each check-in knows the time and what earlier ones did, so you can write things like "once each morning". **Reset to default** brings the original back.
 
-Whatever you write, the heartbeat always follows a few rules: it never deletes anything, never sends, posts or shares anything outside Ri, never completes a task for you, starts agent work only when your instructions say to, and stays quiet when nothing needs you.
+### Ask your main chat
+
+You don't have to write the instructions yourself. Tell your main chat what to watch for, like "keep an eye on my GitHub issues" or "if a customer writes in, draft me a reply". It adds a line to the instructions and keeps everything else you wrote. Then it tells you the line it added and how often it checks, so you can fix anything it guessed, like which repos to watch.
+
+If the heartbeat is off, asking for a watch turns it on, and your main chat says what else is in the instructions so you can drop anything you don't want. If the line needs an account Ri can't reach yet, it asks you to connect it in [Connectors](/docs/concepts/connectors).
+
+Whatever you write, the heartbeat always follows a few rules: it never deletes anything, never sends, posts or shares anything outside Ri, never completes a task for you, starts agent work only when your instructions say to, and stays quiet when nothing needs you. So a line that asks for a reply ends as a draft in your main chat, ready for you to edit and send.
 
 Set how often it runs with **Every** (every 30 minutes to start, and never more often than every 5 minutes) and the **Hours** it may run, all day or between two times. **Check in now** runs one right away.

@@ -280,6 +280,12 @@ describe('heartbeat dispatch', () => {
     expect(composeMainAgentNote('The contract expires today.')).toContain('no narration before or after your checks');
   });
 
+  it('tells the main agent to draft what a check-in proposes, as an email the user can edit and send', async () => {
+    const { composeMainAgentNote } = await import('@/lib/heartbeat/handoff');
+    const note = composeMainAgentNote('Dana (dana@acme.com) asks why she was charged twice. Propose a reply.');
+    expect(note).toContain('If it asks for something to be drafted, draft it: an email goes in create_email_draft');
+  });
+
   it('tells the main agent what the check-in did, so it can mention it in a line', async () => {
     const { ensureMainChat } = await import('@/lib/sessions/main-chat');
     await ensureMainChat(null);

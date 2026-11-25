@@ -46,6 +46,12 @@ All of the heartbeat's rhythm is in this text, so tuning it means editing it. Th
 
 The overnight tidy fills gaps and clears clutter so you don't have to maintain anything. It doesn't ask, and it never overrules something you set. Nothing is lost: to bring a task back from Consider or the archive, tell your main agent or open the task. Remove any line you don't want it doing.
 
+### Asking your main chat
+
+You don't have to open Settings to add something. Tell your main chat what to watch for, like "monitor my GitHub issues" or "if someone has a customer service request, propose a draft". It reads the current instructions with `get_heartbeat`, adds one line in your voice under the right heading, and writes the whole text back with `update_heartbeat`, keeping every line you wrote. If the heartbeat is off it turns it on, since asking for a watch is asking for it to run, and says in a line which other instructions that starts. If the line needs an account it can't reach (GitHub, a support inbox), it asks you to connect it. It tells you the line it added and how often it checks, so you can correct a guess like which repos to watch. The main chat's brief carries these steps (`HEARTBEAT_SECTION` in `src/lib/coordinator/harness-surface.ts`). Watching for something is the heartbeat's job. Work at a set time, like a weekday briefing, is still a schedule of its own.
+
+A line that ends in sending something becomes a proposal, because a check-in never sends. The check-in's Now note says who the draft is for and what it should say, and your main chat writes it as an email draft in its own chat (`create_email_draft`), where you can edit it and send it.
+
 Timing follows your schedule: "3:00 AM" means the next check-in after 3:00, and a time outside your hours won't run until they open. "Once" and "up to twice" are instructions to the agent, not limits the app enforces, so it could occasionally repeat or miss one.
 
 ## What it always follows
@@ -53,7 +59,7 @@ Timing follows your schedule: "3:00 AM" means the next check-in after 3:00, and 
 The app puts these rules in front of your instructions on every check-in. Editing your instructions can't remove them:
 
 - Never delete anything.
-- Never send, post, or share anything outside the app.
+- Never send, post, or share anything outside the app. When the instructions ask for a draft or a reply, it says in its Now note who it's for and what it should say, and the main agent drafts it.
 - Never complete a task. Completing a task is your call.
 - Start or message agent executions only when the instructions say to. The default instructions ask it to tell a stalled chat to continue when the next step is clear and safe.
 - Don't message the user or their main agent directly. The check-in's final reply is how anything reaches them.
@@ -102,7 +108,7 @@ You can also ask your main agent what the heartbeat has been doing.
 | Action | Use |
 |---|---|
 | `get_heartbeat` | Read its settings, next check-in, and last check-in |
-| `update_heartbeat` | Change any of: `enabled`, `instructions`, `resetInstructions`, `intervalSeconds`, `activeHoursStart`, `activeHoursEnd`, `timezone`, `provider`, `model`, `effort` |
+| `update_heartbeat` | Change any of: `enabled`, `instructions`, `resetInstructions`, `intervalSeconds`, `activeHoursStart`, `activeHoursEnd`, `timezone`, `provider`, `model`, `effort`. `instructions` replaces the whole text, so read it first and send it all back with one item changed |
 | `run_trigger` with the returned `triggerId` | Check in now |
 
 ```sh
