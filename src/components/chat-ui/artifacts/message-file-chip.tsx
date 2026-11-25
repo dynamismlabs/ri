@@ -1,7 +1,7 @@
 'use client';
 import { InlineAction } from '@/components/system/inline-action';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, FileText, Download, ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { attachmentUrl } from '@/lib/attachments/view';
@@ -16,6 +16,9 @@ import { OpenWithApp } from '@/components/mcp-apps/open-with';
 import { FilePreviewLink } from './file-preview-link';
 import { useArtifactPreview, useArtifactPreviewCard, type ArtifactPreview } from './artifact-preview-provider';
 import { useMessageFileStrip } from './message-file-strip';
+import { PreviewImage } from './preview-image';
+import { imageThumbnailUrl } from '@/lib/sessions/artifact-image';
+import { usePreviewVisibility } from '@/hooks/use-preview-visibility';
 
 interface MessageFileChipProps {
   attachment: Attachment;
@@ -77,7 +80,9 @@ function FileChip({ attachment, variant = 'inline', tone = 'surface', fileUrl = 
 
 /** In a message with a row of thumbnails, the chip opens its file through the
  * thumbnail and marks it on hover, and isn't a card of its own, so Previous
- * and Next don't visit the file twice. Anywhere else it opens the file itself. */
+ * and Next don't visit the file twice. Anywhere else it opens the file itself.
+ * A picture's chip leads with a tiny copy of it, as in the composer, from the
+ * same thumbnail the row shows, loaded once it nears the screen. */
 function VisualChip({ kind, fileName, url, display, tone }: { kind: 'image' | 'pdf'; fileName: string; url: string; display: string; tone: 'surface' | 'bubble' }) {
   const strip = useMessageFileStrip();
   const inStrip = !!strip?.has(fileName);
@@ -86,18 +91,26 @@ function VisualChip({ kind, fileName, url, display, tone }: { kind: 'image' | 'p
     ? { kind, src: url, name: display, alt: display }
     : { kind, src: attachmentPdfUrl(url, display), name: display, source: display }, [kind, url, display]);
   const cardRef = useArtifactPreviewCard(preview);
+  const { ref: visibilityRef, visible } = usePreviewVisibility();
+  const ref = useCallback((node: HTMLButtonElement | null) => {
+    const observed = visibilityRef(node);
+    const registered = inStrip ? undefined : cardRef(node);
+    return () => { observed?.(); registered?.(); };
+  }, [visibilityRef, cardRef, inStrip]);
   const point = (on: boolean) => strip?.point(on ? fileName : null);
+  const icon = kind === 'pdf' ? <FileText size={11} className="opacity-70 shrink-0" /> : <ImageIcon size={11} className="opacity-70 shrink-0" />;
   return (
     <Tip label={display} onlyWhenTextHidden>
       <InlineAction appearance="chip" bubble={tone === 'bubble'} type="button"
-        ref={inStrip ? undefined : cardRef}
+        ref={ref}
         data-artifact-card={inStrip ? undefined : ''}
         onClick={event => inStrip ? strip!.open(fileName) : open(preview, event.currentTarget)}
         onPointerEnter={() => point(true)} onPointerLeave={() => point(false)}
         onFocus={() => point(true)} onBlur={() => point(false)}
-        className="inline-flex items-center align-baseline gap-1 mx-0.5 cursor-pointer"
+        // Centered on the line, as in the composer: a picture would otherwise set the baseline and lift the chip.
+        className="inline-flex items-center align-middle gap-1 mx-0.5 cursor-pointer"
       >
-        {kind === 'pdf' ? <FileText size={11} className="opacity-70 shrink-0" /> : <ImageIcon size={11} className="opacity-70 shrink-0" />}
+        {kind === 'image' && visible ? <PreviewImage src={imageThumbnailUrl(url)} alt="" fallback={icon} className="size-4 shrink-0 rounded object-cover" /> : icon}
         <span className="font-mono text-[11px] truncate max-w-[200px]">{display}</span>
       </InlineAction>
     </Tip>
