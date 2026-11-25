@@ -80,6 +80,30 @@ it('runs a real Ri conversation from a Slack mention, deduplicates it, and retur
   expect(event('And the rollout?', { type: 'message', ts: '123.000002', root: '123.000001' })).toMatchObject({ accepted: true, threadId: thread.id });
 }, 20_000);
 
+const SLACK_NOTE = "b.txt shows the refund came first, so that's the first inconsistency. Checking c.txt next.";
+const slackPosts = () => sent.filter(row => row.method === 'chat.postMessage').map(row => row.body.text as string);
+
+it('never sends a progress note to Slack as the reply', async () => {
+  // A Claude progress update, as agentex reports it, then the turn ends without an answer.
+  harness.onTurn(async turn => { await turn.emit({ type: 'assistant', text: SLACK_NOTE, phase: 'commentary' }); });
+  event('<@UBOT> Check order 1001');
+  await drainConversations();
+  await vi.waitFor(() => expect(slackPosts()).toHaveLength(1), { timeout: 15_000 });
+  expect(slackPosts()[0]).toContain('finished without a text answer');
+  expect(slackPosts()[0]).not.toContain('Checking c.txt next');
+}, 20_000);
+
+it('sends only the answer to Slack when a progress note came before it', async () => {
+  harness.onTurn(async turn => {
+    await turn.emit({ type: 'assistant', text: SLACK_NOTE, phase: 'commentary' });
+    await turn.say('Order 1001 has three inconsistencies.');
+  });
+  event('<@UBOT> Check order 1001');
+  await drainConversations();
+  await vi.waitFor(() => expect(slackPosts()).toHaveLength(1), { timeout: 15_000 });
+  expect(slackPosts()[0]).toBe('Order 1001 has three inconsistencies.');
+}, 20_000);
+
 it('ignores channel chatter, other bots, edits and unlinked users', () => {
   expect(event('Ordinary discussion', { type: 'message' })).toMatchObject({ accepted: false });
   expect(event('<@UBOT> quoted text', { user: 'UBOT' })).toBeUndefined();

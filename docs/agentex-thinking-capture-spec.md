@@ -1,132 +1,63 @@
-# Spec: Capture assistant *thinking* prose in the Claude provider
+# Thinking and progress updates from Claude and Codex
 
-**Audience:** agentex maintainers (`@agentex/agent`, `packages/agent/src/providers/claude/`)
-**Status:** proposed — forward-looking; see "Current upstream reality" before estimating impact.
-**Author context:** filed from a wrapper app that renders `chat_events` produced by agentex's
-`StreamEvent`s. Thinking rows arrive empty; this spec explains why and what agentex should change.
+**Status:** current as of 2026-11-24 (agentex 0.0.54, Claude Code 2.1.331, codex-cli 0.171.0).
+This replaces the June 2026 spec that asked agentex to capture Claude's thinking prose. That
+prose is gone for good, and the text that does arrive in Claude's thinking blocks turned out to
+be messages for the person.
 
----
+## What each harness returns
 
-## TL;DR
+**Claude (Opus 5.5 and other models with progress updates).** Claude Code requests
+`thinking: {type: "adaptive", display: "updates"}` by default. In that mode:
 
-1. agentex spawns the `claude` **CLI binary** with `--input-format stream-json --output-format
-   stream-json --verbose` and **parses only finalized `assistant` messages**
-   (`providers/claude/parse.js` → `type === "assistant"`). It never enables partial-message
-   streaming and never parses `stream_event` deltas.
-2. For **extended-thinking** turns, the finalized `assistant` message contains a thinking block
-   whose prose has been **stripped** — only the encrypted `signature` survives:
-   `{"type":"thinking","thinking":"","signature":"Ero…"}`. So `parseStreamLine` maps it to a
-   `thinking` StreamEvent with `text: ""`, and downstream consumers render an empty block.
-3. The human-readable thinking prose only ever exists in the **streaming deltas**
-   (`stream_event` → `content_block_delta` → `delta.type === "thinking_delta"`). To capture it you
-   must (a) pass `--include-partial-messages` and (b) accumulate `thinking_delta` text per
-   content-block, emitting it as the `thinking` StreamEvent instead of the empty finalized block.
+- The reasoning block always comes back empty: `{"type":"thinking","thinking":"","signature":"…"}`.
+  The API never returns the raw chain of thought on current models.
+- The notes the model writes between tool calls ("b.txt shows the refund came first, so that's
+  the first inconsistency. Checking c.txt next.") come back as their own `thinking` block with
+  text, right before the `tool_use` they introduce. They are written for the person.
+- Shorter notes still come back as ordinary `text` blocks. Both are user-facing narration.
+- Claude Code names the mode on each line that holds a thinking block: `thinking_display: "updates"`
+  on the live stream-json stream (including `stream_event` wrappers) and `thinkingDisplay:
+  "updates"` in the transcript it writes under `~/.claude/projects`.
 
-## Current upstream reality (measured 2026-06-04, Claude Code 2.1.163)
+Measured on 60 recent transcripts: 5,593 empty thinking blocks, 728 with text, every one of those
+followed by a tool call, median 202 characters. Ordinary text notes in the same turns: 1,664,
+median 133 characters.
 
-⚠️ Capturing the deltas is **necessary but not currently sufficient**. On the current CLI, the
-thinking content block streams a `signature_delta` but **no `thinking_delta` prose at all** — the
-prose is withheld upstream. Verified end-to-end, including via the official
-`@anthropic-ai/claude-agent-sdk` `query()` with `thinking: {type:'enabled', budgetTokens}` +
-`includePartialMessages: true`:
+**Codex.** Every reasoning item in Oct and Nov 2026 rollouts has an empty summary. What Codex
+writes for the person while working is an assistant `message` with `phase: "commentary"`, and the
+answer is `phase: "final_answer"`.
 
-```
-thinking_delta_prose = 0   signature_delta = 1   final thinking block = empty
-```
+## How agentex reports them
 
-Historical transcripts on disk that *do* contain full thinking prose are all from Claude Code
-**≤ 2.1.154**; every session **≥ 2.1.155** is empty regardless of entrypoint (`cli`, `sdk-cli`,
-`sdk-ts`). So this is a client-version / API-policy change, not an invocation bug.
+- A Claude thinking block with text, on a line whose display mode is `"updates"`, becomes an
+  `assistant` event with `phase: "commentary"`, the same shape as Codex commentary. This holds
+  for live sessions, one-shot runs and saved transcripts read through local history, since they
+  share one parser. With `includePartialMessages`, its deltas are `assistant_delta` with
+  `phase: "commentary"` and the consolidated event's `messageId`.
+- Empty thinking blocks stay `thinking` with empty text. A thinking block in any other display
+  mode, or with none (older transcripts that held full reasoning, `"summarized"`), stays
+  `thinking`.
+- Claude one-shot summaries come from the result text and never include the notes.
 
-**Conclusion:** implement the capture path below so agentex is *ready* the moment Anthropic
-re-enables thinking prose (or for any model/provider that still emits it — e.g. older Sonnet
-sessions did). It will not retroactively surface thinking on a CLI that withholds the deltas.
+## How Ri shows them
 
-## Reproduction
+- Commentary from either harness is an `agent` row with `phase: 'commentary'`
+  (`chat_events.phase`, migration 0042), so it renders as an ordinary message: full length,
+  visible after the turn folds its tool calls away, read by a main chat checking on the chat
+  (`condenseEvents`), and counted as activity for the rail.
+- It is never the turn's answer (`isProgressNote`, `src/lib/executions/progress-note.ts`): not an
+  outcome for Unread, not the review target and refused as one, not a delegated request's or a
+  Slack thread's reply, not the turn notification, run summary or hover preview, and it gets no
+  "prepare result" actions. A turn that ends after a note without an answer says it finished
+  without a text answer. Ordinary Claude text between tool calls has no phase and still counts,
+  as it always did.
+- Empty `thinking` rows are stored but never rendered (`filterRenderable`). A `thinking` row with
+  text, from an older transcript or another harness, renders as the dim, collapsible thinking row.
+- Rows stored before agentex 0.0.54 keep their `thinking` source, and older Codex commentary rows
+  have no phase, so they still count as answers. Re-reading an old transcript doesn't duplicate
+  them: chat events dedupe on session, event id and part index, not source.
 
-```bash
-# Finalized assistant message has empty thinking + signature only:
-printf '%s\n' '{"type":"user","message":{"role":"user","content":"Think hard then prove sqrt(2) is irrational."}}' \
- | claude --input-format stream-json --output-format stream-json --verbose \
-          --include-partial-messages --max-thinking-tokens 10000
-# Observe in the stream: content_block_start{type:thinking}, content_block_delta{signature_delta},
-# content_block_stop — and NO content_block_delta{thinking_delta}. final message thinking == "".
-```
-
-## What to change
-
-### 1. Spawn flags — `providers/claude/session.ts` (and `execute.ts`)
-
-Add to the args array:
-
-```diff
-  "--input-format", "stream-json",
-  "--output-format", "stream-json",
-  "--verbose",
-+ "--include-partial-messages",
-```
-
-Optionally set `env.CLAUDE_CODE_ENTRYPOINT = "sdk-ts"` for parity with the official SDK (cosmetic;
-does not affect thinking capture on its own — measured).
-
-Thinking budget: when the caller requests thinking, pass `--max-thinking-tokens <N>` (the SDK's
-`thinking:{type:'enabled',budgetTokens:N}` lowers to this flag). `--thinking adaptive` is the
-SDK's default when no budget is given.
-
-### 2. Parse `stream_event` deltas — `providers/claude/parse.js`
-
-`parseStreamLine` currently handles `type === "assistant"` (finalized) only. Add a `stream_event`
-branch that accumulates thinking prose per content-block index and flushes a populated `thinking`
-StreamEvent. Sketch:
-
-```ts
-// module-scoped, keyed by `${eventUuid|messageId}:${index}`
-const thinkingBuffers = new Map<string, string>();
-
-if (type === "stream_event") {
-  const ev = event["event"];                 // the raw Anthropic stream event
-  const idx = ev["index"];
-  const key = `${messageId ?? sessionId}:${idx}`;
-  if (ev.type === "content_block_start" && ev.content_block?.type === "thinking") {
-    thinkingBuffers.set(key, "");
-    return [];                                // nothing to emit yet
-  }
-  if (ev.type === "content_block_delta" && ev.delta?.type === "thinking_delta") {
-    thinkingBuffers.set(key, (thinkingBuffers.get(key) ?? "") + (ev.delta.thinking ?? ""));
-    return [];
-  }
-  if (ev.type === "content_block_stop" && thinkingBuffers.has(key)) {
-    const text = thinkingBuffers.get(key) ?? "";
-    thinkingBuffers.delete(key);
-    if (!text.trim()) return [];              // empty → skip (don't emit empty thinking)
-    return [{ type: "thinking", text, ...baseFieldsFromEvent(event, messageId) }];
-  }
-  return [];                                  // ignore text_delta/signature_delta/etc.
-}
-```
-
-### 3. De-duplicate against the finalized empty block
-
-The finalized `assistant` message still arrives with an empty thinking block. Either:
-
-- **(preferred)** in the `type === "assistant"` branch, **skip** thinking blocks whose
-  `thinking` is empty (they're superseded by the streamed prose), or
-- emit nothing for thinking in the finalized branch when partial messages are enabled.
-
-This mirrors the existing Codex behaviour, which already skips empty reasoning summaries
-(`codex-on-disk.ts`).
-
-### 4. Stable per-block event ids (robustness, independent of thinking)
-
-`baseFieldsFromEvent` sets `eventId = event.uuid`, i.e. **the same id for every block** in one
-assistant message (thinking + text + tool_use share it). Wrappers that dedupe rows on a wire id
-can drop sibling blocks. Recommend deriving a per-block id, e.g. `eventId = `${uuid}:${index}``,
-so thinking/text/tool rows from one message are individually addressable.
-
-## Acceptance
-
-- A thinking turn yields a `thinking` StreamEvent whose `text` is the full reasoning prose (when
-  the CLI emits `thinking_delta`).
-- No empty `thinking` StreamEvents are emitted.
-- Text/tool_use events are unaffected; ordering preserved (thinking before the text it precedes).
-- Verified against `claude --include-partial-messages` once upstream re-exposes `thinking_delta`.
+`src/lib/executor/adapter.claude-progress-updates.test.ts` runs a real transcript through
+agentex's reader and Ri's mapping. `src/lib/executions/progress-note.test.ts` and the progress
+note cases in the coordination and Slack conversation tests check that a note is never an answer.

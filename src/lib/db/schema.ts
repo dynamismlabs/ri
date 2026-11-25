@@ -2588,6 +2588,12 @@ export const chatEvents = sqliteTable(
     // this message. Null everywhere else, and never filled in for older rows.
     // Not a foreign key, for the same reason as `senderSessionId`.
     authorMemberId: text(),
+    // An agent message's place in its turn, as the harness reports it:
+    // `commentary` is a progress note written mid-turn (Codex commentary,
+    // Claude's progress updates), shown in the chat but never the turn's
+    // answer; `final_answer` is Codex's answer. Null for everything else and
+    // for rows stored before it was recorded. See isProgressNote.
+    phase: text({ enum: ['commentary', 'final_answer'] }),
   },
   (table) => [
     // Idempotent upsert key for CLI-backed events. Claude (JSONL uuid) and

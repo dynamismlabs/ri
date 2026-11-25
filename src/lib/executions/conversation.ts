@@ -1,6 +1,7 @@
 import type { ChatEventRecord } from '@/lib/api/dto/records';
 
 import { isSubagentEvent } from '@/lib/executions/subagent';
+import { isProgressNote } from '@/lib/executions/progress-note';
 
 /**
  * Synthetic assistant text Claude Code injects to keep its own
@@ -84,6 +85,9 @@ export function pickConversationMessages(
     // answer. See `isSubagentEvent`.
     if (isSubagentEvent(e)) continue;
     if (e.content === NO_RESPONSE_REQUESTED) continue;
+    // A progress note says what the agent was doing mid-turn. If the turn
+    // ended without an answer, the preview shows none rather than the note.
+    if (isProgressNote(e)) continue;
     if (!conversationText(e)) continue;
     // Later agent text in the same turn replaces the earlier narration.
     turnFinalAgent = e;

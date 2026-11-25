@@ -27,6 +27,6 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - "@agentex/*"
 patchedDependencies:
-  '@agentex/agent@0.0.53': patches/@agentex__agent@0.0.53.patch
+  '@agentex/agent@0.0.54': patches/@agentex__agent@0.0.54.patch
   '@electron/osx-sign@1.3.3': patches/@electron__osx-sign@1.3.3.patch
   tar@7.5.22: patches/tar@7.5.22.patch

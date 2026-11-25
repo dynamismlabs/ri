@@ -179,6 +179,9 @@ export function parseStreamEvent(
         role: 'assistant',
         source: 'agent' satisfies ChatEventSource,
         content: cumulativeText ?? event.text ?? null,
+        // A progress note (`commentary`) shows in the chat but is never the
+        // turn's answer. See src/lib/executions/progress-note.ts.
+        ...(event.phase ? { phase: event.phase } : {}),
       };
     case 'thinking':
       return {

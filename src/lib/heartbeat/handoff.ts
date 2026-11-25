@@ -22,6 +22,7 @@ import { stableCoordinationId } from '@/lib/coordination/ids';
 import { turnReply } from '@/lib/notifications/turn-reply';
 import { OUTCOME_SOURCES, type AgentDeliveryRecord, type ChatEventSource, type ChatSessionRecord, type RunRecord } from '@/db/types';
 import { NO_MESSAGE_REPLY } from './constants';
+import { isProgressNote } from '@/lib/executions/progress-note';
 import { isNoMessageReply } from './prompt';
 
 /** Far enough back to cross a declining turn, which does little before it replies. */
@@ -103,6 +104,6 @@ export function settleDeclinedNote(runId: string, chatSessionId: string): void {
   const sourceEventId = getRun(runId)?.sourceEventId;
   const events = listRecentChatEvents(chatSessionId, OUTCOME_LOOKBACK);
   const start = events.findIndex((event) => event.id === sourceEventId);
-  const previous = start < 0 ? undefined : events.slice(start + 1).find((event) => OUTCOME_SOURCES.has(event.source as ChatEventSource));
+  const previous = start < 0 ? undefined : events.slice(start + 1).find((event) => OUTCOME_SOURCES.has(event.source as ChatEventSource) && !isProgressNote(event));
   updateChatSession(chatSessionId, { lastOutcomeEventAt: previous?.createdAt ?? null });
 }

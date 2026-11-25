@@ -51,6 +51,7 @@ import type { WorkerEvent } from '@/lib/workers/protocol';
 import { currentRemoteSignal, mirrorSignal } from './remote-live';
 import { settleTurn } from './turns';
 import { recordAgentRequestOutput, queueAgentBlockedUpdates, recordConversationOutput, conversationThreadForSession, queueConversationOutput } from '@/lib/db/queries';
+import { isProgressNote } from '@/lib/executions/progress-note';
 
 /**
  * A chat event: inserted, or for a cumulative provider part replacing an
@@ -61,7 +62,9 @@ import { recordAgentRequestOutput, queueAgentBlockedUpdates, recordConversationO
  */
 export function applyChatEvent(row: CreateChatEventInput, opts: { cumulative: boolean; runId?: string | null }): boolean {
   const stored = opts.cumulative ? replaceChatEventPart(row) : insertChatEvent(row);
-  if (stored && stored.source === 'agent' && stored.content && !stored.externalParentToolCallId) {
+  // A progress note shows in the chat but is never the reply a delegated
+  // request or a conversation thread gets back (isProgressNote).
+  if (stored && stored.source === 'agent' && stored.content && !stored.externalParentToolCallId && !isProgressNote(stored)) {
     recordAgentRequestOutput(opts.runId, stored.id);
     recordConversationOutput(row.sessionId, opts.runId, stored.id);
   }

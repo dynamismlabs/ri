@@ -20,6 +20,7 @@ import { getRun, updateRun, listRecentChatEvents } from '@/lib/db/queries';
 import { captureFromResultEvent } from '@/lib/pricing/models';
 import { HEARTBEAT_HELD_REASON, HEARTBEAT_QUIET_REASON, HEARTBEAT_TOLD_REASON } from '@/lib/heartbeat/constants';
 import { getActiveRunForSession } from './artifact-bucket';
+import { isProgressNote } from '@/lib/executions/progress-note';
 
 /**
  * Public entry point. Wire this from the executor adapter's `onEvent`
@@ -96,7 +97,7 @@ export function extractSummaryFromChat(chatSessionId: string): string | null {
   // Newest first per the existing query order; walk forward to find the
   // most recent `assistant` event with non-empty text.
   for (const evt of events) {
-    if (evt.role === 'assistant' && evt.source === 'agent' && evt.content) {
+    if (evt.role === 'assistant' && evt.source === 'agent' && evt.content && !isProgressNote(evt)) {
       return summarizeText(evt.content);
     }
   }

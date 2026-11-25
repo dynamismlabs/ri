@@ -28,7 +28,7 @@ import { teamContentChanged } from '@/lib/spaces/generation';
 import { tasks, notes, areas, stream, taskCompletions, taskStatusChanges, executionReviews, executionTasks, decks, userState, scratchpad, harnessSettings, harnessModelUsage, harnessOperations, apiKeys, home, devices, deviceGrants, members, teamActivity, teamGrants, teamConnections, sharedOperationReceipts, teamAiSettings, teamChatTurns, workerCommands, executionPlacements, executionTransfers, nativeSessions, reviewCheckouts, workspaceSetups, folderLinks, workspaces, referenceFolders, executions, chatSessions, externalSessionImports, chatEvents, chatRefs, mcpToolResults, triggers, runs, previewTargets, entityVersions, entityLinks, entityProjectionState, notificationChannels, webPushSubscriptions, notificationDeliveries, triagePasses, triageDecisions, streamLinks, skillUsage, hubApps, hubTokens, hubCalls, hubApprovals, appSources, isBackgroundTaskEvent, isAuthRequiredEvent, isConnectionCardEvent, NOTE_KINDS } from '@/lib/db/schema';
 import { decodeBackgroundTaskEvent } from '@/lib/executor/background-task-event';
 import { normalizeNoteRow } from '@/lib/notes/kind';
-import { eq, and, or, desc, asc, sql, gt, lt, inArray, notInArray, isNull, isNotNull, notExists, gte, lte, getTableColumns, type SQL } from 'drizzle-orm';
+import { eq, ne, and, or, desc, asc, sql, gt, lt, inArray, notInArray, isNull, isNotNull, notExists, gte, lte, getTableColumns, type SQL } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
 import slugify from '@sindresorhus/slugify';
 import { upsertEmbedding, buildEmbeddingText, deleteEmbedding } from '@/lib/embeddings/embed';
@@ -47,6 +47,7 @@ import { CHAT_PAGE_SIZE } from '@/constants/chat';
 import { OUTCOME_SOURCES } from '@/db/types';
 import { mergeScratchpad } from '@/lib/scratchpad/merge';
 import { FILE_TOOL_NAMES, fileTargetPath, isSubagentTool } from '@/lib/executions/tool-display';
+import { isProgressNote, PROGRESS_NOTE_PHASE } from '@/lib/executions/progress-note';
 import { replyNamesTextFile } from '@/lib/sessions/reply-text';
 import { replyNamesFile } from '@/lib/sessions/reply-artifacts';
 import { isArtifactMessage } from '@/lib/db/schema';
@@ -1877,6 +1878,7 @@ export function reviewExecutionOutput(input: ReviewOutputInput): ExecutionReview
               eq(chatEvents.id, input.outputEventId),
               inArray(chatEvents.sessionId, sessionIds),
               inArray(chatEvents.source, [...OUTCOME_SOURCES]),
+              notProgressNoteSql(),
             ),
           )
           .get()
@@ -1984,6 +1986,15 @@ export function getExecutionReviews(executionId: string): ExecutionReviewRecord[
  * task Review badge so both agree instead of one using timestamps.
  */
 /**
+ * Rows that may be a turn's answer: everything but a progress note. In SQL so
+ * the review queries agree with isProgressNote. `phase` is null on rows stored
+ * before it was recorded, and those keep counting.
+ */
+function notProgressNoteSql() {
+  return or(isNull(chatEvents.phase), ne(chatEvents.phase, PROGRESS_NOTE_PHASE));
+}
+
+/**
  * The newest REVIEWABLE output event across an execution's chat sessions. Uses
  * the same predicate as `isOutcomeEvent` at insert time: an outcome-source event
  * that is NOT nested subagent narration (a subagent's own text streamed onto the
@@ -2010,6 +2021,7 @@ function latestReviewableOutputEvent(sessionIds: string[]): { id: string; create
         and(
           eq(chatEvents.sessionId, sessionId),
           inArray(chatEvents.source, [...OUTCOME_SOURCES]),
+          notProgressNoteSql(),
           or(
             isNull(chatEvents.externalParentToolCallId),
             sql`NOT EXISTS (SELECT 1 FROM chat_events sub WHERE sub.session_id = ${chatEvents.sessionId} AND sub.external_tool_call_id = ${chatEvents.externalParentToolCallId} AND sub.source = 'tool_call' AND sub.tool_name IN ('Task', 'Agent', 'spawn_agent'))`,
@@ -10911,9 +10923,13 @@ export function searchChatSessions(opts: {
  * Activity is deliberately *not* gated this way: subagent progress is real
  * work and should still float the session in sort order. Only the "needs your
  * attention" signal is scoped to the top-level actor.
+ *
+ * A progress note is gated the same way, for the same reason: it says what the
+ * agent is doing mid-turn, not what it has for you (isProgressNote).
  */
 function isOutcomeEvent(input: CreateChatEventInput): boolean {
   if (!OUTCOME_SOURCES.has(input.source as ChatEventSource)) return false;
+  if (isProgressNote(input)) return false;
   const parentCallId = input.externalParentToolCallId;
   if (!parentCallId) return true;
   return !isSubagentLaunchCall(input.sessionId, parentCallId);

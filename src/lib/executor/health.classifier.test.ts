@@ -20,6 +20,7 @@ function row(
     sessionId: 's',
     senderSessionId: null,
     authorMemberId: null,
+    phase: null,
     updatedAt: partial.createdAt,
     content: null,
     toolName: null,

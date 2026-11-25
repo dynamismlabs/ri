@@ -8,6 +8,7 @@ import { addressOf, isManagerChat } from '@/lib/coordination/address';
 import { coordinationProducer } from '@/lib/coordination/run-context';
 import { stableCoordinationId } from '@/lib/coordination/ids';
 import { AGENT_RESPONSE_INSTRUCTIONS, AGENT_BLOCKED_INSTRUCTIONS, CHAT_MESSAGE_SENT } from '@/lib/sessions/chat-message';
+import { isProgressNote } from '@/lib/executions/progress-note';
 import { createRun, getChatSession, getChatEventById, getRun, getRunForSourceEvent, getSendForEvent, insertChatEvent, updateRun, WAITING_FOR_COORDINATION } from './queries';
 
 const OPEN = ['queued', 'working', 'waiting'] as const;
@@ -237,7 +238,7 @@ export function failAgentDelivery(id: string, reason: string): void {
 export function recordAgentRequestOutput(runId: string | null | undefined, eventId: string): void {
   if (!runId) return;
   const event = getChatEventById(eventId);
-  if (!event || event.source !== 'agent' || event.role !== 'assistant' || event.externalParentToolCallId || getRun(runId)?.chatSessionId !== event.sessionId) return;
+  if (!event || event.source !== 'agent' || event.role !== 'assistant' || event.externalParentToolCallId || isProgressNote(event) || getRun(runId)?.chatSessionId !== event.sessionId) return;
   getDb().update(requests).set({ responseEventId: eventId }).where(and(eq(requests.runId, runId), eq(requests.targetSessionId, event.sessionId), inArray(requests.status, [...OPEN]), or(isNull(requests.responseEventId), ne(requests.responseEventId, eventId)))).run();
 }
 export function settleAgentRequestsForRun(runId: string, outcome: { ok: boolean; stopped?: boolean; errorMessage?: string }): boolean {

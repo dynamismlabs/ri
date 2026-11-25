@@ -169,8 +169,10 @@ Semantics — the contract that keeps existing consumers safe:
   reconcile optimistic delta text against the durable row.
 - Off by default. When off, the flag isn't passed and parser behavior is
   unchanged.
-- Thinking deltas: do **not** promise prose. Claude ≥2.1.155 withholds thinking
-  text (signature-only) — see Ri's `docs/agentex-thinking-capture-spec.md`.
+- Thinking deltas: do **not** promise prose. Current Claude models return no
+  reasoning text (signature-only), and their progress updates stream as
+  `assistant_delta` with `phase: "commentary"` (agentex 0.0.54) — see Ri's
+  `docs/agentex-thinking-capture-spec.md`.
   If `thinking_delta` chunks ever carry text again, emitting a parallel
   `thinking_delta` event under the same flag is welcome, but spec it as
   best-effort.

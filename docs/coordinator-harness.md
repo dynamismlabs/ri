@@ -357,12 +357,10 @@ are untouched.
   `assistant_delta`/`thinking_delta` events, purely additive — the
   consolidated `assistant` event still fires with a matching `messageId`);
   the remaining work is ours: forward deltas through `chat_events`-less SSE
-  and reconcile in the chat UI. Note: agentex documents `thinking_delta` as
-  the only possible carrier of thinking prose, but don't expect it to fix
-  empty thinking rows — Claude Code ≥2.1.155 emits zero `thinking_delta`
-  even with partial messages on (verified 2026-06-04, see
-  `docs/agentex-thinking-capture-spec.md`); prose returns only if upstream
-  policy changes.
+  and reconcile in the chat UI. Streaming won't fill empty thinking rows:
+  current Claude and Codex models return no reasoning text at all. Claude's
+  progress updates do stream, as `assistant_delta` with
+  `phase: "commentary"` (see `docs/agentex-thinking-capture-spec.md`).
 - **Codex**: Agent Ex supports attached configured MCP servers on new and
   resumed threads. Ri qualifies CLI 0.160.0 or newer before exposing scoped
   Connectors, the browser, and execution coordination tools. Configured MCP
