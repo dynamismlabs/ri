@@ -46,7 +46,7 @@ export function PublishedResultList({
           {result.summary && (
             <div className="mt-1.5 text-[13px]">
               {parseFileMarkers(result.summary, result.attachments).map((segment, index) => segment.kind === 'chip'
-                ? <MessageFileChip key={index} attachment={segment.attachment} fileUrl={fileUrl} />
+                ? <MessageFileChip key={index} variant="block" attachment={segment.attachment} fileUrl={fileUrl} />
                 : <MessageResponse key={index} className="text-[13px] [&_li]:text-[13px] [&_p]:text-[13px]">{bodyWithAttachmentUrls(segment.text, fileUrl)}</MessageResponse>)}
             </div>
           )}

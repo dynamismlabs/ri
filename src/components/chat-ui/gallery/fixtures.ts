@@ -80,6 +80,12 @@ export const VERSIONS: EntityVersionRecord[] = [
 /** Self-contained image, so opening this example never loads an account or attachment. */
 export const IMAGE_URL = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="720" height="400" viewBox="0 0 720 400"><rect width="720" height="400" fill="#e8eee9"/><path d="M0 320 210 105 410 310 550 180 720 340V400H0Z" fill="#57715f"/><path d="m210 105 70 73-45-8-32 24-24-24-46 15Z" fill="#fff"/><circle cx="565" cy="90" r="35" fill="#d6b770"/><text x="32" y="365" fill="#fff" font-family="system-ui" font-size="24">A little room to think</text></svg>')}`;
 
+/** Two fictional screenshots of menus, as a person pastes them into a message. */
+export const SCREENSHOTS: Record<string, string> = Object.fromEntries([
+  ['gallery-shot-menu.png', ['Board', 'Calendar', 'Schedules']],
+  ['gallery-shot-rail.png', ['New chat', 'Search chats']],
+].map(([fileName, rows]) => [fileName as string, `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="480" viewBox="0 0 720 480"><rect width="720" height="480" fill="#1b1c1f"/><rect x="40" y="70" width="640" height="${(rows as string[]).length * 70 + 40}" rx="16" fill="#0c0c0e"/>${(rows as string[]).map((row, index) => `<text x="80" y="${135 + index * 70}" fill="#d9d9de" font-family="system-ui" font-size="30">${row}</text>`).join('')}</svg>`]));
+
 /** Two fictional PDF pages, as the Home's renderer would draw them. */
 export const PDF_PAGES = [
   ['Friday review', 'Decisions to make', 'What ships next', 'Who owns the follow-ups'],

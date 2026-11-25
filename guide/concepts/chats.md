@@ -49,7 +49,7 @@ Send a message any time, even while the chat is working. It goes straight to the
 
 ## Files and mentions
 
-Drop or paste any file into a message, up to 50 MiB. Images and PDFs show a preview, and the agent opens the file with its own tools.
+Drop or paste any file into a message, up to 50 MiB. Put it between your words when its place matters, like "these too?" right after a second screenshot. Once you send, its name stays where you put it, and pictures and PDFs show as thumbnails along the bottom of the message, so a screenshot never breaks up a sentence. Click either one to open it. The agent opens the file with its own tools.
 
 Type `@` to mention a task, note, agent, app, Connector or file, so the chat gets the real thing instead of your description of it. Type `@#` to pick a GitHub issue or pull request.
 

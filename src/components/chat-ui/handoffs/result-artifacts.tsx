@@ -20,7 +20,7 @@ export function ResultArtifacts({ result, onFeedback }: { result: WorkResultReco
         <div className="flex flex-wrap items-start gap-2" aria-label="Saved files">
           {attachments.map((attachment) => (
             <div key={attachment.fileName} className="min-w-0 max-w-full">
-              <MessageFileChip attachment={attachment} />
+              <MessageFileChip variant="block" attachment={attachment} />
               {onFeedback && (
                 <Button
                   onClick={() => onFeedback({ attachmentFileName: attachment.fileName })}
