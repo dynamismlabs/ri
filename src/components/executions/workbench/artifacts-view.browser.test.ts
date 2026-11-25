@@ -13,7 +13,7 @@ let browser: Browser;
 let server: http.Server;
 let address: string;
 let output: string;
-const lists: { scope: { executionId: string }; cursor?: unknown }[] = [];
+const lists: { scope: { executionId?: string; sessionId?: string }; cursor?: unknown }[] = [];
 const reads: { sessionId: string; path: string }[] = [];
 const item = (key: string, sessionId: string, chatLabel: string) => ({ key, name: key, source: { kind: 'session', sessionId, path: `out/${key}` }, sessionId, chatLabel, eventId: key, createdAt: '2026-11-01T00:00:00Z', mimeType: null });
 
@@ -59,11 +59,14 @@ beforeAll(async () => {
     if (url.pathname === '/bundle.js') { response.setHeader('Content-Type', 'application/javascript'); response.end(bundle.outputFiles[0].text); return; }
     if (url.pathname === '/api/trpc/artifacts.list') {
       lists.push(input);
-      answer(input.scope.executionId === 'empty' ? { items: [], nextCursor: null }
+      answer(input.scope.sessionId ? { items: [item('mine.csv', input.scope.sessionId, 'Sibling chat')], nextCursor: null }
+        : input.scope.executionId === 'empty' ? { items: [], nextCursor: null }
         : input.cursor ? { items: [item('older.csv', 'archived', 'Earlier research')], nextCursor: null }
           : { items: [item('latest.csv', 'current', 'Current chat'), item('latest.csv', 'archived', 'Earlier research')], nextCursor: { createdAt: '2026-11-01T00:00:00Z', id: 'older' } });
       return;
     }
+    // The tab strip's list: two chats, so the scope switch shows.
+    if (url.pathname === '/api/trpc/sessions.historyGet') { answer({ sessions: [{ id: 'current' }, { id: 'archived' }] }); return; }
     if (url.pathname === '/api/trpc/filePreviews.read') { reads.push(input); answer({ kind: 'table', sheets: [{ name: 'Sheet', rows: [['Item', 'Quantity'], ['Widget', '5']] }], truncated: false, source: 'Item,Quantity\nWidget,5' }); return; }
     if (url.pathname === '/api/session') { response.writeHead(204); response.end(); return; }
     if (url.pathname.startsWith('/api/')) { response.writeHead(404); response.end(); return; }
@@ -76,8 +79,9 @@ beforeAll(async () => {
 }, 90_000);
 afterAll(async () => { await browser?.close(); if (server) await new Promise<void>(resolve => server.close(() => resolve())); if (output) await fs.rm(output, { recursive: true, force: true }); });
 
-it.skipIf(!enabled)('loads on demand, deduplicates, pages across chats, previews and returns, and shares cache between chat tabs', async () => {
+it.skipIf(!enabled)('loads on demand, deduplicates, pages across chats by itself, previews and returns, shares cache between chat tabs and narrows to one chat', async () => {
   const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  page.setDefaultTimeout(8000);
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   try {
     const initial = lists.length;
@@ -86,9 +90,11 @@ it.skipIf(!enabled)('loads on demand, deduplicates, pages across chats, previews
     expect(lists.length).toBe(initial);
     await page.getByRole('button', { name: 'Artifacts', exact: true }).click();
     await page.getByRole('button', { name: 'Open artifact: latest.csv', exact: true }).waitFor();
-    expect(await page.locator('[data-artifact-card]').count()).toBe(1);
-    await page.getByRole('button', { name: 'Load older messages', exact: true }).click();
+    // The same file from two chats is one row.
+    expect(await page.getByRole('button', { name: 'Open artifact: latest.csv', exact: true }).count()).toBe(1);
+    // Older files load as the end of the list comes into view, with no button.
     await page.getByRole('button', { name: 'Open artifact: older.csv', exact: true }).waitFor();
+    expect(lists.filter(input => input.cursor).length).toBe(1);
     await page.getByRole('textbox', { name: 'Filter artifacts' }).fill('Earlier research');
     expect(await page.locator('[data-artifact-card]').count()).toBe(1);
     await page.getByRole('button', { name: 'Open artifact: older.csv', exact: true }).click();
@@ -101,6 +107,15 @@ it.skipIf(!enabled)('loads on demand, deduplicates, pages across chats, previews
     await page.getByRole('button', { name: 'Other chat', exact: true }).click();
     expect(await page.getByRole('textbox', { name: 'Filter artifacts' }).inputValue()).toBe('Earlier research');
     expect(lists.length).toBe(beforeSwitch);
+    // This chat asks for the chat on screen alone, and stops naming each file's chat.
+    await page.getByRole('textbox', { name: 'Filter artifacts' }).fill('');
+    await page.getByRole('button', { name: 'This chat', exact: true }).click();
+    await page.getByRole('button', { name: 'Open artifact: mine.csv', exact: true }).waitFor();
+    expect(lists.at(-1)?.scope).toEqual({ sessionId: 'sibling' });
+    expect(await page.getByText('Sibling chat', { exact: true }).count()).toBe(0);
+    expect(await page.getByRole('textbox', { name: 'Filter artifacts' }).getAttribute('placeholder')).toBe('Filter by filename or path');
+    await page.getByRole('button', { name: 'All chats', exact: true }).click();
+    await page.getByRole('button', { name: 'Open artifact: older.csv', exact: true }).waitFor();
     await page.getByRole('button', { name: 'Other execution', exact: true }).click();
     await page.getByText('No artifacts yet', { exact: true }).waitFor();
     expect(await page.getByRole('textbox', { name: 'Filter artifacts' }).inputValue()).toBe('');

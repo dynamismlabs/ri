@@ -32,6 +32,9 @@ it('includes old and current chats, keeps the source chat, and resolves duplicat
   expect(result.items.map(item => item.sessionId)).toEqual([next.id, first.session.id]);
   expect(result.items[1].source).toEqual({ kind: 'session', sessionId: first.session.id, path: './out/report.pdf' });
   expect(list(first.session.id)).toEqual(result);
+  // One chat's own files, for This chat.
+  expect(list(next.id, undefined, undefined, { chatOnly: true }).items.map(item => item.sessionId)).toEqual([next.id]);
+  expect(list(first.session.id, undefined, undefined, { chatOnly: true }).items.map(item => item.sessionId)).toEqual([first.session.id]);
 });
 
 it('includes message attachments while excluding user paths, thinking and tool activity', () => {
@@ -46,16 +49,41 @@ it('pages across chats without gaps at identical timestamps and excludes hidden 
   const first = execution();
   const second = q.createExecutionChat({ executionId: first.execution.id, harness: 'codex' })!;
   for (let i = 0; i < 70; i++) share(i % 2 ? first.session.id : second.id, `[Report](out/report-${i}.pdf)`);
-  const page = list(first.session.id);
-  expect(page.items).toHaveLength(50);
+  // Batches of 20 messages until the page holds 50 files: three batches, 60 files.
+  const limits = { pageItems: 50, batch: 20 };
+  const page = list(first.session.id, undefined, undefined, limits);
+  expect(page.items).toHaveLength(60);
   expect(page.nextCursor).not.toBeNull();
-  const older = list(first.session.id, page.nextCursor!);
-  expect(older.items).toHaveLength(20);
+  const older = list(first.session.id, page.nextCursor!, undefined, limits);
+  expect(older.items).toHaveLength(10);
   expect(older.nextCursor).toBeNull();
   expect(new Set([...page.items, ...older.items].map(item => item.eventId)).size).toBe(70);
   const visible = list(first.session.id, undefined, chat => chat.id !== second.id);
   expect(visible.items).toHaveLength(35);
   expect(visible.items.every(item => item.sessionId === first.session.id)).toBe(true);
+});
+
+it('fills a page with files across long runs of replies that share none, reading a bounded number per request', () => {
+  const { session } = execution();
+  const at = (i: number) => new Date(Date.UTC(2026, 10, 1) + i * 60_000).toISOString();
+  share(session.id, '[Oldest](out/oldest.pdf)', at(0));
+  for (let i = 1; i < 300; i++) share(session.id, i === 150 ? '[Middle](out/middle.pdf)' : `Reply ${i} with no file`, at(i));
+  // The defaults read all 300 in one request and find both.
+  const all = list(session.id);
+  expect(all.items.map(item => item.name)).toEqual(['middle.pdf', 'oldest.pdf']);
+  expect(all.nextCursor).toBeNull();
+  // A small read cap stops early with a cursor, and following it loses nothing.
+  const names: string[] = [];
+  let cursor: Parameters<typeof list>[1];
+  let requests = 0;
+  do {
+    const page = list(session.id, cursor, undefined, { batch: 40, scanLimit: 80 });
+    names.push(...page.items.map(item => item.name));
+    cursor = page.nextCursor ?? undefined;
+    requests++;
+  } while (cursor);
+  expect(names).toEqual(['middle.pdf', 'oldest.pdf']);
+  expect(requests).toBe(4);
 });
 
 it('uses a direct partial-index seek with no temporary sort', async () => {

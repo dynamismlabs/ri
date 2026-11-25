@@ -15,7 +15,7 @@ import { PreviewIcon } from './artifact-preview-parts';
 export type ArtifactListItem = ReturnType<typeof listExecutionArtifacts>['items'][number];
 
 /** Use the same viewers and access checks as a file opened in the transcript. */
-export function listedArtifactPreview(item: ArtifactListItem): ArtifactPreview {
+export function listedArtifactPreview(item: Pick<ArtifactListItem, 'source' | 'name' | 'mimeType'>): ArtifactPreview {
   const { source, name, mimeType } = item;
   const target = source.kind === 'session' ? source.path : name;
   const image = mimeType?.startsWith('image/') || /\.(?:png|jpe?g|gif|webp|svg|avif|bmp|ico)$/i.test(target);
@@ -31,21 +31,24 @@ export function listedArtifactPreview(item: ArtifactListItem): ArtifactPreview {
   return { kind: 'file', source, name };
 }
 
-/** A collection has its own Previous/Next sequence, separate from the transcript. */
-export function ArtifactList({ items, query = '' }: { items: readonly ArtifactListItem[]; query?: string }) {
+/** A collection has its own Previous/Next sequence, separate from the transcript.
+ * `showChat` names each file's chat, when the list covers several. While
+ * `searching` (older messages still loading), an empty list says nothing yet:
+ * whoever is loading says so. */
+export function ArtifactList({ items, query = '', showChat = true, searching = false }: { items: readonly ArtifactListItem[]; query?: string; showChat?: boolean; searching?: boolean }) {
   const needle = query.trim().toLocaleLowerCase();
-  const shown = items.filter(item => `${item.name} ${item.source.kind === 'session' ? item.source.path : ''} ${item.chatLabel}`.toLocaleLowerCase().includes(needle));
+  const shown = items.filter(item => `${item.name} ${item.source.kind === 'session' ? item.source.path : ''} ${showChat ? item.chatLabel : ''}`.toLocaleLowerCase().includes(needle));
   return <div data-artifact-list="" aria-label="Shared artifacts">
-    {shown.length ? <ul className="divide-y divide-border/60">{shown.map(item => <li key={item.key}><ArtifactRow item={item} /></li>)}</ul>
-      : <div className="flex flex-col items-center gap-2 px-6 py-12 text-center text-sm text-muted-foreground">
+    {shown.length ? <ul className="divide-y divide-border/60">{shown.map(item => <li key={item.key}><ArtifactRow item={item} showChat={showChat} /></li>)}</ul>
+      : !searching && <div className="flex flex-col items-center gap-2 px-6 py-12 text-center text-sm text-muted-foreground">
         <Files size={28} aria-hidden className="mb-1 opacity-60" />
         <p className="font-medium text-foreground">{needle ? 'No matching artifacts' : 'No artifacts yet'}</p>
-        <p className="max-w-xs text-xs leading-relaxed">{needle ? 'Try another filename, path or chat name.' : 'Files shared by the agent and message attachments from every chat appear here.'}</p>
+        <p className="max-w-xs text-xs leading-relaxed">{needle ? `Try another filename${showChat ? ', path or chat name' : ' or path'}.` : 'Files the agent shares and message attachments appear here.'}</p>
       </div>}
   </div>;
 }
 
-function ArtifactRow({ item }: { item: ArtifactListItem }) {
+function ArtifactRow({ item, showChat }: { item: ArtifactListItem; showChat: boolean }) {
   const preview = useMemo(() => listedArtifactPreview(item), [item]);
   const ref = useArtifactPreviewCard(preview);
   const open = useArtifactPreview();
@@ -56,7 +59,7 @@ function ArtifactRow({ item }: { item: ArtifactListItem }) {
       <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 text-muted-foreground"><PreviewIcon preview={preview} size={16} /></span>
       <span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium text-foreground">{item.name}</span>
         <span className="mt-0.5 block truncate font-mono text-[10.5px] text-muted-foreground">{path}</span>
-        <span className="mt-1 block truncate text-[11px] text-muted-foreground/80">{item.chatLabel}</span>
+        {showChat && <span className="mt-1 block truncate text-[11px] text-muted-foreground/80">{item.chatLabel}</span>}
       </span>
     </MenuAction>
   </Tip>;
