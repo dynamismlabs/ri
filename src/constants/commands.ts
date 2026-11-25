@@ -38,6 +38,12 @@ export const HOTKEYS = {
   // tablet with a keyboard. `matchesSendKey` reads them.
   sendMessage: { key: 'Enter', label: 'Enter' },
   sendMessageAnywhere: { key: 'Enter', meta: true, label: '\u2318\u21A9' },
+  // While a chat works, the send key queues the message for when its turn
+  // finishes, and \u2318\u21A9 sends it now, into the turn under way
+  // (docs/message-queue.md). Same keys as the two above, named for the menu
+  // on the send button.
+  queueMessage: { key: 'Enter', label: '\u21A9' },
+  sendMessageNow: { key: 'Enter', meta: true, label: '\u2318\u21A9' },
   slideoutBack: { key: 'Escape', label: 'Esc' },
   slideoutCloseAll: { key: 'Escape', shift: true, label: '\u21E7Esc' },
   openFullPage: { key: 'Enter', meta: true, label: '\u2318\u21A9' },

@@ -21,6 +21,7 @@ import { noteDeliveryUpdate } from '@/lib/query/delivery-fence';
 import { pageStream } from '@/lib/realtime/page-stream';
 import { integrationApprovalsKey } from '@/hooks/use-integration-approvals';
 import { refreshResultOperationEvent } from '@/components/chat-ui/handoffs/presentation';
+import { messageQueueKey, type QueuedMessage } from '@/hooks/use-message-queue';
 
 /**
  * Subscribes to the session's frames and folds every frame into
@@ -31,6 +32,7 @@ import { refreshResultOperationEvent } from '@/components/chat-ui/handoffs/prese
  *   - `background_tasks` → updates the detached-work axis of runtime status
  *   - `pending_input`→ replaces `['session', id, 'pending-input']`
  *   - `integration_approvals` → replaces `['session', id, 'integration-approvals']`
+ *   - `queue`        → replaces the chat's message queue (`messageQueueKey`)
  *
  * Replaces the three independent polls (3s/2s/1.5s) those caches used
  * to drive. Snapshot fetches still fire on mount + window focus as a
@@ -193,6 +195,13 @@ export function useSessionStream(sessionId: string | null): void {
       queryClient.setQueryData<Record<string, MessageDelivery>>(deliveriesKey, (prev) => ({ ...(prev ?? {}), [data.eventId]: data.delivery }));
     };
 
+    // The chat's message queue, in full, whenever it changes (docs/message-queue.md).
+    const queueKey = messageQueueKey(sessionId);
+    const handleQueue = (frame: unknown) => {
+      const data = frame as { messages: QueuedMessage[] };
+      queryClient.setQueryData<QueuedMessage[]>(queueKey, data.messages);
+    };
+
     // Where a move between devices stands (P4.2). When ownership changes,
     // where the execution runs, its folder and its messages all change too.
     const transferKey = ['session', sessionId, 'transfer'] as const;
@@ -223,6 +232,8 @@ export function useSessionStream(sessionId: string | null): void {
       }
       queryClient.invalidateQueries({ queryKey: deliveriesKey });
       queryClient.invalidateQueries({ queryKey: transferKey });
+      // Queue changes aren't replayed either.
+      queryClient.invalidateQueries({ queryKey: queueKey });
     };
 
     // The transcript read afresh, then acknowledged to the page stream once
@@ -252,6 +263,7 @@ export function useSessionStream(sessionId: string | null): void {
       chat_event: handleChatEvent,
       delivery: handleDelivery,
       transfer: handleTransfer,
+      queue: handleQueue,
       runtime: handleRuntime,
       background_tasks: handleBackgroundTasks,
       pending_input: handlePendingInput,

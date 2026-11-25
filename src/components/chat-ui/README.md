@@ -30,6 +30,7 @@ import { PendingInputArea } from '@/components/chat-ui/pending-input-area';
 | `activity/` | Transcript events, grouped activity and background task displays |
 | `messages/` | Agent response markup, copy controls, linked chat origins and sent receipts, voice indicators |
 | `model-menu/` | Searchable model rows, effort, variants and speed controls |
+| `queue/` | The message queue above the message box: messages written while a chat works, with Send now, Edit and Delete (`docs/message-queue.md`) |
 | `gallery/` | The catalog, gallery page and isolated preview fixtures |
 
 `PendingInputArea` is the small shared wrapper that selects a question or

@@ -7,7 +7,7 @@ import { LifecycleGuardProvider } from '@/components/tasks/lifecycle-guard';
 import { useTeam, useTeamNav } from '@/components/team/team-context';
 import { useHomeContext } from './home-context';
 
-const CHAT_CAPABILITIES = { deliveryReceipts: false, prepareResults: true, coordination: false };
+const CHAT_CAPABILITIES = { deliveryReceipts: false, prepareResults: true, coordination: false, messageQueue: false };
 
 /** Only Team policy belongs here. The application's navigation and activity are shared. */
 export function TeamDashboardBoundary({ children }: { children: ReactNode }) {

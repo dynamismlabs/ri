@@ -5,7 +5,7 @@ import type { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import type { HarnessId } from '@/lib/harness/registry';
 import type {
   userState, scratchpad, harnessSettings, harnessOperations, areas, stream, tasks, taskCompletions, taskStatusChanges, notes, decks, apiKeys, home, devices, deviceGrants, members, teamGrants, teamConnections, teamAiSettings, teamChatTurns, workerCommands, executionPlacements, executionTransfers, nativeSessions, reviewCheckouts, workspaceSetups, folderLinks,
-  teamActivity, memberPreferences, memberChatViews, memberExecutionViews, workspaces, referenceFolders, executions, executionTasks, executionReviews, chatSessions, externalSessionImports, chatEvents, chatRefs, agentCoordinationRequests, agentCoordinationDeliveries,
+  teamActivity, memberPreferences, memberChatViews, memberExecutionViews, workspaces, referenceFolders, executions, executionTasks, executionReviews, chatSessions, externalSessionImports, chatEvents, queuedMessages, chatRefs, agentCoordinationRequests, agentCoordinationDeliveries,
   triggers, runs, previewTargets, entityVersions, workResults, workResultTasks, workResultDecisions, workResultAiReviews,
   notificationChannels, webPushSubscriptions, notificationDeliveries,
   conversationConnections, conversationIdentities, conversationThreads, conversationInputs, conversationOutputs,
@@ -268,6 +268,9 @@ export type { SharedTaskSource, SharedNoteSource } from '@/lib/db/schema';
 export type TeamAiSettingsRecord = InferSelectModel<typeof teamAiSettings>;
 export type TeamAiAuthMode = NonNullable<TeamAiSettingsRecord['authMode']>;
 export type TeamChatTurnRecord = InferSelectModel<typeof teamChatTurns>;
+/** A message waiting in a chat's queue (docs/message-queue.md). */
+export type QueuedMessageRecord = WithCamelAttachments<InferSelectModel<typeof queuedMessages>> & { attachments: Attachment[] };
+export type CreateQueuedMessageInput = WithCamelAttachments<Omit<InferInsertModel<typeof queuedMessages>, 'createdAt' | 'updatedAt'>>;
 export type ApiKeyRecord = InferSelectModel<typeof apiKeys>;
 export type ApiKeyRole = ApiKeyRecord['role'];
 // A key always says which device it belongs to. Null for the home's own key

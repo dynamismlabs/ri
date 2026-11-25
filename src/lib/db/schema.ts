@@ -2636,6 +2636,31 @@ export const chatEvents = sqliteTable(
   ],
 );
 
+// ─── Queued messages ──────────────────────────────────────────
+// A message the person queued while their chat was working
+// (docs/message-queue.md). It isn't part of the conversation yet: the home
+// sends it as the chat's next message once a turn finishes normally, or at
+// once when the person picks Send now. Its id becomes the sent message's
+// `chat_events` id. Ordered by id (UUIDv7, minted when it was queued).
+export const queuedMessages = sqliteTable(
+  'queued_messages',
+  {
+    id: text().primaryKey(),
+    ...timestamps,
+    chatSessionId: text().notNull().references((): AnySQLiteColumn => chatSessions.id, { onDelete: 'cascade' }),
+    // Marker content, as a sent message stores it (`[[file:…]]`, `[[task:…]]`).
+    content: text().notNull(),
+    attachments: text({ mode: 'json' }).$type<StoredAttachment[]>().notNull().default([]),
+    // The composer's document, so Edit puts the message back with its chips.
+    draft: text({ mode: 'json' }).$type<Record<string, unknown>>(),
+    // App context frozen when it was queued, sent with it as the message's `raw`.
+    appContext: text({ mode: 'json' }).$type<unknown[]>(),
+    // The key it was queued with, for the command a connected device gets.
+    apiKeyId: text(),
+  },
+  (table) => [index('idx_queued_messages_chat').on(table.chatSessionId, table.id)],
+);
+
 // ─── Connected app results ────────────────────────────────────
 // A model's tool result that renders as an app view (docs/connected-mcp-apps.md),
 // kept so the view reopens for as long as its chat exists. Its transcript event

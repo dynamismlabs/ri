@@ -18,7 +18,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { ArrowUp, Mic, Square, Loader2, Check, X } from 'lucide-react';
+import { ArrowUp, ListEnd, Mic, Square, Loader2, Check, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
 import { LiveWaveform } from '@/components/ui/live-waveform';
@@ -34,7 +35,7 @@ import {
   pickerQueryOptions,
   useSessionEvents,
 } from '@/hooks/use-execution';
-import { buildRecallHistory } from '@/components/chat/editor/history-recall';
+import { buildRecallHistory, textToDocJSON } from '@/components/chat/editor/history-recall';
 import { useMarkSessionRead, useMentionAgents, useReadOnEngage } from '@/hooks/use-workspaces';
 import { cn } from '@/lib/utils';
 import { PERMISSION_MODE_META } from '@/lib/permission-modes';
@@ -59,6 +60,7 @@ import {
   ChatInputEditor,
   type ChatInputEditorHandle,
   type EditorSnapshot,
+  type SubmitKey,
 } from '@/components/chat/editor/chat-input-editor';
 import { ChatAddMenu } from '@/components/chat-ui/add-menu/chat-add-menu';
 import { HOTKEYS } from '@/constants/commands';
@@ -87,6 +89,19 @@ import { useChatCapabilities } from '@/components/chat-ui/chat-capabilities';
 import { AppContextStrip } from '@/components/chat-ui/references/app-context-strip';
 import { useAppPromptPicker } from '@/components/chat-ui/app-prompts/use-app-prompt-picker';
 import { useConnectedContextGroups } from '@/hooks/use-connected-context';
+import { MessageQueueStrip, sendNowHint } from '@/components/chat-ui/queue/message-queue-strip';
+import { appendDraft, composerSendRoute, queuePlaceholder } from './composer-send-route';
+import {
+  queueInput,
+  useMessageQueue,
+  useQueueMessage,
+  useRemoveQueuedMessage,
+  useSendQueuedNow,
+  type QueuedMessage,
+} from '@/hooks/use-message-queue';
+import { Button } from '@/components/ui/button';
+import { Kbd } from '@/components/ui/kbd';
+import { HoverCard, HoverCardTrigger, HoverPreviewContent } from '@/components/system/hover-preview';
 
 /**
  * What the box is for, and a pointer to the two menus. Each menu explains
@@ -243,6 +258,21 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     const [hotkeyTarget, setHotkeyTarget] = useState(true);
     const editorRef = useRef<ChatInputEditorHandle | null>(null);
 
+    // The chat's message queue (docs/message-queue.md). While it works, the
+    // send key queues and ⌘↩ sends now. A team's shared chat queues turns
+    // itself, so it keeps the ordinary send.
+    const chatCapabilities = useChatCapabilities();
+    const queueAvailable = !!sessionId && chatCapabilities.messageQueue !== false;
+    const { data: queuedData } = useMessageQueue(sessionId || null, queueAvailable);
+    const queued = queueAvailable ? queuedData ?? [] : [];
+    const queueMessage = useQueueMessage(sessionId);
+    const removeQueued = useRemoveQueuedMessage(sessionId);
+    const sendQueuedNow = useSendQueuedNow(sessionId);
+    const queueing = queueAvailable && !!isRunning;
+    // Send now goes into the turn under way only where the harness takes
+    // messages mid-turn. Elsewhere it stops the turn first.
+    const takesMessagesMidTurn = harnessDefinition(harness ?? DEFAULT_HARNESS).maximumCapabilities.concurrentSend;
+
     // Expose a narrow imperative surface — just enough for the file tree
     // (and any future panel) to drop text into the editor and focus it.
     // Keeps the parent from holding a full ChatInputEditorHandle, which
@@ -358,7 +388,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
 
     // Agents → `@`-picker items, from the rail's own list. Offered only where
     // chats can reach each other: a team chat has no coordination.
-    const mentionAgents = useMentionAgents(useChatCapabilities().coordination !== false);
+    const mentionAgents = useMentionAgents(chatCapabilities.coordination !== false);
 
     // GitHub PRs and issues → items in the `@`-picker's `#` filter (`@#193`).
     // Empty when gh is missing / unauthenticated or the workspace is non-git;
@@ -538,7 +568,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     const handleSend = useCallback(
       async (
         override?: { text: string; attachments: Attachment[] },
-        opts?: { viaVoice?: boolean },
+        opts?: { viaVoice?: boolean; mode?: 'auto' | 'queue' | 'now' },
       ) => {
         const editor = editorRef.current;
         const out = override ??
@@ -548,10 +578,9 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
         // inserts a chip that serializes to the full context line on its
         // own. No raw-number rewriting here, by design.
         const text = out.text.trim();
-        // No isRunning gate: sends are accepted mid-turn. The harness's
-        // own queue handles ordering — Claude drains as `<system-reminder>`
-        // attachments into the current turn; Codex merges as additional
-        // userMessage items in the same turn.
+        // While the chat works, the message waits in its queue unless it's
+        // sent now (docs/message-queue.md). Sent now, Claude takes it at its
+        // next step and Codex steers the turn with it.
         if (!text || sending || disabled) return;
         // Block while any attached file is still uploading. The button is
         // already disabled in this state, but Enter / Cmd+Enter can race
@@ -577,6 +606,29 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
           editor.clear();
           editor.focus();
           setHasContent(false);
+        }
+
+        const route = composerSendRoute({ working: !!isRunning, queueAvailable, takesMessagesMidTurn }, opts?.mode ?? 'auto');
+        if (route !== 'send') {
+          setSending(true);
+          try {
+            await queueMessage.mutateAsync(queueInput({
+              content: text,
+              attachments: out.attachments,
+              // The document itself, so Edit puts the chips back as they were.
+              draft: (snapshot?.doc as Record<string, unknown> | undefined) ?? null,
+              sendNow: route === 'queue-and-send-now',
+            }));
+          } catch {
+            // The hook said why. Put the message back to try again.
+            if (snapshot) {
+              editor?.restore(snapshot);
+              setHasContent(true);
+            }
+          } finally {
+            setSending(false);
+          }
+          return;
         }
 
         setSending(true);
@@ -606,8 +658,28 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
           setSending(false);
         }
       },
-      [sending, disabled, onSend, sessionId, markRead, queryClient],
+      [sending, disabled, onSend, sessionId, markRead, queryClient, isRunning, queueAvailable, takesMessagesMidTurn, queueMessage],
     );
+
+    /**
+     * Edit a queued message: it leaves the queue and comes back into the box,
+     * after anything already typed there. One that has gone already stays
+     * where it is, and the person is told.
+     */
+    const editQueued = useCallback(async (message: QueuedMessage) => {
+      let removed: QueuedMessage | null;
+      try { removed = await removeQueued.mutateAsync(message); } catch { return; }
+      if (!removed) {
+        toast('That message was sent already.');
+        return;
+      }
+      const editor = editorRef.current;
+      if (!editor) return;
+      const doc = removed.draft ?? textToDocJSON(removed.content);
+      const current = editor.snapshot();
+      editor.restore({ doc: current ? appendDraft(current.doc, doc) : doc });
+      setHasContent(true);
+    }, [removeQueued]);
 
     // What connected apps attached to the next message, one group per app.
     const contextGroups = useConnectedContextGroups(sessionId || null);
@@ -701,6 +773,17 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     const showFocusHint = !voice.isRecording && !disabled && !hasContent && !editorFocused && hotkeyTarget;
     return (
       <div className="flex-shrink-0" onKeyDown={handleKeyDown}>
+        {queueAvailable && (
+          <MessageQueueStrip
+            messages={queued}
+            working={!!isRunning}
+            sendNowStopsTurn={!takesMessagesMidTurn}
+            busyId={sendQueuedNow.isPending ? sendQueuedNow.variables?.id : null}
+            onSendNow={(message) => sendQueuedNow.mutate(message as QueuedMessage)}
+            onEdit={(message) => void editQueued(message as QueuedMessage)}
+            onDelete={(message) => removeQueued.mutate(message as QueuedMessage)}
+          />
+        )}
         {/* No top padding: a band of solid background above the card would
             cut scrolling transcript text off short of the card's edge. */}
         <ChatComposer disabled={disabled && !showStopButton} hint="⇧⇥ to cycle modes" status={statusLine} statusIsError={statusIsError}>
@@ -748,7 +831,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                 <ChatInputEditor
                   sourceChatId={sessionId ?? undefined}
                   ref={editorRef}
-                  placeholder={placeholder ?? DEFAULT_COMPOSER_PLACEHOLDER}
+                  placeholder={queueing ? queuePlaceholder(touchFirst) : placeholder ?? DEFAULT_COMPOSER_PLACEHOLDER}
                   // The placeholder wraps short of the focus hint rather than
                   // under it, in the composer ⌘I reaches. Held while focused
                   // too (the hint hides then), so nothing reflows on click.
@@ -764,7 +847,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   disabled={disabled}
                   onContentChange={setHasContent}
                   onPendingUploadsChange={setHasPendingUploads}
-                  onSubmit={() => handleSend()}
+                  onSubmit={(key: SubmitKey) => handleSend(undefined, { mode: key === 'mod-enter' ? 'now' : 'auto' })}
                   onBackspaceOnEmpty={handleEditorBackspaceOnEmpty}
                   onHotkeyTargetChange={setHotkeyTarget}
                   slashCommands={slashCommands}
@@ -935,6 +1018,42 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       <Square size={10} className="fill-current" />
                     )}
                   </IconButton>
+              ) : !voice.isRecording && queueing ? (
+                  // While the chat works the button queues. Hovering it shows
+                  // both ways to send and their keys.
+                  <HoverCard openDelay={150} closeDelay={150}>
+                    <HoverCardTrigger asChild>
+                      <Button
+                        type="button"
+                        onClick={() => handleSend(undefined, { mode: 'queue' })}
+                        disabled={!canSend}
+                        aria-label="Queue message"
+                        variant="primary"
+                        icon
+                        size={touchFirst ? "touch" : "sm"}
+                      >
+                        {sending ? <Loader2 size={13} className="animate-spin" /> : <ListEnd size={13} />}
+                      </Button>
+                    </HoverCardTrigger>
+                    <HoverPreviewContent side="top" align="end" sideOffset={6} padding="xs" className="w-60">
+                      <MenuAction
+                        density="compact"
+                        disabled={!canSend}
+                        onClick={() => handleSend(undefined, { mode: 'queue' })}
+                        label="Queue"
+                        description="Sends when this turn finishes"
+                        trailing={<Kbd>{HOTKEYS.queueMessage.label}</Kbd>}
+                      />
+                      <MenuAction
+                        density="compact"
+                        disabled={!canSend}
+                        onClick={() => handleSend(undefined, { mode: 'now' })}
+                        label="Send now"
+                        description={sendNowHint(true, !takesMessagesMidTurn)}
+                        trailing={<Kbd>{HOTKEYS.sendMessageNow.label}</Kbd>}
+                      />
+                    </HoverPreviewContent>
+                  </HoverCard>
               ) : !voice.isRecording ? (
                   <IconButton
                     type="button"

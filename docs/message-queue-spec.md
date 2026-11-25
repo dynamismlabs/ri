@@ -1,5 +1,7 @@
 # Message queue v1 — implementation checklist
 
+> **History.** Superseded twice: removed by `docs/conductor-migration-spec.md`, then replaced by `docs/message-queue.md` (2026-11-24), which keeps the queue on the home and adds Send now.
+
 Reviewed by the agentex maintainer's agent. Architectural shape locked
 in; this is the build sheet. Each box is independently meaningful so
 we can pause, ship, or split a PR at any phase boundary.

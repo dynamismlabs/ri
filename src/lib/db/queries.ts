@@ -79,6 +79,7 @@ export * from '@/lib/work-results/completion-queries';
 export * from './work-result-runtime-queries';
 export * from './coordination-queries';
 export * from './conversation-queries';
+export * from './queued-message-queries';
 import {
   bundledModelIds,
   curatedDefaultModelIds,

@@ -17,6 +17,7 @@
 @import '../components/chat-ui/chat-composer.css';
 @import '../components/chat-ui/gallery/model-menu-preview.css';
 @import '../components/chat-ui/questions/question-card.css';
+@import '../components/chat-ui/queue/message-queue-strip.css';
 @import '../components/dashboard/content-panel.css';
 @import '../components/dashboard/focus-view.css';
 @import '../components/dashboard/top-hud.css';
