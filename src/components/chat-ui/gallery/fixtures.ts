@@ -41,7 +41,7 @@ body{font:16px system-ui;padding:28px;background:light-dark(#f5f6f2,#20241e);col
 </style></head><body><p>FRIDAY REVIEW</p><h1>A little more focus</h1><p>Three decisions. One owner for each next step. A review that leaves room to do the work.</p><button id="decision">Record an example decision</button><output id="count">0 decisions recorded</output><script>let count=0;document.getElementById('decision').onclick=()=>{count++;document.getElementById('count').textContent=count+' decisions recorded'};</script></body></html>`;
 
 export function event(source: string, input: Partial<ChatEventRecord> = {}): ChatEventRecord {
-  return { id: `${source}-example`, createdAt: NOW, updatedAt: NOW, sessionId: CHAT_ID, senderSessionId: null, authorMemberId: null, role: 'assistant', source, content: null, toolName: null, toolInput: null, toolIsError: null, toolExitCode: null, raw: null, externalEventId: null, externalMessageId: null, externalTurnId: null, externalToolCallId: null, externalParentToolCallId: null, sourcePartIndex: 0, partRevision: null, attachments: [], ...input };
+  return { id: `${source}-example`, createdAt: NOW, updatedAt: NOW, sessionId: CHAT_ID, senderSessionId: null, authorMemberId: null, phase: null, role: 'assistant', source, content: null, toolName: null, toolInput: null, toolIsError: null, toolExitCode: null, raw: null, externalEventId: null, externalMessageId: null, externalTurnId: null, externalToolCallId: null, externalParentToolCallId: null, sourcePartIndex: 0, partRevision: null, attachments: [], ...input };
 }
 
 export function emailDraft(state: string): EmailDraft {

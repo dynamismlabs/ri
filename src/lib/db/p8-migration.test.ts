@@ -64,7 +64,7 @@ it.each(['personal', 'team'])('upgrades a populated %s Home after production 001
       ...(table === 'chat_sessions' ? { service_tier: null, coordination_held_at: null, turn_status: null, app_tools: null } : {}),
     })));
     expect(rows(db, 'notes')).toEqual(notes.map(row => ({ ...row, kind: null })));
-    expect(rows(db, 'chat_events')).toEqual(events.map(row => ({ ...row, author_member_id: null })));
+    expect(rows(db, 'chat_events')).toEqual(events.map(row => ({ ...row, author_member_id: null, phase: null })));
     expect(rows(db, '__drizzle_migrations').slice(0, history.length)).toEqual(history);
     expect(rows(db, '__drizzle_migrations')).toHaveLength(history.length + pending.length);
     expect(search()).toEqual([251, 971]);

@@ -5,6 +5,7 @@
  */
 import { getArea, getChatSession, getNote, getNoteProjection, getTask, getTaskProjection, getTeamConnection, getWorkspace, listRecentChatEvents } from '@/lib/db/queries';
 import { splitRemoteId } from '@/lib/entity-refs/parse-markers';
+import { isProgressNote } from '@/lib/executions/progress-note';
 import { messageText, type NameEntity } from './message-text';
 
 /** How far back to look. A turn's reply sits just before its result and a few status events. */
@@ -15,8 +16,9 @@ export function turnReply(chatSessionId: string): string | null {
   for (const event of listRecentChatEvents(chatSessionId, TURN_TAIL)) {
     // Back at the message that started the turn: it wrote no reply, and an older one isn't this run's.
     if (event.role === 'user') return null;
-    // A subagent's text (it has a parent tool call) is the subagent's answer, not the turn's.
-    if (event.role === 'assistant' && event.source === 'agent' && !event.externalParentToolCallId && event.content?.trim()) {
+    // A subagent's text (it has a parent tool call) is the subagent's answer, not the turn's,
+    // and a progress note says what the turn was doing, not what it answered.
+    if (event.role === 'assistant' && event.source === 'agent' && !event.externalParentToolCallId && !isProgressNote(event) && event.content?.trim()) {
       return event.content;
     }
   }

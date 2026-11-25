@@ -84,8 +84,13 @@ describe('Claude progress updates', () => {
     const agentText = rows.filter((row) => row.source === 'agent').map((row) => row.content);
     for (const note of notes) expect(agentText).toContain(note);
     for (const row of rows.filter((r) => r.content && notes.includes(r.content))) {
-      expect(row).toMatchObject({ role: 'assistant', source: 'agent' });
+      // Marked as a progress note: shown in the chat, never the turn's answer.
+      expect(row).toMatchObject({ role: 'assistant', source: 'agent', phase: 'commentary' });
     }
+    // Ordinary text between tool calls carries no phase and stays an answer candidate.
+    const plain = rows.filter((r) => r.source === 'agent' && !notes.includes(r.content ?? ''));
+    expect(plain.length).toBeGreaterThan(0);
+    for (const row of plain) expect(row.phase ?? null).toBeNull();
     expect(rows.some((row) => row.source === 'thinking' && row.content?.trim())).toBe(false);
   });
 

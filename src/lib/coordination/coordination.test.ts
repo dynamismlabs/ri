@@ -92,6 +92,20 @@ describe('durable symmetric delivery', () => {
     q.finishAgentRequest(delivery.requestId!, 'failed', 'Late failure');
     expect(q.listAgentDeliveries(delivery.requestId!).filter(row => ['answer','failed','cancelled'].includes(row.kind))).toHaveLength(1);
   });
+  it('never returns a progress note as the answer to a request', async () => {
+    const delivery = await send();
+    const run = accepted.at(-1)!;
+    // A Claude progress update (agentex reports it as commentary), then the turn ends without an answer.
+    applyChatEvent({ id: uuidv7(), sessionId: agentMain.id, role: 'assistant', source: 'agent', phase: 'commentary',
+      content: "b.txt shows the refund came first, so that's the first inconsistency. Checking c.txt next." }, { cumulative: false, runId: run.runId });
+    fake.busy.delete(agentMain.id); fake.producers.delete(agentMain.id);
+    finishRun(run.runId, { ok: true });
+    await drainAgentCoordination();
+    expect(q.getAgentRequest(delivery.requestId!)).toMatchObject({ status: 'completed', responseEventId: null });
+    const answer = q.terminalAgentDelivery(delivery.requestId!)!;
+    expect(answer.payload.content).toContain('finished without a text answer');
+    expect(answer.payload.content).not.toContain('Checking c.txt next');
+  });
   it('survives unchanged retries without changing the accepted payload, event, run or destination', async () => {
     const input = { request_id: 'stable-key', response: 'none', content: 'Exact bytes' };
     const delivery = await send(main, input);

@@ -24,6 +24,7 @@ function ev(source: string, content: string | null): ChatEventRecord {
     sessionId: 's1',
     senderSessionId: null,
     authorMemberId: null,
+    phase: null,
     role: source === 'user' ? 'user' : 'assistant',
     source,
     content,

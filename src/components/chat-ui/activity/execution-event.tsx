@@ -49,6 +49,7 @@ import {
 import { approvalResponseView } from '@/lib/executions/integration-approvals';
 import { computeEditDiff } from '@/lib/executions/edit-diff';
 import { extractPullRequestUrl } from '@/lib/executions/pr-link';
+import { isProgressNote } from '@/lib/executions/progress-note';
 import { describeToolCall, describeToolResult, fileTargetPath, isSubagentTool, toolDisplayName, type ToolGlyph } from '@/lib/executions/tool-display';
 import { decodeBackgroundTaskEvent } from '@/lib/executor/background-task-event';
 import { DEFAULT_HARNESS, harnessDefinition, isKnownHarnessId, type HarnessId } from '@/lib/harness/registry';
@@ -278,7 +279,8 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
               timestamp={event.createdAt}
             />
           )}
-          {canPrepareResult && sessionId && !event.externalParentToolCallId && <OutputHandoffActions event={event} sessionId={sessionId} />}
+          {/* A progress note is what the agent was doing, not a result to hand on. */}
+          {canPrepareResult && sessionId && !event.externalParentToolCallId && !isProgressNote(event) && <OutputHandoffActions event={event} sessionId={sessionId} />}
         </div>
       );
 

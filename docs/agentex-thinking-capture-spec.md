@@ -42,13 +42,22 @@ answer is `phase: "final_answer"`.
 
 ## How Ri shows them
 
-- Commentary from either harness is an `agent` row, so it renders as an ordinary message: full
-  length, visible after the turn folds its tool calls away, read by a main chat checking on the
-  chat (`condenseEvents`), and counted as agent output for the rail.
+- Commentary from either harness is an `agent` row with `phase: 'commentary'`
+  (`chat_events.phase`, migration 0042), so it renders as an ordinary message: full length,
+  visible after the turn folds its tool calls away, read by a main chat checking on the chat
+  (`condenseEvents`), and counted as activity for the rail.
+- It is never the turn's answer (`isProgressNote`, `src/lib/executions/progress-note.ts`): not an
+  outcome for Unread, not the review target and refused as one, not a delegated request's or a
+  Slack thread's reply, not the turn notification, run summary or hover preview, and it gets no
+  "prepare result" actions. A turn that ends after a note without an answer says it finished
+  without a text answer. Ordinary Claude text between tool calls has no phase and still counts,
+  as it always did.
 - Empty `thinking` rows are stored but never rendered (`filterRenderable`). A `thinking` row with
   text, from an older transcript or another harness, renders as the dim, collapsible thinking row.
-- Rows stored before agentex 0.0.54 keep their `thinking` source. Re-reading an old transcript
-  doesn't duplicate them: chat events dedupe on session, event id and part index, not source.
+- Rows stored before agentex 0.0.54 keep their `thinking` source, and older Codex commentary rows
+  have no phase, so they still count as answers. Re-reading an old transcript doesn't duplicate
+  them: chat events dedupe on session, event id and part index, not source.
 
 `src/lib/executor/adapter.claude-progress-updates.test.ts` runs a real transcript through
-agentex's reader and Ri's mapping and checks all of the above.
+agentex's reader and Ri's mapping. `src/lib/executions/progress-note.test.ts` and the progress
+note cases in the coordination and Slack conversation tests check that a note is never an answer.
