@@ -1,5 +1,5 @@
 {
-  "serial": 9,
+  "serial": 10,
   "apps": [
     {
       "id": "people",
@@ -62,8 +62,8 @@
         "Ri's AI model"
       ],
       "git": "https://github.com/dynamismlabs/app-bloom.git",
-      "version": "v0.1.2",
-      "checksum": "sha256-a933547de26246f0b6da07406656ebee0979cd055a56c7de907e2165bfae587a"
+      "version": "v0.1.3",
+      "checksum": "sha256-2c76399f931565fd69547323b30cd7f49c1d84350787139052afdfd4af686d73"
     }
   ]
 }
