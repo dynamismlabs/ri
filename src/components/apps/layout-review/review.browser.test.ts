@@ -267,10 +267,10 @@ it('keeps browsing context through connector setup and opens apps and skills in 
     await page.goBack();
     expect(await page.getByRole('searchbox', { name: 'Search additions' }).inputValue()).toBe('Linear');
     await page.getByRole('button', { name: 'Clear search' }).click();
-    // A connected app opens on its own page.
+    // A connected app with a screen of its own opens that screen, not its page.
     await page.getByRole('region', { name: 'Your apps', exact: true }).getByRole('button', { name: 'Open Receipts', exact: true }).click();
     await page.locator('[data-destination]').waitFor();
-    expect(await page.locator('[data-destination]').textContent()).toBe('~connected/receipts');
+    expect(await page.locator('[data-destination]').textContent()).toBe('~connected/receipts?open=home');
     await page.getByRole('button', { name: 'Return to Apps' }).click();
     await page.getByRole('button', { name: 'Edit skill Private workflow', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { actions: string[][] }).actions)).toContainEqual(['skill', 'ri:private-workflow']);

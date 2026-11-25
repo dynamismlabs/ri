@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { openAppRoute } from '@/components/apps/use-open-app';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useDashboard } from '@/contexts/dashboard-context';
@@ -78,7 +79,7 @@ export function useAppsLayoutReview(props: AppsReviewProps) {
     else details(item);
   };
   const open = (item: ReviewItem) => {
-    if (item.connectedAppId) navigate(`~connected/${item.connectedAppId}`);
+    if (item.connectedAppId) navigate(openAppRoute(item.connectedAppId, connected.data));
     else manage(item);
   };
   const chat = (item: ReviewItem) => {

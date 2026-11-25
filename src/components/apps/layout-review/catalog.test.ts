@@ -44,6 +44,19 @@ describe('one library across Apps', () => {
     const every = reviewItems({ ...sources, connections: [], providers: POPULAR_PROVIDERS.map(provider) });
     expect(popularItems(every).map(item => item.key)).toEqual(['provider:google', 'provider:microsoft', 'provider:slack', 'provider:notion']);
   });
+  it('opens an added catalog app once Ri is connected to it, and manages it until then', () => {
+    const app = { id: 'people', name: 'People', description: 'Relationships.', reaches: [], git: 'https://example.test/people.git', version: 'v0.1.6', checksum: 'sha256-x',
+      sourceId: 'source-1', personalAppId: 'app-1', installedVersion: 'v0.1.6', updateAvailable: false } as CatalogApp;
+    const connected = { id: 'people-server', app: { id: 'app-1', place: { kind: 'ri' } } } as unknown as NonNullable<LibrarySources['connectedApps']>[number];
+    const item = (sources: LibrarySources) => reviewItems(sources).find(candidate => candidate.key === 'catalog:people')!;
+    expect(item({ catalogApps: [app], connectedApps: [connected] })).toMatchObject({ connectedAppId: 'people-server' });
+    expect(primaryLabel(item({ catalogApps: [app], connectedApps: [connected] }))).toBe('Open');
+    // Not allowed yet, or an agent's connection only: its page in Apps finishes it.
+    expect(primaryLabel(item({ catalogApps: [app] }))).toBe('Manage');
+    expect(primaryLabel(item({ catalogApps: [app], connectedApps: [{ ...connected, app: { id: 'app-1', name: 'People', place: { kind: 'agent', workspaceId: 'w' } } }] }))).toBe('Manage');
+    // Added but never installed: Manage, where its page says why.
+    expect(primaryLabel(item({ catalogApps: [{ ...app, installedVersion: null }], connectedApps: [connected] }))).toBe('Manage');
+  });
   it('finds additions by name, purpose and type', () => {
     const items = reviewItems(sources);
     const brief = items.find(item => item.name === 'Research brief')!;

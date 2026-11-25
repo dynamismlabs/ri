@@ -1,4 +1,5 @@
 'use client';
+import { openAppRoute } from './use-open-app';
 import { InlineAction } from '@/components/system/inline-action';
 import { Card } from '@/components/system/card';
 import { MenuAction } from '@/components/system/menu-action';
@@ -88,7 +89,7 @@ function LibraryOverview({ query, navigate }: Parameters<typeof AppLibrary>[0]) 
   const patch = (values: Record<string, string | undefined>) => navigate(libraryRoute(query, { q: searchDraft || undefined, ...values }));
   const open = (item: LibraryItem) => {
     const target = item.target;
-    if (item.connectedAppId) navigate(`~connected/${item.connectedAppId}`);
+    if (item.connectedAppId) navigate(openAppRoute(item.connectedAppId, connected.data));
     else if (isSetupTarget(target)) patch(setupQuery(target));
     else openSkill(target.ref);
   };
