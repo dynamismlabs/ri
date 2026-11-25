@@ -1,0 +1,9 @@
+An app Ri installed can use your accounts in one step: Ri asks which accounts and tools in its own window, from any device.
+Apps opens with a Popular row of familiar services, like Gmail, above Start with a goal.
+Clicking an app opens it. Its settings are one menu away.
+Messages you send while a chat is working wait their turn, and Send now sends one right away.
+Pictures in a message you send show as thumbnails below the words.
+Artifacts shows This chat or All chats, and files you open show in the preview.
+The main chat keeps watching when you ask it to watch for something.
+Claude's progress notes show as messages.
+Rows in the left rail are a little taller.
