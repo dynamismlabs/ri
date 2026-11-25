@@ -37,7 +37,7 @@ describe('MessageQueueStrip', () => {
     expect(html).toContain('aria-label="Queued messages"');
     expect(html).toContain('then write the tests');
     expect(html).toContain('look at login screen.png');
-    expect(html.match(/Send now/g)).toHaveLength(2);
+    expect(html.match(/aria-label="Send now"/g)).toHaveLength(2);
     expect(html.match(/aria-label="Edit queued message"/g)).toHaveLength(2);
     expect(html.match(/aria-label="Delete queued message"/g)).toHaveLength(2);
     expect(html).not.toContain('Paused');

@@ -88,7 +88,7 @@ export function MessageQueueStrip({
   if (messages.length === 0) return null;
   return (
     <div className="mx-auto max-w-3xl px-5">
-      <section aria-label="Queued messages" data-slot="message-queue" className="ri-message-queue mx-3">
+      <section aria-label="Queued messages" data-slot="message-queue" className="ri-message-queue @container/queue mx-3">
         {paused && (
           <p role="status" className="ri-message-queue-note">
             Paused. Send one now, and the rest follow.
@@ -112,10 +112,12 @@ export function MessageQueueStrip({
                       size={size}
                       disabled={busy}
                       onClick={() => onSendNow(message)}
+                      aria-label="Send now"
                       className="gap-1"
                     >
                       {busy ? <Loader2 className="size-3 animate-spin" /> : <ArrowUp className="size-3" />}
-                      Send now
+                      {/* A narrow strip (a phone, a slim panel) keeps its room for the message. */}
+                      <span className="hidden @md/queue:inline">Send now</span>
                     </Button>
                   </Tip>
                   <IconButton
