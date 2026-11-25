@@ -48,6 +48,7 @@ export function RailRow({
       onFocus={onIntent}
       aria-current={active ? 'page' : undefined}
       {...props}
+      data-slot="rail-row"
       className={cn("w-full flex items-center gap-2", className)}
     >
       {mark ?? (Icon && <Icon size={14} className="flex-shrink-0" />)}

@@ -1,1 +1,5 @@
 html:root [data-slot="rail"] { background-color: var(--canvas); }
+/* The rail's rows (New chat, Search chats, the places) stand taller than a
+   menu's compact rows: 28px, so the label has room and the hover fill reads as
+   a row. Touch keeps its 40px minimum. */
+[data-slot="rail-row"].ri-menu-action--compact { padding-block: 6px; }
