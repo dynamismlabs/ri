@@ -24,6 +24,7 @@ import { viewHref } from '@/lib/client/active-view';
 import { attachmentUrl } from '@/lib/attachments/view';
 import { fileSizeLabel, MAX_VIEW_DOWNLOAD_BYTES, saveViewDownload, viewDownload, type ViewDownload } from '@/lib/mcp-apps/view-download';
 import { ConnectedViewForms } from './form/view-forms';
+import { isHubAuthorization, useHubConnect } from '@/components/apps/hub-connect';
 import { useNoticeTimeout } from './notice-timeout';
 
 type OpenView = RouterOutputs['connectedApps']['open'];
@@ -214,6 +215,13 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
   useEffect(() => { places.current = {companion, dashboard}; }, [companion, dashboard]);
   const dashboardRef = useRef(dashboard);
   useEffect(() => { dashboardRef.current = dashboard; }, [dashboard]);
+  // An app Ri installed asking to use the person's accounts through Ri: Ri asks in its own dialog
+  // instead of opening its approval page, which only loads on the computer Ri runs on. Ri tells
+  // the app where its hub is first, so the app's own Connect button has somewhere to go.
+  const hubConnect = useHubConnect();
+  const reviewHub = useRef(hubConnect.review);
+  useEffect(() => { reviewHub.current = hubConnect.review; }, [hubConnect.review]);
+  useEffect(() => { void trpcClient.personalApps.hubOffer.mutate({serverId: view.serverId}).catch(() => {}); }, [view.serverId]);
   useEffect(() => {
     const resource = view.resource;
     const frame = mount.current;
@@ -317,7 +325,11 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
         else window.location.assign(viewHref({kind: 'agent', id: target.workspaceId, tab: 'files'}));
       },
       navigate: () => { throw new Error('This app does not provide internal navigation'); },
-      externalLink: url => { window.open(url, '_blank', 'noopener,noreferrer'); },
+      externalLink: url => {
+        const open = () => { window.open(url, '_blank', 'noopener,noreferrer'); };
+        if (isHubAuthorization(url)) void reviewHub.current(url, view.serverId, open);
+        else open();
+      },
       error: error => { if (!disposed) setError(error.message); },
       ready: () => { if (!disposed) setReady(true); },
       resize: value => { if (!disposed) setHeight(value); },
@@ -398,6 +410,7 @@ function MountedView({view, expanded, deepLink, onExpand}: {view: OpenView; expa
     >Dismiss</Button></p>}
     {!ready && !error && <p role="status" className="absolute left-3 top-3 text-xs text-muted-foreground">Loading interface…</p>}
     <ConnectedViewForms viewId={view.id} />
+    {hubConnect.dialog}
     {/* Inline, the frame is exactly the height the view reports (the host clamps it to 160 to 900 px), capped
         at 80% of the window, and the view scrolls inside only past that. It must not flex: a 0% flex basis in an
         auto-height column resolves to this empty div's content, which collapsed every view to its minimum. */}

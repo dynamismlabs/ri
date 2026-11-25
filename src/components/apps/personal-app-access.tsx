@@ -16,9 +16,12 @@ import { trpc, trpcClient } from '@/lib/trpc/client';
 import { APP_NAME } from '@/constants/app';
 import { useAllowApp } from './allow-app';
 import { HubAppPanel } from './hub-access';
+import { useHubConnect } from './hub-connect';
 import { TurnOffAccessChoice } from './turn-off-access-choice';
 
 type PlaceStatus = 'connected' | 'sign_in' | 'unavailable';
+/** "read your mail, read your calendar and use your model": the app's asks, as the kit words them. */
+const spoken = (items: string[]) => items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
 const statusText = (status: PlaceStatus, app: string, error?: string) =>
   status === 'connected' ? 'Connected' : status === 'sign_in' ? `Waiting for you to allow it in ${app}` : error ?? `${app} isn't answering`;
 
@@ -40,6 +43,9 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   // What the app can reach through Ri's hub, when it connected back to Ri.
   const hub = useQuery(trpc.hubApps.list.queryOptions(undefined, { staleTime: 15_000 }));
   const hubApp = hub.data?.find((item) => item.personalAppId === appId);
+  // Whether Ri can lend an app it installed the person's accounts itself, in its own dialog (src/lib/apps/hub-connect.ts).
+  const hubLink = useQuery({ ...trpc.personalApps.hub.queryOptions({ appId }), enabled: installedByRi, staleTime: 15_000 });
+  const hubConnect = useHubConnect();
   const { data: workspaces } = useWorkspaces({ status: 'active' });
   const [error, setError] = useState<string | null>(null);
   const refresh = () => Promise.all([
@@ -102,6 +108,7 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
   const { name, ri, agents } = app.data;
   const allowed = new Map(agents.flatMap((place) => place.place.kind === 'agent' ? [[place.place.workspaceId, place] as const] : []));
   const others = (workspaces ?? []).filter((workspace) => !allowed.has(workspace.id));
+  const link = hubLink.data;
   const busy = allow.isPending || disallow.isPending || remove.isPending || reconnectRi.isPending || allowApp.checking;
 
   return (
@@ -159,8 +166,24 @@ export function PersonalAppAccess({ appId, onRemoved }: { appId: string; onRemov
           tone="danger"
         >Remove {name}</Button>
       </div>
+      {link?.kind === 'host' && !link.testData && (link.state !== 'connected' || !hubApp || hubApp.off) && (
+        <div className="space-y-2 pt-4">
+          <h2 className="text-sm font-medium">{name} and your accounts</h2>
+          <p className="max-w-prose text-xs text-muted-foreground">
+            {name} asks {APP_NAME} to {link.uses.length ? spoken(link.uses) : 'use your accounts'}{link.purpose ? `, ${link.purpose}` : ''}. You choose which accounts and tools it may use.
+            {link.state === 'reconnect' && link.error ? ` ${link.error}` : ''}
+          </p>
+          <Button
+            disabled={hubConnect.starting}
+            onClick={() => void hubConnect.connect(appId)}
+            variant="primary"
+            size="sm"
+          >{link.state === 'not_connected' ? 'Choose accounts' : 'Connect again'}</Button>
+        </div>
+      )}
       {hubApp && <div className="pt-4"><HubAppPanel id={hubApp.id} embedded /></div>}
       {allowApp.dialog}
+      {hubConnect.dialog}
     </section>
   );
 }
