@@ -116,18 +116,22 @@ describe('GET /api/workspaces/:id/tree', () => {
     expect(body.entries.map((e) => e.path)).toContain('notes/a.md');
   });
 
-  it('lists a checkout on a detached HEAD without status flags, and still reads its files', async () => {
+  it('lists a checkout on a detached HEAD with its uncommitted changes, and reads both sides', async () => {
     const dir = path.join(ROOT, 'detached');
     fs.mkdirSync(dir);
     fs.writeFileSync(path.join(dir, 'a.txt'), 'one\n');
     execSync('git init -q -b main && git add -A && git -c user.email=a@b -c user.name=a commit -q -m init && git checkout -q --detach', { cwd: dir });
+    fs.writeFileSync(path.join(dir, 'a.txt'), 'two\n');
     const ws = await seed(dir, true);
     const tree = await import('./tree/route');
     const body = (await (await tree.GET(get(), ctx({ id: ws.id }))).json()) as TreeBody;
     expect(body.entries.map((e) => e.path)).toEqual(['a.txt']);
+    expect(body.entries[0]?.status).toBeTruthy();
     const file = await import('./file/route');
     const read = (await (await file.GET(get('http://127.0.0.1/x?path=a.txt'), ctx({ id: ws.id }))).json()) as { content: string };
-    expect(read.content).toBe('one\n');
+    expect(read.content).toBe('two\n');
+    const base = (await (await file.GET(get('http://127.0.0.1/x?path=a.txt&base=1'), ctx({ id: ws.id }))).json()) as { content: string };
+    expect(base.content).toBe('one\n');
   });
 
   it('404s an unknown agent and 409s a folder that is gone', async () => {
@@ -289,7 +293,7 @@ describe('writes to the agent folder (the Files tab)', () => {
     expect((await file.DELETE(del('notes/done.md'), ctx({ id: ws.id }))).status).toBe(404);
   });
 
-  it('writes to a checkout on a detached HEAD, which has no folder handle', async () => {
+  it('writes to a checkout on a detached HEAD', async () => {
     const dir = freshFolder('detached-write', true);
     sh(dir, 'git checkout -q --detach');
     const ws = await seed(dir, true);

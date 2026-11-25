@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
 import type { WorkspaceRecord } from '@/db/types';
-import { archiveSessionWorktree, createWorktreeForSession } from './index';
+import { archiveSessionWorktree, createWorktreeForSession, openWorktreeHandle, preflightArchiveSessionWorktree } from './index';
 import { uncommittedFilesOf } from './uncommitted-files';
 
 /**
@@ -123,6 +123,48 @@ describe('archiveSessionWorktree', () => {
     expect(fs.existsSync(wt.path)).toBe(false);
     expect(fs.existsSync(marker)).toBe(true);
     expect(sh(CLONE, `git rev-parse refs/heads/${wt.branch}`)).toBe(head);
+  });
+
+  // An agent reviewing a pull request checks out the PR's branch or commit
+  // directly, leaving the worktree on a detached HEAD. Archive's check for
+  // uncommitted files used to throw there ("ref HEAD is not a symbolic ref").
+  it('archives a worktree the agent left on a detached HEAD, keeping its branch', async () => {
+    const wt = await worktree();
+    sh(wt.path, 'git commit -q --allow-empty -m kept');
+    const head = sh(wt.path, 'git rev-parse HEAD');
+    sh(wt.path, 'git checkout -q --detach origin/main');
+
+    await preflightArchiveSessionWorktree({ session: { worktreePath: wt.path }, sourceCheckoutPath: CLONE });
+    await archiveSessionWorktree({ session: { worktreePath: wt.path }, sourceCheckoutPath: CLONE });
+
+    expect(fs.existsSync(wt.path)).toBe(false);
+    expect(sh(CLONE, `git rev-parse refs/heads/${wt.branch}`)).toBe(head);
+  });
+
+  it('names the files a detached worktree would lose, then removes it when confirmed', async () => {
+    const wt = await worktree();
+    sh(wt.path, 'git checkout -q --detach');
+    fs.writeFileSync(path.join(wt.path, '.env'), 'KEY=1\n');
+
+    const err = await preflightArchiveSessionWorktree({ session: { worktreePath: wt.path }, sourceCheckoutPath: CLONE }).catch((e: unknown) => e);
+    expect((err as Error).name).toBe('DirtyWorktreeError');
+    expect(uncommittedFilesOf(err)).toEqual({ files: [{ path: '.env', change: 'untracked' }], omitted: 0 });
+
+    await archiveSessionWorktree({ session: { worktreePath: wt.path }, sourceCheckoutPath: CLONE, force: true });
+    expect(fs.existsSync(wt.path)).toBe(false);
+  });
+
+  it('opens a detached worktree for its files and changes', async () => {
+    const wt = await worktree();
+    fs.writeFileSync(path.join(wt.path, 'reviewed.ts'), 'export const x = 1;\n');
+    sh(wt.path, 'git add -A && git commit -qm reviewed && git checkout -q --detach');
+
+    const handle = await openWorktreeHandle({ worktreePath: wt.path }, ws);
+
+    expect(handle?.kind).toBe('git');
+    if (handle?.kind !== 'git') return;
+    expect(handle.git.branch).toBeNull();
+    expect((await handle.git.diff('base')).files.map((f) => f.path)).toEqual(['reviewed.ts']);
   });
 
   it('treats a worktree that is already gone as archived', async () => {

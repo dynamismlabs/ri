@@ -54,11 +54,20 @@ describe('openFolderHandle', () => {
     expect(await readBaseFile(handle, 'draft.md')).toBe('');
   });
 
-  it('returns null for a detached HEAD, which agentex cannot open', async () => {
+  it('opens a detached HEAD based on HEAD, so status still means uncommitted changes', async () => {
     const dir = repo('detached');
     fs.writeFileSync(path.join(dir, 'a.txt'), 'one\n');
     sh(dir, 'git add -A && git commit -qm init && git checkout -q --detach');
-    expect(await openFolderHandle(dir)).toBeNull();
+    const head = sh(dir, 'git rev-parse HEAD');
+    fs.writeFileSync(path.join(dir, 'a.txt'), 'two\n');
+
+    const handle = await openFolderHandle(dir);
+    expect(handle?.kind).toBe('git');
+    if (handle?.kind !== 'git') return;
+    expect(handle.git.branch).toBeNull();
+    expect(handle.git.baseSha).toBe(head);
+    expect(await readBaseFile(handle, 'a.txt')).toBe('one\n');
+    expect((await listTree(handle)).entries.find((e) => e.path === 'a.txt')?.status).toBeTruthy();
   });
 
   it('opens a plain folder bare, and returns null for one that is gone', async () => {

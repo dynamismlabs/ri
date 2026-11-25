@@ -10,8 +10,7 @@ import { z as rpcZ } from 'zod/v4';
  * with status flags, bare folders take a bounded walk that skips the
  * heavyweight directories and says when it stopped early (`truncated`, see
  * `walkFolder`). Files the agent copies into worktrees (`filesToCopy`,
- * e.g. `.env*`) are surfaced even though git ignores them. A detached HEAD
- * lists without status flags (see `agent-folder-reads.ts`).
+ * e.g. `.env*`) are surfaced even though git ignores them.
  */
 // Compressed when the body is JSON and over ~1KiB; a streamed or
 // non-JSON response passes through untouched. See lib/api/compression.ts.

@@ -6,9 +6,9 @@
  *
  * For a git agent this is the source checkout, opened with its current
  * branch at HEAD as the base, so status flags mean uncommitted changes
- * (`openFolderHandle`). Non-git folders open as bare handles. A checkout on
- * a detached HEAD can't be opened as a handle, so it gets a plain listing
- * without flags and direct reads. Read-only: nothing here writes.
+ * (`openFolderHandle`), or HEAD itself when detached. Non-git folders open
+ * as bare handles. A folder with no handle gets a plain listing without flags
+ * and direct reads. Read-only: nothing here writes.
  */
 
 import { openFolderHandle } from './index';
