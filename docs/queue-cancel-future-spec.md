@@ -1,5 +1,7 @@
 # Future — per-message queue cancel (Claude Desktop style)
 
+> **History.** Not built. Queued messages now wait on the home, where Edit and Delete take them back before the agent sees them. See `docs/message-queue.md` (2026-11-24).
+
 Status: deferred design. Build only if/when fire-and-forget proves
 insufficient. Successor to the chip queue we removed in
 `docs/conductor-migration-spec.md`.

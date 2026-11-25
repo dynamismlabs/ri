@@ -193,6 +193,9 @@ export interface ChatInputEditorHandle {
   getUiMessageParts(): { parts: Array<{ type: 'text'; text: string } | FileUIPart> };
 }
 
+/** Which key sent the message: a bare Enter, or Cmd/Ctrl+Enter. */
+export type SubmitKey = 'enter' | 'mod-enter';
+
 export interface ChatInputEditorProps {
   /** A retained local draft, never a server echo into an active editor. */
   initialText?: string;
@@ -217,8 +220,12 @@ export interface ChatInputEditorProps {
    * placeholder and again when it resolves (or is removed on failure).
    */
   onPendingUploadsChange?: (hasPendingUploads: boolean) => void;
-  /** Called when the user sends from the keyboard (see `submitOnEnter`). */
-  onSubmit?: () => void;
+  /**
+   * Called when the user sends from the keyboard (see `submitOnEnter`), with
+   * the key: `enter` for a bare Enter, `mod-enter` for Cmd/Ctrl+Enter. While a
+   * chat works the composer queues on one and sends now on the other.
+   */
+  onSubmit?: (key: SubmitKey) => void;
   /**
    * Whether a bare Enter submits. Left unset, it follows the device
    * (`useTouchFirst`): on a computer Enter sends and Shift+Enter inserts a
@@ -454,6 +461,8 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
     onTextChangeRef.current = onTextChange;
     const onSubmitRef = useRef(onSubmit);
     onSubmitRef.current = onSubmit;
+    const placeholderRef = useRef(placeholder);
+    placeholderRef.current = placeholder;
     const editableRef = useRef(!disabled);
     editableRef.current = !disabled;
     // Mirror in a ref so the keymap (built once via useMemo) always reads
@@ -537,12 +546,12 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
                 if (!submitOnEnterRef.current) {
                   return this.editor.commands.setHardBreak();
                 }
-                onSubmitRef.current?.();
+                onSubmitRef.current?.('enter');
                 return true;
               },
               'Shift-Enter': () => this.editor.commands.setHardBreak(),
               'Mod-Enter': () => {
-                onSubmitRef.current?.();
+                onSubmitRef.current?.('mod-enter');
                 return true;
               },
               // Shell-style recall. Only fires when the caret sits at the
@@ -831,7 +840,8 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
           strike: false,
           code: false,
         }),
-        Placeholder.configure({ placeholder: placeholder ?? '' }),
+        // Read when drawn, so a new placeholder shows without rebuilding the editor.
+        Placeholder.configure({ placeholder: () => placeholderRef.current ?? '' }),
         FileChipNode,
         PrChipNode,
         IssueChipNode,
@@ -896,6 +906,14 @@ export const ChatInputEditor = forwardRef<ChatInputEditorHandle, ChatInputEditor
     });
 
     editorRef.current = editor;
+
+    // The placeholder can change while the editor lives (the composer names
+    // the queue's keys while its chat works). An empty transaction redraws it.
+    useEffect(() => {
+      if (!editor || editor.isDestroyed) return;
+      editor.view.dom.setAttribute('aria-label', ariaLabel ?? placeholder ?? 'Message');
+      editor.view.dispatch(editor.state.tr.setMeta('addToHistory', false));
+    }, [editor, placeholder, ariaLabel]);
 
     useEffect(() => {
       if (!editor) return;

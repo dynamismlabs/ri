@@ -2,7 +2,7 @@
  * What a session's stream carries (the per-session route, and the page
  * stream): on open, the chat events missed since `lastEventId`; then every
  * chat event, runtime, background task, pending input, integration approval,
- * reconcile, delivery and transfer change as it's published; and the current ephemeral state as
+ * reconcile, delivery, transfer and queue change as it's published; and the current ephemeral state as
  * a seed, then `ready`. Returns the unsubscribe.
  *
  * Subscribed before the replay, so an event published during it still
@@ -52,6 +52,7 @@ export function openSessionFeed(
       case 'reconcile': emit('reconcile', { status: message.status, replayed: message.replayed }); break;
       case 'delivery': emit('delivery', { eventId: message.eventId, delivery: message.delivery }); break;
       case 'transfer': emit('transfer', { transfer: message.transfer }); break;
+      case 'queue': emit('queue', { messages: message.messages }); break;
       case 'session_updated': break;
       case 'device_updated': break;
     }

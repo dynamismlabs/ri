@@ -13,7 +13,7 @@ it('supplies shared-chat policy while the personal defaults retain their behavio
   function Capture() { seen.push(useChatCapabilities()); return null; }
   renderToStaticMarkup(createElement(TeamDashboardBoundary, null, createElement(Capture)));
   renderToStaticMarkup(createElement(Capture));
-  expect(seen).toEqual([{ deliveryReceipts: false, prepareResults: true, coordination: false }, { deliveryReceipts: true, prepareResults: true }]);
+  expect(seen).toEqual([{ deliveryReceipts: false, prepareResults: true, coordination: false, messageQueue: false }, { deliveryReceipts: true, prepareResults: true }]);
 });
 it('offers model administration only to an authorized owner', () => {
   const seen: boolean[] = [];

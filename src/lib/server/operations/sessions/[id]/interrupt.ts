@@ -17,11 +17,10 @@ import { stopTeamAiWork } from '@/lib/team/ai/chat';
  * flip publishes through the realtime bus, so the UI's "stop" button
  * reverts to "send" without a client-driven refetch.
  *
- * Any messages the user had sent before clicking Stop are still in the
- * harness's internal queue and will run as a follow-up turn — Stop
- * kills the current turn only, not the queue. We don't try to hide
- * this; the user-facing behavior matches Conductor and the Claude
- * VS Code extension.
+ * Messages the person queued while the chat worked stay in Ri's queue,
+ * which holds after a stopped turn until they send one now
+ * (docs/message-queue.md). Only a message already sent now can be in
+ * the harness's own queue, and that one runs as a follow-up turn.
  *
  * Idempotent: a no-op when no turn is running. Returns 200 either way
  * so the client doesn't have to special-case the race where the agent

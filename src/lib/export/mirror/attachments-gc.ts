@@ -35,6 +35,7 @@ import {
   chatEvents as chatEventsTbl,
 } from '@/lib/db/schema';
 import { getAllWorkResultAttachmentFileNames } from '@/lib/work-results/queries';
+import { listQueuedMessageAttachmentFileNames } from '@/lib/db/queued-message-queries';
 import { getAttachmentsDir, getBrainDir } from '@/lib/config/paths';
 import { isAttachmentGcEnabled } from './config';
 import type { Attachment } from '@/db/types';
@@ -87,6 +88,8 @@ export function collectReferencedFileNames(): Set<string> {
   // Results and retained review inputs survive both source and reviewer pruning.
   // These roots stay active when handoff/review capabilities are disabled.
   for (const fileName of getAllWorkResultAttachmentFileNames()) out.add(fileName);
+  // A queued message's files, which no chat event names until it's sent.
+  for (const fileName of listQueuedMessageAttachmentFileNames()) out.add(fileName);
 
   return out;
 }

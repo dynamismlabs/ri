@@ -43,6 +43,9 @@ import { ModelMenuContent, ModelMenuLabel } from '@/components/chat-ui/model-men
 import { HarnessMark } from '@/components/settings/harness-connection-ui';
 import { ModelMenuProvider } from '@/components/chat-ui/model-menu/model-menu-provider';
 import { ChatInputEditor, type ChatInputEditorHandle } from '@/components/chat/editor/chat-input-editor';
+import { textToDocJSON } from '@/components/chat/editor/history-recall';
+import { MessageQueueStrip, queuedMessagePreview, type QueueStripMessage } from '@/components/chat-ui/queue/message-queue-strip';
+import { queuePlaceholder } from '@/components/executions/composer-send-route';
 import { MCP_FORM_EVENT, MCP_FORM_RESPONSE_EVENT } from '@/lib/mcp-apps/form-events';
 import { toChatEventDTO } from '@/lib/api/dto/chat-event';
 import { AgentResponse } from '@/components/chat-ui/messages/agent-response';
@@ -346,6 +349,39 @@ function CoordinationComposer() {
 }
 
 /** The real + beside the real editor, so Mention and Skills open their real menus. */
+/** Two messages written while the example chat works, one with a file. */
+function QueueExample() {
+  const editor = useRef<ChatInputEditorHandle | null>(null);
+  const working = config.state !== 'paused';
+  const stopsTurn = config.state === 'one-at-a-time';
+  const [messages, setMessages] = useState<QueueStripMessage[]>(() => [
+    { id: 'gallery-queued-1', content: 'Then add tests for the date boundary', attachments: [] },
+    { id: 'gallery-queued-2', content: 'When that is done, compare the page with [[file:gallery-login.png]]', attachments: [{ fileName: 'gallery-login.png', originalName: 'login screen.png', mimeType: 'image/png', size: 1, uploadedAt: NOW }] },
+  ]);
+  const [status, setStatus] = useState('This example saves nothing.');
+  const leave = (message: QueueStripMessage, said: string) => {
+    setMessages(queue => queue.filter(item => item.id !== message.id));
+    setStatus(said);
+  };
+  return <div className="pt-24">
+    <MessageQueueStrip
+      messages={messages}
+      working={working}
+      sendNowStopsTurn={stopsTurn}
+      onSendNow={message => leave(message, stopsTurn ? 'The example turn stopped and the message went. No agent got it.' : 'Sent now in the example. No agent got it.')}
+      onEdit={message => {
+        leave(message, 'Back in the message box.');
+        editor.current?.restore({ doc: textToDocJSON(queuedMessagePreview(message.content, message.attachments)) });
+      }}
+      onDelete={message => leave(message, 'Removed from the example queue.')}
+    />
+    <ChatComposer status={status}>
+      <ChatInputEditor ref={editor} ariaLabel="Example message" attachmentsEnabled={false}
+        placeholder={working ? queuePlaceholder(false) : 'Ask for anything. @ to mention, / for skills'} />
+    </ChatComposer>
+  </div>;
+}
+
 function AddMenuExample() {
   const editor = useRef<ChatInputEditorHandle | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
@@ -419,6 +455,7 @@ function Example() {
     {__GALLERY_EXAMPLE__ === 'app-prompts' && <AppPromptsExample />}
     {__GALLERY_EXAMPLE__ === 'model-menu' && <ModelMenuPreview state={config.state} />}
     {__GALLERY_EXAMPLE__ === 'add-menu' && <AddMenuExample />}
+    {__GALLERY_EXAMPLE__ === 'message-queue' && <QueueExample />}
     {__GALLERY_EXAMPLE__ === 'edits' && <div className="space-y-4 text-sm"><p>I clarified the agenda and made the next steps easier to scan.</p><EntityEditChip entityType="note" entityId={RECORD_ID} /></div>}
     {__GALLERY_EXAMPLE__ === 'files' && (config.state === 'beside' ? <FilesBeside /> : <FileChips />)}
     {__GALLERY_EXAMPLE__ === 'html' && <HtmlPreviewLink sessionId={CHAT_ID} path="review-plan.html">An interactive plan for the Friday review</HtmlPreviewLink>}

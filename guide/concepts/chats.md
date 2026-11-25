@@ -45,7 +45,19 @@ A chat may stop to ask you something or to ask permission, like running a comman
 
 ## Talking to a running chat
 
-Send a message any time, even while the chat is working. It goes straight to the chat, which takes it into the work it's doing. Messages from your main chat or another agent arrive labeled with who sent them.
+You can write to a chat while it's working, so you never have to hold the next step in your head. What you send waits in a queue above the message box. When the current turn finishes, the chat gets the first queued message as its next one, then the next, one turn at a time. The queue lives on your Home, so it keeps going after you close the window, and your phone shows the same queue.
+
+Each queued message has three controls:
+
+- **Send now** gives it to the chat straight away. On Claude Code and Codex the agent reads it at its next step, without stopping. On other harnesses the current turn stops first.
+- **Edit** moves it back into the message box.
+- **Delete** removes it.
+
+To send a message now instead of queuing it, press ⌘Enter. Hover the send button to see both choices and their keys.
+
+If you stop a turn, or a turn fails, the queue waits for you rather than carrying on. Send one of its messages now, and the rest follow.
+
+Messages from your main chat or another agent arrive labeled with who sent them.
 
 ## Files and mentions
 

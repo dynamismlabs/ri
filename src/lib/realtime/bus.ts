@@ -64,6 +64,8 @@ export type SessionStreamMessage =
   | { kind: 'delivery'; eventId: string; delivery: unknown }
   /** Where a Continue here stands (P4.2), as `src/lib/transfer/view.ts` shows it. */
   | { kind: 'transfer'; transfer: unknown }
+  /** The chat's queue of messages waiting for their turn (docs/message-queue.md), in full. */
+  | { kind: 'queue'; messages: unknown[] }
   | GlobalSessionStreamMessage;
 
 type Listener = (message: SessionStreamMessage) => void;
@@ -150,6 +152,11 @@ export function publishChatEvent(event: ChatEventRecord): void {
 export function publishRuntime(sessionId: string, running: boolean): void {
   publish(sessionChannel(sessionId), { kind: 'runtime', running });
   publishGlobal({ kind: 'session_updated', sessionId, reason: 'runtime' });
+}
+
+/** A chat's queue changed: every screen showing the chat gets the whole queue. */
+export function publishMessageQueue(sessionId: string, messages: unknown[]): void {
+  publish(sessionChannel(sessionId), { kind: 'queue', messages });
 }
 
 /** Publish the authoritative per-session background state and refresh the rail. */

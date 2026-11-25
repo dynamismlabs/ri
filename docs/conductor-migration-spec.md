@@ -1,5 +1,7 @@
 # Conductor-style migration — replace the chip queue
 
+> **History.** Mid-turn sends are no longer fire-and-forget for personal chats: they wait in the chat's queue unless sent now. See `docs/message-queue.md` (2026-11-24).
+
 Status: ready to execute. Successor to `docs/message-queue-spec.md`.
 
 This spec converts the current Option B implementation (Node-side pre-send

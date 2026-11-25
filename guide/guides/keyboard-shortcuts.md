@@ -32,9 +32,9 @@ In a team, ⌘J and ⌘⇧K are off.
 
 | Keys | What it does |
 | --- | --- |
-| Enter | Send. On a touch screen, Enter starts a new line, and the send button sends. |
+| Enter | Send. While the chat is working, Enter queues the message for when the turn finishes. On a touch screen, Enter starts a new line, and the send button sends. |
 | Shift+Enter | Start a new line. |
-| ⌘Enter | Send, on any device. |
+| ⌘Enter | Send, on any device. While the chat is working, ⌘Enter sends the message now instead of queuing it. |
 | `@` | Mention a task, note, agent, app, Connector or file. ← and → switch between the kinds before you type a search. |
 | `@#` | Mention a GitHub issue or pull request. |
 

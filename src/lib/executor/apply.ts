@@ -50,6 +50,7 @@ import type { RunnerSignal } from '@/lib/runner/types';
 import type { WorkerEvent } from '@/lib/workers/protocol';
 import { currentRemoteSignal, mirrorSignal } from './remote-live';
 import { settleTurn } from './turns';
+import { lastTurnFinishedNormally, noteTurnEnded } from '@/lib/sessions/message-queue-state';
 import { recordAgentRequestOutput, queueAgentBlockedUpdates, recordConversationOutput, conversationThreadForSession, queueConversationOutput } from '@/lib/db/queries';
 import { isProgressNote } from '@/lib/executions/progress-note';
 
@@ -171,6 +172,9 @@ export function applyRunnerSignal(
       if (signal.runId) finishRunInTransaction(signal.runId, turnOutcome(signal), after);
       after.tasks.push(() => {
         void settleWorkResultTurn(chatSessionId, signal).catch((error) => console.warn('[results] turn completion failed', error)).finally(() => settleTurn(signal.turnId, signal.ok ? null : signal.error ?? 'The turn failed'));
+        // The chat's queue moves on only after a turn that finished normally.
+        noteTurnEnded(chatSessionId, signal.ok && !signal.stopped);
+        scheduleQueueDrain(chatSessionId);
       });
       return;
   }
@@ -446,6 +450,20 @@ function scheduleQuietWorkResultDispatch(sessionId: string): void {
       await automatic.dispatchAutomaticWorkResultReviews(sessionId);
       const runtime = await import('@/lib/work-results/runtime');
       await runtime.dispatchQueuedWorkResultOperations(sessionId);
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => scheduleQueueDrain(sessionId));
+  });
+}
+
+/**
+ * Send the chat's next queued message if it's due (docs/message-queue.md).
+ * Asked both when a turn's result lands and when the chat goes quiet, since
+ * either can come second. The queue itself checks the rest.
+ */
+function scheduleQueueDrain(sessionId: string): void {
+  if (!lastTurnFinishedNormally(sessionId)) return;
+  setImmediate(() => {
+    void import('@/lib/sessions/message-queue')
+      .then(({ drainMessageQueue }) => drainMessageQueue(sessionId))
+      .catch((error) => console.warn(`[queue] could not send the next queued message for ${sessionId}:`, error));
   });
 }
