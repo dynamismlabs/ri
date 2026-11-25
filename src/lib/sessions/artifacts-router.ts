@@ -6,6 +6,7 @@ import { sessionAuthority, executionAuthority, executionCatalogFilter } from '@/
 import { listExecutionArtifacts } from './execution-artifacts';
 
 export const artifactsRouter = router({
+  /** Files shared in every chat on an execution (`executionId`), or in one chat (`sessionId`). */
   list: sharedProcedure.input(z.object({
     scope: z.union([
       z.object({ executionId: z.string().min(1).max(128) }).strict(),
@@ -21,6 +22,6 @@ export const artifactsRouter = router({
     const sessionId = 'sessionId' in scope ? scope.sessionId : listChatSessions({ executionId: scope.executionId }).find(visible)?.id;
     if (!sessionId || !getChatSession(sessionId)) throw new TRPCError({ code: 'NOT_FOUND', message: 'Chat not found' });
     sessionAuthority(ctx.key, sessionId, 'read');
-    return listExecutionArtifacts(sessionId, input.cursor ?? undefined, visible);
+    return listExecutionArtifacts(sessionId, input.cursor ?? undefined, visible, { chatOnly: 'sessionId' in scope });
   }),
 });

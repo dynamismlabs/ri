@@ -3,12 +3,15 @@ import { HoverCardPrimitive as HoverCardPrimitive } from '@/components/system/ho
 import { InlineAction } from '@/components/system/inline-action';
 
 
+import { useMemo } from 'react';
 import { FileIcon } from '@/components/file-icon';
 import { cn } from '@/lib/utils';
 import { basename } from '@/lib/executions/tool-display';
 import { dispatchOpenFile } from '@/lib/entity-refs/open-file-event';
 import type { DiffLine, EditDiff } from '@/lib/executions/edit-diff';
 import type { TurnFileEdit } from '@/components/chat-ui/activity/transcript-grouping';
+import { useArtifactPreview } from './artifact-preview-provider';
+import { listedArtifactPreview } from './artifact-list';
 
 /**
  * Render a per-edit hunk as colored lines (add/del/ctx). Shared by the
@@ -55,24 +58,36 @@ interface FileChipProps {
   diff?: EditDiff | null;
   /** Override the displayed label (defaults to the path basename). */
   label?: string;
+  /** The chat whose tool named the file. With it, a file only read opens in the shared preview. */
+  sessionId?: string;
   className?: string;
 }
 
 /**
  * Conductor-style file chip: an outline button (background = surface, a
  * border) with the file-type icon, name, and +N/−M counts. Hover shows a
- * diff preview; click opens the file in the viewer.
+ * diff preview.
+ *
+ * Click opens what the chip is about. A file the agent changed opens at its
+ * change in Files. A file it only read opens like a file in a message: in
+ * the shared preview, beside the chat or large, with the switch between
+ * them. It isn't one of the chat's cards, so Previous and Next don't walk
+ * every file the agent read, only from this one through the shared files.
  */
-export function FileChip({ path, diff, label, className }: FileChipProps) {
+export function FileChip({ path, diff, label, sessionId, className }: FileChipProps) {
   const name = label ?? basename(path);
   const hasDiff = !!diff && diff.lines.length > 0;
+  const open = useArtifactPreview();
+  const preview = useMemo(() => !diff && sessionId ? listedArtifactPreview({ source: { kind: 'session', sessionId, path }, name, mimeType: null }) : null, [diff, sessionId, path, name]);
 
   const chip = (
     <InlineAction appearance="chip"
       type="button"
+      data-artifact-card={preview ? '' : undefined}
       onClick={(e) => {
         e.stopPropagation();
-        dispatchOpenFile(path, e.currentTarget);
+        if (preview) open(preview, e.currentTarget);
+        else dispatchOpenFile(path, e.currentTarget);
       }}
       className={cn("inline-flex max-w-full items-center gap-1.5", "", "", className)}
     >

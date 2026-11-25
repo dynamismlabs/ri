@@ -112,3 +112,20 @@ it('serves relative HTML and images from the agent main chat folder too', async 
   expect(imageResponse.status).toBe(200);
   expect(Buffer.from(await imageResponse.arrayBuffer()).equals(png)).toBe(true);
 });
+
+it('serves an image outside the folder that a file tool in this chat read, and no other', async () => {
+  const png = Buffer.from('89504e470d0a1a0a0000000d4948445200000001000000010806000000', 'hex');
+  const read = path.join(outside, 'read.png');
+  const unread = path.join(outside, 'unread.png');
+  await fs.writeFile(read, png); await fs.writeFile(unread, png);
+  const q = await import('@/lib/db/queries');
+  q.insertChatEvent({ sessionId, role: 'assistant', source: 'tool_call', toolName: 'Read', toolInput: { file_path: read } });
+  const { GET: image } = await import('@/app/api/sessions/[id]/reply-image/route');
+  const get = (file: string) => image(new NextRequest(`http://ri.local/?path=${encodeURIComponent(file)}`), { params: Promise.resolve({ id: sessionId }) });
+  const opened = await get(read);
+  expect(opened.status).toBe(200);
+  expect(Buffer.from(await opened.arrayBuffer()).equals(png)).toBe(true);
+  expect((await get(unread)).status).toBe(403);
+  // The same name a different way (`/a/../b`) is the file that was read.
+  expect((await get(`${outside}/x/../read.png`)).status).toBe(200);
+});

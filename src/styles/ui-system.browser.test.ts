@@ -40,6 +40,7 @@ import {IconButton} from '@/components/system/icon-button';
       import {WorkbenchToggles} from '@/components/executions/workbench/workbench-toggles';
       import {FileChip} from '@/components/chat-ui/artifacts/file-chip';
       import {MessageFileChip} from '@/components/chat-ui/artifacts/message-file-chip';
+      import {ArtifactPreviewProvider} from '@/components/chat-ui/artifacts/artifact-preview-provider';
       const LENSES=[{value:'all',label:'All'},{value:'unread',label:'Unread',count:2,tone:'attention'},{value:'working',label:'Working'}];
       const LANES=[{value:'progress',label:'In progress',count:9},{value:'todo',label:'Todo',count:4},{value:'waiting',label:'Waiting',count:2},{value:'done',label:'Done',count:30}];
       function Fixture(){
@@ -149,7 +150,7 @@ import {IconButton} from '@/components/system/icon-button';
           <div className="dark"><div data-case="nested-pane-token" className="bg-pane text-t1">Nested dark pane</div></div>
         </div>;
       }
-      createRoot(document.getElementById('root')).render(<TooltipProvider><Fixture/></TooltipProvider>);
+      createRoot(document.getElementById('root')).render(<TooltipProvider><ArtifactPreviewProvider><Fixture/></ArtifactPreviewProvider></TooltipProvider>);
     ` },
     bundle: true, write: false, format: 'iife', platform: 'browser', jsx: 'automatic', logLevel: 'silent',
     define: { 'process.env.NODE_ENV': '"development"', 'process.env': '{}' },

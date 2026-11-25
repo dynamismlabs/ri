@@ -374,7 +374,7 @@ export function ExecutionEvent({ event, sessionId, isLatestUnresolved, voiceSent
             {entityEdit ? (
               <EntityEditChip entityType={entityEdit.entityType} entityId={entityEdit.entityId} />
             ) : filePath ? (
-              <FileChip path={filePath} diff={editDiff} />
+              <FileChip path={filePath} diff={editDiff} sessionId={event.sessionId} />
             ) : (
               <>
                 {d.target && (
