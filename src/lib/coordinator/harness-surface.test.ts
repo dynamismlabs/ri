@@ -410,6 +410,32 @@ describe('renderCoordinatorBrief', () => {
     expect(brief).toContain('Never re-introduce yourself');
   });
 
+  it('puts a standing watch in the heartbeat, keeping every line the user wrote', () => {
+    const brief = renderCoordinatorBrief().replace(/\s+/g, ' ');
+    expect(brief).toContain('## The heartbeat');
+    expect(brief).toContain('The heartbeat via `get_heartbeat`, `update_heartbeat`.');
+    // Watching goes in the heartbeat, a set time in a schedule.
+    expect(brief).toContain('is a heartbeat item, not a schedule of its own: "monitor my GitHub issues", "if a customer writes in, propose a reply"');
+    expect(brief).toContain('Keeping watch ("monitor my GitHub issues", "nudge chats that stall") is the heartbeat\'s job instead');
+    expect(brief).not.toContain('For recurring duties');
+    // Read, change one item, write the whole text back.
+    expect(brief).toContain('Read the current instructions with `get_heartbeat`.');
+    expect(brief).toContain('Send the whole text back as `instructions`, every other line unchanged.');
+    // It runs, can reach what it needs, and the user hears what changed.
+    expect(brief).toContain('If `enabled` is false, set it to true in the same call');
+    expect(brief).toContain('ask for it with `request_connection`');
+    expect(brief).toContain('Reply with the line you added and how often it checks');
+    // A send becomes a draft the user sends.
+    expect(brief).toContain('An email is a `create_email_draft` they can edit and send from this chat.');
+  });
+
+  it('keeps the heartbeat section free of em dashes and semicolons', () => {
+    const brief = renderCoordinatorBrief();
+    const section = brief.slice(brief.indexOf('## The heartbeat'), brief.indexOf('## Browser'));
+    expect(section.length).toBeGreaterThan(0);
+    expect(section).not.toMatch(/[—–;]/);
+  });
+
   it('surfaces the browser capability and its skill', () => {
     const brief = renderCoordinatorBrief();
     expect(brief).toContain('## Browser');
@@ -422,6 +448,13 @@ describe('renderCoordinatorBrief', () => {
     expect(brief).toContain(`${APP_NAME} has no setup checklist.`);
     expect(brief).toContain(`Settings → ${APP_NAME} in other agents. Nobody needs it to use ${APP_NAME}.`);
     expect(brief).not.toContain('Get started');
+  });
+
+  it('offers the heartbeat once, at a moment it would help, while it is off', () => {
+    const brief = renderCoordinatorBrief().replace(/\s+/g, ' ');
+    const extras = brief.slice(brief.indexOf('## Extras, when they\'d help'), brief.indexOf('## Rules that matter'));
+    expect(extras).toContain('the heartbeat, in Settings → Heartbeat. While it\'s off, offer it when they connect an account worth watching (email, GitHub, Slack) or mention missing things there');
+    expect(extras).toContain('A yes follows the steps in The heartbeat. A direct ask to watch something needs no offer: just add it.');
   });
 });
 
