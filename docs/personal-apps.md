@@ -120,6 +120,18 @@ An app borrows the person's accounts, and Ri's own services, through Ri's integr
 
 **Trust.** Hub tokens limit what goes through the hub. They don't stop an app's code reading files its user can read (shared spec, Trust).
 
+### Connecting an app Ri installed to the hub
+
+The app's own "Connect to Ri" (in its Settings) sends a browser to Ri's consent screen, and for an app Ri installed, Ri's address there is its loopback one (`http://127.0.0.1:3000`), which a browser on a laptop or phone using Ri through its remote address can't open (found November 25 in People's Connect Calendar). So Ri connects an app it installed itself, asking in its own dialog, through the app kit's hub routes (kit core 0.2.11) with the app's host key, as for allowing Ri in it (`src/lib/apps/hub-connect.ts`):
+
+- **Where the hub is.** Ri tells the app `POST /api/host/hub` with `{ url }`, its hub on this computer (`getLoopbackBaseUrl()` + `/api/integrations/mcp`). The app keeps it only when it has no hub yet. Ri does this when the app's page in Ri reads `GET /api/host/hub`, and once per app while Ri runs when one of its views opens, so the app's own Connect button works inside Ri without asking for an address.
+- **Choosing.** On the app's page, "{App} and your accounts" says what the app asks for and offers Choose accounts (Connect again once it needs reconnecting or was turned off). Ri asks the app to start (`POST /api/host/hub/connect`). The app registers and makes its authorization address with PKCE and state, as for a browser, and answers it. Ri's dialog offers exactly what the consent screen would (`hubConsentFor`), with what the app asked for ticked.
+- **From the app's own view.** The kit opens the same address with `ui/open-link`. Ri sees an approval for its own hub (`src/lib/apps/hub-link.ts`) and asks in the same dialog instead of opening a tab. One for another app than the view's, or for an app Ri didn't install, opens as any link does.
+- **Approving.** Ri checks the authorization as the consent screen's form does: one of Ri's own loopback addresses, the hub as the resource, PKCE, a registered redirect, and a client returning to the one app Ri installed at that address. It records the choice as the app's grant and issues the code (`hubDecisionRedirect`), then sends `{ code, state }` to the app (`POST /api/host/hub/finish`). The app checks the state and exchanges the code at Ri's token endpoint with its own verifier, so its tokens never pass through Ri's dialog. A team's server refuses, as its consent screen does.
+- **When Ri can't.** An app Ri didn't install, one whose owner signs in (409), or one made before kit core 0.2.11 (a page or 404 where the routes would be) connects from its own Settings, as before. Ri says to update it.
+
+Tested in `src/lib/apps/hub-connect.test.ts` against the fixture app with the kit's hub routes: naming the hub once, the dialog's choices, a grant of only what was offered, the app's own token exchange, a code used once, the view's app only, every refusal of the authorization, each fallback, and a hub the app already uses left alone.
+
 ## Building and changing apps
 
 Ri builds and changes apps with the kit's own commands (shared spec §2, and the kit's `docs/safe-change.md`), so a person or any agent can do the same by hand. The kit's name isn't settled, so Ri never assumes it: New app runs the kit Ri carries by the one command its package names, and inside an app Ri runs the kit's command the way the app's own `start` script names it (`<cli> serve`), with `pnpm exec`. Every one of these runs with what Ri brings (below).

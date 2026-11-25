@@ -19,7 +19,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { z } from 'zod/v4';
-import { getAppSourceForApp } from '@/lib/db/queries';
+import { getAppSourceForApp, type AppSourceRecord } from '@/lib/db/queries';
 import { PersonalAppError, placeName } from '@/lib/integrations/apps';
 import { beginMcpAuthorization, completeMcpAuthorization } from '@/lib/integrations/mcp-authorization';
 import type { McpServerEntry } from '@/lib/integrations/mcp-servers';
@@ -73,7 +73,7 @@ export type PlaceAccess = PlaceAccessBase & (
 
 export type AllowResult = (PlaceAccessBase & { connected: true }) | (PlaceAccessBase & { connected: false; kind: 'browser'; reason: BrowserReason });
 
-interface Host { origin: string; key: string }
+export interface Host { origin: string; key: string }
 
 /** `http://127.0.0.1:<port>` and its aliases, or null for any other address. */
 export function loopbackOrigin(value: string): string | null {
@@ -113,9 +113,19 @@ function describe(entry: McpServerEntry): PlaceAccessBase {
 /** The app's grant, when Ri installed it at this address and its kit reports a host key. */
 async function hostFor(entry: McpServerEntry): Promise<Host | BrowserReason> {
   const source = getAppSourceForApp(entry.app!.id);
-  if (!source?.createdByRi || source.removedAt || !source.url || !source.folder) return 'not_installed_by_ri';
   const origin = loopbackOrigin(entry.url);
-  if (!origin || origin !== loopbackOrigin(source.url)) return 'not_installed_by_ri';
+  if (!origin || !source?.url || origin !== loopbackOrigin(source.url)) return 'not_installed_by_ri';
+  return installedAppHost(source);
+}
+
+/**
+ * An app Ri installed on this computer, at its loopback address, with the host key its kit names,
+ * or why Ri can't ask it anything itself. Shared with connecting the app to Ri's hub (hub-connect.ts).
+ */
+export async function installedAppHost(source: AppSourceRecord | undefined): Promise<Host | BrowserReason> {
+  if (!source?.createdByRi || source.removedAt || !source.url || !source.folder) return 'not_installed_by_ri';
+  const origin = loopbackOrigin(source.url);
+  if (!origin) return 'not_installed_by_ri';
   const status = await appStatus(source.id).catch(() => null);
   if (!status?.hostKeyPath) return 'no_endpoint';
   const key = readHostKey(status.hostKeyPath, status.dataDir ?? null);
@@ -131,7 +141,7 @@ async function hostFor(entry: McpServerEntry): Promise<Host | BrowserReason> {
  * the kit refuses a request that carries an Origin or a forwarding header, which only a browser or a
  * proxy would add.
  */
-function hostRequest(host: Host, method: 'GET' | 'POST', pathname: string, body: unknown, timeoutMs: number): Promise<{ status: number; json: unknown }> {
+export function hostRequest(host: Host, method: 'GET' | 'POST', pathname: string, body: unknown, timeoutMs: number): Promise<{ status: number; json: unknown }> {
   const payload = body === undefined ? null : Buffer.from(JSON.stringify(body));
   return new Promise((resolve, reject) => {
     const request = http.request(new URL(pathname, host.origin), {
@@ -158,7 +168,7 @@ function hostRequest(host: Host, method: 'GET' | 'POST', pathname: string, body:
   });
 }
 
-const errorCode = (json: unknown) => json && typeof json === 'object' && typeof (json as { error?: unknown }).error === 'string' ? (json as { error: string }).error : null;
+export const errorCode = (json: unknown) => json && typeof json === 'object' && typeof (json as { error?: unknown }).error === 'string' ? (json as { error: string }).error : null;
 const message = (error: unknown) => error instanceof Error ? error.message : String(error);
 
 /**
