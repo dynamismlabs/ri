@@ -6,6 +6,7 @@ import { z } from 'zod/v4';
 import { TRPCError } from '@trpc/server';
 import { sharedProcedure, router } from '@/lib/trpc/init';
 import { listStartedChats } from '@/lib/db/queries';
+import { isTeamAuthority } from '@/lib/home/authority';
 import { actorFromRequest } from '@/lib/auth/actor';
 import { executionAuthority, workspaceAuthority } from '@/lib/workspaces/access';
 import type { RequestKey } from '@/lib/auth/request-key';
@@ -28,12 +29,16 @@ function authorizedScope(key: RequestKey | null, input: z.infer<typeof scopeInpu
 
 export const startedChatsRouter = router({
   /** Every chat this starter started, newest first, archived included. */
-  list: sharedProcedure.input(z.object({ scope: scopeInput }).strict()).query(({ input, ctx }) =>
-    listStartedChats(authorizedScope(ctx.key, input.scope, 'read'))),
+  list: sharedProcedure.input(z.object({ scope: scopeInput }).strict()).query(({ input, ctx }) => {
+    const scope = authorizedScope(ctx.key, input.scope, 'read');
+    // Coordination is personal: a team's chats start none.
+    return isTeamAuthority() ? [] : listStartedChats(scope);
+  }),
   /** Archive the finished ones you never wrote in (`isFinishedUntouched`). */
   archiveFinished: sharedProcedure.input(z.object({ scope: scopeInput }).strict()).mutation(async ({ input, ctx }) => {
     const scope = authorizedScope(ctx.key, input.scope, 'archive');
-    const { archiveFinishedStartedChats } = await import('./started-chats-archive');
+    const { archiveFinishedStartedChats, NO_STARTED_OUTCOME } = await import('./started-chats-archive');
+    if (isTeamAuthority()) return NO_STARTED_OUTCOME;
     try {
       return await archiveFinishedStartedChats(scope, actorFromRequest(ctx.request.headers));
     } catch (error) {

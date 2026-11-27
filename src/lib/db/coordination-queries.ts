@@ -523,6 +523,13 @@ export function startedByForChats(rows: readonly { id: string; executionId: stri
   if (!rows.length) return out;
   const ids = [...new Set(rows.map((row) => row.id))];
   const executionIds = [...new Set(rows.map((row) => row.executionId).filter((id): id is string => !!id))];
+  // The rows' own chats and their executions' other chats, each by an index
+  // (the execution's, then the request's target), so a poll never scans the
+  // request table.
+  const siblings = executionIds.length
+    ? getDb().select({ id: chatSessions.id }).from(chatSessions).where(inArray(chatSessions.executionId, executionIds)).all().map((row) => row.id)
+    : [];
+  const candidates = [...new Set([...ids, ...siblings])];
   const found = getDb().select({
     requestId: requests.id,
     requestStatus: requests.status,
@@ -546,10 +553,7 @@ export function startedByForChats(rows: readonly { id: string; executionId: stri
     .innerJoin(starterChat, eq(starterChat.id, requests.sourceSessionId))
     .leftJoin(starterExecution, eq(starterExecution.id, starterChat.executionId))
     .leftJoin(workspaces, eq(workspaces.id, starterChat.workspaceId))
-    .where(and(
-      eq(requests.kind, 'delegation'),
-      or(inArray(requests.targetSessionId, ids), executionIds.length ? inArray(startedTarget.executionId, executionIds) : undefined),
-    ))
+    .where(and(eq(requests.kind, 'delegation'), inArray(requests.targetSessionId, candidates)))
     .orderBy(requests.createdAt, requests.id)
     .all();
   const byChat = new Map<string, StartedBy>();
@@ -615,6 +619,17 @@ export function startedChatActivity(chats: readonly { id: string; executionId: s
     .groupBy(requests.targetSessionId)
     .all()
     .map((row) => [row.chatId!, row.at] as const));
+  // A message the person sent into the assigned turn under way (Send now, or
+  // typing while it works) starts no turn of its own. The request's answer
+  // records it as human direction, so it counts as writing in it too.
+  const directed = new Set(getDb().select({ chatId: requests.targetSessionId }).from(requests)
+    .innerJoin(deliveries, eq(deliveries.requestId, requests.id))
+    .where(and(
+      inArray(requests.targetSessionId, ids),
+      inArray(deliveries.kind, ['answer', 'failed', 'cancelled']),
+      sql`json_extract(${deliveries.payload}, '$.humanDirected') = 1`,
+    ))
+    .all().map((row) => row.chatId!));
   const open = new Set(getDb().select({ chatId: requests.targetSessionId }).from(requests)
     .where(and(inArray(requests.targetSessionId, ids), inArray(requests.status, [...OPEN])))
     .all().map((row) => row.chatId!));
@@ -632,7 +647,7 @@ export function startedChatActivity(chats: readonly { id: string; executionId: s
     const at = returned.get(id) ?? null;
     const turn = turns.get(id);
     const since = !!at && !!turn?.lastQueuedAt && timestampEpoch(turn.lastQueuedAt) > timestampEpoch(at);
-    out.set(id, { answerReturnedAt: at && !since && !open.has(id) ? at : null, personWrote: !!turn?.personWrote });
+    out.set(id, { answerReturnedAt: at && !since && !open.has(id) ? at : null, personWrote: !!turn?.personWrote || directed.has(id) });
   }
   return out;
 }
@@ -661,6 +676,8 @@ export interface StartedChatRow {
   turnStatus: (typeof chatSessions.$inferSelect)['turnStatus'];
   answerReturnedAt: string | null;
   personWrote: boolean;
+  /** Other open chats in its execution: a New chat you started there makes the work yours too. */
+  otherChats: number;
 }
 
 /**
@@ -668,11 +685,12 @@ export interface StartedChatRow {
  * (any of its chats) or a main chat's (by its stable address, across New
  * chat). Newest first, archived included: the list folds those.
  */
-export function listStartedChats(scope: { executionId: string } | { address: string }, limit = 200): StartedChatRow[] {
+export function listStartedChats(scope: { executionId: string } | { address: string }, opts: { limit?: number | null; openOnly?: boolean } = {}): StartedChatRow[] {
+  const limit = opts.limit === undefined ? 200 : opts.limit;
   const starters = 'executionId' in scope
     ? inArray(requests.sourceSessionId, getDb().select({ id: chatSessions.id }).from(chatSessions).where(eq(chatSessions.executionId, scope.executionId)))
     : eq(requests.sourceAddress, scope.address);
-  const rows = getDb().select({
+  const query = getDb().select({
     requestId: requests.id,
     requestStatus: requests.status,
     sessionId: startedTarget.id,
@@ -692,14 +710,14 @@ export function listStartedChats(scope: { executionId: string } | { address: str
     lastViewedAt: startedTarget.lastViewedAt,
     unreadMarkerAt: startedTarget.unreadMarkerAt,
     turnStatus: startedTarget.turnStatus,
+    otherChats: sql<number>`(SELECT COUNT(*) FROM chat_sessions other WHERE other.execution_id = ${startedTarget.executionId} AND other.id <> ${startedTarget.id} AND other.status = 'active' AND COALESCE(other.surface_kind, '') <> 'result_review')`,
   }).from(requests)
     .innerJoin(startedTarget, eq(startedTarget.id, requests.targetSessionId))
     .leftJoin(executions, eq(executions.id, startedTarget.executionId))
     .leftJoin(workspaces, eq(workspaces.id, startedTarget.workspaceId))
-    .where(and(eq(requests.kind, 'delegation'), starters))
-    .orderBy(desc(requests.createdAt), desc(requests.id))
-    .limit(limit)
-    .all();
+    .where(and(eq(requests.kind, 'delegation'), starters, opts.openOnly ? eq(startedTarget.status, 'active') : undefined))
+    .orderBy(desc(requests.createdAt), desc(requests.id));
+  const rows = limit === null ? query.all() : query.limit(limit).all();
   if (!rows.length) return [];
   const activity = startedChatActivity(rows.map((row) => ({ id: row.sessionId, executionId: row.executionId })));
   const stopped = rows.filter((row) => row.requestStatus === 'failed' || row.requestStatus === 'cancelled');
@@ -716,5 +734,6 @@ export function listStartedChats(scope: { executionId: string } | { address: str
     outcome: outcomes.get(row.requestId) ?? null,
     answerReturnedAt: activity.get(row.sessionId)?.answerReturnedAt ?? null,
     personWrote: activity.get(row.sessionId)?.personWrote ?? false,
+    otherChats: Number(row.otherChats ?? 0),
   }));
 }

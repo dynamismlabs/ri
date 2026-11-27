@@ -25,7 +25,7 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
   const { id } = rpcInput.params;
   try {
     const queryForce = searchParams(rpcInput.query).get('force') === 'true';
-    const body = rpcInput.body as { force?: boolean };
+    const body = rpcInput.body as { force?: boolean; alsoArchiving?: string[] };
     const force = queryForce || body.force === true;
 
     const actor = actorFromRequest(request.headers);
@@ -36,7 +36,7 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
     // that aren't committed, stay, and the reply names them.
     // The chat itself is archived by now, so a failure here only leaves them open.
     const startedChats = row.status === 'archived' && row.executionId
-      ? await archiveFinishedStartedChats({ executionId: row.executionId }, actor).catch((error) => {
+      ? await archiveFinishedStartedChats({ executionId: row.executionId }, actor, { skip: new Set(body.alsoArchiving ?? []) }).catch((error) => {
         console.warn('[archive] could not archive its started chats', error);
         return NO_STARTED_OUTCOME;
       })
@@ -69,4 +69,4 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
   }
 }
 
-export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), query: rpcZ.object({ "force": rpcZ.string().optional() }).strict().optional(), body: rpcZ.object({ "force": rpcZ.boolean().optional() }).strict().default({}) }).strict();
+export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), query: rpcZ.object({ "force": rpcZ.string().optional() }).strict().optional(), body: rpcZ.object({ "force": rpcZ.boolean().optional(), "alsoArchiving": rpcZ.array(rpcZ.string().min(1).max(128)).max(1000).optional() }).strict().default({}) }).strict();

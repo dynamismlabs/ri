@@ -24,8 +24,8 @@ function titleOf(row: StartedChatRow): string {
 
 /**
  * Whether a started chat is finished and still only its starter's: its
- * answer went back (or it stopped), nothing runs or waits in it, and you
- * never wrote in it or pinned it. Those are what Archive finished, and
+ * answer went back (or it stopped), nothing runs or waits in it, you never
+ * wrote in it or pinned it, and you opened no other chat in its execution. Those are what Archive finished, and
  * archiving their starter, take with them (docs/started-chats.md).
  */
 export function isFinishedUntouched(row: StartedChatRow, live: { running: ReadonlySet<string>; pending: ReadonlySet<string> }): boolean {
@@ -34,7 +34,9 @@ export function isFinishedUntouched(row: StartedChatRow, live: { running: Readon
     && !live.running.has(row.sessionId)
     && !live.pending.has(row.sessionId)
     && !row.personWrote
-    && !row.pinnedAt;
+    && !row.pinnedAt
+    // Archiving it archives its whole execution: a chat you opened there keeps it.
+    && !row.otherChats;
 }
 
 export interface StartedArchiveDeps {
@@ -42,6 +44,8 @@ export interface StartedArchiveDeps {
   archive?: (args: { sessionId: string; actor?: WorkerCommandActor; force: false }) => Promise<{ status: string } | null>;
   /** Who runs and who waits right now. The runtime's snapshot by default. */
   live?: { running: ReadonlySet<string>; pending: ReadonlySet<string> };
+  /** Chats archived in the same pass (a bulk archive), left to their own requests. */
+  skip?: ReadonlySet<string>;
 }
 
 /**
@@ -49,8 +53,8 @@ export interface StartedArchiveDeps {
  * a worktree with files that aren't committed refuses and stays, named in
  * the outcome. One still running or waiting on you stays too. Never forced.
  */
-export async function archiveFinishedStartedChats(scope: StartedScope, actor?: WorkerCommandActor, deps: StartedArchiveDeps = {}): Promise<StartedArchiveOutcome> {
-  const rows = q.listStartedChats(scope).filter((row) => row.status === 'active');
+export async function archiveFinishedStartedChats(scope: StartedScope, actor?: WorkerCommandActor, deps: StartedArchiveDeps = {}, depth = 0): Promise<StartedArchiveOutcome> {
+  const rows = q.listStartedChats(scope, { openOnly: true, limit: null }).filter((row) => !deps.skip?.has(row.sessionId));
   if (!rows.length) return NO_STARTED_OUTCOME;
   const live = deps.live ?? { running: new Set(listRunningSessions()), pending: new Set(listSessionsWithPending()) };
   const kept: StartedArchiveOutcome['kept'] = [];
@@ -63,10 +67,14 @@ export async function archiveFinishedStartedChats(scope: StartedScope, actor?: W
   const archive = deps.archive ?? (await import('./dispatch')).archiveExecutionSession;
   const settled = await Promise.allSettled(finished.map((row) => archive({ sessionId: row.sessionId, actor, force: false })));
   const archived: StartedArchiveOutcome['archived'] = [];
+  const deeper: StartedScope[] = [];
   settled.forEach((result, i) => {
     const row = finished[i]!;
     if (result.status === 'fulfilled') {
-      if (result.value?.status === 'archived') archived.push({ id: row.sessionId, label: titleOf(row) });
+      if (result.value?.status === 'archived') {
+        archived.push({ id: row.sessionId, label: titleOf(row) });
+        if (row.executionId) deeper.push({ executionId: row.executionId });
+      }
       return;
     }
     const error = result.reason;
@@ -75,5 +83,14 @@ export async function archiveFinishedStartedChats(scope: StartedScope, actor?: W
     // it open as it was. Archive finished on the list stays there to retry.
     else console.warn(`[started chats] could not archive ${row.sessionId}:`, error);
   });
+  // The chats those started go too, on the same terms. Delegation refuses
+  // chains past 8, so this stops there as well.
+  if (depth < 8) {
+    for (const next of deeper) {
+      const below = await archiveFinishedStartedChats(next, actor, deps, depth + 1);
+      archived.push(...below.archived);
+      kept.push(...below.kept);
+    }
+  }
   return { archived, kept };
 }

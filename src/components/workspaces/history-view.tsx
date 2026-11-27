@@ -196,6 +196,7 @@ function DateGroups({
   onOpenWorkspaceSettings: (id: string) => void;
 }) {
   const [openGroups, toggleGroup] = useOpenStartedGroups();
+  const { activeSessionId } = useDashboard();
   return (
     <>
       {groups.map((group) => (
@@ -221,7 +222,9 @@ function DateGroups({
                 startedBy={entry.startedBy}
                 childSessions={entry.children}
                 newest={entryNewest(entry)}
-                open={openGroups.has(entry.key)}
+                // Open while it holds the chat on screen, so you can see where
+                // you are. That doesn't change what this browser keeps open.
+                open={openGroups.has(entry.key) || entry.children.some((c) => c.id === activeSessionId)}
                 onToggle={() => toggleGroup(entry.key)}
                 onOpenWorkspaceSettings={onOpenWorkspaceSettings}
                 onOpenLauncher={openLauncher}

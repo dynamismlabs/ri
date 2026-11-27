@@ -864,7 +864,7 @@ export function useBulkArchiveSessions() {
   return useMutation<BulkArchiveResult, Error, { ids: string[]; force?: boolean }, { release: () => void }>({
     mutationFn: async ({ ids, force }) => {
       const settled = await Promise.allSettled(
-        ids.map((id) => sessionsApi.archive(id, { force })),
+        ids.map((id) => sessionsApi.archive(id, { force, alsoArchiving: ids.filter((other) => other !== id) })),
       );
       const result: BulkArchiveResult = { succeeded: [], dirty: [], failed: [], started: { archived: [], kept: [] } };
       const picked = new Set(ids);

@@ -15,12 +15,14 @@ export function startedChatState(
 ): StartedChatState {
   if (row.status === 'active' && live.pending.has(row.sessionId)) return 'needs_you';
   if (row.status === 'active' && (live.streaming.has(row.sessionId) || !isFinishedRequest(row.requestStatus))) return 'working';
+  // Archived before it answered: it won't.
+  if (!isFinishedRequest(row.requestStatus)) return 'cancelled';
   if (row.requestStatus === 'failed') return 'failed';
   if (row.requestStatus === 'cancelled') return 'cancelled';
   return 'returned';
 }
 
 /** Finished, open, and only its starter's: what Archive finished takes (`isFinishedUntouched` on the server). */
-export function isArchivableStartedChat(row: Pick<StartedChatRow, 'status' | 'personWrote' | 'pinnedAt'>, state: StartedChatState): boolean {
-  return row.status === 'active' && (state === 'returned' || state === 'failed' || state === 'cancelled') && !row.personWrote && !row.pinnedAt;
+export function isArchivableStartedChat(row: Pick<StartedChatRow, 'status' | 'personWrote' | 'pinnedAt' | 'otherChats'>, state: StartedChatState): boolean {
+  return row.status === 'active' && (state === 'returned' || state === 'failed' || state === 'cancelled') && !row.personWrote && !row.pinnedAt && !row.otherChats;
 }

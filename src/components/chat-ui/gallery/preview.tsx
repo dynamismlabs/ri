@@ -371,7 +371,7 @@ function startedRow(id: string, label: string, agent: { name: string; emoji: str
   return {
     requestId: `gallery-request-${id}`, requestStatus: 'completed', outcome: null, sessionId: `gallery-started-${id}`, label, executionId: `gallery-execution-${id}`, executionLabel: label,
     status: 'active', pinnedAt: null, workspaceId: `gallery-${agent.name}`, workspaceName: agent.name, workspaceEmoji: agent.emoji, workspaceAttachments: null, workspaceAreaId: null,
-    startedAt: NOW, lastActivityAt: NOW, lastOutcomeEventAt: NOW, lastViewedAt: NOW, unreadMarkerAt: null, turnStatus: null, answerReturnedAt: NOW, personWrote: false, ...over,
+    startedAt: NOW, lastActivityAt: NOW, lastOutcomeEventAt: NOW, lastViewedAt: NOW, unreadMarkerAt: null, turnStatus: null, answerReturnedAt: NOW, personWrote: false, otherChats: 0, ...over,
   };
 }
 const STARTED_ROAST = { name: 'Roast lab', emoji: '🔥' };

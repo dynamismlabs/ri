@@ -45,7 +45,9 @@ nor waiting on you (`answerReturnedAt`, set by `startedChatActivity`):
   for a settled import. Needs approval and Working come first, so a chat that
   needs you always shows.
 
-Every list endpoint adds the two fields through `withStartedChats`: the rail,
+The lookups go by index: a list's chats and their executions' other chats
+(`chat_sessions` by execution), then the requests that target them. Every list
+endpoint adds the two fields through `withStartedChats`: the rail,
 Recent's feed, an agent's chats, search, a chat's own record, the needs-review
 list (which drops the returned ones) and the desktop dock's counts. On the real
 Home it took Unread from 42 to 23.
@@ -56,7 +58,7 @@ Home it took Unread from 42 to 23.
 | --- | --- |
 | Every chat row | A corner arrow (`StartedMark`) before the title, its tooltip naming the starter. Chats you started carry nothing. Recent, Pinned, the agent tree, an agent's Chats tab, chat search, the phone's rows. |
 | A started chat's header | **from** and the starter's name after the title (`StartedFromLink`), opening it. Its first message already has the sender chip. |
-| Recent | Started chats sit under their starter, folded (`groupRecentSessions`, `RecentGroup`). The fold line counts them and says what they're doing: needs you, unread, working. A main chat isn't a Recent row, so one that started chats in the list stands in as their group's head, opening that main chat. A starter not in the list (archived out of the window, or narrowed away by the agent pills) leaves its chats as their own rows, marked. A started chat's own started chats fold into the same group. A group ranks and dates by its newest member, and folds as inactive only when everything in it has. Open groups are kept per browser (`ri.client.openStartedGroups`). While selecting chats to archive the list is flat. |
+| Recent | Started chats sit under their starter, folded (`groupRecentSessions`, `RecentGroup`). The fold line counts them and says what they're doing: needs you, unread, working. A main chat isn't a Recent row, so one that started chats in the list stands in as their group's head, opening that main chat. A starter not in the list (archived out of the window, or narrowed away by the agent pills) leaves its chats as their own rows, marked. A started chat's own started chats fold into the same group. A group ranks and dates by its newest member, and folds as inactive only when everything in it has. Open groups are kept per browser (`ri.client.openStartedGroups`), and a group holding the chat on screen shows open without changing that. While selecting chats to archive the list is flat. |
 | Header pills, Board, the phone's Unread and Working | Each chat stays in the list for its own state, so a started chat can't sit under its starter there. Two or more from one starter in one list stack into one row or card that opens in place (`stackStartedChats`), at the newest one's place. Needs approval never stacks. Counts still count each chat. A lone started chat shows the arrow, and a Board card a from line. |
 | Tools | **Started chats** in a chat's Tools box, its folded strip and the panel's More menu, and as a tab beside an agent's main chat. Shown once it has started one. The row reads like the agent's Chats row: who needs you, else how many work, else how many are open. |
 
@@ -70,9 +72,13 @@ it stopped. Archived ones fold behind one line. It refreshes every 15 seconds
 while shown, and its dots read the runtime's live sets.
 
 **Archive finished** takes the ones that returned or stopped, that nothing runs
-or waits in, and that you never wrote in or pinned (`isFinishedUntouched`).
-Each archives the usual way, never forced: one with files it never committed
-refuses and stays.
+or waits in, that you never wrote in or pinned, and whose execution has no
+other open chat (`isFinishedUntouched`). A message you sent into its assigned
+turn counts as writing in it: it starts no turn of its own, but the answer
+records it as human direction. A New chat you opened in its execution keeps it
+too, since archiving it archives the whole execution. Each archives the usual
+way, never forced: one with files it never committed refuses and stays. One
+archived before it answered reads Cancelled under the fold.
 
 ## Archiving a starter
 
@@ -81,9 +87,13 @@ the same terms (`archiveFinishedStartedChats`, called from the archive
 operation after the chat itself is archived). Ones still working, waiting on
 you, or with uncommitted files stay, and the reply names them, so the toast
 can: "Archived Plan the launch and 2 chats it started. Draft the email is still
-working, so it stays open." Bulk archive sums them ("Also archived 3 chats they
-started"), leaving out chats that were ticked themselves. A failure here only
-leaves them open: the chat itself is already archived.
+working, so it stays open." It goes down the levels: a finished started chat's
+own finished started chats go too, to the depth delegation allows. Bulk archive
+sums them ("Also archived 3 chats they started"), and each request names the
+other ticked chats (`alsoArchiving`), so a cascade never archives one a request
+of the same pass is archiving. A failure here only leaves them open: the chat
+itself is already archived. The reply waits for the cascade, so the toast can
+say what went, while the rows already left on the click.
 
 ## Tests
 

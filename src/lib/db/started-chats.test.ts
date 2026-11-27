@@ -5,6 +5,7 @@ import { archiveFinishedStartedChats } from '@/lib/sessions/started-chats-archiv
 import { withStartedChats } from '@/lib/sessions/started-chats';
 import { classifySession } from '@/lib/sessions/classification';
 import { isSessionUnread } from '@/lib/utils/session-sort';
+import { startedChatState } from '@/lib/sessions/started-chat-state';
 
 let home: TestHome;
 beforeEach(async () => { home = await createTestHome(); });
@@ -199,5 +200,69 @@ describe('archiveFinishedStartedChats', () => {
       { id: dirty.id, label: 'Dirty', reason: 'uncommitted' },
     ]));
     expect(outcome.kept).toHaveLength(3);
+  });
+});
+
+describe('what keeps a started chat yours', () => {
+  it('counts a message you sent into its assigned turn, which starts no turn of its own', () => {
+    const shop = agent('Shop');
+    const parent = chat(shop.id, 'Plan');
+    const child = chat(shop.id, 'Child');
+    delegate(parent, child, 'req');
+    const run = q.createRun({ harness: 'claude', triggerKind: 'manual', chatSessionId: child.id, executionId: child.executionId, status: 'running', queuedAt: '2026-11-20 10:00:00' });
+    q.updateAgentRequest('req', { runId: run.id, status: 'working' });
+    q.noteCoordinationHumanDirection(run.id, child.id);
+    q.finishAgentRequest('req', 'completed', 'Done.');
+    const [row] = q.listStartedChats({ executionId: parent.executionId! });
+    expect(row).toMatchObject({ personWrote: true });
+  });
+
+  it('leaves alone one whose execution has another chat you opened, and the ones archived in the same pass', async () => {
+    const shop = agent('Shop');
+    const parent = chat(shop.id, 'Plan');
+    const shared = chat(shop.id, 'Shared');
+    const picked = chat(shop.id, 'Picked');
+    const plain = chat(shop.id, 'Plain');
+    for (const [c, id] of [[shared, 'r-shared'], [picked, 'r-picked'], [plain, 'r-plain']] as const) {
+      delegate(parent, c, id);
+      returnAnswer(id, c);
+    }
+    q.createChatSession({ harness: 'claude', type: 'execution', executionId: shared.executionId, workspaceId: shop.id });
+    expect(q.listStartedChats({ executionId: parent.executionId! }).find((r) => r.label === 'Shared')?.otherChats).toBe(1);
+    const archived: string[] = [];
+    const outcome = await archiveFinishedStartedChats({ executionId: parent.executionId! }, undefined, {
+      live: { running: NONE, pending: NONE },
+      skip: new Set([picked.id]),
+      archive: async ({ sessionId }) => { archived.push(sessionId); return { status: 'archived' }; },
+    });
+    expect(archived).toEqual([plain.id]);
+    expect(outcome.kept).toEqual([]);
+  });
+
+  it('archives the finished chats its finished chats started, too', async () => {
+    const shop = agent('Shop');
+    const parent = chat(shop.id, 'Plan');
+    const child = chat(shop.id, 'Child');
+    const grandchild = chat(shop.id, 'Grandchild');
+    delegate(parent, child, 'r-child');
+    delegate(child, grandchild, 'r-grandchild');
+    returnAnswer('r-child', child);
+    returnAnswer('r-grandchild', grandchild);
+    const archived: string[] = [];
+    const outcome = await archiveFinishedStartedChats({ executionId: parent.executionId! }, undefined, {
+      live: { running: NONE, pending: NONE },
+      archive: async ({ sessionId }) => {
+        archived.push(sessionId);
+        q.archiveChatSession(sessionId);
+        return { status: 'archived' };
+      },
+    });
+    expect(archived).toEqual([child.id, grandchild.id]);
+    expect(outcome.archived.map((a) => a.label)).toEqual(['Child', 'Grandchild']);
+  });
+
+  it('reads one archived before it answered as cancelled, never as returned', () => {
+    expect(startedChatState({ sessionId: 'c', status: 'archived', requestStatus: 'working' }, { pending: NONE, streaming: NONE })).toBe('cancelled');
+    expect(startedChatState({ sessionId: 'c', status: 'archived', requestStatus: 'completed' }, { pending: NONE, streaming: NONE })).toBe('returned');
   });
 });
