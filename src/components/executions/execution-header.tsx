@@ -1,4 +1,6 @@
 'use client';
+import type { StartedFields } from '@/lib/sessions/started-by';
+import { StartedFromLink } from '@/components/workspaces/started-mark';
 import { PopoverPrimitive } from '@/components/system/popover';
 import { Switch } from '@/components/ui/switch';
 import { ChoiceRow } from '@/components/system/choice-row';
@@ -51,7 +53,7 @@ import { ScheduleChatButton } from '@/components/triggers/schedule-chat-button';
 import { WorkbenchToggles } from './workbench/workbench-toggles';
 
 interface ExecutionHeaderProps {
-  session: ChatSessionWithExecution;
+  session: ChatSessionWithExecution & StartedFields;
   workspace: WorkspaceRecord | undefined;
   /** Phone: the back button. (Desktop closes from the top bar and ⌘E.) */
   onClose: () => void;
@@ -352,6 +354,7 @@ export function ExecutionHeader({
             )}
           </div>
           <div className="flex items-center gap-1.5 min-w-0 pl-0.5">
+            {session.startedBy && <StartedFromLink startedBy={session.startedBy} compact />}
             {statusEl}
             {liveBadge}
             {locationChip}
@@ -409,6 +412,8 @@ export function ExecutionHeader({
             </Tip>
           )}
         </div>
+        {/* A chat another chat started, and the way back to it (docs/started-chats.md). */}
+        {session.startedBy && <StartedFromLink startedBy={session.startedBy} />}
 
         {statusEl}
         {liveBadge}

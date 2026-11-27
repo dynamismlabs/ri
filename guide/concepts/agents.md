@@ -30,6 +30,7 @@ A folder is optional. An agent for planning a trip doesn't need one, and Ri make
 Open an agent from the rail. Its main chat is on the left, and beside it are tabs:
 
 - **Chats:** every chat in this agent, with **All**, **Unread** and **Working** filters.
+- **Started chats:** the chats its main chat handed work to, once it has any. See [Chats started by other chats](/docs/concepts/chats#chats-started-by-other-chats).
 - **Files:** the agent's folder.
 - **Preview:** the project running, for an agent with a preview set up.
 - **Setup:** everything in the table above.

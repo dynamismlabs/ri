@@ -17,6 +17,19 @@ Click **New chat** on an agent, or on its row in the rail. Describe the work, at
 
 Ask a chat to start another conversation on the same work. They share the folder, branch and device, and can run at the same time. Your current conversation stays open. Give the new conversation a brief of its own. Its result comes back to the chat that started it.
 
+## Chats started by other chats
+
+Your main chat and your chats can hand work to another agent. Each hand-off starts a new chat there, and its answer comes back to the chat that asked. Ri shows you where each one came from and keeps you from reading the same result twice.
+
+- **The mark.** A chat another chat started has a small corner arrow before its title. Point at it to see which chat started it. In the chat itself, **from** and that chat's name sit beside the title. Click it to go back.
+- **In Recent.** Started chats sit under the chat that started them, folded into one line that says how many there are and what they're doing. Click the line to open them, and again to fold them. A main chat that started chats shows as their group, even though Recent doesn't list main chats otherwise.
+- **In the top bar and on the Board.** Each chat stays in the list for its own state. When two or more from the same chat land in one list, they stack into one row you can open. **Needs approval** never stacks, since each one needs your decision.
+- **Not unread twice.** Once a started chat's answer goes back, it leaves **Unread** and **Waiting response**, because the chat that asked already has it. It comes back the moment it needs your approval, works again, or you write in it. After you write in one, it reads like any other chat. **Mark as unread** still brings one back.
+
+A chat that started others gets **Started chats** in its Tools, and an agent's main chat gets a **Started chats** tab. It lists every chat it started: the ones waiting on you first, then the ones working, then the rest, each with where it stands. **Archive finished** archives the ones that returned or stopped and that you never wrote in.
+
+Archiving a chat archives its finished started chats with it, the ones you never wrote in. One that's still working, waits on you, or has files it never committed stays open, and the message after archiving names it.
+
 ## Beside the chat
 
 Next to the conversation, a panel shows what the chat is working with:
@@ -29,7 +42,7 @@ Next to the conversation, a panel shows what the chat is working with:
 | **Changes** | What it changed, file by file. |
 | **Files** | The folder it works in. |
 
-**Notes & tasks** and **Scratchpad** are in the panel's More menu. **Terminal** (Ctrl and backtick) opens a shell in the chat's folder, and **Tools** (Ctrl and period) shows or hides the panel.
+**Notes & tasks** and **Scratchpad** are in the panel's More menu, with **Started chats** once the chat has started one. **Terminal** (Ctrl and backtick) opens a shell in the chat's folder, and **Tools** (Ctrl and period) shows or hides the panel.
 
 ## Knowing where it stands
 

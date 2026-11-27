@@ -40,6 +40,7 @@ import { resolveHomeContext } from '@/lib/home/context';
 import { filePreviewsRouter } from '@/lib/files/router';
 import { artifactsRouter } from '@/lib/sessions/artifacts-router';
 import { messageQueueRouter } from '@/lib/sessions/message-queue-router';
+import { startedChatsRouter } from '@/lib/sessions/started-chats-router';
 import { resolveHomeExecutionChoices } from '@/lib/home/execution-choices';
 import { isTeamAuthority } from '@/lib/home/authority';
 import { SCRATCHPAD_MAX_LENGTH } from '@/lib/scratchpad/merge';
@@ -92,6 +93,7 @@ export const appRouter = router({
   artifacts: artifactsRouter,
   // A chat's queue of messages waiting for their turn (docs/message-queue.md).
   messageQueue: messageQueueRouter,
+  startedChats: startedChatsRouter,
   email: emailRouter,
   externalAi: externalAiRouter,
   chatSources: chatSourcesRouter,

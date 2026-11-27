@@ -7,6 +7,7 @@ import { IconButton } from '@/components/system/icon-button';
 import type { CSSProperties, ReactNode } from 'react';
 import { Archive, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { startedArchiveToast } from '@/lib/sessions/started-archive-copy';
 import { useQueryClient } from '@tanstack/react-query';
 import type { RailTab } from '@/lib/client/rail-tab';
 import { useOptionalHomeContext } from '@/components/home/home-context';
@@ -92,8 +93,15 @@ export function RailListHeader({ tab }: { tab: RailTab }) {
       if (ok) {
         const forced = await bulkArchive.mutateAsync({ ids: result.dirty.map((d) => d.id), force: true });
         result.failed.push(...forced.failed);
+        result.started = {
+          archived: [...result.started.archived, ...forced.started.archived],
+          kept: [...result.started.kept, ...forced.started.kept],
+        };
       }
     }
+
+    const started = startedArchiveToast(result.started, { kind: 'bulk' });
+    if (started) toast.success(started.title, started.description ? { description: started.description } : undefined);
 
     if (result.failed.length > 0) {
       const n = result.failed.length;

@@ -12,8 +12,9 @@ import { ROW_ACTIONS_GIVE_WAY, SessionRowActions } from './session-row-actions';
 import { useSessionRowHover } from './session-hover-context';
 import { SelectionCheck, useRowSelection } from './workspace-selection-context';
 import { executionView } from '@/lib/client/active-view';
-import { agentInitials } from '@/lib/client/agent-initials';
 import { ChatStatusLine } from './chat-status-line';
+import { WorkspaceAvatar } from './workspace-avatar';
+import { StartedMark } from './started-mark';
 
 interface HistoryRowProps {
   session: RailSession;
@@ -23,6 +24,12 @@ interface HistoryRowProps {
   snippet?: string | null;
   onOpenWorkspaceSettings?: (workspaceId: string) => void;
   onOpenLauncher?: (workspaceId: string) => void;
+  /**
+   * The address of the group this row sits in, under the chat that started
+   * it. Its mark would only repeat what the indent says, so it shows only
+   * for a chat a sibling started (docs/started-chats.md).
+   */
+  groupAddress?: string;
 }
 
 /**
@@ -58,6 +65,7 @@ export function HistoryRow({
   snippet,
   onOpenWorkspaceSettings,
   onOpenLauncher,
+  groupAddress,
 }: HistoryRowProps) {
   const { activeSessionId, setActiveView } = useDashboard();
   const status = useChatStatus(session);
@@ -132,16 +140,19 @@ export function HistoryRow({
       <div className="flex-1 min-w-0 flex items-start">
         <div className="flex-1 min-w-0 leading-tight">
           <div className="flex items-baseline gap-1.5">
-            <span
-              className={cn(
-                'flex-1 text-[11.5px] truncate',
-                labelIsPlaceholder
-                  ? 'italic text-muted-foreground/70'
-                  : 'font-medium text-foreground/90',
-                status.isUnread && !labelIsPlaceholder && 'font-semibold text-foreground',
-              )}
-            >
-              {label}
+            <span className="flex min-w-0 flex-1 items-center gap-1">
+              {session.startedBy && session.startedBy.address !== groupAddress && <StartedMark startedBy={session.startedBy} />}
+              <span
+                className={cn(
+                  'min-w-0 flex-1 text-[11.5px] truncate',
+                  labelIsPlaceholder
+                    ? 'italic text-muted-foreground/70'
+                    : 'font-medium text-foreground/90',
+                  status.isUnread && !labelIsPlaceholder && 'font-semibold text-foreground',
+                )}
+              >
+                {label}
+              </span>
             </span>
             <span className={cn('text-[9px] text-muted-foreground/60 flex-shrink-0', !selectable && ROW_ACTIONS_GIVE_WAY)}>
               {formatCompactRelative(timestamp)}
@@ -231,46 +242,4 @@ export function HighlightedText({ segments }: { segments: readonly HighlightSegm
   );
 }
 
-/**
- * An agent's picture: its cover, else its emoji, else its initials. `sm` is
- * for one-line chips and menu items (chat search's agent filter). The default
- * sits a pixel low to line up with a two-line row's title.
- */
-export function WorkspaceAvatar({
-  wsImage,
-  wsEmoji,
-  wsName,
-  size = 'md',
-}: {
-  wsImage: string | null;
-  wsEmoji: string | null;
-  wsName: string;
-  size?: 'sm' | 'md';
-}) {
-  const sm = size === 'sm';
-  return (
-    <span
-      className={cn(
-        'relative flex items-center justify-center flex-shrink-0',
-        sm ? 'w-4 h-4' : 'w-5 h-5 mt-px',
-      )}
-    >
-      {wsImage ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={wsImage} alt="" className={cn('object-cover', sm ? 'w-4 h-4 rounded-sm' : 'w-5 h-5 rounded')} />
-      ) : wsEmoji ? (
-        <span className={cn('leading-none', sm ? 'text-[12px]' : 'text-base')}>{wsEmoji}</span>
-      ) : (
-        <span
-          aria-hidden
-          className={cn(
-            'flex items-center justify-center font-bold tracking-wide bg-muted text-muted-foreground',
-            sm ? 'w-4 h-4 rounded-sm text-[7px]' : 'w-5 h-5 rounded text-[9px]',
-          )}
-        >
-          {agentInitials(wsName)}
-        </span>
-      )}
-    </span>
-  );
-}
+export { WorkspaceAvatar } from './workspace-avatar';

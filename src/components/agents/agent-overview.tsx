@@ -1,4 +1,5 @@
 'use client';
+import { StartedMark } from '@/components/workspaces/started-mark';
 import { InlineAction } from '@/components/system/inline-action';
 
 import { StatusBadge } from '@/components/system/status-badge';
@@ -244,14 +245,17 @@ function ExecutionRow({ session, state, inactive = false }: { session: RailSessi
     >
       <StateDot state={state} background={background} />
       <div className="min-w-0 flex-1">
-        <div
-          className={cn(
-            'truncate text-[12px]',
-            untitled ? 'italic text-muted-foreground/70' : 'text-foreground/90',
-            state === 'unread' && !untitled ? 'font-semibold' : 'font-medium',
-          )}
-        >
-          {label}
+        <div className="flex min-w-0 items-center gap-1">
+          {session.startedBy && <StartedMark startedBy={session.startedBy} />}
+          <span
+            className={cn(
+              'min-w-0 flex-1 truncate text-[12px]',
+              untitled ? 'italic text-muted-foreground/70' : 'text-foreground/90',
+              state === 'unread' && !untitled ? 'font-semibold' : 'font-medium',
+            )}
+          >
+            {label}
+          </span>
         </div>
         {/* What its agent said it needs or did (docs/chat-status-lines.md). */}
         <ChatStatusLine status={session.turnStatus} className="mt-0.5 text-[11px]" />

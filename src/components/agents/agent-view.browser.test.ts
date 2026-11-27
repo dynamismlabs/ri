@@ -23,6 +23,8 @@ const STUBS: Record<string, string> = {
     export const useAgentExecutions = () => ({ working: [], needsYou: [] });
     export const useAgentPreviews = () => ({ data: { previews: [] } });`,
   '@/hooks/use-main-chat': `export const useMainChat = (scope) => ({ data: { session: { id: 'main-' + scope } } });`,
+  '@/hooks/use-started-chats': `export const useStartedSummary = () => ({ count: 0, open: 0, needs: 0, working: 0 });`,
+  '@/components/executions/workbench/started-chats-view': `export const StartedChatsView = () => null;`,
   '@/hooks/use-areas': `export const useAreas = () => ({ data: [] });`,
   '@/components/home/home-context': `
     export const useHomeStorageScope = () => null;

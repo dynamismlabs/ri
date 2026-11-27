@@ -82,6 +82,11 @@ interface UnreadableSession {
   lastOutcomeEventAt: string | null;
   unreadMarkerAt: string | null;
   lastViewedAt: string | null;
+  /**
+   * A started chat whose answer went back to the chat that asked, with
+   * nothing since (docs/started-chats.md). Lists carry it, other reads don't.
+   */
+  answerReturnedAt?: string | null;
 }
 
 /**
@@ -105,6 +110,12 @@ export function latestActivityAt(
  * bucket priority handles separately.
  */
 export function isSessionUnread(s: UnreadableSession): boolean {
+  // Its answer is already in the chat that asked, which tells you about it.
+  // Only Mark as unread brings it back. A new turn clears the field.
+  if (s.answerReturnedAt) {
+    const read = Math.max(timestampEpoch(s.answerReturnedAt), timestampEpoch(s.lastViewedAt));
+    return !!s.unreadMarkerAt && timestampEpoch(s.unreadMarkerAt) > read;
+  }
   const activity = latestActivityAt(s);
   if (!activity) return false;
   const lastViewed = s.lastViewedAt ?? '1970-01-01';

@@ -33,6 +33,7 @@ it('returns focus and pointer input after selecting or dismissing the agent devi
     export const useQueryClient=()=>({});
     export const useDefaultSelection=()=>({harness:'codex',model:'fixture-model',variant:null,effort:null});
     export const useOptionalHomeContext=()=>null;
+    export const useCoordinatorName=()=>'Ri';
     export const useWorkNavigation=()=>({openAgent:(id,tab)=>record('open',tab),openExecution:()=>{}});
     export const useWorkActivity=()=>({activeSessionId:null,streamingSessionIds:new Set(),backgroundSessionIds:new Set(),pendingInputSessionIds:new Set()});
     export const useDashboard=()=>({streamingSessionIds:new Set(),pendingInputSessionIds:new Set(),setActiveView:()=>{},setMobileTab:()=>{},openAgent:(id,tab)=>record('open',tab)});
@@ -57,7 +58,7 @@ it('returns focus and pointer input after selecting or dismissing the agent devi
       onResolve(opts:{filter:RegExp},fn:()=>{path:string;namespace:string}):void;
       onLoad(opts:{filter:RegExp;namespace:string},fn:()=>{contents:string;loader:string}):void;
     }){
-      api.onResolve({filter:/^(?:@\/hooks\/use-(?:workspaces|areas|inactivity|default-selection)|@\/contexts\/(?:dashboard-context|work-context)|@\/lib\/executions\/start-execution|@\/lib\/client\/agent-view-mode|@\/components\/workspaces\/workspace-create-modal|@\/components\/home\/home-context|\.\/home-context|@\/lib\/trpc\/client|@tanstack\/react-query)$/},()=>({path:'data-hooks',namespace:'fixture'}));
+      api.onResolve({filter:/^(?:@\/hooks\/use-(?:workspaces|areas|inactivity|default-selection|user-state)|@\/contexts\/(?:dashboard-context|work-context)|@\/lib\/executions\/start-execution|@\/lib\/client\/agent-view-mode|@\/components\/workspaces\/workspace-create-modal|@\/components\/home\/home-context|\.\/home-context|@\/lib\/trpc\/client|@tanstack\/react-query)$/},()=>({path:'data-hooks',namespace:'fixture'}));
       api.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:fixture,loader:'js'}));
     }}],
   });

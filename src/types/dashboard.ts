@@ -5,8 +5,8 @@ export type Theme = 'dark' | 'light';
 export type ThemePreference = 'system' | Theme;
 export type WorkMode = 'light' | 'deep' | null;
 /** Tabs in the agent view's tools panel (docs/agents-view-spec.md Phase 7). The terminal is a drawer, not a tab (§10). */
-export type AgentTab = 'overview' | 'files' | 'preview' | 'setup';
-export const AGENT_TABS: readonly AgentTab[] = ['overview', 'files', 'preview', 'setup'];
+export type AgentTab = 'overview' | 'started' | 'files' | 'preview' | 'setup';
+export const AGENT_TABS: readonly AgentTab[] = ['overview', 'started', 'files', 'preview', 'setup'];
 
 /**
  * What fills the main area: Home (the deck and chat panels), an agent's

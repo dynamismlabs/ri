@@ -20,7 +20,8 @@ import { HOTKEYS } from '@/constants/commands';
 import { Kbd } from '@/components/ui/kbd';
 import { useArtifactPreviewStore, useBesidePreview } from '@/components/chat-ui/artifacts/artifact-preview-provider';
 import { PreviewIcon, previewName } from '@/components/chat-ui/artifacts/artifact-preview-parts';
-import { AGENT_TOOL_TABS } from './agent-tools';
+import { agentToolTabs } from './agent-tools';
+import { useStartedSummary } from '@/hooks/use-started-chats';
 import { useBesideChatSummary } from './agent-beside-chat';
 
 /**
@@ -53,6 +54,8 @@ export function AgentToolsBox({
   const { needsYou, working } = useAgentExecutions(workspace.id);
   const { data } = useAgentPreviews(workspace.id);
   const running = (data?.previews ?? []).filter((p) => p.serverStatus === 'running').length;
+  const started = useStartedSummary({ workspaceId: workspace.id });
+  const tabs = agentToolTabs(started.count > 0, 'overview');
 
   const status: Partial<Record<AgentTab, { text: string; tone: string; dot: string } | null>> = {
     overview: needsYou.length > 0
@@ -61,6 +64,12 @@ export function AgentToolsBox({
         ? { text: `${working.length} working`, tone: '', dot: 'bg-emerald-500 animate-pulse' }
         : null,
     preview: running > 0 ? { text: `${running} running`, tone: '', dot: 'bg-emerald-500' } : null,
+    // Read like Chats: who needs you, else how many are working, else how many are open.
+    started: started.needs > 0
+      ? { text: `${started.needs} ${started.needs === 1 ? 'needs' : 'need'} you`, tone: 'text-amber-600 dark:text-amber-400', dot: 'bg-amber-500' }
+      : started.working > 0
+        ? { text: `${started.working} working`, tone: '', dot: 'bg-emerald-500 animate-pulse' }
+        : started.open > 0 ? { text: `${started.open} open`, tone: '', dot: '' } : null,
   };
 
   return (
@@ -68,7 +77,7 @@ export function AgentToolsBox({
       label={`${workspace.name} tools`}
       list={
         <div className="flex flex-col">
-          {AGENT_TOOL_TABS.map(({ id, label, Icon }) => {
+          {tabs.map(({ id, label, Icon }) => {
             const s = status[id];
             return (
               <Fragment key={id}>
@@ -89,7 +98,7 @@ export function AgentToolsBox({
       }
       strip={
         <>
-          {AGENT_TOOL_TABS.map(({ id, label, Icon }) => {
+          {tabs.map(({ id, label, Icon }) => {
             const s = status[id];
             return (
               <Fragment key={id}>

@@ -45,6 +45,8 @@ import { ModelMenuProvider } from '@/components/chat-ui/model-menu/model-menu-pr
 import { ChatInputEditor, type ChatInputEditorHandle } from '@/components/chat/editor/chat-input-editor';
 import { textToDocJSON } from '@/components/chat/editor/history-recall';
 import { MessageQueueStrip, queuedMessagePreview, type QueueStripMessage } from '@/components/chat-ui/queue/message-queue-strip';
+import { StartedChatsList } from '@/components/chat-ui/coordination/started-chats-list';
+import type { StartedChatRow } from '@/lib/db/coordination-queries';
 import { queuePlaceholder } from '@/components/executions/composer-send-route';
 import { MCP_FORM_EVENT, MCP_FORM_RESPONSE_EVENT } from '@/lib/mcp-apps/form-events';
 import { toChatEventDTO } from '@/lib/api/dto/chat-event';
@@ -364,6 +366,58 @@ function CoordinationComposer() {
   </ChatComposer>;
 }
 
+/** The chats one chat started, beside it: each state, archiving, and Archive finished. */
+function startedRow(id: string, label: string, agent: { name: string; emoji: string }, over: Partial<StartedChatRow>): StartedChatRow {
+  return {
+    requestId: `gallery-request-${id}`, requestStatus: 'completed', outcome: null, sessionId: `gallery-started-${id}`, label, executionId: `gallery-execution-${id}`, executionLabel: label,
+    status: 'active', pinnedAt: null, workspaceId: `gallery-${agent.name}`, workspaceName: agent.name, workspaceEmoji: agent.emoji, workspaceAttachments: null, workspaceAreaId: null,
+    startedAt: NOW, lastActivityAt: NOW, lastOutcomeEventAt: NOW, lastViewedAt: NOW, unreadMarkerAt: null, turnStatus: null, answerReturnedAt: NOW, personWrote: false, ...over,
+  };
+}
+const STARTED_ROAST = { name: 'Roast lab', emoji: '🔥' };
+const STARTED_SHOP = { name: 'Tidewater shop', emoji: '☕' };
+const STARTED_HOUSE = { name: 'Household', emoji: '🗂️' };
+const statusLine = (line: string, needsYou = false) => ({ line, needsYou, effort: needsYou ? 'quick' as const : null, unblocks: null, at: NOW });
+function startedRows(): StartedChatRow[] {
+  if (config.state === 'empty') return [];
+  if (config.state === 'finished') return [
+    startedRow('rates', 'Check last year’s skip rates', STARTED_ROAST, { turnStatus: statusLine('12 months of skips, by month') }),
+    startedRow('sheet', 'Update the wholesale price sheet', STARTED_SHOP, { turnStatus: statusLine('Updated 14 prices') }),
+    startedRow('billing', 'Compare billing providers', STARTED_HOUSE, { requestStatus: 'failed', outcome: 'The worktree couldn’t be created.' }),
+  ];
+  return [
+    startedRow('spike', 'Check last spring’s order spike', STARTED_ROAST, { requestStatus: 'working', answerReturnedAt: null, turnStatus: statusLine('Approve reading the orders export', true) }),
+    startedRow('email', 'Draft the skip email', STARTED_SHOP, { requestStatus: 'working', answerReturnedAt: null, turnStatus: statusLine('Second draft, tightening the subject line') }),
+    startedRow('rates', 'Check last year’s skip rates', STARTED_ROAST, { turnStatus: statusLine('12 months of skips, by month') }),
+    startedRow('billing', 'Compare billing providers', STARTED_HOUSE, { requestStatus: 'failed', outcome: 'The worktree couldn’t be created.' }),
+    startedRow('discount', 'Price the skip discount', STARTED_SHOP, { personWrote: true, answerReturnedAt: null, lastViewedAt: '2026-10-19T13:00:00.000Z', turnStatus: statusLine('Wrote up the middle option') }),
+    startedRow('faq', 'Draft the wholesale FAQ', STARTED_SHOP, { status: 'archived' }),
+  ];
+}
+function StartedChatsExample() {
+  const [rows, setRows] = useState(startedRows);
+  const [status, setStatus] = useState('This example saves nothing.');
+  const live = { pending: new Set(['gallery-started-spike']), streaming: new Set(['gallery-started-email']) };
+  const archive = (ids: string[], said: string) => {
+    setRows((list) => list.map((row) => (ids.includes(row.sessionId) ? { ...row, status: 'archived' as const } : row)));
+    setStatus(said);
+  };
+  return <div className="flex h-[520px] flex-col overflow-hidden rounded-lg border border-border bg-background">
+    <StartedChatsList
+      rows={rows}
+      live={live}
+      starter="This chat"
+      onOpen={(row) => setStatus(`Opening ${row.label} is off in the example.`)}
+      onArchive={(row) => archive([row.sessionId], `Archived ${row.label} in the example.`)}
+      onArchiveFinished={() => {
+        const finished = rows.filter((row) => row.status === 'active' && !row.personWrote && row.requestStatus !== 'working' && !live.pending.has(row.sessionId));
+        archive(finished.map((row) => row.sessionId), `Archived ${finished.length} finished in the example.`);
+      }}
+    />
+    <p role="status" className="border-t border-border px-3 py-2 text-xs text-muted-foreground">{status}</p>
+  </div>;
+}
+
 /** The real + beside the real editor, so Mention and Skills open their real menus. */
 /** Two messages written while the example chat works, one with a file. */
 function QueueExample() {
@@ -472,6 +526,7 @@ function Example() {
     {__GALLERY_EXAMPLE__ === 'model-menu' && <ModelMenuPreview state={config.state} />}
     {__GALLERY_EXAMPLE__ === 'add-menu' && <AddMenuExample />}
     {__GALLERY_EXAMPLE__ === 'message-queue' && <QueueExample />}
+    {__GALLERY_EXAMPLE__ === 'started-chats' && <StartedChatsExample />}
     {__GALLERY_EXAMPLE__ === 'edits' && <div className="space-y-4 text-sm"><p>I clarified the agenda and made the next steps easier to scan.</p><EntityEditChip entityType="note" entityId={RECORD_ID} /></div>}
     {__GALLERY_EXAMPLE__ === 'files' && (config.state === 'beside' ? <FilesBeside /> : config.state === 'sent' ? <SentFiles /> : <FileChips />)}
     {__GALLERY_EXAMPLE__ === 'html' && <HtmlPreviewLink sessionId={CHAT_ID} path="review-plan.html">An interactive plan for the Friday review</HtmlPreviewLink>}

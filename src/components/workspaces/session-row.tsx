@@ -1,6 +1,7 @@
 'use client';
 
 import { useDashboard } from '@/contexts/dashboard-context';
+import type { StartedFields } from '@/lib/sessions/started-by';
 import type { ChatSessionWithExecution } from '@/lib/api/dto/records';
 import { cn } from '@/lib/utils';
 import { formatCompactRelative } from '@/lib/utils/relative-time';
@@ -14,9 +15,10 @@ import { SelectionCheck, useRowSelection } from './workspace-selection-context';
 import { Tip } from '@/components/ui/tip';
 import { useDismissRailFlyout } from './rail-flyout';
 import { ChatAskSize, ChatStatusLine } from './chat-status-line';
+import { StartedMark } from './started-mark';
 
 interface SessionRowProps {
-  session: ChatSessionWithExecution;
+  session: ChatSessionWithExecution & StartedFields;
   showWorkspaceLabel?: string;
   /**
    * Which surface this row is rendered on. Same session can render in
@@ -224,6 +226,7 @@ export function SessionRow({
       </span>
       {density === 'compact' ? (
         <>
+          {session.startedBy && <StartedMark startedBy={session.startedBy} />}
           <span
             className={cn(
               'flex-1 min-w-0 truncate text-[11px]',
@@ -263,14 +266,17 @@ export function SessionRow({
         // metadata line truncate before them.
         <div className="flex-1 min-w-0 flex items-center">
           <div className="flex-1 min-w-0">
-            <span
-              className={cn(
-                'block text-[11px] truncate',
-                labelIsPlaceholder ? 'italic text-muted-foreground/70' : 'font-medium',
-                isUnread && !labelIsPlaceholder && 'font-semibold text-foreground',
-              )}
-            >
-              {label}
+            <span className="flex min-w-0 items-center gap-1">
+              {session.startedBy && <StartedMark startedBy={session.startedBy} />}
+              <span
+                className={cn(
+                  'block min-w-0 flex-1 text-[11px] truncate',
+                  labelIsPlaceholder ? 'italic text-muted-foreground/70' : 'font-medium',
+                  isUnread && !labelIsPlaceholder && 'font-semibold text-foreground',
+                )}
+              >
+                {label}
+              </span>
             </span>
             {/* The status line its agent set (docs/chat-status-lines.md):
                 what it did, or what it needs from you. Part of the row's

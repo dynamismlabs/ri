@@ -32,3 +32,8 @@ export function combineActivityBuckets(sessions: Record<BucketId, RailSession[]>
 export function activityDestination(row: ActivityItem): { kind: 'agent' | 'execution'; id: string } {
   return row.kind === 'agent' ? { kind: 'agent', id: row.item.workspace.id } : { kind: 'execution', id: row.session.id };
 }
+
+/** Who started an item, when it's a chat another chat started. Main chats never are. */
+export function startedByOfActivity(row: ActivityItem) {
+  return row.kind === 'execution' ? row.session.startedBy ?? null : null;
+}

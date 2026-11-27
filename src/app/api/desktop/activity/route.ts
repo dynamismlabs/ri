@@ -5,6 +5,7 @@ import { listRailSessions } from '@/lib/db/queries';
 import { listRunningSessions, listSessionsWithPending } from '@/lib/executor/status-snapshot';
 import { classifySession } from '@/lib/sessions/classification';
 import { sortSessionsHotnessDesc } from '@/lib/utils/session-sort';
+import { withStartedChats } from '@/lib/sessions/started-chats';
 import {
   DESKTOP_ACTIVITY_TARGET_LIMIT, desktopActivityLabel,
   type DesktopActivityData, type DesktopActivityKind, type DesktopActivityTarget,
@@ -22,7 +23,9 @@ export function GET(request: NextRequest) {
     const running = new Set(listRunningSessions());
     const counts = { needsInput: 0, unread: 0, running: 0 };
     const targets: Record<DesktopActivityKind, DesktopActivityTarget[]> = { needsInput: [], unread: [], running: [] };
-    for (const session of sortSessionsHotnessDesc(listRailSessions())) {
+    // With where each came from, so a started chat whose answer went back
+    // counts as it does in the rail (docs/started-chats.md).
+    for (const session of sortSessionsHotnessDesc(withStartedChats(listRailSessions()))) {
       if (session.status !== 'active') continue;
       const bucket = classifySession(session, pending, running);
       const state: DesktopActivityKind | null = bucket === 'needsApproval' ? 'needsInput' : bucket === 'working' ? 'running' : bucket === 'unread' ? 'unread' : null;

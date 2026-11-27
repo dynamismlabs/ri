@@ -62,6 +62,8 @@ function s(id: string, iso: string): RailSession {
     workspaceAttachments: null,
     workspaceAreaId: null,
     workspaceIsGit: false,
+    startedBy: null,
+    answerReturnedAt: null,
   };
 }
 

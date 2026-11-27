@@ -19,14 +19,15 @@
  *     Opening it is a jump, so closing it goes back where you were.
  */
 
-export const PANEL_VIEWS = ['run', 'preview', 'artifacts', 'changes', 'files', 'notes', 'scratch', 'file'] as const;
+export const PANEL_VIEWS = ['run', 'preview', 'artifacts', 'changes', 'files', 'notes', 'scratch', 'started', 'file'] as const;
 export type PanelView = (typeof PANEL_VIEWS)[number];
 /** The panel's own tools: every view but the file opened from the chat. */
 export type ToolView = Exclude<PanelView, 'file'>;
 
 /** Views shown as tabs. The rest live in the panel's More menu. */
 export const PRIMARY_VIEWS: readonly PanelView[] = ['run', 'preview', 'artifacts', 'changes', 'files'];
-export const MORE_VIEWS: readonly PanelView[] = ['notes', 'scratch'];
+/** `started` shows only once the chat has started one (docs/started-chats.md). */
+export const MORE_VIEWS: readonly PanelView[] = ['notes', 'scratch', 'started'];
 
 export const PANEL_VIEW_LABELS: Record<PanelView, string> = {
   run: 'Run',
@@ -36,6 +37,7 @@ export const PANEL_VIEW_LABELS: Record<PanelView, string> = {
   files: 'Files',
   notes: 'Notes & tasks',
   scratch: 'Scratchpad',
+  started: 'Started chats',
   file: 'File',
 };
 

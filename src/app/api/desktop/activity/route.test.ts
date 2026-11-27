@@ -3,8 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RailSessionRow } from '@/lib/db/queries';
 import { readDesktopActivity } from '@/lib/sessions/desktop-activity-contract';
 
-const { sessions, running, pending } = vi.hoisted(() => ({ sessions: vi.fn(), running: vi.fn(), pending: vi.fn() }));
-vi.mock('@/lib/db/queries', () => ({ listRailSessions: sessions }));
+const { sessions, running, pending, startedBy, startedActivity } = vi.hoisted(() => ({ sessions: vi.fn(), running: vi.fn(), pending: vi.fn(), startedBy: vi.fn(), startedActivity: vi.fn() }));
+vi.mock('@/lib/db/queries', () => ({ listRailSessions: sessions, startedByForChats: startedBy, startedChatActivity: startedActivity }));
 vi.mock('@/lib/executor/status-snapshot', () => ({ listRunningSessions: running, listSessionsWithPending: pending }));
 vi.mock('@/lib/auth/config-file', () => ({ readAuthConfig: () => ({ localToken: 'owner' }) }));
 import { GET } from './route';
@@ -20,6 +20,7 @@ const request = (owner = 'owner', capability = 'private-desktop-capability') => 
 beforeEach(() => {
   vi.stubEnv('RI_DESKTOP_CLIENT_SECRET', 'private-desktop-capability');
   sessions.mockReset().mockReturnValue([]); running.mockReset().mockReturnValue([]); pending.mockReset().mockReturnValue([]);
+  startedBy.mockReset().mockReturnValue(new Map()); startedActivity.mockReset().mockReturnValue(new Map());
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -44,6 +45,16 @@ describe('owner desktop activity API', () => {
         { sessionId: 'unread', label: 'Chat unread', state: 'unread' },
         { sessionId: 'running', label: 'Chat running', state: 'running' },
       ] });
+  });
+
+  it('leaves out a started chat whose answer already went back, as the rail does', async () => {
+    const unread = { lastOutcomeEventAt: '2026-09-26T00:00:00Z' };
+    sessions.mockReturnValue([session('started', unread), session('mine', unread)]);
+    startedBy.mockReturnValue(new Map([['started', { requestId: 'r', sessionId: 'parent', address: 'session:parent', kind: 'chat' }]]));
+    startedActivity.mockReturnValue(new Map([['started', { answerReturnedAt: '2026-09-26 00:00:05', personWrote: false }]]));
+    const body = readDesktopActivity(await GET(request()).json());
+    expect(body.unread).toBe(1);
+    expect(body.targets.map(target => target.sessionId)).toEqual(['mine']);
   });
 
   it('bounds destinations while keeping complete counts, with input before unread and newest first', async () => {

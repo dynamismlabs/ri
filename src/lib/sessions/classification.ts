@@ -3,7 +3,7 @@ import { isSessionUnread, sortSessionsHotnessDesc, type SortableSession } from '
 
 export type BucketId = 'needsApproval' | 'unread' | 'waiting' | 'working';
 
-type ClassifiableSession = Pick<ChatSessionRecord, 'id' | 'status' | 'surfaceKind' | 'lastOutcomeEventAt' | 'unreadMarkerAt' | 'lastViewedAt'>;
+type ClassifiableSession = Pick<ChatSessionRecord, 'id' | 'status' | 'surfaceKind' | 'lastOutcomeEventAt' | 'unreadMarkerAt' | 'lastViewedAt'> & { answerReturnedAt?: string | null };
 
 // Each session lives in exactly one bucket. Priority order (resolves
 // overlaps) is encoded here, NOT in BUCKET_ORDER — visual order and
@@ -40,6 +40,12 @@ export function classifySession(
   // `listWorkspaceExecutions` and doesn't care about buckets — so it's always
   // findable, just not always claiming your attention.
   if (session.surfaceKind === 'imported_agent') return null;
+
+  // A started chat whose answer went back isn't waiting on you either: the
+  // chat that asked has it (docs/started-chats.md). Same terms as an import
+  // above: it comes back the moment it needs you, works again, or you write
+  // in it, and its starter's Started chats and Recent always list it.
+  if (session.answerReturnedAt) return null;
 
   return 'waiting';
 }

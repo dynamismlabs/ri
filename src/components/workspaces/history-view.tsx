@@ -16,6 +16,9 @@ import { InactiveFold } from './inactive-fold';
 import { useInactivity } from '@/hooks/use-inactivity';
 import { Tip } from '@/components/ui/tip';
 import { useWorkspaceSelection } from './workspace-selection-context';
+import { entryNewest, entrySessions, groupRecentSessions, type RecentEntry } from '@/lib/sessions/started-by';
+import { useOpenStartedGroups } from '@/lib/client/started-folds';
+import { RecentGroup } from './started-group';
 
 const PILL_SCROLL_PRESETS = {
   bar: 'flex gap-1 overflow-x-auto -mx-2 px-2 py-1 scrollbar-thin',
@@ -100,14 +103,28 @@ export function HistoryView() {
   // verbatim, which meant it inherited every ordering quirk the SQL had.
   // Running the shared key here keeps Recent agreeing with the header's
   // status pills and the workspace tree.
+  //
+  // Every started chat sits under the chat that started it
+  // (docs/started-chats.md), so an entry is a row or a group. While ticking
+  // chats to archive the list is flat: each chat is its own checkbox.
   const { grouped, older, olderIds } = useMemo(() => {
-    const recent: RailSession[] = [];
-    const folded: RailSession[] = [];
-    for (const s of sortSessionsHotnessDesc(filtered)) {
-      (isInactive(s) && s.id !== activeSessionId ? folded : recent).push(s);
+    const entries: RecentEntry<RailSession>[] = selecting
+      ? sortSessionsHotnessDesc(filtered).map((session) => ({ kind: 'row', key: session.id, session }))
+      : groupRecentSessions(filtered, selectedWs.size > 0 ? selectedWs : null);
+    const recent: RecentEntry<RailSession>[] = [];
+    const folded: RecentEntry<RailSession>[] = [];
+    for (const entry of entries) {
+      // An entry folds away as inactive only when everything in it has.
+      const members = entrySessions(entry);
+      const inactive = members.every((s) => isInactive(s) && s.id !== activeSessionId);
+      (inactive ? folded : recent).push(entry);
     }
-    return { grouped: groupByDateBucket(recent), older: groupByDateBucket(folded), olderIds: folded.map((s) => s.id) };
-  }, [filtered, isInactive, activeSessionId]);
+    return {
+      grouped: groupEntriesByDateBucket(recent),
+      older: groupEntriesByDateBucket(folded),
+      olderIds: folded.flatMap((entry) => entrySessions(entry).map((s) => s.id)),
+    };
+  }, [filtered, isInactive, activeSessionId, selecting, selectedWs]);
 
   const togglePill = (id: string) => {
     const next = new Set(selectedWs);
@@ -175,9 +192,10 @@ function DateGroups({
   groups,
   onOpenWorkspaceSettings,
 }: {
-  groups: DateGroup[];
+  groups: EntryDateGroup[];
   onOpenWorkspaceSettings: (id: string) => void;
 }) {
+  const [openGroups, toggleGroup] = useOpenStartedGroups();
   return (
     <>
       {groups.map((group) => (
@@ -185,14 +203,26 @@ function DateGroups({
           <h3 className="px-3 pt-2 pb-1 text-[11px] leading-[1.4] font-medium text-muted-foreground/70">
             {group.label}
             <span className="ml-1.5 text-muted-foreground/50 font-normal lowercase tracking-normal">
-              {group.sessions.length}
+              {group.entries.length}
             </span>
           </h3>
           <div className="flex flex-col px-1">
-            {group.sessions.map((s) => (
+            {group.entries.map((entry) => entry.kind === 'row' ? (
               <HistoryRow
-                key={s.id}
-                session={s}
+                key={entry.key}
+                session={entry.session}
+                onOpenWorkspaceSettings={onOpenWorkspaceSettings}
+                onOpenLauncher={openLauncher}
+              />
+            ) : (
+              <RecentGroup
+                key={entry.key}
+                parent={entry.parent}
+                startedBy={entry.startedBy}
+                childSessions={entry.children}
+                newest={entryNewest(entry)}
+                open={openGroups.has(entry.key)}
+                onToggle={() => toggleGroup(entry.key)}
                 onOpenWorkspaceSettings={onOpenWorkspaceSettings}
                 onOpenLauncher={openLauncher}
               />
@@ -272,9 +302,25 @@ interface DateGroup {
  *   Older          (one bucket for everything past a year)
  */
 export function groupByDateBucket(sessions: RailSession[], now: Date = new Date()): DateGroup[] {
-  const groups = new Map<string, DateGroup>();
+  return bucketByDate(sessions, (s) => s, now).map(({ id, label, items }) => ({ id, label, sessions: items }));
+}
 
-  for (const s of sessions) {
+interface EntryDateGroup {
+  id: string;
+  label: string;
+  entries: RecentEntry<RailSession>[];
+}
+
+/** Recent's entries by date. A group dates by its newest chat, as it sorts. */
+export function groupEntriesByDateBucket(entries: RecentEntry<RailSession>[], now: Date = new Date()): EntryDateGroup[] {
+  return bucketByDate(entries, entryNewest, now).map(({ id, label, items }) => ({ id, label, entries: items }));
+}
+
+function bucketByDate<T>(items: T[], sessionOf: (item: T) => RailSession, now: Date): { id: string; label: string; items: T[] }[] {
+  const groups = new Map<string, { id: string; label: string; items: T[] }>();
+
+  for (const item of items) {
+    const s = sessionOf(item);
     // Bucket on activity, not outcome. A month-old execution worked on today
     // belongs under "Today" — keying off `lastOutcomeEventAt` filed it by
     // when the agent last spoke, so a session you spent the afternoon in the
@@ -283,9 +329,9 @@ export function groupByDateBucket(sessions: RailSession[], now: Date = new Date(
     const bucket = describeBucket(ts, now);
     const existing = groups.get(bucket.id);
     if (existing) {
-      existing.sessions.push(s);
+      existing.items.push(item);
     } else {
-      groups.set(bucket.id, { id: bucket.id, label: bucket.label, sessions: [s] });
+      groups.set(bucket.id, { id: bucket.id, label: bucket.label, items: [item] });
     }
   }
 

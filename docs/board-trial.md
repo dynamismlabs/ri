@@ -38,7 +38,7 @@ A status popover's expand button opens Agent Activity with `boardFocus=<bucket>`
 
 Execution cards open their existing primary chat. Main-chat cards open their agent. The Board deliberately follows the HUD's current one-row-per-execution population rather than introducing a new rollup for sibling chats. Waiting response retains its established meaning, including quiet active chats. It does not claim every card contains an unanswered question.
 
-Cards use labels, identities, timestamps and existing main-chat previews. Pending execution questions come from the existing in-memory pending-request snapshot attached to the rail response. No extra transcript queries, background model calls, database policies or migrations are introduced. Activity cards cannot be dragged. Task cards still use the existing semantic lifecycle commands and optimistic hooks.
+Cards use labels, identities, timestamps and existing main-chat previews. A started chat's card says which chat it's from, and two or more from one chat in a column stack into one card that opens in place ([started-chats.md](started-chats.md)). Pending execution questions come from the existing in-memory pending-request snapshot attached to the rail response. No extra transcript queries, background model calls, database policies or migrations are introduced. Activity cards cannot be dragged. Task cards still use the existing semantic lifecycle commands and optimistic hooks.
 
 ## Verification
 

@@ -7,6 +7,7 @@ import { archiveAnywayDialog } from '@/components/executions/uncommitted-files';
 import { requestWorkbenchView } from '@/components/executions/workbench/view-request';
 import { useWorkActivity, useWorkNavigation } from '@/contexts/work-context';
 import { dirtyWorktreeOf, useArchiveSession } from '@/hooks/use-workspaces';
+import { startedArchiveToast, type StartedOutcomeLike } from '@/lib/sessions/started-archive-copy';
 
 function errorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -105,8 +106,13 @@ export function useArchiveExecution() {
         toast.error(name ? `Couldn't archive "${name}"` : "Couldn't archive the chat", { description: errorMessage(err) });
         return false;
       };
+      // Its finished started chats went with it. Say so, and name any that stay.
+      const announce = (row: { startedChats?: StartedOutcomeLike } | null | undefined) => {
+        const message = row?.startedChats && startedArchiveToast(row.startedChats, { kind: 'parent', label: name || null });
+        if (message) toast.success(message.title, message.description ? { description: message.description } : undefined);
+      };
       try {
-        await mutateAsync({ id, force: false });
+        announce(await mutateAsync({ id, force: false }));
         return true;
       } catch (err) {
         const dirty = dirtyWorktreeOf(err);
@@ -116,7 +122,7 @@ export function useArchiveExecution() {
         );
         if (!force) return false;
         try {
-          await mutateAsync({ id, force: true });
+          announce(await mutateAsync({ id, force: true }));
           return true;
         } catch (err2) {
           return failed(err2);

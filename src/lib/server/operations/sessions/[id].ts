@@ -1,3 +1,4 @@
+import { withStartedChats } from '@/lib/sessions/started-chats';
 import { actorFromRequest } from '@/lib/auth/actor';
 import { authorizeTeamActorExecution, assertTeamModelSelection } from '@/lib/home/execution-authority';
 import { widensPermissions } from '@/lib/permissions/modes';
@@ -32,7 +33,7 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, request: Operat
     sessionAuthority(getRequestKey(request.headers), id, 'read');
     const row = getChatSessionWithExecution(id);
     if (!row) return reply({ error: 'Session not found' }, { status: 404 });
-    return reply(conversationViews(getRequestKey(request.headers), [row])[0]);
+    return reply(withStartedChats(conversationViews(getRequestKey(request.headers), [row]))[0]);
   } catch (err) {
     const denied = executionOperationFailure(err);
     if (denied) return denied;
