@@ -20,8 +20,8 @@ importers:
         specifier: ^0.0.3
         version: 0.0.3
       '@agentex/workspace':
-        specifier: ^0.0.6
-        version: 0.0.6
+        specifier: ^0.0.7
+        version: 0.0.7
       '@ai-sdk/anthropic':
         specifier: ^3.0.63
         version: 3.0.63(zod@3.25.76)
@@ -555,8 +555,8 @@ packages:
     engines: {node: '>=20.19.0'}
     os: [darwin, linux]
 
-  '@agentex/workspace@0.0.6':
-    resolution: {integrity: sha512-CVK0HU+KdA/FlyytEPAo6b1+cXK9t9cs+4E5hm//DE2q01EOBp2DpTUqrQIvOyDH5JvwBfswxhPz4C6bwkQwwQ==}
+  '@agentex/workspace@0.0.7':
+    resolution: {integrity: sha512-ptur+vmQyMr9HTWUPzm6egGhKOELqvdlvXKWOjguTnbhNY03oV2qkJGLrTN8smnj1Xypa4Tjv1lueIdX16ipug==}
     engines: {node: '>=20.19.0'}
     os: [darwin, linux]
 
@@ -9966,7 +9966,7 @@ snapshots:
 
   '@agentex/github@0.0.3': {}
 
-  '@agentex/workspace@0.0.6':
+  '@agentex/workspace@0.0.7':
     dependencies:
       chokidar: 5.0.0
       picomatch: 4.0.4

@@ -10,7 +10,7 @@
  * caller names.
  *
  * Writes (the Files tab's editor and tree) go to the folder by path, so they
- * work for git, plain and detached-HEAD folders alike. They are for the
+ * work for git and plain folders alike. They are for the
  * person using the app. The agent's main chat still never writes here
  * (docs/agents-view-spec.md Phase 6): its changes go through executions. An
  * archived agent is read-only (409), like its terminal and main chat.

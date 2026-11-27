@@ -476,7 +476,7 @@ export async function createWorktreeForSession(args: {
       // file tree come up immediately; those files appear lazily as they land.
       return {
         path: handle.path,
-        branch: handle.git.branch,
+        branch,
         baseSha: handle.git.baseSha,
         warning: joinWarnings(warning, localFiles),
       };
@@ -560,7 +560,7 @@ export async function resumeWorktreeForSession(args: {
 
     return {
       path: handle.path,
-      branch: handle.git.branch,
+      branch,
       baseSha: handle.git.baseSha,
       // Resume recreates the ORIGINAL branch at its original base — there is
       // no remote refresh to caveat.
@@ -676,14 +676,14 @@ async function gitOut(cwd: string, args: string[]): Promise<string | null> {
 
 /**
  * Open a folder the user owns (an agent's own folder, not a worktree we
- * made) as a read handle. Returns null when the folder is gone, or when it is
- * a git checkout on a detached HEAD (mid-rebase, bisect), which agentex
- * cannot open: callers fall back to a plain listing and direct reads.
+ * made) as a read handle. Returns null when the folder is gone: callers fall
+ * back to a plain listing and direct reads.
  *
- * A git checkout opens with an explicit base: its current branch at HEAD.
- * Status flags and the diff "old" side then mean what they should for the
- * user's own folder, uncommitted changes. An unborn repo bases on the empty
- * tree, so every file reads as added. Anything else opens bare.
+ * A git checkout opens with an explicit base: its current branch at HEAD
+ * (`HEAD` itself when detached, mid-rebase or bisecting). Status flags and
+ * the diff "old" side then mean what they should for the user's own folder,
+ * uncommitted changes. An unborn repo bases on the empty tree, so every file
+ * reads as added. Anything else opens bare.
  *
  * The base is never read from agentex's worktree metadata. agentex only
  * records a base for worktrees it created, so a main checkout has none: 0.0.5
@@ -700,8 +700,7 @@ export async function openFolderHandle(cwd: string): Promise<import('@agentex/wo
       gitOut(cwd, ['symbolic-ref', '--short', 'HEAD']),
       gitOut(cwd, ['rev-parse', '--verify', '--quiet', 'HEAD']),
     ]);
-    if (!branch) return null;
-    return await lib.workspace.open(cwd, { source: cwd, baseBranch: branch, baseSha: head ?? EMPTY_TREE_SHA });
+    return await lib.workspace.open(cwd, { source: cwd, baseBranch: branch ?? 'HEAD', baseSha: head ?? EMPTY_TREE_SHA });
   } catch (err) {
     if (err instanceof lib.WorkspaceNotFoundError) return null;
     throw err;
@@ -722,8 +721,7 @@ export async function openFolderHandle(cwd: string): Promise<import('@agentex/wo
  * doesn't. Without a merge-base it falls back to `fallbackSha` (an execution's
  * recorded start), then HEAD, then the empty tree.
  *
- * Throws `WorkspaceNotFoundError` when the folder is gone, and agentex's own
- * error on a detached HEAD, which it cannot open.
+ * Throws `WorkspaceNotFoundError` when the folder is gone.
  */
 async function openSourceCheckout(
   ws: Pick<WorkspaceRecord, 'cwd' | 'baseBranch' | 'remoteName'>,
