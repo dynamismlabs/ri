@@ -194,16 +194,18 @@ describe('chat composer', () => {
           for (const b of boxes) { expect(Math.abs(b.y - boxes[0]!.y)).toBeLessThanOrEqual(1); expect(b.x).toBeGreaterThanOrEqual(0); expect(b.right).toBeLessThanOrEqual(width); }
           expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
         };
-        // The composer keeps its size from the mic to the transcript (at
-        // 360px the empty box's placeholder wraps to a second line).
+        // The composer keeps its size from the mic to the transcript. Measured
+        // against a one-line draft: the empty box's placeholder wraps at
+        // phone widths, by how much depending on the fonts installed.
         const card = page.locator('[data-slot="chat-composer-card"]');
-        await editor(page).waitFor();
+        await editor(page).click();
+        await page.keyboard.type('Hi');
         const idle = await box(card);
         await page.getByRole('button', { name: 'Voice input', exact: true }).click();
         await page.getByRole('button', { name: 'Stop recording', exact: true }).waitFor();
         await check();
         const listening = await box(card);
-        if (width >= 390) expect(listening).toEqual(idle);
+        expect(listening).toEqual(idle);
         // Browser speech has no waveform to draw, so it says it's listening.
         expect(await card.getByRole('status').filter({ hasText: 'Listening…' }).isVisible()).toBe(true);
         // The composer sits on the screen's bottom edge in the app, so the
@@ -227,6 +229,11 @@ describe('Quick Capture', () => {
   const panel = (page: Page) => page.locator('[data-voice-panel]');
   const text = (page: Page) => page.getByRole('textbox', { name: 'Quick capture' });
   const cancel = (page: Page) => panel(page).getByRole('button', { name: 'Cancel', exact: true });
+  /** Cancel's place in the voice row, and the row's size: what can't move after Stop. */
+  const cancelInRow = async (page: Page) => {
+    const [row, button] = await Promise.all([box(panel(page)), box(cancel(page))]);
+    return { x: button.x - row.x, y: button.y - row.y, width: button.width, rowWidth: row.width, rowHeight: row.height };
+  };
 
   async function ready(page: Page) {
     await expect.poll(() => text(page).isEnabled(), { timeout: 10_000 }).toBe(true);
@@ -239,14 +246,14 @@ describe('Quick Capture', () => {
       await text(page).fill('Groceries:');
       await page.getByRole('button', { name: 'Voice capture' }).click();
       await panel(page).getByText('Listening…').waitFor();
-      const cancelWhileListening = await box(cancel(page));
+      const cancelWhileListening = await cancelInRow(page);
       await page.evaluate(() => window.voiceFixture.say(0, 'milk'));
       await page.waitForTimeout(100);
       expect(await text(page).inputValue()).toBe('Groceries:');
 
       await panel(page).getByRole('button', { name: 'Stop', exact: true }).click();
       await panel(page).getByRole('status').filter({ hasText: 'Transcribing…' }).waitFor({ timeout: 300 });
-      expect(await box(cancel(page))).toEqual(cancelWhileListening);
+      expect(await cancelInRow(page)).toEqual(cancelWhileListening);
       expect(await panel(page).getByRole('button', { name: 'Stop', exact: true }).isDisabled()).toBe(true);
       expect(await page.getByRole('button', { name: 'Capture', exact: true }).isDisabled()).toBe(true);
       await page.evaluate(() => window.voiceFixture.say(1, 'eggs'));
