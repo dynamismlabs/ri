@@ -214,6 +214,14 @@ function ServerForm() {
   return <div className="flex h-[520px] flex-col rounded-xl border border-border"><ChatTranscript session={{ id: CHAT_ID, startedAt: NOW }} events={events} isLoading={false} isRunning={false} hasOlder={false} isLoadingOlder={false} loadOlder={async () => 0} /></div>;
 }
 
+function RateLimitExample() {
+  const events = [toChatEventDTO(event('rate_limit', {
+    id: 'gallery-rate-limit', role: 'system', content: 'Rate limit reached', toolIsError: true,
+  }))];
+  return <div className="flex min-h-[360px] flex-col"><ChatTranscript session={{ id: CHAT_ID, startedAt: NOW, harness: 'claude' }}
+    events={events} isLoading={false} isRunning={false} hasOlder={false} isLoadingOlder={false} loadOlder={async () => 0} /></div>;
+}
+
 function FileChips() {
   return <div className="space-y-5 text-sm"><p>Here are the review materials:</p><MessageFileChip attachment={{ fileName: 'gallery-agenda.txt', originalName: 'friday-agenda.txt', mimeType: 'text/plain', size: 99, uploadedAt: NOW }} variant="block" /><MessageFileChip attachment={{ fileName: 'gallery-image.svg', originalName: 'a-little-room-to-think.svg', mimeType: 'image/svg+xml', size: 720, uploadedAt: NOW }} fileUrl={() => IMAGE_URL} variant="block" /><MessageFileChip attachment={{ fileName: 'gallery-report.pdf', originalName: 'friday-review.pdf', mimeType: 'application/pdf', size: 48210, uploadedAt: NOW }} variant="block" /></div>;
 }
@@ -459,6 +467,7 @@ function Example() {
       : 'Read [the website](https://example.com/guide?view=review#next), visit https://example.com, or use [a longer destination](https://example.com/research/planning/a-longer-document-name?view=review&section=next-steps#decisions).'} />}
     {__GALLERY_EXAMPLE__ === 'email' && <EmailComposer id={DRAFT_ID} sessionId={CHAT_ID} initial={runtime.email} />}
     {(__GALLERY_EXAMPLE__ === 'questions' || __GALLERY_EXAMPLE__ === 'permissions') && <PendingInputArea sessionId={CHAT_ID} />}
+    {__GALLERY_EXAMPLE__ === 'rate-limit' && <RateLimitExample />}
     {__GALLERY_EXAMPLE__ === 'approvals' && <IntegrationApprovalCard rows={runtime.events.filter(row => row.source === 'approval_request')} sessionId={CHAT_ID} isLatest />}
     {__GALLERY_EXAMPLE__ === 'connections' && <ConnectionRequestCard event={runtime.events[0]} sessionId={CHAT_ID} />}
     {__GALLERY_EXAMPLE__ === 'mentions' && <Mentions />}

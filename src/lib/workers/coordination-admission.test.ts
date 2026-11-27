@@ -99,6 +99,27 @@ async function userMessage(content: string) {
 }
 
 
+it('denies a saved resume when its device reconnects after a manual continuation', async () => {
+  const q = await import('@/lib/db/queries');
+  const { runTick } = await import('@/lib/scheduler/runner');
+  const { scheduleRateLimitResume } = await import('@/lib/server/operations/rate-limit-resume');
+  await worker!.stop();
+  worker = null;
+  const failure = q.insertChatEvent({ sessionId: chatId, role: 'system', source: 'rate_limit', toolIsError: true, content: 'Rate limit reached' })!;
+  const { trigger } = await scheduleRateLimitResume({
+    sessionId: chatId, eventId: failure.id, prompt: 'Should never reach the laptop', runAt: new Date(Date.now() + 60_000).toISOString(),
+  });
+  expect(await runTick(new Date(trigger!.runAt!))).toBe(1);
+  await until(() => q.chatRunState(chatId).queuedSends.length > 0, 'the queued resume');
+  const saved = q.chatRunState(chatId).queuedSends[0]!;
+  expect(saved.payload).toMatchObject({ coordinationAdmission: true });
+  await userMessage('We already continued manually.');
+  worker = await startWorkerProcess({ homeUrl: server.url, homeId, workerKey, root: laptopRoot });
+  await until(() => q.getWorkerCommand(saved.id)?.state === 'failed', 'the worker refusing the obsolete resume');
+  expect(q.getWorkerCommand(saved.id)?.error).toMatch(/already continued/);
+  expect(q.listRuns({ triggerId: trigger!.id })[0]?.status).toBe('failed');
+}, 60_000);
+
 it('runs a delegated sibling on the existing connected device without preparing another execution', async () => {
   const q = await import('@/lib/db/queries');
   const { runAction } = await import('@/lib/actions/dispatch');

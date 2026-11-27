@@ -27,3 +27,23 @@ Hover previews the card, click or tap pins it, a second click closes it, and Esc
 ## Verification
 
 `RI_USAGE_BROWSER_TEST=1 pnpm exec vitest run src/components/dashboard/rate-limits-pill.browser.test.ts` covers light and dark rendering, compact sizing, keyboard and pinned interaction, foreground polling, visibility resume, live updates, threshold persistence, fractional usage, badge color and reset expiry. Display tests cover the above-zero option, combinations of warning thresholds, stale measurements, model-specific scopes, missing percentages and optional extra usage. The API tests cover nullable preference updates and validation.
+
+## Resume a stopped chat
+
+A root Claude or Codex quota failure or an Antigravity turn ending with
+`rate_limited` can offer a one-time resume. Usage warnings alone do not arm
+anything. Ri uses the failure's structured reset or unambiguous provider text,
+plus fresh, matching account and model windows when available on the home.
+It adds a minute to the latest applicable reset. Without a time, the person
+chooses one. A new undated exhausted window pauses an existing schedule.
+
+The source failure uniquely binds an ordinary session-target trigger.
+Claiming it and saving its run are atomic. The run id is also the saved
+message id. The existing local and worker delivery boundaries check that its
+schedule is active and the chat has not continued, changed harness, or gone on
+Hold. An interrupted claim shows up in run history. Ri does not replay a
+message whose provider acceptance could not be confirmed.
+
+Account telemetry on a connected device is not read from the home account.
+Its resume uses the reset reported with the failure or the time the person
+chose, and follows the same delivery checks when the device reconnects.

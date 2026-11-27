@@ -66,7 +66,7 @@ export function ScheduleChatButton({
   const [open, setOpen] = useState(false);
   if (!chat || !canScheduleChat(chat)) return null;
 
-  const mine = (triggers ?? []).filter((t) => t.targetSessionId === chat.id);
+  const mine = (triggers ?? []).filter((t) => t.targetSessionId === chat.id && !t.resumeEventId);
   const live = mine.filter((t) => t.enabled);
   const first = live[0];
   const chip = live.length > 1
@@ -122,7 +122,7 @@ function ScheduleDialogBody({ sessionId, onDone }: { sessionId: string; onDone: 
   if (!chat) return null;
   return (
     <div className="max-h-[min(80vh,40rem)] overflow-y-auto">
-      <ChatSchedules chat={chat} mine={(triggers ?? []).filter((t) => t.targetSessionId === chat.id)} onDone={onDone} />
+      <ChatSchedules chat={chat} mine={(triggers ?? []).filter((t) => t.targetSessionId === chat.id && !t.resumeEventId)} onDone={onDone} />
     </div>
   );
 }

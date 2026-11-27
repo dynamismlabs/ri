@@ -9,5 +9,6 @@ export const ChatCapabilities = createContext<{
   coordination?: boolean;
   /** Messages sent while the chat works wait in its queue (docs/message-queue.md). A team's shared chat queues turns itself. */
   messageQueue?: boolean;
+  rateLimitResume?: boolean;
 }>({ deliveryReceipts: true, prepareResults: true });
 export const useChatCapabilities = () => useContext(ChatCapabilities);

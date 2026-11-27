@@ -52,6 +52,7 @@ import { beginRun } from '@/lib/runs/artifact-bucket';
 import { finishRun } from '@/lib/runs/finish';
 import { bindConversationRun } from '@/lib/db/queries';
 import { claimPreparingInputs } from '@/lib/coordination/input-reservations';
+import { rateLimitResumeAdmission } from '@/lib/runs/rate-limit-resume';
 import { isUnacceptedCoordinationRun, humanCoordinationContext, noteCoordinationHumanDirection, agentRequestMessageRefusal, agentMessageAdmission } from '@/lib/db/queries';
 import { explicitHarnessSelection, type ProviderId } from '@/lib/harness/options';
 import { getHarnessModelCatalog } from '@/lib/harness/model-discovery';
@@ -838,6 +839,8 @@ async function sendAdmitted(
       stopIsFailure: !!options.resultOperationRunId,
       admission: async () => {
         policy.verify();
+        const resumeRefusal = options.sourceEventId === runId && runId ? rateLimitResumeAdmission(runId) : null;
+        if (resumeRefusal) throw new ExecutorError('invalid_state', resumeRefusal);
         const admission = agentMessageAdmission(options.sourceEventId, runId, options.coordinationDeliveryIds);
         if (admission?.held && options.actor?.source !== 'human') {
           const { CoordinationHeldError } = await import('@/lib/coordination/hold');
@@ -855,7 +858,8 @@ async function sendAdmitted(
       spec,
       sourceEventId: options.sourceEventId ?? null,
       coordinationDeliveryIds: options.coordinationDeliveryIds,
-      coordinationAdmission: !!agentMessageAdmission(options.sourceEventId) || !!options.coordinationDeliveryIds?.length,
+      coordinationAdmission: !!agentMessageAdmission(options.sourceEventId) || !!options.coordinationDeliveryIds?.length
+        || (!!runId && options.sourceEventId === runId),
       actor: options.actor,
       files,
       signal: options.signal,

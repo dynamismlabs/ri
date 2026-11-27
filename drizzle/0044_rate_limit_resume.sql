@@ -1,0 +1,2 @@
+ALTER TABLE `triggers` ADD `resume_event_id` text REFERENCES chat_events(id) ON DELETE CASCADE;--> statement-breakpoint
+CREATE UNIQUE INDEX `uniq_triggers_resume_event` ON `triggers` (`resume_event_id`);

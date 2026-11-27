@@ -40,6 +40,8 @@ export interface HarnessRateLimits {
   observedAt: string;
   /** The provider's account id, when it reports one. A change starts over. */
   accountId?: string;
+  /** Identity of this provider connection when an account id is unavailable. */
+  authContextId?: string;
   buckets: StoredRateLimitBucket[];
 }
 
@@ -100,8 +102,11 @@ export function mergeRateLimits(
   update: RateLimitUpdate,
 ): HarnessRateLimits {
   const { snapshot } = update;
-  const accountChanged = Boolean(previous?.accountId && snapshot.accountId && previous.accountId !== snapshot.accountId);
-  const kept = update.mode === 'replace' || accountChanged ? undefined : previous;
+  const sameAccount = !!snapshot.accountId && snapshot.accountId === previous?.accountId;
+  const sameContext = !!snapshot.authContextId && snapshot.authContextId === previous?.authContextId;
+  const scoped = !!(snapshot.accountId || snapshot.authContextId || previous?.accountId || previous?.authContextId);
+  const sameScope = snapshot.accountId && previous?.accountId ? sameAccount : sameContext;
+  const kept = update.mode === 'replace' || (scoped && !sameScope) ? undefined : previous;
   const byId = new Map<string, StoredRateLimitBucket>();
   if (kept) {
     const removed = new Set(update.removedBucketIds ?? []);
@@ -117,11 +122,13 @@ export function mergeRateLimits(
     if (existing && Date.parse(existing.observedAt) > Date.parse(bucket.observedAt)) continue;
     byId.set(bucket.id, stored(bucket));
   }
-  const accountId = snapshot.accountId ?? (accountChanged ? undefined : previous?.accountId);
+  const accountId = snapshot.accountId ?? (sameScope ? previous?.accountId : undefined);
+  const authContextId = snapshot.authContextId ?? (sameScope ? previous?.authContextId : undefined);
   return {
     harness,
     observedAt: kept ? later(kept.observedAt, snapshot.observedAt) : snapshot.observedAt,
     ...(accountId ? { accountId } : {}),
+    ...(authContextId ? { authContextId } : {}),
     buckets: [...byId.values()],
   };
 }
@@ -175,9 +182,9 @@ async function readOne(id: HarnessId): Promise<void> {
  * harness read in the last two minutes, or that a chat reported on in that
  * time, is skipped. A read already in flight is joined, not repeated.
  */
-export async function readHarnessRateLimits(now = Date.now()): Promise<HarnessRateLimits[]> {
+export async function readHarnessRateLimits(now = Date.now(), harness?: HarnessId): Promise<HarnessRateLimits[]> {
   const state = current();
-  await Promise.all(readableHarnesses().map((id) => {
+  await Promise.all(readableHarnesses().filter(id => !harness || harness === id).map((id) => {
     if (state.reading[id]) return state.reading[id];
     if (!due(id, now)) return undefined;
     state.readAt[id] = now;

@@ -39,6 +39,7 @@ import { LIFECYCLE_COMMANDS } from '@/lib/tasks/lifecycle';
 import { resolveHomeContext } from '@/lib/home/context';
 import { filePreviewsRouter } from '@/lib/files/router';
 import { artifactsRouter } from '@/lib/sessions/artifacts-router';
+import { rateLimitResumeRouter } from './rate-limit-resume-router';
 import { messageQueueRouter } from '@/lib/sessions/message-queue-router';
 import { resolveHomeExecutionChoices } from '@/lib/home/execution-choices';
 import { isTeamAuthority } from '@/lib/home/authority';
@@ -92,6 +93,7 @@ export const appRouter = router({
   artifacts: artifactsRouter,
   // A chat's queue of messages waiting for their turn (docs/message-queue.md).
   messageQueue: messageQueueRouter,
+  rateLimitResume: rateLimitResumeRouter,
   email: emailRouter,
   externalAi: externalAiRouter,
   chatSources: chatSourcesRouter,

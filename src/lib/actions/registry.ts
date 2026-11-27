@@ -2598,6 +2598,7 @@ const update_trigger_action = defineAction({
     const { id, provider, ...rest } = input;
     const current = getTrigger(id);
     if (!current) throw new ActionError('not_found', `Trigger not found: ${id}`);
+    if (current.resumeEventId) throw new ActionError('conflict', 'Change this scheduled resume from the chat where it was created.');
 
     // App-managed rows: schedule + delivery are user-owned, identity/behavior
     // is not. Reject edits to locked fields; the friendly editor (e.g. Deck
@@ -2789,6 +2790,7 @@ const run_trigger_action = defineAction({
     if (served) return served.result;
     const trigger = getTrigger(id);
     if (!trigger) throw new ActionError('not_found', `Trigger not found: ${id}`);
+    if (trigger.resumeEventId) throw new ActionError('conflict', 'Send a message in the chat to continue now.');
     // Lazy: see the import-section comment. Pulls in the executor adapter
     // and `@agentex/agent` only on actual run-trigger invocations.
     const { dispatchRun } = await import('@/lib/runs/dispatch');

@@ -24,6 +24,8 @@ import { recordCoordinationProducer } from '@/lib/coordination/run-context';
 import { acceptAgentDeliveriesForRun, noteCoordinationHumanDirection } from '@/lib/db/queries';
 import {
   chatPlacement,
+  getRun,
+  updateRun,
   getAckedEventSeq,
   getChatSession,
   adoptNativeChatSessionLabel,
@@ -42,6 +44,7 @@ import {
 import { publishBackgroundTaskActivity, publishPendingInput, publishRuntime, publishSessionTitle } from '@/lib/realtime/bus';
 import { queueNeedsInput } from '@/lib/notifications/emit';
 import { recordRunTelemetry } from '@/lib/runs/event-hooks';
+import { isRateLimitResumeRun } from '@/lib/runs/rate-limit-resume';
 import { finishRunInTransaction } from '@/lib/runs/finish';
 import { DEFAULT_PERMISSION_MODE } from '@/lib/permissions/modes';
 import { inTransaction, type AfterCommit } from '@/lib/effects/after-commit';
@@ -97,9 +100,14 @@ export function applyRunnerSignal(
     case 'producing_run':
       if (current && !from) recordCoordinationProducer(chatSessionId, signal.runId);
       return;
-    case 'input_accepted':
+    case 'input_accepted': {
       acceptAgentDeliveriesForRun(signal.runId, chatSessionId, signal.deliveryIds, signal.producingRunId);
+      const run = getRun(signal.runId);
+      if (run?.status === 'running' && isRateLimitResumeRun(run)) {
+        updateRun(run.id, { statusReason: 'rate_limit_resume_accepted' });
+      }
       return;
+    }
     case 'native_title': {
       // Heartbeats contain live runtime state, but no title metadata. A journaled
       // name still needs applying after a newer heartbeat, with ownership guards.
