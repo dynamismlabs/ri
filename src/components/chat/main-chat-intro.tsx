@@ -5,6 +5,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { ArrowUp, PenLine } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { APP_NAME } from '@/constants/app';
+import { FIRST_TASK_PROMPT } from '@/lib/coordinator/first-task';
 import { trpc } from '@/lib/trpc/client';
 
 import { Tip } from '@/components/ui/tip';
@@ -22,6 +23,8 @@ export interface MainChatStarter {
   prompt: string;
   /** Put `prompt` in the composer instead of sending it. */
   draft?: boolean;
+  /** The one to start with, drawn as the primary button. At most one, first. */
+  primary?: boolean;
 }
 
 /** What an empty main chat can do: send a starter, or put one in the composer. */
@@ -48,15 +51,18 @@ export interface MainChatIntro {
 
 /**
  * The app's main chat, introducing itself by the name the user calls it.
- * A `fresh` Ri, one with no tasks yet, starts with getting the person's work
- * in: the usual starters would read an empty plate, agents and stream.
+ * A `fresh` Ri, one with no tasks yet, starts with something real: the
+ * person's first task, in their own words, saved and linked in the reply
+ * (the brief tells the coordinator how, `FIRST_TASK_PROMPT`). Planning and
+ * a look at what it can do stay beside it. The usual starters would read an
+ * empty plate, agents and stream.
  */
 export function appMainChatIntro(name: string = APP_NAME, { fresh = false }: { fresh?: boolean } = {}): MainChatIntro {
   if (fresh) return {
-    title: 'What should we work on?',
-    description: `I’m ${name}. Tell me what’s on your mind and I’ll turn it into tasks and notes, then help you plan your day.`,
+    title: 'What do you need to get done?',
+    description: `I’m ${name}. Tell me one thing you need to do and I’ll save it as your first task. I can also help you plan your day.`,
     starters: [
-      { label: 'Here’s what’s on my mind', prompt: 'Here’s what’s on my mind: ', draft: true },
+      { label: 'Capture your first task', prompt: FIRST_TASK_PROMPT, draft: true, primary: true },
       { label: 'Plan my day with me', prompt: 'Help me plan my day. Ask me what I have going on, then turn it into tasks.' },
       { label: 'What can you do for me?', prompt: 'What can you help me with? Keep it short, and suggest one thing to try first.' },
     ],
@@ -74,10 +80,15 @@ export function appMainChatIntro(name: string = APP_NAME, { fresh = false }: { f
   };
 }
 
+/** A Ri with no tasks yet. Still loading counts as not fresh. */
+export function useFreshHome(enabled = true): boolean {
+  const tasks = useQuery({ ...trpc.tasks.list.queryOptions({ limit: 1 }), enabled });
+  return tasks.data?.length === 0;
+}
+
 /** The app's main chat intro for this Ri: fresh until it has a task. */
 export function useAppMainChatIntro(name?: string, enabled = true): MainChatIntro {
-  const tasks = useQuery({ ...trpc.tasks.list.queryOptions({ limit: 1 }), enabled });
-  return appMainChatIntro(name, { fresh: tasks.data?.length === 0 });
+  return appMainChatIntro(name, { fresh: useFreshHome(enabled) });
 }
 
 /** One agent's main chat. */
@@ -115,23 +126,48 @@ export function MainChatIntroPanel({
         <p className="mt-1.5 text-[12px] leading-relaxed text-muted-foreground">{intro.description}</p>
         <div className="mt-4 flex flex-wrap gap-1.5">
           {intro.starters.map((s) => (
-            <Tip key={s.label} label={s.draft ? 'Start this in the composer' : 'Send this'}>
-              <Button
-                type="button"
-                disabled={disabled}
-                onClick={() => (s.draft ? onDraft(s.prompt) : onSend(s.prompt))}
-                variant="secondary"
-                size="sm"
-                className="inline-flex max-w-full items-center gap-1.5"
-              >
-                {s.draft ? <PenLine size={11} className="flex-shrink-0" /> : <ArrowUp size={11} className="flex-shrink-0 opacity-60" />}
-                <span className="truncate">{s.label}</span>
-              </Button>
-            </Tip>
+            <StarterButton key={s.label} starter={s} size="sm" disabled={disabled} onSend={onSend} onDraft={onDraft} />
           ))}
         </div>
         {footer}
       </div>
     </div>
+  );
+}
+
+/**
+ * One starter: sends as written, or puts its text in the composer to finish.
+ * The primary one is the clear first step, the rest are quieter.
+ */
+export function StarterButton({
+  starter,
+  size,
+  disabled,
+  onSend,
+  onDraft,
+}: {
+  starter: MainChatStarter;
+  size: 'sm' | 'md';
+  disabled?: boolean;
+  onSend: (prompt: string) => void;
+  onDraft: (prompt: string) => void;
+}) {
+  return (
+    <Tip label={starter.draft ? 'Start this in the composer' : 'Send this'}>
+      <Button
+        type="button"
+        disabled={disabled}
+        onClick={() => (starter.draft ? onDraft(starter.prompt) : onSend(starter.prompt))}
+        variant={starter.primary ? 'primary' : 'secondary'}
+        size={size}
+        data-starter-primary={starter.primary || undefined}
+        className="inline-flex max-w-full items-center gap-1.5"
+      >
+        {starter.draft
+          ? <PenLine size={11} className="flex-shrink-0" />
+          : <ArrowUp size={11} className={starter.primary ? 'flex-shrink-0' : 'flex-shrink-0 opacity-60'} />}
+        <span className="truncate">{starter.label}</span>
+      </Button>
+    </Tip>
   );
 }

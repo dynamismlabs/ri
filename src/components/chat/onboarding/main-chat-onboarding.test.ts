@@ -23,6 +23,7 @@ const fixtures = vi.hoisted(() => ({
   installSkill: vi.fn(async () => {}),
   progress: { show: vi.fn(), record: vi.fn(), finish: vi.fn(async () => {}), moveChat: vi.fn(async () => {}) },
   refetch: vi.fn(async () => ({})),
+  fresh: true,
 }));
 
 // These DOM-only behavior fixtures use desktop layout. Real field viewport
@@ -62,11 +63,23 @@ vi.mock('@/components/workspaces/workspace-create-modal', () => ({ WorkspaceCrea
 vi.mock('@/components/chat/main-chat-intro', async () => {
   const { createElement } = await import('react');
   return {
-    useAppMainChatIntro: () => ({ title: 'What should we work on?', description: '', starters: [] }),
+    useAppMainChatIntro: () => ({
+      title: 'What should we work on?', description: '',
+      starters: fixtures.fresh
+        ? [{ label: 'Capture your first task', prompt: 'Add my first task: ', draft: true, primary: true }, { label: 'Plan my day with me', prompt: 'Plan' }]
+        : [{ label: 'What’s on my plate today?', prompt: 'Plate' }],
+    }),
+    useFreshHome: () => fixtures.fresh,
     useEmptyChatActions: () => ({}),
     MainChatIntroPanel: ({ intro, footer }: { intro: { title: string }; footer?: ReactNode }) =>
       createElement('section', null, intro.title, footer),
+    StarterButton: ({ starter }: { starter: { label: string; primary?: boolean } }) =>
+      createElement('button', { 'data-primary': starter.primary ? 'yes' : undefined }, starter.label),
   };
+});
+vi.mock('./onboarding-phone', async () => {
+  const { createElement } = await import('react');
+  return { PhoneOffer: () => createElement('aside', { 'data-phone-offer': '' }, 'Use Ri on your phone') };
 });
 vi.mock('./onboarding-apps', () => ({ OnboardingApps: () => null }));
 vi.mock('./onboarding-areas', () => ({
@@ -101,6 +114,7 @@ const AT = '2026-10-06T12:00:00.000Z';
 
 beforeEach(() => {
   vi.clearAllMocks();
+  fixtures.fresh = true;
   Object.assign(fixtures.state, {
     name: null, onboardedAt: null, coordinatorIntroducedAt: null, coordinatorName: null, onboarding: null,
     defaultHarness: 'claude', defaultModel: 'sonnet', defaultEffort: 'high',
@@ -313,5 +327,46 @@ describe('a home that finished setting up', () => {
     const notNow = [...container.querySelectorAll('button')].find((node) => node.textContent === 'Not now');
     await act(async () => notNow!.click());
     expect(fixtures.progress.record).toHaveBeenCalledWith('apps', { status: 'skipped', chatId: 'chat-1' });
+  });
+});
+
+describe('the end of setup', () => {
+  /** Every step answered in this chat but the last, a first agent, which is then put off. */
+  async function finishSetup() {
+    Object.assign(fixtures.state, { name: 'Trey', coordinatorName: 'Rye' });
+    const answered = (reply: string) => ({ status: 'answered', reply, chatId: 'chat-1', at: AT });
+    fixtures.state.onboarding = {
+      steps: {
+        identity: answered('Rye'), harness: answered(''), you: answered('Trey'), import: answered('Not now'),
+        about: answered('Skip'), areas: answered('None'), apps: answered('Not now'),
+      },
+    };
+    await render();
+    const later = [...container.querySelectorAll('button')].find((node) => node.textContent === 'Later');
+    expect(later).toBeDefined();
+    await act(async () => later!.click());
+  }
+
+  it('asks a Ri with no tasks for its first one, the first-task starter first, and offers the phone under the starters', async () => {
+    await finishSetup();
+    expect(container.textContent).toContain('You’re all set, Trey.');
+    expect(container.textContent).toContain('What’s one thing you need to get done? Tell me and I’ll save it as your first task.');
+    const buttons = [...container.querySelectorAll('button')];
+    const primary = buttons.find((node) => node.getAttribute('data-primary') === 'yes');
+    expect(primary?.textContent).toBe('Capture your first task');
+    expect(buttons.map((node) => node.textContent)).toContain('Plan my day with me');
+    // The phone comes after the starters, not before or instead of them.
+    const order = [...container.querySelectorAll('button, [data-phone-offer]')].map((node) => node.textContent);
+    expect(order.indexOf('Use Ri on your phone')).toBeGreaterThan(order.indexOf('Plan my day with me'));
+    expect(order.indexOf('Plan my day with me')).toBeGreaterThan(order.indexOf('Capture your first task'));
+    expect(fixtures.progress.finish).toHaveBeenCalledWith({ skipped: false, chatId: 'chat-1' });
+  });
+
+  it('keeps the usual closing line for a Ri that already has tasks', async () => {
+    fixtures.fresh = false;
+    await finishSetup();
+    expect(container.textContent).toContain('Ask me anything below, or start with one of these.');
+    expect(container.textContent).not.toContain('first task');
+    expect(container.querySelector('[data-phone-offer]')).not.toBeNull();
   });
 });

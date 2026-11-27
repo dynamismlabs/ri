@@ -35,6 +35,27 @@ class Recorder {
   }
 }
 
+/** The browser's speech recognition: results and its end arrive when the test says. */
+class Recognition {
+  static all: Recognition[] = [];
+  continuous = false;
+  interimResults = false;
+  lang = '';
+  aborted = false;
+  onresult: ((event: unknown) => void) | null = null;
+  onend: (() => void) | null = null;
+  onerror: ((event: unknown) => void) | null = null;
+  private results: { 0: { transcript: string }; isFinal: boolean }[] = [];
+  constructor() { Recognition.all.push(this); }
+  start() {}
+  stop() {}
+  abort() { this.aborted = true; this.onerror?.({ error: 'aborted' }); this.onend?.(); }
+  say(index: number, ...texts: string[]) {
+    texts.forEach((transcript, offset) => { this.results[index + offset] = { 0: { transcript }, isFinal: true }; });
+    this.onresult?.({ resultIndex: index, results: this.results });
+  }
+}
+
 let root: Root | undefined;
 /** The app's query cache, fresh for each test so a cached provider probe never carries over. */
 let queries: QueryClient;
@@ -43,6 +64,7 @@ let microphone: ReturnType<typeof vi.fn>;
 let track: { stop: ReturnType<typeof vi.fn> };
 const local = 'local/parakeet-tdt-0.6b-v3';
 const groq = 'groq/whisper-large-v3-turbo';
+const web = 'web/speech-recognition';
 
 function Harness({ model = local }: { model?: string }) {
   const value = useVoiceInput(model);
@@ -73,6 +95,7 @@ beforeEach(() => {
   microphone = vi.fn().mockResolvedValue({ getTracks: () => [track] });
   vi.stubGlobal('navigator', { mediaDevices: { getUserMedia: microphone } });
   Recorder.all = [];
+  Recognition.all = [];
   client.get.mockReset().mockResolvedValue({ providers: {
     local: { available: true, configured: true }, groq: { available: true, configured: true }, web: { available: true, configured: true },
   } });
@@ -135,6 +158,24 @@ describe('voice privacy and asynchronous lifecycle', () => {
     expect(hasActiveInput()).toBe(true);
   });
 
+  it('reads as transcribing from Stop, through the recorder flush and a slow answer', async () => {
+    const result = deferred<{ text: string }>();
+    client.upload.mockReturnValueOnce(result.promise);
+    await mount(groq); await start();
+    await act(async () => { voice.stopRecording(); });
+    expect(voice.isRecording).toBe(false);
+    expect(voice.isTranscribing).toBe(true);
+    expect(client.upload).not.toHaveBeenCalled();
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(client.upload).toHaveBeenCalledTimes(1);
+    expect(voice.isTranscribing).toBe(true);
+    expect(voice.transcript).toBe('');
+    await act(async () => { result.resolve({ text: 'the whole thing' }); });
+    expect(voice.isTranscribing).toBe(false);
+    expect(voice.transcript).toBe('the whole thing');
+    expect(hasActiveInput()).toBe(false);
+  });
+
   it('does not upload when canceled during the recorder stop delay', async () => {
     await mount(); await start();
     await act(async () => { voice.stopRecording(); voice.cancelRecording(); await vi.advanceTimersByTimeAsync(500); });
@@ -185,6 +226,55 @@ describe('voice privacy and asynchronous lifecycle', () => {
     expect(voice.providerStatus?.web.available).toBe(true);
     await act(async () => { window.dispatchEvent(new window.Event('ri:voice-providers-changed')); });
     expect(voice.captureMode).toBe('media-recorder');
+  });
+});
+
+describe('browser speech', () => {
+  beforeEach(() => { Object.assign(window, { SpeechRecognition: Recognition }); });
+  const recognition = () => Recognition.all.at(-1)!;
+
+  it('holds results until recognition ends, then publishes the whole transcript once', async () => {
+    await mount(web); await start();
+    expect(voice.isRecording).toBe(true);
+    await act(async () => { recognition().say(0, 'buy milk'); });
+    expect(voice.transcript).toBe('');
+    await act(async () => { voice.stopRecording(); });
+    expect(voice.isRecording).toBe(false);
+    expect(voice.isTranscribing).toBe(true);
+    // Its last words come after Stop, and a settled result can be delivered again.
+    await act(async () => { recognition().say(0, 'buy milk', ' and eggs '); });
+    expect(voice.transcript).toBe('');
+    await act(async () => { recognition().onend?.(); });
+    expect(voice.isTranscribing).toBe(false);
+    expect(voice.transcript).toBe('buy milk and eggs');
+    expect(hasActiveInput()).toBe(false);
+  });
+
+  it('publishes what was heard when recognition ends on its own', async () => {
+    await mount(web); await start();
+    await act(async () => { recognition().say(0, 'a long pause'); recognition().onend?.(); });
+    expect(voice.isRecording).toBe(false);
+    expect(voice.transcript).toBe('a long pause');
+  });
+
+  it('publishes nothing when canceled after Stop, even if results arrive late', async () => {
+    await mount(web); await start();
+    const canceled = recognition();
+    await act(async () => { canceled.say(0, 'never mind'); voice.stopRecording(); });
+    await act(async () => { voice.cancelRecording(); });
+    expect(canceled.aborted).toBe(true);
+    expect(voice.isTranscribing).toBe(false);
+    await act(async () => { canceled.say(1, 'late words'); canceled.onend?.(); });
+    expect(voice.transcript).toBe('');
+    expect(hasActiveInput()).toBe(false);
+  });
+
+  it('publishes nothing from a failed recognition', async () => {
+    await mount(web); await start();
+    await act(async () => { recognition().say(0, 'half a'); recognition().onerror?.({ error: 'network' }); recognition().onend?.(); });
+    expect(voice.error).toBe('Speech recognition error');
+    expect(voice.transcript).toBe('');
+    expect(voice.isRecording || voice.isTranscribing).toBe(false);
   });
 });
 

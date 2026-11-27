@@ -687,10 +687,12 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     // Voice transcript → composer. Auto-send dispatches a synthesized
     // payload (text only, no attachments). Manual mode inserts the text
     // at the editor's current cursor position so existing typed prefix
-    // and any inline chips stay where they were.
+    // and any inline chips stay where they were. The transcript arrives
+    // whole (the hook holds browser speech until recognition ends), and a
+    // canceled one never arrives.
     const lastTranscriptRef = useRef('');
     useEffect(() => {
-      if (!voice.transcript || voice.isRecording) return;
+      if (!voice.transcript || voice.isRecording || voice.isTranscribing) return;
       if (voice.transcript === lastTranscriptRef.current) return;
 
       lastTranscriptRef.current = voice.transcript;
@@ -737,6 +739,9 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
 
     const canSend = hasContent && !sending && !disabled && !hasPendingUploads;
     const showVoiceButton = voice.isSupported;
+    // From the mic until the words arrive (or fail, or are canceled): the
+    // editor steps aside for the waveform, then the Transcribing label.
+    const voiceActive = voice.isRecording || voice.isTranscribing;
     // Send/Stop button slot:
     //   has text   → Send (even mid-turn; the harness queues internally)
     //   no text + running → Stop
@@ -752,10 +757,11 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     };
 
     // Status line below the composer — voice / error / disabled / helper.
+    // Transcribing shows inside the composer, where it can be read.
     const statusLine = voice.isRecording
-      ? 'Recording, tap mic to stop'
+      ? 'Recording, tap stop when you’re done'
       : voice.isTranscribing
-        ? 'Transcribing…'
+        ? null
         : voice.error
           ? voice.error
           : voice.unsupportedReason && !voice.isSupported
@@ -770,7 +776,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
     const statusIsError = !!voice.error;
 
     // The "⌘I to focus" nudge: an empty, idle composer that ⌘I would reach.
-    const showFocusHint = !voice.isRecording && !disabled && !hasContent && !editorFocused && hotkeyTarget;
+    const showFocusHint = !voiceActive && !disabled && !hasContent && !editorFocused && hotkeyTarget;
     return (
       <div className="flex-shrink-0" onKeyDown={handleKeyDown}>
         {queueAvailable && (
@@ -792,10 +798,13 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
               {externalConversation.team && ' Visible to the Ri team.'}
             </p>}
             <CoordinationControls sessionId={sessionId} />
-            {/* Top: rich editor — or live waveform while recording. The
-              editor preserves typed text + inline paste chips across
-              the recording swap. Native contenteditable auto-grows;
-              max-height + overflow keep tall pastes scrollable.
+            {/* Top: rich editor, or the voice row while a recording is under
+              way: the live waveform, then Transcribing… from Stop until the
+              words arrive. The editor stays mounted underneath (hidden), so
+              typed text, inline chips, the cursor and uploads in flight are
+              all where they were when the transcript goes in. Native
+              contenteditable auto-grows; max-height + overflow keep tall
+              pastes scrollable.
 
               Wrapper is `position: relative` so the focus-hotkey nudge
               can float in the top-right at the placeholder's baseline.
@@ -812,22 +821,40 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
               onInput={readOnEngage}
               onPaste={readOnEngage}
             >
-              {voice.isRecording ? (
-                <div className="px-3 pt-2.5 pb-1 flex items-center" style={{ minHeight: 36 }}>
-                  <LiveWaveform
-                    active={voice.isRecording}
-                    height={24}
-                    barWidth={2}
-                    barGap={1}
-                    barRadius={1}
-                    sensitivity={1.2}
-                    mode="static"
-                    fadeEdges
-                    className="text-destructive flex-1"
-                    stream={voice.stream}
-                  />
+              {/* Both voice rows are the editor's one-line height, so the
+                composer keeps its size from the mic to the transcript. */}
+              {voice.isRecording && (
+                <div className="flex min-h-10 items-center px-3 pt-2.5 pb-1">
+                  {voice.stream ? (
+                    <LiveWaveform
+                      active={voice.isRecording}
+                      height={24}
+                      barWidth={2}
+                      barGap={1}
+                      barRadius={1}
+                      sensitivity={1.2}
+                      mode="static"
+                      fadeEdges
+                      className="text-destructive flex-1"
+                      stream={voice.stream}
+                    />
+                  ) : (
+                    // Browser speech has no audio of its own to draw.
+                    <span role="status" className="text-[13px] text-muted-foreground">Listening…</span>
+                  )}
                 </div>
-              ) : (
+              )}
+              {voice.isTranscribing && (
+                <div
+                  role="status"
+                  data-voice-transcribing
+                  className="flex min-h-10 items-center gap-2 px-3 pt-2.5 pb-1 text-[13px] text-foreground"
+                >
+                  <Loader2 size={14} className="flex-shrink-0 animate-spin text-muted-foreground" aria-hidden />
+                  <span>Transcribing…</span>
+                </div>
+              )}
+              <div className={cn(voiceActive && 'hidden')}>
                 <ChatInputEditor
                   sourceChatId={sessionId ?? undefined}
                   ref={editorRef}
@@ -864,7 +891,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   draftKey={draftKey ?? (sessionId ? `exec:${sessionId}` : undefined)}
                   history={messageHistory}
                 />
-              )}
+              </div>
               {/* Floating focus hint — only when the editor is the empty
                 "placeholder" state, mirroring the placeholder's tone. */}
               {showFocusHint && (
@@ -880,13 +907,16 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
             {/* Bottom toolbar. Two layouts behind the same flex row so
               vertical height stays steady:
                 · idle  : [+][mode]  ………  [model][effort][context][mic][send]
-                · record: [auto-send labeled toggle]  …  [X cancel][stop]
-              While recording the pre-send controls are out of context
-              (you can't change model mid-record meaningfully), so we
-              hide them and surface auto-send labeled clearly so the
-              user knows what hitting Stop will do. */}
+                · voice : [auto-send labeled toggle]  …  [Cancel][stop]
+              The voice layout holds from the mic until the transcript
+              arrives, fails or is canceled, so Cancel never moves: after
+              Stop its neighbor just goes quiet. While recording the
+              pre-send controls are out of context (you can't change
+              model mid-record meaningfully), so we hide them and surface
+              auto-send labeled clearly so the user knows what hitting
+              Stop will do. */}
             <ComposerControls touch={touchFirst}>{modeIconOnly => <>
-              {voice.isRecording ? (
+              {voiceActive ? (
                 // Push everything to the right so the recording cluster
                 // (Auto-send + X + stop) reads as one unit. Auto-send sits
                 // immediately next to the cancel/stop pair so it's
@@ -952,7 +982,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                 </>
               )}
 
-              {voice.isRecording && (
+              {voiceActive && (
                 <AutoSendSwitch
                   on={autoSend}
                   onToggle={toggleAutoSend}
@@ -960,18 +990,19 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                 />
               )}
 
-              {showVoiceButton && (voice.isRecording || voice.isTranscribing) && (
-                  <IconButton
+              {voiceActive && (
+                <Tip label={voice.isTranscribing ? 'Stop transcribing and discard it' : 'Discard this recording'}>
+                  <Button
                     type="button"
                     onClick={voice.cancelRecording}
-                    label={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording'}
-                    tooltip={voice.isTranscribing ? 'Cancel transcription' : 'Cancel recording (discard)'}
                     variant="ghost"
                     size={touchFirst ? "touch" : "sm"}
-                    className="flex items-center justify-center"
+                    data-voice-cancel
                   >
                     <X size={13} />
-                  </IconButton>
+                    Cancel
+                  </Button>
+                </Tip>
               )}
 
               {showVoiceButton && (
@@ -979,18 +1010,18 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                     type="button"
                     onClick={voice.toggleRecording}
                     disabled={voice.isTranscribing || disabled}
-                    label={voice.isRecording ? 'Stop recording' : 'Voice input'}
+                    label={voice.isRecording ? 'Stop recording' : voice.isTranscribing ? 'Recording stopped' : 'Voice input'}
                     tooltip={voice.isRecording
                       ? 'Stop recording (transcribe)'
-                      : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
+                      : voice.isTranscribing
+                        ? 'Transcribing what you said'
+                        : `Voice input${voice.provider === 'local' ? ' (Parakeet)' : ''}`}
                     variant={voice.isRecording ? "destructive" : "ghost"}
                     pressed={voice.isRecording}
                     size={touchFirst ? "touch" : "sm"}
                     tone={voice.isRecording ? "danger" : "neutral"}
                   >
-                    {voice.isTranscribing ? (
-                      <Loader2 size={13} className="animate-spin" />
-                    ) : voice.isRecording ? (
+                    {voiceActive ? (
                       <Square size={11} className="fill-current" />
                     ) : (
                       <Mic size={13} />
@@ -998,8 +1029,8 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                   </IconButton>
               )}
 
-              {/* Send hides while recording — nothing to send until
-                transcription completes. Stop owns the slot during a
+              {/* Send hides from the mic until the transcript is in —
+                nothing to send before then. Stop owns the slot during a
                 turn-in-flight via showStopButton (unchanged). */}
               {showStopButton ? (
                   <IconButton
@@ -1018,7 +1049,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       <Square size={10} className="fill-current" />
                     )}
                   </IconButton>
-              ) : !voice.isRecording && queueing ? (
+              ) : !voiceActive && queueing ? (
                   // While the chat works the button queues. Hovering it shows
                   // both ways to send and their keys.
                   <HoverCard openDelay={150} closeDelay={150}>
@@ -1054,7 +1085,7 @@ export const ExecutionComposer = forwardRef<ExecutionComposerHandle, ExecutionCo
                       />
                     </HoverPreviewContent>
                   </HoverCard>
-              ) : !voice.isRecording ? (
+              ) : !voiceActive ? (
                   <IconButton
                     type="button"
                     onClick={() => handleSend()}

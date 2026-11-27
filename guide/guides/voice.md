@@ -17,6 +17,12 @@ In **Settings**, open **Voice**. Pick a **Default model** from these kinds:
 
 **Auto-send voice messages** sends what you said as soon as it's transcribed, instead of leaving it in the box for you to check.
 
+## Recording and transcribing
+
+Tap the microphone and speak. Tap stop when you're done. The box then says **Transcribing…** until your words arrive, so you can tell it's still working. **Cancel** stays in the same place the whole time: tap it while recording or transcribing and nothing you said is kept or sent.
+
+Your words arrive all at once, when the transcript is complete. With auto-send on, Ri sends the whole message, never half a sentence. With it off, they go into the box where your cursor was, beside anything you already typed. In Quick Capture they go after what you typed.
+
 ## Local speech
 
 Local speech keeps your audio on your computer. Under **Optional local speech**, click **Install local speech**. Ri downloads a verified model, with no Python or Docker to install. Leave about 900 MiB of disk free.

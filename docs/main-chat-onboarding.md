@@ -36,7 +36,7 @@ Each step shows only when it applies to this home (`stepApplies`).
 | Areas | No areas yet | "Want me to keep things in areas?" Suggestions from what you said and the projects you brought in, Work and Personal, or your own | Areas |
 | Apps | Always | Popular apps in a row and a search over all of them. Notes that it checks before sending anything or doing anything that can't be undone (the default Ask first policy) | Connections, through Settings |
 | A first agent | No agents yet, and no import bringing some in | The New agent dialog, or Later | A workspace |
-| Done | Always | "You're all set", then the starters | `coordinatorIntroducedAt`, and `onboardedAt` for a new home |
+| Done | Always | "You're all set", then the starters (the first task first, with no tasks yet), then Use Ri on your phone without a paired phone | `coordinatorIntroducedAt`, and `onboardedAt` for a new home |
 
 Each answer shows as the user's reply bubble, and the next message picks up whichever answer came
 last (`acknowledge`), since which steps came before depends on the home. A short typing beat
@@ -111,10 +111,23 @@ What a person came for is their own work, so that's where first run ends. The st
 one thing, whether this Ri has a task yet (`useAppMainChatIntro` in
 `src/components/chat/main-chat-intro.tsx`):
 
-- **No tasks yet:** "Tell me what's on your mind and I'll turn it into tasks and notes, then help
-  you plan your day", with Here's what's on my mind (finished in the composer), Plan my day with me
-  and What can you do for me?
+- **No tasks yet:** the first chat ends on something real. The closing line asks "What's one thing
+  you need to get done?", and Capture your first task is the primary starter: it puts "Add my first
+  task: " in the composer for the person to finish (`FIRST_TASK_PROMPT`,
+  `src/lib/coordinator/first-task.ts`). The coordinator's brief names that prompt, so the reply is
+  one task made with `create_task` from their words and its `[[task:UUID]]` chip, which opens it.
+  Plan my day with me and What can you do for me? stay beside it as secondary starters.
 - **Otherwise:** the usual starters, which read the plate, the agents and the stream.
+
+Under the starters at the end of the conversation, a home with no paired phone (one whose key has
+signed in, `hasPairedPhone` in `src/lib/devices/phone.ts`) gets one quiet line, Use Ri on your
+phone (`PhoneOffer`, `onboarding-phone.tsx`). It isn't a step and is never asked. Opened, with an
+https remote address it shows Settings' own pairing form (`PairDeviceForm`, fixed to a phone) and
+pairing panel with the QR code, then watches the devices until the phone signs in. Without one it
+explains Set up phone access (the microphone needs https, and the remote address works away from
+home) and opens Settings, Devices on the remote address (`PHONE_SETUP_ANCHOR`), where a callout
+offers Back to pairing. The address saved there lands in the shared base-URL cache, so the line
+in the chat turns into the pairing form by itself.
 
 Settings has no setup checklist. Until 2026-11-18 it opened on Get started while anything was
 left, a progress bar over remote access, notifications, Connectors, the agent browser and using

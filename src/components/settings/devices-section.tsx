@@ -64,22 +64,10 @@ export function DevicesSection() {
   });
 
   const [formOpen, setFormOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [kind, setKind] = useState<DeviceKind>('phone');
   // A new device's link shows by the form it came from. Another link for a
   // device already here shows in that device's card.
   const [pairing, setPairing] = useState<{ res: PairDeviceResponse; inCard: boolean } | null>(null);
   const refresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ['devices'] }), [queryClient]);
-
-  const pairMutation = useMutation({
-    mutationFn: (input: { name: string; kind: DeviceKind }) => devicesApi.pair(input),
-    onSuccess: (res) => {
-      setPairing({ res, inCard: false });
-      setName('');
-      setFormOpen(false);
-      void refresh();
-    },
-  });
 
   const addKeyMutation = useMutation({
     mutationFn: (id: string) => devicesApi.addKey(id),
@@ -89,12 +77,6 @@ export function DevicesSection() {
       void refresh();
     },
   });
-
-  const handlePair = useCallback(() => {
-    const trimmed = name.trim();
-    if (!trimmed) return;
-    pairMutation.mutate({ name: trimmed, kind });
-  }, [pairMutation, name, kind]);
 
   // Home first, then the rest as they were added.
   const listed = useMemo(
@@ -123,42 +105,13 @@ export function DevicesSection() {
       </div>
 
       {formOpen && (
-        <Card padding="md" className="space-y-2">
-          <Field
-            autoFocus
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="iPhone 15"
-            controlClassName="mt-1 w-full"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handlePair();
-            }}
-            label="Name"
-          />
-          <KindSelect value={kind} onChange={setKind} />
-          <div className="flex items-center gap-2 pt-1">
-            <Button
-              onClick={handlePair}
-              disabled={!name.trim() || pairMutation.isPending}
-              variant="primary"
-              size="md"
-            >
-              {pairMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
-              Create pairing link
-            </Button>
-            <Button
-              onClick={() => setFormOpen(false)}
-              variant="ghost"
-              size="sm"
-            >
-              Cancel
-            </Button>
-          </div>
-          {pairMutation.isError && (
-            <p className="text-[11px] text-destructive">Couldn&apos;t add the device. Try again.</p>
-          )}
-        </Card>
+        <PairDeviceForm
+          onPaired={(res) => {
+            setPairing({ res, inCard: false });
+            setFormOpen(false);
+          }}
+          onCancel={() => setFormOpen(false)}
+        />
       )}
 
       {pairing && !pairing.inCard && <PairingPanel pairing={pairing.res} baseUrls={baseUrls} onDone={() => setPairing(null)} />}
@@ -187,6 +140,79 @@ export function DevicesSection() {
   );
 }
 
+/**
+ * Name a new device and make its pairing link: Settings' Add device, and the
+ * phone offer at the end of first-run setup (which names it a phone).
+ */
+export function PairDeviceForm({
+  initialName = '',
+  kind: fixedKind,
+  onPaired,
+  onCancel,
+}: {
+  initialName?: string;
+  /** Pair this kind without asking. Otherwise the form asks, phone first. */
+  kind?: DeviceKind;
+  onPaired: (pairing: PairDeviceResponse) => void;
+  onCancel: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const [name, setName] = useState(initialName);
+  const [kind, setKind] = useState<DeviceKind>(fixedKind ?? 'phone');
+  const pairMutation = useMutation({
+    mutationFn: (input: { name: string; kind: DeviceKind }) => devicesApi.pair(input),
+    onSuccess: (res) => {
+      setName('');
+      onPaired(res);
+      void queryClient.invalidateQueries({ queryKey: ['devices'] });
+    },
+  });
+  const handlePair = () => {
+    const trimmed = name.trim();
+    if (!trimmed || pairMutation.isPending) return;
+    pairMutation.mutate({ name: trimmed, kind });
+  };
+
+  return (
+    <Card padding="md" className="space-y-2">
+      <Field
+        autoFocus
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="iPhone 15"
+        controlClassName="mt-1 w-full"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') handlePair();
+        }}
+        label="Name"
+      />
+      {!fixedKind && <KindSelect value={kind} onChange={setKind} />}
+      <div className="flex items-center gap-2 pt-1">
+        <Button
+          onClick={handlePair}
+          disabled={!name.trim() || pairMutation.isPending}
+          variant="primary"
+          size="md"
+        >
+          {pairMutation.isPending ? <Loader2 size={12} className="animate-spin" /> : null}
+          Create pairing link
+        </Button>
+        <Button
+          onClick={onCancel}
+          variant="ghost"
+          size="sm"
+        >
+          Cancel
+        </Button>
+      </div>
+      {pairMutation.isError && (
+        <p className="text-[11px] text-destructive">Couldn&apos;t add the device. Try again.</p>
+      )}
+    </Card>
+  );
+}
+
 function KindSelect({ value, onChange }: { value: DeviceKind; onChange: (kind: DeviceKind) => void }) {
   return (
     <NativeSelect
@@ -205,7 +231,7 @@ function KindSelect({ value, onChange }: { value: DeviceKind; onChange: (kind: D
 }
 
 /** The pairing link for a device's new key, at each address the home knows. Shown once. */
-function PairingPanel({
+export function PairingPanel({
   pairing,
   baseUrls,
   onDone,

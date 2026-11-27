@@ -57,6 +57,7 @@ import { readAuthConfig } from '@/lib/auth/config-file';
 import { SOUL_MD_FILENAME, USER_MD_FILENAME } from '@/lib/config/personalization-templates';
 import { SESSION_CREDENTIAL_HEADER, sessionCredential } from '@/lib/actions/session-credential';
 import { DEFAULT_COORDINATOR_NAME } from '@/lib/coordinator/name';
+import { FIRST_TASK_PROMPT } from '@/lib/coordinator/first-task';
 import type { WorkspaceRecord } from '@/db/types';
 import { KNOWN_HARNESS_IDS, type HarnessId } from '@/lib/harness/registry';
 
@@ -186,7 +187,13 @@ never stored states.
 Create tasks into \`todo\` by default, and into \`consider\` only when the user
 is floating a tentative possibility. Never create straight into \`in_progress\`,
 \`done\`, or \`archived\`. Runtime and agent-run events never change a task's
-lifecycle on their own.`;
+lifecycle on their own.
+
+A new ${APP_NAME}'s first chat offers "Capture your first task", which sends
+"${FIRST_TASK_PROMPT.trim()}" and their words. Make exactly one task from what they
+said with \`create_task\`: a short imperative title, their own words kept in
+the description, and no deadline they didn't give. Reply in a line or two
+with its reference on its own line, so they can open it.`;
 
 const STREAM_TRIAGE_SECTION = `## Stream triage
 

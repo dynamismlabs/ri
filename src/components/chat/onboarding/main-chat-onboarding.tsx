@@ -2,7 +2,14 @@
 import { Field } from '@/components/system/field';
 
 import { Button } from '@/components/system/button';
-import { MainChatIntroPanel, useAppMainChatIntro, useEmptyChatActions } from '@/components/chat/main-chat-intro';
+import {
+	MainChatIntroPanel,
+	StarterButton,
+	useAppMainChatIntro,
+	useEmptyChatActions,
+	useFreshHome,
+	type MainChatStarter,
+} from '@/components/chat/main-chat-intro';
 import {
 	IdentityEditor,
 	draftFromState,
@@ -22,12 +29,13 @@ import type { AreaSuggestion } from '@/lib/onboarding/area-suggestions';
 import { baseOnboardingRecord, type OnboardingRecord, type OnboardingStepName } from '@/lib/onboarding/progress';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowRight, ArrowUp, ListChecks, PenLine, Plus } from 'lucide-react';
+import { ArrowRight, ListChecks, Plus } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useImportRun } from './import-runner';
 import { ABOUT_SKIPPED, AboutStep, aboutQuestion, useAboutDraft } from './onboarding-about';
 import { OnboardingApps } from './onboarding-apps';
+import { PhoneOffer } from './onboarding-phone';
 import { AreasStep, NO_AREAS, areasLines, useAreaSuggestions } from './onboarding-areas';
 import { DefaultModelLine } from './onboarding-default-model';
 import {
@@ -56,7 +64,6 @@ import {
 import { Card, PrimaryButton, QuietButton, Reply, Says, Turn, Typing } from './onboarding-ui';
 import { useHarnessCheck, type HarnessCheck } from './use-harness-check';
 import { useOnboardingProgress } from './use-onboarding-progress';
-import { Tip } from '@/components/ui/tip';
 
 /** How long the assistant "types" before a new step appears. */
 const TYPING_MS = 650;
@@ -77,7 +84,9 @@ type Mode = 'conversation' | 'new-step' | 'intro';
  *   check couldn't set one up, and either way a line saying which model and
  *   effort are now the default, with Change) → what to call you → what you're working on →
  *   history to bring in (only when some was found) → areas (only with none) →
- *   apps → a first agent (only with none) → the usual starters.
+ *   apps → a first agent (only with none) → the usual starters (the first
+ *   task first, for a Ri with no tasks), and under them Ri on your phone for
+ *   a home that hasn't paired one.
  *
  * The messages are scripted and drawn with the transcript's own components,
  * not stored as chat events. The real conversation with the harness starts
@@ -106,6 +115,7 @@ export function MainChatOnboarding() {
   const chatId = mainChat?.session?.id ?? null;
   const name = useCoordinatorName();
   const appIntro = useAppMainChatIntro(name);
+  const freshHome = useFreshHome();
   const actions = useEmptyChatActions();
   const progress = useOnboardingProgress();
   const qc = useQueryClient();
@@ -296,6 +306,7 @@ export function MainChatOnboarding() {
   const said: Said = {
     replies: repliesInConversation(record, chats),
     userName: userState?.name?.trim() || null,
+    freshHome,
     check,
     history,
     suggestions: areaSuggestions.data?.areas ?? [],
@@ -393,7 +404,11 @@ export function MainChatOnboarding() {
               {reply !== undefined ? (
                 <Reply step={step}>{reply}</Reply>
               ) : step === 'done' ? (
-                <Starters />
+                <>
+                  <Starters starters={appIntro.starters} />
+                  {/* An extra, not a step: Ri on their phone, for a home without one. */}
+                  <PhoneOffer />
+                </>
               ) : (
                 stepCard(step, (r) => advance(step, r))
               )}
@@ -416,6 +431,8 @@ const EMPTY_STEPS: ReadonlySet<OnboardingStepName> = new Set();
 interface Said {
   replies: Partial<Record<OnboardingStepName, string>>;
   userName: string | null;
+  /** No tasks yet: the end asks for the first one. */
+  freshHome: boolean;
   check: HarnessCheck | undefined;
   history: ImportableHistory | null;
   suggestions: AreaSuggestion[];
@@ -522,7 +539,11 @@ function question(step: OnboardingStep, said: Said): ReactNode {
         </Says>
       );
     case 'done':
-      return <Says>Ask me anything below, or start with one of these.</Says>;
+      return said.freshHome ? (
+        <Says>What’s one thing you need to get done? Tell me and I’ll save it as your first task.</Says>
+      ) : (
+        <Says>Ask me anything below, or start with one of these.</Says>
+      );
   }
 }
 
@@ -661,25 +682,12 @@ function AgentStep({ onDone }: { onDone: (summary: string) => void }) {
 }
 
 /** The usual starters, as the conversation's last word. */
-function Starters() {
+function Starters({ starters }: { starters: MainChatStarter[] }) {
   const actions = useEmptyChatActions();
-  const { starters } = useAppMainChatIntro();
   return (
     <div className="flex flex-wrap gap-1.5">
       {starters.map((s) => (
-        <Tip key={s.label} label={s.draft ? 'Start this in the composer' : 'Send this'}>
-          <Button
-            type="button"
-            disabled={actions.disabled}
-            onClick={() => (s.draft ? actions.draft(s.prompt) : actions.send(s.prompt))}
-            variant="secondary"
-            size="md"
-            className="inline-flex items-center gap-1.5"
-          >
-            {s.draft ? <PenLine size={11} className="text-muted-foreground" /> : <ArrowUp size={11} className="text-muted-foreground" />}
-            {s.label}
-          </Button>
-        </Tip>
+        <StarterButton key={s.label} starter={s} size="md" disabled={actions.disabled} onSend={actions.send} onDraft={actions.draft} />
       ))}
     </div>
   );

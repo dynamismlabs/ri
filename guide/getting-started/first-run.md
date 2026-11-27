@@ -29,6 +29,13 @@ Ri asks what to call you. If you've used Claude Code, Codex or OpenCode on this 
 
 ## After setup
 
-Your main chat offers a few ways to start. With nothing in Ri yet, tell it what's on your mind and it turns that into tasks and notes, then helps you plan your day.
+With nothing in Ri yet, your main chat asks what you need to get done and starts you on **Capture your first task**. Finish the sentence in your own words and send it. Your assistant saves it as your first task and links it in its reply, so one click opens it. **Plan my day with me** and **What can you do for me?** sit beside it if you'd rather start there.
 
-Ri has no setup checklist. The rest is extra, and your assistant mentions each one when it would help: Ri on your phone, notifications, the agent browser, your accounts, and Ri inside your other AI tools.
+Under them is **Use Ri on your phone**, until you pair one. Your phone needs a secure address for Ri, one that starts with https. It lets you talk to Ri with the microphone and reach it away from home.
+
+- **With a secure address,** the pairing form opens right there. Click **Create pairing link** and scan the QR code with your phone. Ri tells you once your phone is in.
+- **Without one,** **Set up phone access** opens the remote address in **Settings**, under **Devices**. Save it there and choose **Back to pairing**. The pairing form is waiting in your main chat.
+
+[Your phone and other devices](/docs/getting-started/devices) has the details.
+
+Ri has no setup checklist. The rest is extra, and your assistant mentions each one when it would help: notifications, the agent browser, your accounts, and Ri inside your other AI tools.

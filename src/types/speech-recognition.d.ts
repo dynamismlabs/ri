@@ -1,4 +1,6 @@
 interface SpeechRecognitionEvent extends Event {
+  /** The first result this event changed. Earlier ones are as they were. */
+  resultIndex: number;
   results: SpeechRecognitionResultList;
 }
 

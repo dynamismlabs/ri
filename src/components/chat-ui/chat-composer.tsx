@@ -15,7 +15,9 @@ export function ChatComposer({ children, disabled, hint, status, statusIsError }
     <div data-slot="chat-composer-card" className={cn('@container/composer flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-card transition-colors focus-within:border-primary/50', disabled && 'opacity-60')}>
       {children}
     </div>
-    <div className="mt-1 flex min-h-[14px] items-center justify-between gap-2 px-1">
+    {/* One line tall with or without a status in it, so a status coming and
+        going never moves the composer above (it sits on the screen's bottom edge). */}
+    <div className="mt-1 flex min-h-[15px] items-center justify-between gap-2 px-1 leading-[15px]">
       <span className="hidden text-[10px] text-muted-foreground/60 sm:inline">{hint}</span>
       {status && <span role={statusIsError ? 'alert' : 'status'} className={cn('text-[10px]', statusIsError ? 'text-destructive' : 'text-muted-foreground/70')}>{status}</span>}
     </div>
