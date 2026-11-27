@@ -20,7 +20,7 @@ export function RateLimitResume({ event }: { event: Pick<ChatEventDTO, 'id' | 's
   const data = status.data;
   const trigger = data?.trigger;
   const run = data?.run;
-  const now = Date.now();
+  const now = status.dataUpdatedAt;
   const needsTime = !data?.resumeAt || Date.parse(data.resumeAt) <= now;
   const busy = schedule.isPending || cancel.isPending;
   const sending = run?.status === 'running' || run?.status === 'queued';
@@ -29,7 +29,7 @@ export function RateLimitResume({ event }: { event: Pick<ChatEventDTO, 'id' | 's
   const validTime = !!chosenTime && chosenTime.getTime() > now;
 
   return (
-    <Callout tone="warning" padding="md" density="comfortable" className="space-y-2 text-xs">
+    <Callout tone="warning" padding="md" density="comfortable" className="space-y-2">
       <p className="font-medium whitespace-pre-wrap">{event.content ?? 'Rate limit reached'}</p>
       {status.isPending && <p className="flex items-center gap-1.5 text-muted-foreground"><Loader2 size={12} className="animate-spin" /> Checking reset time…</p>}
       {trigger ? <>

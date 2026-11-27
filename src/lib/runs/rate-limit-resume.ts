@@ -16,7 +16,8 @@ export function rateLimitResumeTiming(chat: ChatSessionRecord, event: ChatEventR
     ? [chatRateLimitSnapshot(chat.id), getHarnessRateLimits().find(entry => entry.harness === chat.harness)]
     : [];
   const snapshot = snapshots
-    .filter(entry => entry != null && sameRateLimitAccount(event, entry))
+    .filter(entry => entry != null)
+    .filter(entry => sameRateLimitAccount(event, entry))
     .sort((a, b) => Date.parse(b.observedAt) - Date.parse(a.observedAt))[0];
   const buckets = snapshot?.buckets.filter(bucket => Date.parse(bucket.observedAt) >= now - SNAPSHOT_MAX_AGE_MS) ?? [];
   const { resetAt, unknownObservedAt } = recoveryRateLimits(event, buckets, chat.model);
