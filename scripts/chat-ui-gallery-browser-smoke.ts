@@ -423,6 +423,26 @@ async function main() {
       await beside.getByRole('button', { name: 'Show large', exact: true }).click();
       await frame.getByRole('dialog').getByRole('cell', { name: 'Widget', exact: true }).waitFor();
     }
+    async function exerciseRateLimitResume() {
+      let frame = await select('rate-limit', 'ready');
+      const message = frame.getByLabel('Resume message', { exact: true });
+      await message.waitFor();
+      assert.equal(await message.inputValue(), 'Continue');
+      await message.fill('Continue with the remaining tests');
+      await frame.getByRole('button', { name: 'Schedule resume', exact: true }).click();
+      try { await frame.getByText('Resume scheduled for', { exact: false }).waitFor(); }
+      catch (error) { console.error('Resume preview:', await frame.locator('body').innerText()); throw error; }
+      await frame.getByText('Continue with the remaining tests', { exact: true }).waitFor();
+      await frame.getByRole('button', { name: 'Cancel resume', exact: true }).click();
+      await frame.getByRole('button', { name: 'Schedule resume', exact: true }).waitFor();
+      frame = await select('rate-limit', 'unknown');
+      const time = frame.getByLabel('Resume time', { exact: true });
+      await time.waitFor();
+      assert.equal(await frame.getByRole('button', { name: 'Schedule resume', exact: true }).isDisabled(), true);
+      await time.fill('2030-12-25T10:30');
+      await frame.getByRole('button', { name: 'Schedule resume', exact: true }).click();
+      await frame.getByRole('button', { name: 'Cancel resume', exact: true }).waitFor();
+    }
     for (const example of CHAT_UI_EXAMPLES.filter(example => !focusedExample || example.id === focusedExample)) {
       for (const state of example.states) {
         const frame = await select(example.id, state.id);
@@ -431,6 +451,11 @@ async function main() {
       console.log(`Rendered ${example.id} in all states`);
     }
     if (focusedExample) {
+      if (focusedExample === 'rate-limit') {
+        await exerciseRateLimitResume();
+        await page.setViewportSize({ width: 390, height: 1050 });
+        await exerciseRateLimitResume();
+      }
       if (focusedExample === 'shared-chat') await exerciseSharedChat();
       if (focusedExample === 'chat-messages') await exerciseChatMessages();
       if (focusedExample === 'coordination') {
@@ -448,7 +473,7 @@ async function main() {
         for (const exampleState of focusedStates) {
           for (const theme of ['light', 'dark']) {
             await select(focusedExample, exampleState.id);
-            await page.getByRole('button', { name: theme, exact: true }).click();
+            await page.getByRole('button', { name: theme === 'light' ? 'Light' : 'Dark', exact: true }).click();
             const active = await (await page.locator('iframe').first().elementHandle())!.contentFrame(); assert(active);
             await active.locator(`html[data-theme="${theme}"] [data-gallery-example]`).waitFor();
             if (focusedExample === 'html') await htmlCardReady(active);
@@ -595,7 +620,7 @@ async function main() {
       for (const id of ['email', 'shared-chat', 'server-form', 'questions', 'approvals', 'chat-messages', 'html', 'connected-app']) {
         await select(id);
         for (const theme of ['light', 'dark']) {
-          await page.getByRole('button', { name: theme, exact: true }).click();
+          await page.getByRole('button', { name: theme === 'light' ? 'Light' : 'Dark', exact: true }).click();
           const iframe = page.locator('iframe').first(); await iframe.waitFor();
           await iframe.scrollIntoViewIfNeeded();
           const active = await (await iframe.elementHandle())!.contentFrame(); assert(active);

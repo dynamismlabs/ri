@@ -47,6 +47,8 @@ import {
   getChatSessionWithExecution,
   hasPendingCoordinationSend,
   bumpSessionOutcome,
+  advanceTriggerNextRun,
+  isUnresolvedRateLimitEvent,
   getWorkspace,
   insertChatEvent,
   resetExecutionForReprovision,
@@ -68,6 +70,8 @@ import { checkInContext } from '@/lib/heartbeat/notes';
 import { homeCantRun } from '@/lib/setups/run-on';
 import { resolveTriggerSelection } from '@/lib/triggers/model-speed';
 import { lateBy } from '@/lib/triggers/lateness';
+import { inTransaction, type AfterCommit } from '@/lib/effects/after-commit';
+import { rateLimitResumeAdmission, rateLimitResumeSiblingBusy } from './rate-limit-resume';
 
 export interface DispatchRunArgs {
   trigger: TriggerRecord;
@@ -96,27 +100,9 @@ export async function dispatchRun(args: DispatchRunArgs): Promise<DispatchedRunR
   assertPersonalCapability('Schedules');
   const { trigger, triggerKind, triggerPayload = null, scheduledFor = null } = args;
 
-  // 0. Budget guard. Block + auto-pause scheduled fires at 100%. The
-  //    user_state.monthly_budget_usd is the single ceiling; in-flight
-  //    runs are allowed to complete. See docs/async-agents-v1.md §4.7.
-  if (budgetGate() === 'block') {
-    updateTrigger(trigger.id, {
-      enabled: false,
-      disabledReason: BUDGET_DISABLED_REASON,
-    });
-    const skipped = recordSkipped({
-      trigger,
-      executionId: null,
-      workspaceId: trigger.workspaceId ?? null,
-      chatSessionId: null,
-      triggerKind,
-      triggerPayload,
-      scheduledFor,
-      reason: BUDGET_DISABLED_REASON,
-    });
-    setTriggerLastRun(trigger.id, skipped.id, 'skipped');
-    return { run: skipped, chatSession: null };
-  }
+  if (trigger.resumeEventId) throw new Error('A rate-limit resume can only fire on its schedule.');
+  const blocked = skipOverBudget(args);
+  if (blocked) return blocked;
 
   // A chat target sends into that chat as it is: its own engine, model and
   // folder. No execution to resolve and no chat to create.
@@ -257,6 +243,49 @@ export async function dispatchRun(args: DispatchRunArgs): Promise<DispatchedRunR
   return { run, chatSession: chat };
 }
 
+function skipOverBudget(args: DispatchRunArgs): DispatchedRunResult | null {
+  const { trigger, triggerKind, triggerPayload = null, scheduledFor = null } = args;
+  // 0. Budget guard. Block + auto-pause scheduled fires at 100%. The
+  //    user_state.monthly_budget_usd is the single ceiling; in-flight
+  //    runs are allowed to complete. See docs/async-agents-v1.md §4.7.
+  if (budgetGate() === 'block') {
+    updateTrigger(trigger.id, {
+      enabled: false,
+      disabledReason: BUDGET_DISABLED_REASON,
+    });
+    const skipped = recordSkipped({
+      trigger,
+      executionId: null,
+      workspaceId: trigger.workspaceId ?? null,
+      chatSessionId: null,
+      triggerKind,
+      triggerPayload,
+      scheduledFor,
+      reason: BUDGET_DISABLED_REASON,
+    });
+    setTriggerLastRun(trigger.id, skipped.id, 'skipped');
+    return { run: skipped, chatSession: null };
+  }
+  return null;
+}
+
+/** Save the claim and the run together, then start delivery after commit. */
+export function dispatchDueRateLimitResume(id: string, now: Date): boolean {
+  assertPersonalCapability('Schedules');
+  return inTransaction(after => {
+    const trigger = getTrigger(id);
+    if (!trigger?.enabled || !trigger.resumeEventId || trigger.kind !== 'at' || trigger.targetKind !== 'session'
+      || !trigger.nextRunAt || Date.parse(trigger.nextRunAt) > now.getTime()) return false;
+    const chat = trigger.targetSessionId ? getChatSession(trigger.targetSessionId) : undefined;
+    if (chat && isUnresolvedRateLimitEvent(chat.id, trigger.resumeEventId)
+      && (oneTimeFireMustWait(trigger) || rateLimitResumeSiblingBusy(chat))) return false;
+    const args = { trigger, triggerKind: 'at' as const, scheduledFor: trigger.nextRunAt };
+    advanceTriggerNextRun(trigger.id, null, now.toISOString());
+    if (!skipOverBudget(args)) dispatchToChat(args, after);
+    return true;
+  });
+}
+
 function chatIsBusy(chatId: string): boolean {
   return isRunning(chatId) || hasBackgroundTasks(chatId) || hasPendingCoordinationSend(chatId)
     || !!findActiveRunForChatSession(chatId);
@@ -297,7 +326,7 @@ export const TARGET_CHAT_UNAVAILABLE = 'target_chat_unavailable';
  *   `allow_concurrent` skips too. "Busy" is the same reading coordination
  *   uses before it delivers a message (`busy` in coordination/service.ts).
  */
-async function dispatchToChat(args: DispatchRunArgs): Promise<DispatchedRunResult> {
+function dispatchToChat(args: DispatchRunArgs, after?: AfterCommit): DispatchedRunResult {
   const { trigger, triggerKind, triggerPayload = null, scheduledFor = null } = args;
   const chat = trigger.targetSessionId ? getChatSession(trigger.targetSessionId) : undefined;
   const unavailable = !chat ? 'The chat this trigger sends to no longer exists.'
@@ -324,6 +353,8 @@ async function dispatchToChat(args: DispatchRunArgs): Promise<DispatchedRunResul
     setTriggerLastRun(trigger.id, skipped.id, 'skipped');
     return { run: skipped, chatSession: null };
   };
+  if (trigger.resumeEventId && !isUnresolvedRateLimitEvent(chat.id, trigger.resumeEventId)) return skip('chat_already_continued');
+  if (trigger.resumeEventId && chat.harness !== trigger.harness) return skip('harness_changed');
   if (chat.coordinationHeldAt) return skip('chat_paused');
   if (chatIsBusy(chat.id)) {
     if (trigger.concurrencyPolicy !== 'coalesce_if_active') return skip('chat_busy');
@@ -341,14 +372,20 @@ async function dispatchToChat(args: DispatchRunArgs): Promise<DispatchedRunResul
     // trigger was made.
     harness: chat.harness,
     triggerKind,
-    triggerPayload,
+    triggerPayload: trigger.resumeEventId ? { rateLimitResume: true } : triggerPayload,
     scheduledFor,
     status: 'queued',
   });
   // The chat already existed, so this run did not create it:
   // `createdByRunId` stays as it was.
   markRunStarted(run.id);
-  void runUnderLease(run.id, chat.id, trigger, execution, triggerPayload, scheduledFor);
+  const deliver = () => { void runUnderLease(run.id, chat.id, trigger, execution, triggerPayload, scheduledFor); };
+  if (after) {
+    updateTrigger(trigger.id, { lastRunId: run.id, lastRunStatus: null });
+    after.tasks.push(deliver);
+  } else {
+    deliver();
+  }
   return { run, chatSession: chat };
 }
 
@@ -699,9 +736,12 @@ async function runUnderLease(
     // changes. The agent's stream output still arrives via the
     // adapter's onEvent callback unchanged. The run keeps it, so a move
     // that holds it delivers it as this run (P3 re-check).
+    const refusal = trigger.resumeEventId ? rateLimitResumeAdmission(runId) : null;
+    if (refusal) throw new Error(refusal);
     let sourceEventId: string | null = null;
     try {
       sourceEventId = insertChatEvent({
+        ...(trigger.resumeEventId ? { id: runId, raw: { rateLimitResume: trigger.resumeEventId } } : {}),
         sessionId: chatSessionId,
         role: 'user',
         source: 'user',
@@ -712,6 +752,7 @@ async function runUnderLease(
     } catch (err) {
       console.warn(`[dispatch] failed to persist scheduled prompt event for ${chatSessionId}:`, err);
     }
+    if (trigger.resumeEventId && !sourceEventId) throw new Error('The scheduled message could not be saved.');
     // The prompt's event carries its delivery when the execution runs
     // on another device, so the chat shows it waiting (P3.2).
     const sent = await sendAsRun(runId, chatSessionId, trigger.timeoutSeconds, execution, prompt, { sourceEventId });
@@ -744,8 +785,10 @@ async function sendAsRun(
   options: Omit<DispatchOptions, 'internalCall' | 'runId' | 'onQueuedCommand' | 'signal' | 'onHeld'>,
 ): Promise<'done' | 'held'> {
   let held = false;
-  const send = () =>
-    runArtifactBucket.runWith(runId, chatSessionId, () =>
+  const send = () => {
+    const refusal = options.sourceEventId === runId ? rateLimitResumeAdmission(runId) : null;
+    if (refusal) throw new Error(refusal);
+    return runArtifactBucket.runWith(runId, chatSessionId, () =>
       runWithTimeout(chatSessionId, timeoutSeconds, ({ onQueuedCommand, signal }) =>
         executorDispatch(chatSessionId, message, {
           ...options,
@@ -759,6 +802,7 @@ async function sendAsRun(
         }),
       ),
     );
+  };
   if (runsElsewhere(execution)) await send();
   else await withApiLease(send);
   return held ? 'held' : 'done';

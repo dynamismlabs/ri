@@ -34,11 +34,14 @@ import type { Serialize } from '@trpc/server/unstable-core-do-not-import';
 import type { ChatEventRecord } from '@/db/types';
 import { decodeBackgroundTaskEvent } from '@/lib/executor/background-task-event';
 import { MCP_FORM_RESPONSE_EVENT } from '@/lib/mcp-apps/form-events';
+import { isChatRateLimitFailure } from '@/lib/harness/rate-limit-failure';
 import { decodeChatMessageReceipt } from '@/lib/sessions/chat-message';
 
 export type ChatEventDTO = Serialize<Omit<ChatEventRecord, 'raw'> & {
   /** Retained Team history keeps insertion order, independent of provider clock skew. */
   insertionCursor?: number;
+  rateLimitFailure?: true;
+  rateLimitResumeEventId?: string;
   /** Provider payload, present only when it is actually decodable. */
   raw: ChatEventRecord['raw'] | null;
   /** `raw.subtype`, lifted so the transcript never needs the full object. */
@@ -65,6 +68,8 @@ export function toChatEventDTO(row: ChatEventRecord): ChatEventDTO {
   const sentReceipt = decodeChatMessageReceipt(row);
   return {
     ...row,
+    ...(row.source === 'user' && typeof raw?.rateLimitResume === 'string' ? { rateLimitResumeEventId: raw.rateLimitResume } : {}),
+    ...(isChatRateLimitFailure(row) ? { rateLimitFailure: true as const } : {}),
     // Background tasks and device continuations retain their existing payloads.
     raw: decodeBackgroundTaskEvent(row.raw) || row.source === 'continuation' ? row.raw
       : raw?.agentCoordination && typeof raw.agentCoordination === 'object' ? { agentCoordination: raw.agentCoordination }

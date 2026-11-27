@@ -37,7 +37,7 @@ import {
   reapStaleRunningRuns,
 } from '@/lib/db/queries';
 import type { TriggerRecord } from '@/db/types';
-import { dispatchRun, oneTimeFireMustWait } from '@/lib/runs/dispatch';
+import { dispatchDueRateLimitResume, dispatchRun, oneTimeFireMustWait } from '@/lib/runs/dispatch';
 
 const TICK_INTERVAL_MS = 60_000;
 const STARTUP_DELAY_MS = 5_000;
@@ -210,6 +210,10 @@ async function runAdmittedTick(now: Date): Promise<number> {
  * query.
  */
 async function processTrigger(trigger: TriggerRecord, now: Date): Promise<boolean> {
+  if (trigger.resumeEventId) {
+    const { prepareRateLimitResume } = await import('@/lib/server/operations/rate-limit-resume');
+    return await prepareRateLimitResume(trigger, now) && dispatchDueRateLimitResume(trigger.id, now);
+  }
   // Left due and untouched, so the next tick asks again.
   if (oneTimeFireMustWait(trigger)) return false;
 

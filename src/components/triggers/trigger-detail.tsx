@@ -47,6 +47,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
   const failing = trigger.consecutiveFailures >= 3;
   const lastFailedRun = (recentRuns ?? []).find((r) => r.status === 'failed');
   const managed = isReservedTrigger(id);
+  const scheduledResume = !!trigger.resumeEventId;
   const isHeartbeat = id === RESERVED_TRIGGER_IDS.heartbeat;
   const overdue = overdueLabel(trigger);
 
@@ -60,7 +61,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
             : `Check the computer has free disk space. If this stays, restart ${APP_NAME}.`}
         </Callout>
       )}
-      {failing && (
+      {failing && !scheduledResume && (
         <Callout padding="md" density="comfortable" tone={"error"} className="flex items-start gap-3">
           <AlertTriangle size={16} className="text-destructive mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
@@ -103,6 +104,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
+        {!scheduledResume && <>
         <Button
           onClick={() => runTrigger.mutate(id)}
           disabled={runTrigger.isPending}
@@ -121,7 +123,7 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
         >
           {trigger.enabled ? <PauseCircle size={14} /> : <PlayCircle size={14} />}
           {trigger.enabled ? 'Pause' : 'Resume'}
-        </Button>
+        </Button></>}
         {!managed && (
           <Button
             onClick={(event) => { deleteReturn.current=event.currentTarget; setConfirmingDelete(true); }}
@@ -153,7 +155,14 @@ export function TriggerDetail({ trigger, onDeleted, onNavigateAway }: {
         </Card>
       )}
 
-      <TriggerForm key={id} trigger={trigger} onNavigateAway={onNavigateAway} />
+      {scheduledResume && trigger.targetSessionId ? (
+        <Card padding="md" density="row">
+          <p>Manage the scheduled resume in its chat.</p>
+          <Button variant="link" asChild>
+            <Link onNavigate={onNavigateAway} href={`/?session=${trigger.targetSessionId}&message=${trigger.resumeEventId}`}>Open chat</Link>
+          </Button>
+        </Card>
+      ) : <TriggerForm key={id} trigger={trigger} onNavigateAway={onNavigateAway} />}
 
       {trigger.kind === 'webhook' && trigger.webhookPublicId && (
         <section>
@@ -248,6 +257,8 @@ const SKIP_REASONS: Record<string, string> = {
   execution_busy: 'Skipped: another run was going in the same folder',
   coalesced_into_active: 'Added to the turn already under way',
   chat_busy: 'Skipped: the chat was busy',
+  chat_already_continued: 'Skipped: the chat already continued',
+  harness_changed: 'Skipped: the chat changed harness',
   chat_paused: 'Skipped: the chat’s incoming messages were paused',
 };
 

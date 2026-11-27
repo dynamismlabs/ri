@@ -12138,6 +12138,36 @@ export function getTrigger(id: string): TriggerRecord | undefined {
   return db.select().from(triggers).where(eq(triggers.id, id)).get();
 }
 
+/** One indexed schedule per failure. */
+export function getRateLimitResumeTrigger(eventId: string): TriggerRecord | undefined {
+  return getDb().select().from(triggers).where(eq(triggers.resumeEventId, eventId)).get();
+}
+
+/**
+ * Read a bounded tail in insertion order. Worker clock skew cannot hide a later
+ * user message. Read only early columns even when provider payloads are large.
+ */
+export function isUnresolvedRateLimitEvent(sessionId: string, eventId: string, ownMessageId?: string): boolean {
+  const rows = getDb().select({ id: sql<string>`${chatEvents.id}`, source: sql<string>`${chatEvents.source}` })
+    .from(sql`${chatEvents} INDEXED BY idx_chat_events_session_cursor`)
+    .where(eq(chatEvents.sessionId, sessionId))
+    .orderBy(sql`${chatEvents}.rowid DESC`).limit(150).all();
+  for (const row of rows) {
+    if (row.id === eventId) return true;
+    if (row.id === ownMessageId) continue;
+    if (row.source === 'user') return false;
+    if (row.source === 'agent' || row.source === 'error' || row.source === 'rate_limit') {
+      const later = getDb().select({
+        parent: chatEvents.externalParentToolCallId, phase: chatEvents.phase,
+        failure: chatEvents.toolIsError,
+      }).from(chatEvents).where(eq(chatEvents.id, row.id)).get();
+      // Older account usage pills have no error flag. They are not turns.
+      if (!later?.parent && later?.phase !== 'commentary' && (row.source !== 'rate_limit' || later?.failure)) return false;
+    }
+  }
+  return false;
+}
+
 /**
  * Lookup by user-facing name within scope. workspaceId === undefined
  * means brain-level only; pass a workspaceId to scope to that workspace.
@@ -12549,12 +12579,12 @@ export function reapStaleRunningRuns(): number {
 }
 
 /** The execution-level mutex check — one row max in `running`. */
-export function findActiveRunForExecution(executionId: string): RunRecord | undefined {
+export function findActiveRunForExecution(executionId: string, exceptRunId?: string): RunRecord | undefined {
   const db = getDb();
   return db
     .select()
     .from(runs)
-    .where(and(eq(runs.executionId, executionId), activeRun()))
+    .where(and(eq(runs.executionId, executionId), activeRun(), exceptRunId ? ne(runs.id, exceptRunId) : undefined))
     .get();
 }
 

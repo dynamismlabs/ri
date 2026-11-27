@@ -3129,6 +3129,8 @@ export const triggers = sqliteTable(
     // fire looks the chat up, and one that is archived or gone pauses the
     // trigger, saying why (dispatch.ts `dispatchToChat`).
     targetSessionId: text(),
+    // Binds a one-time resume to its actual failure and deduplicates scheduling.
+    resumeEventId: text().references(() => chatEvents.id, { onDelete: 'cascade' }),
 
     // The thing to do when fired.
     prompt: text().notNull(),
@@ -3258,6 +3260,7 @@ export const triggers = sqliteTable(
       .on(table.webhookPublicId)
       .where(sql`${table.webhookPublicId} IS NOT NULL`),
     index('idx_triggers_workspace_status').on(table.workspaceId, table.enabled),
+    uniqueIndex('uniq_triggers_resume_event').on(table.resumeEventId),
   ],
 );
 

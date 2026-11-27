@@ -309,6 +309,13 @@
       "when": 1795581414737,
       "tag": "0043_message-queue",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "6",
+      "when": 1795758665802,
+      "tag": "0044_rate_limit_resume",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,8 @@ export class GalleryRuntime {
   pending;
   logs: string[] = [];
   private revision = 0;
+  private resumeAt = new Date(Date.now() + 60 * 60_000).toISOString();
+  private resume: { runAt: string; prompt: string } | null = null;
   private coordination: ReturnType<typeof coordinationDeliveryExample>;
   private held: boolean;
   private coordinationPolicy: 'ask' | 'allow' = 'ask';
@@ -24,6 +26,7 @@ export class GalleryRuntime {
   private archived = new Set<string>();
   constructor(readonly example: ChatUiExampleId, readonly state: string, readonly resource?: unknown) {
     this.coordination = coordinationDeliveryExample(state);
+    if (example === 'rate-limit' && state === 'scheduled') this.resume = { runAt: this.resumeAt, prompt: 'Continue' };
     if (example === 'chat-messages' && state === 'reply-archived') this.archived.add(RECEIVER_CHAT_ID);
     this.held = state === 'held';
     this.email = emailDraft(state);
@@ -49,9 +52,24 @@ export class GalleryRuntime {
   private recordDecision(disposition: WorkResultDecisionRecord['disposition'], note?: string) {
     this.decisions.unshift({ id: `decision-${this.decisions.length}`, createdAt: NOW, updatedAt: NOW, resultId: RECORD_ID, requestHash: 'gallery', userId: 'local', disposition, actorSource: 'human', actorUserId: 'local', actorMemberId: null, actorSessionId: null, note: note ?? null, context: null, attachments: [], feedbackSessionId: CHAT_ID, feedbackMessageId: null });
   }
+  private resumeStatus() {
+    const trigger = this.resume ? { ...this.resume, id: 'gallery-resume', enabled: true, nextRunAt: this.resume.runAt, lastFiredAt: null } : null;
+    return { actionable: true, resumeAt: this.state === 'unknown' ? null : this.resumeAt, trigger, run: null };
+  }
   async invoke(path: string, value: unknown): Promise<unknown> {
     const input = (value ?? {}) as Record<string, unknown>;
     const body = (input.body ?? {}) as Record<string, unknown>;
+    if (path === 'rateLimitResume.get') return this.resumeStatus();
+    if (path === 'rateLimitResume.schedule') {
+      this.resume = { runAt: String(input.runAt ?? this.resumeAt), prompt: String(input.prompt) };
+      this.changed('Example resume scheduled');
+      return this.resumeStatus();
+    }
+    if (path === 'rateLimitResume.cancel') {
+      this.resume = null;
+      this.changed('Example resume cancelled');
+      return { cancelled: true };
+    }
     if (path === 'coordination.delivery') return this.coordination;
     if (path === 'coordination.state') return { unrestricted: this.state === 'manager', active: {chatIds: ['active','held'].includes(this.state) || this.coordination.status === 'queued' ? [SENDER_CHAT_ID] : [], starting:false, assignmentsWaiting:this.held ? 1 : 0}, scopes: {chat:CHAT_ID,execution:null,agent:null,global:'1'}, incoming: {}, assignmentsWaiting:this.held ? 1 : 0, policy: this.coordinationChatPolicy ?? this.coordinationPolicy, source: this.coordinationChatPolicy ? 'chat' : 'global', levels: [{source:'chat',value:this.coordinationChatPolicy},{source:'execution',value:null},{source:'agent',value:null},{source:'global',value:this.coordinationPolicy}], heldAt: this.held ? NOW : null, pending: this.held ? 5 : 0, approvals: this.state === 'approval' && this.coordination.status === 'awaiting_approval' ? [{...this.coordination,destinationName:'Research',launchOptions:null}] : [] };
     if (path === 'coordination.defaults') return { global: this.coordinationPolicy };

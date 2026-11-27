@@ -60,6 +60,7 @@ import { withAppSessionInstructions } from '@/lib/executor/prompts/standing-inst
 import { ExecutorError } from './errors';
 import { withFirstTurnPreamble } from './first-turn';
 import { runnerState, isRunning, hasBackgroundTasks, sessionSelectionKey, unconfirmedCloseRefusal } from './live-state';
+import { isRateLimitFailure } from '@/lib/harness/rate-limit-failure';
 import { parseStreamEvent } from './parse';
 import {
   answerRefusal,
@@ -538,6 +539,32 @@ function liveHandle(chatSessionId: string): AgentSession | null {
   return null;
 }
 
+function rateLimitHandle(chatSessionId: string) {
+  if (state.unconfirmedCloses.has(chatSessionId) || closingSessions.has(chatSessionId)) return undefined;
+  return isHarnessSessionAlive(chatSessionId) ? state.harnessSessions.get(chatSessionId) : undefined;
+}
+
+/** Capacity reported by this live chat's account, without opening a new session. */
+export function chatRateLimitSnapshot(chatSessionId: string) {
+  return rateLimitHandle(chatSessionId)?.rateLimits?.getSnapshot().value ?? null;
+}
+
+/** A native usage read sends no prompt. Agentex bounds and deduplicates it. */
+export async function refreshChatRateLimits(chatSessionId: string): Promise<boolean> {
+  const handle = rateLimitHandle(chatSessionId);
+  const rates = handle?.rateLimits;
+  if (!handle || !rates?.refresh) return false;
+  const current = rates.getSnapshot({ maxAgeMs: 120_000 });
+  if (current.support === 'unsupported') return false;
+  if (current.status === 'fresh') return true;
+  const attempts = processState('runner.rate-limit-read-at', () => new WeakMap<AgentSession, number>());
+  const now = Date.now();
+  if (now - (attempts.get(handle) ?? 0) < 120_000) return true;
+  attempts.set(handle, now);
+  try { return (await rates.refresh()).value !== null; }
+  catch { return false; }
+}
+
 /**
  * Send a message into the chat's harness, starting it from the spec when
  * there's no live session. Resolves once the harness accepted the message.
@@ -622,8 +649,8 @@ async function sendPrepared(req: SendRequest): Promise<SendResult> {
     throw err;
   }
   void result.then(
-    (value) => {
-      const turn = value as { status?: string; summary?: string | null; errorMessage?: string } | null;
+    async (value) => {
+      const turn = value as { status?: string; summary?: string | null; errorCode?: string; errorMessage?: string } | null;
       // A turn the person stopped ends normally: its run completes and the
       // dispatch resolves. Every other unfinished status is a failure, and a
       // result operation must complete to count.
@@ -631,6 +658,21 @@ async function sendPrepared(req: SendRequest): Promise<SendResult> {
       const error = turn?.status && turn.status !== 'completed' && !stopped
         ? turn.errorMessage ?? `The ${req.stopIsFailure ? 'result operation' : 'turn'} ended with runtime status ${turn.status}.`
         : null;
+      if (harness === 'antigravity' && error && (turn?.errorCode === 'rate_limited'
+        || (turn?.errorCode === 'process_exited' && isRateLimitFailure(error)))) {
+        try {
+          await runnerSink().writer.write(redactHarnessRuntimeValue({
+            sessionId: chatSessionId,
+            role: 'system',
+            source: 'rate_limit',
+            toolIsError: true,
+            content: error,
+            raw: { providerType: harness, errorCode: turn.errorCode },
+          }));
+        } catch (error) {
+          console.warn('[runner] could not record the Antigravity usage limit:', error);
+        }
+      }
       finishTurn(req, ref, error, commandUuid, turn?.summary ?? null, stopped);
     },
     (err: unknown) => finishTurn(req, ref, err instanceof Error ? err.message : String(err), commandUuid),
@@ -831,6 +873,7 @@ async function startSession(spec: SessionSpec, admission?: () => boolean | Promi
       console.warn(`[runner] couldn't record the harness process for ${chatSessionId}:`, err);
     });
   if (admission && !await admission()) throw new ExecutorError('unsupported', 'This result operation ended before its runtime could start.');
+  let rateLimitContext: { accountId?: string; authContextId?: string } | undefined;
   const pendingOwner = {};
   state.eventOwners.set(chatSessionId, pendingOwner);
   const handle = await provider.createSession({
@@ -850,14 +893,21 @@ async function startSession(spec: SessionSpec, admission?: () => boolean | Promi
       try {
         const safeEvent = redactHarnessRuntimeValue(event);
         // Account limits are per harness, not per chat (harness/rate-limits.ts).
-        if (safeEvent.type === 'rate_limits') runnerSink().rateLimits?.(spec.harness, safeEvent.update);
+        if (safeEvent.type === 'rate_limits') {
+          const { accountId, authContextId } = safeEvent.update.snapshot;
+          rateLimitContext = { accountId, authContextId };
+          runnerSink().rateLimits?.(spec.harness, safeEvent.update);
+        }
         if (safeEvent.type === 'title_changed' && !safeEvent.parentToolCallId) {
           if (safeEvent.title) report(chatSessionId, { type: 'native_title', title: safeEvent.title });
           return;
         }
         _recordSessionInventory(chatSessionId, safeEvent);
         state.lastActivityAt.set(chatSessionId, Date.now());
-        await persistStreamEvent(chatSessionId, safeEvent, runnerSink().writer, { trackBackgroundTaskRuntime: true });
+        await persistStreamEvent(chatSessionId, safeEvent, runnerSink().writer, {
+          trackBackgroundTaskRuntime: true,
+          rateLimitContext,
+        });
         reportNativeSession(chatSessionId, safeEvent.sessionId);
       } catch (err) {
         // One bad event shouldn't crash the whole turn — log and keep going.
@@ -994,7 +1044,7 @@ export function persistStreamEvent(
   chatSessionId: string,
   event: StreamEvent,
   writer: EventWriter,
-  options: { trackBackgroundTaskRuntime?: boolean } = {},
+  options: { trackBackgroundTaskRuntime?: boolean; rateLimitContext?: { accountId?: string; authContextId?: string } } = {},
 ): Promise<void> {
   // One perf-log scope per stored event, by harness, so the log can tell how
   // much of the server's time goes to taking in agent output.
@@ -1005,7 +1055,7 @@ async function persist(
   chatSessionId: string,
   event: StreamEvent,
   writer: EventWriter,
-  options: { trackBackgroundTaskRuntime?: boolean },
+  options: { trackBackgroundTaskRuntime?: boolean; rateLimitContext?: { accountId?: string; authContextId?: string } },
 ): Promise<void> {
   const safeEvent = redactHarnessRuntimeValue(event);
   // Runtime signal, not transcript content — and it has to be applied even
@@ -1014,6 +1064,13 @@ async function persist(
   trackTurnBoundary(chatSessionId, safeEvent);
   const row: CreateChatEventInput | null = parseStreamEvent(chatSessionId, safeEvent);
   if (!row) return;
+  if (row.source === 'rate_limit' && row.toolIsError && options.trackBackgroundTaskRuntime) {
+    const context = options.rateLimitContext ?? chatRateLimitSnapshot(chatSessionId);
+    if (context) {
+      const { accountId, authContextId } = context;
+      row.raw = { ...row.raw as Record<string, unknown>, rateLimitContext: { accountId, authContextId } };
+    }
+  }
   const cumulativeOpenCodePart = safeEvent.providerType === 'opencode'
     && Boolean(safeEvent.eventId)
     && (safeEvent.type === 'assistant' || safeEvent.type === 'thinking');

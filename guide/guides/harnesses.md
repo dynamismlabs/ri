@@ -32,6 +32,8 @@ Then open **Settings**, under **Models**. **Harnesses and models** shows each ha
 
 Plans have usage limits. **Usage & budget**, at the bottom of **Models**, shows what your agents have spent, with an optional monthly cap. **Show at** chooses when your plan's usage appears in the top bar: at 50, 80 and 90 percent to start.
 
+If a limit stops a Claude Code, Codex or Antigravity chat, you can [schedule a message to resume it](/docs/concepts/schedules-and-heartbeat#resume-after-a-rate-limit).
+
 ## How the harnesses differ
 
 | | Claude Code | Codex | Cursor | OpenCode | Antigravity |

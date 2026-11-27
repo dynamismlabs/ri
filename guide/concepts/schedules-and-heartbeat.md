@@ -27,6 +27,16 @@ Each schedule runs on the harness and model you pick in its form. That choice do
 
 Every chat has a clock at the top. Use it to have that chat come back on a schedule, with a message like "Check on progress and keep going. When the work is done, pause this schedule." Turn on **Start a new chat each time** to get a fresh chat on every run instead. Your agents can set these up themselves too, when you ask them to check back later.
 
+### Resume after a rate limit
+
+If a usage limit stops a chat, **Schedule resume** lets you leave a message to send when it can work again. The message starts as **Continue** and you can edit it. Ri sends it once in the same chat. Use **Cancel resume** to take it back, or send your own message to continue sooner.
+
+- **Claude Code** uses the reset reported with the limit. Ri can also check matching account usage when the chat runs on your Home computer.
+- **Codex** uses its reported reset and checks for other exhausted windows when matching account usage is available.
+- **Gemini through Antigravity** uses a reset time if it appears in the error message. Otherwise choose a time yourself.
+
+Ri adds a minute after a reported reset. If a later usage check finds another limit with no reset time, Ri pauses the resume and asks you to choose a new time. You can see its run in **Schedules and Triggers**.
+
 ### When the computer sleeps
 
 Schedules run on your Home's computer, so they need it awake. On a laptop, a time missed while it slept runs once when it wakes. A run that starts more than a few minutes late is told how late it is, so it can skip work that no longer makes sense, and say why. The list shows runs that are late. For schedules you can count on, run Ri on [a computer that stays on](/docs/guides/always-on).

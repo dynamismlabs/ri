@@ -29,6 +29,10 @@ import { ActivityGroup } from '@/components/chat-ui/activity/activity-group';
 import { ExecutionEvent } from '@/components/chat-ui/activity/execution-event';
 import { TurnFilesFooter } from '@/components/chat-ui/artifacts/file-chip';
 import { ThinkingState } from '@/components/executions/thinking-state';
+import { RateLimitResume } from '@/components/chat-ui/activity/rate-limit-resume';
+import { supportsRateLimitResume } from '@/lib/harness/rate-limit-failure';
+import { isProgressNote } from '@/lib/executions/progress-note';
+import { useChatCapabilities } from './chat-capabilities';
 import { buildTranscriptNodes } from '@/components/chat-ui/activity/transcript-grouping';
 
 // Layout effect that no-ops to a passive effect during SSR — the
@@ -37,7 +41,7 @@ import { buildTranscriptNodes } from '@/components/chat-ui/activity/transcript-g
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export interface ChatTranscriptProps {
-  session: Pick<ChatSessionWithExecution, 'id' | 'startedAt'>;
+  session: Pick<ChatSessionWithExecution, 'id' | 'startedAt'> & Partial<Pick<ChatSessionWithExecution, 'harness' | 'status' | 'type' | 'surfaceKind' | 'externalSessionId'>>;
   events: ChatEventDTO[] | undefined;
   isLoading: boolean;
   isRunning: boolean;
@@ -56,6 +60,7 @@ export interface ChatTranscriptProps {
 export function ChatTranscript({ session, events: rawEvents, isLoading, clientStatus = {}, loadOlder, isLoadingOlder, hasOlder, isRunning, voiceSentIds, scrollClassName, before, eventHeader, eventFooter }: ChatTranscriptProps) {
   hot('render ChatTranscript');
   const { density } = useTranscriptDensity();
+  const capabilities = useChatCapabilities();
 
   const events = useMemo(() => filterRenderable(rawEvents ?? []), [rawEvents]);
 
@@ -133,6 +138,20 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
     return -1;
   }, [renderEvents]);
 
+  const resumeEventId = useMemo(() => {
+    if (capabilities.rateLimitResume === false || !session.harness || !supportsRateLimitResume(session.harness)
+      || session.status === 'archived' || session.type === 'content'
+      || session.surfaceKind === 'team_chat' || session.surfaceKind === 'result_review' || (session.surfaceKind === 'imported_agent' && !session.externalSessionId)) return null;
+    for (let i = renderEvents.length - 1; i >= 0; i--) {
+      const event = renderEvents[i];
+      if (event.externalParentToolCallId) continue;
+      if (event.rateLimitResumeEventId) return event.rateLimitResumeEventId;
+      if (event.rateLimitFailure) return isRunning ? null : event.id;
+      if (event.source === 'user' || event.source === 'error' || (event.source === 'agent' && !isProgressNote(event))) return null;
+    }
+    return null;
+  }, [capabilities.rateLimitResume, session.harness, session.status, session.type, session.surfaceKind, session.externalSessionId, renderEvents, isRunning]);
+
   // Cursor for scroll-up paging + the layout-effect key that fires the
   // re-anchor: the RAW oldest event (unfiltered — that's what the pager
   // sends as `before` and what changes when an older page lands).
@@ -204,7 +223,7 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
           return (
             <div key={event.id}>
               {eventHeader?.(event)}
-              <ExecutionEvent
+              {event.id === resumeEventId ? <RateLimitResume event={event} /> : <ExecutionEvent
               event={event}
               sessionId={session.id}
               // Merge result summaries onto call rows only in condensed
@@ -225,7 +244,7 @@ export function ChatTranscript({ session, events: rawEvents, isLoading, clientSt
               voiceSent={voiceSentIds?.has(event.id) ?? false}
               clientStatus={clientStatus[event.id]}
               approvalGroup={approvalGroups.get(event.id)}
-            />
+            />}
               {eventFooter?.(event)}
             </div>
           );

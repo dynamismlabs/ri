@@ -7,6 +7,7 @@
 import { uuidv7 } from 'uuidv7';
 import type { StreamEvent } from '@agentex/agent';
 import type { ChatEventSource, CreateChatEventInput } from '@/db/types';
+import { isChatRateLimitFailure } from '@/lib/harness/rate-limit-failure';
 import { decodeBackgroundTaskEvent, isActiveBackgroundTaskEvent } from '@/lib/executor/background-task-event';
 
 /** Render a rate_limit event's content as a human sentence. */
@@ -100,6 +101,14 @@ export function parseStreamEvent(
   chatSessionId: string,
   event: StreamEvent,
 ): CreateChatEventInput | null {
+  const row = parseEvent(chatSessionId, event);
+  if (row && row.source && row.source !== 'rate_limit' && isChatRateLimitFailure({ ...row, source: row.source })) {
+    return { ...row, source: 'rate_limit', role: 'system', toolIsError: true };
+  }
+  return row;
+}
+
+function parseEvent(chatSessionId: string, event: StreamEvent): CreateChatEventInput | null {
   const externalEventId = event.eventId ?? uuidv7();
   const createdAt = event.timestamp || new Date().toISOString();
   const isOpenCodePart = event.providerType === 'opencode' && Boolean(event.eventId);
@@ -258,7 +267,7 @@ export function parseStreamEvent(
         status === 'blocked' ||
         status === 'limited' ||
         status === 'throttled';
-      if (!isThrottle) return null;
+      if (!isThrottle || event.isUsingOverage === true) return null;
       const friendly = formatRateLimitContent(status, ev.limitType ?? null, ev.resetAt ?? null);
       return {
         ...base,
@@ -357,10 +366,11 @@ function mapUnknownEvent(
   // it stays a hidden system row. The last one, with no retry left, is why
   // the turn produced nothing, so it renders as an error. Hidden, a failed
   // turn looked like no reply at all and the user sent the message again.
-  if (codexMethod === 'error') {
+  if (codexMethod === 'error' || codexMethod === 'turn/failed') {
     const failure = codexTurnFailure(ev.raw);
     if (failure) {
-      return { ...base, role: 'system', source: 'error' satisfies ChatEventSource, content: failure };
+      const row = { ...base, role: 'system', source: 'error' satisfies ChatEventSource, content: failure } as const;
+      if (codexMethod === 'error' || isChatRateLimitFailure(row)) return row;
     }
   }
 
@@ -413,11 +423,11 @@ function mapUnknownEvent(
 function codexTurnFailure(raw: Record<string, unknown> | undefined): string | null {
   const params = raw?.['params'];
   if (!params || typeof params !== 'object') return null;
-  const { willRetry, error } = params as { willRetry?: unknown; error?: unknown };
+  const { willRetry, error, message: fallback } = params as { willRetry?: unknown; error?: unknown; message?: unknown };
   if (willRetry === true) return null;
   const err = error && typeof error === 'object' ? (error as { message?: unknown; additionalDetails?: unknown }) : {};
   const message = typeof err.message === 'string' ? err.message.trim() : '';
   const details = typeof err.additionalDetails === 'string' ? err.additionalDetails.trim() : '';
   if (message && details && !message.includes(details)) return `${message} (${details})`;
-  return message || details || 'Codex stopped with an error.';
+  return message || details || (typeof error === 'string' ? error : '') || (typeof fallback === 'string' ? fallback : '') || 'Codex stopped with an error.';
 }
