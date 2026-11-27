@@ -16,6 +16,8 @@ import { useCaptureDraft } from '@/hooks/use-capture-draft';
 import { LiveWaveform } from '@/components/ui/live-waveform';
 import { api, apiErrorText } from '@/lib/api/client';
 import type { StreamRecord } from '@/db/types';
+import { Tip } from '@/components/ui/tip';
+import { cn } from '@/lib/utils';
 
 import { retainCaptureDraft } from '@/lib/client/capture-draft';
 import { CAPTURE_MAX_TEXT_LENGTH, CAPTURE_MAX_IMAGES, chooseCaptureImages, transferFiles } from '@/lib/client/capture-images';
@@ -85,6 +87,9 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
     return () => retainCaptureDraft(owner, false);
   }, [imageUploading, createStream.isPending, voice.transcript]);
 
+  // A transcript arrives whole, once its recording is done (browser speech
+  // included), and joins the draft after what's typed. A canceled one never
+  // arrives.
   useEffect(() => {
     if (!voice.transcript) return;
     const joined = `${text}${text && !/\s$/.test(text) ? ' ' : ''}${voice.transcript}`;
@@ -169,7 +174,8 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
   };
   const hasFiles = (event: React.DragEvent) => Array.from(event.dataTransfer.types).includes('Files');
   const recoveryDisabled = busy || hasDraft || activeVoice || !!voice.transcript;
-  const placeholder = voice.isRecording ? 'Listening…' : images.length ? 'Add a note for these images (optional)' : "What's on your mind?";
+  // The voice row under the text says what the mic is doing.
+  const placeholder = images.length ? 'Add a note for these images (optional)' : "What's on your mind?";
 
   return <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
     <DialogPrimitive.Portal>
@@ -287,21 +293,33 @@ export function QuickCaptureModal({ open, onOpenChange }: QuickCaptureModalProps
                 {inputError && <p role="alert" className="text-amber-600 dark:text-amber-500">{inputError}</p>}
                 {voice.error && <p role="alert" className="text-destructive">{voice.error}</p>}
                 {voice.captureMode === null && voice.unsupportedReason && <p className="text-muted-foreground">{voice.unsupportedReason}</p>}
-                {voice.isTranscribing && <p role="status">Transcribing voice capture… <Button
-                  type="button"
-                  onClick={voice.cancelRecording}
-                  variant="link"
-                  size="sm"
-                >Cancel transcription</Button></p>}
               </div>
-              {voice.isRecording && voice.stream && <div className="mx-3 mb-3 flex items-center gap-3 rounded-xl bg-red-400/5 p-3">
-                <LiveWaveform stream={voice.stream} active height={28} barColor="currentColor" className="flex-1 text-foreground" />
+              {/* One row from the mic until the words are in the draft: the
+                  waveform (or Listening… for browser speech), then
+                  Transcribing… from Stop. Cancel and Stop keep their places
+                  throughout, and a canceled transcript never reaches the draft. */}
+              {activeVoice && <div data-voice-panel className={cn('mx-3 mb-3 flex min-h-[52px] items-center gap-2 rounded-xl py-2 pr-2 pl-3', voice.isTranscribing ? 'bg-muted/50' : 'bg-red-400/5')}>
+                {voice.isTranscribing
+                  ? <p role="status" className="flex min-w-0 flex-1 items-center gap-2 text-sm text-foreground"><Loader2 size={15} aria-hidden className="shrink-0 animate-spin text-muted-foreground" />Transcribing…</p>
+                  : voice.stream
+                    ? <LiveWaveform stream={voice.stream} active height={28} barColor="currentColor" className="min-w-0 flex-1 text-foreground" />
+                    : <p role="status" className="min-w-0 flex-1 text-sm text-muted-foreground">Listening…</p>}
+                <Tip label={voice.isTranscribing ? 'Stop transcribing and discard it' : 'Discard this recording'}>
+                  <Button
+                    type="button"
+                    onClick={voice.cancelRecording}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  ><X size={12} />Cancel</Button>
+                </Tip>
                 <Button
                   type="button"
                   onClick={voice.toggleRecording}
+                  disabled={!voice.isRecording}
                   variant="ghost"
                   size="sm"
-                  tone="danger"
+                  tone={voice.isRecording ? 'danger' : 'neutral'}
                   className="flex items-center gap-1"
                 ><Square size={12} />Stop</Button>
               </div>}

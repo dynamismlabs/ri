@@ -4,14 +4,19 @@ import { useOptionalHomeContext } from '@/components/home/home-context';
 
 export type { DeviceView };
 
-/** This home's devices. Settings, Devices and the imports panel share the cache. */
-export function useDevices() {
+/**
+ * This home's devices. Settings, Devices and the imports panel share the cache.
+ * `refetchInterval` keeps it current while something waits on a device, like
+ * a pairing link waiting for its phone.
+ */
+export function useDevices(options: { refetchInterval?: number | false } = {}) {
   const home = useOptionalHomeContext();
   return useQuery({
     enabled: home?.capabilities.privatePlanning ?? true,
     queryKey: ['devices'],
     queryFn: () => devicesApi.list(),
     staleTime: 30_000,
+    refetchInterval: options.refetchInterval,
   });
 }
 

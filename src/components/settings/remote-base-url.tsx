@@ -25,11 +25,19 @@ import {
 	Link,
 	Loader2,
 	RefreshCw,
+	Smartphone,
 	Trash2,
 } from 'lucide-react';
-import { useState } from 'react';
-import { setSettingsSection } from './settings-store';
+import { useEffect, useRef, useState } from 'react';
+import { securePhoneAddress } from '@/lib/devices/phone';
+import { closeSettings, setSettingsSection, useSettingsStore } from './settings-store';
 import { Tip } from '@/components/ui/tip';
+
+/**
+ * Settings, Devices opened from the first run's "Set up phone access": land on
+ * the remote address, and say how to get back to pairing the phone.
+ */
+export const PHONE_SETUP_ANCHOR = 'phone-access';
 
 /**
  * CRUD for the remote base URL stored in ~/<APP_SHORT_ID>/config.json.
@@ -122,6 +130,12 @@ async function runTest(rawUrl: string): Promise<TestResult> {
 export function RemoteBaseUrlSection() {
   const queryClient = useQueryClient();
   const confirm = useConfirm();
+  const { anchor } = useSettingsStore();
+  const forPhone = anchor === PHONE_SETUP_ANCHOR;
+  const sectionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (forPhone) sectionRef.current?.scrollIntoView({ block: 'start' });
+  }, [forPhone]);
   const { data, isLoading } = useQuery({
     queryKey: ['settings', 'base-url'],
     queryFn: () => settingsApi.getBaseUrls(),
@@ -257,8 +271,10 @@ export function RemoteBaseUrlSection() {
     if (testResult.status !== 'idle') setTestResult({ status: 'idle' });
   };
 
+  const phoneReady = !!securePhoneAddress(saved);
+
   return (
-    <div className="space-y-2">
+    <div ref={sectionRef} className="scroll-mt-4 space-y-2">
       <div className="flex items-center gap-2">
         <Globe size={14} className="text-muted-foreground" />
         <h3 className="text-sm font-medium text-foreground">Remote base URL</h3>
@@ -266,6 +282,21 @@ export function RemoteBaseUrlSection() {
       <p className="text-[11px] text-muted-foreground/70">
         The URL a remote device would paste in its browser to reach this machine. Anything works, port and all.
       </p>
+
+      {/* Came here to set up a phone: the way back to pairing it. */}
+      {forPhone && (
+        <Callout padding="sm" tone={phoneReady ? 'success' : 'info'} role="status" className="flex flex-wrap items-center gap-2">
+          <Smartphone size={12} className="shrink-0" />
+          <p className="min-w-0 flex-1 text-[11px] text-foreground/90">
+            {phoneReady
+              ? 'Your secure address is saved. Go back to pair your phone.'
+              : 'To use Ri on your phone, save a secure address here, one that starts with https. Then go back to pair your phone.'}
+          </p>
+          <Button onClick={closeSettings} variant={phoneReady ? 'primary' : 'secondary'} size="xs">
+            Back to pairing
+          </Button>
+        </Callout>
+      )}
 
       <Card padding="sm" density="row" className="flex flex-wrap items-center gap-2">
         {checkingBeamd ? (

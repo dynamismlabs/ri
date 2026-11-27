@@ -13,7 +13,7 @@ Every device gets its own key, which you can remove at any time.
 2. Give it a name, pick its type (a phone or a computer, for example), and click **Create pairing link**.
 3. Scan the QR code with that device, or copy the link to it. The link is shown once.
 
-From a terminal on the computer that runs Ri, `ri pair` does the same and prints the link and a QR code.
+From a terminal on the computer that runs Ri, `ri pair` does the same and prints the link and a QR code. At the end of [your first run](/docs/getting-started/first-run), **Use Ri on your phone** does it for a phone without leaving the chat.
 
 The pairing link offers the addresses your Ri knows: your remote address, the address you're using now, and your local network. Use the remote address for a phone, so it works away from home.
 

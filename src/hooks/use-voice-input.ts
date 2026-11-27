@@ -23,9 +23,13 @@ export type CaptureMode = 'media-recorder' | 'web-speech' | null;
 
 // ─── State machine ──────────────────────────────────────────────
 // Single source of truth for the recording lifecycle.
-//   idle → starting → recording → stopping → transcribing → idle
-//                              ↘ cancelling → idle
-type VoiceStatus = 'idle' | 'starting' | 'recording' | 'stopping' | 'cancelling' | 'transcribing';
+//   Parakeet / Groq: idle → starting → recording → stopping → transcribing → idle
+//   Browser speech:  idle → recording → stopping → idle
+// `stopping` is the moment after Stop: the recorder flushing its last audio
+// (500 ms) or the browser finishing recognition. It reads as transcribing,
+// so nothing looks idle between Stop and the transcript. Cancel works from
+// every state and ends in idle with nothing published.
+type VoiceStatus = 'idle' | 'starting' | 'recording' | 'stopping' | 'transcribing';
 
 export interface ProviderStatus {
   local: { available: boolean; configured: boolean; managedModel?: string };
@@ -36,9 +40,17 @@ export interface ProviderStatus {
 export interface UseVoiceInputReturn {
   /** Currently recording audio */
   isRecording: boolean;
-  /** Transcribing the recording */
+  /**
+   * Stopped and waiting for the words: from Stop (the recorder's last audio,
+   * or the browser finishing recognition) until the transcript arrives,
+   * fails or is canceled.
+   */
   isTranscribing: boolean;
-  /** The transcribed text ready to send */
+  /**
+   * The transcribed text ready to use. Set once per recording, when it is
+   * complete: browser speech holds its results until recognition ends, so
+   * auto-send never sends half a sentence.
+   */
   transcript: string;
   /** Clear the current transcript */
   clearTranscript: () => void;
@@ -115,11 +127,12 @@ export function useVoiceInput(voiceModelOverride?: string): UseVoiceInputReturn 
 
   // Web Speech API refs (fallback)
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const webTranscriptRef = useRef('');
+  /** This recognition's final results by index, published together when it ends. */
+  const webResultsRef = useRef<string[]>([]);
 
   // Derived booleans — public API stays the same
   const isRecording = status === 'starting' || status === 'recording';
-  const isTranscribing = status === 'transcribing';
+  const isTranscribing = status === 'stopping' || status === 'transcribing';
 
   // Probe provider availability on mount
   useEffect(() => {
@@ -266,6 +279,7 @@ export function useVoiceInput(voiceModelOverride?: string): UseVoiceInputReturn 
       recognition.onerror = null;
       recognition.abort();
     }
+    webResultsRef.current = [];
     streamRef.current?.getTracks().forEach(track => track.stop());
     streamRef.current = null;
   }, []);
@@ -314,13 +328,8 @@ export function useVoiceInput(voiceModelOverride?: string): UseVoiceInputReturn 
         // Kill the mic — we own it, not LiveWaveform
         stopMic();
 
-        // Read the CURRENT status to decide what to do
-        if (getStatus() === 'cancelling') {
-          setVoiceStatus('idle');
-          return;
-        }
-
-        // stopping → transcribe
+        // stopping → transcribe. A cancel never gets here: it detaches this
+        // handler before the recorder stops.
         if (blob.size === 0) {
           setVoiceStatus('idle');
           return;
@@ -416,28 +425,27 @@ export function useVoiceInput(voiceModelOverride?: string): UseVoiceInputReturn 
     recognition.interimResults = false;
     recognition.lang = 'en-US';
 
-    webTranscriptRef.current = '';
+    webResultsRef.current = [];
 
+    // Final results are kept by index (a result can be delivered again as it
+    // settles) and published only when recognition ends, so a draft or
+    // auto-send gets the whole transcript once, never a piece of it.
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       if (!current()) return;
-      let text = '';
-      for (let i = 0; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          text += event.results[i][0].transcript;
-        }
-      }
-      if (text.trim()) {
-        webTranscriptRef.current = webTranscriptRef.current
-          ? `${webTranscriptRef.current} ${text.trim()}`
-          : text.trim();
-        setTranscript(webTranscriptRef.current);
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) webResultsRef.current[i] = event.results[i][0].transcript.trim();
       }
     };
 
+    // Ends after Stop, or on its own after a long silence. Either way the
+    // words so far are the transcript.
     recognition.onend = () => {
       if (!current()) return;
-      setVoiceStatus('idle');
       recognitionRef.current = null;
+      const text = webResultsRef.current.filter(Boolean).join(' ');
+      webResultsRef.current = [];
+      if (text) setTranscript(prev => prev ? `${prev} ${text}` : text);
+      setVoiceStatus('idle');
     };
 
     recognition.onerror = (event: Event) => {
@@ -445,6 +453,11 @@ export function useVoiceInput(voiceModelOverride?: string): UseVoiceInputReturn 
       // abort() fires an 'aborted' error — that's intentional cancel, not a real error
       if ((event as Event & { error?: string }).error === 'aborted') return;
       console.error('[Voice] Web Speech error:', event);
+      // A failed recognition publishes nothing: its end event follows the error.
+      recognition.onresult = null;
+      recognition.onend = null;
+      recognition.onerror = null;
+      webResultsRef.current = [];
       setError('Speech recognition error');
       setVoiceStatus('idle');
       recognitionRef.current = null;
@@ -455,11 +468,14 @@ export function useVoiceInput(voiceModelOverride?: string): UseVoiceInputReturn 
     catch { recognitionRef.current = null; setError('Could not start browser speech recognition'); setVoiceStatus('idle'); }
   }, [setVoiceStatus, getStatus]);
 
+  // Stop listening and wait for the browser's last results. They arrive
+  // before its end event, which publishes the transcript.
   const stopWeb = useCallback(() => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
-  }, []);
+    const recognition = recognitionRef.current;
+    if (!recognition || getStatus() !== 'recording') return;
+    setVoiceStatus('stopping');
+    recognition.stop();
+  }, [setVoiceStatus, getStatus]);
 
   // ─── Unified controls ────────────────────────────────────
 
