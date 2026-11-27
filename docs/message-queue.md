@@ -61,6 +61,13 @@ before asking the queue. Apply asks twice, when the result lands and when
 the chat goes quiet (`scheduleQuietWorkResultDispatch`), because either can
 come second.
 
+Apply asks through `message-queue-state.ts` too (`drainQueue`), never by
+importing `message-queue.ts`: the send path leads back to apply, and that
+loop, loaded as its own chunk, makes Turbopack's Windows production build
+panic. The queue gives its sender there when it loads
+(`provideQueueSender`), and the home's startup (`instrumentation.ts`) loads
+it, so the queue moves with no screen open.
+
 ## Where it lives
 
 The queue is on the home, in `queued_messages`, never in the browser. A

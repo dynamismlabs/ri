@@ -50,7 +50,7 @@ import type { RunnerSignal } from '@/lib/runner/types';
 import type { WorkerEvent } from '@/lib/workers/protocol';
 import { currentRemoteSignal, mirrorSignal } from './remote-live';
 import { settleTurn } from './turns';
-import { lastTurnFinishedNormally, noteTurnEnded } from '@/lib/sessions/message-queue-state';
+import { drainQueue, lastTurnFinishedNormally, noteTurnEnded } from '@/lib/sessions/message-queue-state';
 import { recordAgentRequestOutput, queueAgentBlockedUpdates, recordConversationOutput, conversationThreadForSession, queueConversationOutput } from '@/lib/db/queries';
 import { isProgressNote } from '@/lib/executions/progress-note';
 
@@ -462,8 +462,7 @@ function scheduleQuietWorkResultDispatch(sessionId: string): void {
 function scheduleQueueDrain(sessionId: string): void {
   if (!lastTurnFinishedNormally(sessionId)) return;
   setImmediate(() => {
-    void import('@/lib/sessions/message-queue')
-      .then(({ drainMessageQueue }) => drainMessageQueue(sessionId))
+    void drainQueue(sessionId)
       .catch((error) => console.warn(`[queue] could not send the next queued message for ${sessionId}:`, error));
   });
 }
