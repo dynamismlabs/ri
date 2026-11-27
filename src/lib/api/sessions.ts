@@ -420,8 +420,9 @@ export const sessionsApi = {
     return fetchDiffStatsBatched(id);
   },
 
-  archive(id: string, opts?: { force?: boolean }) {
-    return trpcClient.sessions.archivePost.mutate({params: {id: id}, body: { force: opts?.force ?? false }});
+  /** `alsoArchiving`: the other chats in the same bulk pass, which its started-chats cascade leaves to their own requests. */
+  archive(id: string, opts?: { force?: boolean; alsoArchiving?: string[] }) {
+    return trpcClient.sessions.archivePost.mutate({params: {id: id}, body: { force: opts?.force ?? false, ...(opts?.alsoArchiving?.length ? { alsoArchiving: opts.alsoArchiving } : {}) }});
   },
 
   /**

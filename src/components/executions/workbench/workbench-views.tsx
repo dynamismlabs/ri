@@ -10,6 +10,7 @@ import type { PreviewController } from '../preview/use-preview-controller';
 import { ChangesView } from './changes-view';
 import { FilesView } from './files-view';
 import { ArtifactsView } from './artifacts-view';
+import { StartedChatsView } from './started-chats-view';
 import type { PanelView } from './workbench-state';
 import { Tip } from '@/components/ui/tip';
 import { BesideFileView } from '@/components/chat-ui/artifacts/artifact-beside';
@@ -102,6 +103,11 @@ export function WorkbenchViewBody({ view, ctx, active = true }: { view: PanelVie
           onReferenceInChat={ctx.onReferenceInChat}
         />
       );
+    case 'started':
+      // An execution's chats started them. A chat without an execution has none to list.
+      return ctx.worktreeId !== ctx.sessionId
+        ? <StartedChatsView scope={{ executionId: ctx.worktreeId }} starter="This chat" />
+        : null;
     case 'notes':
       return (
         <ReferencesPane

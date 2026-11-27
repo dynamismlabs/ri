@@ -3,6 +3,7 @@ import { reply, searchParams, type OperationContext } from '@/lib/server/operati
 import { z as rpcZ } from 'zod/v4';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { executionCatalogFilter, executionOperationFailure } from '@/lib/workspaces/access';
+import { withStartedChats } from '@/lib/sessions/started-chats';
 
 /**
  * Search across chat/execution titles and transcripts. Titles containing
@@ -55,7 +56,7 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, request: Operat
     const limitRaw = parseInt(params.get('limit') ?? '30', 10);
     const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(limitRaw, 1), 500) : 30;
 
-    const results = searchChatSessions({ query, status, workspaceId, source, limit }).filter(visible);
+    const results = withStartedChats(searchChatSessions({ query, status, workspaceId, source, limit }).filter(visible));
     return reply(results);
   } catch (err) {
     const denied = executionOperationFailure(err);

@@ -1,7 +1,11 @@
 import { and, eq, inArray, isNull, lte, or, desc, ne, gt, sql } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/sqlite-core';
 import { publishChatEvent } from '@/lib/realtime/bus';
 import { getDb } from '@/lib/db';
-import { type AgentCoordinationPayload, agentCoordinationRequests as requests, agentCoordinationDeliveries as deliveries, chatSessions, executions, workspaces, userState, workerCommands, runs } from './schema';
+import { type AgentCoordinationPayload, type StoredAttachment, agentCoordinationRequests as requests, agentCoordinationDeliveries as deliveries, chatSessions, chatEvents, executions, workspaces, userState, workerCommands, runs } from './schema';
+import { camelizeKeys } from '@/lib/case/keys';
+import type { StartedBy } from '@/lib/sessions/started-by';
+import { timestampEpoch } from '@/lib/utils/timestamps';
 import type { AgentRequestRecord, ChatEventRecord, AgentDeliveryRecord, CreateAgentRequestInput, CreateAgentDeliveryInput, RunRecord } from '@/db/types';
 import { inputIsPreparing } from '@/lib/coordination/input-reservations';
 import { addressOf, isManagerChat } from '@/lib/coordination/address';
@@ -493,4 +497,243 @@ export function preserveSystemContext(sessionId: string, key: string, content: s
       raw: { agentCoordination: { deliveryId: id, senderKind: 'system', kind: 'message', content: shown } } }, events);
     return delivery;
   });
+}
+
+// ─── Started chats (docs/started-chats.md) ────────────────────
+//
+// A chat another chat started is a delegation's target. These read the
+// delegation record by id lists: one row per delegation, a small table.
+
+const startedTarget = alias(chatSessions, 'started_target');
+const starterChat = alias(chatSessions, 'starter_chat');
+const starterExecution = alias(executions, 'starter_execution');
+
+function starterKind(address: string): StartedBy['kind'] {
+  return address === 'coordinator' ? 'home' : address.startsWith('agent:') ? 'agent' : 'chat';
+}
+
+/**
+ * Who started each chat in a list: the delegation that made the chat itself,
+ * else the one that made its execution (a chat you opened later in a started
+ * execution is still that work). A delegation into an execution that was
+ * already there marks only the chat it made.
+ */
+export function startedByForChats(rows: readonly { id: string; executionId: string | null }[]): Map<string, StartedBy> {
+  const out = new Map<string, StartedBy>();
+  if (!rows.length) return out;
+  const ids = [...new Set(rows.map((row) => row.id))];
+  const executionIds = [...new Set(rows.map((row) => row.executionId).filter((id): id is string => !!id))];
+  // The rows' own chats and their executions' other chats, each by an index
+  // (the execution's, then the request's target), so a poll never scans the
+  // request table.
+  const siblings = executionIds.length
+    ? getDb().select({ id: chatSessions.id }).from(chatSessions).where(inArray(chatSessions.executionId, executionIds)).all().map((row) => row.id)
+    : [];
+  const candidates = [...new Set([...ids, ...siblings])];
+  const found = getDb().select({
+    requestId: requests.id,
+    requestStatus: requests.status,
+    address: requests.sourceAddress,
+    options: requests.options,
+    targetId: requests.targetSessionId,
+    targetExecutionId: startedTarget.executionId,
+    sessionId: starterChat.id,
+    label: starterChat.label,
+    status: starterChat.status,
+    executionId: starterChat.executionId,
+    executionLabel: starterExecution.label,
+    executionStatus: starterExecution.status,
+    workspaceId: starterChat.workspaceId,
+    workspaceName: workspaces.name,
+    workspaceEmoji: workspaces.emoji,
+    workspaceAttachments: workspaces.attachments,
+    workspaceAreaId: workspaces.areaId,
+  }).from(requests)
+    .innerJoin(startedTarget, eq(startedTarget.id, requests.targetSessionId))
+    .innerJoin(starterChat, eq(starterChat.id, requests.sourceSessionId))
+    .leftJoin(starterExecution, eq(starterExecution.id, starterChat.executionId))
+    .leftJoin(workspaces, eq(workspaces.id, starterChat.workspaceId))
+    .where(and(eq(requests.kind, 'delegation'), inArray(requests.targetSessionId, candidates)))
+    .orderBy(requests.createdAt, requests.id)
+    .all();
+  const byChat = new Map<string, StartedBy>();
+  const byExecution = new Map<string, StartedBy>();
+  for (const row of found) {
+    const startedBy: StartedBy = {
+      requestId: row.requestId,
+      sessionId: row.sessionId,
+      address: row.address,
+      kind: starterKind(row.address),
+      label: row.label ?? row.executionLabel ?? null,
+      executionId: row.executionId,
+      workspaceId: row.workspaceId,
+      workspaceName: row.workspaceName ?? null,
+      workspaceEmoji: row.workspaceEmoji ?? null,
+      workspaceAttachments: row.workspaceAttachments ? camelizeKeys(row.workspaceAttachments as StoredAttachment[]) as unknown as StartedBy['workspaceAttachments'] : null,
+      workspaceAreaId: row.workspaceAreaId ?? null,
+      archived: row.status === 'archived' || row.executionStatus === 'archived',
+      requestStatus: row.requestStatus,
+    };
+    if (row.targetId && !byChat.has(row.targetId)) byChat.set(row.targetId, startedBy);
+    // The earliest delegation that made the execution, not one sent into it later.
+    if (row.targetExecutionId && !row.options?.executionId && !byExecution.has(row.targetExecutionId)) byExecution.set(row.targetExecutionId, startedBy);
+  }
+  for (const row of rows) {
+    const startedBy = byChat.get(row.id) ?? (row.executionId ? byExecution.get(row.executionId) : undefined);
+    if (startedBy) out.set(row.id, startedBy);
+  }
+  return out;
+}
+
+export interface StartedChatActivity {
+  /** When its last answer went back, while nothing has happened in it since. */
+  answerReturnedAt: string | null;
+  /** A person sent it a message of their own, at any point. */
+  personWrote: boolean;
+}
+
+/**
+ * What happened in started chats after they were asked: whether their answer
+ * went back with nothing since, and whether a person ever wrote in them.
+ *
+ * An answer counts once it's on its way (queued, delivered or accepted). One
+ * the asking chat could never take (it was archived) didn't land anywhere,
+ * so that chat stays unread as usual. Any later turn, yours or another
+ * chat's, is new since: then it reads like any other chat. Runs are read by
+ * the execution index, a handful per started chat.
+ */
+export function startedChatActivity(chats: readonly { id: string; executionId: string | null }[]): Map<string, StartedChatActivity> {
+  const out = new Map<string, StartedChatActivity>();
+  if (!chats.length) return out;
+  const ids = [...new Set(chats.map((chat) => chat.id))];
+  const executionIds = [...new Set(chats.map((chat) => chat.executionId).filter((id): id is string => !!id))];
+  const returned = new Map(getDb().select({ chatId: requests.targetSessionId, at: sql<string>`MAX(${deliveries.createdAt})` })
+    .from(requests)
+    .innerJoin(deliveries, eq(deliveries.requestId, requests.id))
+    .where(and(
+      inArray(requests.targetSessionId, ids),
+      inArray(requests.status, TERMINAL as ('completed' | 'failed' | 'cancelled')[]),
+      inArray(deliveries.kind, ['answer', 'failed', 'cancelled']),
+      inArray(deliveries.status, ['queued', 'delivered', 'accepted']),
+    ))
+    .groupBy(requests.targetSessionId)
+    .all()
+    .map((row) => [row.chatId!, row.at] as const));
+  // A message the person sent into the assigned turn under way (Send now, or
+  // typing while it works) starts no turn of its own. The request's answer
+  // records it as human direction, so it counts as writing in it too.
+  const directed = new Set(getDb().select({ chatId: requests.targetSessionId }).from(requests)
+    .innerJoin(deliveries, eq(deliveries.requestId, requests.id))
+    .where(and(
+      inArray(requests.targetSessionId, ids),
+      inArray(deliveries.kind, ['answer', 'failed', 'cancelled']),
+      sql`json_extract(${deliveries.payload}, '$.humanDirected') = 1`,
+    ))
+    .all().map((row) => row.chatId!));
+  const open = new Set(getDb().select({ chatId: requests.targetSessionId }).from(requests)
+    .where(and(inArray(requests.targetSessionId, ids), inArray(requests.status, [...OPEN])))
+    .all().map((row) => row.chatId!));
+  const turns = new Map(executionIds.length ? getDb().select({
+    chatId: runs.chatSessionId,
+    lastQueuedAt: sql<string>`MAX(${runs.queuedAt})`,
+    personWrote: sql<number>`MAX(CASE WHEN ${chatEvents.source} = 'user' AND ${chatEvents.senderSessionId} IS NULL THEN 1 ELSE 0 END)`,
+  }).from(runs)
+    .leftJoin(chatEvents, eq(chatEvents.id, runs.sourceEventId))
+    .where(and(inArray(runs.executionId, executionIds), inArray(runs.chatSessionId, ids)))
+    .groupBy(runs.chatSessionId)
+    .all()
+    .map((row) => [row.chatId!, row] as const) : []);
+  for (const id of ids) {
+    const at = returned.get(id) ?? null;
+    const turn = turns.get(id);
+    const since = !!at && !!turn?.lastQueuedAt && timestampEpoch(turn.lastQueuedAt) > timestampEpoch(at);
+    out.set(id, { answerReturnedAt: at && !since && !open.has(id) ? at : null, personWrote: !!turn?.personWrote || directed.has(id) });
+  }
+  return out;
+}
+
+export interface StartedChatRow {
+  requestId: string;
+  requestStatus: StartedBy['requestStatus'];
+  /** Why it stopped, when it failed or was cancelled. */
+  outcome: string | null;
+  sessionId: string;
+  label: string | null;
+  executionId: string | null;
+  executionLabel: string | null;
+  status: 'active' | 'archived';
+  pinnedAt: string | null;
+  workspaceId: string | null;
+  workspaceName: string | null;
+  workspaceEmoji: string | null;
+  workspaceAttachments: StartedBy['workspaceAttachments'];
+  workspaceAreaId: string | null;
+  startedAt: string;
+  lastActivityAt: string | null;
+  lastOutcomeEventAt: string | null;
+  lastViewedAt: string | null;
+  unreadMarkerAt: string | null;
+  turnStatus: (typeof chatSessions.$inferSelect)['turnStatus'];
+  answerReturnedAt: string | null;
+  personWrote: boolean;
+  /** Other open chats in its execution: a New chat you started there makes the work yours too. */
+  otherChats: number;
+}
+
+/**
+ * The chats one starter started, for its Started chats list: an execution's
+ * (any of its chats) or a main chat's (by its stable address, across New
+ * chat). Newest first, archived included: the list folds those.
+ */
+export function listStartedChats(scope: { executionId: string } | { address: string }, opts: { limit?: number | null; openOnly?: boolean } = {}): StartedChatRow[] {
+  const limit = opts.limit === undefined ? 200 : opts.limit;
+  const starters = 'executionId' in scope
+    ? inArray(requests.sourceSessionId, getDb().select({ id: chatSessions.id }).from(chatSessions).where(eq(chatSessions.executionId, scope.executionId)))
+    : eq(requests.sourceAddress, scope.address);
+  const query = getDb().select({
+    requestId: requests.id,
+    requestStatus: requests.status,
+    sessionId: startedTarget.id,
+    label: startedTarget.label,
+    executionId: startedTarget.executionId,
+    executionLabel: executions.label,
+    status: startedTarget.status,
+    pinnedAt: executions.pinnedAt,
+    workspaceId: startedTarget.workspaceId,
+    workspaceName: workspaces.name,
+    workspaceEmoji: workspaces.emoji,
+    workspaceAttachments: workspaces.attachments,
+    workspaceAreaId: workspaces.areaId,
+    startedAt: startedTarget.startedAt,
+    lastActivityAt: startedTarget.lastActivityAt,
+    lastOutcomeEventAt: startedTarget.lastOutcomeEventAt,
+    lastViewedAt: startedTarget.lastViewedAt,
+    unreadMarkerAt: startedTarget.unreadMarkerAt,
+    turnStatus: startedTarget.turnStatus,
+    otherChats: sql<number>`(SELECT COUNT(*) FROM chat_sessions other WHERE other.execution_id = ${startedTarget.executionId} AND other.id <> ${startedTarget.id} AND other.status = 'active' AND COALESCE(other.surface_kind, '') <> 'result_review')`,
+  }).from(requests)
+    .innerJoin(startedTarget, eq(startedTarget.id, requests.targetSessionId))
+    .leftJoin(executions, eq(executions.id, startedTarget.executionId))
+    .leftJoin(workspaces, eq(workspaces.id, startedTarget.workspaceId))
+    .where(and(eq(requests.kind, 'delegation'), starters, opts.openOnly ? eq(startedTarget.status, 'active') : undefined))
+    .orderBy(desc(requests.createdAt), desc(requests.id));
+  const rows = limit === null ? query.all() : query.limit(limit).all();
+  if (!rows.length) return [];
+  const activity = startedChatActivity(rows.map((row) => ({ id: row.sessionId, executionId: row.executionId })));
+  const stopped = rows.filter((row) => row.requestStatus === 'failed' || row.requestStatus === 'cancelled');
+  const outcomes = new Map(stopped.map((row) => [row.requestId, terminalAgentDelivery(row.requestId)?.payload.content ?? null] as const));
+  return rows.map((row) => ({
+    ...row,
+    status: row.status as StartedChatRow['status'],
+    workspaceName: row.workspaceName ?? null,
+    workspaceEmoji: row.workspaceEmoji ?? null,
+    workspaceAttachments: row.workspaceAttachments ? camelizeKeys(row.workspaceAttachments as StoredAttachment[]) as unknown as StartedBy['workspaceAttachments'] : null,
+    workspaceAreaId: row.workspaceAreaId ?? null,
+    executionLabel: row.executionLabel ?? null,
+    pinnedAt: row.pinnedAt ?? null,
+    outcome: outcomes.get(row.requestId) ?? null,
+    answerReturnedAt: activity.get(row.sessionId)?.answerReturnedAt ?? null,
+    personWrote: activity.get(row.sessionId)?.personWrote ?? false,
+    otherChats: Number(row.otherChats ?? 0),
+  }));
 }

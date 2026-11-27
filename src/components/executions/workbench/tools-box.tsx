@@ -7,6 +7,7 @@ import {
   AppWindow,
   ChevronDown,
   ChevronRight,
+  CornerDownRight,
   FileText,
   Files,
   GitBranch,
@@ -36,6 +37,8 @@ export interface ToolsListProps {
   /** Tasks and notes linked to this chat. */
   linkedCount: number;
   scratchHasContent: boolean;
+  /** The chats it started, when it has any (docs/started-chats.md). */
+  started?: StartedSummary | null;
   onShow: (view: PanelView) => void;
   /** Start the app and open Preview, on purpose. */
   onStartAndPreview: () => void;
@@ -60,6 +63,7 @@ export function ToolsList({
   diffStats,
   linkedCount,
   scratchHasContent,
+  started,
   onShow,
   onStartAndPreview,
   terminal,
@@ -225,8 +229,40 @@ export function ToolsList({
           </Tip>
         ) : null,
       )}
+      {started && started.count > 0 && row(
+        'started',
+        <CornerDownRight size={15} />,
+        'Started chats',
+        <StartedSummaryText summary={started} />,
+        'Chats this chat started, and where each one stands',
+      )}
     </div>
   );
+}
+
+/** What a starter's chats are doing, for its Tools row (docs/started-chats.md). */
+export interface StartedSummary {
+  /** Every one it started, archived included. */
+  count: number;
+  /** The ones still open. */
+  open: number;
+  needs: number;
+  working: number;
+}
+
+/** The row's status, read like the agent's Chats row: who needs you, else how many are working, else how many are open. */
+export function StartedSummaryText({ summary }: { summary: StartedSummary }) {
+  if (summary.needs > 0) return <span className="text-amber-600 dark:text-amber-400">{summary.needs} {summary.needs === 1 ? 'needs' : 'need'} you</span>;
+  if (summary.working > 0) return <span>{summary.working} working</span>;
+  return summary.open > 0 ? <span>{summary.open} open</span> : null;
+}
+
+/** The dot on a folded Started chats tool: amber while one needs you, green while one works. */
+export function startedBadge(summary: StartedSummary | null | undefined): string | undefined {
+  if (!summary) return undefined;
+  if (summary.needs > 0) return 'bg-amber-500';
+  if (summary.working > 0) return 'bg-emerald-500';
+  return undefined;
 }
 
 /**
@@ -387,6 +423,9 @@ export function ToolsBox(props: ToolsListProps) {
           <ToolsStripDivider />
           <ToolsMini onClick={() => onShow('notes')} icon={<ListTodo size={16} />} label="Notes & tasks" />
           <ToolsMini onClick={() => onShow('scratch')} icon={<NotebookPen size={16} />} label="Scratchpad" badge={props.scratchHasContent ? 'bg-muted-foreground/70' : undefined} />
+          {props.started && props.started.count > 0 && (
+            <ToolsMini onClick={() => onShow('started')} icon={<CornerDownRight size={16} />} label="Started chats" badge={startedBadge(props.started)} />
+          )}
         </>
       }
     />

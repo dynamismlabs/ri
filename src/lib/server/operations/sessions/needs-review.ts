@@ -4,6 +4,8 @@ import { z as rpcZ } from 'zod/v4';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { executionCatalogAuthority, executionCatalogFilter, executionOperationFailure } from '@/lib/workspaces/access';
 import { conversationViews } from '@/lib/sessions/view-state';
+import { withStartedChats } from '@/lib/sessions/started-chats';
+import { isSessionUnread } from '@/lib/utils/session-sort';
 
 /**
  * Returns the *candidate* set — sessions where lastOutcomeEventAt has
@@ -22,7 +24,9 @@ export async function GET(_rpcInput: rpcZ.infer<typeof GETInput>, request: Opera
     const rows = authority ? conversationViews(key, listRailSessions().filter(visible))
       .filter(row => [row.lastOutcomeEventAt, row.unreadMarkerAt].some(at => at && at > (row.lastViewedAt ?? '')))
       : listNeedsReviewSessionCandidates().filter(visible);
-    return reply(rows);
+    // A started chat whose answer went back isn't unread: the chat that
+    // asked has it (docs/started-chats.md). The shared rule decides.
+    return reply(withStartedChats(rows).filter(isSessionUnread));
   } catch (err) {
     const denied = executionOperationFailure(err);
     if (denied) return denied;

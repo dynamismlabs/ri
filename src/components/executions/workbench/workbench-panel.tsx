@@ -12,6 +12,7 @@ import { useState } from 'react';
 import {
   AppWindow,
   ChevronLeft,
+  CornerDownRight,
   File,
   FileText,
   Files,
@@ -30,6 +31,7 @@ import { MORE_VIEWS, PANEL_VIEW_LABELS, PRIMARY_VIEWS, type PanelView } from './
 import { Tip } from '@/components/ui/tip';
 import { BesideFileTab } from '@/components/chat-ui/artifacts/artifact-beside';
 import { PanelWindowControls, panelTabClass } from './panel-strip';
+import { StartedSummaryText, type StartedSummary } from './tools-box';
 
 export const VIEW_ICONS: Record<PanelView, React.ComponentType<{ size?: number; className?: string }>> = {
   run: Play,
@@ -39,6 +41,7 @@ export const VIEW_ICONS: Record<PanelView, React.ComponentType<{ size?: number; 
   files: FileText,
   notes: ListTodo,
   scratch: NotebookPen,
+  started: CornerDownRight,
   file: File,
 };
 
@@ -49,6 +52,8 @@ interface WorkbenchPanelProps {
   changedFiles: number | null;
   linkedCount: number;
   scratchHasContent: boolean;
+  /** The chats it started, when it has any (docs/started-chats.md). */
+  started: StartedSummary | null;
 }
 
 /**
@@ -62,7 +67,7 @@ interface WorkbenchPanelProps {
  * tabs keeps the preview loaded, the open file in place, and the output
  * scrolled where it was.
  */
-export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scratchHasContent }: WorkbenchPanelProps) {
+export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scratchHasContent, started }: WorkbenchPanelProps) {
   const [measure, width] = useElementWidth<HTMLDivElement>();
   const { state, dispatch, show, jump } = workbench;
   const view = state.view;
@@ -75,6 +80,8 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
 
   const status = ctx.controller.runStatus;
   const moreActive = MORE_VIEWS.includes(view);
+  // Started chats is listed once the chat has started one, or while it's open.
+  const moreViews = MORE_VIEWS.filter((v) => v !== 'started' || (started?.count ?? 0) > 0 || view === 'started');
   const MoreIcon = moreActive ? VIEW_ICONS[view] : MoreHorizontal;
   const runTone = RUN_STATUS_TONE[status];
   const dots = {
@@ -104,7 +111,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
           <SegmentedList ariaLabel="Chat tools" iconOnly={(width ?? 0) < 720} options={options} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Tip label="Notes & tasks, Scratchpad">
+              <Tip label={moreViews.map((v) => PANEL_VIEW_LABELS[v]).join(', ')}>
                 <ChipButton
                   label={moreActive ? PANEL_VIEW_LABELS[view] : 'More'}
                   aria-label={moreActive ? PANEL_VIEW_LABELS[view] : 'More tools'}
@@ -119,7 +126,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
               </Tip>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" sideOffset={4} className="min-w-52">
-              {MORE_VIEWS.map((v) => {
+              {moreViews.map((v) => {
                 const Icon = VIEW_ICONS[v];
                 return (
                   <MenuAction kind="menu" key={v} onClick={() => show(v)} selected={view === v}>
@@ -127,6 +134,7 @@ export function WorkbenchPanel({ workbench, ctx, changedFiles, linkedCount, scra
                     {PANEL_VIEW_LABELS[v]}
                     <span className="ml-auto pl-4 text-[11px] text-muted-foreground">
                       {v === 'notes' && linkedCount > 0 && `${linkedCount} linked`}
+                      {v === 'started' && started && <StartedSummaryText summary={started} />}
                       {v === 'scratch' && scratchHasContent && (
                         <span
                           aria-label="Has notes"

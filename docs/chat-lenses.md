@@ -27,7 +27,7 @@ glance, before a tap.
 | **Working** | Chats with a turn running now, and AI reviews running. A turn blocked on you is under Unread, so each chat is in one place. Background tasks (a dev server left running) aren't the agent working, as on the header's Working pill. | Green. |
 | **Agents** | Every agent as the agents-only rail draws it: a dot for its own chat, its name in bold when it wants you, a line in its voice, and counts of its chats that need you (amber) and are working (green). The chevron opens its chats under it, + starts one, ⋯ has New chat on…, Files and Setup. New agent is the last row. | None. |
 
-Each chat row has a dot for its state, its title (bold while unread), what it's
+Two or more chats one chat started stack into one row in Unread and Working, opening in place, and a started chat's row has a corner arrow before its title ([started-chats.md](started-chats.md)). Each chat row has a dot for its state, its title (bold while unread), what it's
 blocked on or what its agent said at the end of its turn
 (`docs/chat-status-lines.md`) with the size of an ask, then its agent and
 where it runs, and its age, "needs input" or "working" at the end.

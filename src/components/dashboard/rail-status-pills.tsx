@@ -6,7 +6,8 @@ import { Button } from '@/components/system/button';
 import { useState } from 'react';
 import { useDashboard } from '@/contexts/dashboard-context';
 import { useActivityBuckets } from '@/hooks/use-activity-buckets';
-import type { ActivityItem } from '@/lib/sessions/activity-buckets';
+import { startedByOfActivity, type ActivityItem } from '@/lib/sessions/activity-buckets';
+import { stackStartedChats, type StartedBy } from '@/lib/sessions/started-by';
 import { openBoard } from '@/lib/client/task-board';
 import { useRailSessions } from '@/hooks/use-workspaces';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/system/popover';
@@ -22,10 +23,11 @@ import { AgentAttentionRow } from '@/components/workspaces/agent-attention-row';
 import { AgentIcon } from '@/components/agents/agent-icon';
 import { Tip } from '@/components/ui/tip';
 import Link from 'next/link';
-import { ClipboardCheck, ShieldAlert, Maximize2 } from 'lucide-react';
+import { ChevronRight, ClipboardCheck, ShieldAlert, Maximize2 } from 'lucide-react';
 import type { RailResponse } from '@/lib/api/sessions';
 import { BackgroundTasksPill } from './background-tasks-pill';
 import { StatusPill } from './status-pill';
+import { StartedFromLine, StartedMark } from '@/components/workspaces/started-mark';
 
 // The HUD's compact status overview stays visible regardless of rail collapse.
 // Its popovers and Agent Activity share the same rows. A row opens the chat,
@@ -112,10 +114,12 @@ function ActivityStatusPill({ bucketId, items }: ActivityStatusPillProps) {
     >
       {(close) => (
         <>
-          {items.map((row) => row.kind === 'agent' ? (
-            <AgentAttentionRow key={row.id} item={row.item} variant="pill" onPick={close} />
+          {stackStartedChats(items, bucketId, startedByOfActivity).map((entry) => entry.kind === 'stack' ? (
+            <PillStack key={entry.key} startedBy={entry.startedBy} rows={entry.items} onPick={close} />
+          ) : entry.item.kind === 'agent' ? (
+            <AgentAttentionRow key={entry.item.id} item={entry.item.item} variant="pill" onPick={close} />
           ) : (
-            <PillSessionRow key={row.id} session={row.session} onPick={close} />
+            <PillSessionRow key={entry.item.id} session={entry.item.session} onPick={close} />
           ))}
         </>
       )}
@@ -126,9 +130,11 @@ function ActivityStatusPill({ bucketId, items }: ActivityStatusPillProps) {
 interface PillSessionRowProps {
   session: RailSession;
   onPick: () => void;
+  /** Off inside a stack, whose head already says who started them. */
+  showMark?: boolean;
 }
 
-function PillSessionRow({ session, onPick }: PillSessionRowProps) {
+function PillSessionRow({ session, onPick, showMark = true }: PillSessionRowProps) {
   const { activeSessionId, setActiveView } = useDashboard();
   const isActive = activeSessionId === session.id;
   // Rail rows are one-per-execution, so title by the stable execution label
@@ -150,16 +156,55 @@ function PillSessionRow({ session, onPick }: PillSessionRowProps) {
     >
       <AgentIcon workspace={{ name: wsName, attachments: session.workspaceAttachments, emoji: session.workspaceEmoji, areaId: session.workspaceAreaId }} size="sm" />
       <div className="flex-1 min-w-0 leading-tight">
-        <div className={cn(
-          'text-[11.5px] truncate',
-          labelIsPlaceholder ? 'italic text-muted-foreground/70' : 'font-medium text-foreground/90',
-        )}>
-          {label}
+        <div className="flex min-w-0 items-center gap-1">
+          {session.startedBy && showMark && <StartedMark startedBy={session.startedBy} />}
+          <span className={cn(
+            'min-w-0 flex-1 text-[11.5px] truncate',
+            labelIsPlaceholder ? 'italic text-muted-foreground/70' : 'font-medium text-foreground/90',
+          )}>
+            {label}
+          </span>
         </div>
         <div className="text-[10px] truncate mt-0.5 text-muted-foreground/70">
           {wsName}
         </div>
       </div>
     </MenuAction>
+  );
+}
+
+/**
+ * Two or more chats one chat started, in one status list: one row that opens
+ * in place (docs/started-chats.md). The list's count still counts each.
+ */
+function PillStack({ startedBy, rows, onPick }: { startedBy: StartedBy; rows: ActivityItem[]; onPick: () => void }) {
+  const [open, setOpen] = useState(false);
+  const sessions = rows.flatMap((row) => (row.kind === 'execution' ? [row.session] : []));
+  const first = sessions[0];
+  if (!first) return null;
+  const wsName = first.workspaceName ?? 'No agent';
+  return (
+    <div className="flex flex-col" data-started-stack={startedBy.address}>
+      <MenuAction density="compact"
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-start gap-1.5 text-left"
+      >
+        <AgentIcon workspace={{ name: wsName, attachments: first.workspaceAttachments, emoji: first.workspaceEmoji, areaId: first.workspaceAreaId }} size="sm" />
+        <div className="flex-1 min-w-0 leading-tight">
+          <div className="flex min-w-0 items-center gap-1">
+            <span className="truncate text-[11.5px] font-medium text-foreground/90">{sessions.length} started chats</span>
+            <ChevronRight size={11} aria-hidden className={cn('flex-shrink-0 text-muted-foreground/60 transition-transform', open && 'rotate-90')} />
+          </div>
+          <StartedFromLine startedBy={startedBy} iconSize={9} className="mt-0.5 text-[10px] text-muted-foreground/70" />
+        </div>
+      </MenuAction>
+      {open && (
+        <div className="ml-[14px] border-l border-border pl-0.5">
+          {sessions.map((session) => <PillSessionRow key={session.id} session={session} onPick={onPick} showMark={false} />)}
+        </div>
+      )}
+    </div>
   );
 }

@@ -8,6 +8,7 @@ import { z as rpcZ } from 'zod/v4';
 // Turbopack dev is extremely slow to compile — it made this route hang on
 // cold compile. The snapshot reads the same live state with no heavy imports.
 import { toRailSessionDTOs } from '@/lib/api/dto/rail-session';
+import { withStartedChats } from '@/lib/sessions/started-chats';
 import { listBackgroundTaskIds, listForSession } from '@/lib/executor/live-state';
 import {
   listBackgroundTaskSessions,
@@ -51,7 +52,7 @@ export async function GET(_rpcInput: rpcZ.infer<typeof GETInput>, request: Opera
       catch (error) { if (!isTeamError(error)) throw error; return false; }
     };
     // Redacted to what the rail draws. See lib/api/dto/rail-session.ts.
-    const rows = toRailSessionDTOs(conversationViews(key, listRailSessions().filter(session => visible(session.id))));
+    const rows = withStartedChats(toRailSessionDTOs(conversationViews(key, listRailSessions().filter(session => visible(session.id)))));
     const mainRows = conversationViews(key, listAgentMainChats().filter(chat => visible(chat.id)));
     const ids = new Set([...rows.map(session => session.id), ...mainRows.map(chat => chat.id)]);
     const pendingSessionIds = listSessionsWithPending().filter(id => !authority || ids.has(id));

@@ -1,4 +1,5 @@
 'use client';
+import { useStartedSummary } from '@/hooks/use-started-chats';
 
 import { Button } from '@/components/system/button';
 import { useSearchParams } from 'next/navigation';
@@ -323,6 +324,7 @@ function ExecutionWorkbenchView({ sessionId }: ExecutionViewProps) {
   const linkedCount = references.data?.pages[0]?.counts.inChat ?? 0;
   const { data: scratch } = useScratchpad(sessionId);
   const scratchHasContent = !!scratch?.scratchPad?.trim();
+  const started = useStartedSummary(executionId ? { executionId } : null);
 
   // ── Keyboard: ⌃` terminal, ⌃. tools, ⌘P go to file, Escape restores then closes ─
   // The same keys as the agent view (use-workbench-hotkeys.ts).
@@ -378,6 +380,7 @@ function ExecutionWorkbenchView({ sessionId }: ExecutionViewProps) {
     diffStats: diffStats.data,
     linkedCount,
     scratchHasContent,
+    started,
   };
 
   const viewContext = (surface: 'desktop' | 'phone'): WorkbenchViewContext => ({
@@ -548,6 +551,7 @@ function ExecutionWorkbenchView({ sessionId }: ExecutionViewProps) {
                   changedFiles={diffStats.data?.files ?? null}
                   linkedCount={linkedCount}
                   scratchHasContent={scratchHasContent}
+                  started={started}
                 />
               ) : null,
               pct: workbench.panelPct,

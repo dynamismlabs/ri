@@ -130,6 +130,8 @@ The receiving card says Shared by you, separates directions from quoted material
 
 The sending chat receives a compact linked receipt. A human forward that fails before acceptance creates a durable failure card there with its destination and reason. Receipts, approval history and Hold audits are system events that start zero agent turns. Instructions discourage acknowledgment-only chatter without a runtime prose classifier. Hold remains the dependable way to get the human back in control.
 
+A chat `delegate_work` started is marked in every list, grouped under its starter in Recent, stacked with its siblings in status lists, listed in its starter's Started chats, and kept out of Unread once its answer has gone back ([started-chats.md](started-chats.md)).
+
 Links preserve exact chat and event IDs. A direct message lookup works outside the currently loaded transcript page. Archived links open history without resuming the chat or replacing its current main chat. The composer shows linked participating chats and Pause incoming only while approved work or delivery is active. Completed history does not keep controls visible. An enabled pause stays visible with a waiting count and Resume. Standing preferences and pause controls live in the chat menu. The Send to chat dialog centers within viewport margins without horizontal scrolling, including when choosing a new chat model.
 
 ## Mentioning an agent

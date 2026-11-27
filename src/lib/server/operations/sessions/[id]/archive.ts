@@ -3,6 +3,7 @@ import { executionOperationFailure } from '@/lib/workspaces/access';
 import { getChatSessionWithExecution } from '@/lib/db/queries';
 import { reply, searchParams, type OperationContext } from '@/lib/server/operation';
 import { archiveExecutionSession, RemoteDirtyWorktreeError } from '@/lib/sessions/dispatch';
+import { archiveFinishedStartedChats, NO_STARTED_OUTCOME } from '@/lib/sessions/started-chats-archive';
 import { uncommittedFilesOf, type DirtyWorktreeBody } from '@/lib/workspaces/uncommitted-files';
 import { z as rpcZ } from 'zod/v4';
 
@@ -24,12 +25,23 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
   const { id } = rpcInput.params;
   try {
     const queryForce = searchParams(rpcInput.query).get('force') === 'true';
-    const body = rpcInput.body as { force?: boolean };
+    const body = rpcInput.body as { force?: boolean; alsoArchiving?: string[] };
     const force = queryForce || body.force === true;
 
-    const row = await archiveExecutionSession({ sessionId: id, force, actor: actorFromRequest(request.headers) });
+    const actor = actorFromRequest(request.headers);
+    const row = await archiveExecutionSession({ sessionId: id, force, actor });
     if (!row) return reply({ error: 'Session not found' }, { status: 404 });
-    return reply(row);
+    // Its finished started chats go with it, the way each would archive on
+    // its own (docs/started-chats.md). Ones still working, or with files
+    // that aren't committed, stay, and the reply names them.
+    // The chat itself is archived by now, so a failure here only leaves them open.
+    const startedChats = row.status === 'archived' && row.executionId
+      ? await archiveFinishedStartedChats({ executionId: row.executionId }, actor, { skip: new Set(body.alsoArchiving ?? []) }).catch((error) => {
+        console.warn('[archive] could not archive its started chats', error);
+        return NO_STARTED_OUTCOME;
+      })
+      : NO_STARTED_OUTCOME;
+    return reply({ ...row, startedChats });
   } catch (err) {
     const denied = executionOperationFailure(err);
     if (denied) return denied;
@@ -57,4 +69,4 @@ export async function POST(rpcInput: rpcZ.infer<typeof POSTInput>, request: Oper
   }
 }
 
-export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), query: rpcZ.object({ "force": rpcZ.string().optional() }).strict().optional(), body: rpcZ.object({ "force": rpcZ.boolean().optional() }).strict().default({}) }).strict();
+export const POSTInput = rpcZ.object({ params: rpcZ.object({ "id": rpcZ.string().min(1) }).strict(), query: rpcZ.object({ "force": rpcZ.string().optional() }).strict().optional(), body: rpcZ.object({ "force": rpcZ.boolean().optional(), "alsoArchiving": rpcZ.array(rpcZ.string().min(1).max(128)).max(1000).optional() }).strict().default({}) }).strict();

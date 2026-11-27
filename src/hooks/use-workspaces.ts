@@ -19,6 +19,8 @@ import { optimisticPatch } from '@/lib/query/optimistic-entity';
 import type { WorkResultDetailResponse } from '@/lib/api/results';
 import { useExecutionRuntimeScope } from '@/components/home/execution-runtime-context';
 import { isSessionUnread, latestActivityAt } from '@/lib/utils/session-sort';
+import { trpc } from '@/lib/trpc/client';
+import type { StartedOutcomeLike } from '@/lib/sessions/started-archive-copy';
 
 const WORKSPACES_KEY = ['workspaces'] as const;
 const UPDATE_WORKSPACE_KEY = ['workspaces', 'update'] as const;
@@ -37,8 +39,8 @@ export function useStackDetection(cwd: string | null) {
 }
 
 const NEEDS_REVIEW_KEY = ['sessions', 'needs-review'] as const;
-const RAIL_KEY = ['sessions', 'rail'] as const;
-const HISTORY_KEY = ['sessions', 'history'] as const;
+export const RAIL_KEY = ['sessions', 'rail'] as const;
+export const HISTORY_KEY = ['sessions', 'history'] as const;
 
 /**
  * Chats with an archive request out, by how many. The server keeps an
@@ -791,6 +793,8 @@ export function useArchiveSession() {
       qc.invalidateQueries({ queryKey: NEEDS_REVIEW_KEY });
       qc.invalidateQueries({ queryKey: RAIL_KEY });
       qc.invalidateQueries({ queryKey: HISTORY_KEY });
+      // A starter's Started chats list shows this one, or the ones it took.
+      qc.invalidateQueries({ queryKey: trpc.startedChats.list.pathKey() });
       // What the chat itself says, wherever its state shows (a returned
       // result's card). The chat on screen was left on the click.
       invalidateChatRows(qc, id, qc.getQueryData<ChatSessionWithExecution>(sessionKey(id))?.executionId);
@@ -839,6 +843,8 @@ export interface BulkArchiveResult {
   succeeded: string[];
   dirty: DirtyArchive[];
   failed: { id: string; message: string }[];
+  /** The finished chats they started, archived with them, and the ones that stayed (docs/started-chats.md). */
+  started: StartedOutcomeLike;
 }
 
 /**
@@ -858,13 +864,22 @@ export function useBulkArchiveSessions() {
   return useMutation<BulkArchiveResult, Error, { ids: string[]; force?: boolean }, { release: () => void }>({
     mutationFn: async ({ ids, force }) => {
       const settled = await Promise.allSettled(
-        ids.map((id) => sessionsApi.archive(id, { force }).then(() => id)),
+        ids.map((id) => sessionsApi.archive(id, { force, alsoArchiving: ids.filter((other) => other !== id) })),
       );
-      const result: BulkArchiveResult = { succeeded: [], dirty: [], failed: [] };
+      const result: BulkArchiveResult = { succeeded: [], dirty: [], failed: [], started: { archived: [], kept: [] } };
+      const picked = new Set(ids);
       settled.forEach((outcome, i) => {
         const id = ids[i]!;
         if (outcome.status === 'fulfilled') {
           result.succeeded.push(id);
+          // A chat ticked itself is counted as ticked, not as one its starter took.
+          const started = outcome.value.startedChats;
+          if (started) {
+            result.started = {
+              archived: [...result.started.archived, ...started.archived.filter((c) => !picked.has(c.id))],
+              kept: [...result.started.kept, ...started.kept.filter((c) => !picked.has(c.id))],
+            };
+          }
           return;
         }
         const err = outcome.reason;
@@ -897,6 +912,7 @@ export function useBulkArchiveSessions() {
       qc.invalidateQueries({ queryKey: NEEDS_REVIEW_KEY });
       qc.invalidateQueries({ queryKey: RAIL_KEY });
       qc.invalidateQueries({ queryKey: HISTORY_KEY });
+      qc.invalidateQueries({ queryKey: trpc.startedChats.list.pathKey() });
       for (const id of ids) invalidateChatRows(qc, id, qc.getQueryData<ChatSessionWithExecution>(sessionKey(id))?.executionId);
     },
   });

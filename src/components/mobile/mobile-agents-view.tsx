@@ -44,6 +44,8 @@ import {
   Settings,
 } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
+import { StartedFromLine, StartedMark } from '@/components/workspaces/started-mark';
+import { stackStartedChats, type StartedBy, type StartedFields } from '@/lib/sessions/started-by';
 import { RunOnSheet } from './run-on-sheet';
 import { Tip } from '@/components/ui/tip';
 import { MobileReviewRow } from '@/components/results/mobile-review-attention';
@@ -147,8 +149,10 @@ function UnreadLens({ work }: { work: AgentsTabWork }) {
           <MobileChatRow key={s.id} session={s} agentName={s.workspaceName ?? undefined} waitingOn={s.waitingOn} />
         ))}
         {reviewsWaiting.map((review) => <MobileReviewRow key={review.reviewId} review={review} />)}
-        {unread.map((s) => (
-          <MobileChatRow key={s.id} session={s} agentName={agentName(s.workspaceId)} />
+        {stackStartedChats(unread, 'unread', (s) => s.startedBy).map((entry) => entry.kind === 'stack' ? (
+          <MobileStartedStack key={entry.key} startedBy={entry.startedBy} sessions={entry.items} agentName={agentName} />
+        ) : (
+          <MobileChatRow key={entry.item.id} session={entry.item} agentName={agentName(entry.item.workspaceId)} />
         ))}
       </div>
       <InactiveFold sectionId="unread" count={unreadInactive.length} touch className="pl-8">
@@ -170,8 +174,10 @@ function WorkingLens({ work }: { work: AgentsTabWork }) {
         <LensEmpty title="Nothing running right now" detail="A chat shows here while its agent is working." />
       )}
       <div className="space-y-0.5">
-        {working.map((s) => (
-          <MobileChatRow key={s.id} session={s} agentName={s.workspaceName ?? undefined} />
+        {stackStartedChats(working, 'working', (s) => s.startedBy).map((entry) => entry.kind === 'stack' ? (
+          <MobileStartedStack key={entry.key} startedBy={entry.startedBy} sessions={entry.items} agentName={(id) => entry.items.find((s) => s.workspaceId === id)?.workspaceName ?? undefined} />
+        ) : (
+          <MobileChatRow key={entry.item.id} session={entry.item} agentName={entry.item.workspaceName ?? undefined} />
         ))}
         {reviewsWorking.map((review) => <MobileReviewRow key={review.reviewId} review={review} />)}
       </div>
@@ -487,13 +493,15 @@ function ChatCounts({ needsYou, working, blocked }: { needsYou: number; working:
 // ─── Chat row (phone sized) ───────────────────────────────────────
 
 interface MobileChatRowProps {
-  session: ChatSessionWithExecution;
+  session: ChatSessionWithExecution & StartedFields;
   /** Its agent, in lists that hold several agents' chats. */
   agentName?: string;
   /** What it's blocked on, when it's waiting on you. */
   waitingOn?: string | null;
   /** Idle past the inactive threshold: dimmed, with a moon before its age. */
   inactive?: boolean;
+  /** Inside a stack, whose head already says who started it. */
+  hideMark?: boolean;
 }
 
 /**
@@ -503,7 +511,7 @@ interface MobileChatRowProps {
  * turn (docs/chat-status-lines.md), then its agent and where it runs. Its
  * age at the end, or "needs input" / "working" while those hold.
  */
-function MobileChatRow({ session, agentName, waitingOn, inactive = false }: MobileChatRowProps) {
+function MobileChatRow({ session, agentName, waitingOn, inactive = false, hideMark = false }: MobileChatRowProps) {
   const { activeSessionId, activeExecutionId, streamingSessionIds, backgroundSessionIds, pendingInputSessionIds } = useWorkActivity();
   const { openExecution } = useWorkNavigation();
   const isPending = pendingInputSessionIds.has(session.id);
@@ -563,6 +571,7 @@ function MobileChatRow({ session, agentName, waitingOn, inactive = false }: Mobi
       </span>
       <span className="flex-1 min-w-0">
         <span className="flex items-baseline gap-2">
+          {session.startedBy && !hideMark && <StartedMark startedBy={session.startedBy} size={12} className="self-center" />}
           <span
             className={cn(
               'flex-1 min-w-0 truncate text-[14px] leading-[18px]',
@@ -589,6 +598,32 @@ function MobileChatRow({ session, agentName, waitingOn, inactive = false }: Mobi
         {meta && <span className="mt-0.5 block truncate text-[11px] text-muted-foreground/70">{meta}</span>}
       </span>
     </MenuAction>
+  );
+}
+
+/**
+ * Two or more chats one chat started, in one tab: one row that opens in
+ * place (docs/started-chats.md), as in the desktop header's lists.
+ */
+function MobileStartedStack({ startedBy, sessions, agentName }: { startedBy: StartedBy; sessions: (ChatSessionWithExecution & StartedFields)[]; agentName: (workspaceId: string | null) => string | undefined }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col" data-started-stack={startedBy.address}>
+      <MenuAction type="button" aria-expanded={open} onClick={() => setOpen((v) => !v)} className="w-full flex items-start gap-2 text-left">
+        <span className="flex h-[18px] w-4 flex-shrink-0 items-center justify-center">
+          <ChevronRight size={14} aria-hidden className={cn('text-muted-foreground transition-transform', open && 'rotate-90')} />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block truncate text-[14px] font-medium leading-[18px] text-foreground/90">{sessions.length} started chats</span>
+          <StartedFromLine startedBy={startedBy} iconSize={11} className="mt-0.5 text-[12px] text-muted-foreground/80" />
+        </span>
+      </MenuAction>
+      {open && (
+        <div className="ml-4 border-l border-border pl-1">
+          {sessions.map((s) => <MobileChatRow key={s.id} session={s} agentName={agentName(s.workspaceId)} hideMark />)}
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -7,7 +7,9 @@ import { IconButton } from '@/components/system/icon-button';
 import { useElementWidth } from '@/hooks/use-element-width';
 import { useViewportTier } from '@/hooks/use-viewport-tier';
 import { useState, type ReactNode } from 'react';
-import { AppWindow, FolderTree, MessagesSquare, Settings2, X, type LucideIcon } from 'lucide-react';
+import { AppWindow, CornerDownRight, FolderTree, MessagesSquare, Settings2, X, type LucideIcon } from 'lucide-react';
+import { useStartedSummary } from '@/hooks/use-started-chats';
+import { StartedChatsView } from '@/components/executions/workbench/started-chats-view';
 import type { WorkspaceRecord } from '@/db/types';
 import type { AgentTab } from '@/types/dashboard';
 import { cn } from '@/lib/utils';
@@ -25,9 +27,16 @@ import { AgentBesideChat, BesideChatTabLabel } from './agent-beside-chat';
  * it's closed. The terminal isn't one: it's the drawer across the bottom,
  * as in an execution (docs/agents-view-spec.md §10).
  */
+/** The tabs to show: Started chats once the main chat has started one, or while it's the tab on screen. */
+export function agentToolTabs(hasStarted: boolean, current: AgentTab) {
+  return AGENT_TOOL_TABS.filter((t) => t.id !== 'started' || hasStarted || current === 'started');
+}
+
 export const AGENT_TOOL_TABS: ReadonlyArray<{ id: AgentTab; label: string; Icon: LucideIcon }> = [
   // Mostly the agent's chats, so it says so. The id stays: URLs and saved tabs use it.
   { id: 'overview', label: 'Chats', Icon: MessagesSquare },
+  // The chats its main chat started (docs/started-chats.md). Shown once it has any.
+  { id: 'started', label: 'Started chats', Icon: CornerDownRight },
   { id: 'files', label: 'Files', Icon: FolderTree },
   { id: 'preview', label: 'Preview', Icon: AppWindow },
   { id: 'setup', label: 'Setup', Icon: Settings2 },
@@ -83,6 +92,8 @@ export function AgentTools({
   // Every tab the user has opened in this agent, the current one included.
   // Derived during render, so a tab that arrives through the URL mounts
   // straight away.
+  const started = useStartedSummary({ workspaceId: workspace.id });
+  const tabs = agentToolTabs(started.count > 0, tab);
   const [visited, setVisited] = useState<ReadonlySet<AgentTab>>(() => new Set([tab]));
   if (!visited.has(tab)) setVisited(new Set(visited).add(tab));
 
@@ -90,6 +101,8 @@ export function AgentTools({
     switch (id) {
       case 'overview':
         return <AgentOverview workspace={workspace} onSelectTab={onSelectTab} />;
+      case 'started':
+        return <StartedChatsView scope={{ workspaceId: workspace.id }} starter="The main chat" />;
       case 'files':
         return <AgentFiles workspace={workspace} />;
       case 'preview':
@@ -112,7 +125,7 @@ export function AgentTools({
             ariaLabel="Agent tools"
             size={tier === 'phone' ? 'touch' : 'compact'}
             iconOnly={tier !== 'phone' && (width ?? 0) < 560}
-            options={AGENT_TOOL_TABS.map((t) => ({
+            options={tabs.map((t) => ({
               value: t.id,
               label: t.label,
               icon: <t.Icon />,
@@ -164,7 +177,7 @@ export function AgentTools({
           )}
         </div>
         <div className="flex-1 min-h-0 relative">
-          {AGENT_TOOL_TABS.filter((t) => visited.has(t.id)).map((t) => (
+          {tabs.filter((t) => visited.has(t.id)).map((t) => (
             // Inactive tabs stay laid out (so a preview or a file keeps its
             // size) but are transparent and inert. Not `visibility: hidden`,
             // which a descendant that sets `visibility: visible` would override

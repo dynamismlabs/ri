@@ -1,3 +1,4 @@
+import { withStartedChats } from '@/lib/sessions/started-chats';
 import { conversationViews } from '@/lib/sessions/view-state';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { workspaceAuthority, executionOperationFailure } from '@/lib/workspaces/access';
@@ -32,7 +33,7 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, request: Operat
     // finished work; the rail never asks for it.
     const includeArchived = searchParams(rpcInput.query).get('includeArchived') === 'true';
     const rows = listWorkspaceExecutions(id, { includeArchived });
-    return reply(conversationViews(getRequestKey(request.headers), rows));
+    return reply(withStartedChats(conversationViews(getRequestKey(request.headers), rows)));
   } catch (err) {
     const denied = executionOperationFailure(err);
     if (denied) return denied;

@@ -4,6 +4,7 @@ import { reply, searchParams, type OperationContext } from '@/lib/server/operati
 import { z as rpcZ } from 'zod/v4';
 import { getRequestKey } from '@/lib/auth/request-key';
 import { executionCatalogFilter, executionOperationFailure } from '@/lib/workspaces/access';
+import { withStartedChats } from '@/lib/sessions/started-chats';
 
 /**
  * Execution history feed for the rail's "By history" tab. Returns every
@@ -27,7 +28,7 @@ export async function GET(rpcInput: rpcZ.infer<typeof GETInput>, request: Operat
     const workspaceId = searchParams(rpcInput.query).get('workspaceId') || undefined;
     const visible = executionCatalogFilter(getRequestKey(request.headers));
     const sessions = listHistorySessions({ limit: 200, workspaceId }).filter(visible);
-    return reply({ sessions: conversationViews(getRequestKey(request.headers), sessions) });
+    return reply({ sessions: withStartedChats(conversationViews(getRequestKey(request.headers), sessions)) });
   } catch (err) {
     const denied = executionOperationFailure(err);
     if (denied) return denied;
