@@ -22,7 +22,7 @@ import { isImportMirror } from '@/lib/import/mirror';
 import { processState } from '@/lib/process-state';
 import { publishMessageQueue } from '@/lib/realtime/bus';
 import { admitNewMessage, sendHumanMessage } from './send-message';
-import { holdQueue, lastTurnFinishedNormally } from './message-queue-state';
+import { holdQueue, lastTurnFinishedNormally, provideQueueSender } from './message-queue-state';
 
 /** What a screen shows of a queued message. */
 export interface QueuedMessageView {
@@ -136,6 +136,7 @@ export async function drainMessageQueue(chatSessionId: string): Promise<void> {
     sending.delete(chatSessionId);
   }
 }
+provideQueueSender(drainMessageQueue);
 
 /** Wait for a stopped turn to let go of the chat, for a harness that takes one message at a time. */
 async function quiet(chatSessionId: string, timeoutMs = 15_000): Promise<boolean> {

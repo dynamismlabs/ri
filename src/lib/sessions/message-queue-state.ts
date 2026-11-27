@@ -1,7 +1,8 @@
 /**
  * How each chat's last turn ended, for its message queue
  * (docs/message-queue.md). Light on purpose: `executor/apply.ts` records it
- * as each turn's result lands, without loading the send path.
+ * as each turn's result lands, and asks for the next queued message, without
+ * loading the send path.
  *
  * The queue moves on only after a turn that finished normally. A turn the
  * person stopped, or one that failed, holds it until they act, and so does a
@@ -10,6 +11,24 @@
 import { processState } from '@/lib/process-state';
 
 const lastTurnFinished = processState('message-queue.last-turn', () => new Map<string, boolean>());
+
+/**
+ * The queue's sender. `message-queue.ts` gives it here when it loads, which
+ * the home's startup makes sure of, so `apply.ts` never imports the send
+ * path. It mustn't: the send path leads back to `apply.ts`, and that loop,
+ * loaded as its own chunk, makes Turbopack's Windows build panic ("Dependency
+ * tracking is disabled so invalidation is not allowed").
+ */
+const sender = processState('message-queue.sender', () => ({ drain: null as ((chatSessionId: string) => Promise<void>) | null }));
+
+export function provideQueueSender(drain: (chatSessionId: string) => Promise<void>): void {
+  sender.drain = drain;
+}
+
+/** Send the chat's next queued message if it's due. Before the queue has loaded, there is nothing to send. */
+export async function drainQueue(chatSessionId: string): Promise<void> {
+  await sender.drain?.(chatSessionId);
+}
 
 /** A turn's result landed: `finished` when it ended normally, not stopped or failed. */
 export function noteTurnEnded(chatSessionId: string, finished: boolean): void {

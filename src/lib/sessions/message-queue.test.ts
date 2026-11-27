@@ -9,6 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { uuidv7 } from 'uuidv7';
 import { APP_SHORT_ID } from '@/constants/app';
 
@@ -100,6 +101,21 @@ describe('message queue', () => {
     expect(q.listQueuedMessages(id)).toEqual([]);
     expect(q.getChatEventById(queued.id)?.content).toBe('then write the tests');
     expect(publishMessageQueue).toHaveBeenLastCalledWith(id, []);
+  });
+
+  it('sends when apply asks through the queue state, which never loads the send path', async () => {
+    const { state, chat, add, sentContents } = await load();
+    const id = chat();
+    add(id, 'then write the tests');
+    expect(sentContents()).toEqual([]);
+    state.noteTurnEnded(id, true);
+    await state.drainQueue(id);
+    expect(sentContents()).toEqual(['then write the tests']);
+    // Importing the queue from apply.ts would loop back to it, and that loop makes
+    // Turbopack's Windows production build panic. The home's startup loads the queue.
+    const source = (file: string) => fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8');
+    expect(source('../executor/apply.ts')).not.toMatch(/sessions\/message-queue['"]/);
+    expect(source('../../../instrumentation.ts')).toContain("await import('@/lib/sessions/message-queue');");
   });
 
   it('sends one message per turn, in order', async () => {

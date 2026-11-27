@@ -77,6 +77,9 @@ export async function register() {
     const moved = await (await import('@/lib/external-ai/local-setup')).repairLocalAgents();
     if (moved.length > 0) console.log(`[agents] moved ${moved.join(', ')} to this Ri's address on this computer`);
   }).catch((err: unknown) => console.warn('[agents] address check skipped:', err instanceof Error ? err.message : String(err)));
+  // The queue gives apply.ts its sender when it loads (src/lib/sessions/message-queue-state.ts),
+  // so a chat's next queued message goes once its turn finishes, with no screen open.
+  await import('@/lib/sessions/message-queue');
   await (await import('@/lib/home/execution-startup')).startHomeExecutionRuntime();
 
   // Every agent's folders are in the home's records (docs/homes-spec.md
